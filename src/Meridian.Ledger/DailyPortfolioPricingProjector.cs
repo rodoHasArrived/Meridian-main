@@ -38,7 +38,9 @@ public static class DailyPortfolioPricingProjector
             input.Policy.PolicyId,
             input.Policy.ValuationMethod,
             mark.FinancialAccountId,
-            mark.InstrumentType);
+            mark.InstrumentType,
+            mark.FairValueLevel == FairValueLevel.Unclassified ? input.Policy.DefaultFairValueLevel : mark.FairValueLevel,
+            mark.IsStalePriced);
     }
 
     private static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> BuildJournalLines(

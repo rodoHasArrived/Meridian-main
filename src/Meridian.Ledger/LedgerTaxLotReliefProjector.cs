@@ -19,17 +19,40 @@ public static class LedgerTaxLotReliefProjector
             : LedgerTaxLotBasisAdjuster.Apply(input.OpenLots, input.BasisAdjustments);
 
         var orderedLots = OrderLots(input, effectiveLots).ToList();
-        var selections = SelectLots(input.QuantitySold, orderedLots);
+        var averageUnitCost = ResolveAverageUnitCost(input.ReliefMethod, effectiveLots);
+        var selections = SelectLots(input.QuantitySold, orderedLots, averageUnitCost);
         var proceeds = RoundCurrency(input.QuantitySold * input.SalePrice);
         var costBasis = selections.Sum(static selection => selection.CostBasis);
         var realizedGainOrLoss = proceeds - costBasis;
-        var lines = BuildLines(input, proceeds, costBasis, realizedGainOrLoss);
+        var washSale = ComputeWashSale(input, selections, realizedGainOrLoss);
+        var disallowedLoss = washSale?.DisallowedLoss ?? 0m;
+        var lines = BuildLines(input, proceeds, costBasis, realizedGainOrLoss, disallowedLoss);
 
         return new LedgerTaxLotReliefProjection(input, selections, proceeds, costBasis, realizedGainOrLoss, lines)
         {
             AppliedAdjustments = input.BasisAdjustments,
             EffectiveLots = effectiveLots,
+            WashSale = washSale,
         };
+    }
+
+    /// <summary>
+    /// Computes the pooled average unit cost for <see cref="LedgerTaxLotReliefMethod.AverageCost"/>,
+    /// or <c>null</c> for lot-discrete methods (which value each slice at its own lot's unit cost).
+    /// </summary>
+    private static decimal? ResolveAverageUnitCost(
+        LedgerTaxLotReliefMethod method,
+        IReadOnlyList<LedgerTaxLot> effectiveLots)
+    {
+        if (method != LedgerTaxLotReliefMethod.AverageCost)
+            return null;
+
+        var totalQuantity = effectiveLots.Sum(static lot => lot.Quantity);
+        if (totalQuantity <= 0m)
+            return null; // no relievable quantity; SelectLots surfaces the shortfall consistently.
+
+        var totalCost = effectiveLots.Sum(static lot => lot.Quantity * lot.UnitCost);
+        return totalCost / totalQuantity;
     }
 
     private static IEnumerable<LedgerTaxLot> OrderLots(LedgerTaxLotReliefInput input, IReadOnlyList<LedgerTaxLot> effectiveLots)
@@ -47,6 +70,11 @@ public static class LedgerTaxLotReliefProjector
                 .ThenBy(static lot => lot.AcquiredDate)
                 .ThenBy(static lot => lot.LotId, StringComparer.OrdinalIgnoreCase),
             LedgerTaxLotReliefMethod.SpecificId => OrderSpecificLots(input, effectiveLots),
+            // Average cost pools every lot into a single average unit cost (see ResolveAverageUnitCost),
+            // but lots are still depleted oldest-first so lot-closing and holding periods stay deterministic.
+            LedgerTaxLotReliefMethod.AverageCost => effectiveLots
+                .OrderBy(static lot => lot.AcquiredDate)
+                .ThenBy(static lot => lot.LotId, StringComparer.OrdinalIgnoreCase),
             _ => throw new ArgumentOutOfRangeException(nameof(input), input.ReliefMethod, "Unsupported tax-lot relief method."),
         };
     }
@@ -71,7 +99,8 @@ public static class LedgerTaxLotReliefProjector
 
     private static IReadOnlyList<LedgerTaxLotReliefSelection> SelectLots(
         decimal quantitySold,
-        IReadOnlyList<LedgerTaxLot> orderedLots)
+        IReadOnlyList<LedgerTaxLot> orderedLots,
+        decimal? averageUnitCost)
     {
         var consumption = LotConsumption.Consume(orderedLots, quantitySold, static lot => lot.Quantity);
 
@@ -79,18 +108,120 @@ public static class LedgerTaxLotReliefProjector
             throw new InvalidOperationException($"Insufficient open tax-lot quantity to relieve {quantitySold}; remaining shortfall was {consumption.Shortfall}.");
 
         return consumption.Slices
-            .Select(static slice => new LedgerTaxLotReliefSelection(
+            .Select(slice => new LedgerTaxLotReliefSelection(
                 slice.Lot,
                 slice.Quantity,
-                RoundCurrency(slice.Quantity * slice.Lot.UnitCost)))
+                RoundCurrency(slice.Quantity * (averageUnitCost ?? slice.Lot.UnitCost))))
             .ToList();
+    }
+
+    /// <summary>
+    /// Applies the account's <see cref="WashSalePolicy"/> to a realized loss: when a
+    /// substantially-identical security is acquired within the policy window, the proportional
+    /// share of the loss is disallowed and carried into the replacement lots' basis. Returns
+    /// <c>null</c> when no wash sale applies (a gain, disabled policy, or no matching replacement).
+    /// </summary>
+    private static WashSaleOutcome? ComputeWashSale(
+        LedgerTaxLotReliefInput input,
+        IReadOnlyList<LedgerTaxLotReliefSelection> selections,
+        decimal realizedGainOrLoss)
+    {
+        if (!input.WashSalePolicy.Enabled || realizedGainOrLoss >= 0m || input.ReplacementAcquisitions.Count == 0)
+            return null;
+
+        var soldSecurityId = ResolveSoldSecurityId(selections);
+        var window = input.WashSalePolicy.WindowDays;
+        var lower = input.SaleDate.AddDays(-window);
+        var upper = input.SaleDate.AddDays(window);
+
+        var matching = input.ReplacementAcquisitions
+            .Where(replacement => replacement.Quantity > 0m
+                && replacement.AcquiredDate >= lower
+                && replacement.AcquiredDate <= upper
+                && SecurityMatches(soldSecurityId, replacement.SecurityId))
+            .ToList();
+        if (matching.Count == 0)
+            return null;
+
+        var matchedQuantity = Math.Min(input.QuantitySold, matching.Sum(static replacement => replacement.Quantity));
+        if (matchedQuantity <= 0m)
+            return null;
+
+        var totalLoss = Math.Abs(realizedGainOrLoss);
+        var disallowedLoss = RoundCurrency(totalLoss * (matchedQuantity / input.QuantitySold));
+        if (disallowedLoss <= 0m)
+            return null;
+
+        // Never disallow more than the recognized loss after rounding.
+        disallowedLoss = Math.Min(disallowedLoss, totalLoss);
+        var allowedLoss = totalLoss - disallowedLoss;
+        // Earliest relieved acquisition date carries the sold shares' holding period onto the
+        // replacement lot. Min over DayNumber keeps the result an unambiguous DateOnly.
+        var holdingPeriodCarryDate = DateOnly.FromDayNumber(
+            selections.Min(static selection => selection.Lot.AcquiredDate.DayNumber));
+        var basisIncreases = DistributeBasisIncreases(matching, disallowedLoss, holdingPeriodCarryDate);
+
+        return new WashSaleOutcome(disallowedLoss, allowedLoss, matchedQuantity, basisIncreases);
+    }
+
+    private static Guid? ResolveSoldSecurityId(IReadOnlyList<LedgerTaxLotReliefSelection> selections)
+    {
+        var securityIds = selections
+            .Select(static selection => selection.Lot.SecurityId)
+            .Where(static securityId => securityId is not null)
+            .Distinct()
+            .ToList();
+
+        // A single, unambiguous security identity is used for matching; mixed or absent identities
+        // fall back to trusting the caller-supplied replacement scope.
+        return securityIds.Count == 1 ? securityIds[0] : null;
+    }
+
+    private static bool SecurityMatches(Guid? soldSecurityId, Guid? replacementSecurityId)
+    {
+        if (soldSecurityId is null || replacementSecurityId is null)
+            return true; // caller-scoped: accept the replacement in the security's own relief context.
+        return soldSecurityId.Value == replacementSecurityId.Value;
+    }
+
+    /// <summary>
+    /// Distributes the disallowed loss across replacement lots in proportion to their quantities,
+    /// assigning any rounding residual to the final lot so the increases sum exactly to the
+    /// disallowed amount.
+    /// </summary>
+    private static IReadOnlyList<WashSaleBasisIncrease> DistributeBasisIncreases(
+        IReadOnlyList<WashSaleReplacementAcquisition> matching,
+        decimal disallowedLoss,
+        DateOnly holdingPeriodCarryDate)
+    {
+        var byLot = matching
+            .GroupBy(static replacement => replacement.LotId, StringComparer.OrdinalIgnoreCase)
+            .Select(group => (LotId: group.Key, Quantity: group.Sum(static replacement => replacement.Quantity)))
+            .ToList();
+
+        var totalQuantity = byLot.Sum(static lot => lot.Quantity);
+        var increases = new List<WashSaleBasisIncrease>(byLot.Count);
+        var allocated = 0m;
+
+        for (var index = 0; index < byLot.Count; index++)
+        {
+            var amount = index == byLot.Count - 1
+                ? disallowedLoss - allocated
+                : RoundCurrency(disallowedLoss * (byLot[index].Quantity / totalQuantity));
+            allocated += amount;
+            if (amount != 0m)
+                increases.Add(new WashSaleBasisIncrease(byLot[index].LotId, amount, holdingPeriodCarryDate));
+        }
+
+        return increases;
     }
 
     private static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> BuildLines(
         LedgerTaxLotReliefInput input,
         decimal proceeds,
         decimal costBasis,
-        decimal realizedGainOrLoss)
+        decimal realizedGainOrLoss,
+        decimal disallowedLoss)
     {
         var financialAccountId = input.FinancialAccountId;
         var cash = string.IsNullOrWhiteSpace(financialAccountId)
@@ -116,8 +247,13 @@ public static class LedgerTaxLotReliefProjector
         }
         else
         {
-            lines.Add((loss, Math.Abs(realizedGainOrLoss), 0m));
-            lines.Add((input.Account, 0m, costBasis));
+            // Only the allowed portion of the loss is recognized; the disallowed (wash-sale)
+            // portion is capitalized back into the replacement lot's basis, which nets against the
+            // position credit so the entry still balances and no premature loss is booked.
+            var allowedLoss = Math.Abs(realizedGainOrLoss) - disallowedLoss;
+            if (allowedLoss > 0m)
+                lines.Add((loss, allowedLoss, 0m));
+            lines.Add((input.Account, 0m, costBasis - disallowedLoss));
         }
 
         return lines;
