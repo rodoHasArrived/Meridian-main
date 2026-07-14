@@ -1488,7 +1488,7 @@ export function useDataViewModel(
         await waitForBackfillProgressPoll(BACKFILL_PROGRESS_POLL_INTERVAL_MS, pollingController.signal);
       }
     };
-    let pollingTask = Promise.resolve();
+    let pollingTask: Promise<void>;
 
     try {
       const runRequest = services.run(buildBackfillRequest(form));

@@ -50,7 +50,8 @@ export function DesignSystemNavRail({
 }: DesignSystemNavRailProps) {
   return (
     <aside
-      className={cn(designSystemNavRailClasses.root, compact && designSystemNavRailClasses.compact, className)}
+      className={cn(designSystemNavRailClasses.root, "mds-nav-rail", "op-rail", compact && designSystemNavRailClasses.compact, className)}
+      data-design-system-component="NavRail"
       aria-label={ariaLabel}
     >
       <nav className={designSystemNavRailClasses.nav} aria-label={navAriaLabel}>

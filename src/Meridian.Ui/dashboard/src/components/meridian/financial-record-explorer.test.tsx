@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -292,7 +292,9 @@ describe("FinancialRecordExplorerShell", () => {
     });
 
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
-    await user.type(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), "aapl");
+    fireEvent.change(screen.getByRole("textbox", { name: "Search Ledger Explorer" }), {
+      target: { value: "aapl" }
+    });
 
     await waitFor(() => {
       expect(window.location.href).toContain("period=2026-06");
