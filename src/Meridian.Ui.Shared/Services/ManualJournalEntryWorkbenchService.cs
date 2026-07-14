@@ -23,6 +23,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     private readonly IAccountingActionAuditStore _auditStore;
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly ILedgerJournalStore? _journalStore;
+    private readonly IGovernedLedgerPostingTarget? _postingTarget;
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
     private readonly IBankTransactionSource? _bankTransactionSource;
 
@@ -33,13 +34,15 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ISecurityMasterQueryService? securityMasterQueryService = null,
         ILedgerJournalStore? journalStore = null,
         ReportPackWorkflowService? reportPackWorkflowService = null,
-        IBankTransactionSource? bankTransactionSource = null)
+        IBankTransactionSource? bankTransactionSource = null,
+        IGovernedLedgerPostingTarget? postingTarget = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _securityMasterQueryService = securityMasterQueryService;
         _journalStore = journalStore;
+        _postingTarget = postingTarget;
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
     }
@@ -652,7 +655,14 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ct)
             .ConfigureAwait(false);
 
-        await journalStore.AppendAsync(write, ct).ConfigureAwait(false);
+        if (_postingTarget is not null)
+        {
+            await _postingTarget.PostAsync(write, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            await journalStore.AppendAsync(write, ct).ConfigureAwait(false);
+        }
 
         var transition = BuildTransition(draft.Status, ManualJournalEntryStatusDto.Posted, request, recordedAtUtc);
         var next = draft with
@@ -755,6 +765,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             postingCommand.SourceEventId,
             postingCommand.SourceJournalEntryId,
             BuildManualPostingKind(draft),
+            AdjustmentApproval: BuildManualAdjustmentApproval(draft, postingCommand, evidenceLinks, recordedAtUtc),
             PostingCommand: postingCommand,
             LedgerBookId: ledgerBook.LedgerBookId);
     }
@@ -878,6 +889,38 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             : draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
                 ? LedgerPostingKindDto.Adjustment
                 : LedgerPostingKindDto.Originating;
+
+    private static LedgerAdjustmentApprovalMetadataDto? BuildManualAdjustmentApproval(
+        ManualJournalEntryDraftDto draft,
+        AccountingPostingCommandDto postingCommand,
+        IReadOnlyList<string> evidenceLinks,
+        DateTimeOffset recordedAtUtc)
+    {
+        if (!draft.ReversalOfJournalEntryId.HasValue && !draft.RebookedFromJournalEntryId.HasValue)
+        {
+            return null;
+        }
+
+        var approvalId = NormalizeOptional(draft.ApprovalId)
+            ?? throw new InvalidOperationException("Correction posting requires a retained approval id.");
+        var approvedBy = NormalizeOptional(draft.ApprovedBy)
+            ?? throw new InvalidOperationException("Correction posting requires a retained approving actor.");
+        var approvedAt = draft.ApprovedAtUtc
+            ?? throw new InvalidOperationException("Correction posting requires a retained approval timestamp.");
+        var sourceJournalEntryId = postingCommand.SourceJournalEntryId
+            ?? throw new InvalidOperationException("Correction posting requires source journal-entry lineage.");
+        var evidenceLink = evidenceLinks.FirstOrDefault();
+
+        return new LedgerAdjustmentApprovalMetadataDto(
+            approvalId,
+            LedgerAdjustmentApprovalStatusDto.Approved,
+            approvedBy,
+            approvedAt,
+            draft.ReversalOfJournalEntryId.HasValue ? "period-close-reversal" : "governed-rebook",
+            GovernanceCaseId: $"journal-correction:{sourceJournalEntryId:D}",
+            EvidenceLink: evidenceLink,
+            Notes: $"Governed correction approved before posting at {recordedAtUtc:O}.");
+    }
 
     private static AccountingPostingEvidenceKindDto ClassifyManualPostingEvidence(string evidenceLink)
     {

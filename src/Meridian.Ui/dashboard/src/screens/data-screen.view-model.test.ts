@@ -13,6 +13,7 @@ import {
   buildBackfillProviderOptions,
   buildBackfillNarrative,
   buildBackfillRequest,
+  buildBackfillLiveProgressState,
   buildBackfillResultCardState,
   buildBackfillTriggerState,
   buildDataUploadPanelState,
@@ -912,6 +913,131 @@ describe("data-screen view model", () => {
     expect(completedCard.title).toBe("Backfill complete — polygon");
     expect(completedCard.statusLabel).toBe("Written");
     expect(completedCard.tone).toBe("success");
+  });
+
+  it("derives exact provider fallback progress without hiding dropped notifications", () => {
+    const state = buildBackfillLiveProgressState({
+      isActive: true,
+      timestamp: "2026-07-13T17:05:00Z",
+      providerProgress: {
+        symbols: {
+          AAPL: {
+            symbol: "AAPL",
+            rangeStart: "2026-07-01",
+            rangeEnd: "2026-07-12",
+            totalDays: 12,
+            completedDays: 6,
+            percentComplete: 50,
+            isCompleted: false,
+            isFailed: false,
+            isSkipped: false,
+            currentProvider: "stooq",
+            currentStatus: "Downloading",
+            providerAttempt: 2,
+            retryRound: 1,
+            operation: "daily-bars",
+            attemptStartedAt: "2026-07-13T17:04:30Z",
+            lastUpdatedAt: "2026-07-13T17:05:00Z",
+            error: null
+          }
+        },
+        recentProviderAttempts: [{
+          symbol: "AAPL",
+          provider: "polygon",
+          rangeStart: "2026-07-01",
+          rangeEnd: "2026-07-12",
+          providerAttempt: 1,
+          retryRound: 0,
+          operation: "daily-bars",
+          status: "Failed",
+          barsDownloaded: 0,
+          startedAt: "2026-07-13T17:04:00Z",
+          observedAt: "2026-07-13T17:04:20Z",
+          error: "HTTP 429"
+        }],
+        overallPercentComplete: 50,
+        totalSymbols: 1,
+        completedSymbols: 0,
+        failedSymbols: 0,
+        droppedProviderNotifications: 3,
+        timestamp: "2026-07-13T17:05:00Z"
+      }
+    });
+
+    expect(state).toMatchObject({
+      active: true,
+      title: "Live provider progress",
+      overallPercent: 50,
+      droppedNotificationWarning: expect.stringContaining("3 older provider notifications")
+    });
+    expect(state?.symbols[0]).toMatchObject({
+      symbol: "AAPL",
+      range: "2026-07-01 to 2026-07-12",
+      provider: "stooq",
+      attempt: "Attempt 2, retry 1",
+      status: "Downloading",
+      progress: "50%"
+    });
+    expect(state?.recentAttempts[0]).toMatchObject({
+      label: "AAPL · polygon",
+      tone: "danger",
+      detail: expect.stringContaining("HTTP 429")
+    });
+  });
+
+  it("polls provider progress while a backfill run is in flight and keeps the final snapshot", async () => {
+    let resolveRun!: (value: BackfillTriggerResult) => void;
+    let runSettled = false;
+    const progressReads = vi.fn(async (): Promise<BackfillProgressResponse> => ({
+      isActive: !runSettled,
+      providerProgress: {
+        symbols: {},
+        recentProviderAttempts: [],
+        overallPercentComplete: runSettled ? 100 : 25,
+        totalSymbols: 1,
+        completedSymbols: runSettled ? 1 : 0,
+        failedSymbols: 0,
+        droppedProviderNotifications: 0,
+        timestamp: "2026-07-13T17:05:00Z"
+      },
+      timestamp: "2026-07-13T17:05:00Z"
+    }));
+    const services = {
+      preview: async () => preview,
+      run: () => new Promise<BackfillTriggerResult>((resolve) => {
+        resolveRun = resolve;
+      }),
+      getProgress: progressReads
+    };
+    const workspace: DataWorkspaceResponse = { metrics: [], providers, backfills: [], exports: [] };
+    const { result } = renderHook(() => useDataViewModel(workspace, "/data/backfills", services));
+
+    await waitFor(() => expect(result.current.form.provider).toBe("polygon"));
+    act(() => result.current.updateBackfillForm("symbols", "AAPL"));
+    await act(async () => result.current.previewBackfill());
+
+    let runPromise!: Promise<void>;
+    act(() => {
+      runPromise = result.current.runBackfill();
+    });
+
+    await waitFor(() => {
+      expect(progressReads).toHaveBeenCalled();
+      expect(result.current.liveProgressState?.overallPercent).toBe(25);
+    });
+
+    await act(async () => {
+      runSettled = true;
+      resolveRun(completedBackfill);
+      await runPromise;
+    });
+
+    expect(result.current.liveProgressState).toMatchObject({
+      active: false,
+      overallPercent: 100,
+      title: "Final provider progress"
+    });
+    expect(progressReads.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
   it("derives failed backfill result cards with danger tone and error evidence", () => {

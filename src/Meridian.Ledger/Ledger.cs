@@ -27,6 +27,8 @@ public sealed class Ledger : IReadOnlyLedger
     private readonly HashSet<Guid> _ledgerEntryIds = [];
     private readonly Dictionary<LedgerAccount, AccountTotals> _accountTotals = [];
     private readonly Dictionary<LedgerAccount, List<AccountBalanceSnapshot>> _accountBalanceSnapshots = [];
+    private readonly Dictionary<(LedgerAccount Account, string ScopeKey), DimensionalBalanceSeries>
+        _dimensionalBalanceSnapshots = [];
     private readonly List<LedgerPostingCountSnapshot> _postingCountSnapshots = [];
     private long _ledgerLineSequence;
     private long _journalPostingSequence;
@@ -65,7 +67,8 @@ public sealed class Ledger : IReadOnlyLedger
                 totals = AccountTotals.Empty;
 
             _accountTotals[line.Account] = totals.Add(line.Debit, line.Credit, entry.Timestamp);
-            AddAccountBalanceSnapshot(line);
+            var snapshot = AddAccountBalanceSnapshot(line);
+            AddDimensionalBalanceSnapshot(line, snapshot);
         }
 
         AddPostingCountSnapshot(entry);
@@ -299,8 +302,8 @@ public sealed class Ledger : IReadOnlyLedger
         string? financialAccountId = null,
         LedgerLineDimensionSet? lineDimensions = null)
     {
-        if (lineDimensions is not null)
-            return BuildTrialBalanceFromLines(timestamp: null, financialAccountId, lineDimensions);
+        if (LedgerLineDimensionSetNormalizer.Canonicalize(lineDimensions) is { } canonicalDimensions)
+            return BuildTrialBalanceFromDimensionSnapshots(timestamp: null, financialAccountId, canonicalDimensions);
 
         var result = new Dictionary<LedgerAccount, decimal>(_accountTotals.Count);
         foreach (var (account, totals) in _accountTotals)
@@ -322,8 +325,8 @@ public sealed class Ledger : IReadOnlyLedger
         string? financialAccountId = null,
         LedgerLineDimensionSet? lineDimensions = null)
     {
-        if (lineDimensions is not null)
-            return BuildTrialBalanceFromLines(timestamp, financialAccountId, lineDimensions);
+        if (LedgerLineDimensionSetNormalizer.Canonicalize(lineDimensions) is { } canonicalDimensions)
+            return BuildTrialBalanceFromDimensionSnapshots(timestamp, financialAccountId, canonicalDimensions);
 
         var result = new Dictionary<LedgerAccount, decimal>();
         foreach (var (account, snapshots) in _accountBalanceSnapshots)
@@ -341,30 +344,30 @@ public sealed class Ledger : IReadOnlyLedger
         return result;
     }
 
-    private IReadOnlyDictionary<LedgerAccount, decimal> BuildTrialBalanceFromLines(
+    private IReadOnlyDictionary<LedgerAccount, decimal> BuildTrialBalanceFromDimensionSnapshots(
         DateTimeOffset? timestamp,
         string? financialAccountId,
-        LedgerLineDimensionSet? lineDimensions)
+        LedgerLineDimensionSet lineDimensions)
     {
         var result = new Dictionary<LedgerAccount, decimal>();
-
-        foreach (var journalEntry in _journal)
+        foreach (var series in _dimensionalBalanceSnapshots.Values)
         {
-            if (timestamp is not null && journalEntry.Timestamp > timestamp.Value)
+            if (!MatchesFinancialAccount(series.Account, financialAccountId) ||
+                !MatchesLineDimensions(series.Dimensions, lineDimensions))
+            {
+                continue;
+            }
+
+            var index = timestamp is null
+                ? series.Snapshots.Count - 1
+                : LastAccountBalanceSnapshotAtOrBefore(series.Snapshots, timestamp.Value);
+            if (index < 0)
                 continue;
 
-            foreach (var line in journalEntry.Lines)
-            {
-                if (!MatchesFinancialAccount(line.Account, financialAccountId))
-                    continue;
-
-                if (!MatchesLineDimensions(line.Dimensions, lineDimensions))
-                    continue;
-
-                result.TryGetValue(line.Account, out var currentBalance);
-                var delta = CalculateNetBalance(line.Account, line.Debit, line.Credit);
-                result[line.Account] = currentBalance + delta;
-            }
+            var snapshot = series.Snapshots[index];
+            result.TryGetValue(series.Account, out var current);
+            result[series.Account] = current +
+                CalculateNetBalance(series.Account, snapshot.Debits, snapshot.Credits);
         }
 
         return result;
@@ -561,7 +564,7 @@ public sealed class Ledger : IReadOnlyLedger
         return result;
     }
 
-    private void AddAccountBalanceSnapshot(LedgerEntry line)
+    private AccountBalanceSnapshot AddAccountBalanceSnapshot(LedgerEntry line)
     {
         if (!_accountBalanceSnapshots.TryGetValue(line.Account, out var snapshots))
         {
@@ -579,6 +582,27 @@ public sealed class Ledger : IReadOnlyLedger
         var index = FindAccountBalanceInsertIndex(snapshots, snapshot);
         snapshots.Insert(index, snapshot);
         RecalculateAccountBalanceSnapshots(snapshots, index);
+        return snapshot;
+    }
+
+    private void AddDimensionalBalanceSnapshot(
+        LedgerEntry line,
+        AccountBalanceSnapshot snapshot)
+    {
+        var dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(line.Dimensions);
+        if (dimensions is null)
+            return;
+
+        var key = (line.Account, LedgerLineDimensionSetFields.BuildScopeKey(dimensions));
+        if (!_dimensionalBalanceSnapshots.TryGetValue(key, out var series))
+        {
+            series = new DimensionalBalanceSeries(line.Account, dimensions, []);
+            _dimensionalBalanceSnapshots[key] = series;
+        }
+
+        var index = FindAccountBalanceInsertIndex(series.Snapshots, snapshot);
+        series.Snapshots.Insert(index, snapshot);
+        RecalculateAccountBalanceSnapshots(series.Snapshots, index);
     }
 
     private static int FindAccountBalanceInsertIndex(
@@ -809,6 +833,11 @@ public sealed class Ledger : IReadOnlyLedger
         decimal CreditDelta,
         decimal Debits,
         decimal Credits);
+
+    private sealed record DimensionalBalanceSeries(
+        LedgerAccount Account,
+        LedgerLineDimensionSet Dimensions,
+        List<AccountBalanceSnapshot> Snapshots);
 
     private readonly record struct LedgerPostingCountSnapshot(
         DateTimeOffset Timestamp,

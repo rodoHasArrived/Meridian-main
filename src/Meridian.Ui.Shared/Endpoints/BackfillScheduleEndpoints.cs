@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
 using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
@@ -6,8 +7,11 @@ using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using BackfillResult = Meridian.Contracts.Backfill.BackfillResult;
+using UiBackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -21,7 +25,7 @@ public static class BackfillScheduleEndpoints
         var group = app.MapGroup("").WithTags("Backfill");
 
         // Backfill health
-        group.MapGet(UiApiRoutes.BackfillHealth, ([FromServices] BackfillScheduleManager? schedMgr, [FromServices] BackfillCoordinator backfill) =>
+        group.MapGet(UiApiRoutes.BackfillHealth, ([FromServices] BackfillScheduleManager? schedMgr, [FromServices] UiBackfillCoordinator backfill) =>
         {
             var summary = schedMgr?.GetStatusSummary();
             return Results.Json(new
@@ -61,7 +65,7 @@ public static class BackfillScheduleEndpoints
         .Produces(200);
 
         // Gap fill
-        group.MapPost(UiApiRoutes.BackfillGapFill, async (BackfillCoordinator backfill, GapFillRequest req) =>
+        group.MapPost(UiApiRoutes.BackfillGapFill, async (UiBackfillCoordinator backfill, GapFillRequest req) =>
         {
             if (req.Symbols is null || req.Symbols.Length == 0)
                 return Results.BadRequest(new { error = "At least one symbol is required." });
@@ -104,29 +108,22 @@ public static class BackfillScheduleEndpoints
         .Produces(200);
 
         // Backfill executions
-        group.MapGet(UiApiRoutes.BackfillExecutions, (int? limit, [FromServices] BackfillExecutionHistory? history) =>
+        group.MapGet(UiApiRoutes.BackfillExecutions, (int? limit, IServiceProvider services) =>
         {
-            if (history is null)
-                return Results.Json(new { executions = Array.Empty<object>(), total = 0 }, jsonOptions);
-
-            var executions = history.GetRecentExecutions(limit ?? 50);
-            var autoExecutions = executions.Where(e => e.Trigger == ExecutionTrigger.AutoRemediation).ToList();
-            return Results.Json(new
-            {
+            var history = services.GetService<BackfillExecutionHistory>();
+            var executions = history?.GetRecentExecutions(limit ?? 50) ?? [];
+            var defaultProvider = services
+                .GetService<IOptions<AutoGapRemediationPolicy>>()?
+                .Value.DefaultProvider;
+            var response = BackfillExecutionContractProjection.Build(
                 executions,
-                total = executions.Count,
-                autoRemediation = new
-                {
-                    total = autoExecutions.Count,
-                    withReason = autoExecutions.Count(e => !string.IsNullOrWhiteSpace(e.AutoRemediationTriggerReason)),
-                    lastOutcome = autoExecutions.FirstOrDefault()?.AutoRemediationLastOutcome
-                },
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
+                defaultProvider,
+                DateTimeOffset.UtcNow);
+            return Results.Json(response, jsonOptions);
         })
         .WithName("GetBackfillExecutions")
-        .WithDescription("Returns recent backfill execution history with optional limit parameter.")
-        .Produces(200);
+        .WithDescription("Returns typed recent execution history with remediation SLA and compatibility evidence.")
+        .Produces<BackfillExecutionHistoryResponse>(200);
 
         // Backfill statistics
         group.MapGet(UiApiRoutes.BackfillStatistics, ([FromServices] BackfillExecutionHistory? history, [FromServices] BackfillScheduleManager? schedMgr) =>

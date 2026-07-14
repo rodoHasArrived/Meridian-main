@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Catalog;
+using Meridian.Infrastructure.Utilities;
 using Meridian.Ui.Services.Contracts;
 
 namespace Meridian.Ui.Services;
@@ -15,6 +17,7 @@ public sealed class SymbolMappingService
     public static SymbolMappingService Instance => _instance.Value;
 
     private readonly IConfigService _configService;
+    private readonly ICanonicalSymbolRegistry? _registry;
     private readonly string _legacyMappingsFilePath;
     private readonly Lock _pathInitializationLock = new();
     private Task? _pathInitializationTask;
@@ -54,6 +57,16 @@ public sealed class SymbolMappingService
     }
 
     /// <summary>
+    /// Creates the production adapter over the shared canonical registry. Legacy files are read
+    /// only as idempotent migration and rollback inputs.
+    /// </summary>
+    public SymbolMappingService(ICanonicalSymbolRegistry registry, IConfigService? configService = null)
+        : this(configService ?? new ConfigService())
+    {
+        _registry = registry ?? throw new ArgumentNullException(nameof(registry));
+    }
+
+    /// <summary>
     /// Loads symbol mappings from disk.
     /// </summary>
     public async Task LoadAsync(CancellationToken ct = default)
@@ -86,6 +99,12 @@ public sealed class SymbolMappingService
             {
                 _config = new SymbolMappingsConfig();
             }
+
+            if (_registry is not null)
+            {
+                await ImportLegacyMappingsIntoRegistryAsync(ct).ConfigureAwait(false);
+                RefreshFromRegistry();
+            }
         }
         catch (Exception ex)
         {
@@ -100,6 +119,12 @@ public sealed class SymbolMappingService
     /// </summary>
     public async Task SaveAsync(CancellationToken ct = default)
     {
+        if (_registry is not null)
+        {
+            MappingsChanged?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         try
         {
             var mappingsFilePath = await GetMappingsFilePathAsync(ct);
@@ -142,6 +167,31 @@ public sealed class SymbolMappingService
     /// </summary>
     public async Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(mapping);
+        if (_registry is not null)
+        {
+            var canonical = mapping.CanonicalSymbol.Trim().ToUpperInvariant();
+            await _registry.RegisterAsync(ToDefinition(mapping, SymbolMappingSources.Operator), ct)
+                .ConfigureAwait(false);
+            foreach (var (provider, providerSymbol) in mapping.ProviderSymbols ?? [])
+            {
+                if (!string.IsNullOrWhiteSpace(providerSymbol))
+                {
+                    await _registry.SetProviderSymbolAsync(
+                        canonical,
+                        provider,
+                        providerSymbol,
+                        SymbolMappingSources.Operator,
+                        isOverride: true,
+                        ct).ConfigureAwait(false);
+                }
+            }
+
+            RefreshFromRegistry();
+            MappingsChanged?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         var mappings = _config.Mappings?.ToList() ?? new List<SymbolMapping>();
 
         var existingIndex = mappings.FindIndex(m =>
@@ -168,6 +218,26 @@ public sealed class SymbolMappingService
     /// </summary>
     public async Task RemoveMappingAsync(string canonicalSymbol, CancellationToken ct = default)
     {
+        if (_registry is not null)
+        {
+            var definition = _registry.GetDefinition(canonicalSymbol);
+            if (definition is null)
+                return;
+
+            foreach (var (provider, providerSymbol) in definition.ProviderSymbols)
+            {
+                if (providerSymbol.IsOverride)
+                {
+                    await _registry.RemoveProviderSymbolAsync(definition.Canonical, provider, ct)
+                        .ConfigureAwait(false);
+                }
+            }
+
+            RefreshFromRegistry();
+            MappingsChanged?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         var mappings = _config.Mappings?.ToList() ?? new List<SymbolMapping>();
         mappings.RemoveAll(m =>
             string.Equals(m.CanonicalSymbol, canonicalSymbol, StringComparison.OrdinalIgnoreCase));
@@ -180,6 +250,9 @@ public sealed class SymbolMappingService
     /// </summary>
     public string MapToProvider(string canonicalSymbol, string providerId)
     {
+        if (_registry?.GetProviderSymbol(canonicalSymbol, providerId) is { } registrySymbol)
+            return registrySymbol;
+
         // First check for explicit mapping
         var mapping = GetMapping(canonicalSymbol);
         if (mapping?.ProviderSymbols != null &&
@@ -198,6 +271,9 @@ public sealed class SymbolMappingService
     /// </summary>
     public string MapToCanonical(string providerSymbol, string providerId)
     {
+        if (_registry?.TryResolve(providerSymbol, providerId) is { } canonical)
+            return canonical;
+
         // Check for explicit reverse mapping
         var mapping = _config.Mappings?.FirstOrDefault(m =>
             m.ProviderSymbols != null &&
@@ -226,15 +302,7 @@ public sealed class SymbolMappingService
             return symbol.ToUpperInvariant();
         }
 
-        return provider.DefaultTransform switch
-        {
-            SymbolTransform.Uppercase => symbol.ToUpperInvariant(),
-            SymbolTransform.Lowercase => symbol.ToLowerInvariant(),
-            SymbolTransform.DotsToSpaces => symbol.Replace(".", " ").ToUpperInvariant(),
-            SymbolTransform.DotsToDashes => symbol.Replace(".", "-").ToUpperInvariant(),
-            SymbolTransform.StooqFormat => $"{symbol.Replace(".", "-").ToLowerInvariant()}.us",
-            _ => symbol.ToUpperInvariant()
-        };
+        return SymbolNormalization.NormalizeForProvider(symbol, providerId);
     }
 
     /// <summary>
@@ -256,7 +324,9 @@ public sealed class SymbolMappingService
             SymbolTransform.Lowercase => providerSymbol.ToUpperInvariant(),
             SymbolTransform.DotsToSpaces => providerSymbol.Replace(" ", ".").ToUpperInvariant(),
             SymbolTransform.DotsToDashes => providerSymbol.Replace("-", ".").ToUpperInvariant(),
-            SymbolTransform.StooqFormat => providerSymbol.Replace(".us", "").Replace("-", ".").ToUpperInvariant(),
+            SymbolTransform.StooqFormat => providerSymbol.EndsWith(".us", StringComparison.OrdinalIgnoreCase)
+                ? providerSymbol[..^3].Replace("-", ".").ToUpperInvariant()
+                : providerSymbol.Replace("-", ".").ToUpperInvariant(),
             _ => providerSymbol.ToUpperInvariant()
         };
     }
@@ -410,6 +480,101 @@ public sealed class SymbolMappingService
 
         return mapping;
     }
+
+    private async Task ImportLegacyMappingsIntoRegistryAsync(CancellationToken ct)
+    {
+        if (_registry is null)
+            return;
+
+        foreach (var mapping in _config.Mappings ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(mapping.CanonicalSymbol))
+                continue;
+
+            await _registry.RegisterAsync(ToDefinition(mapping, SymbolMappingSources.LegacyConfig), ct)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private void RefreshFromRegistry()
+    {
+        if (_registry is null)
+            return;
+
+        _config = new SymbolMappingsConfig
+        {
+            Version = "2.0",
+            LastUpdated = DateTime.UtcNow,
+            Mappings = _registry.GetAll()
+                .OrderBy(static definition => definition.Canonical, StringComparer.OrdinalIgnoreCase)
+                .Select(static definition => new SymbolMapping
+                {
+                    CanonicalSymbol = definition.Canonical,
+                    DisplayName = definition.DisplayName,
+                    SecurityType = ToSecurityType(definition.AssetClass),
+                    PrimaryExchange = definition.Exchange,
+                    Currency = definition.Currency ?? "USD",
+                    Figi = definition.Figi,
+                    Isin = definition.Isin,
+                    Cusip = definition.Cusip,
+                    ProviderSymbols = definition.ProviderSymbols.ToDictionary(
+                        static pair => pair.Key,
+                        static pair => pair.Value.Symbol,
+                        StringComparer.OrdinalIgnoreCase),
+                    IsCustomMapping = definition.ProviderSymbols.Values.Any(static mapping => mapping.IsOverride),
+                    UpdatedAt = definition.ProviderSymbols.Values
+                        .Select(static mapping => mapping.UpdatedAt?.UtcDateTime ?? DateTime.MinValue)
+                        .DefaultIfEmpty(DateTime.MinValue)
+                        .Max()
+                })
+                .ToArray()
+        };
+    }
+
+    private static CanonicalSymbolDefinition ToDefinition(SymbolMapping mapping, string source)
+        => new()
+        {
+            Canonical = mapping.CanonicalSymbol.Trim().ToUpperInvariant(),
+            DisplayName = mapping.DisplayName,
+            AssetClass = ToAssetClass(mapping.SecurityType),
+            Exchange = mapping.PrimaryExchange,
+            Currency = mapping.Currency,
+            Figi = mapping.Figi,
+            Isin = mapping.Isin,
+            Cusip = mapping.Cusip,
+            ProviderSymbols = (mapping.ProviderSymbols ?? new Dictionary<string, string>())
+                .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+                .ToDictionary(
+                    static pair => pair.Key.Trim().ToLowerInvariant(),
+                    pair => new ProviderSymbolDefinition(
+                        pair.Value.Trim(),
+                        source,
+                        IsOverride: true,
+                        UpdatedAt: mapping.UpdatedAt == default
+                            ? DateTimeOffset.UtcNow
+                            : new DateTimeOffset(DateTime.SpecifyKind(mapping.UpdatedAt, DateTimeKind.Utc))),
+                    StringComparer.OrdinalIgnoreCase)
+        };
+
+    private static string ToAssetClass(string? securityType)
+        => securityType?.Trim().ToUpperInvariant() switch
+        {
+            "OPT" => "option",
+            "FUT" => "future",
+            "CASH" or "FX" => "forex",
+            "CRYPTO" => "crypto",
+            _ => "equity"
+        };
+
+    private static string ToSecurityType(string? assetClass)
+        => assetClass?.Trim().ToLowerInvariant() switch
+        {
+            "option" => "OPT",
+            "future" => "FUT",
+            "forex" => "CASH",
+            "crypto" => "CRYPTO",
+            _ => "STK"
+        };
 
     private async Task<string> GetMappingsFilePathAsync(CancellationToken ct)
     {

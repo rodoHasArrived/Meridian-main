@@ -142,6 +142,14 @@ Ledger period close writes also fail closed for reviewed automation. `PostgresLe
 rejects assistant or automation-origin close requests before saving the period status, period-close
 event, or operator inbox sign-off work item so period locks remain human-approved accounting
 records.
+Hard close additionally hydrates the period journal and refuses the status mutation while any
+dimension-scoped Revenue or Expense balance remains non-zero. Closing-entry projection and approval
+stay in the shared workbench; Storage owns the final invariant at the durable period boundary.
+Governed restatement can move only a hard-closed period back to soft close, and only for a human
+Controller or Fund Controller command with a reason, approval reference, and one retained evidence
+artifact that identifies the period, ledger book, reversal/restatement intent, and approval. The
+reopen event retains the prior status and clears the hard-close timestamp so subsequent writes still
+flow through the existing soft-close adjustment approval guard.
 
 Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
 schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;

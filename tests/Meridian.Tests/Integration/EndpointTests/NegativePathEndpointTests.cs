@@ -311,13 +311,18 @@ public sealed class NegativePathEndpointTests : IDisposable
     }
 
     [Fact]
-    public async Task BackfillProgress_WhenNoActiveBackfill_ReturnsJsonWithMessage()
+    public async Task BackfillProgress_WhenNoActiveBackfill_ReturnsTypedEmptySnapshot()
     {
         var response = await _client.GetAsync("/api/backfill/progress");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var json = await DeserializeAsync(response);
-        json.Should().ContainKey("message");
+        json.Should().ContainKey("lastRun");
+        json["lastRun"].ValueKind.Should().Be(JsonValueKind.Null);
+        json.Should().ContainKey("isActive");
+        json["isActive"].GetBoolean().Should().BeFalse();
+        json.Should().ContainKey("providerProgress");
+        json["providerProgress"].GetProperty("totalSymbols").GetInt32().Should().Be(0);
     }
 
     [Fact]

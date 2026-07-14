@@ -1,6 +1,7 @@
 using System.Threading;
 using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Ledger;
 using Serilog;
 
 namespace Meridian.Application.Accounting;
@@ -43,10 +44,19 @@ public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
             }
 
             var source = string.IsNullOrWhiteSpace(bar.Source) ? _provider.Name : bar.Source;
+            var ageDays = asOf.DayNumber - bar.SessionDate.DayNumber;
+            var confidence = ageDays switch
+            {
+                <= 0 => DailyPortfolioPriceConfidence.High,
+                <= 3 => DailyPortfolioPriceConfidence.Medium,
+                _ => DailyPortfolioPriceConfidence.Low
+            };
             return new MarkPriceQuote(
                 bar.Close,
                 source,
-                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}"));
+                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}"),
+                bar.SessionDate,
+                confidence);
         }
         catch (OperationCanceledException)
         {

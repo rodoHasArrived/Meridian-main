@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Catalog;
 
 namespace Meridian.Core.Config;
 
@@ -290,7 +291,18 @@ public sealed record SymbolMappingsConfig(
     // <summary>
     // List of symbol mappings.
     // </summary>
-    SymbolMappingConfig[]? Mappings = null
+    SymbolMappingConfig[]? Mappings = null,
+
+    // <summary>
+    // Migration mode for the shared canonical symbol registry. Compare returns the legacy
+    // result while reporting disagreements; legacy inputs remain available for rollback.
+    // </summary>
+    SymbolResolutionMode ResolutionMode = SymbolResolutionMode.Compare,
+
+    // <summary>
+    // Emit structured disagreement diagnostics while running in comparison mode.
+    // </summary>
+    bool ReportMismatches = true
 );
 
 /// <summary>

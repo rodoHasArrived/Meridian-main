@@ -789,6 +789,9 @@ describe("workstation API endpoint catalog", () => {
     expect(backfillCheckpointResumeEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/resume");
     expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
+    expect(PROVIDER_API_ENDPOINTS.catalog).toBe("/api/providers/catalog");
+    expect(PROVIDER_API_ENDPOINTS.rateLimits).toBe("/api/providers/rate-limits");
+    expect(PROVIDER_API_ENDPOINTS.health).toBe("/api/providers/health");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness).toBe("/api/accounting-system/production-readiness");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans).toBe("/api/accounting-system/migration-worker-plans");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile).toBe("/api/accounting-system/tenant-administration-profile");

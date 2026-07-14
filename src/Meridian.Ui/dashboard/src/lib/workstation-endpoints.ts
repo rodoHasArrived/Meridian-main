@@ -399,6 +399,9 @@ export const BACKFILL_API_ENDPOINTS = {
 export const PROVIDER_API_ENDPOINTS = {
   configure: UI_API_ROUTES.ProviderConfigure,
   status: UI_API_ROUTES.ProviderStatus,
+  catalog: UI_API_ROUTES.ProviderCatalog,
+  rateLimits: UI_API_ROUTES.ProviderRateLimits,
+  health: UI_API_ROUTES.ProviderHealth,
   connections: UI_API_ROUTES.ProviderConnections,
   readiness: UI_API_ROUTES.ProviderReadiness,
   capabilityMatrix: UI_API_ROUTES.ProviderCapabilityMatrix
@@ -459,6 +462,7 @@ export const PROVIDER_INTEGRATION_API_ENDPOINTS = {
 
 export const SYMBOL_API_ENDPOINTS = {
   symbols: UI_API_ROUTES.Symbols,
+  registry: UI_API_ROUTES.CanonicalSymbolRegistry,
   statistics: UI_API_ROUTES.SymbolsStatistics,
   search: UI_API_ROUTES.SymbolsSearch,
   add: UI_API_ROUTES.SymbolsAdd,

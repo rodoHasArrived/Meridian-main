@@ -16,4 +16,6 @@ public sealed record DailyPortfolioPricingLine(
     string PolicyId,
     string ValuationMethod,
     string? FinancialAccountId,
-    string? InstrumentType);
+    string? InstrumentType,
+    DateOnly? PriceObservedOn = null,
+    DailyPortfolioPriceConfidence Confidence = DailyPortfolioPriceConfidence.High);

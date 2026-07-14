@@ -795,7 +795,8 @@ public sealed record ManualJournalEntryDraftDto(
     JournalEntryReversalDto? Reversal = null,
     JournalEntryRebookDto? Rebook = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    AutomatedJournalEvidenceAssessmentDto? AutomationEvidenceAssessment = null)
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];

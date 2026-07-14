@@ -12,12 +12,19 @@ namespace Meridian.Storage.Ledger;
 /// </summary>
 public sealed class DurableAutomatedJournalPoster : IAutomatedJournalPostingTarget
 {
-    private readonly ILedgerJournalStore _store;
+    private readonly IGovernedLedgerPostingTarget _postingTarget;
     private readonly Meridian.Ledger.Ledger? _projectionLedger;
 
     public DurableAutomatedJournalPoster(ILedgerJournalStore store, Meridian.Ledger.Ledger? projectionLedger = null)
+        : this(new DurableLedgerPostingTarget(store), projectionLedger)
     {
-        _store = store ?? throw new ArgumentNullException(nameof(store));
+    }
+
+    public DurableAutomatedJournalPoster(
+        IGovernedLedgerPostingTarget postingTarget,
+        Meridian.Ledger.Ledger? projectionLedger = null)
+    {
+        _postingTarget = postingTarget ?? throw new ArgumentNullException(nameof(postingTarget));
         _projectionLedger = projectionLedger;
     }
 
@@ -52,22 +59,36 @@ public sealed class DurableAutomatedJournalPoster : IAutomatedJournalPostingTarg
     {
         ArgumentNullException.ThrowIfNull(approval);
         ArgumentNullException.ThrowIfNull(evidenceLinks);
+        if (approval.Status == AutomatedJournalApprovalStatus.Posted)
+        {
+            return approval;
+        }
+        if (approval.Status != AutomatedJournalApprovalStatus.Approved)
+        {
+            throw new InvalidOperationException("Only approved automated journal drafts can be posted.");
+        }
         if (periodId == Guid.Empty)
             throw new ArgumentException("Period id is required.", nameof(periodId));
         if (evidenceLinks.Count == 0)
             throw new ArgumentException("Posting evidence is required.", nameof(evidenceLinks));
 
-        // Throws when the approval is not in Approved status, before anything is written.
         var entry = approval.ToJournalEntry();
 
-        await _store.AppendAsync(
-            new LedgerJournalEntryWrite(
+        await _postingTarget.PostAsync(
+                new LedgerJournalEntryWrite(
                 entry,
                 aggregateId ?? approval.ApprovalId,
                 periodId),
-            ct).ConfigureAwait(false);
+                ct)
+            .ConfigureAwait(false);
 
-        var projection = projectionLedger ?? _projectionLedger ?? new Meridian.Ledger.Ledger();
-        return approval.PostTo(projection, actor, occurredAtUtc, reason, evidenceLinks);
+        var projection = projectionLedger ?? _projectionLedger;
+        if (projection is not null &&
+            !projection.Journal.Any(journal => journal.JournalEntryId == entry.JournalEntryId))
+        {
+            projection.Post(entry);
+        }
+
+        return approval.MarkPosted(actor, occurredAtUtc, reason, evidenceLinks);
     }
 }

@@ -332,7 +332,41 @@ public sealed class DataSourceRegistryTests
             "Register failures must be surfaced with the module identity");
     }
 
+    [Fact]
+    public void GetRegistrationReport_ReturnsImmutablePointInTimeSnapshotWithCumulativeCounts()
+    {
+        var timeProvider = new ManualTimeProvider(new DateTimeOffset(2026, 7, 13, 12, 0, 0, TimeSpan.Zero));
+        var registry = new DataSourceRegistry(timeProvider: timeProvider);
+        registry.ConfigureModule("ds-registry-requires-config", new ProviderModuleContext { Enabled = true });
+        var services = new ServiceCollection();
+
+        registry.RegisterModules(services, typeof(DataSourceRegistryTests).Assembly);
+        var first = registry.GetRegistrationReport();
+        timeProvider.Advance(TimeSpan.FromMinutes(5));
+        registry.RegisterModules(new ServiceCollection(), typeof(DataSourceRegistryTests).Assembly);
+        var second = registry.GetRegistrationReport();
+
+        first.GeneratedAt.Should().Be(new DateTimeOffset(2026, 7, 13, 12, 0, 0, TimeSpan.Zero));
+        second.GeneratedAt.Should().Be(first.GeneratedAt.AddMinutes(5));
+        first.ModuleCandidateCount.Should().BeGreaterThan(0);
+        first.ModuleActivationAttemptCount.Should().BeGreaterThan(0);
+        first.ModuleRegistrationAttemptCount.Should().BeGreaterThan(0);
+        first.RegisteredModuleCount.Should().BeGreaterThan(0);
+        second.ModuleCandidateCount.Should().Be(first.ModuleCandidateCount * 2);
+        first.Failures.Should().NotBeSameAs(second.Failures);
+        ((IList<DataSourceDiscoveryFailure>)first.Failures).IsReadOnly.Should().BeTrue();
+    }
+
     #endregion
+}
+
+internal sealed class ManualTimeProvider(DateTimeOffset utcNow) : TimeProvider
+{
+    private DateTimeOffset _utcNow = utcNow;
+
+    public override DateTimeOffset GetUtcNow() => _utcNow;
+
+    public void Advance(TimeSpan duration) => _utcNow += duration;
 }
 
 // -----------------------------------------------------------------------

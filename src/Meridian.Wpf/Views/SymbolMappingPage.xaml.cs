@@ -17,11 +17,16 @@ public partial class SymbolMappingPage : Page
     private readonly SymbolMappingViewModel _viewModel;
 
     public SymbolMappingPage()
+        : this(new SymbolMappingViewModel())
+    {
+    }
+
+    public SymbolMappingPage(SymbolMappingViewModel viewModel)
     {
         InitializeComponent();
 
         _loggingService = WpfServices.LoggingService.Instance;
-        _viewModel = new SymbolMappingViewModel();
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = _viewModel;
     }
 

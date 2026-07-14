@@ -3236,8 +3236,8 @@ export function getReconciliationCalibrationSummary() {
 
 // --- Backfill mutations ---
 
-export function getBackfillProgress() {
-  return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress);
+export function getBackfillProgress(options: ApiRequestOptions = {}) {
+  return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress, options);
 }
 
 export function triggerBackfill(request: BackfillTriggerRequest) {
@@ -3706,6 +3706,10 @@ export function getSymbols(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").SymbolRecord[]>(SYMBOL_API_ENDPOINTS.symbols, options);
 }
 
+export function getCanonicalSymbolRegistry(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").CanonicalSymbolRegistryResponse>(SYMBOL_API_ENDPOINTS.registry, options);
+}
+
 export function getSymbolsStatistics(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").SymbolStatistics>(SYMBOL_API_ENDPOINTS.statistics, options);
 }
@@ -3740,10 +3744,32 @@ export function getQualityGaps() {
   return getJson<import("@/types").QualityGapEntry[]>(QUALITY_API_ENDPOINTS.gaps);
 }
 
+export function remediateQualityGap(
+  symbol: string,
+  request: import("@/types").QualityGapRemediationRequest
+) {
+  return postJson<import("@/types").QualityGapRemediationResponse>(
+    `${QUALITY_API_ENDPOINTS.gaps}/${encodeURIComponent(symbol)}`,
+    request
+  );
+}
+
 // --- Provider capability matrix and security-master supply surfaces ---
 
 export function getProviderCapabilityMatrix() {
   return getJson<import("@/types").ProviderCapabilityMatrixResponse>(PROVIDER_API_ENDPOINTS.capabilityMatrix);
+}
+
+export function getProviderCatalog(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderCatalogResponse>(PROVIDER_API_ENDPOINTS.catalog, options);
+}
+
+export function getProviderRateLimits(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderRateLimitsResponse>(PROVIDER_API_ENDPOINTS.rateLimits, options);
+}
+
+export function getProviderConnectionHealth(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderConnectionHealthResponse>(PROVIDER_API_ENDPOINTS.health, options);
 }
 
 export function getCorporateActionInbox() {

@@ -55,6 +55,7 @@ using Meridian.Storage.Integrations;
 using Meridian.Storage.MoneyMarket;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
+using Meridian.Ledger;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Policies;
 using Meridian.Storage.Query;
@@ -178,6 +179,17 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IFileMaintenanceService, FileMaintenanceService>();
         services.AddSingleton<IQualityTrendStore, FileQualityTrendStore>();
         services.AddSingleton<IDataQualityService, DataQualityService>();
+        services.TryAddSingleton<IDataQualityScoringService>(sp => new DataQualityScoringService(
+            sp.GetRequiredService<StorageOptions>(),
+            sp.GetRequiredService<ILogger<DataQualityScoringService>>(),
+            sp.GetService<ISourceRegistry>(),
+            sp.GetService<IMetadataTagService>()));
+        services.TryAddSingleton<Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer>(sp =>
+            new Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer(
+                sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<DataQualityMonitor>(sp => new DataQualityMonitor(
+            sp.GetRequiredService<Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer>(),
+            sp.GetRequiredService<StorageOptions>().RootPath));
         services.AddSingleton<IStorageSearchService, StorageSearchService>();
         services.AddSingleton<ITierMigrationService, TierMigrationService>();
         services.AddSingleton<IAuditChainService, AuditChainService>();
@@ -200,6 +212,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
+            services.AddSingleton(sp => new DurableAutomatedJournalPoster(
+                sp.GetRequiredService<IGovernedLedgerPostingTarget>()));
+            services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
+                sp.GetRequiredService<DurableAutomatedJournalPoster>());
             services.AddSingleton<PostgresAccountingConfigurationStore>();
             services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());

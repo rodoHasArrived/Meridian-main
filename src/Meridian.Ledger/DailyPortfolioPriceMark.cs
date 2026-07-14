@@ -1,6 +1,17 @@
 namespace Meridian.Ledger;
 
 /// <summary>
+/// Confidence assigned to a retained portfolio closing mark after provider and
+/// freshness checks. Operational valuation workflows reject marks below policy.
+/// </summary>
+public enum DailyPortfolioPriceConfidence : byte
+{
+    Low = 0,
+    Medium = 1,
+    High = 2
+}
+
+/// <summary>
 /// Daily mark and evidence for one valued portfolio position.
 /// </summary>
 public sealed record DailyPortfolioPriceMark
@@ -13,7 +24,9 @@ public sealed record DailyPortfolioPriceMark
         string PriceSource,
         string EvidenceReference,
         string? FinancialAccountId = null,
-        string? InstrumentType = null)
+        string? InstrumentType = null,
+        DateOnly? PriceObservedOn = null,
+        DailyPortfolioPriceConfidence Confidence = DailyPortfolioPriceConfidence.High)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol must not be null or whitespace.", nameof(Symbol));
@@ -36,6 +49,8 @@ public sealed record DailyPortfolioPriceMark
         this.EvidenceReference = EvidenceReference.Trim();
         this.FinancialAccountId = string.IsNullOrWhiteSpace(FinancialAccountId) ? null : FinancialAccountId.Trim();
         this.InstrumentType = string.IsNullOrWhiteSpace(InstrumentType) ? null : InstrumentType.Trim();
+        this.PriceObservedOn = PriceObservedOn;
+        this.Confidence = Confidence;
     }
 
     public string Symbol { get; }
@@ -53,4 +68,8 @@ public sealed record DailyPortfolioPriceMark
     public string? FinancialAccountId { get; }
 
     public string? InstrumentType { get; }
+
+    public DateOnly? PriceObservedOn { get; }
+
+    public DailyPortfolioPriceConfidence Confidence { get; }
 }

@@ -10,7 +10,8 @@ import {
   type AnomalyCellContext,
   type CellActionApi,
   type CellActionId,
-  type CoverageGapCellContext
+  type CoverageGapCellContext,
+  type QualityGapCellContext
 } from "./data-screen.cell-actions";
 import type { ToastApi } from "@/components/ui/toast";
 
@@ -27,7 +28,19 @@ const anomalyContext: AnomalyCellContext = {
   anomalyType: "PriceSpike"
 };
 
-function actionIds(context: CoverageGapCellContext | AnomalyCellContext) {
+const qualityGapContext: QualityGapCellContext = {
+  kind: "quality-gap",
+  symbol: "TSLA",
+  gapId: "111111111111111111111111",
+  dashboardVersion: "quality-v1",
+  provider: "polygon",
+  from: "2026-07-01T14:00:00Z",
+  to: "2026-07-01T14:07:00Z",
+  canBackfill: true,
+  disabledReason: null
+};
+
+function actionIds(context: CoverageGapCellContext | AnomalyCellContext | QualityGapCellContext) {
   return buildCellActions(context, () => undefined)
     .filter((entry) => entry.type !== "divider")
     .map((entry) => entry.id);
@@ -56,6 +69,19 @@ describe("buildCellActions", () => {
       (entry) => entry.type !== "divider" && entry.danger
     );
     expect(dangerous).toBe(false);
+  });
+
+  it("projects the server-owned exact-gap remediation action", () => {
+    expect(actionIds(qualityGapContext)).toEqual([
+      "backfill",
+      "compare-providers",
+      "open-capability-matrix"
+    ]);
+    const disabled = buildCellActions(
+      { ...qualityGapContext, canBackfill: false, disabledReason: "Invalid range" },
+      () => undefined
+    ).find((entry) => entry.id === "backfill");
+    expect(disabled?.type !== "divider" && disabled?.disabled).toBe(true);
   });
 
   it("routes every actionable item through the dispatcher", () => {
@@ -97,7 +123,7 @@ function Harness({
   api,
   onOpenCapabilityMatrix
 }: {
-  context: CoverageGapCellContext | AnomalyCellContext;
+  context: CoverageGapCellContext | AnomalyCellContext | QualityGapCellContext;
   toast: ToastApi;
   api?: Partial<CellActionApi>;
   onOpenCapabilityMatrix?: (symbol: string) => void;
@@ -123,6 +149,27 @@ function Harness({
 }
 
 describe("useCellActions", () => {
+  it("remediates the selected opaque gap instead of issuing a symbol-wide request", async () => {
+    const user = userEvent.setup();
+    const toast = stubToast();
+    const remediateQualityGap = vi.fn().mockResolvedValue({
+      gapId: qualityGapContext.gapId,
+      symbol: qualityGapContext.symbol,
+      status: "Completed"
+    });
+
+    render(<Harness context={qualityGapContext} toast={toast} api={{ remediateQualityGap }} />);
+
+    await user.click(screen.getByRole("button", { name: "Open actions" }));
+    await user.click(await screen.findByRole("menuitem", { name: /Backfill this exact gap/ }));
+
+    await waitFor(() => expect(remediateQualityGap).toHaveBeenCalledWith("TSLA", {
+      gapId: "111111111111111111111111",
+      dashboardVersion: "quality-v1"
+    }));
+    expect(toast.success).toHaveBeenCalled();
+  });
+
   it("triggers a backfill through the endpoint layer and reports success", async () => {
     const user = userEvent.setup();
     const toast = stubToast();

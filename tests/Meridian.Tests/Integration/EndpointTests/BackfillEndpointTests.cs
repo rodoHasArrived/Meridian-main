@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -67,7 +68,13 @@ public sealed class BackfillEndpointTests
 
         var content = await response.Content.ReadAsStringAsync();
         var json = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content)!;
-        json.Should().ContainKey("message");
+        json.Should().ContainKey("lastRun");
+        json["lastRun"].ValueKind.Should().Be(JsonValueKind.Null);
+        json.Should().ContainKey("isActive");
+        json["isActive"].GetBoolean().Should().BeFalse();
+        json.Should().ContainKey("providerProgress");
+        json["providerProgress"].GetProperty("symbols").ValueKind.Should().Be(JsonValueKind.Object);
+        json["providerProgress"].GetProperty("recentProviderAttempts").ValueKind.Should().Be(JsonValueKind.Array);
     }
 
     #endregion
@@ -286,7 +293,15 @@ public sealed class BackfillEndpointTests
             CompletedAt = DateTimeOffset.UtcNow.AddMinutes(-1),
             AutoRemediationTriggerReason = "gap:Significant:00:10:00",
             AutoRemediationAttemptCount = 2,
-            AutoRemediationLastOutcome = "Completed"
+            AutoRemediationLastOutcome = "Completed",
+            AutoRemediationSla = new BackfillRemediationSlaMetadata(
+                BackfillRemediationSlaTier.SameBusinessDay,
+                DateTimeOffset.UtcNow.AddHours(4),
+                RequiresOwnerAssignment: true,
+                DownstreamWorkflow: "accounting",
+                ReasonCode: "CriticalWorkflow",
+                Provider: "polygon",
+                TriggerSource: AutoRemediationTriggerSource.QualityAlert)
         });
 
         var response = await _client.GetAsync("/api/backfill/executions?limit=5");
@@ -296,11 +311,18 @@ public sealed class BackfillEndpointTests
         var auto = doc.RootElement.GetProperty("autoRemediation");
         auto.GetProperty("total").GetInt32().Should().BeGreaterThan(0);
         auto.GetProperty("withReason").GetInt32().Should().BeGreaterThan(0);
+        auto.GetProperty("defaultProvider").GetString().Should().NotBeNullOrWhiteSpace();
 
         var executions = doc.RootElement.GetProperty("executions");
+        executions[0].GetProperty("executionId").GetString().Should().Be("autoexec123");
         executions[0].TryGetProperty("autoRemediationTriggerReason", out _).Should().BeTrue();
         executions[0].TryGetProperty("autoRemediationAttemptCount", out _).Should().BeTrue();
         executions[0].TryGetProperty("autoRemediationLastOutcome", out _).Should().BeTrue();
+        var sla = executions[0].GetProperty("autoRemediationSla");
+        sla.GetProperty("tier").GetString().Should().Be("SameBusinessDay");
+        sla.GetProperty("status").GetString().Should().Be("Completed");
+        sla.GetProperty("provider").GetString().Should().Be("polygon");
+        sla.GetProperty("isCompatibilityDerived").GetBoolean().Should().BeFalse();
     }
 
     [Fact]

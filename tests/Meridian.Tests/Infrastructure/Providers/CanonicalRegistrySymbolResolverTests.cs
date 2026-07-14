@@ -83,4 +83,74 @@ public sealed class CanonicalRegistrySymbolResolverTests
 
         mapped.Should().BeNull();
     }
+
+    [Fact]
+    public async Task MapSymbolAsync_RegistryHit_ReturnsTargetProviderSymbol()
+    {
+        var registry = new Mock<ICanonicalSymbolRegistry>();
+        registry.Setup(r => r.TryResolveWithProvider("BRK-B", "yahoo")).Returns("BRK.B");
+        registry.Setup(r => r.GetProviderSymbol("BRK.B", "stooq")).Returns("brk-b.us");
+        var inner = new Mock<ISymbolResolver>(MockBehavior.Strict);
+        using var resolver = new CanonicalRegistrySymbolResolver(registry.Object, inner.Object);
+
+        var mapped = await resolver.MapSymbolAsync("BRK-B", "yahoo", "stooq");
+
+        mapped.Should().Be("brk-b.us");
+        inner.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ResolveAsync_InnerProviderSymbols_AreLearnedWithProviderScope()
+    {
+        var registry = new Mock<ICanonicalSymbolRegistry>();
+        registry.Setup(r => r.GetDefinition("BRK.B")).Returns((CanonicalSymbolDefinition?)null);
+        CanonicalSymbolDefinition? learned = null;
+        registry.Setup(r => r.RegisterAsync(It.IsAny<CanonicalSymbolDefinition>(), It.IsAny<CancellationToken>()))
+            .Callback<CanonicalSymbolDefinition, CancellationToken>((definition, _) => learned = definition)
+            .Returns(Task.CompletedTask);
+        var resolution = new SymbolResolution("BRK.B");
+        resolution.ProviderSymbols["yahoo"] = "BRK-B";
+        resolution.ProviderSymbols["stooq"] = "brk-b.us";
+        var inner = new Mock<ISymbolResolver>();
+        inner.Setup(r => r.ResolveAsync("BRK.B", null, It.IsAny<CancellationToken>())).ReturnsAsync(resolution);
+        using var resolver = new CanonicalRegistrySymbolResolver(registry.Object, inner.Object);
+
+        await resolver.ResolveAsync("BRK.B");
+
+        learned.Should().NotBeNull();
+        learned!.ProviderSymbols["yahoo"].Symbol.Should().Be("BRK-B");
+        learned.ProviderSymbols["yahoo"].Source.Should().Be(SymbolMappingSources.OpenFigi);
+        learned.ProviderSymbols["stooq"].Symbol.Should().Be("brk-b.us");
+    }
+
+    [Fact]
+    public async Task MapSymbolAsync_CompareMode_ReportsMismatchAndReturnsLegacyResult()
+    {
+        var securityId = Guid.NewGuid();
+        var registry = new Mock<ICanonicalSymbolRegistry>();
+        registry.Setup(r => r.TryResolveWithProvider("BRK-B", "yahoo")).Returns("BRK.B");
+        registry.Setup(r => r.GetProviderSymbol("BRK.B", "stooq")).Returns("brk-b.us");
+        registry.Setup(r => r.GetDefinition("BRK-B")).Returns(new CanonicalSymbolDefinition
+        {
+            Canonical = "BRK.B",
+            SecurityId = securityId
+        });
+        var inner = new Mock<ISymbolResolver>();
+        inner.Setup(r => r.MapSymbolAsync("BRK-B", "yahoo", "stooq", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("legacy-brk.us");
+        SymbolResolutionMismatch? mismatch = null;
+        using var resolver = new CanonicalRegistrySymbolResolver(
+            registry.Object,
+            inner.Object,
+            mode: SymbolResolutionMode.Compare,
+            mismatchObserver: observed => mismatch = observed);
+
+        var mapped = await resolver.MapSymbolAsync("BRK-B", "yahoo", "stooq");
+
+        mapped.Should().Be("legacy-brk.us");
+        mismatch.Should().NotBeNull();
+        mismatch!.CanonicalResult.Should().Be("brk-b.us");
+        mismatch.LegacyResult.Should().Be("legacy-brk.us");
+        mismatch.SecurityId.Should().Be(securityId);
+    }
 }

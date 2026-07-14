@@ -20,20 +20,20 @@
 
 ---
 
-## Status Update (2026-07-06)
+## Status Update (2026-07-13)
 
-The codebase moved fast after this brainstorm was written: within a day, several ideas were fully
-or partially implemented on `main`. The narratives below are preserved as the point-in-time
-analysis of 2026-07-05, with dated update notes where the premise has changed. Current status:
+The `codex/data-provider-accounting-completion` branch completed ideas #1–#5 during the 2026-07-13
+implementation pass. The narratives below are preserved as the point-in-time analysis of
+2026-07-05, with dated update notes where the premise has changed. Current branch status:
 
 | # | Idea | Status | What remains |
 |---|------|--------|--------------|
-| 1 | Streaming unification + honest status | Partially done | Diagnostics gap closed — `NyseMarketDataClient`, `RobinhoodMarketDataClient`, and `IBMarketDataClient` now implement `IProviderConnectionDiagnosticsSource` directly. Remaining: consolidating the duplicated reconnect/heartbeat/resubscribe logic onto `WebSocketProviderBase` (or an equivalent shared seam). |
-| 2 | Canonical symbol spine | Core done | Resolver now wired into the backfill worker path and `ValidateBarsAsync` resolves per provider. Remaining: converging static `NormalizeSymbol`, `ISymbolResolver`, and the UI `SymbolMappingService` onto `CanonicalSymbolRegistry`. |
-| 3 | Unified data quality + browser dashboard | Partially done | The Data workspace now renders `DataQualityRegion` over `/api/quality/dashboard`. Remaining: unifying the three scoring subsystems behind one composite health model, and contextual gap actions (one-click backfill). |
-| 4 | Backfill feedback loop | Done | `OnProgressUpdate` is raised with subscriber-failure guards; SLA metadata is typed (`BackfillRemediationSlaDecision`/`Metadata`/`Status`); the remediation provider is an options default rather than hard-coded. |
-| 5 | Failure & rate-limit hardening | Partially done | `DataSourceRegistry` now records activation/registration failures via `RecordFailure`, and `CompositeHistoricalDataProvider` now classifies rate limits only from structured `RateLimitException` or HTTP 429 status metadata instead of message text. Remaining: streaming-side rate-limit tracking and confirming registration failures surface in the provider catalog UI. |
-| 6 | Mark-to-market wiring | Done (2026-07-06) | `DailyMarkToMarketService` runs `DailyPortfolioPricingProjector` into governed drafts, with tests. `NavAttributionService` now computes NAV as assets − liabilities (with `ByAssetClass` decomposing that total), covered by `NavAttributionServiceTests`. |
+| 1 | Streaming unification + honest status | Done (2026-07-13) | A shared `ProviderConnectionSupervisor` now owns complete connection transactions for WebSocket and polling lanes; NYSE/IB subscription replay and polling recovery are implemented, and runtime health routes return `unknown`/`unavailable` when diagnostics do not exist. Focused proof: the supervisor harness passed 5/5, and both the default and IBAPI smoke-stub Infrastructure builds passed. Added NYSE/IB replay/rate and endpoint-honesty tests await execution after shared contention; aggregate CI has not run. |
+| 2 | Canonical symbol spine | Done (2026-07-13) | Registry identity is `SecurityId`-aware with provider-scoped aliases; `Legacy`/`Compare`/`Canonical` modes, idempotent migration receipts, mismatch diagnostics, and the browser registry surface are implemented. Focused proof: browser registry tests passed 5/5; Contracts, Storage, and Application builds plus contract-impact, generated-route, and schema checks passed. Added .NET endpoint/collision tests await a serialized rerun; aggregate CI has not run. |
+| 3 | Unified data quality + browser dashboard | Done (2026-07-13) | `CompositeDataQualityReadService` combines stored completeness, streaming freshness, and adapter gap integrity, issues stable opaque gap IDs, and resolves exact provider/range remediation through `AutoGapRemediationService`; browser and WPF consume the shared contract. Focused proof: browser quality tests passed 18/18 and the Application, Ui.Shared, and Ui.Services builds passed. Aggregate CI has not run. |
+| 4 | Backfill feedback loop | Done (2026-07-13) | Live progress carries range, provider, fallback attempt, and retry through typed contracts to browser and WPF; bounded execution history durably retains typed SLA/remediation evidence. Focused proof: browser view-model tests passed 39/39, rendered screen tests passed 26/26, the Contracts build passed, and the WPF XAML parsed. New durable-history/.NET/WPF tests await execution after shared MSBuild contention; aggregate CI has not run. |
+| 5 | Failure & rate-limit hardening | Done (2026-07-13) | The catalog exposes immutable, sanitized registration failures; historical and streaming rate diagnostics use coherent lock-guarded snapshots, and NYSE maps HTTP 429 to typed `RateLimitException`. Browser and WPF show current usage, reset, failure, and retry posture while stating that history is unavailable. Focused ProviderSdk/Infrastructure builds and 24 browser tests passed; added .NET/WPF filters await a serialized rerun. Aggregate CI has not run. |
+| 6 | Mark-to-market wiring | Done (2026-07-13) | Trusted historical-provider close marks retain observed-date and confidence evidence and must pass staleness and coverage gates. Persisted, explicitly scoped daily-valuation schedules run through the due-run host into governed workbench drafts for human approval and durable posting; restart hydration feeds marked statements and NAV, the close cockpit exposes a "Daily valuation" lane, and NAV already computes assets − liabilities. Focused `Meridian.Application` and `Meridian.FinancialOperations` builds passed (the latter with one existing analyzer warning), along with generated-route, static, and diff checks. Added scheduler/E2E, cockpit, and stale/low-confidence tests await execution; `Meridian.Ui.Shared` reached the new code before two sibling `BackfillCoordinator` ambiguities stopped its build. Aggregate CI has not run. |
 | 7 | Automated journal drafts | Done (2026-07-06) | Corporate-action/dividend producers, management/performance-fee accrual (`FeeScheduleAccrualEventProducer` + `RunFeeAccrualIntakeAsync` + endpoint), and dividend withholding-tax accrual (`WithholdingTaxRate` on the dividend intake lane) all land governed drafts in the workbench queue. Operator/cockpit-triggered; recurring scheduling remains optional follow-on. |
 | 8 | Closing entries + retained-earnings roll | Done (2026-07-06) | `AutomatedJournalIntakeRunner.RunPeriodCloseIntakeAsync` projects closing entries from a closed period's trial balance and lands the governed draft in the workbench queue via `/api/ledger/journal-automation/period-close-intake`; open periods are rejected loudly. |
 | 9 | One ledger spine | Done (2026-07-08) | `DurableAutomatedJournalPoster` posts approved drafts through `ILedgerJournalStore`; `LedgerJournalStoreHydrationExtensions` hydrates as-of and book/period projections from the durable journal store; `Ledger` keeps balance/posting snapshots for point-in-time reads; tests cover hydration, durable-first posting, as-of snapshots, and the F#/C# enum-ordinal contract. |
@@ -116,13 +116,14 @@ needs its recorded-session replay tests run before/after, and IB's simulation cl
 (`IBSimulationClient.cs`) needs to stay behaviorally identical. Do one provider per PR, never a
 big-bang migration.
 
-> **Update (2026-07-06):** the diagnostics premise above is resolved — `NyseMarketDataClient`,
-> `RobinhoodMarketDataClient`, and `IBMarketDataClient` now implement
-> `IProviderConnectionDiagnosticsSource` directly, and `ProviderEndpoints` consults the
-> diagnostics projection before falling back to enabled/metrics state. The remaining scope of
-> this idea is the *reconnect/heartbeat/resubscribe consolidation* — three hand-rolled
-> reconnection implementations still exist outside `WebSocketProviderBase` — not the status
-> plumbing.
+> **Update (2026-07-13):** implemented. `ProviderConnectionSupervisor` now owns a complete
+> connection transaction (transport, protocol readiness, and subscription replay) for the shared
+> WebSocket manager and `PollingProviderBase`. NYSE and IB retain and replay live subscription
+> intent, and failed replay consumes bounded supervised retries. Provider health, dashboard, and
+> test routes return nullable `unknown`/`unavailable` states instead of equating enabled with
+> connected when runtime diagnostics are absent. Focused proof passed the supervisor harness 5/5
+> and both the default and IBAPI smoke-stub Infrastructure builds. Added NYSE/IB replay/rate and
+> endpoint-honesty tests were not executed because of shared contention; aggregate CI has not run.
 
 ### 2. Canonical Symbol-Resolution Spine
 
@@ -153,12 +154,15 @@ Tradeoffs: identity resolution is the classic place where a "unification" quietl
 behavior for symbols that only worked by accident. Ship the registry convergence behind a
 comparison mode first (log where old and new resolution disagree, act on the report), then flip.
 
-> **Update (2026-07-06):** the correctness core is fixed — the backfill worker path now builds an
-> `OpenFigiSymbolResolver` when symbol resolution is enabled and passes it into
-> `CompositeHistoricalDataProvider`, and `ValidateBarsAsync` resolves the validation provider's
-> symbol before fetching. What remains is the structural half: three parallel identity mechanisms
-> (static `NormalizeSymbol`, the resolver, the UI `SymbolMappingService`) still have no single
-> source of truth in `CanonicalSymbolRegistry`.
+> **Update (2026-07-13):** implemented. `CanonicalSymbolRegistry` now treats `SecurityId` as the
+> durable identity and retains normalized, provider-scoped outbound symbols plus alias provenance.
+> `CanonicalRegistrySymbolResolver` supports `Legacy`, `Compare`, and `Canonical` modes; comparison
+> mode preserves the legacy result while recording disagreements. A hosted, idempotent migration
+> imports legacy mappings without deleting rollback inputs, and the browser Data workspace shows
+> identity, provider aliases, comparison evidence, and migration receipts. Focused browser registry
+> tests passed 5/5; Contracts, Storage, and Application builds plus contract-impact,
+> generated-route, and schema checks passed. Added .NET endpoint/collision tests await a serialized
+> rerun; aggregate CI has not run.
 
 ### 3. Unified Data-Quality Model + Browser Data Quality Dashboard
 
@@ -187,11 +191,14 @@ Tradeoffs: this is the largest provider-side item, and the unification risks bec
 Sequence it as read-model + React view over *existing* endpoints first (the browser dashboard is
 pure additive value), then converge the three scoring paths behind the read-model one at a time.
 
-> **Update (2026-07-06):** the browser surface now exists — `data-screen.tsx` renders
-> `DataQualityRegion`, backed by `data-screen.data-quality.view-model.ts` and tests, over
-> `/api/quality/dashboard`. The remaining scope of this idea is improving that panel, not
-> building it: unify the three scoring subsystems behind one composite health model and add the
-> contextual actions (one-click backfill from a gap row).
+> **Update (2026-07-13):** implemented. `CompositeDataQualityReadService` produces one typed read
+> model from stored completeness, streaming freshness, and adapter gap integrity, preserving
+> partial or unavailable evidence instead of inventing scores. Stable opaque gap IDs and dashboard
+> versions let the server resolve an action to the exact symbol, provider, and range before calling
+> `AutoGapRemediationService`. Browser and WPF now show the composite score, source components,
+> stable gaps, and contextual remediation from the shared contract. Focused browser quality tests
+> passed 18/18, and the Application, Ui.Shared, and Ui.Services builds passed. Aggregate CI has not
+> run.
 
 ### 4. Backfill Feedback Loop: Live Progress and Typed SLA Metadata
 
@@ -220,11 +227,15 @@ through the existing event-pipeline policy channels, drop-oldest). The SLA metad
 touches persisted execution logs — route through the WAL/`AtomicFileWriter` patterns and keep the
 parser as fallback for old records.
 
-> **Update (2026-07-06):** implemented — `CompositeHistoricalDataProvider` raises progress through
-> `RaiseProgress`, `AutoGapRemediationService` stores typed `BackfillRemediationSlaMetadata`
-> records, and the remediation provider comes from `AutoGapRemediationPolicy.DefaultProvider`
-> rather than a hard-coded call-site. This lane is done; the narrative above is the point-in-time
-> analysis, not a work list.
+> **Update (2026-07-13):** implemented. `CompositeHistoricalDataProvider` publishes bounded live
+> observations with symbol range, current provider, fallback attempt, retry round, status, and bar
+> count through the typed progress endpoint. Browser and WPF project the same range/provider/attempt
+> evidence. `BackfillExecutionHistory` atomically persists a bounded JSON snapshot, while the typed
+> execution contract carries remediation SLA tier/status/deadline, provider, attempt, outcome, and
+> compatibility-derived legacy evidence. Focused browser view-model tests passed 39/39, rendered
+> screen tests passed 26/26, the Contracts build passed, and `BackfillPage.xaml` parsed. The added
+> durable-history/.NET/WPF filters were not executed because of shared MSBuild contention; aggregate
+> CI has not run.
 
 ### 5. Provider Failure & Rate-Limit Hardening
 
@@ -253,12 +264,16 @@ distinguish "assembly not present" (info) from "module threw during activation" 
 string-matching removal needs one pass over every adapter's error mapping to confirm each API's
 429 shape is already translated.
 
-> **Update (2026-07-08):** the composite string-matching gap is closed —
-> `CompositeHistoricalDataProvider` treats rate limits as structured failures only
-> (`RateLimitException`, including wrapped instances, or `HttpRequestException.StatusCode ==
-> TooManyRequests`). Plain exception messages that mention 429 now remain ordinary provider
-> failures, covered by regression tests. Remaining scope is streaming-side rate-limit tracking and
-> provider-catalog proof that registration failures are visible to operators.
+> **Update (2026-07-13):** implemented. `DataSourceRegistry` publishes an immutable registration
+> report with typed activation/registration failures, and the provider catalog exposes a sanitized
+> operator projection. `ProviderRateLimitTracker` and provider snapshots are fully lock-guarded and
+> `TimeProvider`-based across historical and streaming surfaces; NYSE maps HTTP 429/`Retry-After`
+> through `NyseHttpResponseGuard` to typed `RateLimitException`. The typed current-state endpoint,
+> browser Data workspace, and WPF provider-management surface show requests, remaining capacity,
+> reset countdown, failure reason, connection availability, and retry posture without inferring
+> missing runtime state; all explicitly state that rate-limit history is not retained. Focused
+> ProviderSdk/Infrastructure builds and 24 browser tests passed. Added .NET/WPF filters await a
+> serialized rerun after shared build contention; aggregate CI has not run.
 
 ---
 
@@ -296,12 +311,20 @@ Posting through the governed path means the projector's output shape must map on
 posting-rule/draft contracts — that mapping layer is the real design work, and it's the pilot for
 idea 9.
 
-> **Update (2026-07-06):** the marquee wiring landed — `DailyMarkToMarketService`
-> (`src/Meridian.Application/Accounting/`) runs `DailyPortfolioPricingProjector.Project` and
-> builds a governed draft, with test coverage. Still open from this idea: `NavAttributionService`
-> continues to compute `totalNav` as `components.Sum(c => c.Balance)` rather than
-> assets − liabilities, and the end-to-end path (drafts approved → posted → NAV reflects marks)
-> needs verification before the NAV-at-cost consequence can be declared closed.
+> **Update (2026-07-13):** implemented. Closing marks from registered historical providers retain
+> provider/source, observed-date, and confidence evidence; missing, stale, low-confidence, or
+> incomplete required coverage blocks the valuation instead of silently carrying a mark forward.
+> `FileDailyValuationPortfolioSource` persists explicitly scoped fund/book/period/position work,
+> while `DailyValuationSchedulerHostedService` and the due-run route execute scheduled valuations.
+> Accepted runs become governed workbench drafts for human approval and durable posting, restart
+> hydration rebuilds marked statements and NAV, and the existing close cockpit now exposes a
+> "Daily valuation" lane with schedule, draft, and blocking evidence. `NavAttributionService`
+> already computes NAV as assets − liabilities. The focused `Meridian.Application` and
+> `Meridian.FinancialOperations` builds passed (the latter with one existing analyzer warning), as
+> did generated-route, static, and diff checks. The focused scheduler/E2E, cockpit-lane, and
+> stale/low-confidence mark tests were added but have not executed yet; `Meridian.Ui.Shared`
+> compiled the new scheduler, DI, and cockpit code before stopping on two unrelated sibling
+> `BackfillCoordinator` ambiguities. Aggregate CI has not run.
 
 ### 7. Automated Journal Drafts in the Close Cockpit
 

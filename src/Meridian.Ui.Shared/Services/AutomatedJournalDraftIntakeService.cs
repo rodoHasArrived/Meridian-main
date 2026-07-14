@@ -18,7 +18,8 @@ public sealed record AutomatedJournalDraftIntakeRequest(
     string? PeriodId = null,
     string? EntityId = null,
     string? TenantId = null,
-    string? CompanyId = null);
+    string? CompanyId = null,
+    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null);
 
 /// <summary>
 /// Batch of prebuilt automated journal drafts (for example period-close closing entries,
@@ -34,7 +35,8 @@ public sealed record AutomatedJournalPreparedDraftIntakeRequest(
     string? PeriodId = null,
     string? EntityId = null,
     string? TenantId = null,
-    string? CompanyId = null);
+    string? CompanyId = null,
+    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null);
 
 /// <summary>
 /// One event the intake did not turn into a new draft, with the reason it was skipped.
@@ -117,7 +119,8 @@ public sealed class AutomatedJournalDraftIntakeService
                 request.PeriodId,
                 request.EntityId,
                 request.TenantId,
-                request.CompanyId),
+                request.CompanyId,
+                request.EvidenceAssessments),
             skipped,
             ct).ConfigureAwait(false);
     }
@@ -179,7 +182,18 @@ public sealed class AutomatedJournalDraftIntakeService
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
-            var dto = BuildDraftDto(request, draft, journalEntryId, idempotencyKey, evidenceLinks, chartLookup);
+            var evidenceAssessment = request.EvidenceAssessments is not null &&
+                                     request.EvidenceAssessments.TryGetValue(idempotencyKey, out var retainedAssessment)
+                ? retainedAssessment
+                : null;
+            var dto = BuildDraftDto(
+                request,
+                draft,
+                journalEntryId,
+                idempotencyKey,
+                evidenceLinks,
+                chartLookup,
+                evidenceAssessment);
             var saved = await _workbench.SaveDraftAsync(
                 new SaveManualJournalEntryDraftRequest(
                     dto,
@@ -202,7 +216,8 @@ public sealed class AutomatedJournalDraftIntakeService
         Guid journalEntryId,
         string idempotencyKey,
         IReadOnlyList<string> evidenceLinks,
-        ChartAccountLookup chartLookup)
+        ChartAccountLookup chartLookup,
+        AutomatedJournalEvidenceAssessmentDto? evidenceAssessment)
     {
         var effectiveDate = draft.Metadata.EffectiveDate
             ?? DateOnly.FromDateTime(draft.Event.Timestamp.UtcDateTime);
@@ -250,7 +265,8 @@ public sealed class AutomatedJournalDraftIntakeService
             EntryType: MapEntryType(draft.Event.Kind),
             TreasuryContext: new TreasuryLedgerContextDto(
                 EffectiveDate: effectiveDate,
-                IdempotencyKey: idempotencyKey));
+                IdempotencyKey: idempotencyKey),
+            AutomationEvidenceAssessment: evidenceAssessment);
     }
 
     private static ManualJournalEntryTypeDto MapEntryType(AutomatedJournalEventKind kind)

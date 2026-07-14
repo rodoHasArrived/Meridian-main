@@ -417,6 +417,85 @@ public sealed record ClosePeriodLockResultDto(
         Issues ?? [];
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ClosePostingGateStateDto>))]
+public enum ClosePostingGateStateDto
+{
+    Unavailable = 0,
+    NotRequired = 1,
+    Required = 2,
+    DraftQueued = 3,
+    Submitted = 4,
+    Approved = 5,
+    Posted = 6,
+    ReversalQueued = 7,
+    Blocked = 8
+}
+
+/// <summary>
+/// One non-zero temporary-account balance considered by the period-close posting gate.
+/// Dimensions remain attached so fund, entity, and sleeve close scopes never collapse.
+/// </summary>
+public sealed record ClosePostingBalanceDto(
+    string AccountName,
+    string AccountType,
+    decimal Balance,
+    string? Symbol = null,
+    string? FinancialAccountId = null,
+    LedgerDimensionSetDto? Dimensions = null);
+
+/// <summary>
+/// Shared close-plan projection for the final "Post closing entries" gate.
+/// The gate is ready only when every revenue and expense balance in the scoped period is zero.
+/// </summary>
+public sealed record ClosePostingGateDto(
+    string GateId,
+    string Label,
+    ClosePostingGateStateDto State,
+    bool IsReadyForLock,
+    decimal NetIncomeRoll,
+    int TemporaryAccountBalanceCount,
+    string Detail,
+    Guid? DraftJournalEntryId = null,
+    ManualJournalEntryStatusDto? DraftStatus = null,
+    string? IdempotencyKey = null,
+    IReadOnlyList<ClosePostingBalanceDto>? Balances = null,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    IReadOnlyList<Guid>? ClosingBatchJournalEntryIds = null,
+    IReadOnlyList<Guid>? ReversalDraftJournalEntryIds = null)
+{
+    public IReadOnlyList<ClosePostingBalanceDto> Balances { get; init; } = Balances ?? [];
+    public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
+    public IReadOnlyList<Guid> ClosingBatchJournalEntryIds { get; init; } = ClosingBatchJournalEntryIds ?? [];
+    public IReadOnlyList<Guid> ReversalDraftJournalEntryIds { get; init; } = ReversalDraftJournalEntryIds ?? [];
+}
+
+public sealed record ReopenClosePeriodRequestDto(
+    Guid WorkflowId,
+    long ExpectedWorkflowVersion,
+    string Actor,
+    string Role,
+    string Rationale,
+    string IncidentId,
+    string Justification,
+    string ApprovalReference,
+    string ImpactSummary,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
+}
+
+public sealed record ClosePeriodReopenResultDto(
+    bool IsReopened,
+    ClosePeriodPlanDto? Plan,
+    OperationsTransitionResultDto? Transition,
+    ClosePostingGateDto? ClosingEntriesGate,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto>? Issues = null)
+{
+    public IReadOnlyList<AccountingConfigurationValidationIssueDto> Issues { get; init; } = Issues ?? [];
+}
+
 public sealed record ClosePeriodPlanDto(
     string ClosePlanId,
     string FundProfileId,
@@ -433,7 +512,8 @@ public sealed record ClosePeriodPlanDto(
     IReadOnlyList<CloseCalendarMilestoneDto>? CloseCalendar = null,
     ClosePeriodPlanConfigurationDto? Configuration = null,
     IReadOnlyList<CloseEvidenceReviewDto>? EvidenceReviews = null,
-    IReadOnlyList<CloseOperatingCoverageItemDto>? OperatingCoverage = null)
+    IReadOnlyList<CloseOperatingCoverageItemDto>? OperatingCoverage = null,
+    ClosePostingGateDto? ClosingEntriesGate = null)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];

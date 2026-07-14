@@ -91,7 +91,7 @@ public sealed record AutomatedJournalApproval
 
     public JournalEntry ToJournalEntry()
     {
-        if (Status is not AutomatedJournalApprovalStatus.Approved and not AutomatedJournalApprovalStatus.Posted)
+        if (Status is not AutomatedJournalApprovalStatus.Approved)
             throw new InvalidOperationException("Only approved automated journal drafts can be converted to journal entries.");
 
         var metadata = BuildPostingMetadata();
@@ -122,14 +122,29 @@ public sealed record AutomatedJournalApproval
             throw new InvalidOperationException("Only approved automated journal drafts can be posted.");
 
         ledger.Post(ToJournalEntry());
-        return Transition(
+        return MarkPosted(
+            actor,
+            occurredAtUtc,
+            reason,
+            evidenceLinks);
+    }
+
+    /// <summary>
+    /// Records the governed posted transition after a posting target has durably accepted
+    /// the journal. Callers must persist first; this method performs no ledger mutation.
+    /// </summary>
+    public AutomatedJournalApproval MarkPosted(
+        string actor,
+        DateTimeOffset occurredAtUtc,
+        string reason,
+        IReadOnlyList<string> evidenceLinks)
+        => Transition(
             AutomatedJournalApprovalStatus.Posted,
             actor,
             occurredAtUtc,
             reason,
             evidenceLinks,
             requireEvidence: true);
-    }
 
     private AutomatedJournalApproval Transition(
         AutomatedJournalApprovalStatus toStatus,

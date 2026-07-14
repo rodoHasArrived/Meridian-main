@@ -233,8 +233,8 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                RecordError("Provider returned Unauthorized while polling Robinhood quotes. Refresh or replace the stored access token.");
-                SetLifecycleState(ProviderConnectionLifecycleState.Failed);
+                RecordTerminalPollFailure(new UnauthorizedAccessException(
+                    "Provider returned Unauthorized while polling Robinhood quotes. Refresh or replace the stored access token."));
                 _logger.LogWarning("Robinhood quote polling: 401 Unauthorized — access token may have expired");
                 return false;
             }

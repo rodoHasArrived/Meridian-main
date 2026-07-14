@@ -1098,10 +1098,38 @@ describe("DataScreen", () => {
     };
 
     const mockProgress: BackfillProgressResponse = {
-      active: false,
-      provider: null,
-      symbols: [],
-      message: null
+      isActive: false,
+      providerProgress: {
+        symbols: {
+          MSFT: {
+            symbol: "MSFT",
+            rangeStart: "2024-01-01",
+            rangeEnd: "2024-01-31",
+            totalDays: 31,
+            completedDays: 31,
+            percentComplete: 100,
+            isCompleted: true,
+            isFailed: false,
+            isSkipped: false,
+            currentProvider: "polygon",
+            currentStatus: "Completed",
+            providerAttempt: 1,
+            retryRound: 0,
+            operation: "daily-bars",
+            attemptStartedAt: "2024-01-31T10:00:00Z",
+            lastUpdatedAt: "2024-01-31T10:00:05Z",
+            error: null
+          }
+        },
+        recentProviderAttempts: [],
+        overallPercentComplete: 100,
+        totalSymbols: 1,
+        completedSymbols: 1,
+        failedSymbols: 0,
+        droppedProviderNotifications: 0,
+        timestamp: "2024-01-31T10:00:05Z"
+      },
+      timestamp: "2024-01-31T10:00:05Z"
     };
 
     vi.spyOn(api, "previewBackfill").mockResolvedValueOnce(mockPreview);
@@ -1124,6 +1152,12 @@ describe("DataScreen", () => {
       expect(resultStatus).toHaveTextContent("MSFT");
       expect(resultStatus).toHaveTextContent("512");
     });
+    const progressStatus = screen.getByRole("status", { name: /live backfill provider progress/i });
+    expect(progressStatus).toHaveTextContent("Final provider progress");
+    expect(progressStatus).toHaveTextContent("MSFT");
+    expect(progressStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
+    expect(progressStatus).toHaveTextContent("polygon");
+    expect(screen.getByRole("progressbar", { name: "Overall backfill progress" })).toHaveAttribute("aria-valuenow", "100");
   });
 
   it("shows an error banner when previewBackfill rejects", async () => {

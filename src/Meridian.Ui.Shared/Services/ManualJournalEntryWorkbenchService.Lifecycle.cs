@@ -545,6 +545,16 @@ public sealed partial class ManualJournalEntryWorkbenchService
             issues.Add(Issue("manual-je.evidence-missing", AccountingConfigurationValidationSeverityDto.Critical, "At least one source document or evidence link is required before approval submission.", "evidence", "Attach source support or link retained evidence before submitting approval."));
         }
 
+        if (draft.AutomationEvidenceAssessment is { RequiresInvestigation: true } assessment)
+        {
+            issues.Add(Issue(
+                "manual-je.automation-investigation-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                assessment.Summary,
+                assessment.AssessmentCode,
+                "Investigate the retained source evidence and rerun the automated intake with evidence that meets the configured confidence threshold."));
+        }
+
         foreach (var attachment in attachments)
         {
             if (string.IsNullOrWhiteSpace(attachment.DisplayName) || string.IsNullOrWhiteSpace(attachment.Uri))

@@ -10,6 +10,7 @@ using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Core.Performance;
 using Meridian.Execution.Sdk;
+using Meridian.Infrastructure.Resilience;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -23,19 +24,22 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     private readonly EClientSocket _clientSocket;
     private EReader? _reader;
 
-    private CancellationTokenSource _cts = new();
+    private CancellationTokenSource? _cts;
     private Task? _readerLoop;
-    private Task? _reconnectTask;
+    private readonly ProviderConnectionSupervisor _connectionSupervisor;
 
     private int _nextDepthTickerId = 10_000;
     private readonly ConcurrentDictionary<int, string> _depthTickerMap = new();
     private readonly ConcurrentDictionary<int, bool> _depthTickerSmartDepthMap = new();
+    private readonly ConcurrentDictionary<int, DepthSubscription> _depthSubscriptions = new();
 
     private int _nextTradeTickerId = 20_000;
     private readonly ConcurrentDictionary<int, string> _tradeTickerMap = new();
+    private readonly ConcurrentDictionary<int, TradeSubscription> _tradeSubscriptions = new();
 
     private int _nextQuoteTickerId = 30_000;
     private readonly ConcurrentDictionary<int, string> _quoteTickerMap = new();
+    private readonly ConcurrentDictionary<int, QuoteSubscription> _quoteSubscriptions = new();
 
     private int _nextHistoricalReqId = 40_000;
     private readonly ConcurrentDictionary<int, TaskCompletionSource<List<IBApi.Bar>>> _historicalDataRequests = new();
@@ -44,16 +48,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     // Performance monitoring
     private readonly ConnectionWarmUp _warmUp;
-    private readonly ExponentialBackoffRetry _reconnectBackoff;
     private HeartbeatMonitor? _heartbeatMonitor;
 
     // Connection state
-    private volatile bool _isReconnecting;
     private volatile bool _disposed;
     private long _lastMessageTimestamp;
     private long _connectionEstablishedTimestamp;
     private long _totalMessagesReceived;
-    private long _reconnectAttempts;
+    private DateTimeOffset? _lastMessageReceivedAt;
 
     // Latency tracking
     private long _currentTimeRequestTimestamp;
@@ -82,12 +84,13 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             warmUpInterval: TimeSpan.FromMinutes(5),
             warmUpIterations: 5);
 
-        _reconnectBackoff = new ExponentialBackoffRetry(
-            initialDelay: TimeSpan.FromSeconds(1),
-            maxDelay: TimeSpan.FromMinutes(2),
-            maxRetries: -1, // Unlimited retries
-            multiplier: 2.0,
-            jitterFactor: 0.1);
+        _connectionSupervisor = new ProviderConnectionSupervisor(
+            providerName: "Interactive Brokers",
+            maxReconnectAttempts: 10,
+            retryBaseDelay: TimeSpan.FromSeconds(1),
+            maxRetryDelay: TimeSpan.FromMinutes(2),
+            logger: _log);
+        _connectionSupervisor.StateChanged += OnConnectionSupervisorStateChanged;
     }
 
     public string Host { get; }
@@ -96,10 +99,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public bool EnableAutoReconnect { get; set; }
     public bool EnableHeartbeat { get; set; }
 
-    public bool IsConnected => _clientSocket.IsConnected();
-    public bool IsReconnecting => _isReconnecting;
+    public bool IsConnected => _connectionSupervisor.IsConnected && IsTransportConnected;
+    private bool IsTransportConnected => _clientSocket.IsConnected();
+    public bool IsReconnecting => _connectionSupervisor.IsReconnecting;
     public long TotalMessagesReceived => Interlocked.Read(ref _totalMessagesReceived);
-    public long ReconnectAttempts => Interlocked.Read(ref _reconnectAttempts);
+    public long ReconnectAttempts => _connectionSupervisor.GetSnapshot().ReconnectAttempts;
     public double LastRoundTripLatencyUs => _lastRoundTripLatencyUs;
     public WarmUpStatistics? LastWarmUpStats => _warmUp.LastWarmUpStats;
 
@@ -125,6 +129,16 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public event EventHandler? ConnectionRestored;
 
     /// <summary>
+    /// Raised when the shared connection lifecycle snapshot changes.
+    /// </summary>
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
+
+    /// <summary>
+    /// Raised whenever a live streaming request is sent to TWS/Gateway.
+    /// </summary>
+    public event EventHandler? StreamingRequestSent;
+
+    /// <summary>
     /// Event raised on latency measurement from heartbeat/time request.
     /// </summary>
     public event EventHandler<double>? LatencyMeasured;
@@ -143,17 +157,26 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         if (IsConnected) return;
         if (_disposed) throw new ObjectDisposedException(nameof(EnhancedIBConnectionManager));
 
-        await ConnectInternalAsync(ct).ConfigureAwait(false);
+        await _connectionSupervisor.ConnectAsync(
+            CompleteConnectionTransactionAsync,
+            ct).ConfigureAwait(false);
     }
 
-    private async Task ConnectInternalAsync(CancellationToken ct)
+    private async Task CompleteConnectionTransactionAsync(CancellationToken ct)
+    {
+        await CleanupTransportAsync(CancellationToken.None).ConfigureAwait(false);
+        await ConnectTransportAsync(ct).ConfigureAwait(false);
+        await ReplaySubscriptionsAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task ConnectTransportAsync(CancellationToken ct)
     {
         _clientSocket.eConnect(Host, Port, ClientId);
 
         // Wait briefly for connection establishment
         await Task.Delay(100, ct).ConfigureAwait(false);
 
-        if (!IsConnected)
+        if (!IsTransportConnected)
         {
             throw new InvalidOperationException($"Failed to connect to IB Gateway at {Host}:{Port}");
         }
@@ -162,15 +185,16 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         _reader.Start();
 
         // Start reader loop with high priority
-        _cts = new CancellationTokenSource();
+        var connectionCts = CancellationTokenSource.CreateLinkedTokenSource(
+            _connectionSupervisor.ConnectionLifetimeToken);
+        _cts = connectionCts;
         _readerLoop = Task.Factory.StartNew(
-            () => ReaderLoop(_cts.Token),
-            _cts.Token,
+            () => ReaderLoop(connectionCts.Token),
+            connectionCts.Token,
             TaskCreationOptions.LongRunning,
             TaskScheduler.Default);
 
         Interlocked.Exchange(ref _connectionEstablishedTimestamp, Stopwatch.GetTimestamp());
-        _reconnectBackoff.Reset();
 
         // Validate the server version reported by TWS/Gateway before proceeding.
         IBApiVersionValidator.ValidateServerVersion(
@@ -231,52 +255,104 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     private void OnHeartbeatUnhealthy(object? sender, EventArgs e)
     {
-        if (EnableAutoReconnect && !_isReconnecting)
-        {
-            _ = TriggerReconnectAsync();
-        }
+        NotifyConnectionLost(new TimeoutException("Interactive Brokers heartbeat became unhealthy."));
     }
 
-    public async Task DisconnectAsync(CancellationToken ct = default)
+    public Task DisconnectAsync(CancellationToken ct = default)
+        => _connectionSupervisor.DisconnectAsync(CleanupTransportAsync, ct);
+
+    /// <summary>
+    /// Returns a safe lifecycle snapshot for the provider diagnostics endpoints.
+    /// Interactive Brokers uses a TCP socket, so the WebSocket state is intentionally None.
+    /// </summary>
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
     {
+        var supervisor = _connectionSupervisor.GetSnapshot();
+        var now = DateTimeOffset.UtcNow;
+        var lastActivity = _lastMessageReceivedAt ?? supervisor.LastConnectedAt;
+
+        return new WebSocketConnectionDiagnostics(
+            ProviderName: "Interactive Brokers",
+            LifecycleState: supervisor.LifecycleState,
+            WebSocketState: System.Net.WebSockets.WebSocketState.None,
+            IsConnected: IsConnected,
+            IsReconnecting: supervisor.IsReconnecting,
+            ReconnectAttempts: supervisor.ReconnectAttempts,
+            LastConnectedAt: supervisor.LastConnectedAt,
+            LastDisconnectedAt: supervisor.LastDisconnectedAt,
+            LastHeartbeatReceivedAt: _lastMessageReceivedAt,
+            LastMessageReceivedAt: _lastMessageReceivedAt,
+            LastReconnectAttemptAt: supervisor.LastReconnectAttemptAt,
+            LastError: supervisor.LastError,
+            LastFailureKind: supervisor.LastFailureKind,
+            ConnectionAge: supervisor.ConnectionAge,
+            IdleDuration: lastActivity.HasValue ? now - lastActivity.Value : null,
+            ActiveSubscriptions: _depthSubscriptions.Count + _tradeSubscriptions.Count + _quoteSubscriptions.Count);
+    }
+
+    private async Task CleanupTransportAsync(CancellationToken ct)
+    {
+        var heartbeatMonitor = _heartbeatMonitor;
+        var connectionCts = _cts;
+        var readerLoop = _readerLoop;
+
+        _heartbeatMonitor = null;
+        _cts = null;
+        _readerLoop = null;
+        _reader = null;
+
+        heartbeatMonitor?.Dispose();
+
         try
         {
-            _heartbeatMonitor?.Dispose();
-            _heartbeatMonitor = null;
-
-            _cts.Cancel();
-            if (_readerLoop is not null)
-            {
-                try
-                {
-                    await _readerLoop.ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) { }
-            }
+            connectionCts?.Cancel();
         }
-        catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+        catch (ObjectDisposedException)
         {
-            _log.Debug(ex, "Error during Interactive Brokers disconnect cleanup");
         }
 
-        if (IsConnected)
+        if (IsTransportConnected)
             _clientSocket.eDisconnect();
 
+        if (readerLoop is not null && readerLoop.Id != Task.CurrentId)
+        {
+            try
+            {
+                await readerLoop.ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+            {
+                _log.Debug(ex, "Interactive Brokers reader-loop cleanup failed");
+            }
+        }
+
+        connectionCts?.Dispose();
         Interlocked.Exchange(ref _connectionEstablishedTimestamp, 0);
+        ct.ThrowIfCancellationRequested();
     }
+
+    private void OnConnectionSupervisorStateChanged(ProviderConnectionSupervisorSnapshot _)
+        => ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
 
     public void Dispose()
     {
         if (_disposed) return;
-        _disposed = true;
 
-        _heartbeatMonitor?.Dispose();
-        _cts.Cancel();
-
-        if (IsConnected)
-            _clientSocket.eDisconnect();
-
-        _cts.Dispose();
+        try
+        {
+            DisconnectAsync().GetAwaiter().GetResult();
+        }
+        finally
+        {
+            _connectionSupervisor.StateChanged -= OnConnectionSupervisorStateChanged;
+            _connectionSupervisor.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            _cts?.Dispose();
+            _cts = null;
+            _disposed = true;
+        }
     }
 
     private void ReaderLoop(CancellationToken ct)
@@ -296,79 +372,44 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             }
             catch (Exception ex) when (!ct.IsCancellationRequested && ex is System.Net.WebSockets.WebSocketException or IOException or InvalidOperationException)
             {
-                // Connection may have been lost
-                if (EnableAutoReconnect && !_isReconnecting)
-                {
-                    _ = TriggerReconnectAsync();
-                }
+                NotifyConnectionLost(ex);
                 break;
             }
         }
     }
 
-    private async Task TriggerReconnectAsync(CancellationToken ct = default)
+    private void NotifyConnectionLost(Exception? error = null)
     {
-        if (_isReconnecting || _disposed) return;
-        _isReconnecting = true;
+        if (_disposed || !_connectionSupervisor.MarkConnectionLost(error))
+            return;
 
         ConnectionLost?.Invoke(this, EventArgs.Empty);
 
+        if (EnableAutoReconnect)
+            _ = TriggerReconnectAsync();
+    }
+
+    private async Task TriggerReconnectAsync(CancellationToken ct = default)
+    {
         try
         {
-            // Stop existing reader
-            _cts.Cancel();
-            _heartbeatMonitor?.Dispose();
-            _heartbeatMonitor = null;
+            var reconnected = await _connectionSupervisor.ReconnectAsync(
+                CompleteConnectionTransactionAsync,
+                ct).ConfigureAwait(false);
 
-            if (_readerLoop is not null)
+            if (reconnected)
             {
-                try { await _readerLoop.ConfigureAwait(false); }
-                catch (OperationCanceledException) { }
-                catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
-                {
-                    _log.Debug(ex, "Reader loop cleanup failed");
-                }
-            }
-
-            if (IsConnected)
-                _clientSocket.eDisconnect();
-
-            // Attempt reconnection with exponential backoff
-            while (!_disposed && _reconnectBackoff.CanRetry)
-            {
-                ct.ThrowIfCancellationRequested();
-                Interlocked.Increment(ref _reconnectAttempts);
-
-                await _reconnectBackoff.WaitAsync(ct).ConfigureAwait(false);
-
-                try
-                {
-                    // Dispose the previous CTS before creating a new one to prevent leaks
-                    _cts.Dispose();
-                    _cts = new CancellationTokenSource();
-                    await ConnectInternalAsync(_cts.Token).ConfigureAwait(false);
-
-                    if (IsConnected)
-                    {
-                        _reconnectBackoff.Reset();
-                        ConnectionRestored?.Invoke(this, EventArgs.Empty);
-                        break;
-                    }
-                }
-                catch (Exception ex) when (ex is not OutOfMemoryException)
-                {
-                    _log.Debug(ex, "Reconnection attempt {Attempt} failed", Interlocked.Read(ref _reconnectAttempts));
-                }
+                ConnectionRestored?.Invoke(this, EventArgs.Empty);
             }
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested || _disposed)
         {
-            // Reconnection was cancelled; this method runs fire-and-forget, so the
-            // cancellation must not surface as an unobserved task exception.
+            // Explicit shutdown cancelled the supervised reconnect.
         }
-        finally
+        catch (Exception ex)
         {
-            _isReconnecting = false;
+            _connectionSupervisor.RecordFailure(ex);
+            _log.Error(ex, "Interactive Brokers supervised reconnect failed");
         }
     }
 
@@ -377,6 +418,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         Interlocked.Increment(ref _totalMessagesReceived);
         Interlocked.Exchange(ref _lastMessageTimestamp, Stopwatch.GetTimestamp());
+        _lastMessageReceivedAt = DateTimeOffset.UtcNow;
     }
 
     // -----------------------
@@ -389,16 +431,13 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
         var id = Interlocked.Increment(ref _nextDepthTickerId);
         _depthTickerMap[id] = symbol;
+        _depthSubscriptions[id] = new DepthSubscription(symbol, contract, depthLevels, smartDepth);
 
         // Router needs this mapping for callbacks
         _router.RegisterDepthTicker(id, symbol);
         _depthTickerSmartDepthMap[id] = smartDepth;
 
-#if IBAPI_VENDOR
-        _clientSocket.reqMarketDepth(id, contract, depthLevels, smartDepth, null);
-#else
-        _clientSocket.reqMktDepth(id, contract, depthLevels, smartDepth, null);
-#endif
+        SendDepthSubscription(id, contract, depthLevels, smartDepth);
         return id;
     }
 
@@ -418,6 +457,8 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         var smartDepth = _depthTickerSmartDepthMap.TryRemove(tickerId, out var storedSmartDepth) && storedSmartDepth;
         _clientSocket.cancelMktDepth(tickerId, smartDepth);
         _depthTickerMap.TryRemove(tickerId, out _);
+        _depthSubscriptions.TryRemove(tickerId, out _);
+        StreamingRequestSent?.Invoke(this, EventArgs.Empty);
     }
 
 
@@ -431,10 +472,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
         var id = Interlocked.Increment(ref _nextTradeTickerId);
         _tradeTickerMap[id] = cfg.Symbol;
+        _tradeSubscriptions[id] = new TradeSubscription(cfg.Symbol, contract);
         _router.RegisterTradeTicker(id, cfg.Symbol);
 
         // tickType can be "AllLast" (prints + special conditions) or "Last".
-        _clientSocket.reqTickByTickData(id, contract, "AllLast", 0, ignoreSize: false);
+        SendTradeSubscription(id, contract);
         return id;
     }
 
@@ -442,6 +484,8 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         _clientSocket.cancelTickByTickData(tickerId);
         _tradeTickerMap.TryRemove(tickerId, out _);
+        _tradeSubscriptions.TryRemove(tickerId, out _);
+        StreamingRequestSent?.Invoke(this, EventArgs.Empty);
     }
 
     // -----------------------
@@ -461,15 +505,19 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         if (cfg is null) throw new ArgumentNullException(nameof(cfg));
         var contract = ContractFactory.Create(cfg);
+        var ticks = genericTickList ?? IBGenericTickTypes.DefaultEquityGenericTicks;
 
         var id = Interlocked.Increment(ref _nextQuoteTickerId);
         _quoteTickerMap[id] = cfg.Symbol;
+        _quoteSubscriptions[id] = new QuoteSubscription(
+            cfg.Symbol,
+            contract,
+            ticks,
+            snapshot,
+            regulatorySnapshot);
         _router.RegisterQuoteTicker(id, cfg.Symbol);
 
-        // Default to RT Volume and Shortable ticks for equities
-        var ticks = genericTickList ?? IBGenericTickTypes.DefaultEquityGenericTicks;
-
-        _clientSocket.reqMktData(id, contract, ticks, snapshot, regulatorySnapshot, null);
+        SendQuoteSubscription(id, contract, ticks, snapshot, regulatorySnapshot);
         return id;
     }
 
@@ -480,6 +528,76 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         _clientSocket.cancelMktData(tickerId);
         _quoteTickerMap.TryRemove(tickerId, out _);
+        _quoteSubscriptions.TryRemove(tickerId, out _);
+        StreamingRequestSent?.Invoke(this, EventArgs.Empty);
+    }
+
+    private Task ReplaySubscriptionsAsync(CancellationToken ct)
+    {
+        foreach (var (tickerId, subscription) in _depthSubscriptions.OrderBy(pair => pair.Key))
+        {
+            ct.ThrowIfCancellationRequested();
+            _router.RegisterDepthTicker(tickerId, subscription.Symbol);
+            SendDepthSubscription(
+                tickerId,
+                subscription.Contract,
+                subscription.DepthLevels,
+                subscription.SmartDepth);
+        }
+
+        foreach (var (tickerId, subscription) in _tradeSubscriptions.OrderBy(pair => pair.Key))
+        {
+            ct.ThrowIfCancellationRequested();
+            _router.RegisterTradeTicker(tickerId, subscription.Symbol);
+            SendTradeSubscription(tickerId, subscription.Contract);
+        }
+
+        foreach (var (tickerId, subscription) in _quoteSubscriptions.OrderBy(pair => pair.Key))
+        {
+            ct.ThrowIfCancellationRequested();
+            _router.RegisterQuoteTicker(tickerId, subscription.Symbol);
+            SendQuoteSubscription(
+                tickerId,
+                subscription.Contract,
+                subscription.GenericTickList,
+                subscription.Snapshot,
+                subscription.RegulatorySnapshot);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void SendDepthSubscription(int tickerId, Contract contract, int depthLevels, bool smartDepth)
+    {
+#if IBAPI_VENDOR
+        _clientSocket.reqMarketDepth(tickerId, contract, depthLevels, smartDepth, null);
+#else
+        _clientSocket.reqMktDepth(tickerId, contract, depthLevels, smartDepth, null);
+#endif
+        StreamingRequestSent?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void SendTradeSubscription(int tickerId, Contract contract)
+    {
+        _clientSocket.reqTickByTickData(tickerId, contract, "AllLast", 0, ignoreSize: false);
+        StreamingRequestSent?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void SendQuoteSubscription(
+        int tickerId,
+        Contract contract,
+        string genericTickList,
+        bool snapshot,
+        bool regulatorySnapshot)
+    {
+        _clientSocket.reqMktData(
+            tickerId,
+            contract,
+            genericTickList,
+            snapshot,
+            regulatorySnapshot,
+            null);
+        StreamingRequestSent?.Invoke(this, EventArgs.Empty);
     }
 
     // -----------------------
@@ -676,11 +794,15 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     public void error(Exception e)
     {
+        if (IsPacingViolation(-1, e.Message))
+            PacingViolation?.Invoke(this, -1);
         ErrorOccurred?.Invoke(this, new IBApiError(-1, -1, e.Message, null));
     }
 
     public void error(string str)
     {
+        if (IsPacingViolation(-1, str))
+            PacingViolation?.Invoke(this, -1);
         ErrorOccurred?.Invoke(this, new IBApiError(-1, -1, str, null));
     }
 
@@ -689,8 +811,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         RecordMessageReceived();
 
         // Handle pacing violations
-        if (errorCode == IBApiLimits.ErrorPacingViolation ||
-            errorMsg.Contains("pacing", StringComparison.OrdinalIgnoreCase))
+        if (IsPacingViolation(errorCode, errorMsg))
         {
             PacingViolation?.Invoke(this, id);
         }
@@ -701,7 +822,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             _historicalDataBuffers.TryRemove(id, out _);
 
             // For pacing violations, throw specific exception
-            if (errorCode == IBApiLimits.ErrorPacingViolation ||
+            if (IsPacingViolation(errorCode, errorMsg) ||
                 errorCode == IBApiLimits.ErrorHistoricalDataService)
             {
                 tcs.TrySetException(new IBPacingViolationException(errorCode, errorMsg));
@@ -726,8 +847,14 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     public void connectionClosed()
     {
-        ConnectionLost?.Invoke(this, EventArgs.Empty);
+        NotifyConnectionLost(new IOException("Interactive Brokers connection closed."));
     }
+
+    private static bool IsPacingViolation(int errorCode, string message)
+        => errorCode is IBApiLimits.ErrorPacingViolation or IBApiLimits.ErrorMaxMessageRateExceeded
+            || message.Contains("pacing", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("max rate", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("maximum rate", StringComparison.OrdinalIgnoreCase);
 
     // -----------------------
     // EWrapper Level 1 tick callbacks
@@ -1092,6 +1219,21 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
             "BOND" => "SMART",
             _ => "SMART"
         };
+
+    private sealed record DepthSubscription(
+        string Symbol,
+        Contract Contract,
+        int DepthLevels,
+        bool SmartDepth);
+
+    private sealed record TradeSubscription(string Symbol, Contract Contract);
+
+    private sealed record QuoteSubscription(
+        string Symbol,
+        Contract Contract,
+        string GenericTickList,
+        bool Snapshot,
+        bool RegulatorySnapshot);
 
     // The full EWrapper interface is extensive. Add methods as you need them for trades/ticks/orders.
 }

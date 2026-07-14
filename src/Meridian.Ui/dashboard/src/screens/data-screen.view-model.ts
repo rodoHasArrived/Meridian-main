@@ -40,6 +40,7 @@ import type {
 } from "@/screens/data-screen.route-state";
 import type {
   BackfillPreviewResult,
+  BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -179,10 +180,39 @@ export interface BackfillResultCardState {
   errorText: string | null;
 }
 
+export interface BackfillLiveProgressSymbolState {
+  symbol: string;
+  range: string;
+  provider: string;
+  attempt: string;
+  status: string;
+  progress: string;
+  error: string | null;
+}
+
+export interface BackfillLiveProgressAttemptState {
+  id: string;
+  label: string;
+  detail: string;
+  tone: "default" | "warning" | "danger";
+}
+
+export interface BackfillLiveProgressState {
+  ariaLabel: string;
+  title: string;
+  summary: string;
+  active: boolean;
+  overallPercent: number;
+  symbols: BackfillLiveProgressSymbolState[];
+  recentAttempts: BackfillLiveProgressAttemptState[];
+  droppedNotificationWarning: string | null;
+  observedAt: string;
+}
+
 export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillPreviewResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
-  getProgress: () => Promise<BackfillProgressResponse>;
+  getProgress: (signal?: AbortSignal) => Promise<BackfillProgressResponse>;
 }
 
 export interface ProviderSetupLifecycleServices {
@@ -895,8 +925,9 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
-  getProgress: () => workstationApi.getBackfillProgress()
+  getProgress: (signal) => workstationApi.getBackfillProgress({ signal })
 };
+const BACKFILL_PROGRESS_POLL_INTERVAL_MS = 500;
 const defaultProviderSetupLifecycle: ProviderSetupLifecycleServices = {};
 
 const defaultBackfillForm: BackfillFormState = {
@@ -1095,6 +1126,7 @@ export function useDataViewModel(
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
+  const [liveProgress, setLiveProgress] = useState<BackfillProgressResponse | null>(null);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
@@ -1247,6 +1279,10 @@ export function useDataViewModel(
     () => result ? buildBackfillResultCardState(result, "result") : null,
     [result]
   );
+  const liveProgressState = useMemo(
+    () => buildBackfillLiveProgressState(liveProgress),
+    [liveProgress]
+  );
   const uploadPanelState = useMemo(
     () => buildDataUploadPanelState(
       uploadCatalog,
@@ -1273,6 +1309,7 @@ export function useDataViewModel(
     setDialogOpen(true);
     setPreview(null);
     setResult(null);
+    setLiveProgress(null);
     setError(null);
     setBusy(false);
     setPhase("idle");
@@ -1307,6 +1344,7 @@ export function useDataViewModel(
     setForm((current) => ({ ...current, [field]: value }));
     setPreview(null);
     setResult(null);
+    setLiveProgress(null);
     setError(null);
   }, []);
 
@@ -1428,15 +1466,45 @@ export function useDataViewModel(
     token.safeSetState(setBusy, true);
     token.safeSetState(setPhase, "running");
     token.safeSetState(setError, null);
+    token.safeSetState(setLiveProgress, null);
+
+    const pollingController = new AbortController();
+    const abortPolling = () => pollingController.abort();
+    token.signal.addEventListener("abort", abortPolling, { once: true });
+    const pollProgress = async () => {
+      while (!pollingController.signal.aborted && token.isCurrent()) {
+        try {
+          const progress = await services.getProgress(pollingController.signal);
+          if (!pollingController.signal.aborted && token.isCurrent()) {
+            token.safeSetState(setLiveProgress, progress);
+          }
+        } catch {
+          if (pollingController.signal.aborted || !token.isCurrent()) {
+            break;
+          }
+          // The run remains authoritative; a later poll can recover from a transient read failure.
+        }
+
+        await waitForBackfillProgressPoll(BACKFILL_PROGRESS_POLL_INTERVAL_MS, pollingController.signal);
+      }
+    };
+    let pollingTask = Promise.resolve();
 
     try {
-      const nextResult = await services.run(buildBackfillRequest(form));
+      const runRequest = services.run(buildBackfillRequest(form));
+      pollingTask = pollProgress();
+      const nextResult = await runRequest;
       if (!token.isCurrent()) {
         backfillLifecycle.markStale(token.version);
         return;
       }
       token.safeSetState(setResult, nextResult);
-      await services.getProgress().catch(() => null);
+      pollingController.abort();
+      await pollingTask;
+      const finalProgress = await services.getProgress(token.signal).catch(() => null);
+      if (finalProgress && token.isCurrent()) {
+        token.safeSetState(setLiveProgress, finalProgress);
+      }
       backfillLifecycle.succeed(token, { message: "Historical backfill run completed." });
     } catch (err) {
       if (!token.isCurrent()) {
@@ -1446,6 +1514,8 @@ export function useDataViewModel(
       token.safeSetState(setError, buildDataErrorState(err, "Backfill run failed."));
       backfillLifecycle.fail(token, err, { fallback: "Backfill run failed." });
     } finally {
+      pollingController.abort();
+      token.signal.removeEventListener("abort", abortPolling);
       if (token.isCurrent()) {
         token.safeSetState(setBusy, false);
         token.safeSetState(setPhase, "idle");
@@ -1844,6 +1914,7 @@ export function useDataViewModel(
     previewResultCard,
     result,
     runResultCard,
+    liveProgressState,
     error,
     busy,
     phase,
@@ -3759,6 +3830,97 @@ export function buildBackfillResultCardState(
       !isPreview && (result as BackfillTriggerResult).error ? `Error ${(result as BackfillTriggerResult).error}` : null
     ].filter(Boolean).join(". ")
   };
+}
+
+export function buildBackfillLiveProgressState(
+  response: BackfillProgressResponse | null
+): BackfillLiveProgressState | null {
+  const snapshot = response?.providerProgress;
+  if (!snapshot) {
+    return null;
+  }
+
+  const symbols = Object.values(snapshot.symbols)
+    .sort((left, right) => left.symbol.localeCompare(right.symbol))
+    .map((symbol) => ({
+      symbol: symbol.symbol,
+      range: formatBackfillRange(symbol.rangeStart, symbol.rangeEnd),
+      provider: formatBackfillValue(symbol.currentProvider, "Waiting for provider"),
+      attempt: symbol.providerAttempt > 0
+        ? `Attempt ${symbol.providerAttempt}${symbol.retryRound > 0 ? `, retry ${symbol.retryRound}` : ""}`
+        : "Not started",
+      status: resolveBackfillProviderProgressStatus(symbol),
+      progress: `${clampBackfillProgress(symbol.percentComplete).toLocaleString(undefined, { maximumFractionDigits: 1 })}%`,
+      error: symbol.error
+    }));
+  const recentAttempts = snapshot.recentProviderAttempts.slice(-8).reverse().map((attempt) => ({
+    id: [attempt.symbol, attempt.provider, attempt.providerAttempt, attempt.retryRound, attempt.observedAt].join("-"),
+    label: `${attempt.symbol} · ${attempt.provider}`,
+    detail: [
+      formatBackfillRange(attempt.rangeStart, attempt.rangeEnd),
+      `attempt ${attempt.providerAttempt}${attempt.retryRound > 0 ? `, retry ${attempt.retryRound}` : ""}`,
+      attempt.status ?? attempt.operation ?? "provider update",
+      `${attempt.barsDownloaded.toLocaleString()} bars`,
+      attempt.error
+    ].filter(Boolean).join(" · "),
+    tone: attempt.error
+      ? "danger" as const
+      : attempt.status?.toLowerCase().includes("skip")
+        ? "warning" as const
+        : "default" as const
+  }));
+  const overallPercent = clampBackfillProgress(snapshot.overallPercentComplete);
+  const active = response.isActive ?? response.active ?? false;
+  const observedAt = formatBackfillProgressTimestamp(snapshot.timestamp || response.timestamp);
+
+  return {
+    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })} percent.`,
+    title: active ? "Live provider progress" : "Final provider progress",
+    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })}% overall`,
+    active,
+    overallPercent,
+    symbols,
+    recentAttempts,
+    droppedNotificationWarning: snapshot.droppedProviderNotifications > 0
+      ? `${snapshot.droppedProviderNotifications.toLocaleString()} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
+      : null,
+    observedAt
+  };
+}
+
+function resolveBackfillProviderProgressStatus(
+  symbol: BackfillProviderProgressSnapshot["symbols"][string]
+): string {
+  if (symbol.isFailed) return "Failed";
+  if (symbol.isSkipped) return "Skipped";
+  if (symbol.isCompleted) return "Completed";
+  return symbol.currentStatus ?? symbol.operation ?? "Pending";
+}
+
+function clampBackfillProgress(value: number): number {
+  return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
+}
+
+function formatBackfillProgressTimestamp(value: string | null | undefined): string {
+  if (!value) return "Time unavailable";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : `${formatUtcMinute(parsed)} UTC`;
+}
+
+function waitForBackfillProgressPoll(delayMs: number, signal: AbortSignal): Promise<void> {
+  if (signal.aborted) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const complete = () => {
+      window.clearTimeout(timer);
+      signal.removeEventListener("abort", complete);
+      resolve();
+    };
+    const timer = window.setTimeout(complete, delayMs);
+    signal.addEventListener("abort", complete, { once: true });
+  });
 }
 
 export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRequest {

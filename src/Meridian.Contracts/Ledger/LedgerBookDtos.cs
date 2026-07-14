@@ -286,6 +286,17 @@ public sealed record CloseLedgerPeriodRequest(
     string ToleranceProfileId = "standard-recon-tolerance",
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
+public sealed record ReopenLedgerPeriodRequest(
+    string ReopenedBy,
+    string Role,
+    string Reason,
+    string ApprovalReference,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
+}
+
 public sealed record LedgerPeriodTrialBalanceLineDto(
     string AccountName,
     string AccountType,
@@ -472,6 +483,14 @@ public sealed record LedgerPeriodCloseResultDto(
     LedgerPeriodSummaryDto Summary,
     OperatorWorkItemDto WorkItem);
 
+public sealed record LedgerPeriodReopenResultDto(
+    LedgerPeriodDto Period,
+    string PriorStatus,
+    string ReopenedBy,
+    DateTimeOffset ReopenedAtUtc,
+    string ApprovalReference,
+    IReadOnlyList<string> EvidenceLinks);
+
 public interface ILedgerBookService
 {
     Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);
@@ -498,4 +517,11 @@ public interface ILedgerBookService
         Guid periodId,
         CloseLedgerPeriodRequest request,
         CancellationToken ct = default);
+
+    Task<LedgerPeriodReopenResultDto> ReopenPeriodAsync(
+        Guid periodId,
+        ReopenLedgerPeriodRequest request,
+        CancellationToken ct = default)
+        => Task.FromException<LedgerPeriodReopenResultDto>(
+            new NotSupportedException("This ledger book service does not support governed period reopen."));
 }

@@ -130,6 +130,66 @@ public sealed class DailyMarkToMarketServiceTests
     }
 
     [Fact]
+    public async Task PrepareAsync_StaleClosingMark_BlocksStrictValuationBatch()
+    {
+        var prices = new MapPriceSource().Add(
+            "AAPL",
+            160m,
+            DateOnly.FromDateTime(AsOf.UtcDateTime).AddDays(-4),
+            DailyPortfolioPriceConfidence.High);
+        var service = new DailyMarkToMarketService(prices);
+
+        var run = await service.PrepareAsync(new DailyMarkToMarketRequest(
+            Policy,
+            "2026-07",
+            AsOf,
+            "USD",
+            [new MarkToMarketPosition("AAPL", 100m, 150m)],
+            Actor: "ops",
+            Reason: "daily close marks",
+            QualityPolicy: new MarkPriceQualityPolicy(
+                TimeSpan.FromDays(3),
+                DailyPortfolioPriceConfidence.Medium,
+                RequireCompleteCoverage: true)));
+
+        run.IsBlocked.Should().BeTrue();
+        run.HasDraft.Should().BeFalse();
+        var rejection = run.RejectedMarks.Should().ContainSingle().Subject;
+        rejection.Reason.Should().Contain("4 days old");
+        rejection.EvidenceReference.Should().Be("evidence:AAPL");
+    }
+
+    [Fact]
+    public async Task PrepareAsync_LowConfidenceClosingMark_BlocksStrictValuationBatch()
+    {
+        var prices = new MapPriceSource().Add(
+            "AAPL",
+            160m,
+            DateOnly.FromDateTime(AsOf.UtcDateTime),
+            DailyPortfolioPriceConfidence.Low);
+        var service = new DailyMarkToMarketService(prices);
+
+        var run = await service.PrepareAsync(new DailyMarkToMarketRequest(
+            Policy,
+            "2026-07",
+            AsOf,
+            "USD",
+            [new MarkToMarketPosition("AAPL", 100m, 150m)],
+            Actor: "ops",
+            Reason: "daily close marks",
+            QualityPolicy: new MarkPriceQualityPolicy(
+                TimeSpan.FromDays(3),
+                DailyPortfolioPriceConfidence.Medium,
+                RequireCompleteCoverage: true)));
+
+        run.IsBlocked.Should().BeTrue();
+        run.HasDraft.Should().BeFalse();
+        var rejection = run.RejectedMarks.Should().ContainSingle().Subject;
+        rejection.Reason.Should().Contain("below required Medium");
+        rejection.EvidenceReference.Should().Be("evidence:AAPL");
+    }
+
+    [Fact]
     public async Task HistoricalCloseMarkPriceSource_UsesLatestSessionOnOrBeforeAsOf()
     {
         var friday = new DateOnly(2026, 07, 03);
@@ -152,6 +212,8 @@ public sealed class DailyMarkToMarketServiceTests
         quote!.Price.Should().Be(151.25m, "the latest session on or before the valuation date wins");
         quote.Source.Should().Be("stooq");
         quote.EvidenceReference.Should().Contain("2026-07-03");
+        quote.ObservedOn.Should().Be(friday);
+        quote.Confidence.Should().Be(DailyPortfolioPriceConfidence.Medium);
     }
 
     [Fact]
@@ -173,9 +235,18 @@ public sealed class DailyMarkToMarketServiceTests
     {
         private readonly Dictionary<string, MarkPriceQuote> _quotes = new(StringComparer.OrdinalIgnoreCase);
 
-        public MapPriceSource Add(string symbol, decimal price)
+        public MapPriceSource Add(
+            string symbol,
+            decimal price,
+            DateOnly? observedOn = null,
+            DailyPortfolioPriceConfidence confidence = DailyPortfolioPriceConfidence.High)
         {
-            _quotes[symbol] = new MarkPriceQuote(price, "test-source", $"evidence:{symbol}");
+            _quotes[symbol] = new MarkPriceQuote(
+                price,
+                "test-source",
+                $"evidence:{symbol}",
+                observedOn ?? DateOnly.FromDateTime(AsOf.UtcDateTime),
+                confidence);
             return this;
         }
 

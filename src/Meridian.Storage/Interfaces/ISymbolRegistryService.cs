@@ -48,6 +48,22 @@ public interface ISymbolRegistryService
     Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, CancellationToken ct = default);
 
     /// <summary>
+    /// Adds a provider mapping with provenance and merge precedence.
+    /// </summary>
+    Task AddProviderMappingAsync(
+        string canonical,
+        string provider,
+        string providerSymbol,
+        string source,
+        bool isOverride,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Removes a provider mapping without removing the canonical security entry.
+    /// </summary>
+    Task<bool> RemoveProviderMappingAsync(string canonical, string provider, CancellationToken ct = default);
+
+    /// <summary>
     /// Gets all symbols.
     /// </summary>
     IEnumerable<SymbolRegistryEntry> GetAllSymbols();

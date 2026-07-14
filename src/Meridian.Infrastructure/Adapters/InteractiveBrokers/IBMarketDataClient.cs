@@ -7,6 +7,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Resilience;
+using Meridian.ProviderSdk;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -21,14 +22,15 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 [ImplementsAdr("ADR-001", "Interactive Brokers streaming data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class IBMarketDataClient : IMarketDataClient, IProviderConnectionDiagnosticsSource
+public sealed class IBMarketDataClient :
+    IMarketDataClient,
+    IProviderConnectionDiagnosticsSource,
+    IProviderRateLimitDiagnosticsSource
 {
     private readonly IMarketDataClient _inner;
     private readonly bool _isSimulation;
-    private volatile ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
-    private DateTimeOffset? _connectedAt;
-    private DateTimeOffset? _disconnectedAt;
-    private string? _lastError;
+    private readonly ProviderConnectionSupervisor _simulationSupervisor;
+    private readonly ProviderRateLimitTracker _streamingRateLimits;
 
     public IBMarketDataClient(
         IMarketEventPublisher publisher,
@@ -38,8 +40,32 @@ public sealed class IBMarketDataClient : IMarketDataClient, IProviderConnectionD
         OptionDataCollector? optionCollector = null,
         IBOptions? options = null)
     {
+        _simulationSupervisor = new ProviderConnectionSupervisor(
+            providerName: "Interactive Brokers (simulation)",
+            maxReconnectAttempts: 3,
+            retryBaseDelay: TimeSpan.FromSeconds(1),
+            maxRetryDelay: TimeSpan.FromSeconds(10));
+        _simulationSupervisor.StateChanged += OnSimulationSupervisorStateChanged;
+
+        _streamingRateLimits = new ProviderRateLimitTracker();
+        _streamingRateLimits.RegisterProvider(
+            "ib",
+            maxRequestsPerWindow: 50,
+            window: TimeSpan.FromSeconds(1),
+            minDelay: TimeSpan.FromMilliseconds(20));
+
 #if IBAPI
-        _inner = new IBMarketDataClientIBApi(publisher, tradeCollector, depthCollector, quoteCollector, optionCollector, options ?? new IBOptions());
+        var liveClient = new IBMarketDataClientIBApi(
+            publisher,
+            tradeCollector,
+            depthCollector,
+            quoteCollector,
+            optionCollector,
+            options ?? new IBOptions());
+        liveClient.RateLimitHit += RecordPacingViolation;
+        liveClient.StreamingRequestSent += RecordStreamingRequest;
+        liveClient.ConnectionDiagnosticsChanged += OnInnerConnectionDiagnosticsChanged;
+        _inner = liveClient;
         _isSimulation = false;
 #else
         _inner = new IBSimulationClient(publisher);
@@ -118,73 +144,125 @@ public sealed class IBMarketDataClient : IMarketDataClient, IProviderConnectionD
         if (_inner is IProviderConnectionDiagnosticsSource innerSource)
             return innerSource.GetConnectionDiagnosticsSnapshot();
 
-        var now = DateTimeOffset.UtcNow;
-        var connected = _lifecycleState == ProviderConnectionLifecycleState.Connected;
+        var supervisor = _simulationSupervisor.GetSnapshot();
         return new WebSocketConnectionDiagnostics(
             ProviderName: _isSimulation ? "Interactive Brokers (simulation)" : "Interactive Brokers",
-            LifecycleState: _lifecycleState,
+            LifecycleState: supervisor.LifecycleState,
             WebSocketState: System.Net.WebSockets.WebSocketState.None,
-            IsConnected: connected,
-            IsReconnecting: false,
-            ReconnectAttempts: 0,
-            LastConnectedAt: _connectedAt,
-            LastDisconnectedAt: _disconnectedAt,
+            IsConnected: supervisor.IsConnected,
+            IsReconnecting: supervisor.IsReconnecting,
+            ReconnectAttempts: supervisor.ReconnectAttempts,
+            LastConnectedAt: supervisor.LastConnectedAt,
+            LastDisconnectedAt: supervisor.LastDisconnectedAt,
             LastHeartbeatReceivedAt: null,
             LastMessageReceivedAt: null,
-            LastReconnectAttemptAt: null,
-            LastError: _lastError,
-            LastFailureKind: null,
-            ConnectionAge: connected && _connectedAt is { } connectedAt ? now - connectedAt : null,
+            LastReconnectAttemptAt: supervisor.LastReconnectAttemptAt,
+            LastError: supervisor.LastError,
+            LastFailureKind: supervisor.LastFailureKind,
+            ConnectionAge: supervisor.ConnectionAge,
             IdleDuration: null);
+    }
+
+    /// <inheritdoc/>
+    public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
+    {
+        var status = _streamingRateLimits.GetStatus(ProviderId)
+            ?? throw new InvalidOperationException("IB streaming rate-limit tracking is not initialized.");
+
+        return new ProviderRateLimitDiagnosticSnapshot(
+            ProviderId,
+            ProviderRateLimitSurfaces.Streaming,
+            status.ObservedAt,
+            status.RequestsInWindow,
+            status.MaxRequestsPerWindow,
+            status.Window,
+            status.IsRateLimited,
+            status.ResetAt,
+            status.UsageRatio,
+            status.Reason);
     }
 
     public async Task ConnectAsync(CancellationToken ct = default)
     {
-        SetLifecycleState(ProviderConnectionLifecycleState.Connecting);
-        try
-        {
+        if (_inner is IProviderConnectionDiagnosticsSource)
             await _inner.ConnectAsync(ct).ConfigureAwait(false);
-            _connectedAt = DateTimeOffset.UtcNow;
-            _lastError = null;
-            SetLifecycleState(ProviderConnectionLifecycleState.Connected);
-        }
-        catch (Exception ex)
-        {
-            _lastError = ex.Message;
-            SetLifecycleState(ProviderConnectionLifecycleState.Failed);
-            throw;
-        }
+        else
+            await _simulationSupervisor.ConnectAsync(_inner.ConnectAsync, ct).ConfigureAwait(false);
     }
 
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
-        await _inner.DisconnectAsync(ct).ConfigureAwait(false);
-        _disconnectedAt = DateTimeOffset.UtcNow;
-        SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
+        if (_inner is IProviderConnectionDiagnosticsSource)
+            await _inner.DisconnectAsync(ct).ConfigureAwait(false);
+        else
+            await _simulationSupervisor.DisconnectAsync(_inner.DisconnectAsync, ct).ConfigureAwait(false);
     }
 
-    private void SetLifecycleState(ProviderConnectionLifecycleState state)
+    private void OnSimulationSupervisorStateChanged(ProviderConnectionSupervisorSnapshot _)
+        => ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
+
+    private void OnInnerConnectionDiagnosticsChanged(WebSocketConnectionDiagnostics snapshot)
+        => ConnectionDiagnosticsChanged?.Invoke(snapshot);
+
+    internal void RecordPacingViolation(TimeSpan? retryAfter = null)
+        => _streamingRateLimits.RecordRateLimitHit(ProviderId, retryAfter ?? TimeSpan.FromSeconds(1));
+
+    private void RecordStreamingRequest()
+        => _streamingRateLimits.RecordRequest(ProviderId);
+
+    public int SubscribeMarketDepth(SymbolConfig cfg)
     {
-        if (_lifecycleState == state)
-            return;
-
-        _lifecycleState = state;
-        ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
+        var subscriptionId = _inner.SubscribeMarketDepth(cfg);
+        if (_isSimulation)
+            RecordStreamingRequest();
+        return subscriptionId;
     }
 
-    public int SubscribeMarketDepth(SymbolConfig cfg) => _inner.SubscribeMarketDepth(cfg);
-    public void UnsubscribeMarketDepth(int subscriptionId) => _inner.UnsubscribeMarketDepth(subscriptionId);
+    public void UnsubscribeMarketDepth(int subscriptionId)
+    {
+        _inner.UnsubscribeMarketDepth(subscriptionId);
+        if (_isSimulation)
+            RecordStreamingRequest();
+    }
 
-    public int SubscribeTrades(SymbolConfig cfg) => _inner.SubscribeTrades(cfg);
-    public void UnsubscribeTrades(int subscriptionId) => _inner.UnsubscribeTrades(subscriptionId);
+    public int SubscribeTrades(SymbolConfig cfg)
+    {
+        var subscriptionId = _inner.SubscribeTrades(cfg);
+        if (_isSimulation)
+            RecordStreamingRequest();
+        return subscriptionId;
+    }
 
-    public ValueTask DisposeAsync() => _inner.DisposeAsync();
+    public void UnsubscribeTrades(int subscriptionId)
+    {
+        _inner.UnsubscribeTrades(subscriptionId);
+        if (_isSimulation)
+            RecordStreamingRequest();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _simulationSupervisor.StateChanged -= OnSimulationSupervisorStateChanged;
+#if IBAPI
+        if (_inner is IBMarketDataClientIBApi liveClient)
+        {
+            liveClient.RateLimitHit -= RecordPacingViolation;
+            liveClient.StreamingRequestSent -= RecordStreamingRequest;
+            liveClient.ConnectionDiagnosticsChanged -= OnInnerConnectionDiagnosticsChanged;
+        }
+#endif
+        await _inner.DisposeAsync().ConfigureAwait(false);
+        await _simulationSupervisor.DisposeAsync().ConfigureAwait(false);
+        _streamingRateLimits.Dispose();
+    }
 }
 
 #if IBAPI
 [ImplementsAdr("ADR-001", "Interactive Brokers API streaming data provider")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
-internal sealed class IBMarketDataClientIBApi : IMarketDataClient
+internal sealed class IBMarketDataClientIBApi :
+    IMarketDataClient,
+    IProviderConnectionDiagnosticsSource
 {
     private static readonly ILogger _log = Log.ForContext<IBMarketDataClientIBApi>();
     private readonly EnhancedIBConnectionManager _conn;
@@ -213,16 +291,28 @@ internal sealed class IBMarketDataClientIBApi : IMarketDataClient
             host: _options.Host,
             port: _options.Port,
             clientId: _options.ClientId);
+        _conn.ConnectionDiagnosticsChanged += OnConnectionDiagnosticsChanged;
+        _conn.PacingViolation += OnPacingViolation;
+        _conn.StreamingRequestSent += OnStreamingRequestSent;
     }
+
+    public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
+
+    public event Action<TimeSpan?>? RateLimitHit;
+
+    public event Action? StreamingRequestSent;
+
+    public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+        => _conn.GetConnectionDiagnosticsSnapshot();
 
     public async Task ConnectAsync(CancellationToken ct = default)
     {
-        await _conn.ConnectAsync().ConfigureAwait(false);
+        await _conn.ConnectAsync(ct).ConfigureAwait(false);
     }
 
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
-        await _conn.DisconnectAsync().ConfigureAwait(false);
+        await _conn.DisconnectAsync(ct).ConfigureAwait(false);
     }
 
     public int SubscribeMarketDepth(SymbolConfig cfg)
@@ -263,6 +353,9 @@ internal sealed class IBMarketDataClientIBApi : IMarketDataClient
     {
         try
         {
+            _conn.ConnectionDiagnosticsChanged -= OnConnectionDiagnosticsChanged;
+            _conn.PacingViolation -= OnPacingViolation;
+            _conn.StreamingRequestSent -= OnStreamingRequestSent;
             _conn.Dispose();
         }
         catch (Exception ex)
@@ -271,5 +364,14 @@ internal sealed class IBMarketDataClientIBApi : IMarketDataClient
         }
         return ValueTask.CompletedTask;
     }
+
+    private void OnConnectionDiagnosticsChanged(WebSocketConnectionDiagnostics snapshot)
+        => ConnectionDiagnosticsChanged?.Invoke(snapshot);
+
+    private void OnPacingViolation(object? sender, int requestId)
+        => RateLimitHit?.Invoke(TimeSpan.FromSeconds(1));
+
+    private void OnStreamingRequestSent(object? sender, EventArgs args)
+        => StreamingRequestSent?.Invoke();
 }
 #endif
