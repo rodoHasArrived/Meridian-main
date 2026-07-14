@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
 using Meridian.Domain.Events;
 using Serilog;
-using Meridian.Core.Monitoring;
 
 namespace Meridian.DataIntegration.Monitoring;
 

@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Core.Resilience;
 using Meridian.Core.Subscriptions.Models;
-using Meridian.Contracts.Domain.Enums;
 using Meridian.Domain.Models;
 using Serilog;
 

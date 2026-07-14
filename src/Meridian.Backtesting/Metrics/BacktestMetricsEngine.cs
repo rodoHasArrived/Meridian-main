@@ -373,14 +373,14 @@ internal static class BacktestMetricsEngine
     private static IEnumerable<LinkedListNode<(long Qty, decimal Price)>> OrderLots(
         LinkedList<(long Qty, decimal Price)> lots,
         LotSelectionMethod method) => method switch
-    {
-        LotSelectionMethod.Lifo => EnumerateNodesReverse(lots),
-        LotSelectionMethod.Hifo => EnumerateNodes(lots).OrderByDescending(static n => n.Value.Price),
-        // SpecificId falls back to FIFO: attribution rebuilds synthetic lots from the fill
-        // stream, so the portfolio's TargetLotId values cannot match them — the same fallback
-        // SimulatedPortfolio applies when the nominated lot is absent.
-        _ => EnumerateNodes(lots),
-    };
+        {
+            LotSelectionMethod.Lifo => EnumerateNodesReverse(lots),
+            LotSelectionMethod.Hifo => EnumerateNodes(lots).OrderByDescending(static n => n.Value.Price),
+            // SpecificId falls back to FIFO: attribution rebuilds synthetic lots from the fill
+            // stream, so the portfolio's TargetLotId values cannot match them — the same fallback
+            // SimulatedPortfolio applies when the nominated lot is absent.
+            _ => EnumerateNodes(lots),
+        };
 
     private static IEnumerable<LinkedListNode<T>> EnumerateNodes<T>(LinkedList<T> list)
     {
