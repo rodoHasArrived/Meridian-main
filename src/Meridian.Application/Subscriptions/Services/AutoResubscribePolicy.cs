@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
+using Meridian.Core.Resilience;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Domain.Models;
@@ -12,7 +13,8 @@ namespace Meridian.Application.Subscriptions.Services;
 
 /// <summary>
 /// Auto-resubscribe policy that triggers resubscription when integrity events occur.
-/// Implements rate limiting and circuit breaker pattern to prevent cascading failures.
+/// Implements rate limiting and delegates circuit-breaking (global and per-symbol) to the
+/// shared <see cref="CircuitBreaker"/> primitive.
 ///
 /// Flow:
 /// 1. Integrity event received → check rate limit → check circuit breaker → resubscribe
@@ -21,19 +23,19 @@ namespace Meridian.Application.Subscriptions.Services;
 /// </summary>
 public sealed class AutoResubscribePolicy : IAsyncDisposable
 {
+    /// <summary>Throttle between half-open probes of the global breaker.</summary>
+    private static readonly TimeSpan GlobalHalfOpenProbeInterval = TimeSpan.FromSeconds(5);
+
     private readonly SubscriptionOrchestrator _subscriptionManager;
     private readonly ILogger _log;
     private readonly AutoResubscribeOptions _options;
+    private readonly TimeProvider _clock;
 
     // Per-symbol rate limiting: tracks last resubscription attempt time
     private readonly ConcurrentDictionary<string, SymbolResubscribeState> _symbolStates = new(StringComparer.OrdinalIgnoreCase);
 
-    // Global circuit breaker state
-    private readonly object _circuitLock = new();
-    private CircuitState _circuitState = CircuitState.Closed;
-    private DateTimeOffset _circuitOpenedAt;
-    private int _consecutiveFailures;
-    private DateTimeOffset _lastHalfOpenTest;
+    private readonly CircuitBreaker _globalBreaker;
+    private readonly CircuitBreakerOptions _symbolBreakerOptions;
 
     // Background cleanup task
     private readonly CancellationTokenSource _cts = new();
@@ -42,11 +44,29 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
     public AutoResubscribePolicy(
         SubscriptionOrchestrator subscriptionManager,
         AutoResubscribeOptions? options = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        TimeProvider? clock = null)
     {
         _subscriptionManager = subscriptionManager ?? throw new ArgumentNullException(nameof(subscriptionManager));
         _options = options ?? new AutoResubscribeOptions();
         _log = log ?? LoggingSetup.ForContext<AutoResubscribePolicy>();
+        _clock = clock ?? TimeProvider.System;
+
+        _globalBreaker = new CircuitBreaker(
+            new CircuitBreakerOptions
+            {
+                FailureThreshold = _options.CircuitBreakerThreshold,
+                BreakDuration = _options.CircuitBreakerDuration,
+                HalfOpenProbeInterval = GlobalHalfOpenProbeInterval,
+            },
+            _clock);
+        _globalBreaker.StateChanged += OnGlobalBreakerStateChanged;
+
+        _symbolBreakerOptions = new CircuitBreakerOptions
+        {
+            FailureThreshold = _options.SymbolCircuitBreakerThreshold,
+            BreakDuration = _options.SymbolCircuitBreakerDuration,
+        };
 
         _cleanupTask = CleanupLoopAsync();
 
@@ -63,10 +83,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
     /// <summary>
     /// Current state of the global circuit breaker.
     /// </summary>
-    public CircuitState CurrentCircuitState
-    {
-        get { lock (_circuitLock) return _circuitState; }
-    }
+    public CircuitState CurrentCircuitState => ToCircuitState(_globalBreaker.Status);
 
     /// <summary>
     /// Number of symbols currently in cooldown.
@@ -107,7 +124,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         }
 
         // Check global circuit breaker
-        if (!CanProceedGlobalCircuit())
+        if (!_globalBreaker.TryAcquire())
         {
             _log.Warning("Global circuit breaker OPEN. Skipping resubscription for {Symbol}", symbol);
             ResubscriptionMetrics.IncRateLimitedSkip();
@@ -115,7 +132,9 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         }
 
         // Get or create symbol state
-        var state = _symbolStates.GetOrAdd(symbol, _ => new SymbolResubscribeState());
+        var state = _symbolStates.GetOrAdd(
+            symbol,
+            _ => new SymbolResubscribeState(new CircuitBreaker(_symbolBreakerOptions, _clock), _clock));
 
         // Check per-symbol rate limiting
         if (!state.CanResubscribe(_options.SymbolCooldown, _options.MinResubscribeInterval))
@@ -126,7 +145,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         }
 
         // Check per-symbol circuit breaker
-        if (!state.CanProceedCircuit(_options.SymbolCircuitBreakerDuration))
+        if (!state.CanProceedCircuit())
         {
             _log.Debug("Symbol circuit breaker OPEN for {Symbol}. Skipping resubscription.", symbol);
             ResubscriptionMetrics.IncRateLimitedSkip();
@@ -150,7 +169,13 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
 
             state.RecordSuccess();
             ResubscriptionMetrics.IncResubscribeSuccess(elapsedMs);
-            OnGlobalSuccess();
+
+            var closedAfterProbe = _globalBreaker.Status == CircuitStatus.HalfOpen;
+            _globalBreaker.RecordSuccess();
+            if (closedAfterProbe)
+            {
+                _log.Information("Global circuit breaker CLOSED after successful half-open test");
+            }
 
             _log.Information("Auto-resubscribe succeeded for {Symbol} in {ElapsedMs}ms", symbol, elapsedMs);
             return Task.FromResult(true);
@@ -158,9 +183,9 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         catch (Exception ex)
         {
             sw.Stop();
-            state.RecordFailure(_options.SymbolCircuitBreakerThreshold);
+            state.RecordFailure();
             ResubscriptionMetrics.IncResubscribeFailure();
-            OnGlobalFailure();
+            _globalBreaker.RecordFailure();
 
             _log.Error(ex, "Auto-resubscribe failed for {Symbol}", symbol);
             return Task.FromResult(false);
@@ -212,12 +237,15 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
     /// </summary>
     public void ResetCircuitBreaker()
     {
-        lock (_circuitLock)
+        var wasClosed = _globalBreaker.Status == CircuitStatus.Closed;
+        _globalBreaker.Reset();
+        if (wasClosed)
         {
-            _circuitState = CircuitState.Closed;
-            _consecutiveFailures = 0;
+            // The transition hook only fires on a real state change; the manual reset has always
+            // counted a close even when the breaker was already closed.
             ResubscriptionMetrics.IncCircuitBreakerClose();
         }
+
         _log.Information("Global circuit breaker manually reset to CLOSED");
     }
 
@@ -233,85 +261,41 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         }
     }
 
-    private bool CanProceedGlobalCircuit()
+    private void OnGlobalBreakerStateChanged(CircuitStatus from, CircuitStatus to)
     {
-        lock (_circuitLock)
+        switch (to)
         {
-            switch (_circuitState)
-            {
-                case CircuitState.Closed:
-                    return true;
-
-                case CircuitState.Open:
-                    // Check if break duration has passed
-                    if (DateTimeOffset.UtcNow - _circuitOpenedAt >= _options.CircuitBreakerDuration)
-                    {
-                        _circuitState = CircuitState.HalfOpen;
-                        _lastHalfOpenTest = DateTimeOffset.UtcNow;
-                        ResubscriptionMetrics.IncCircuitBreakerHalfOpen();
-                        _log.Information("Global circuit breaker transitioning to HALF-OPEN");
-                        return true;
-                    }
-                    return false;
-
-                case CircuitState.HalfOpen:
-                    // Only allow one test at a time (throttle half-open tests)
-                    if (DateTimeOffset.UtcNow - _lastHalfOpenTest < TimeSpan.FromSeconds(5))
-                        return false;
-                    _lastHalfOpenTest = DateTimeOffset.UtcNow;
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-    }
-
-    private void OnGlobalSuccess()
-    {
-        lock (_circuitLock)
-        {
-            if (_circuitState == CircuitState.HalfOpen)
-            {
-                _circuitState = CircuitState.Closed;
-                _consecutiveFailures = 0;
-                ResubscriptionMetrics.IncCircuitBreakerClose();
-                _log.Information("Global circuit breaker CLOSED after successful half-open test");
-            }
-            else
-            {
-                _consecutiveFailures = 0;
-            }
-        }
-    }
-
-    private void OnGlobalFailure()
-    {
-        lock (_circuitLock)
-        {
-            _consecutiveFailures++;
-
-            if (_circuitState == CircuitState.HalfOpen)
-            {
-                // Half-open test failed, back to open
-                _circuitState = CircuitState.Open;
-                _circuitOpenedAt = DateTimeOffset.UtcNow;
+            case CircuitStatus.Open when from == CircuitStatus.HalfOpen:
                 ResubscriptionMetrics.IncCircuitBreakerOpen();
                 _log.Warning("Global circuit breaker re-opened after failed half-open test");
-            }
-            else if (_consecutiveFailures >= _options.CircuitBreakerThreshold)
-            {
-                _circuitState = CircuitState.Open;
-                _circuitOpenedAt = DateTimeOffset.UtcNow;
+                break;
+
+            case CircuitStatus.Open:
                 ResubscriptionMetrics.IncCircuitBreakerOpen();
                 _log.Error(
                     "Global circuit breaker OPENED after {Failures} consecutive failures. " +
                     "Breaking for {Duration}s",
-                    _consecutiveFailures,
+                    _options.CircuitBreakerThreshold,
                     _options.CircuitBreakerDuration.TotalSeconds);
-            }
+                break;
+
+            case CircuitStatus.HalfOpen:
+                ResubscriptionMetrics.IncCircuitBreakerHalfOpen();
+                _log.Information("Global circuit breaker transitioning to HALF-OPEN");
+                break;
+
+            case CircuitStatus.Closed:
+                ResubscriptionMetrics.IncCircuitBreakerClose();
+                break;
         }
     }
+
+    private static CircuitState ToCircuitState(CircuitStatus status) => status switch
+    {
+        CircuitStatus.Open => CircuitState.Open,
+        CircuitStatus.HalfOpen => CircuitState.HalfOpen,
+        _ => CircuitState.Closed,
+    };
 
     private void UpdateMetricsGauges()
     {
@@ -328,7 +312,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
                 await Task.Delay(TimeSpan.FromMinutes(5), _cts.Token);
 
                 // Clean up stale symbol states (no activity for 1 hour)
-                var staleThreshold = DateTimeOffset.UtcNow.AddHours(-1);
+                var staleThreshold = _clock.GetUtcNow().AddHours(-1);
                 var staleSymbols = _symbolStates
                     .Where(kvp => kvp.Value.LastActivityTime < staleThreshold)
                     .Select(kvp => kvp.Key)
@@ -368,26 +352,30 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
     }
 
     /// <summary>
-    /// Per-symbol resubscription state tracking.
+    /// Per-symbol resubscription state: rate limiting (cooldown / minimum interval) plus a
+    /// per-symbol <see cref="CircuitBreaker"/>.
     /// </summary>
-    private sealed class SymbolResubscribeState
+    private sealed class SymbolResubscribeState(CircuitBreaker breaker, TimeProvider clock)
     {
         private readonly object _lock = new();
         private DateTimeOffset _lastAttemptTime;
         private DateTimeOffset _lastSuccessTime;
-        private int _consecutiveFailures;
-        private CircuitState _circuitState = CircuitState.Closed;
-        private DateTimeOffset _circuitOpenedAt;
 
-        public DateTimeOffset LastActivityTime { get; private set; } = DateTimeOffset.UtcNow;
-        public CircuitState CircuitState { get { lock (_lock) return _circuitState; } }
+        public DateTimeOffset LastActivityTime { get; private set; } = clock.GetUtcNow();
+
+        public CircuitState CircuitState => breaker.Status switch
+        {
+            CircuitStatus.Open => CircuitState.Open,
+            CircuitStatus.HalfOpen => CircuitState.HalfOpen,
+            _ => CircuitState.Closed,
+        };
 
         public bool IsInCooldown(TimeSpan cooldown)
         {
             lock (_lock)
             {
                 return _lastSuccessTime != default &&
-                       DateTimeOffset.UtcNow - _lastSuccessTime < cooldown;
+                       clock.GetUtcNow() - _lastSuccessTime < cooldown;
             }
         }
 
@@ -395,7 +383,7 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         {
             lock (_lock)
             {
-                var now = DateTimeOffset.UtcNow;
+                var now = clock.GetUtcNow();
 
                 // Check minimum interval between attempts
                 if (_lastAttemptTime != default && now - _lastAttemptTime < minInterval)
@@ -409,33 +397,13 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
             }
         }
 
-        public bool CanProceedCircuit(TimeSpan breakDuration)
-        {
-            lock (_lock)
-            {
-                if (_circuitState == CircuitState.Closed)
-                    return true;
-
-                if (_circuitState == CircuitState.Open)
-                {
-                    if (DateTimeOffset.UtcNow - _circuitOpenedAt >= breakDuration)
-                    {
-                        _circuitState = CircuitState.HalfOpen;
-                        return true;
-                    }
-                    return false;
-                }
-
-                // Half-open: allow test
-                return true;
-            }
-        }
+        public bool CanProceedCircuit() => breaker.TryAcquire();
 
         public void RecordAttempt()
         {
             lock (_lock)
             {
-                _lastAttemptTime = DateTimeOffset.UtcNow;
+                _lastAttemptTime = clock.GetUtcNow();
                 LastActivityTime = _lastAttemptTime;
             }
         }
@@ -444,41 +412,24 @@ public sealed class AutoResubscribePolicy : IAsyncDisposable
         {
             lock (_lock)
             {
-                _lastSuccessTime = DateTimeOffset.UtcNow;
-                _consecutiveFailures = 0;
-                _circuitState = CircuitState.Closed;
+                _lastSuccessTime = clock.GetUtcNow();
                 LastActivityTime = _lastSuccessTime;
             }
+
+            breaker.RecordSuccess();
         }
 
-        public void RecordFailure(int threshold)
+        public void RecordFailure()
         {
             lock (_lock)
             {
-                _consecutiveFailures++;
-                LastActivityTime = DateTimeOffset.UtcNow;
-
-                if (_circuitState == CircuitState.HalfOpen)
-                {
-                    _circuitState = CircuitState.Open;
-                    _circuitOpenedAt = DateTimeOffset.UtcNow;
-                }
-                else if (_consecutiveFailures >= threshold)
-                {
-                    _circuitState = CircuitState.Open;
-                    _circuitOpenedAt = DateTimeOffset.UtcNow;
-                }
+                LastActivityTime = clock.GetUtcNow();
             }
+
+            breaker.RecordFailure();
         }
 
-        public void ResetCircuit()
-        {
-            lock (_lock)
-            {
-                _circuitState = CircuitState.Closed;
-                _consecutiveFailures = 0;
-            }
-        }
+        public void ResetCircuit() => breaker.Reset();
     }
 }
 
