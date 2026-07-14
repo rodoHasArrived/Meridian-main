@@ -21,19 +21,31 @@ public interface ICanonicalStatementStore
 /// </summary>
 internal static class ReconciliationRecordFileName
 {
+    // Longer sanitized names fall back to a hash so the result stays within
+    // path-component limits on every supported file system.
+    private const int MaxNameLength = 128;
+
     private static readonly char[] InvalidChars =
         [.. Path.GetInvalidFileNameChars(), '/', '\\'];
 
-    public static string For(string recordId)
+    public static string For(string? recordId)
     {
+        if (string.IsNullOrEmpty(recordId))
+        {
+            return Hash(string.Empty);
+        }
+
         var name = string.Join('_', recordId.Split(InvalidChars))
             .Replace("..", "_", StringComparison.Ordinal)
             .Trim('.', ' ');
 
-        return string.IsNullOrWhiteSpace(name)
-            ? Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(recordId))).ToLowerInvariant()
+        return string.IsNullOrWhiteSpace(name) || name.Length > MaxNameLength
+            ? Hash(recordId)
             : name;
     }
+
+    private static string Hash(string value)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 }
 
 public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalStatementStore
