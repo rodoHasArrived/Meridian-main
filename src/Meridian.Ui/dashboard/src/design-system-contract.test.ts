@@ -30,6 +30,10 @@ function readAccountingViewModel() {
   return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
 }
 
+function readAccountingSecurityMasterPanels() {
+  return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.security-master-panels.tsx"), "utf8");
+}
+
 function readDesignSystemPrimitives() {
   return readFileSync(resolve(process.cwd(), "src/design-system/primitives.tsx"), "utf8");
 }
@@ -423,12 +427,14 @@ describe("dashboard design-system contract", () => {
 
   it("keeps Security Master schedules on shared workbench primitives with view-model copy", () => {
     const screen = readAccountingScreen();
+    const securityMasterPanels = readAccountingSecurityMasterPanels();
     const viewModel = readAccountingViewModel();
 
-    expect(screen).toContain("function SecuritySchedulesPanel");
-    expect(screen).toContain("<DenseDataTable");
-    expect(screen).toContain("<ToolbarStrip");
-    expect(screen).toContain("<EntitySummary");
+    expect(screen).toContain('from "@/screens/accounting-screen.security-master-panels"');
+    expect(securityMasterPanels).toContain("export function SecuritySchedulesPanel");
+    expect(securityMasterPanels).toContain("<DenseDataTable");
+    expect(securityMasterPanels).toContain("<ToolbarStrip");
+    expect(securityMasterPanels).toContain("<EntitySummary");
     expect(viewModel).toContain("buildSecuritySchedulesViewState");
     expect(viewModel).toContain("SecuritySchedulesViewState");
     expect(viewModel).toContain("Cash-flow and factor schedules");
@@ -437,7 +443,10 @@ describe("dashboard design-system contract", () => {
   });
 
   it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {
-    const badge = readDesignSystemPrimitives();
+    // The badge variant vocabulary now lives in the design-system primitive adapter that
+    // `@/components/ui/badge` re-exports, so assert the semantic tones at their source.
+    const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/badge.tsx");
+    const sharedToneMappings = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/shared-tone-mappings.ts");
     const evidenceScreen = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx");
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
     const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");
@@ -451,10 +460,14 @@ describe("dashboard design-system contract", () => {
     }
 
     expect(evidenceViewModel).toContain('export type EvidenceStatusTone = "success" | "warning" | "danger" | "muted";');
-    expect(evidenceScreen).toContain('Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline">');
-    expect(evidenceScreen).toContain('muted: "outline"');
-    expect(evidenceScreen).toContain("badgeVariant[panel.statusTone]");
-    expect(evidenceScreen).toContain("badgeVariant[row.tone]");
+    expect(sharedToneMappings).toContain("export function readinessToneToBadgeVariant");
+    expect(sharedToneMappings).toContain("case \"success\":");
+    expect(sharedToneMappings).toContain("return \"outline\"");
+    expect(evidenceScreen).toContain('import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings"');
+    expect(evidenceScreen).toContain("readinessToneToBadgeVariant(panel.statusTone)");
+    expect(evidenceScreen).toContain("readinessToneToBadgeVariant(row.tone)");
+    expect(evidenceScreen).toContain("evidenceStatusToneToTextClass(tone)");
+    expect(evidenceScreen).toContain("actionBadgeVariant[action.tone]");
 
     for (const state of ["Success", "Warning", "Danger"]) {
       expect(wpfThemeTokens).toContain(`${state}ColorBrush`);
