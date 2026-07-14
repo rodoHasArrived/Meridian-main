@@ -31,6 +31,8 @@ public sealed class WaterfallMarkPriceSource : IMarkPriceSource
         ArgumentNullException.ThrowIfNull(tiers);
         if (tiers.Count == 0)
             throw new ArgumentException("At least one price-source tier is required.", nameof(tiers));
+        if (tiers.Any(static tier => tier is null || tier.Source is null))
+            throw new ArgumentException("Every price-source tier and its source must be non-null.", nameof(tiers));
 
         _tiers = tiers;
         _log = log ?? LoggingSetup.ForContext<WaterfallMarkPriceSource>();

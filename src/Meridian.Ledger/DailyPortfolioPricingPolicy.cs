@@ -47,4 +47,15 @@ public sealed record DailyPortfolioPricingPolicy
     public string ApprovedBy { get; }
 
     public DateTimeOffset ApprovedAtUtc { get; }
+
+    /// <summary>
+    /// Default ASC 820 fair-value level applied to marks that do not classify themselves.
+    /// Defaults to <see cref="FairValueLevel.Unclassified"/> for backward compatibility.
+    /// </summary>
+    public FairValueLevel DefaultFairValueLevel { get; }
+
+    /// <summary>
+    /// Freshness policy applied to daily marks. Defaults to <see cref="StalePricePolicy.Disabled"/>.
+    /// </summary>
+    public StalePricePolicy StalePricePolicy { get; }
 }

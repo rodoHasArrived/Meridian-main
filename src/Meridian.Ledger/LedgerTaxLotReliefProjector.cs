@@ -205,9 +205,14 @@ public static class LedgerTaxLotReliefProjector
 
         for (var index = 0; index < byLot.Count; index++)
         {
+            // Cap each lot at the remaining unallocated loss so accumulated rounding on earlier
+            // lots can never push a later lot's basis increase negative; the final lot absorbs
+            // whatever residual is left. Basis increases are non-negative by construction and sum
+            // exactly to the disallowed loss.
+            var remaining = disallowedLoss - allocated;
             var amount = index == byLot.Count - 1
-                ? disallowedLoss - allocated
-                : RoundCurrency(disallowedLoss * (byLot[index].Quantity / totalQuantity));
+                ? remaining
+                : Math.Min(remaining, RoundCurrency(disallowedLoss * (byLot[index].Quantity / totalQuantity)));
             allocated += amount;
             if (amount != 0m)
                 increases.Add(new WashSaleBasisIncrease(byLot[index].LotId, amount, holdingPeriodCarryDate));
@@ -256,6 +261,8 @@ public static class LedgerTaxLotReliefProjector
             lines.Add((input.Account, 0m, costBasis - disallowedLoss));
         }
 
-        return lines;
+        // Drop any degenerate zero/zero lines (e.g. a fully-deferred wash sale at a zero sale
+        // price) so the projection is always materializable into valid ledger entries.
+        return lines.Where(static line => line.debit != 0m || line.credit != 0m).ToList();
     }
 }

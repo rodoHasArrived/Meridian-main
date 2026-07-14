@@ -126,6 +126,13 @@ public sealed class DailyValuationPolicyTests
         act.Should().Throw<ArgumentException>();
     }
 
+    [Fact]
+    public void Waterfall_TierWithNullSource_Throws()
+    {
+        var act = () => new WaterfallMarkPriceSource([new PriceSourceTier(null!, FairValueLevel.Level1, "bad")]);
+        act.Should().Throw<ArgumentException>();
+    }
+
     // -------------------------------------------------------------------------
     // Stale-price handling in the valuation run
     // -------------------------------------------------------------------------

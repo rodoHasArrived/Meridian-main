@@ -233,6 +233,28 @@ public sealed class LedgerTaxLotReliefWashSaleTests
         projection.WashSale.BasisIncreases.Sum(increase => increase.Amount).Should().Be(1_200m);
     }
 
+    [Fact]
+    public void WashSale_UnevenReplacementSplit_KeepsBasisIncreasesNonNegativeAndExact()
+    {
+        // Three replacement lots with quantities that force rounding when distributing the
+        // disallowed loss: every basis increase must stay non-negative and the parts must sum
+        // exactly to the disallowed amount.
+        var input = LossSaleInput(
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacements:
+            [
+                new WashSaleReplacementAcquisition("lot-rep-1", new DateOnly(2026, 3, 5), 33m, SecurityId),
+                new WashSaleReplacementAcquisition("lot-rep-2", new DateOnly(2026, 3, 6), 33m, SecurityId),
+                new WashSaleReplacementAcquisition("lot-rep-3", new DateOnly(2026, 3, 7), 34m, SecurityId),
+            ]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        var washSale = projection.WashSale!;
+        washSale.BasisIncreases.Should().OnlyContain(increase => increase.Amount >= 0m);
+        washSale.BasisIncreases.Sum(increase => increase.Amount).Should().Be(washSale.DisallowedLoss);
+    }
+
     // -------------------------------------------------------------------------
     // Fixtures
     // -------------------------------------------------------------------------

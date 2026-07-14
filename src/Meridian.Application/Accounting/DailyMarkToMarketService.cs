@@ -63,9 +63,11 @@ public sealed record DailyMarkToMarketRun(
     public bool HasDraft => Approval is not null;
 
     /// <summary>
-    /// Symbols whose mark price was older than the valuation policy allowed. Symbols blocked by a
-    /// <see cref="StalePriceHandling.Block"/> policy are excluded from the draft and listed here;
-    /// flagged/allowed stale symbols are included in the draft but still reported for review.
+    /// Stale-priced symbols surfaced for review: those blocked by a
+    /// <see cref="StalePriceHandling.Block"/> policy (excluded from the draft) and those retained
+    /// under a <see cref="StalePriceHandling.Flag"/> policy (included in the draft but flagged).
+    /// Symbols stale under an <see cref="StalePriceHandling.Allow"/> policy are tolerated silently
+    /// and are not listed here.
     /// </summary>
     public IReadOnlyList<string> StalePricedSymbols { get; init; } = [];
 }

@@ -243,11 +243,11 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         HashSet<Guid> existingIds,
         string ticker)
     {
-        var journalsById = ledger.Journal
-            .GroupBy(static journal => journal.JournalEntryId)
-            .ToDictionary(static group => group.Key, static group => group.First());
         var reversed = 0;
 
+        // Only a handful of journals are ever looked up here (the superseded chain's primary plus
+        // derived withholding/receipt postings), so a direct scan avoids materializing a dictionary
+        // of the whole ledger on every superseded action.
         foreach (var prior in state.Timeline)
         {
             if (prior.CorpActId == state.Effective.CorpActId || !existingIds.Contains(prior.CorpActId))
@@ -255,7 +255,8 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 
             foreach (var originalId in EnumeratePostedJournalIds(prior.CorpActId))
             {
-                if (!journalsById.TryGetValue(originalId, out var original))
+                var original = ledger.Journal.FirstOrDefault(journal => journal.JournalEntryId == originalId);
+                if (original is null)
                     continue;
 
                 var reversalId = DeriveJournalId(originalId, "reversal");
