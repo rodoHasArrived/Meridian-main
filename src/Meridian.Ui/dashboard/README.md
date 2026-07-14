@@ -11,6 +11,11 @@ last_reviewed: 2026-07-10
 
 # src/Meridian.Ui/dashboard
 
+First launch is browser-primary. `/setup` renders the first-run concierge while the
+shared first-run API remains the source of truth for starter kits, sample safety labels,
+recommendations, and completed activation outcomes. Sample mode stays offline-capable
+and visibly labelled `SAMPLE · PAPER` throughout the shell.
+
 ## Purpose
 
 Browser workstation dashboard is the active browser operator workstation.
