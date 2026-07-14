@@ -66,22 +66,14 @@ public static class LedgerJournalReversal
         if (reason is not null)
             tags[ReversalReasonTag] = reason;
 
-        // Identifying provenance is carried forward, but the original idempotency key is
-        // intentionally dropped so the reversal is a distinct, independently-guarded posting.
-        return new JournalEntryMetadata(
-            ActivityType: source.ActivityType,
-            Symbol: source.Symbol,
-            SecurityId: source.SecurityId,
-            OrderId: source.OrderId,
-            FillId: source.FillId,
-            LedgerBook: source.LedgerBook,
-            LedgerView: source.LedgerView,
-            FinancialAccountId: source.FinancialAccountId,
-            EffectiveDate: source.EffectiveDate,
-            FundEventId: source.FundEventId,
-            FundEventType: source.FundEventType,
-            CapitalAccountId: source.CapitalAccountId,
-            InvestorId: source.InvestorId,
-            Tags: tags);
+        // Carry the full source context — including retained evidence references and payment /
+        // settlement / fund-event lineage — onto the reversal so the original -> reversal chain
+        // stays auditable. Only the idempotency key is dropped (and Tags augmented) so the reversal
+        // is a distinct, independently-guarded posting.
+        return source with
+        {
+            IdempotencyKey = null,
+            Tags = tags,
+        };
     }
 }

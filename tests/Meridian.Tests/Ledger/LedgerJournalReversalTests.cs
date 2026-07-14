@@ -23,7 +23,11 @@ public sealed class LedgerJournalReversalTests
             Symbol: "ABC",
             SecurityId: SecurityId,
             LedgerView: LedgerViewKind.SecurityMaster,
-            IdempotencyKey: "dividend|ABC|2026-03-01");
+            IdempotencyKey: "dividend|ABC|2026-03-01",
+            EvidenceReferences:
+            [
+                new JournalEvidenceReference("ev-1", "security-master://ca/1", "corporate-action", "SecurityMaster", Ts, "system"),
+            ]);
 
         return new JournalEntry(
             id,
@@ -65,6 +69,18 @@ public sealed class LedgerJournalReversalTests
         reversal.Metadata.Tags[LedgerJournalReversal.ReversalReasonTag].Should().Be("cancelled");
         reversal.Metadata.SecurityId.Should().Be(SecurityId);
         reversal.Metadata.IdempotencyKey.Should().BeNull("a reversal is an independently-guarded posting");
+    }
+
+    [Fact]
+    public void Reverse_PreservesSourceEvidenceReferences()
+    {
+        // A reversal is itself an accounting entry; the retained source evidence must carry forward
+        // so the original -> reversal chain stays auditable.
+        var reversal = LedgerJournalReversal.Reverse(OriginalDividend(Guid.NewGuid()), Guid.NewGuid(), Ts, "cancelled");
+
+        reversal.Metadata.EvidenceReferences.Should().ContainSingle();
+        reversal.Metadata.EvidenceReferences[0].EvidenceId.Should().Be("ev-1");
+        reversal.Metadata.IdempotencyKey.Should().BeNull();
     }
 
     [Fact]
