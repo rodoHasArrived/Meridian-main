@@ -16,15 +16,19 @@ public sealed class InitialAccountBootstrapService(IUserAccountStore accountStor
 
     public async Task<string?> CreateAsync(IPAddress? remoteAddress, string? suppliedToken, string username, string password, CancellationToken ct)
     {
-        if (remoteAddress is not null && !IPAddress.IsLoopback(remoteAddress)) return null;
-        if (string.IsNullOrWhiteSpace(username) || username.Length > 80 || password.Length < 12) return null;
+        if (remoteAddress is not null && !IPAddress.IsLoopback(remoteAddress))
+            return null;
+        if (string.IsNullOrWhiteSpace(username) || username.Length > 80 || password.Length < 12)
+            return null;
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (accountStore.HasAccounts) return null;
+            if (accountStore.HasAccounts)
+                return null;
             var expected = Environment.GetEnvironmentVariable(TokenEnvironmentVariable);
-            if (!TokenEquals(expected, suppliedToken)) return null;
+            if (!TokenEquals(expected, suppliedToken))
+                return null;
 
             await accountStore.UpsertAsync(
                 new UserAccountUpsertRequestDto(
@@ -40,7 +44,8 @@ public sealed class InitialAccountBootstrapService(IUserAccountStore accountStor
 
     private static bool TokenEquals(string? expected, string? supplied)
     {
-        if (string.IsNullOrWhiteSpace(expected) || string.IsNullOrWhiteSpace(supplied)) return false;
+        if (string.IsNullOrWhiteSpace(expected) || string.IsNullOrWhiteSpace(supplied))
+            return false;
         var left = Encoding.UTF8.GetBytes(expected);
         var right = Encoding.UTF8.GetBytes(supplied);
         return left.Length == right.Length && CryptographicOperations.FixedTimeEquals(left, right);

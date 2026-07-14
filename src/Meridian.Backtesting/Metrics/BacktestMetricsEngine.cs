@@ -264,11 +264,16 @@ internal static class BacktestMetricsEngine
     {
         // Attribution realized P&L honors each account's lot-selection method so it ties out
         // with the realized P&L the portfolio books via SimulatedPortfolio.RealiseLots.
-        var lotSelectionByAccount = request.ResolveAccounts()
-            .ToDictionary(
-                static account => account.AccountId,
-                static account => account.Rules?.LotSelection ?? LotSelectionMethod.Fifo,
-                StringComparer.OrdinalIgnoreCase);
+        // Built tolerantly: metrics must not throw on a malformed account list (blank or
+        // duplicated ids) that the engine itself would reject elsewhere.
+        var lotSelectionByAccount = new Dictionary<string, LotSelectionMethod>(StringComparer.OrdinalIgnoreCase);
+        foreach (var account in request.ResolveAccounts())
+        {
+            if (account is null || string.IsNullOrWhiteSpace(account.AccountId))
+                continue;
+
+            lotSelectionByAccount.TryAdd(account.AccountId, account.Rules?.LotSelection ?? LotSelectionMethod.Fifo);
+        }
 
         var result = new Dictionary<string, SymbolAttribution>(StringComparer.OrdinalIgnoreCase);
         var groupedFills = fills.GroupBy(f => f.Symbol, StringComparer.OrdinalIgnoreCase);

@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import {
-  DesignSystemBadge,
-  type DesignSystemBadgeProps
-} from "@/design-system/primitives";
-
-export type BadgeProps = DesignSystemBadgeProps;
-=======
 import { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/primitives";
 
 /**
@@ -22,5 +14,4 @@ import { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/
  */
 export type BadgeProps = DesignSystemBadgeProps;
 
->>>>>>> bc00bfd6a5c542ab8d7e5f96a4f054e5239c4708
 export const Badge = DesignSystemBadge;
