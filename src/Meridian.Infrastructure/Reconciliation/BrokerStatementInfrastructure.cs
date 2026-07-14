@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Domain.Reconciliation;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Infrastructure.Reconciliation;
 
@@ -34,9 +35,10 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
 
     public async Task SaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default)
     {
-        Directory.CreateDirectory(_folder);
         var payload = JsonSerializer.Serialize(new { import, rows });
-        await File.WriteAllTextAsync(Path.Combine(_folder, $"{import.ImportId}.json"), payload, ct).ConfigureAwait(false);
+        // Atomic write: a crash mid-import must not leave a truncated statement file that the
+        // duplicate-key scan would then fail to parse.
+        await AtomicFileWriter.WriteAsync(Path.Combine(_folder, $"{import.ImportId}.json"), payload, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default)
@@ -174,11 +176,10 @@ public sealed class JsonReconciliationBreakStore(string dataRoot) : IReconciliat
 
     public async Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default)
     {
-        Directory.CreateDirectory(_folder);
         foreach (var record in records)
         {
             var path = Path.Combine(_folder, $"{record.BreakId}.json");
-            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(record), ct).ConfigureAwait(false);
+            await AtomicFileWriter.WriteAsync(path, JsonSerializer.Serialize(record), ct).ConfigureAwait(false);
         }
     }
 
