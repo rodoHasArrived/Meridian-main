@@ -234,6 +234,29 @@ public sealed class LedgerTaxLotReliefWashSaleTests
     }
 
     [Fact]
+    public void WashSale_ReplacementLotsBeyondSoldQuantity_LoadLossOnlyOnMatchedShares()
+    {
+        // Sell 100 shares; two 100-share replacement lots. A wash sale matches share-for-share, so
+        // only the earliest 100 replacement shares carry the fully-disallowed loss — the later lot
+        // must not have its basis touched.
+        var input = LossSaleInput(
+            washSalePolicy: WashSalePolicy.UnitedStates,
+            replacements:
+            [
+                new WashSaleReplacementAcquisition("lot-early", new DateOnly(2026, 3, 4), 100m, SecurityId),
+                new WashSaleReplacementAcquisition("lot-late", new DateOnly(2026, 3, 6), 100m, SecurityId),
+            ]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        var washSale = projection.WashSale!;
+        washSale.DisallowedLoss.Should().Be(2_000m); // replacement >= sold -> whole loss disallowed
+        washSale.BasisIncreases.Should().ContainSingle();
+        washSale.BasisIncreases[0].ReplacementLotId.Should().Be("lot-early");
+        washSale.BasisIncreases[0].Amount.Should().Be(2_000m);
+    }
+
+    [Fact]
     public void WashSale_UnevenReplacementSplit_KeepsBasisIncreasesNonNegativeAndExact()
     {
         // Three replacement lots with quantities that force rounding when distributing the

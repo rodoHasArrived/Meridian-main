@@ -159,7 +159,7 @@ public static class LedgerTaxLotReliefProjector
         // replacement lot. Min over DayNumber keeps the result an unambiguous DateOnly.
         var holdingPeriodCarryDate = DateOnly.FromDayNumber(
             selections.Min(static selection => selection.Lot.AcquiredDate.DayNumber));
-        var basisIncreases = DistributeBasisIncreases(matching, disallowedLoss, holdingPeriodCarryDate);
+        var basisIncreases = DistributeBasisIncreases(matching, matchedQuantity, disallowedLoss, holdingPeriodCarryDate);
 
         return new WashSaleOutcome(disallowedLoss, allowedLoss, matchedQuantity, basisIncreases);
     }
@@ -185,37 +185,55 @@ public static class LedgerTaxLotReliefProjector
     }
 
     /// <summary>
-    /// Distributes the disallowed loss across replacement lots in proportion to their quantities,
-    /// assigning any rounding residual to the final lot so the increases sum exactly to the
-    /// disallowed amount.
+    /// Distributes the disallowed loss across the replacement shares that actually absorb it. Only
+    /// <paramref name="matchedQuantity"/> replacement shares carry the deferred loss (a wash sale
+    /// matches share-for-share), so replacement lots are consumed in acquisition order until that
+    /// quantity is filled — any lots beyond it are untouched. Within the matched shares the loss is
+    /// weighted by each lot's consumed quantity, with the rounding residual on the final matched lot
+    /// and every increase capped at the remaining balance so none can go negative.
     /// </summary>
     private static IReadOnlyList<WashSaleBasisIncrease> DistributeBasisIncreases(
         IReadOnlyList<WashSaleReplacementAcquisition> matching,
+        decimal matchedQuantity,
         decimal disallowedLoss,
         DateOnly holdingPeriodCarryDate)
     {
-        var byLot = matching
-            .GroupBy(static replacement => replacement.LotId, StringComparer.OrdinalIgnoreCase)
-            .Select(group => (LotId: group.Key, Quantity: group.Sum(static replacement => replacement.Quantity)))
-            .ToList();
+        // Consume replacement shares oldest-first up to the matched quantity, aggregating per lot.
+        var consumedByLot = new List<(string LotId, decimal Quantity)>();
+        var remainingToMatch = matchedQuantity;
+        foreach (var replacement in matching
+            .OrderBy(static replacement => replacement.AcquiredDate)
+            .ThenBy(static replacement => replacement.LotId, StringComparer.OrdinalIgnoreCase))
+        {
+            if (remainingToMatch <= 0m)
+                break;
 
-        var totalQuantity = byLot.Sum(static lot => lot.Quantity);
-        var increases = new List<WashSaleBasisIncrease>(byLot.Count);
+            var consumed = Math.Min(remainingToMatch, replacement.Quantity);
+            remainingToMatch -= consumed;
+
+            var existing = consumedByLot.FindIndex(lot => string.Equals(lot.LotId, replacement.LotId, StringComparison.OrdinalIgnoreCase));
+            if (existing >= 0)
+                consumedByLot[existing] = (replacement.LotId, consumedByLot[existing].Quantity + consumed);
+            else
+                consumedByLot.Add((replacement.LotId, consumed));
+        }
+
+        var totalConsumed = consumedByLot.Sum(static lot => lot.Quantity);
+        var increases = new List<WashSaleBasisIncrease>(consumedByLot.Count);
         var allocated = 0m;
 
-        for (var index = 0; index < byLot.Count; index++)
+        for (var index = 0; index < consumedByLot.Count; index++)
         {
             // Cap each lot at the remaining unallocated loss so accumulated rounding on earlier
             // lots can never push a later lot's basis increase negative; the final lot absorbs
-            // whatever residual is left. Basis increases are non-negative by construction and sum
-            // exactly to the disallowed loss.
+            // whatever residual is left. Basis increases are non-negative and sum exactly.
             var remaining = disallowedLoss - allocated;
-            var amount = index == byLot.Count - 1
+            var amount = index == consumedByLot.Count - 1
                 ? remaining
-                : Math.Min(remaining, RoundCurrency(disallowedLoss * (byLot[index].Quantity / totalQuantity)));
+                : Math.Min(remaining, RoundCurrency(disallowedLoss * (consumedByLot[index].Quantity / totalConsumed)));
             allocated += amount;
             if (amount != 0m)
-                increases.Add(new WashSaleBasisIncrease(byLot[index].LotId, amount, holdingPeriodCarryDate));
+                increases.Add(new WashSaleBasisIncrease(consumedByLot[index].LotId, amount, holdingPeriodCarryDate));
         }
 
         return increases;
