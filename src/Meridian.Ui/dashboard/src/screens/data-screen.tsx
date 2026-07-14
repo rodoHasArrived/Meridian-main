@@ -50,12 +50,9 @@ import {
 } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
 import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
-<<<<<<< Updated upstream
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
-=======
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
->>>>>>> Stashed changes
 import { resultToneClass } from "@/screens/data-screen.tone-styles";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
 import {
