@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Identity.Auth;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Migrations;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 
@@ -171,51 +172,26 @@ public sealed class PostgresScopedAccessAssignmentStore : IScopedAccessAssignmen
         _options = options ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public async Task EnsureMigratedAsync(CancellationToken ct = default)
+    public Task EnsureMigratedAsync(CancellationToken ct = default)
     {
-        await using var connection = await OpenAsync(ct).ConfigureAwait(false);
-        await using var schema = connection.CreateCommand();
-        schema.CommandText = $"CREATE SCHEMA IF NOT EXISTS {QuoteIdentifier(_options.Schema)}";
-        await schema.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        // The DDL lives in Migrations/001_user_access_assignment.sql (copied to
+        // IdentityAccess/Migrations in the output) and runs through the shared runner:
+        // one transaction, advisory-lock serialization, and a checksum ledger. Reapply
+        // drift policy preserves the historical re-run-every-startup semantics.
+        var runner = new PostgresMigrationRunner(new PostgresMigrationRunnerOptions
+        {
+            ConnectionString = _options.ConnectionString,
+            Schema = _options.Schema,
+            ScriptsSubdirectory = Path.Combine("IdentityAccess", "Migrations"),
+            DisplayName = "Identity scoped access",
+            LockScopeName = "identity_scoped_access",
+            ConnectionStringSettingName = $"{nameof(ScopedAccessStoreOptions)}.{nameof(_options.ConnectionString)}",
+            LedgerTableName = "identity_access_schema_migrations",
+            QuoteSchemaInScripts = true,
+            DriftPolicy = MigrationDriftPolicy.Reapply,
+        });
 
-        await using var table = connection.CreateCommand();
-        table.CommandText = $"""
-            CREATE TABLE IF NOT EXISTS {Q("user_access_assignment")} (
-                assignment_id uuid PRIMARY KEY,
-                principal_id text NOT NULL,
-                principal_kind text NOT NULL,
-                scope_kind text NOT NULL,
-                scope_id uuid NULL,
-                role text NOT NULL,
-                role_profile_name text NULL,
-                permission_names jsonb NOT NULL,
-                permission_mask bigint NOT NULL,
-                effective_from timestamptz NOT NULL,
-                effective_to timestamptz NULL,
-                granted_by text NOT NULL,
-                rationale text NOT NULL,
-                correlation_id text NOT NULL,
-                version bigint NOT NULL,
-                created_at_utc timestamptz NOT NULL,
-                updated_at_utc timestamptz NOT NULL,
-                revoked_by text NULL,
-                revoked_at_utc timestamptz NULL,
-                revocation_reason text NULL,
-                last_audit_id text NULL,
-                approval_limit_amount numeric NULL,
-                approval_limit_currency text NULL,
-                segregation_of_duties_rule text NULL
-            );
-            ALTER TABLE {Q("user_access_assignment")}
-                ADD COLUMN IF NOT EXISTS approval_limit_amount numeric NULL;
-            ALTER TABLE {Q("user_access_assignment")}
-                ADD COLUMN IF NOT EXISTS approval_limit_currency text NULL;
-            ALTER TABLE {Q("user_access_assignment")}
-                ADD COLUMN IF NOT EXISTS segregation_of_duties_rule text NULL;
-            CREATE INDEX IF NOT EXISTS ix_user_access_assignment_principal
-                ON {Q("user_access_assignment")} (principal_id, scope_kind, scope_id);
-            """;
-        await table.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        return runner.EnsureMigratedAsync(ct);
     }
 
     public async Task<IReadOnlyList<UserAccessAssignmentDto>> ListAsync(CancellationToken ct = default)

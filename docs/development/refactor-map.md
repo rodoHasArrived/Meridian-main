@@ -277,7 +277,82 @@ at every migrated site except where a divergence was itself the defect (noted pe
 - **Key files:**
   - `src/Meridian.Ledger/LotConsumption.cs`
   - `tests/Meridian.Tests/Ledger/LotConsumptionTests.cs`
-- **Follow-up (known divergences deliberately NOT changed in this pass):** oversell behavior still differs by engine (ledger throws, backtest flips, paper clamps); only the ledger projector rounds realized amounts to 2 dp; `PaperPosition.UnrealisedPnl` returns 0 for shorts; `BacktestMetricsEngine` attribution remains FIFO-only for non-FIFO accounts. Each is a product decision to reconcile explicitly, not silently.
+- **Follow-up:** the known divergences flagged here were resolved or ratified in Phase 9 — see
+  Step 9.5 for the current lot-accounting policy statement.
+
+---
+
+## Phase 9 — Shared Infrastructure Follow-ups ✅ COMPLETE
+
+Second consolidation pass closing out the Phase 8 follow-up queue.
+
+### Step 9.1 — Identity inline-DDL migrator onto the shared runner ✅
+- **What was done:** the inline `CREATE TABLE`/`ALTER TABLE … IF NOT EXISTS` statements in
+  `PostgresScopedAccessAssignmentStore.EnsureMigratedAsync` moved to
+  `src/Meridian.Identity/Migrations/001_user_access_assignment.sql` (copied to
+  `IdentityAccess/Migrations` in build output) and run through `PostgresMigrationRunner` with a
+  feature-prefixed checksum ledger (`identity_access_schema_migrations`), quoted-schema rendering,
+  and the `Reapply` drift policy that preserves the historical re-run-every-startup workflow.
+- **Key files:** `src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs`,
+  `src/Meridian.Identity/Migrations/001_user_access_assignment.sql`.
+
+### Step 9.2 — Retired the dead JSON-document migration registries ✅
+- **What was done:** deleted `SchemaUpcasterRegistry` (never instantiated; no
+  `ISchemaUpcaster<MarketEvent>` implementation exists) and `SchemaVersionManager` (its semver/BFS
+  migration engine and built-in Trade/Quote schemas had zero reachable invocations).
+  `SchemaValidationService` keeps its live behavior (EventSchemaValidator delegation and the JSONL
+  startup scan) and drops the inert version-manager plumbing. The platform's single
+  schema-evolution seam is the `ISchemaUpcaster<T>` contract, whose one live consumer (Security
+  Master asset-terms version promotion) is unchanged.
+- **Key files:** `src/Meridian.Contracts/Schema/ISchemaUpcaster.cs` (kept),
+  `src/Meridian.DataIntegration/Monitoring/SchemaValidationService.cs`.
+
+### Step 9.3 — One circuit-breaker state machine ✅
+- **What was done:** `CircuitBreaker` in `src/Meridian.Core/Resilience/` implements the
+  consecutive-failure Closed/Open/HalfOpen machine once (injectable `TimeProvider`, optional
+  half-open probe throttle, `StateChanged` transition hook). `CompositeSink`'s per-sink state and
+  `AutoResubscribePolicy`'s global and per-symbol machines delegate to it; observable surfaces
+  (SinkHealth report, `TotalCircuitBreaks`, `ResubscriptionMetrics` transitions, log shapes) are
+  unchanged, and the resubscribe policy gained a clock seam that finally makes it testable.
+  The Polly HTTP/WS pipelines remain the right tool for HTTP-shaped resilience and are untouched.
+- **Key files:** `src/Meridian.Core/Resilience/CircuitBreaker.cs`,
+  `src/Meridian.Storage/Sinks/CompositeSink.cs`,
+  `src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs`,
+  `tests/Meridian.Tests/Core/CircuitBreakerTests.cs`.
+
+### Step 9.4 — Remaining non-atomic JSON writers ✅
+- **What was done:** `WindowStateStore` (WPF window layout) and the per-record
+  `JsonCanonicalStatementStore`/`JsonReconciliationBreakStore` files now persist via
+  `AtomicFileWriter`; `JsonRunbookStore` moved onto `JsonFileSnapshotStore`, gaining the shared
+  gate and temp+rename persistence.
+
+### Step 9.5 — Lot-accounting divergences resolved or ratified ✅
+- **Fixed — backtest metrics attribution:** `BacktestMetricsEngine` realized attribution now
+  honors each account's `LotSelectionMethod`, matches lots per (symbol, account), and keeps
+  separate long/short books mirroring `SimulatedPortfolio.RealiseLots`/`RealiseShortLots`
+  (short-cover P&L was previously ignored entirely). `SpecificId` falls back to FIFO because
+  attribution's synthetic lots cannot share the portfolio's lot ids.
+- **Fixed — paper corporate actions:** `ApplyCorporateActionsAsync` now rescales the open lot
+  book by the same factors applied to the aggregate position, so a post-split sell realizes
+  against split-adjusted lot costs instead of falling into the shortfall fallback.
+- **Ratified policy — oversell/crossing fills:** all engines split crossing fills into a close
+  plus an open on the other side (paper and backtest agree); the ledger relief projector throws
+  on oversell because a book-of-record relief must never invent lots.
+- **Ratified policy — short unrealized P&L:** `(MarketPrice − CostBasis) × Quantity` with signed
+  quantity in both paper and backtest engines; `PortfolioValue` uses signed market value plus
+  short collateral and does not double-count.
+- **Ratified policy — rounding:** GL postings (`LedgerTaxLotReliefProjector`) round to the minor
+  currency unit (2 dp away-from-zero) as the book of record; paper/backtest engines keep full
+  decimal precision as simulation/analytics surfaces. Any reconciliation crossing the two must
+  use a ≥ 1-cent tolerance (the statement reconciliation default `AmountTolerance = 0.01`
+  already does).
+- **Ratified policy — fees:** realized lot P&L excludes commission in the portfolio engines and
+  attribution (commission is a separate cash flow / column); the win-rate round-trip counter
+  deliberately includes proportional commission because it approximates net trade outcomes.
+- **Key files:** `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs`,
+  `src/Meridian.Execution/Services/PaperTradingPortfolio.cs`,
+  `tests/Meridian.Backtesting.Tests/BacktestMetricsEngineTests.cs`,
+  `tests/Meridian.Tests/Execution/PaperTradingPortfolioTests.cs`.
 
 ---
 
