@@ -26,6 +26,10 @@ function readAccountingScreen() {
   return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.tsx"), "utf8");
 }
 
+function readAccountingSecurityMasterPanels() {
+  return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.security-master-panels.tsx"), "utf8");
+}
+
 function readAccountingViewModel() {
   return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
 }
@@ -423,12 +427,14 @@ describe("dashboard design-system contract", () => {
 
   it("keeps Security Master schedules on shared workbench primitives with view-model copy", () => {
     const screen = readAccountingScreen();
+    const securityMasterPanels = readAccountingSecurityMasterPanels();
     const viewModel = readAccountingViewModel();
 
-    expect(screen).toContain("function SecuritySchedulesPanel");
-    expect(screen).toContain("<DenseDataTable");
-    expect(screen).toContain("<ToolbarStrip");
-    expect(screen).toContain("<EntitySummary");
+    expect(screen).toContain('from "@/screens/accounting-screen.security-master-panels"');
+    expect(securityMasterPanels).toContain("export function SecuritySchedulesPanel");
+    expect(securityMasterPanels).toContain("<DenseDataTable");
+    expect(securityMasterPanels).toContain("<ToolbarStrip");
+    expect(securityMasterPanels).toContain("<EntitySummary");
     expect(viewModel).toContain("buildSecuritySchedulesViewState");
     expect(viewModel).toContain("SecuritySchedulesViewState");
     expect(viewModel).toContain("Cash-flow and factor schedules");
@@ -437,7 +443,14 @@ describe("dashboard design-system contract", () => {
   });
 
   it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {
+<<<<<<< HEAD
     const badge = readDesignSystemPrimitives();
+=======
+    // The badge variant vocabulary now lives in the design-system primitive adapter that
+    // `@/components/ui/badge` re-exports, so assert the semantic tones at their source.
+    const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/badge.tsx");
+    const sharedToneMappings = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/shared-tone-mappings.ts");
+>>>>>>> bc00bfd6a5c542ab8d7e5f96a4f054e5239c4708
     const evidenceScreen = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx");
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
     const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");
@@ -451,10 +464,14 @@ describe("dashboard design-system contract", () => {
     }
 
     expect(evidenceViewModel).toContain('export type EvidenceStatusTone = "success" | "warning" | "danger" | "muted";');
-    expect(evidenceScreen).toContain('Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline">');
-    expect(evidenceScreen).toContain('muted: "outline"');
-    expect(evidenceScreen).toContain("badgeVariant[panel.statusTone]");
-    expect(evidenceScreen).toContain("badgeVariant[row.tone]");
+    expect(sharedToneMappings).toContain("export function readinessToneToBadgeVariant");
+    expect(sharedToneMappings).toContain("case \"success\":");
+    expect(sharedToneMappings).toContain("return \"outline\"");
+    expect(evidenceScreen).toContain('import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings"');
+    expect(evidenceScreen).toContain("readinessToneToBadgeVariant(panel.statusTone)");
+    expect(evidenceScreen).toContain("readinessToneToBadgeVariant(row.tone)");
+    expect(evidenceScreen).toContain("evidenceStatusToneToTextClass(tone)");
+    expect(evidenceScreen).toContain("actionBadgeVariant[action.tone]");
 
     for (const state of ["Success", "Warning", "Danger"]) {
       expect(wpfThemeTokens).toContain(`${state}ColorBrush`);
@@ -521,5 +538,89 @@ describe("dashboard design-system contract", () => {
     expect(primitiveSource).not.toContain("border-slate");
     expect(primitiveSource).not.toContain("bg-slate");
     expect(primitiveSource).not.toContain("text-slate");
+  });
+
+  it("exposes dashboard-native design-system primitive adapters for the shell and core controls", () => {
+    expect(existsSync(resolve(process.cwd(), "src/design-system/primitives.tsx"))).toBe(true);
+
+    const primitives = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/primitives.tsx");
+    const button = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/button.tsx");
+    const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/badge.tsx");
+    const status = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/status.tsx");
+    const masthead = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/masthead.tsx");
+    const trustStrip = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/trust-strip.tsx");
+    const navRail = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/nav-rail.tsx");
+    const tokens = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/tokens.ts");
+    const bridge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/assets.ts");
+    const implementation = [button, badge, status, masthead, trustStrip, navRail, tokens].join("\n");
+
+    // `primitives.tsx` remains the compatibility barrel while the adapters live in
+    // per-component modules.
+    for (const reexport of [
+      'export { DesignSystemButton, type DesignSystemButtonProps } from "@/design-system/button"',
+      'export { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/badge"',
+      'DesignSystemStatus',
+      'DesignSystemMasthead',
+      'export { DesignSystemTrustStrip } from "@/design-system/trust-strip"',
+      'DesignSystemNavRail',
+      'export { DESIGN_SYSTEM_SHELL_TOKEN_CONTRACT } from "@/design-system/tokens"'
+    ]) {
+      expect(primitives).toContain(reexport);
+    }
+
+    // The primitive adapters are all present and typed.
+    for (const symbol of [
+      "export const DesignSystemButton",
+      "export interface DesignSystemButtonProps",
+      "export function DesignSystemBadge",
+      "export interface DesignSystemBadgeProps",
+      "export function DesignSystemStatus",
+      "export function DesignSystemMasthead",
+      "export function DesignSystemTrustStrip",
+      "export interface DesignSystemMastheadProps",
+      "export function DesignSystemNavRail",
+      "export const designSystemNavRailClasses"
+    ]) {
+      expect(implementation).toContain(symbol);
+    }
+
+    // The five canonical operator severities are encoded once, in the primitive layer.
+    expect(status).toContain('export const DESIGN_SYSTEM_SEVERITIES = ["ready", "review", "action", "blocked", "info"]');
+    expect(status).toContain("export function normalizeDesignSystemSeverity");
+
+    // Shell primitives are wired against the workstation token contract from the bridge.
+    expect(tokens).toContain('import { DESIGN_SYSTEM_WORKSTATION_TOKENS } from "@/design-system/assets"');
+    expect(tokens).toContain("export const DESIGN_SYSTEM_SHELL_TOKEN_CONTRACT = DESIGN_SYSTEM_WORKSTATION_TOKENS");
+    expect(bridge).toContain("export const DESIGN_SYSTEM_WORKSTATION_TOKENS");
+    expect(bridge).toContain('"--ws-masthead-bg"');
+    expect(bridge).toContain('"--ws-accent"');
+  });
+
+  it("delegates public shell components to the design-system primitive adapters", () => {
+    const button = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/ui/button.tsx");
+    const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/ui/badge.tsx");
+    const nav = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.tsx");
+    const app = readRepositoryFile("src/Meridian.Ui/dashboard/src/app.tsx");
+    const topbar = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workstation-topbar.tsx");
+
+    // @/components/ui/button and @/components/ui/badge stay stable public imports that
+    // re-export the primitive adapters rather than forking behavior.
+    expect(button).toContain('import { DesignSystemButton, type DesignSystemButtonProps } from "@/design-system/primitives"');
+    expect(button).toContain("export const Button = DesignSystemButton");
+    expect(button).toContain("export type ButtonProps = DesignSystemButtonProps");
+    expect(badge).toContain('import { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/primitives"');
+    expect(badge).toContain("export const Badge = DesignSystemBadge");
+    expect(badge).toContain("export type BadgeProps = DesignSystemBadgeProps");
+
+    // The rail composes the design-system rail class contract; the shell masthead renders
+    // the design-system masthead adapter directly, and the WorkstationTopbar live-adapter
+    // name keeps resolving through a delegating wrapper.
+    expect(nav).toContain('import { DesignSystemNavRail, designSystemNavRailClasses } from "@/design-system/primitives"');
+    expect(nav).toContain("<DesignSystemNavRail");
+    expect(nav).toContain("designSystemNavRailClasses.item");
+    expect(app).toContain('import { DesignSystemMasthead } from "@/design-system/primitives"');
+    expect(app).toContain("<DesignSystemMasthead");
+    expect(topbar).toContain("export function WorkstationTopbar");
+    expect(topbar).toContain("return <DesignSystemMasthead {...props} />");
   });
 });

@@ -167,9 +167,15 @@ body {
 .toolbar-chip.active,
 .operator-mode-toggle [aria-pressed="true"],
 .operator-mode-toggle [aria-current="page"] {
+<<<<<<< HEAD
   border-color: rgba(47, 111, 143, 0.34);
   background: rgba(47, 111, 143, 0.10);
   color: var(--mds-workspace-accent, var(--cyan-primary));
+=======
+  border-color: color-mix(in srgb, var(--ws-accent) 34%, transparent);
+  background: color-mix(in srgb, var(--ws-accent) 10%, transparent);
+  color: var(--ws-accent);
+>>>>>>> bc00bfd6a5c542ab8d7e5f96a4f054e5239c4708
 }
 
 .development-fixture-path-link,
