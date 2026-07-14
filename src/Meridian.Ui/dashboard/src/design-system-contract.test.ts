@@ -423,12 +423,14 @@ describe("dashboard design-system contract", () => {
 
   it("keeps Security Master schedules on shared workbench primitives with view-model copy", () => {
     const screen = readAccountingScreen();
+    const securityMasterPanels = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/accounting-screen.security-master-panels.tsx");
     const viewModel = readAccountingViewModel();
 
-    expect(screen).toContain("function SecuritySchedulesPanel");
-    expect(screen).toContain("<DenseDataTable");
-    expect(screen).toContain("<ToolbarStrip");
-    expect(screen).toContain("<EntitySummary");
+    expect(screen).toContain('import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels"');
+    expect(securityMasterPanels).toContain("export function SecuritySchedulesPanel");
+    expect(securityMasterPanels).toContain("<DenseDataTable");
+    expect(securityMasterPanels).toContain("<ToolbarStrip");
+    expect(securityMasterPanels).toContain("<EntitySummary");
     expect(viewModel).toContain("buildSecuritySchedulesViewState");
     expect(viewModel).toContain("SecuritySchedulesViewState");
     expect(viewModel).toContain("Cash-flow and factor schedules");
