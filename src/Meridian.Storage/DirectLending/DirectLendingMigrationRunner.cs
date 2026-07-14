@@ -18,6 +18,9 @@ public sealed class DirectLendingMigrationRunner
             DisplayName = "Direct lending",
             LockScopeName = "direct_lending",
             ConnectionStringSettingName = $"{nameof(DirectLendingOptions)}.{nameof(options.ConnectionString)}",
+            // Feature-prefixed ledger: Direct Lending shares the Security Master schema by
+            // default, whose ordinal-tracking schema_migrations table is incompatible.
+            LedgerTableName = "direct_lending_schema_migrations",
             DriftPolicy = MigrationDriftPolicy.Reapply,
         });
     }

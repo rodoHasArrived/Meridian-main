@@ -17,6 +17,9 @@ public sealed class FundAccountMigrationRunner
             DisplayName = "Fund accounts",
             LockScopeName = "fund_accounts",
             ConnectionStringSettingName = $"{nameof(FundAccountStoreOptions)}.{nameof(options.ConnectionString)}",
+            // Feature-prefixed ledger so a shared schema can never collide with another
+            // feature's migration table layout.
+            LedgerTableName = "fund_account_schema_migrations",
             DriftPolicy = MigrationDriftPolicy.Reapply,
         });
     }

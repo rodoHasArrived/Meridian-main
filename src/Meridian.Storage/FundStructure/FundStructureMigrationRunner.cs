@@ -17,6 +17,9 @@ public sealed class FundStructureMigrationRunner
             DisplayName = "Fund structure",
             LockScopeName = "fund_structure",
             ConnectionStringSettingName = $"{nameof(FundStructureStoreOptions)}.{nameof(options.ConnectionString)}",
+            // Feature-prefixed ledger so a shared schema can never collide with another
+            // feature's migration table layout.
+            LedgerTableName = "fund_structure_schema_migrations",
             DriftPolicy = MigrationDriftPolicy.Reapply,
         });
     }
