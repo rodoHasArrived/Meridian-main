@@ -1,13 +1,22 @@
 import { useState } from "react";
-import {
-  formatNumber as formatNumberAmount,
-  formatPercent as formatPercentAmount,
-  formatPrefixedCurrency,
-  formatSignedCurrency as formatSignedCurrencyAmount,
-  pluralizeCount
-} from "@/lib/format";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import {
+  comparisonToneForPnl,
+  formatCountLabel,
+  formatCurrency,
+  formatCurrencyPrecise,
+  formatDateTime,
+  formatNumber,
+  formatPercent,
+  formatSignedCurrency,
+  pnlFieldTone,
+  pnlTone,
+  riskFieldTone,
+  riskTone,
+  runStatusTone,
+  sumNumericStrings
+} from "@/screens/portfolio-screen.presentation";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdAccount,
@@ -2288,12 +2297,6 @@ function positionId(symbol: string, side: string, index: number): string {
   return `${symbol.toLowerCase()}-${side.toLowerCase()}-${index}`;
 }
 
-function pnlTone(value: string): "success" | "danger" | "default" {
-  if (value.startsWith("+")) return "success";
-  if (value.startsWith("-")) return "danger";
-  return "default";
-}
-
 function parseNumericValue(value: string): number | null {
   const normalizedPercent = value.trim().endsWith("%");
   const cleaned = value.replace(/[$+,%]/g, "").trim();
@@ -2522,91 +2525,4 @@ function continuityWarningTone(severity: StrategyRunContinuityWarningSeverity): 
   }
 
   return severity === "Warning" ? "warning" : "muted";
-}
-
-function pnlFieldTone(value: string): PortfolioDetailField["tone"] {
-  const tone = pnlTone(value);
-  if (tone === "success") return "success";
-  if (tone === "danger") return "danger";
-  return "default";
-}
-
-function comparisonToneForPnl(value: string): PortfolioRunComparisonCard["tone"] {
-  const tone = pnlTone(value);
-  if (tone === "success") return "success";
-  if (tone === "danger") return "danger";
-  return "default";
-}
-
-function runStatusTone(
-  status: string,
-  pnl: PortfolioRunRow["pnlTone"]
-): PortfolioRunDetail["statusTone"] {
-  if (status === "Needs Review") return "warning";
-  if (status === "Completed") return pnl === "danger" ? "warning" : "success";
-  if (status === "Queued" || status === "Running") return "default";
-  return pnl === "danger" ? "danger" : "default";
-}
-
-function riskFieldTone(state: TradingWorkspaceResponse["risk"]["state"] | undefined): PortfolioDetailField["tone"] {
-  if (state === "Healthy") return "success";
-  if (state === "Observe") return "warning";
-  if (state === "Constrained") return "danger";
-  return "muted";
-}
-
-function riskTone(
-  riskState: TradingWorkspaceResponse["risk"]["state"] | undefined,
-  pnl: PortfolioPositionRow["pnlTone"]
-): PortfolioPositionDetail["statusTone"] {
-  if (riskState === "Constrained") return "danger";
-  if (riskState === "Observe") return "warning";
-  if (pnl === "danger") return "warning";
-  if (pnl === "success" || riskState === "Healthy") return "success";
-  return "default";
-}
-
-function sumNumericStrings(values: string[]): number {
-  return values.reduce((sum, v) => {
-    const cleaned = v.replace(/[$+,]/g, "");
-    const n = parseFloat(cleaned);
-    return sum + (isNaN(n) ? 0 : n);
-  }, 0);
-}
-
-function formatCurrency(value: number): string {
-  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
-}
-
-function formatSignedCurrency(value: number): string {
-  return formatSignedCurrencyAmount(value, { maximumFractionDigits: 0 });
-}
-
-function formatCurrencyPrecise(value: number): string {
-  return formatPrefixedCurrency(value, { minimumFractionDigits: 2 });
-}
-
-function formatPercent(value: number): string {
-  return formatPercentAmount(value * 100);
-}
-
-function formatNumber(value: number): string {
-  return formatNumberAmount(value, { maximumFractionDigits: 4 });
-}
-
-function formatCountLabel(count: number, noun: string): string {
-  return pluralizeCount(count, noun);
-}
-
-function formatDateTime(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? "—"
-    : `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function padUtc(value: number): string {
-  return value.toString().padStart(2, "0");
 }

@@ -438,7 +438,9 @@ describe("dashboard design-system contract", () => {
 
   it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {
     const badge = readDesignSystemPrimitives();
+    const sharedToneMappings = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/shared-tone-mappings.ts");
     const evidenceScreen = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx");
+    const evidenceAssuranceLists = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-assurance-lists.tsx");
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
     const wpfThemeTokens = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeTokens.xaml");
     const wpfThemeSurfaces = readRepositoryFile("src/Meridian.Wpf/Styles/ThemeSurfaces.xaml");
@@ -451,10 +453,15 @@ describe("dashboard design-system contract", () => {
     }
 
     expect(evidenceViewModel).toContain('export type EvidenceStatusTone = "success" | "warning" | "danger" | "muted";');
-    expect(evidenceScreen).toContain('Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline">');
-    expect(evidenceScreen).toContain('muted: "outline"');
-    expect(evidenceScreen).toContain("badgeVariant[panel.statusTone]");
-    expect(evidenceScreen).toContain("badgeVariant[row.tone]");
+    expect(sharedToneMappings).toContain("export function readinessToneToBadgeVariant");
+    expect(sharedToneMappings).toContain("case \"success\":");
+    expect(sharedToneMappings).toContain("return \"outline\"");
+    expect(evidenceScreen).toContain('import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings"');
+    expect(evidenceScreen).toContain("readinessToneToBadgeVariant(panel.statusTone)");
+    expect(evidenceAssuranceLists).toContain('import { readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings"');
+    expect(evidenceAssuranceLists).toContain("readinessToneToBadgeVariant(row.tone)");
+    expect(evidenceScreen).toContain("evidenceStatusToneToTextClass(tone)");
+    expect(evidenceScreen).toContain("actionBadgeVariant[action.tone]");
 
     for (const state of ["Success", "Warning", "Danger"]) {
       expect(wpfThemeTokens).toContain(`${state}ColorBrush`);

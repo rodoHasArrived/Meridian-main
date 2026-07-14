@@ -28,6 +28,7 @@ import {
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
+import { closeCommandCenterTextMatches, humanizeCloseBlockerCode, isCloseChecklistDone, isOpenAccountingBreakStatus } from "./accounting-screen.close-cockpit-presenters";
 import type {
   AccountingCloseCalendarMilestoneViewModel,
   AccountingCloseDependencyGraphRowViewModel,
@@ -3206,19 +3207,6 @@ export function buildCloseCommandCenterViewState({
   };
 }
 
-function humanizeCloseBlockerCode(code: string): string {
-  const normalized = code.trim();
-  if (!normalized) {
-    return "Close control blocker";
-  }
-
-  return normalized
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .toLowerCase()
-    .replace(/^\w/, (character) => character.toUpperCase());
-}
-
 function buildSharedFinancialOperationsCommandCenterViewState(
   commandCenter: FinancialOperationsCommandCenter,
   loading: boolean,
@@ -3461,18 +3449,6 @@ function collectCloseCommandCenterBlockers(workflow: OperationsContinuityWorkflo
   return [...byKey.values()];
 }
 
-function isCloseChecklistDone(status: string): boolean {
-  const normalized = status.trim().toLowerCase();
-  return normalized === "done" || normalized === "complete" || normalized === "completed" || normalized === "acknowledged";
-}
-
-function closeCommandCenterTextMatches(left: string | null | undefined, right: string | null | undefined, needle: string): boolean {
-  const normalizedNeedle = needle.toLowerCase();
-  return [left, right]
-    .map((value) => value?.toLowerCase() ?? "")
-    .some((value) => value.includes(normalizedNeedle));
-}
-
 function countCloseCommandCenterValuationIssues(coverage: MultiAssetCoverageSummary | null | undefined): number {
   if (!coverage) {
     return 0;
@@ -3597,9 +3573,4 @@ function buildCloseCommandCenterSummary(
   }
 
   return `The close is at risk with ${formatCount(activeRows.length, "watch item")} across the command center.`;
-}
-
-function isOpenAccountingBreakStatus(status: string): boolean {
-  const normalized = status.trim().toLowerCase();
-  return normalized !== "resolved" && normalized !== "dismissed" && normalized !== "closed";
 }

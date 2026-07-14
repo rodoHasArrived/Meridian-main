@@ -498,8 +498,8 @@ export function buildReconciliationQueuePanelViewState(
   };
 }
 
-function formatReconciliationState(value: string): string {
-  const normalized = value
+function formatReconciliationState(value: string | null | undefined): string {
+  const normalized = (value ?? "")
     .trim()
     .replace(/[_-]+/g, " ")
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")

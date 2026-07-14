@@ -5,6 +5,13 @@ import { formatCurrency } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
+import {
+  buildTradingReadinessSummaryRows,
+  formatReadinessStatusValue,
+  formatTradingUtcDateTime as formatUtcDateTime,
+  type AcceptanceLevel,
+  type TradingReadinessSummaryRow
+} from "@/screens/trading-screen.readiness-summary";
 import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
@@ -20,17 +27,24 @@ import type {
   ReplayFileRecord,
   ReplayStatus,
   TradingActionResult,
-  TradingAcceptanceGateStatus,
   TradingFill,
   TradingOperatorReadiness,
   TradingOrder,
   TradingPosition,
   TradingRiskState,
-  TradingWorkspaceResponse,
-  WorkstationBrokerageSyncStatus
+  TradingWorkspaceResponse
 } from "@/types";
 
-export type AcceptanceLevel = "ready" | "review" | "atRisk";
+export {
+  formatReadinessStatusValue,
+  mapBrokerageSyncLevel,
+  mapReadinessStatusLevel
+} from "@/screens/trading-screen.readiness-summary";
+export type {
+  AcceptanceLevel,
+  TradingReadinessSummaryRow
+} from "@/screens/trading-screen.readiness-summary";
+
 export type TradingDataTone = "default" | "success" | "warning" | "danger" | "muted";
 export type TradingRouteWorkstream = "orders" | "positions" | "risk";
 export type TradingWorkflowPanelId = "strategy" | "replay" | "promotion";
@@ -414,14 +428,6 @@ export interface TradingBlotterViewModel {
   selectPosition: (id: string) => void;
   selectOrder: (id: string) => void;
   selectFill: (id: string) => void;
-}
-
-export interface TradingReadinessSummaryRow {
-  id: string;
-  label: string;
-  value: string;
-  level: AcceptanceLevel;
-  ariaLabel: string;
 }
 
 export interface TradingReadinessWorkItemRow {
@@ -890,144 +896,6 @@ function buildTradingReadinessWarningRows(warnings: string[]): TradingReadinessW
     text: warning,
     ariaLabel: `Trading readiness warning: ${warning}`
   }));
-}
-
-export function formatReadinessStatusValue(status: TradingAcceptanceGateStatus | string): string {
-  if (status === "ReviewRequired") {
-    return "Review required";
-  }
-
-  return status;
-}
-
-export function mapReadinessStatusLevel(status: TradingAcceptanceGateStatus | string): AcceptanceLevel {
-  if (status === "Ready") {
-    return "ready";
-  }
-
-  if (status === "Blocked") {
-    return "atRisk";
-  }
-
-  return "review";
-}
-
-export function mapBrokerageSyncLevel(status: WorkstationBrokerageSyncStatus): AcceptanceLevel {
-  if (status.health === "Healthy" && !status.isStale) {
-    return "ready";
-  }
-
-  if (status.health === "Failed" || status.health === "Degraded") {
-    return "atRisk";
-  }
-
-  return "review";
-}
-
-function buildTradingReadinessSummaryRows(readiness: TradingOperatorReadiness): TradingReadinessSummaryRow[] {
-  const overallValue = formatReadinessStatusValue(readiness.overallStatus);
-  const paperValue = readiness.readyForPaperOperation ? "Ready for paper" : "Not paper ready";
-  const liveBlockers = readiness.liveOperationBlockers ?? [];
-  const liveOperationRequirements = readiness.liveOperationRequirements ?? [];
-  const liveValue = readiness.readyForLiveOperation
-    ? "Ready for live"
-    : liveBlockers.length > 0
-      ? `${liveBlockers.length} blocker${liveBlockers.length === 1 ? "" : "s"}`
-      : "Not live ready";
-  const brokerageValue = readiness.brokerageSync
-    ? formatBrokerageSyncValue(readiness.brokerageSync)
-    : "No account sync";
-  const executionReconciliation = readiness.executionReconciliation ?? null;
-  const asOfLabel = formatUtcDateTime(readiness.asOf);
-  const rows: TradingReadinessSummaryRow[] = [
-    {
-      id: "overall",
-      label: "Overall",
-      value: overallValue,
-      level: mapReadinessStatusLevel(readiness.overallStatus),
-      ariaLabel: `Overall readiness: ${overallValue}`
-    },
-    {
-      id: "paper",
-      label: "Paper",
-      value: paperValue,
-      level: readiness.readyForPaperOperation ? "ready" : "review",
-      ariaLabel: `Paper operation readiness: ${paperValue}`
-    },
-    {
-      id: "live",
-      label: "Live",
-      value: liveValue,
-      level: readiness.readyForLiveOperation ? "ready" : liveBlockers.length > 0 ? "atRisk" : "review",
-      ariaLabel: `Live operation readiness: ${liveValue}${liveBlockers.length > 0 ? `. Blockers: ${liveBlockers.join(", ")}` : ""}`
-    },
-    {
-      id: "brokerage",
-      label: "Brokerage",
-      value: brokerageValue,
-      level: readiness.brokerageSync ? mapBrokerageSyncLevel(readiness.brokerageSync) : "review",
-      ariaLabel: `Brokerage sync: ${brokerageValue}`
-    }
-  ];
-
-  for (const requirement of liveOperationRequirements) {
-    const requirementValue = formatReadinessStatusValue(requirement.status);
-    rows.push({
-      id: `live-requirement-${requirement.requirementId}`,
-      label: requirement.label,
-      value: requirementValue,
-      level: mapReadinessStatusLevel(requirement.status),
-      ariaLabel: formatLiveOperationRequirementAriaLabel(requirement, requirementValue)
-    });
-  }
-
-  if (executionReconciliation) {
-    const executionValue = formatExecutionReconciliationValue(executionReconciliation);
-    rows.push({
-      id: "broker-execution",
-      label: "Broker orders",
-      value: executionValue,
-      level: mapReadinessStatusLevel(executionReconciliation.status),
-      ariaLabel: `Broker execution reconciliation: ${executionValue}`
-    });
-  }
-
-  rows.push(
-    {
-      id: "as-of",
-      label: "As of",
-      value: asOfLabel,
-      level: "review",
-      ariaLabel: `Readiness snapshot timestamp: ${asOfLabel}`
-    }
-  );
-
-  return rows;
-}
-
-function formatLiveOperationRequirementAriaLabel(
-  requirement: NonNullable<TradingOperatorReadiness["liveOperationRequirements"]>[number],
-  requirementValue: string
-): string {
-  const blocker = requirement.blockerCode ? ` Blocker: ${requirement.blockerCode}.` : "";
-  return `${requirement.label}: ${requirementValue}. ${requirement.detail}${blocker}`;
-}
-
-function formatBrokerageSyncValue(status: WorkstationBrokerageSyncStatus): string {
-  const staleSuffix = status.isStale && status.health !== "Stale" ? " stale" : "";
-  return `${status.health}${staleSuffix}`;
-}
-
-function formatExecutionReconciliationValue(reconciliation: NonNullable<TradingOperatorReadiness["executionReconciliation"]>): string {
-  if (reconciliation.status === "Ready") {
-    return `${reconciliation.matchedOpenOrderCount} matched`;
-  }
-
-  if (reconciliation.breakCount > 0) {
-    return `${reconciliation.breakCount} break${reconciliation.breakCount === 1 ? "" : "s"}`;
-  }
-
-  return formatReadinessStatusValue(reconciliation.status);
 }
 
 function buildTradingReadinessAnnouncement({
@@ -4196,21 +4064,6 @@ function formatQuantity(value: number): string {
     return "0";
   }
   return Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 4 });
-}
-
-function formatUtcDateTime(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function padUtc(value: number): string {
-  return value.toString().padStart(2, "0");
 }
 
 export type PromotionGateField =

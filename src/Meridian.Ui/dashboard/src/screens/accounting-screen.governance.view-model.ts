@@ -28,6 +28,12 @@ import {
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
+import {
+  formatConfigurationActionLabel, formatConfigurationActorLabel, formatMigrationRunKind,
+  formatMigrationRunStatus, formatProductionReadinessArea, formatProductionReadinessStatus, formatRuleEffectiveRange,
+  migrationRunStatusTone, productionReadinessStatusTone,
+  resolveAccountingProductionReadinessActivationDisabledReason, resolveDryRunRuleMismatchReason,
+} from "./accounting-screen.governance-presenters";
 import type {
   AccountingApprovalQueueSetupEditorViewModel,
   AccountingConfigurationAuditViewModel,
@@ -2825,36 +2831,6 @@ function resolveAccountingConfigurationActivationDisabledReason(
   return null;
 }
 
-function resolveAccountingProductionReadinessActivationDisabledReason(
-  readiness: AccountingProductionReadiness | null,
-  loading: boolean,
-  error: ApiErrorDisplay | null
-): string | null {
-  if (loading) {
-    return "Wait for the production-readiness assessment before activation.";
-  }
-
-  if (error || !readiness) {
-    return "Refresh production readiness successfully before activation.";
-  }
-
-  if (readiness.status !== "Ready") {
-    return `Resolve the ${formatProductionReadinessStatus(readiness.status).toLowerCase()} production-readiness assessment before activation.`;
-  }
-
-  return null;
-}
-
-function resolveDryRunRuleMismatchReason(
-  dryRunPreview: RuleDryRunResult,
-  selectedRule: PostingRule,
-  action: string
-): string | null {
-  return dryRunPreview.selectedRuleId && dryRunPreview.selectedRuleId !== selectedRule.ruleId
-    ? `Dry-run preview must match the selected posting rule before ${action}.`
-    : null;
-}
-
 function buildDefaultAccountingChartAccountDraft(): AccountingChartAccountDraft {
   return {
     nodeId: "assets-cash-operating",
@@ -4396,76 +4372,6 @@ function buildAccountingMigrationRolloutPlanRows(plan: AccountingMigrationRollou
   });
 }
 
-function formatMigrationRunKind(kind: AccountingMigrationRunArtifact["kind"]): string {
-  switch (kind) {
-    case "LedgerBookScope":
-      return "Ledger-book scope";
-    case "HistoricalJournalBackfill":
-      return "Historical journal backfill";
-    case "DimensionalBackfill":
-      return "Dimensional backfill";
-    case "AccountingConfigurationPromotion":
-      return "Configuration promotion";
-    case "CloseReportingEvidence":
-      return "Close/reporting evidence";
-    default:
-      return String(kind);
-  }
-}
-
-function formatMigrationRunStatus(status: AccountingMigrationRunArtifact["status"]): string {
-  return status === "Completed" ? "Completed" : status === "Certified" ? "Certified" : status === "Failed" ? "Failed" : status === "Running" ? "Running" : "Planned";
-}
-
-function migrationRunStatusTone(status: AccountingMigrationRunArtifact["status"]): AccountingMigrationRunArtifactViewModel["tone"] {
-  switch (status) {
-    case "Certified":
-    case "Completed":
-      return "success";
-    case "Failed":
-      return "danger";
-    case "Running":
-      return "warning";
-    case "Planned":
-    default:
-      return "default";
-  }
-}
-
-function formatProductionReadinessStatus(status: AccountingProductionReadiness["status"]): string {
-  switch (status) {
-    case "Ready":
-      return "Ready";
-    case "ReviewRequired":
-      return "Review required";
-    case "Blocked":
-      return "Blocked";
-    case "Unavailable":
-      return "Unavailable";
-    default:
-      return String(status);
-  }
-}
-
-function formatProductionReadinessArea(area: string): string {
-  return area
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/\bGl\b/g, "GL");
-}
-
-function productionReadinessStatusTone(status: AccountingProductionReadiness["status"]): AccountingProductionReadinessComponentViewModel["tone"] {
-  switch (status) {
-    case "Ready":
-      return "success";
-    case "Blocked":
-    case "Unavailable":
-      return "danger";
-    case "ReviewRequired":
-    default:
-      return "warning";
-  }
-}
-
 type LedgerScopeScalarKey = Exclude<keyof NonNullable<PostingRule["scope"]>, "externalGlDimensions">;
 
 const LEDGER_SCOPE_SCALAR_KEYS: LedgerScopeScalarKey[] = [
@@ -5040,12 +4946,6 @@ function formatRuleDryRunMatch(match: AccountingRuleDryRunMatch): string {
   return `${match.displayName} ${state} at priority ${match.priority}. ${reasons}${issues}`;
 }
 
-function formatRuleEffectiveRange(rule: PostingRule): string {
-  const start = rule.effectiveFrom ?? "open start";
-  const end = rule.effectiveTo ?? "open end";
-  return `${start} -> ${end}`;
-}
-
 function formatLedgerDimensionSet(dimensions?: PostingRule["scope"]): string[] {
   if (!dimensions) {
     return [];
@@ -5082,30 +4982,6 @@ function formatLedgerDimensionSet(dimensions?: PostingRule["scope"]): string[] {
   }
 
   return rows;
-}
-
-function formatConfigurationActorLabel(actor: string | null | undefined): string {
-  const normalized = actor?.trim() ?? "";
-  if (!normalized) {
-    return "Unknown operator";
-  }
-
-  if (/^fixture[-_:]/i.test(normalized)) {
-    return /review/i.test(normalized) ? "Configuration reviewer" : "Configuration controller";
-  }
-
-  if (normalized === "browser-accounting-operator") {
-    return "Accounting operator";
-  }
-
-  return normalized;
-}
-
-function formatConfigurationActionLabel(action: string): string {
-  const words = action.trim().replace(/[._-]+/g, " ");
-  return words.length > 0
-    ? `${words.charAt(0).toUpperCase()}${words.slice(1)}`
-    : "Configuration change";
 }
 
 function promotionTone(

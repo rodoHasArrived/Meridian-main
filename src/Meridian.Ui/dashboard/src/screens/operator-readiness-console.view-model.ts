@@ -5,6 +5,12 @@ import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import {
+  formatReadinessUtcMinute,
+  levelFromReadiness,
+  levelFromTone,
+  toErrorMessage
+} from "@/screens/operator-readiness-console.presentation";
 import type {
   DataProviderRecord,
   DataWorkspaceResponse,
@@ -1973,59 +1979,4 @@ function buildMissingReadinessDetail(
 function hasCriticalOperatorInbox(operatorInbox: OperatorInbox | null): boolean {
   return (operatorInbox?.criticalCount ?? 0) > 0 ||
     operatorInbox?.items.some((item) => item.tone === "Critical") === true;
-}
-
-function levelFromReadiness(status: string): ReadinessConsoleLevel {
-  if (status === "Ready") {
-    return "ready";
-  }
-
-  if (status === "Blocked") {
-    return "blocked";
-  }
-
-  return "review";
-}
-
-function levelFromTone(tone: string): ReadinessConsoleLevel {
-  if (tone === "Success") {
-    return "ready";
-  }
-
-  if (tone === "Critical") {
-    return "blocked";
-  }
-
-  if (tone === "Warning") {
-    return "review";
-  }
-
-  return "neutral";
-}
-
-function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {
-  if (!value) {
-    return fallback;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return fallback;
-  }
-
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
-}
-
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function toErrorMessage(err: unknown, fallback: string): string {
-  if (err instanceof Error && err.message.trim()) {
-    return err.message;
-  }
-
-  return fallback;
 }

@@ -79,9 +79,9 @@ export function ReportPreviewValidationScreen({ data }: FinanceStandardScreenPro
   const retainedArtifacts = readStringArray(run, "artifacts");
   const retainedOutputReferences = generatedFiles.length > 0 ? generatedFiles : retainedArtifacts;
   const selectedTemplateMetadata = runTemplateId
-    ? data?.reporting.templates.find((candidate) => candidate.templateId === runTemplateId) ?? null
+    ? data?.reporting.templates?.find((candidate) => candidate.templateId === runTemplateId) ?? null
     : selectedTemplate
-      ? data?.reporting.templates.find((candidate) => candidate.templateId === selectedTemplate.templateName) ?? null
+      ? data?.reporting.templates?.find((candidate) => candidate.templateId === selectedTemplate.templateName) ?? null
       : null;
   const previewSections = (selectedTemplateMetadata?.sections ?? []).map((section) => presentReportingIdentifier(section, "Report section"));
   const sectionCount = readNumber(run, "sectionCount", previewSections.length);
@@ -264,7 +264,7 @@ export function ReportRunDetailScreen({ data }: FinanceStandardScreenProps) {
   const run = runs.find((candidate) => readString(candidate, "runId", "") === requestedRunId) ?? runs[0] ?? null;
   const runId = readString(run, "runId", requestedRunId || "No run selected");
   const runTemplateId = readString(run, "templateId", "");
-  const retainedTemplateName = data?.reporting.templates.find((candidate) => candidate.templateId === runTemplateId)?.name;
+  const retainedTemplateName = data?.reporting.templates?.find((candidate) => candidate.templateId === runTemplateId)?.name;
   const reportName = readString(
     run,
     "reportName",

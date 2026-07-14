@@ -21,6 +21,16 @@ import { Label } from "@/components/ui/label";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { readinessToneToBadgeVariant, readinessToneToPanelClass } from "@/lib/shared-tone-mappings";
 import {
+  buildReopenWorkflowFormDisabledReason,
+  formatApprovalDecisionCommandError,
+  formatApprovalSubmitCommandError,
+  formatBreakCommandError,
+  formatChecklistCommandError,
+  formatCloseWorkflowCommandError,
+  formatReopenWorkflowCommandError,
+  type ReopenWorkflowFormState
+} from "@/screens/operations-continuity-screen.command-state";
+import {
   useOperationsContinuityScreenViewModel,
   type FinancialOperationsCommandSpineRow,
   type FinancialOperationsOperatorQueueRow,
@@ -594,13 +604,6 @@ const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidenceP
 
 type BreakCommandKind = "assign" | "resolve";
 type ApprovalDecisionKind = "approve" | "reject";
-
-interface ReopenWorkflowFormState {
-  incidentId: string;
-  justification: string;
-  approvalReference: string;
-  impactSummary: string;
-}
 
 interface BreakCaseColumnOptions {
   pendingBreakCommand: { breakId: string; kind: BreakCommandKind } | null;
@@ -2449,72 +2452,4 @@ export function OperationsContinuityScreen() {
       </section>
     </div>
   );
-}
-
-function formatChecklistCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Checklist acknowledgement command failed.";
-}
-
-function formatBreakCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Break command failed.";
-}
-
-function formatApprovalSubmitCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Approval submission command failed.";
-}
-
-function formatApprovalDecisionCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Approval decision command failed.";
-}
-
-function formatCloseWorkflowCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Close package publication command failed.";
-}
-
-function buildReopenWorkflowFormDisabledReason(form: ReopenWorkflowFormState): string | null {
-  if (!form.incidentId.trim()) {
-    return "Incident id is required before governed reopen.";
-  }
-
-  if (!form.approvalReference.trim()) {
-    return "Approval reference is required before governed reopen.";
-  }
-
-  if (!form.justification.trim()) {
-    return "Justification is required before governed reopen.";
-  }
-
-  if (!form.impactSummary.trim()) {
-    return "Impact summary is required before governed reopen.";
-  }
-
-  return null;
-}
-
-function formatReopenWorkflowCommandError(err: unknown): string {
-  if (err instanceof Error && err.message.trim().length > 0) {
-    return err.message;
-  }
-
-  return "Governed reopen command failed.";
 }

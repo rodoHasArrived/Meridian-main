@@ -10,16 +10,25 @@ import {
 } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import {
-  hasRetainedReportingAsOfDateValue,
-  reportingRunRequiresPeriodConfirmation
-} from "@/lib/reporting-periods";
+import { reportingRunRequiresPeriodConfirmation } from "@/lib/reporting-periods";
 import {
   buildReportingTaskMode,
   isReportPackRoute,
   type ReportingTaskModeViewModel
 } from "@/screens/reporting-screen.task-mode-view-model";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterDatasetSource, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import {
+  buildScheduleDeliveryPlanRows,
+  buildScheduleDeliveryPlanSummary,
+  buildScheduleRows,
+  buildScheduleSummary,
+  formatReportingTimestamp as formatTimestamp,
+  formatStarterDeliveryTargets,
+  formatStarterPeriod,
+  formatStarterTemplateId,
+  hasRetainedReportingAsOfDate,
+  presentReportingAsOfDate
+} from "@/screens/reporting-screen.schedule-view-model";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingRunStatusProjection, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -41,22 +50,6 @@ const formatReportPackDistributionDue = (dueAtUtc: string | null): string => {
 
   return formatTimestamp(dueAtUtc);
 };
-
-const reportingTimestampFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  timeZone: "UTC",
-  timeZoneName: "short"
-});
-
-const reportingDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  timeZone: "UTC"
-});
 
 const reportingStatusLabels: Record<string, string> = {
   active: "Active",
@@ -151,24 +144,7 @@ function presentReportingSignOffContext(value: string | null | undefined): strin
     .replace(/\bHumanOperator\b/g, "Human operator");
 }
 
-export function hasRetainedReportingAsOfDate(value: string | null | undefined): boolean {
-  return hasRetainedReportingAsOfDateValue(value);
-}
-
-export function presentReportingAsOfDate(value: string | null | undefined): string {
-  if (!hasRetainedReportingAsOfDate(value)) {
-    return "No as-of date retained";
-  }
-
-  const retained = value!.trim();
-  const isoDate = retained.match(/^(\d{4}-\d{2}-\d{2})/)?.[1];
-  if (!isoDate) {
-    return retained;
-  }
-
-  const parsed = new Date(`${isoDate}T00:00:00Z`);
-  return Number.isNaN(parsed.getTime()) ? retained : reportingDateFormatter.format(parsed);
-}
+export { hasRetainedReportingAsOfDate, presentReportingAsOfDate };
 
 export function presentReportingRunStatusLabel(
   status: string | null | undefined,
@@ -2111,211 +2087,6 @@ function buildRunActionRows(run: ReportingRunStatusProjection): ReportingRunActi
         : `${action.label} unavailable${disabledReason ? `: ${disabledReason}` : ""}`
     };
   });
-}
-
-function buildScheduleRows(
-  schedules: ReportingScheduleRecord[],
-  datasetSources: ReportWriterDatasetSource[]
-): ReportingScheduleRow[] {
-  return schedules.map((schedule) => ({
-    id: schedule.scheduleId,
-    templateId: schedule.templateId,
-    state: schedule.state,
-    stateVariant: schedule.state === "Active" ? "success" : schedule.state === "Paused" ? "warning" : "outline",
-    cronLabel: schedule.cronExpression,
-    dueLabel: formatTimestamp(schedule.dueAtUtc),
-    nextAsOfLabel: presentReportingAsOfDate(schedule.nextAsOfDate),
-    lastRunLabel: schedule.lastRunAtUtc ? formatTimestamp(schedule.lastRunAtUtc) : "Not run",
-    runCountLabel: `${schedule.runCount} run${schedule.runCount === 1 ? "" : "s"}`,
-    description: schedule.description?.trim() || "No schedule note",
-    deliveryTargetLabel: formatScheduleDeliveryTargets(schedule.deliveryTargets),
-    datasetSourceLabel: formatScheduleDatasetSource(schedule.datasetSourceId, datasetSources),
-    canPause: schedule.state === "Active",
-    canResume: schedule.state === "Paused",
-    ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
-  }));
-}
-
-function buildScheduleSummary(schedules: ReportingScheduleRow[]): string {
-  if (schedules.length === 0) {
-    return "No reporting schedules configured.";
-  }
-
-  const activeCount = schedules.filter((schedule) => schedule.state === "Active").length;
-  return `${schedules.length} schedule${schedules.length === 1 ? "" : "s"} configured; ${activeCount} active.`;
-}
-
-function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): ReportingScheduleDeliveryPlanRow[] {
-  return plans.map((plan) => ({
-    id: plan.planId,
-    scheduleId: plan.scheduleId,
-    templateId: plan.templateId,
-    distributionId: plan.distributionId,
-    recipient: plan.recipient,
-    recipientRole: plan.recipientRole,
-    channel: plan.channel,
-    deliveryMode: plan.deliveryMode,
-    formatsLabel: plan.formats.length > 0 ? plan.formats.join(", ") : "Pdf, Xlsx, Csv",
-    readinessSummary: plan.readinessSummary,
-    readinessVariant: plan.isReady ? "success" : "warning",
-    dueLabel: formatTimestamp(plan.dueAtUtc),
-    nextAsOfLabel: presentReportingAsOfDate(plan.nextAsOfDate),
-    ownerLabel: plan.owner,
-    route: plan.route,
-    note: plan.note,
-    lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
-    lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
-    lastDeliveryLinks: buildDeliveryAccessLinkRows(plan.lastDeliveryAccessLinks, `${plan.planId}-delivery-link`),
-    accessExpiryLabel: plan.lastDeliveryAccessExpiresAtUtc
-      ? formatTimestamp(plan.lastDeliveryAccessExpiresAtUtc)
-      : "No retained access expiry",
-    accessSummaryLabel: plan.lastDeliveryAccessSummary?.trim() || "No retained access summary",
-    channelSummaryLabel: plan.lastDeliveryChannelSummary?.trim() || "No retained channel summary",
-    downloadSummaryLabel: plan.lastDeliveryDownloadSummary?.trim() || "No retained download summary",
-    notificationSummaryLabel: plan.lastDeliveryNotificationSummary?.trim() || "No retained notification proof",
-    reportWriterDatasetSummaryLabel: plan.lastDeliveryReportWriterDatasetSummary?.trim() || "No retained report-writer dataset",
-    reportWriterGridSummaryLabel: plan.lastDeliveryReportWriterGridSummary?.trim() || "No retained report-writer grids",
-    integrityLabel: formatSchedulePlanIntegrity(plan),
-    integritySummary: plan.lastDeliveryIntegritySummary ?? null,
-    entitlementLabel: plan.lastDeliveryEntitlementScope?.trim() || "No retained delivery entitlement",
-    brandingLabel: formatSchedulePlanBranding(plan),
-    versionStamp: plan.versionStamp,
-    ariaLabel: `${plan.recipient} ${plan.deliveryMode} scheduled delivery plan for ${plan.scheduleId}`
-  }));
-}
-
-function formatSchedulePlanBranding(plan: ReportingScheduleDeliveryPlan): string {
-  if (plan.brandingTheme) {
-    return `${plan.brandingTheme.name} · ${plan.brandingTheme.firmName} · ${plan.brandingTheme.themeId}`;
-  }
-
-  return plan.brandingThemeId?.trim() || "Default theme";
-}
-
-function formatScheduleDatasetSource(
-  datasetSourceId: string | null | undefined,
-  datasetSources: ReportWriterDatasetSource[]
-): string {
-  const normalizedSourceId = datasetSourceId?.trim();
-  if (!normalizedSourceId) {
-    return "Default retained dataset";
-  }
-
-  const source = datasetSources.find((candidate) =>
-    candidate.sourceId.localeCompare(normalizedSourceId, undefined, { sensitivity: "base" }) === 0);
-
-  return source ? `${source.label} (${source.rowCount})` : normalizedSourceId;
-}
-
-function buildDeliveryAccessLinkRows(
-  links: ReportPackDeliveryAccessLink[] | null | undefined,
-  idPrefix: string
-): ReportingDeliveryAccessLinkRow[] {
-  return (links ?? [])
-    .filter((link) => link.href?.trim())
-    .map((link, index) => {
-      const label = link.label?.trim() || link.kind || "Delivery link";
-      const href = link.href.trim();
-      const expiresLabel = link.expiresAtUtc ? `Expires ${formatTimestamp(link.expiresAtUtc)}` : null;
-      return {
-        id: `${idPrefix}-${index + 1}`,
-        kind: link.kind?.trim() || "delivery-link",
-        label,
-        href,
-        tokenLabel: link.requiresToken ? "Token gated" : "Internal",
-        expiresLabel,
-        description: link.description?.trim() || null,
-        ariaLabel: `${label} ${link.requiresToken ? "token gated" : "internal route"} ${href}`
-      };
-    });
-}
-
-function buildScheduleDeliveryPlanSummary(plans: ReportingScheduleDeliveryPlanRow[]): string {
-  if (plans.length === 0) {
-    return "No schedule delivery plans configured.";
-  }
-
-  const readyCount = plans.filter((plan) => plan.readinessVariant === "success").length;
-  return `${plans.length} delivery plan${plans.length === 1 ? "" : "s"} configured; ${readyCount} ready.`;
-}
-
-function formatSchedulePlanLastDelivery(plan: ReportingScheduleDeliveryPlan): string {
-  if (!plan.lastDeliveryAtUtc || !plan.lastDeliveryState) {
-    return "No retained delivery yet";
-  }
-
-  return `${plan.lastDeliveryState} ${formatTimestamp(plan.lastDeliveryAtUtc)}`;
-}
-
-function formatSchedulePlanIntegrity(plan: ReportingScheduleDeliveryPlan): string {
-  const artifactCount = plan.lastDeliveryArtifactCount ?? 0;
-  if (artifactCount <= 0) {
-    return "No retained artifact checksums";
-  }
-
-  return `${artifactCount} artifact${artifactCount === 1 ? "" : "s"} with SHA-256`;
-}
-
-function formatScheduleDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {
-  if (!targets || targets.length === 0) {
-    return "No delivery targets";
-  }
-
-  return targets.map(formatScheduleDeliveryTarget).join("; ");
-}
-
-function formatScheduleDeliveryTarget(target: ReportingScheduleDeliveryTarget): string {
-  const formats = target.formats && target.formats.length > 0
-    ? target.formats.join("/")
-    : "Pdf/Xlsx/Csv";
-  const mode = target.deliveryMode ?? "Policy";
-  return `${target.distributionId} via ${mode} (${formats})`;
-}
-
-function formatStarterDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {
-  if (!targets || targets.length === 0) {
-    return "Delivery targets need review";
-  }
-
-  return targets.map(formatScheduleDeliveryTarget).join("; ");
-}
-
-function formatStarterPeriod(period: string | null | undefined): string {
-  if (!period) {
-    return "Default period";
-  }
-
-  const normalized = period.trim();
-  if (normalized === "CurrentMonth") {
-    return "Current month";
-  }
-
-  if (normalized === "CurrentQuarter") {
-    return "Current quarter";
-  }
-
-  if (normalized === "CurrentBusinessDay") {
-    return "Current business day";
-  }
-
-  return normalized.replace(/([a-z])([A-Z])/g, "$1 $2");
-}
-
-function formatStarterTemplateId(templateId: string): string {
-  return templateId
-    .split(/[-_]/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function formatTimestamp(value: string): string {
-  const timestamp = new Date(value);
-  if (Number.isNaN(timestamp.getTime())) {
-    return value;
-  }
-
-  return reportingTimestampFormatter.format(timestamp);
 }
 
 function artifactLabel(artifact: string): string {
