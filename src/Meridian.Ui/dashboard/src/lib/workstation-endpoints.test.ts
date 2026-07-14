@@ -23,6 +23,8 @@ import {
   backfillCheckpointEndpoint,
   backfillCheckpointPendingEndpoint,
   backfillCheckpointResumeEndpoint,
+  workstationIngestionOperationActionEndpoint,
+  workstationIngestionOperationEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -178,6 +180,16 @@ import {
 } from "@/lib/workstation-endpoints";
 
 describe("workstation API endpoint catalog", () => {
+  it("builds governed Data operations and assurance routes", () => {
+    expect(WORKSTATION_API_ENDPOINTS.ingestionOperations).toBe("/api/workstation/data/ingestion-operations");
+    expect(workstationIngestionOperationEndpoint("job / 1")).toBe("/api/workstation/data/ingestion-operations/job%20%2F%201");
+    expect(workstationIngestionOperationActionEndpoint("job / 1", "retry now")).toBe(
+      "/api/workstation/data/ingestion-operations/job%20%2F%201/actions/retry%20now"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.storageAssurance).toBe("/api/workstation/data/storage-assurance");
+    expect(WORKSTATION_API_ENDPOINTS.storageMaintenancePreview).toBe("/api/workstation/data/storage-assurance/actions/preview");
+    expect(WORKSTATION_API_ENDPOINTS.storageMaintenanceExecute).toBe("/api/workstation/data/storage-assurance/actions/execute");
+  });
   it("keeps canonical workspace bootstrap endpoints in one shared catalog", () => {
     expect(WORKSTATION_API_ENDPOINTS).toMatchObject({
       session: "/api/workstation/session",

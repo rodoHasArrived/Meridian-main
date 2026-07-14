@@ -45,7 +45,8 @@ describe("WorkspaceNav", () => {
 
     expect(dataSections).toHaveAttribute("aria-hidden", "false");
     expect(screen.getByLabelText("Providers, current page")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByLabelText("Open Backfill queues")).toHaveAttribute("href", "/data/backfills");
+    expect(screen.getByLabelText("Open Ingestion operations")).toHaveAttribute("href", "/data/operations");
+    expect(screen.getByLabelText("Open Storage assurance")).toHaveAttribute("href", "/data/assurance");
   });
 
   it("renders exactly the seven root workspaces and shows status pills only in detailed mode", () => {

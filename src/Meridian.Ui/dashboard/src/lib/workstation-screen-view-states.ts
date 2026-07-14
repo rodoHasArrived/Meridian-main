@@ -29,7 +29,7 @@ export interface AccountingReconciliationViewState {
 }
 
 export interface DataWorkstationViewState {
-  workstream: "overview" | "providers" | "backfills" | "exports" | "query";
+  workstream: "overview" | "providers" | "operations" | "assurance" | "backfills" | "exports" | "query";
   selectedId: string | null;
 }
 

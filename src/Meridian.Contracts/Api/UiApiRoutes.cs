@@ -63,6 +63,14 @@ public static class UiApiRoutes
     public const string IngestionJobById = "/api/ingestion/jobs/{jobId}";
     public const string IngestionJobTransition = "/api/ingestion/jobs/{jobId}/transition";
 
+    // Governed Data workspace operations and assurance endpoints
+    public const string WorkstationIngestionOperations = "/api/workstation/data/ingestion-operations";
+    public const string WorkstationIngestionOperationById = "/api/workstation/data/ingestion-operations/{jobId}";
+    public const string WorkstationIngestionOperationAction = "/api/workstation/data/ingestion-operations/{jobId}/actions/{action}";
+    public const string WorkstationStorageAssurance = "/api/workstation/data/storage-assurance";
+    public const string WorkstationStorageMaintenancePreview = "/api/workstation/data/storage-assurance/actions/preview";
+    public const string WorkstationStorageMaintenanceExecute = "/api/workstation/data/storage-assurance/actions/execute";
+
     // Backfill provider metadata and status endpoints
     public const string BackfillProviderMetadata = "/api/backfill/providers/metadata";
     public const string BackfillProviderStatuses = "/api/backfill/providers/statuses";

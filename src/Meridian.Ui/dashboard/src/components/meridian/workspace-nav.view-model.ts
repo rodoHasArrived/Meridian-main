@@ -125,7 +125,8 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
     { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.dataEvidence },
-    { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills },
+    { label: "Ingestion operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations },
+    { label: "Storage assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance },
     { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports },
     { label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery }
   ],
@@ -277,7 +278,7 @@ function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
     case "reporting":
       return "Report pack, evidence, and export canvases.";
     case "data":
-      return "Provider, watchlist, quote, alert, and backfill folders.";
+      return "Provider, ingestion, storage assurance, quote, and evidence folders.";
     case "strategy":
       return "Designer, lab, promotion, and projection contexts.";
     case "accounting":
