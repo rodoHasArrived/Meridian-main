@@ -29,10 +29,18 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
   const summaryAriaLabel = `Environment and sources. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
-    <section className="workstation-trust-strip" aria-label={viewModel.ariaLabel}>
+    <section
+      className="workstation-trust-strip mds-trust-strip"
+      aria-label={viewModel.ariaLabel}
+      data-design-system-component="Status"
+    >
       <details className="workstation-trust-details">
         <summary
-          className={cn("workstation-trust-summary", `workstation-trust-item-${summaryTone}`)}
+          className={cn(
+            "workstation-trust-summary",
+            `workstation-trust-item-${summaryTone}`,
+            `mds-status--${summaryTone}`
+          )}
           aria-label={summaryAriaLabel}
         >
           <span className="workstation-trust-label">Environment</span>
@@ -53,7 +61,11 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
               <Link
                 key={item.id}
                 to={item.href}
-                className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
+                className={cn(
+                  "workstation-trust-item",
+                  `workstation-trust-item-${item.tone}`,
+                  `mds-status--${item.tone}`
+                )}
                 aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
               >
                 {content}
@@ -61,7 +73,11 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
             ) : (
               <span
                 key={item.id}
-                className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`)}
+                className={cn(
+                  "workstation-trust-item",
+                  `workstation-trust-item-${item.tone}`,
+                  `mds-status--${item.tone}`
+                )}
                 aria-label={item.ariaLabel}
               >
                 {content}

@@ -8,8 +8,11 @@ import {
   DESIGN_SYSTEM_PACKAGE_ROOT,
   DESIGN_SYSTEM_TOKEN_FILES
 } from "@/design-system/assets";
+import { DesignSystemTrustStrip } from "@/design-system/trust-strip";
 import { cn } from "@/lib/utils";
 import type { SessionInfo } from "@/types";
+
+export { DesignSystemTrustStrip };
 
 export const DESIGN_SYSTEM_TOKEN_METADATA = {
   packageRoot: DESIGN_SYSTEM_PACKAGE_ROOT,
@@ -321,52 +324,6 @@ export function DesignSystemMasthead({
         )}
       </div>
     </header>
-  );
-}
-
-export function DesignSystemTrustStrip({
-  viewModel
-}: {
-  viewModel: AppShellTrustStripState;
-}) {
-  return (
-    <section
-      className="workstation-trust-strip mds-trust-strip"
-      aria-label={viewModel.ariaLabel}
-      data-design-system-component="Status"
-    >
-      {viewModel.items.map((item) => {
-        const content = (
-          <>
-            <span className="workstation-trust-label">{item.label}</span>
-            <span className="workstation-trust-value">{item.value}</span>
-            <span className="sr-only">
-              {item.detail}
-              {item.actionLabel ? ` ${item.actionLabel}.` : ""}
-            </span>
-          </>
-        );
-
-        return item.href ? (
-          <Link
-            key={item.id}
-            to={item.href}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`, `mds-status--${item.tone}`)}
-            aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
-          >
-            {content}
-          </Link>
-        ) : (
-          <span
-            key={item.id}
-            className={cn("workstation-trust-item", `workstation-trust-item-${item.tone}`, `mds-status--${item.tone}`)}
-            aria-label={item.ariaLabel}
-          >
-            {content}
-          </span>
-        );
-      })}
-    </section>
   );
 }
 
