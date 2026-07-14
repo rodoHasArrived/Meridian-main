@@ -31,7 +31,6 @@ internal sealed class SchemaCheckCommand : ICliCommand
 
         var schemaOptions = new SchemaValidationOptions
         {
-            EnableVersionTracking = true,
             MaxFilesToCheck = CliArguments.GetInt(args, "--max-files", 100),
             FailOnFirstIncompatibility = CliArguments.HasFlag(args, "--fail-fast")
         };

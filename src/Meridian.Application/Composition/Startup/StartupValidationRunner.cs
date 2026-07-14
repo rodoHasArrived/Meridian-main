@@ -59,7 +59,7 @@ internal static class StartupValidationRunner
 
         log.Information("Running startup schema compatibility check...");
         await using var schemaService = new SchemaValidationService(
-            new SchemaValidationOptions { EnableVersionTracking = true },
+            new SchemaValidationOptions(),
             cfg.DataRoot);
 
         var schemaCheckResult = await schemaService.PerformStartupCheckAsync(ct);
