@@ -9,21 +9,21 @@
     "endpoint_count": 596,
     "documented_endpoint_count": 596,
     "undocumented_endpoint_count": 0,
-    "workstation_contract_count": 810,
-    "documented_workstation_contract_count": 810,
+    "workstation_contract_count": 820,
+    "documented_workstation_contract_count": 820,
     "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:362",
+      "source": "src/Meridian/UiServer.cs:369",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:384",
+      "source": "src/Meridian/UiServer.cs:391",
       "documented": true
     },
     {
@@ -941,37 +941,37 @@
     {
       "method": "POST",
       "path": "/api/strategies/covered-call/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:24",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:25",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/covered-call/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:52",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:53",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/covered-call/runs/{runId}/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:70",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:71",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/strategies/covered-call/runs/{runId}/result",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:93",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:94",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/covered-call/runs/{runId}/cancel",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:135",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:136",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/strategies/covered-call/chain-preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:158",
+      "source": "src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:159",
       "documented": true
     },
     {

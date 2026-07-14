@@ -11,7 +11,6 @@ public sealed class ProviderIntegrationStagingReviewService
 
     private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
     private readonly IProviderIntegrationManifestStore store;
-    private readonly ILogger<ProviderIntegrationStagingReviewService> logger;
 
     public ProviderIntegrationStagingReviewService(
         IProviderIntegrationManifestStore store,
@@ -36,30 +35,7 @@ public sealed class ProviderIntegrationStagingReviewService
             logger,
             "staging-review",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
-            nameof(GetReviewAsync),
-            connectionId);
-        try
-        {
-            return await GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
-                nameof(GetReviewAsync),
-                connectionId);
-            throw;
-        }
-    }
+            () => GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationStagingReviewDto> GetReviewCoreAsync(
         string? tenantId,
@@ -126,7 +102,7 @@ public sealed class ProviderIntegrationStagingReviewService
             records.Count,
             records.Count(record => record.ValidationWarnings.Count == 0),
             records.Count(record => record.ValidationWarnings.Count > 0));
-    }).ConfigureAwait(false);
+    }
 
     private static int NormalizeLimit(int recentRunLimit)
     {

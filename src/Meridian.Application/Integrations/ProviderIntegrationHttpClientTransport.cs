@@ -28,32 +28,7 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
             new ProviderIntegrationBoundaryContext(
                 EndpointKey: request?.Path,
                 Capability: request is null ? null : request.Method.ToString()),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for {Method} {Path}.",
-            nameof(SendAsync),
-            request?.Method,
-            request?.Path);
-        try
-        {
-            return await SendCoreAsync(request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for {Method} {Path}.",
-                nameof(SendAsync),
-                request?.Method,
-                request?.Path);
-            throw;
-        }
-    }
+            () => SendCoreAsync(request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationHttpResponse> SendCoreAsync(
         ProviderIntegrationHttpRequest request,
@@ -89,7 +64,7 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
                 group => string.Join(",", group.SelectMany(header => header.Value)),
                 StringComparer.OrdinalIgnoreCase),
             body);
-    }).ConfigureAwait(false);
+    }
 
     private static string BuildRequestUri(ProviderIntegrationHttpRequest request)
     {

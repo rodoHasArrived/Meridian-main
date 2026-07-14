@@ -67,7 +67,8 @@ public sealed record AppConfig(
     ProviderConnectionsConfig? ProviderConnections = null,
     FeatureCapabilityOptions? FeatureCapabilities = null,
     FundOperationsPersistenceConfig? FundOperationsPersistence = null,
-    ProviderModulesConfig? ProviderModules = null
+    ProviderModulesConfig? ProviderModules = null,
+    PipelineRuntimeConfig? Pipeline = null
 )
 {
     /// <summary>
@@ -79,6 +80,24 @@ public sealed record AppConfig(
     [JsonExtensionData]
     public Dictionary<string, System.Text.Json.JsonElement>? AdditionalSections { get; set; }
 }
+
+/// <summary>
+/// Runtime tuning for the event pipeline's flush behaviour. All fields are optional; unset values
+/// fall back to the pipeline's built-in defaults (final flush 30s, periodic sink flush 60s), so
+/// existing configurations keep their current behaviour. Non-positive values are ignored (treated
+/// as unset) by the pipeline registration.
+/// </summary>
+/// <param name="FinalFlushTimeoutSeconds">
+/// Timeout, in seconds, for the final flush during pipeline shutdown before giving up.
+/// </param>
+/// <param name="SinkFlushTimeoutSeconds">
+/// Per-call timeout, in seconds, for periodic sink flushes, preventing a hung sink from stalling
+/// the pipeline indefinitely.
+/// </param>
+public sealed record PipelineRuntimeConfig(
+    int? FinalFlushTimeoutSeconds = null,
+    int? SinkFlushTimeoutSeconds = null
+);
 
 /// <summary>
 /// Configuration for the unified provider registry (Phase 1.2).

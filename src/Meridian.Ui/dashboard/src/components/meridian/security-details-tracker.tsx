@@ -85,11 +85,14 @@ function loadOverrides(securityId: string): Record<string, string> {
   try {
     const raw = ls.getItem(storageKey(STORAGE_PREFIX_OVERRIDES, securityId));
     if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
+    return parseStoredOverrides(JSON.parse(raw) as unknown);
   } catch {
     return {};
   }
+}
+
+export function parseStoredOverrides(parsed: unknown): Record<string, string> {
+  return isRecord(parsed) ? sanitiseOverrideValues(parsed as Record<string, string>) : {};
 }
 
 function saveOverrides(securityId: string, overrides: Record<string, string>): void {
@@ -124,6 +127,10 @@ export function SecurityDetailsPanel({
   const [updatedBy, setUpdatedBy] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const loadGenerationRef = useRef(0);
+  // Serializes optimistic override patches: only the most recently issued patch is
+  // allowed to apply its server response, so a slow/failed earlier patch can neither
+  // clobber a newer edit nor mask its own failure.
+  const persistGenerationRef = useRef(0);
 
   useEffect(() => {
     if (!securityId) {
@@ -187,6 +194,10 @@ export function SecurityDetailsPanel({
 
   const persistPatch = useCallback(async (next: Record<string, string>, patch: OperatorOverridesPatchRequest) => {
     if (!securityId) return;
+    // Capture the last-known-good state so a rejected patch can be rolled back instead
+    // of leaving an optimistic value the server never accepted.
+    const previous = overrides;
+    const generation = ++persistGenerationRef.current;
     setOverrides(next);
     saveOverrides(securityId, next);
     dispatchOverridesChanged(securityId);
@@ -194,6 +205,9 @@ export function SecurityDetailsPanel({
     setServerErrorText(null);
     try {
       const dto = await overridesService.patch(securityId, patch);
+      // A newer patch has superseded this one; discard the stale response so it cannot
+      // overwrite the newer optimistic value.
+      if (persistGenerationRef.current !== generation) return;
       const merged = sanitiseOverrideValues(dto.values);
       setOverrides(merged);
       saveOverrides(securityId, merged);
@@ -202,10 +216,16 @@ export function SecurityDetailsPanel({
       setServerStatus("synced");
       dispatchOverridesChanged(securityId);
     } catch (err) {
+      if (persistGenerationRef.current !== generation) return;
+      // Roll the optimistic change back to the last-known-good values so a failed patch
+      // is not silently presented as applied.
+      setOverrides(previous);
+      saveOverrides(securityId, previous);
+      dispatchOverridesChanged(securityId);
       setServerStatus("offline");
-      setServerErrorText(err instanceof Error ? err.message : "Failed to save override on the server. Changes kept locally.");
+      setServerErrorText(err instanceof Error ? err.message : "Failed to save override on the server. Reverted to the last saved values.");
     }
-  }, [overridesService, securityId]);
+  }, [overrides, overridesService, securityId]);
 
   const commitEdit = useCallback((field: SecurityDetailFieldDef) => {
     if (!securityId) return;
@@ -469,17 +489,27 @@ function loadLots(securityId: string): SecurityLot[] {
   try {
     const raw = ls.getItem(storageKey(STORAGE_PREFIX_LOTS, securityId));
     if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((l): l is SecurityLot =>
-      l && typeof l.lotId === "string"
-      && typeof l.tradeDate === "string"
-      && typeof l.quantity === "number"
-      && typeof l.price === "number"
-    ).map((l) => ({ ...l, fees: l.fees ?? 0, note: l.note ?? "" }));
+    return parseStoredLots(JSON.parse(raw) as unknown);
   } catch {
     return [];
   }
+}
+
+export function parseStoredLots(parsed: unknown): SecurityLot[] {
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter((l): l is SecurityLot =>
+    isRecord(l)
+    && typeof l.lotId === "string"
+    && typeof l.tradeDate === "string"
+    && typeof l.quantity === "number"
+    && typeof l.price === "number"
+    && (l.fees === undefined || typeof l.fees === "number")
+    && (l.note === undefined || typeof l.note === "string")
+  ).map((l) => ({ ...l, fees: l.fees ?? 0, note: l.note ?? "" }));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function saveLots(securityId: string, lots: SecurityLot[]): void {

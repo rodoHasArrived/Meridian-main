@@ -30,7 +30,6 @@ public sealed class ProviderIntegrationOpenApiImportService
         ProviderCapabilityKindDto.Executions
     ];
 
-    private readonly ILogger<ProviderIntegrationOpenApiImportService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationOpenApiImportService> logger;
 
@@ -57,32 +56,7 @@ public sealed class ProviderIntegrationOpenApiImportService
             new ProviderIntegrationBoundaryContext(
                 TenantId: tenantId,
                 ManifestId: request?.ManifestId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, provider {ProviderId}.",
-            nameof(ImportAsync),
-            request?.ManifestId,
-            request?.ProviderId);
-        try
-        {
-            return await ImportCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, provider {ProviderId}.",
-                nameof(ImportAsync),
-                request?.ManifestId,
-                request?.ProviderId);
-            throw;
-        }
-    }
+            () => ImportCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationOpenApiImportResultDto> ImportCoreAsync(
         string? tenantId,
@@ -185,7 +159,7 @@ public sealed class ProviderIntegrationOpenApiImportService
         }
 
         return result;
-    }).ConfigureAwait(false);
+    }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

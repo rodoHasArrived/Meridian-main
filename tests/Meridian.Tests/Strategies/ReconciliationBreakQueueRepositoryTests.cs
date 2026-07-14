@@ -112,6 +112,115 @@ public sealed class ReconciliationBreakQueueRepositoryTests
     }
 
     [Fact]
+    public async Task CreateOrMigrateAsync_rekeys_superseded_break_id_and_preserves_casework_lineage()
+    {
+        var repo = CreateRepository(out _);
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:old-fingerprint",
+            SourceType = "statement",
+            SourceBreakId = "upstream-break-1",
+            SourceFingerprint = "old-fingerprint",
+            AssignedTo = "controller-a"
+        };
+        await repo.CreateIfMissingAsync(legacy);
+        // Human casework on the legacy id whose lineage must survive the re-key.
+        await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(legacy.BreakId, "controller-a", "controller-a", "triage"));
+
+        var reseeded = legacy with { BreakId = "statement:new-fingerprint", SourceFingerprint = "new-fingerprint" };
+        var created = await repo.CreateOrMigrateAsync(reseeded, previousBreakId: "statement:old-fingerprint");
+
+        created.Should().BeFalse(); // a migration, not a brand-new case
+        (await repo.GetByIdAsync("statement:old-fingerprint")).Should().BeNull();
+
+        var migrated = await repo.GetByIdAsync("statement:new-fingerprint");
+        migrated.Should().NotBeNull();
+        migrated!.AssignedTo.Should().Be("controller-a");
+        migrated.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
+        migrated.SourceFingerprint.Should().Be("new-fingerprint");
+
+        // The full audit trail follows the re-key: the migration event plus the pre-migration rows
+        // that remain stored under the superseded id are all returned under the new id.
+        var history = await repo.GetAuditHistoryAsync("statement:new-fingerprint");
+        history.Should().Contain(e => e.EventType == "BreakIdMigrated" && e.Note!.Contains("statement:old-fingerprint"));
+        history.Should().Contain(e => e.EventType == "CaseCreated");
+        history.Should().Contain(e => e.EventType == "ReviewStarted");
+        history.Select(e => e.Sequence).Should().BeInAscendingOrder();
+
+        // Rebuild from the linked trail still resolves to the current, re-keyed case.
+        var rebuilt = await repo.RebuildSnapshotFromAuditAsync("statement:new-fingerprint");
+        rebuilt!.BreakId.Should().Be("statement:new-fingerprint");
+    }
+
+    [Fact]
+    public async Task CreateOrMigrateAsync_does_not_rekey_when_current_break_id_already_exists()
+    {
+        var repo = CreateRepository(out _);
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with { BreakId = "statement:old", AssignedTo = "controller-a" };
+        var current = CreateItem(ReconciliationBreakQueueStatus.Open) with { BreakId = "statement:new" };
+        await repo.CreateIfMissingAsync(legacy);
+        await repo.CreateIfMissingAsync(current);
+
+        var result = await repo.CreateOrMigrateAsync(current with { SourceFingerprint = "new" }, previousBreakId: "statement:old");
+
+        result.Should().BeFalse();
+        // The already-present current case wins; the legacy case is left untouched (no destructive merge).
+        (await repo.GetByIdAsync("statement:old")).Should().NotBeNull();
+        (await repo.GetByIdAsync("statement:new")).Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateOrMigrateAsync_does_not_rekey_a_legacy_case_owned_by_a_different_source_break()
+    {
+        var repo = CreateRepository(out _);
+        // A legacy Delta==null case seeded under a shared fingerprint id, owned by upstream break B.
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:shared-legacy",
+            SourceType = "statement",
+            SourceBreakId = "upstream-break-B",
+            SourceFingerprint = "shared-legacy",
+            AssignedTo = "controller-b"
+        };
+        await repo.CreateIfMissingAsync(legacy);
+
+        // A different upstream break A that collides on the same legacy fingerprint id.
+        var breakA = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:new-A",
+            SourceType = "statement",
+            SourceBreakId = "upstream-break-A",
+            SourceFingerprint = "new-A"
+        };
+
+        var createdA = await repo.CreateOrMigrateAsync(breakA, previousBreakId: "statement:shared-legacy");
+
+        // Break A must not steal break B's case: it is created fresh, and the legacy case is untouched.
+        createdA.Should().BeTrue();
+        (await repo.GetByIdAsync("statement:shared-legacy")).Should().NotBeNull();
+        (await repo.GetByIdAsync("statement:new-A"))!.AssignedTo.Should().BeNull();
+
+        // Break B, sharing the legacy source identity, correctly re-keys its own case.
+        var breakB = legacy with { BreakId = "statement:new-B", SourceFingerprint = "new-B" };
+        var migratedB = await repo.CreateOrMigrateAsync(breakB, previousBreakId: "statement:shared-legacy");
+        migratedB.Should().BeFalse();
+        (await repo.GetByIdAsync("statement:shared-legacy")).Should().BeNull();
+        (await repo.GetByIdAsync("statement:new-B"))!.AssignedTo.Should().Be("controller-b");
+    }
+
+    [Fact]
+    public async Task CreateOrMigrateAsync_creates_a_new_case_when_no_superseded_case_exists()
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { BreakId = "statement:new" };
+
+        var created = await repo.CreateOrMigrateAsync(item, previousBreakId: "statement:absent-old");
+
+        created.Should().BeTrue();
+        (await repo.GetByIdAsync("statement:new")).Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task Audit_history_is_append_only_and_contains_required_fields_in_chronological_order()
     {
         var repo = CreateRepository(out var root);

@@ -9,7 +9,6 @@ public sealed class ProviderIntegrationQuarantineReviewService
     private const int DefaultRecentRunLimit = 10;
     private const int MaxRecentRunLimit = 50;
 
-    private readonly ILogger<ProviderIntegrationQuarantineReviewService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationQuarantineReviewService> logger;
 
@@ -36,30 +35,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
             logger,
             "quarantine-review",
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
-            nameof(GetReviewAsync),
-            connectionId);
-        try
-        {
-            return await GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
-                nameof(GetReviewAsync),
-                connectionId);
-            throw;
-        }
-    }
+            () => GetReviewCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationQuarantineReviewDto> GetReviewCoreAsync(
         string? tenantId,
@@ -125,7 +101,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
             decisionPosture.ReplayRequestedRecordCount,
             decisionPosture.IgnoredRecordCount,
             decisionPosture.CashPositionCandidateCount);
-    }).ConfigureAwait(false);
+    }
 
     public async Task<ProviderIntegrationQuarantineResolutionResultDto> ResolveAsync(
         ProviderIntegrationQuarantineResolutionRequestDto request,
@@ -143,30 +119,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
                 TenantId: tenantId,
                 ConnectionId: request?.ConnectionId,
                 SyncRunId: request?.SyncRunId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for connection {ConnectionId}.",
-            nameof(ResolveAsync),
-            request?.ConnectionId);
-        try
-        {
-            return await ResolveCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for connection {ConnectionId}.",
-                nameof(ResolveAsync),
-                request?.ConnectionId);
-            throw;
-        }
-    }
+            () => ResolveCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationQuarantineResolutionResultDto> ResolveCoreAsync(
         string? tenantId,
@@ -208,7 +161,7 @@ public sealed class ProviderIntegrationQuarantineReviewService
             record,
             decision,
             "Provider integration quarantine review decision recorded.");
-    }).ConfigureAwait(false);
+    }
 
     private static int NormalizeLimit(int recentRunLimit)
     {

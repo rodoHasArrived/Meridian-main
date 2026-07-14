@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Meridian.Core.Scheduling;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Storage.Maintenance;
@@ -272,9 +273,7 @@ public sealed class ArchiveMaintenanceScheduleManager : IArchiveMaintenanceSched
             var schedules = _schedules.Values.ToList();
             var json = JsonSerializer.Serialize(schedules, s_jsonOptions);
 
-            var tempPath = _schedulesPath + ".tmp";
-            await File.WriteAllTextAsync(tempPath, json, ct);
-            File.Move(tempPath, _schedulesPath, overwrite: true);
+            await AtomicFileWriter.WriteAsync(_schedulesPath, json, ct);
 
             _logger.LogDebug("Persisted {Count} maintenance schedules to {Path}", schedules.Count, _schedulesPath);
         }
@@ -522,9 +521,7 @@ public sealed class MaintenanceExecutionHistory : IMaintenanceExecutionHistory
 
             var json = JsonSerializer.Serialize(executions, s_jsonOptions);
 
-            var tempPath = _historyPath + ".tmp";
-            await File.WriteAllTextAsync(tempPath, json, ct);
-            File.Move(tempPath, _historyPath, overwrite: true);
+            await AtomicFileWriter.WriteAsync(_historyPath, json, ct);
         }
         finally
         {

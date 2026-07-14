@@ -6,7 +6,6 @@ namespace Meridian.Application.Integrations;
 
 public sealed class ProviderIntegrationActivationService
 {
-    private readonly ILogger<ProviderIntegrationActivationService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly ILogger<ProviderIntegrationActivationService> logger;
 
@@ -34,32 +33,7 @@ public sealed class ProviderIntegrationActivationService
                 TenantId: tenantId,
                 ManifestId: request?.ManifestId,
                 ConnectionId: request?.ConnectionId),
-            async () =>
-    {
-        logger.LogDebug(
-            "Provider integration operation {Operation} starting for manifest {ManifestId}, connection {ConnectionId}.",
-            nameof(ActivateAsync),
-            request?.ManifestId,
-            request?.ConnectionId);
-        try
-        {
-            return await ActivateCoreAsync(tenantId, request, ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Provider integration operation {Operation} failed for manifest {ManifestId}, connection {ConnectionId}.",
-                nameof(ActivateAsync),
-                request?.ManifestId,
-                request?.ConnectionId);
-            throw;
-        }
-    }
+            () => ActivateCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
 
     private async Task<ProviderIntegrationActivationResultDto> ActivateCoreAsync(
         string? tenantId,
@@ -121,7 +95,7 @@ public sealed class ProviderIntegrationActivationService
             readiness,
             activationConnection.ApprovalEvidenceId,
             "Provider integration connection activated.");
-    }).ConfigureAwait(false);
+    }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

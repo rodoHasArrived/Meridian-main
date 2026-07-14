@@ -2022,7 +2022,7 @@ function buildProfileAuthenticationPanel(
         tone: diagnosticBlocked ? "warning" : "success",
         badgeVariant: diagnosticBlocked ? "warning" : "success",
         actionLabel: "Open diagnostics",
-        actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints,
+        actionHref: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics,
         actionAriaLabel: "Open Settings diagnostic services from profile authentication posture"
       }
     ]

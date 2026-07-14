@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
+using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Polly;
-using Polly.Extensions.Http;
 
 namespace Meridian.Ui.Services;
 
@@ -49,10 +48,10 @@ public static class HttpClientNames
 /// - Centralized configuration for timeouts, headers, retry policies
 /// - Better testability through DI
 ///
-/// This intentionally duplicates resilience policies from
-/// Meridian.Infrastructure.Http.SharedResiliencePolicies because the WPF desktop app
-/// cannot reference the Infrastructure project (XAML compiler limitation).
-/// When updating retry/circuit breaker policies, keep both implementations in sync.
+/// Retry and circuit-breaker behaviour is sourced from the single
+/// <see cref="SharedResiliencePolicies"/> definition in Meridian.Infrastructure (which
+/// both this project and the WPF desktop app already reference), so there is no longer a
+/// separate copy to keep in sync.
 /// </remarks>
 public static class HttpClientConfiguration
 {
@@ -181,42 +180,12 @@ public static class HttpClientConfiguration
     }
 
     /// <summary>
-    /// Adds standard resilience policies (retry with exponential backoff, circuit breaker).
+    /// Adds standard resilience policies (retry with exponential backoff, circuit breaker)
+    /// from the shared Infrastructure definition so desktop and service HTTP clients behave
+    /// identically.
     /// </summary>
     private static IHttpClientBuilder AddStandardResiliencePolicy(this IHttpClientBuilder builder)
-    {
-        return builder
-            .AddPolicyHandler(GetRetryPolicy())
-            .AddPolicyHandler(GetCircuitBreakerPolicy());
-    }
-
-    /// <summary>
-    /// Creates a retry policy with exponential backoff for transient HTTP errors.
-    /// </summary>
-    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-    {
-        return HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            .WaitAndRetryAsync(
-                retryCount: 3,
-                sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                onRetry: (outcome, timespan, retryAttempt, _) =>
-                {
-                });
-    }
-
-    /// <summary>
-    /// Creates a circuit breaker policy to prevent cascading failures.
-    /// </summary>
-    private static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
-    {
-        return HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .CircuitBreakerAsync(
-                handledEventsAllowedBeforeBreaking: 5,
-                durationOfBreak: TimeSpan.FromSeconds(30));
-    }
+        => builder.AddSharedResiliencePolicy();
 }
 
 /// <summary>

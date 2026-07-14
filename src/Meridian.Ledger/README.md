@@ -59,6 +59,15 @@ depreciation run, mirroring `DailyPortfolioPricingDraftBuilder`.
 account level so accounting statements can follow front-office lot-relief policy.
 `LedgerTaxLotReliefProjector` applies those account-level relief methods to open tax lots and
 prepares balanced cash, security cost-basis, and realized gain/loss lines before durable posting.
+`LedgerTaxLot` carries an optional `SecurityId` so cost-basis lots link to Security Master
+reference data. `LedgerTaxLotBasisAdjuster` (fed via `LedgerTaxLotReliefInput.BasisAdjustments`)
+restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — corporate-action
+splits and return of capital, pool-factor paydowns, and day-count premium/discount amortization —
+before relief, keeping the ledger engine free of Security Master contracts while relieving basis
+against the effective lots. The Application-layer `SecurityMasterCostBasisAdjustmentService` reads
+the master and produces those adjustments; `SecurityMasterAmortizationLedgerBridge` posts the
+matching coupon-accrual, premium-amortization/discount-accretion, and principal-paydown journal
+entries so cash flow projections are booked instead of remaining display-only.
 `AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
 receipts, cash-interest credits, corporate-action cash events, and recurring accrual obligations
 such as management fees, performance fees, commissions, and withholding taxes before workflow
