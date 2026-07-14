@@ -103,6 +103,31 @@ public sealed class LedgerTaxLotReliefWashSaleTests
     }
 
     [Fact]
+    public void AverageCost_MultiSliceRoundingResidual_TotalTiesToRoundedPooledBasis()
+    {
+        // 3 shares pooled at 100/3 each; selling 2 across two lots. Rounding each slice independently
+        // would give 33.33 + 33.33 = 66.66, but the rounded pooled basis for 2 shares is 66.67 — the
+        // rounding residual is carried onto the final slice so the total ties.
+        var input = new LedgerTaxLotReliefInput(
+            Account,
+            new DateOnly(2026, 3, 1),
+            quantitySold: 2m,
+            salePrice: 40m,
+            LedgerTaxLotReliefMethod.AverageCost,
+            [
+                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 1m, 100m / 3m, SecurityId),
+                new LedgerTaxLot("lot-b", new DateOnly(2026, 1, 2), 1m, 100m / 3m, SecurityId),
+                new LedgerTaxLot("lot-c", new DateOnly(2026, 1, 3), 1m, 100m / 3m, SecurityId),
+            ]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        projection.Selections.Should().HaveCount(2);
+        projection.CostBasis.Should().Be(66.67m); // rounded pooled basis for 2 shares, not 66.66
+        projection.Selections.Select(selection => selection.CostBasis).Should().Contain([33.33m, 33.34m]);
+    }
+
+    [Fact]
     public void AverageCost_SingleShareFromUnevenPool_TiesUnitCostToRoundedBasis()
     {
         // A 3-share pool at 100/3 per share has a repeating average; a 1-share sale rounds the basis

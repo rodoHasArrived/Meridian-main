@@ -102,9 +102,13 @@ public static class LedgerReportPackBuilder
                 }
                 else
                 {
+                    // Cap each row at the remaining unallocated amount so accumulated rounding on
+                    // earlier rows can never push the final row's residual negative (matches the
+                    // projector's DistributeBasisIncreases).
+                    var remaining = disallowedTotal - allocatedDisallowed;
                     disallowed = totalQuantity == 0m
                         ? 0m
-                        : RoundCurrency(disallowedTotal * (selection.QuantityRelieved / totalQuantity));
+                        : Math.Min(remaining, RoundCurrency(disallowedTotal * (selection.QuantityRelieved / totalQuantity)));
                     allocatedDisallowed += disallowed;
                 }
 

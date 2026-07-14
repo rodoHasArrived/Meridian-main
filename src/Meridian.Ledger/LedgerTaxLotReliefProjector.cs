@@ -107,22 +107,48 @@ public static class LedgerTaxLotReliefProjector
         if (!consumption.FullyConsumed)
             throw new InvalidOperationException($"Insufficient open tax-lot quantity to relieve {quantitySold}; remaining shortfall was {consumption.Shortfall}.");
 
-        return consumption.Slices
-            .Select(slice =>
+        var slices = consumption.Slices;
+
+        // Lot-discrete methods (FIFO/LIFO/HIFO/SpecificId) relieve each lot at its own recorded
+        // unit cost; each slice's basis rounds independently because lots are not pooled.
+        if (averageUnitCost is not { } pooledUnitCost)
+        {
+            return slices
+                .Select(static slice => new LedgerTaxLotReliefSelection(
+                    slice.Lot,
+                    slice.Quantity,
+                    RoundCurrency(slice.Quantity * slice.Lot.UnitCost),
+                    slice.Lot.UnitCost))
+                .ToList();
+        }
+
+        // Average cost pools every share at one unit cost. Round the total basis for the whole sold
+        // quantity once and carry the rounding residual onto the final slice, so the per-slice bases
+        // sum exactly to the rounded pooled basis (no cent drift across lots). Each slice reports the
+        // unit cost implied by its rounded basis so the realized-gain export ties per row.
+        var totalCostBasis = RoundCurrency(slices.Sum(static slice => slice.Quantity) * pooledUnitCost);
+        var selections = new List<LedgerTaxLotReliefSelection>(slices.Count);
+        var allocated = 0m;
+
+        for (var index = 0; index < slices.Count; index++)
+        {
+            var slice = slices[index];
+            decimal costBasis;
+            if (index == slices.Count - 1)
             {
-                // Average cost relieves every share at the pooled unit cost; lot-discrete methods
-                // relieve at the lot's own cost.
-                var relievedUnitCost = averageUnitCost ?? slice.Lot.UnitCost;
-                var costBasis = RoundCurrency(slice.Quantity * relievedUnitCost);
-                // For average cost, report the unit cost implied by the rounded pooled basis so the
-                // realized-gain export ties (QuantityRelieved * UnitCost == CostBasis); discrete
-                // methods report the lot's own recorded unit cost.
-                var reportedUnitCost = averageUnitCost is not null && slice.Quantity != 0m
-                    ? costBasis / slice.Quantity
-                    : relievedUnitCost;
-                return new LedgerTaxLotReliefSelection(slice.Lot, slice.Quantity, costBasis, reportedUnitCost);
-            })
-            .ToList();
+                costBasis = totalCostBasis - allocated;
+            }
+            else
+            {
+                costBasis = RoundCurrency(slice.Quantity * pooledUnitCost);
+                allocated += costBasis;
+            }
+
+            var reportedUnitCost = slice.Quantity != 0m ? costBasis / slice.Quantity : pooledUnitCost;
+            selections.Add(new LedgerTaxLotReliefSelection(slice.Lot, slice.Quantity, costBasis, reportedUnitCost));
+        }
+
+        return selections;
     }
 
     /// <summary>
@@ -130,6 +156,12 @@ public static class LedgerTaxLotReliefProjector
     /// substantially-identical security is acquired within the policy window, the proportional
     /// share of the loss is disallowed and carried into the replacement lots' basis. Returns
     /// <c>null</c> when no wash sale applies (a gain, disabled policy, or no matching replacement).
+    /// <para>
+    /// Scope: deferral is computed from the sale's aggregate net realized loss. A single relief that
+    /// spans both gain and loss lots (a net gain that nonetheless contains loss shares) is not yet
+    /// decomposed to defer only the loss shares; per-loss-lot matching within a mixed gain/loss sale
+    /// is a documented follow-up.
+    /// </para>
     /// </summary>
     private static WashSaleOutcome? ComputeWashSale(
         LedgerTaxLotReliefInput input,
