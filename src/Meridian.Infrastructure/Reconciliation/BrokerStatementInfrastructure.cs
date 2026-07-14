@@ -14,6 +14,28 @@ public interface ICanonicalStatementStore
     Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Maps record identifiers onto safe file names for the per-record JSON stores. The identifiers
+/// are system-generated today, but they flow through DTOs, so path separators, traversal
+/// sequences, and characters invalid in file names are neutralized before touching the disk.
+/// </summary>
+internal static class ReconciliationRecordFileName
+{
+    private static readonly char[] InvalidChars =
+        [.. Path.GetInvalidFileNameChars(), '/', '\\'];
+
+    public static string For(string recordId)
+    {
+        var name = string.Join('_', recordId.Split(InvalidChars))
+            .Replace("..", "_", StringComparison.Ordinal)
+            .Trim('.', ' ');
+
+        return string.IsNullOrWhiteSpace(name)
+            ? Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(recordId))).ToLowerInvariant()
+            : name;
+    }
+}
+
 public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalStatementStore
 {
     private readonly string _folder = Path.Combine(dataRoot, "reconciliation", "statement-imports");
@@ -38,7 +60,8 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
         var payload = JsonSerializer.Serialize(new { import, rows });
         // Atomic write: a crash mid-import must not leave a truncated statement file that the
         // duplicate-key scan would then fail to parse.
-        await AtomicFileWriter.WriteAsync(Path.Combine(_folder, $"{import.ImportId}.json"), payload, ct).ConfigureAwait(false);
+        var fileName = ReconciliationRecordFileName.For(import.ImportId);
+        await AtomicFileWriter.WriteAsync(Path.Combine(_folder, $"{fileName}.json"), payload, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default)
@@ -178,7 +201,7 @@ public sealed class JsonReconciliationBreakStore(string dataRoot) : IReconciliat
     {
         foreach (var record in records)
         {
-            var path = Path.Combine(_folder, $"{record.BreakId}.json");
+            var path = Path.Combine(_folder, $"{ReconciliationRecordFileName.For(record.BreakId)}.json");
             await AtomicFileWriter.WriteAsync(path, JsonSerializer.Serialize(record), ct).ConfigureAwait(false);
         }
     }
