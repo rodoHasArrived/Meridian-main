@@ -245,6 +245,11 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     {
         var reversed = 0;
 
+        // The correction is booked at the superseding action's effective date, not backdated into
+        // the original event's period — a reversal was not known until the amendment/cancellation
+        // arrived, so as-of balances and journal-range queries must not see it before that date.
+        var correctionTimestamp = ToUtcStartOfDay(state.Effective.ExDate);
+
         // Only a handful of journals are ever looked up here (the superseded chain's primary plus
         // derived withholding/receipt postings), so a direct scan avoids materializing a dictionary
         // of the whole ledger on every superseded action.
@@ -264,7 +269,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     continue; // already reversed on a prior sync
 
                 var reason = $"Superseded by {state.Effective.CorpActId:D} ({state.LifecycleState})";
-                ledger.Post(LedgerJournalReversal.Reverse(original, reversalId, original.Timestamp, reason));
+                ledger.Post(LedgerJournalReversal.Reverse(original, reversalId, correctionTimestamp, reason));
                 reversed++;
             }
         }

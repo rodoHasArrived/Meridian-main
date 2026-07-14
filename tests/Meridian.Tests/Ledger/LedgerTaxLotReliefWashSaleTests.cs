@@ -76,6 +76,32 @@ public sealed class LedgerTaxLotReliefWashSaleTests
         resolved.ReliefMethod.Should().Be(LedgerTaxLotReliefMethod.AverageCost);
     }
 
+    [Fact]
+    public void AverageCost_ReportsPooledUnitCostAcrossLots()
+    {
+        // Sell 150 across two lots (100@100 and 100@140, pooled average 120). Every relieved slice
+        // must report the pooled unit cost — not the individual lot cost — so realized-gain report
+        // rows stay internally consistent: QuantityRelieved * UnitCost == CostBasis.
+        var input = new LedgerTaxLotReliefInput(
+            Account,
+            new DateOnly(2026, 3, 1),
+            quantitySold: 150m,
+            salePrice: 130m,
+            LedgerTaxLotReliefMethod.AverageCost,
+            [
+                new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 100m, 100m, SecurityId),
+                new LedgerTaxLot("lot-b", new DateOnly(2026, 2, 1), 100m, 140m, SecurityId),
+            ]);
+
+        var projection = LedgerTaxLotReliefProjector.Project(input);
+
+        projection.Selections.Should().HaveCount(2);
+        projection.Selections.Should().OnlyContain(selection => selection.UnitCost == 120m);
+        projection.Selections.Should().OnlyContain(selection =>
+            selection.QuantityRelieved * selection.UnitCost == selection.CostBasis);
+        projection.CostBasis.Should().Be(18_000m); // 150 shares @ pooled 120
+    }
+
     // -------------------------------------------------------------------------
     // Wash sale — no deferral paths (behaviour preservation)
     // -------------------------------------------------------------------------

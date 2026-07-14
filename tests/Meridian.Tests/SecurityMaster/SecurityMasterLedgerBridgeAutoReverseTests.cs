@@ -103,6 +103,40 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
     }
 
     [Fact]
+    public async Task AutoReverse_DatesReversalAtCorrectionEvent_NotOriginalPeriod()
+    {
+        var (bridge, queryService) = CreateBridge();
+        var ledger = new DomainLedger();
+        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
+        var original = MakeDividend(0.25m); // ex 2026-03-15, income booked that day
+
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original });
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+
+        // The cancellation arrives with a later effective date.
+        var cancellation = original with
+        {
+            CorpActId = Guid.NewGuid(),
+            ExDate = new DateOnly(2026, 4, 15),
+            PayDate = null,
+            SupersedesCorpActId = original.CorpActId,
+            LifecycleState = CorporateActionLifecycleStates.Cancelled,
+        };
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original, cancellation });
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+
+        var income = LedgerAccounts.DividendIncome;
+        var beforeCorrection = new DateTimeOffset(2026, 3, 20, 0, 0, 0, TimeSpan.Zero);
+        var afterCorrection = new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
+
+        // As of a cutoff before the cancellation, the original dividend still stands — the reversal
+        // is dated at the correction (2026-04-15) and must not be backdated into the March period.
+        ledger.GetBalanceAsOf(income, beforeCorrection).Should().NotBe(0m);
+        // Once past the correction date the reversal nets the income back to zero.
+        ledger.GetBalanceAsOf(income, afterCorrection).Should().Be(0m);
+    }
+
+    [Fact]
     public async Task DefaultContext_AmendmentAfterPosting_DefersWithoutReversing()
     {
         var (bridge, queryService) = CreateBridge();

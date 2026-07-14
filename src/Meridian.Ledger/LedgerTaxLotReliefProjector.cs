@@ -108,10 +108,18 @@ public static class LedgerTaxLotReliefProjector
             throw new InvalidOperationException($"Insufficient open tax-lot quantity to relieve {quantitySold}; remaining shortfall was {consumption.Shortfall}.");
 
         return consumption.Slices
-            .Select(slice => new LedgerTaxLotReliefSelection(
-                slice.Lot,
-                slice.Quantity,
-                RoundCurrency(slice.Quantity * (averageUnitCost ?? slice.Lot.UnitCost))))
+            .Select(slice =>
+            {
+                // Average cost relieves every share at the pooled unit cost; lot-discrete methods
+                // relieve at the lot's own cost. Store whichever was used so the selection's unit
+                // cost and cost basis stay consistent for reporting.
+                var unitCost = averageUnitCost ?? slice.Lot.UnitCost;
+                return new LedgerTaxLotReliefSelection(
+                    slice.Lot,
+                    slice.Quantity,
+                    RoundCurrency(slice.Quantity * unitCost),
+                    unitCost);
+            })
             .ToList();
     }
 
