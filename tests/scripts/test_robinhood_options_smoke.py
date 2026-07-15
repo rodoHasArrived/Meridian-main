@@ -60,9 +60,11 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('ASPNETCORE_ENVIRONMENT = "Development"', environment)
 
     def test_startup_continues_through_optional_development_authentication(self) -> None:
-        self.assertIn('$startupContinuationInvoked = $false', self.script)
-        self.assertIn('Find-ElementByExactName -Root $Root -Name "Continue without credentials"', self.script)
+        self.assertIn('ContinuationInvoked = $false', self.script)
+        self.assertIn('Find-ElementByExactName -Root $activeRoot -Name "Continue without credentials"', self.script)
         self.assertIn('Invoke-OrClickElement -Element $continueWithoutCredentials', self.script)
+        self.assertIn('[System.Windows.Automation.AutomationElement]::FromHandle($Process.MainWindowHandle)', self.script)
+        self.assertIn('$root = Wait-ForShellReady', self.script)
 
 
 if __name__ == "__main__":

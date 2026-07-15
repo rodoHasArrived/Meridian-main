@@ -753,31 +753,52 @@ function Wait-ForShellReady {
     $selectionMarkers = @("Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
     $shellMarkers = @("Strategy Workspace", "Trading Workspace", "Data Workspace", "Accounting Workspace")
     $initialMarkers = $selectionMarkers + $shellMarkers + $PageMarkers
-    $startupContinuationInvoked = $false
+    $startupState = @{
+        ContinuationInvoked = $false
+        Root = $Root
+    }
 
     $state = Wait-Until -TimeoutSeconds $TimeoutSeconds -FailureMessage "Timed out waiting for Meridian startup." -Condition {
-        $failure = Find-FirstElementByPartialNames -Root $Root -Patterns @("Unable to open", "Object reference not set to an instance")
-        if ($null -ne $failure) {
-            throw "Desktop surfaced a page-load error during startup: $($failure.Current.Name)"
-        }
-
-        if (-not $startupContinuationInvoked) {
-            $continueWithoutCredentials = Find-ElementByExactName -Root $Root -Name "Continue without credentials"
-            if ($null -ne $continueWithoutCredentials) {
-                Write-Log "Optional development authentication detected. Continuing without credentials."
-                Invoke-OrClickElement -Element $continueWithoutCredentials
-                $startupContinuationInvoked = $true
+        if ($startupState.ContinuationInvoked) {
+            try {
+                $Process.Refresh()
+                if ($Process.MainWindowHandle -ne 0) {
+                    $currentRoot = [System.Windows.Automation.AutomationElement]::FromHandle($Process.MainWindowHandle)
+                    if ($null -ne $currentRoot) {
+                        $startupState.Root = $currentRoot
+                    }
+                }
+            }
+            catch {
                 return $null
             }
         }
 
-        $match = Find-FirstElementByNames -Root $Root -Names $initialMarkers
+        $activeRoot = $startupState.Root
+        $failure = Find-FirstElementByPartialNames -Root $activeRoot -Patterns @("Unable to open", "Object reference not set to an instance")
+        if ($null -ne $failure) {
+            throw "Desktop surfaced a page-load error during startup: $($failure.Current.Name)"
+        }
+
+        if (-not $startupState.ContinuationInvoked) {
+            $continueWithoutCredentials = Find-ElementByExactName -Root $activeRoot -Name "Continue without credentials"
+            if ($null -ne $continueWithoutCredentials) {
+                Write-Log "Optional development authentication detected. Continuing without credentials."
+                Invoke-OrClickElement -Element $continueWithoutCredentials
+                $startupState.ContinuationInvoked = $true
+                return $null
+            }
+        }
+
+        $match = Find-FirstElementByNames -Root $activeRoot -Names $initialMarkers
         if ($null -ne $match) {
             return $match
         }
 
         return $null
     }
+
+    $Root = $startupState.Root
 
     if ($state.Current.Name -in $selectionMarkers) {
         Write-Log "Operating context selection detected. Entering the preselected workstation context."
@@ -792,6 +813,8 @@ function Wait-ForShellReady {
             return Find-FirstElementByNames -Root $Root -Names ($shellMarkers + $PageMarkers)
         } | Out-Null
     }
+
+    return $Root
 }
 
 function Wait-ForCasePage {
@@ -877,7 +900,7 @@ function Invoke-SmokeCase {
     try {
         $root = Get-WindowAutomationRoot -Process $process
         $startupTimeoutSeconds = if ($Case.ContainsKey("StartupTimeoutSeconds")) { [int]$Case.StartupTimeoutSeconds } else { 45 }
-        Wait-ForShellReady -Root $root -Process $process -PageMarkers $Case.ReadyMarkers -TimeoutSeconds $startupTimeoutSeconds
+        $root = Wait-ForShellReady -Root $root -Process $process -PageMarkers $Case.ReadyMarkers -TimeoutSeconds $startupTimeoutSeconds
 
         $pageReady = $null
         try {
