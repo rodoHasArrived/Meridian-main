@@ -273,7 +273,38 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             StrategyId = safeRequest.StrategyId
         };
 
-        _orders[orderId] = orderState;
+        // Atomic reservation closes the concurrent-duplicate race the early guard cannot: if two
+        // placements with the same id race past that read-only guard, only one wins this slot. A
+        // placement that finds an already-open order here rejects instead of overwriting it; a
+        // terminal order at the key is a legitimate id reuse and is replaced.
+        var reserved = _orders.AddOrUpdate(
+            orderId,
+            orderState,
+            (_, existing) => existing.Status is OrderStatus.Filled or OrderStatus.Cancelled
+                or OrderStatus.Rejected or OrderStatus.Expired
+                ? orderState
+                : existing);
+        if (!ReferenceEquals(reserved, orderState))
+        {
+            var duplicateReason = $"An order with client order id '{orderId}' is already open.";
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderPlaceRejected",
+                outcome: "Rejected",
+                orderId: orderId,
+                state: reserved,
+                report: null,
+                message: duplicateReason,
+                ct: ct).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = reserved,
+                ErrorMessage = duplicateReason
+            };
+        }
+
         TrimRetainedOrdersIfNeeded();
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
