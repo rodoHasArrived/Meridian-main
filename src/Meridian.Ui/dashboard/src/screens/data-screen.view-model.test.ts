@@ -483,6 +483,8 @@ describe("data-screen view model", () => {
     expect(resolveDataWorkstream("/data/backfills")).toBe("backfills");
     expect(resolveDataWorkstream("/data/providers")).toBe("providers");
     expect(resolveDataWorkstream("/data/import")).toBe("import");
+    expect(resolveDataWorkstream("/data/operations")).toBe("operations");
+    expect(resolveDataWorkstream("/data/assurance")).toBe("assurance");
     expect(resolveDataWorkstream("/data/exports")).toBe("exports");
     expect(resolveDataWorkstream("/data/query")).toBe("query");
     expect(resolveDataWorkstream("/data")).toBe("overview");

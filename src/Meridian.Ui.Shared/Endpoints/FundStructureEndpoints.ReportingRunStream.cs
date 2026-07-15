@@ -21,7 +21,9 @@ public static partial class FundStructureEndpoints
     /// </summary>
     public static void MapReportingRunStreamEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        var group = app.MapGroup("/api/fund-structure").WithTags("Fund Structure");
+        var group = app.MapGroup("/api/fund-structure")
+            .WithTags("Fund Structure")
+            .RequireWorkstationTenantScope();
 
         // GET /api/fund-structure/reporting/runs/{runId}/stream — SSE channel emitting
         // `event: report-run` frames with the run's status/audit payload whenever it changes (notably
@@ -49,15 +51,14 @@ public static partial class FundStructureEndpoints
                 return Results.Problem($"Reporting run '{runId}' was not found.", statusCode: StatusCodes.Status404NotFound);
             }
 
-            // Access is a property of the run's template governance; enforce it at subscribe time.
-            var governedCatalog = context.RequestServices.GetService<GovernedReportingTemplateCatalog>();
-            if (governedCatalog is not null)
+            // Historical run access is governed by the immutable tenant and access snapshot retained
+            // on the manifest, not by the template's current policy. Legacy unscoped manifests fail
+            // closed on this tenant-bound endpoint.
+            var accessContext = BuildReportAccessQueryContext(context);
+            var evaluation = ReportAccessPolicyEvaluator.Evaluate(manifest, accessContext);
+            if (!evaluation.IsAccessible)
             {
-                var evaluation = governedCatalog.EvaluateAccess(manifest.TemplateId, BuildReportAccessQueryContext(context));
-                if (!evaluation.IsAccessible)
-                {
-                    return Results.Problem(evaluation.Reason, statusCode: StatusCodes.Status403Forbidden);
-                }
+                return Results.Problem(evaluation.Reason, statusCode: StatusCodes.Status403Forbidden);
             }
 
             var broadcaster = context.RequestServices.GetService<ReportRunStreamBroadcaster>();
@@ -104,7 +105,8 @@ public static partial class FundStructureEndpoints
     /// (<see cref="Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster"/>). Authorization is
     /// enforced at subscribe time by the SSE endpoint, so this pure builder needs no access context —
     /// a run's status is a property of the run, not the viewer. Returns null when the orchestration
-    /// service or the run is unavailable.
+    /// service or the run is unavailable. The payload is emitted only to subscriptions that were
+    /// authorized against the manifest's immutable tenant/access snapshot.
     /// </summary>
     internal static ReportingRunAuditTrailDto? TryBuildReportRunAuditTrail(IServiceProvider services, string runId)
     {

@@ -87,7 +87,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
     private sealed record ReportPackDeliverySnapshot(IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
 }
 
-public sealed class ReportPackDeliveryService
+public sealed partial class ReportPackDeliveryService
 {
     private static readonly TimeSpan PackageAccessWindow = TimeSpan.FromDays(14);
     private readonly ReportPackWorkflowService _workflowService;
@@ -198,15 +198,6 @@ public sealed class ReportPackDeliveryService
             request.EvidenceLinks,
             request.Formats,
             request.DeliveryMode);
-    }
-
-    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
-    {
-        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
-        {
-            throw new InvalidOperationException(
-                $"Reviewed automation cannot {action}; a human operator approval is required.");
-        }
     }
 
     public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(

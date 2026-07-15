@@ -306,8 +306,6 @@ import type {
   RenderReportTemplateRequest,
   RenderReportTemplateResponse,
   ReportingDueScheduleRunResult,
-  ReportingRunRequest,
-  ReportingRunResult,
   ReportingScheduleRecord,
   ReportingScheduleRunResult,
   ReportingStarterKitProvisionResult,
@@ -338,6 +336,7 @@ import type {
   MaintenanceScheduleHistoryResponse,
   MaintenanceSchedulesResponse
 } from "@/types";
+import { createReportingRunsApi } from "@/lib/api/reporting-runs.api";
 import {
   AUTH_API_ENDPOINTS,
   ADMIN_OPERATIONS_API_ENDPOINTS,
@@ -2628,17 +2627,7 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<ReportingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
 }
 
-export function runReportingNow(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
-  return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
-}
-
-export function assessReportingRunReadiness(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
-  return postJson<import("@/types").ReportingRunReadiness>(
-    FUND_STRUCTURE_API_ENDPOINTS.reportingRunReadiness,
-    request,
-    options
-  );
-}
+export const { assessReportingRunReadiness, runReportingNow } = createReportingRunsApi(postJson);
 
 export function previewReportPack(request: FundReportPackPreviewRequest, options: ApiRequestOptions = {}) {
   return postJson<FundReportPackPreview>(FUND_STRUCTURE_API_ENDPOINTS.reportPackPreview, request, options);

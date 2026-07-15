@@ -25,7 +25,61 @@ export interface DataOperationsRouteFocusCardState {
   action: DataOperationsRouteFocusActionState | null;
 }
 
-export type DataOperationsWorkstream = "overview" | "providers" | "import" | "backfills" | "exports" | "query";
+export type DataOperationsWorkstream =
+  | "overview"
+  | "providers"
+  | "import"
+  | "backfills"
+  | "operations"
+  | "assurance"
+  | "exports"
+  | "query";
+
+export const DATA_ROUTE_TABS = [
+  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, workstream: "overview" },
+  { id: "providers", label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders, workstream: "providers" },
+  { id: "import", label: "Import", route: WORKSTATION_ROUTE_CATALOG.dataImport, workstream: "import" },
+  { id: "backfills", label: "Backfills", route: WORKSTATION_ROUTE_CATALOG.dataBackfills, workstream: "backfills" },
+  { id: "operations", label: "Operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations, workstream: "operations" },
+  { id: "assurance", label: "Assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance, workstream: "assurance" },
+  { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports, workstream: "exports" },
+  { id: "query", label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery, workstream: "query" }
+] as const;
+
+export const DATA_ROUTE_VIEW_COPY: Record<DataOperationsWorkstream, { title: string; description: string }> = {
+  overview: {
+    title: "Data overview",
+    description: "Provider posture, data quality, and analytics posture. Providers, backfills, exports, and SQL have focused routes."
+  },
+  providers: {
+    title: "Provider catalog",
+    description: "Source health, credentials, routing trust, verification, and recovery actions."
+  },
+  import: {
+    title: "Data import",
+    description: "Template-led retained-file preview, validation evidence, and downstream handoff."
+  },
+  backfills: {
+    title: "Backfill queue",
+    description: "Historical repair jobs with operator-visible status, ranges, and result evidence."
+  },
+  operations: {
+    title: "Ingestion operations",
+    description: "Resumable import and backfill recovery with checkpointed evidence and audited actions."
+  },
+  assurance: {
+    title: "Storage assurance",
+    description: "Unified storage posture with preview-first, confirmation-gated maintenance actions."
+  },
+  exports: {
+    title: "Export packages",
+    description: "Governed export runs and downstream handoff evidence."
+  },
+  query: {
+    title: "SQL query",
+    description: "Read-only SQL workbench over the workstation store."
+  }
+};
 
 export interface DataWorkstationViewState {
   workstream: DataOperationsWorkstream;
@@ -43,6 +97,14 @@ export function resolveDataWorkstream(pathname: string): DataOperationsWorkstrea
 
   if (pathname.includes("/backfills")) {
     return "backfills";
+  }
+
+  if (pathname.includes("/operations")) {
+    return "operations";
+  }
+
+  if (pathname.includes("/assurance")) {
+    return "assurance";
   }
 
   if (pathname.includes("/exports")) {

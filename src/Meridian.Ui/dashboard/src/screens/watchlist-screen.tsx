@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useMemo, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,11 @@ import {
   type WatchlistSelectedDetail,
   type WatchlistSortColumn
 } from "@/screens/watchlist-screen.view-model";
+import {
+  ContextMenu,
+  useWatchlistRowActions,
+  WatchlistRowActionsTrigger
+} from "@/screens/watchlist-screen.row-actions";
 
 export function WatchlistScreen() {
   const { record: recordActivity } = useActivityLog();
@@ -98,6 +103,12 @@ export function WatchlistScreen() {
   });
   const FeedbackIcon = vm.submitFeedback?.tone === "success" ? CheckCircle2 : AlertCircle;
   const inCompanionPane = isCompanionPaneRoute(useLocation().pathname);
+  const navigate = useNavigate();
+  const rowActions = useWatchlistRowActions({
+    onInspect: vm.selectSymbol,
+    onOpenQuote: (row) => navigate(row.quoteHref),
+    onRemove: (symbol) => void vm.removeSymbol(symbol)
+  });
 
   return (
     <ScreenLayout
@@ -347,7 +358,7 @@ export function WatchlistScreen() {
               </div>
               <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)]">
                 <DenseDataTable
-                  columns={buildColumns(vm.selectSymbol, vm.selectedSymbol, vm.detailPanelId, vm.removeSymbol)}
+                  columns={buildColumns(vm.selectSymbol, vm.selectedSymbol, vm.detailPanelId, vm.removeSymbol, rowActions.openFor)}
                   rows={vm.rows}
                   getRowId={(row) => row.symbol}
                   getRowAriaLabel={(row) => row.ariaLabel}
@@ -355,12 +366,20 @@ export function WatchlistScreen() {
                   getRowAriaExpanded={(row) => row.symbol === vm.selectedRowId}
                   getRowSelectAriaLabel={(row) => row.rowSelectAriaLabel}
                   onRowSelect={(row) => vm.selectSymbol(row.symbol)}
+                  onRowContextMenu={(row, event) => rowActions.openFor(event, row)}
                   selectedRowId={vm.selectedRowId}
                   emptyText={vm.listDescription}
                   ariaLabel={vm.tableLabel}
                   caption={vm.tableCaption}
                   sort={vm.sort}
                   onToggleSort={(columnId) => vm.toggleSort(columnId as WatchlistSortColumn)}
+                />
+                <ContextMenu
+                  open={rowActions.menu.open}
+                  position={rowActions.menu.position}
+                  items={rowActions.menu.items}
+                  onClose={rowActions.menu.close}
+                  label={rowActions.menu.label}
                 />
                 <WatchlistDetailPanel
                   title={vm.detailPanelTitle}
@@ -403,7 +422,11 @@ function buildColumns(
   selectSymbol: (symbol: string) => void,
   selectedSymbol: string | null,
   detailPanelId: string,
-  removeSymbol: (symbol: string) => Promise<void>
+  removeSymbol: (symbol: string) => Promise<void>,
+  openRowMenu: (
+    event: ReactMouseEvent<HTMLElement> | ReactKeyboardEvent<HTMLElement>,
+    row: WatchlistRowViewModel
+  ) => void
 ): DenseDataTableColumn<WatchlistRowViewModel>[] {
   return [
     {
@@ -537,6 +560,10 @@ function buildColumns(
               {row.removeStatusLabel}
             </span>
           ) : null}
+          <WatchlistRowActionsTrigger
+            label={`More actions for ${row.symbol}`}
+            onOpen={(event) => openRowMenu(event, row)}
+          />
         </div>
       )
     }

@@ -113,6 +113,42 @@ create index if not exists ix_reporting_artifact_audit_tenant_package
         package_id,
         sequence desc);
 
+create or replace function __SCHEMA__.enforce_reporting_artifact_audit_append()
+returns trigger
+language plpgsql
+as $$
+declare
+    expected_sequence bigint;
+    expected_previous_hash text;
+begin
+    select next_sequence, last_hash
+    into expected_sequence, expected_previous_hash
+    from __SCHEMA__.reporting_artifact_audit_chain_head
+    where chain_id = 1
+    for update;
+
+    if expected_sequence is null then
+        raise exception 'reporting artifact audit chain head is missing'
+            using errcode = '55000';
+    end if;
+
+    if new.sequence <> expected_sequence
+       or new.previous_hash is distinct from expected_previous_hash then
+        raise exception 'reporting artifact audit append does not extend the current chain head'
+            using errcode = '55000';
+    end if;
+
+    return new;
+end;
+$$;
+
+drop trigger if exists trg_reporting_artifact_audit_append_guard
+    on __SCHEMA__.reporting_artifact_audit;
+
+create trigger trg_reporting_artifact_audit_append_guard
+before insert on __SCHEMA__.reporting_artifact_audit
+for each row execute function __SCHEMA__.enforce_reporting_artifact_audit_append();
+
 create or replace function __SCHEMA__.reject_reporting_artifact_metadata_mutation()
 returns trigger
 language plpgsql

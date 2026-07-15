@@ -273,13 +273,20 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         if (_options.SyncMode != WalSyncMode.NoSync)
         {
-            // Use async flush to avoid blocking the thread with a synchronous fsync syscall.
             // The underlying FileStream was opened with FileOptions.WriteThrough, which bypasses
-            // the .NET managed buffer and ensures data reaches the OS kernel buffer on each write.
-            // FlushAsync submits any remaining OS buffer data; the OS handles physical persistence
-            // asynchronously. This eliminates the millisecond-level blocking caused by fsync(2)
-            // while maintaining the durability guarantees required in most crash scenarios.
+            // the .NET managed buffer and pushes data to the OS kernel buffer on each write.
+            // FlushAsync submits any remaining OS buffer data without the millisecond-level
+            // blocking of a synchronous fsync(2) — sufficient for BatchedSync's balanced guarantee.
             await _currentWalFile.FlushAsync(ct).ConfigureAwait(false);
+
+            if (_options.SyncMode == WalSyncMode.EveryWrite)
+            {
+                // EveryWrite is documented as the "most durable" mode, so it must force contents to
+                // physical disk (fsync) rather than trusting WriteThrough + async flush. There is no
+                // async flush-to-disk API, so this synchronous call is intentional: it is the cost
+                // callers accept when they opt into the strongest durability guarantee.
+                _currentWalFile.Flush(flushToDisk: true);
+            }
         }
 
         _uncommittedRecords = 0;
@@ -749,8 +756,6 @@ public sealed class WriteAheadLog : IAsyncDisposable
         }
     }
 
-    private static ReadOnlySpan<byte> PipeSeparator => "|"u8;
-
     /// <summary>
     /// Repairs all WAL files by scanning every record, validating checksums,
     /// and rewriting only valid records into new WAL files.
@@ -872,11 +877,19 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     }
 
                     await writer.FlushAsync();
+
+                    // Force the repaired contents to physical disk before the atomic rename, so a
+                    // crash immediately after the rename cannot surface a temp file whose bytes
+                    // never left the OS cache. Mirrors the truncate path's flush-to-disk.
+                    await outStream.FlushAsync(ct).ConfigureAwait(false);
+                    outStream.Flush(flushToDisk: true);
                 }
 
-                // Replace original with repaired file
-                File.Delete(walFile);
-                File.Move(tempPath, walFile);
+                // Replace the original with the repaired file in a single atomic rename.
+                // A prior File.Delete + File.Move sequence had a crash window between the two
+                // calls in which the WAL file could be lost entirely; File.Move(overwrite: true)
+                // is an atomic replace on the same volume.
+                File.Move(tempPath, walFile, overwrite: true);
 
                 // Make the rename durable so the repaired file survives a crash or power loss.
                 // post-commit (the repaired file is already in place): must not observe cancellation.

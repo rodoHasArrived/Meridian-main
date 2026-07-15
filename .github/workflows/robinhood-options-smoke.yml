@@ -69,9 +69,11 @@ jobs:
       - name: Run Robinhood options smoke
         shell: pwsh
         run: |
-          $smokeArgs = @('-Configuration', '${{ inputs.configuration }}')
+          $smokeArgs = @{
+            Configuration = '${{ inputs.configuration }}'
+          }
           if ('${{ inputs.skip_build }}' -eq 'true') {
-            $smokeArgs += '-SkipBuild'
+            $smokeArgs.SkipBuild = $true
           }
           & scripts/dev/robinhood-options-smoke.ps1 @smokeArgs
 
