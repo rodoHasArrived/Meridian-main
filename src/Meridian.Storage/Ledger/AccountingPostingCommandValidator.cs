@@ -124,7 +124,15 @@ public static class AccountingPostingCommandValidator
         AccountingPostingCommandDto command)
     {
         if (command.BookContext is not { } context)
+        {
+            if (RequiresAuthoritativeBookContext(command))
+            {
+                throw new LedgerValidationException(
+                    "Typed accounting posting commands require authoritative book context before append.");
+            }
+
             return;
+        }
 
         var writeBookId = command.LedgerBookId ?? write.LedgerBookId;
         if (writeBookId != context.LedgerBookId)
@@ -158,6 +166,12 @@ public static class AccountingPostingCommandValidator
                 "Accounting posting command book context policy must match the ledger write accounting policy and version.");
         }
     }
+
+    private static bool RequiresAuthoritativeBookContext(AccountingPostingCommandDto command)
+        => command.BookPositionId.HasValue ||
+           command.EconomicEvent is not null ||
+           command.ProjectionLineage is not null ||
+           command.RulePackReference is not null;
 
     private static void ValidateTypedAssertions(AccountingPostingCommandDto command)
     {
