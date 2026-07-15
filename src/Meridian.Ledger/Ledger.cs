@@ -29,6 +29,12 @@ public sealed class Ledger : IReadOnlyLedger
     private readonly Dictionary<LedgerAccount, List<AccountBalanceSnapshot>> _accountBalanceSnapshots = [];
     private readonly Dictionary<(LedgerAccount Account, string ScopeKey), DimensionalBalanceSeries>
         _dimensionalBalanceSnapshots = [];
+    private readonly Dictionary<string, HashSet<DimensionalBalanceSeries>>
+        _dimensionalBalanceSeriesIndex = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, List<ScopedLedgerLinePosting>>
+        _dimensionalPostingIndex = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, List<ScopedLedgerLinePosting>>
+        _financialAccountPostingIndex = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<LedgerPostingCountSnapshot> _postingCountSnapshots = [];
     private long _ledgerLineSequence;
     private long _journalPostingSequence;
@@ -69,6 +75,7 @@ public sealed class Ledger : IReadOnlyLedger
             _accountTotals[line.Account] = totals.Add(line.Debit, line.Credit, entry.Timestamp);
             var snapshot = AddAccountBalanceSnapshot(line);
             AddDimensionalBalanceSnapshot(line, snapshot);
+            AddScopedPostingIndexes(entry.JournalEntryId, line, snapshot.Sequence);
         }
 
         AddPostingCountSnapshot(entry);
@@ -350,7 +357,11 @@ public sealed class Ledger : IReadOnlyLedger
         LedgerLineDimensionSet lineDimensions)
     {
         var result = new Dictionary<LedgerAccount, decimal>();
-        foreach (var series in _dimensionalBalanceSnapshots.Values)
+        var candidateSeries = FindCandidateDimensionSeries(lineDimensions);
+        if (candidateSeries is null)
+            return result;
+
+        foreach (var series in candidateSeries)
         {
             if (!MatchesFinancialAccount(series.Account, financialAccountId) ||
                 !MatchesLineDimensions(series.Dimensions, lineDimensions))
@@ -428,8 +439,9 @@ public sealed class Ledger : IReadOnlyLedger
         string? financialAccountId = null,
         LedgerLineDimensionSet? lineDimensions = null)
     {
-        var balances = TrialBalanceAsOf(timestamp, financialAccountId, lineDimensions);
-        if (string.IsNullOrWhiteSpace(financialAccountId) && lineDimensions is null)
+        var canonicalDimensions = LedgerLineDimensionSetNormalizer.Canonicalize(lineDimensions);
+        var balances = TrialBalanceAsOf(timestamp, financialAccountId, canonicalDimensions);
+        if (string.IsNullOrWhiteSpace(financialAccountId) && canonicalDimensions is null)
         {
             var index = LastPostingCountSnapshotAtOrBefore(timestamp);
             return index < 0
@@ -441,23 +453,10 @@ public sealed class Ledger : IReadOnlyLedger
                     _postingCountSnapshots[index].LedgerEntryCount);
         }
 
-        var journalCount = 0;
-        var ledgerEntryCount = 0;
-        foreach (var journalEntry in _journal)
-        {
-            if (journalEntry.Timestamp > timestamp)
-                continue;
-
-            var scopedLines = journalEntry.Lines
-                .Where(line => MatchesFinancialAccount(line.Account, financialAccountId))
-                .Where(line => MatchesLineDimensions(line.Dimensions, lineDimensions))
-                .ToList();
-            if (scopedLines.Count == 0)
-                continue;
-
-            journalCount++;
-            ledgerEntryCount += scopedLines.Count;
-        }
+        var (journalCount, ledgerEntryCount) = GetScopedPostingCountsAsOf(
+            timestamp,
+            financialAccountId,
+            canonicalDimensions);
 
         return new LedgerSnapshot(timestamp, balances, journalCount, ledgerEntryCount);
     }
@@ -598,12 +597,170 @@ public sealed class Ledger : IReadOnlyLedger
         {
             series = new DimensionalBalanceSeries(line.Account, dimensions, []);
             _dimensionalBalanceSnapshots[key] = series;
+            foreach (var field in LedgerLineDimensionSetFields.Enumerate(dimensions))
+            {
+                var indexKey = BuildDimensionIndexKey(field);
+                if (!_dimensionalBalanceSeriesIndex.TryGetValue(indexKey, out var indexedSeries))
+                {
+                    indexedSeries = [];
+                    _dimensionalBalanceSeriesIndex[indexKey] = indexedSeries;
+                }
+
+                indexedSeries.Add(series);
+            }
         }
 
         var index = FindAccountBalanceInsertIndex(series.Snapshots, snapshot);
         series.Snapshots.Insert(index, snapshot);
         RecalculateAccountBalanceSnapshots(series.Snapshots, index);
     }
+
+    private IReadOnlyCollection<DimensionalBalanceSeries>? FindCandidateDimensionSeries(
+        LedgerLineDimensionSet dimensions)
+    {
+        HashSet<DimensionalBalanceSeries>? smallest = null;
+        foreach (var field in LedgerLineDimensionSetFields.Enumerate(dimensions))
+        {
+            if (!_dimensionalBalanceSeriesIndex.TryGetValue(BuildDimensionIndexKey(field), out var candidates))
+                return null;
+
+            if (smallest is null || candidates.Count < smallest.Count)
+                smallest = candidates;
+        }
+
+        return smallest;
+    }
+
+    private void AddScopedPostingIndexes(Guid journalEntryId, LedgerEntry line, long sequence)
+    {
+        var dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(line.Dimensions);
+        var posting = new ScopedLedgerLinePosting(
+            line.Timestamp,
+            sequence,
+            journalEntryId,
+            line.Account,
+            dimensions);
+
+        if (!string.IsNullOrWhiteSpace(line.Account.FinancialAccountId))
+        {
+            var financialAccountId = line.Account.FinancialAccountId.Trim();
+            if (!_financialAccountPostingIndex.TryGetValue(financialAccountId, out var postings))
+            {
+                postings = [];
+                _financialAccountPostingIndex[financialAccountId] = postings;
+            }
+
+            InsertScopedPosting(postings, posting);
+        }
+
+        if (dimensions is null)
+            return;
+
+        foreach (var field in LedgerLineDimensionSetFields.Enumerate(dimensions))
+        {
+            var indexKey = BuildDimensionIndexKey(field);
+            if (!_dimensionalPostingIndex.TryGetValue(indexKey, out var postings))
+            {
+                postings = [];
+                _dimensionalPostingIndex[indexKey] = postings;
+            }
+
+            InsertScopedPosting(postings, posting);
+        }
+    }
+
+    private (int JournalCount, int LedgerEntryCount) GetScopedPostingCountsAsOf(
+        DateTimeOffset timestamp,
+        string? financialAccountId,
+        LedgerLineDimensionSet? dimensions)
+    {
+        IReadOnlyList<ScopedLedgerLinePosting>? candidates = null;
+        if (!string.IsNullOrWhiteSpace(financialAccountId))
+        {
+            if (!_financialAccountPostingIndex.TryGetValue(financialAccountId.Trim(), out var accountPostings))
+                return (0, 0);
+
+            candidates = accountPostings;
+        }
+
+        if (dimensions is not null)
+        {
+            foreach (var field in LedgerLineDimensionSetFields.Enumerate(dimensions))
+            {
+                if (!_dimensionalPostingIndex.TryGetValue(BuildDimensionIndexKey(field), out var dimensionPostings))
+                    return (0, 0);
+
+                if (candidates is null || dimensionPostings.Count < candidates.Count)
+                    candidates = dimensionPostings;
+            }
+        }
+
+        if (candidates is null)
+            return (0, 0);
+
+        var journalIds = new HashSet<Guid>();
+        var ledgerEntryCount = 0;
+        var lastIndex = LastScopedPostingAtOrBefore(candidates, timestamp);
+        for (var index = 0; index <= lastIndex; index++)
+        {
+            var posting = candidates[index];
+            if (!MatchesFinancialAccount(posting.Account, financialAccountId) ||
+                !MatchesLineDimensions(posting.Dimensions, dimensions))
+            {
+                continue;
+            }
+
+            journalIds.Add(posting.JournalEntryId);
+            ledgerEntryCount++;
+        }
+
+        return (journalIds.Count, ledgerEntryCount);
+    }
+
+    private static void InsertScopedPosting(
+        List<ScopedLedgerLinePosting> postings,
+        ScopedLedgerLinePosting posting)
+    {
+        var low = 0;
+        var high = postings.Count;
+        while (low < high)
+        {
+            var mid = low + ((high - low) / 2);
+            if (CompareScopedPostings(postings[mid], posting) <= 0)
+                low = mid + 1;
+            else
+                high = mid;
+        }
+
+        postings.Insert(low, posting);
+    }
+
+    private static int LastScopedPostingAtOrBefore(
+        IReadOnlyList<ScopedLedgerLinePosting> postings,
+        DateTimeOffset timestamp)
+    {
+        var low = 0;
+        var high = postings.Count - 1;
+        var result = -1;
+        while (low <= high)
+        {
+            var mid = low + ((high - low) / 2);
+            if (postings[mid].Timestamp <= timestamp)
+            {
+                result = mid;
+                low = mid + 1;
+            }
+            else
+            {
+                high = mid - 1;
+            }
+        }
+
+        return result;
+    }
+
+    private static string BuildDimensionIndexKey(LedgerDimensionField field)
+        => $"{field.Name.ToUpperInvariant()}\u001f{field.Value.ToUpperInvariant()}";
 
     private static int FindAccountBalanceInsertIndex(
         IReadOnlyList<AccountBalanceSnapshot> snapshots,
@@ -785,6 +942,12 @@ public sealed class Ledger : IReadOnlyLedger
         return timestamp != 0 ? timestamp : left.Sequence.CompareTo(right.Sequence);
     }
 
+    private static int CompareScopedPostings(ScopedLedgerLinePosting left, ScopedLedgerLinePosting right)
+    {
+        var timestamp = left.Timestamp.CompareTo(right.Timestamp);
+        return timestamp != 0 ? timestamp : left.Sequence.CompareTo(right.Sequence);
+    }
+
     private static LedgerLineInput ToLedgerLineInput(LedgerEntry line) =>
         new()
         {
@@ -838,6 +1001,13 @@ public sealed class Ledger : IReadOnlyLedger
         LedgerAccount Account,
         LedgerLineDimensionSet Dimensions,
         List<AccountBalanceSnapshot> Snapshots);
+
+    private readonly record struct ScopedLedgerLinePosting(
+        DateTimeOffset Timestamp,
+        long Sequence,
+        Guid JournalEntryId,
+        LedgerAccount Account,
+        LedgerLineDimensionSet? Dimensions);
 
     private readonly record struct LedgerPostingCountSnapshot(
         DateTimeOffset Timestamp,

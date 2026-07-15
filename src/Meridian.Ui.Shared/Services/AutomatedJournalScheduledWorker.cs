@@ -1,6 +1,7 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,16 +14,21 @@ public sealed record AutomatedJournalScheduledRunResult(
     AutomatedJournalScheduleStateDto State,
     string Summary,
     IReadOnlyList<Guid> JournalEntryIds,
-    IReadOnlyList<string> Blockers);
+    IReadOnlyList<string> Blockers,
+    decimal? EvidenceConfidenceScore = null,
+    AutomatedJournalEvidenceQualityDto? EvidenceQuality = null,
+    string? NextPeriodId = null,
+    DateTimeOffset? NextScheduledForUtc = null);
 
 public sealed record AutomatedJournalScheduledBatchResult(
     DateTimeOffset EvaluatedAtUtc,
     IReadOnlyList<AutomatedJournalScheduledRunResult> Runs);
 
 /// <summary>
-/// Deterministic one-shot worker for due monthly fee and dividend work. It only invokes
-/// automated intake, which writes to the existing manual journal workbench; it never
-/// submits, approves, or posts a journal entry.
+/// Deterministic recurring worker for due monthly fee and dividend work. A completed cycle
+/// advances the durable period cursor atomically while retaining its run history. The worker
+/// only invokes automated intake into the existing manual journal workbench; it never submits,
+/// approves, or posts a journal entry.
 /// </summary>
 public sealed class AutomatedJournalScheduledWorker
 {
@@ -44,12 +50,37 @@ public sealed class AutomatedJournalScheduledWorker
     public async Task<AutomatedJournalScheduledBatchResult> RunDueAsync(
         DateTimeOffset nowUtc,
         CancellationToken ct = default)
+        => await RunDueCoreAsync(nowUtc, tenantId: null, companyId: null, scopeSpecified: false, ct: ct)
+            .ConfigureAwait(false);
+
+    /// <summary>
+    /// Runs only schedules owned by the exact tenant/company scope. Null values are treated as
+    /// the legacy unscoped identity, not as wildcards, so an unscoped operator cannot trigger
+    /// another tenant's accounting automation.
+    /// </summary>
+    public async Task<AutomatedJournalScheduledBatchResult> RunDueForScopeAsync(
+        DateTimeOffset nowUtc,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => await RunDueCoreAsync(nowUtc, NormalizeScope(tenantId), NormalizeScope(companyId), scopeSpecified: true, ct: ct)
+            .ConfigureAwait(false);
+
+    private async Task<AutomatedJournalScheduledBatchResult> RunDueCoreAsync(
+        DateTimeOffset nowUtc,
+        string? tenantId,
+        string? companyId,
+        bool scopeSpecified,
+        CancellationToken ct)
     {
         nowUtc = nowUtc.ToUniversalTime();
         await _runGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             var due = (await _store.ListAsync(ct).ConfigureAwait(false))
+                .Where(item => !scopeSpecified ||
+                    (string.Equals(item.TenantId, tenantId, StringComparison.OrdinalIgnoreCase) &&
+                     string.Equals(item.CompanyId, companyId, StringComparison.OrdinalIgnoreCase)))
                 .Where(static item => item.IsEnabled)
                 .Where(static item => item.ScheduledForUtc.HasValue)
                 .Where(item => item.ScheduledForUtc!.Value <= nowUtc)
@@ -92,7 +123,10 @@ public sealed class AutomatedJournalScheduledWorker
             existingRun?.StartedAtUtc ?? nowUtc,
             CompletedAtUtc: null,
             State: AutomatedJournalScheduleStateDto.Running,
-            Summary: $"Monthly {item.Kind} schedule '{item.ScheduleId}' is running for {scheduledForUtc:O}.");
+            Summary: $"Monthly {item.Kind} schedule '{item.ScheduleId}' is running for {scheduledForUtc:O}.",
+            PeriodId: item.PeriodId,
+            PeriodStart: item.PeriodStart,
+            PeriodEnd: item.PeriodEnd);
         var running = item with
         {
             State = AutomatedJournalScheduleStateDto.Running,
@@ -106,6 +140,34 @@ public sealed class AutomatedJournalScheduledWorker
 
         try
         {
+            if (item.Kind == AutomatedJournalScheduleKind.FeeAccrual)
+            {
+                var feeEvidence = AutomatedJournalFeeEvidenceEvaluator.Evaluate(
+                    item.PeriodId,
+                    item.Currency,
+                    item.BeginningNav,
+                    item.EndingNavBeforeFees,
+                    item.HighWaterMark,
+                    item.CapitalAccountReconciliation,
+                    item.MinimumCapitalAccountConfidence,
+                    nowUtc);
+                if (!feeEvidence.IsReady)
+                {
+                    return await CompleteAsync(
+                        running,
+                        runKey,
+                        nowUtc,
+                        feeEvidence.FailureState,
+                        feeEvidence.Assessment.Summary,
+                        [],
+                        BuildScheduleEvidenceLinks(running, feeEvidence.EvidenceLinks, nowUtc),
+                        feeEvidence.Blockers,
+                        feeEvidence.Assessment.ConfidenceScore,
+                        feeEvidence.Assessment.Quality,
+                        ct).ConfigureAwait(false);
+                }
+            }
+
             if (item.Kind == AutomatedJournalScheduleKind.DividendCapture && item.Positions.Count == 0)
             {
                 const string blocker = "No positions are configured for the monthly dividend-capture scope.";
@@ -118,6 +180,8 @@ public sealed class AutomatedJournalScheduledWorker
                     [],
                     [],
                     [blocker],
+                    null,
+                    null,
                     ct).ConfigureAwait(false);
             }
 
@@ -149,6 +213,8 @@ public sealed class AutomatedJournalScheduledWorker
                 [],
                 [],
                 [blocker],
+                null,
+                null,
                 ct).ConfigureAwait(false);
         }
     }
@@ -177,7 +243,9 @@ public sealed class AutomatedJournalScheduledWorker
                 [
                     $"{UiApiRoutes.LedgerJournalAutomationMonthlySchedules}?scheduleId={Uri.EscapeDataString(item.ScheduleId)}"
                 ],
-                EvidenceRetainedAtUtc: scheduledForUtc),
+                EvidenceRetainedAtUtc: scheduledForUtc,
+                CapitalAccountReconciliation: item.CapitalAccountReconciliation,
+                MinimumCapitalAccountConfidence: item.MinimumCapitalAccountConfidence),
             ct);
 
     private Task<AutomatedJournalIntakeRunResult> RunDividendCaptureAsync(
@@ -239,6 +307,12 @@ public sealed class AutomatedJournalScheduledWorker
             .Distinct()
             .ToArray();
         var evidenceLinks = BuildEvidenceLinks(running, run, nowUtc);
+        var evidenceConfidenceScore = run.EvidenceAssessments.Count == 0
+            ? (decimal?)null
+            : run.EvidenceAssessments.Values.Min(static assessment => assessment.ConfidenceScore);
+        var evidenceQuality = run.EvidenceAssessments.Count == 0
+            ? (AutomatedJournalEvidenceQualityDto?)null
+            : run.EvidenceAssessments.Values.Min(static assessment => assessment.Quality);
 
         AutomatedJournalScheduleStateDto state;
         string summary;
@@ -283,6 +357,8 @@ public sealed class AutomatedJournalScheduledWorker
             journalEntryIds,
             evidenceLinks,
             blockers,
+            evidenceConfidenceScore,
+            evidenceQuality,
             ct).ConfigureAwait(false);
     }
 
@@ -295,6 +371,8 @@ public sealed class AutomatedJournalScheduledWorker
         IReadOnlyList<Guid> journalEntryIds,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
         IReadOnlyList<string> blockers,
+        decimal? evidenceConfidenceScore,
+        AutomatedJournalEvidenceQualityDto? evidenceQuality,
         CancellationToken ct)
     {
         var prior = running.RunHistory.First(history => string.Equals(history.RunKey, runKey, StringComparison.OrdinalIgnoreCase));
@@ -305,9 +383,14 @@ public sealed class AutomatedJournalScheduledWorker
             Summary = summary,
             JournalEntryIds = journalEntryIds,
             EvidenceLinks = evidenceLinks,
-            Blockers = blockers
+            Blockers = blockers,
+            PeriodId = running.PeriodId,
+            PeriodStart = running.PeriodStart,
+            PeriodEnd = running.PeriodEnd,
+            EvidenceConfidenceScore = evidenceConfidenceScore,
+            EvidenceQuality = evidenceQuality
         };
-        var completed = running with
+        var completedCycle = running with
         {
             State = state,
             LastRunAtUtc = nowUtc,
@@ -315,17 +398,27 @@ public sealed class AutomatedJournalScheduledWorker
             LastSummary = summary,
             EvidenceLinks = evidenceLinks,
             Blockers = blockers,
+            LastEvidenceConfidenceScore = evidenceConfidenceScore,
+            LastEvidenceQuality = evidenceQuality,
             RunHistory = UpsertHistory(running.RunHistory, completedHistory)
         };
-        await _store.SaveAsync(completed, ct).ConfigureAwait(false);
+        var next = ShouldAdvance(completedCycle, state, journalEntryIds)
+            ? AdvanceRecurringCycle(completedCycle)
+            : completedCycle;
+        var persisted = await _store.SaveAsync(next, ct).ConfigureAwait(false);
+        var advanced = !string.Equals(persisted.PeriodId, running.PeriodId, StringComparison.OrdinalIgnoreCase);
         return new AutomatedJournalScheduledRunResult(
-            completed.ScheduleId,
+            persisted.ScheduleId,
             runKey,
             prior.ScheduledForUtc,
             state,
             summary,
             journalEntryIds,
-            blockers);
+            blockers,
+            evidenceConfidenceScore,
+            evidenceQuality,
+            advanced ? persisted.PeriodId : null,
+            advanced ? persisted.ScheduledForUtc : null);
     }
 
     private static IReadOnlyList<OperationsEvidenceLinkDto> BuildEvidenceLinks(
@@ -354,9 +447,76 @@ public sealed class AutomatedJournalScheduledWorker
         return evidence;
     }
 
+    private static IReadOnlyList<OperationsEvidenceLinkDto> BuildScheduleEvidenceLinks(
+        AutomatedJournalScheduleWorkItem item,
+        IReadOnlyList<OperationsEvidenceLinkDto> retainedEvidence,
+        DateTimeOffset capturedAtUtc)
+    {
+        var evidence = retainedEvidence
+            .Where(static link => !string.IsNullOrWhiteSpace(link.Route))
+            .DistinctBy(static link => $"{link.EvidenceId}|{link.Route}", StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        evidence.Add(new OperationsEvidenceLinkDto(
+            $"automated-journal-schedule:{item.ScheduleId}",
+            "Monthly automated-journal schedule and run history",
+            $"{UiApiRoutes.LedgerJournalAutomationMonthlySchedules}?scheduleId={Uri.EscapeDataString(item.ScheduleId)}",
+            "automated-journal-scheduler",
+            capturedAtUtc));
+        return evidence;
+    }
+
     private static string BuildRunKey(AutomatedJournalScheduleWorkItem item, DateTimeOffset scheduledForUtc)
         => FormattableString.Invariant(
             $"{item.ScheduleId.Trim().ToLowerInvariant()}|{item.PeriodId.Trim().ToLowerInvariant()}|{scheduledForUtc:O}");
+
+    private static bool ShouldAdvance(
+        AutomatedJournalScheduleWorkItem item,
+        AutomatedJournalScheduleStateDto state,
+        IReadOnlyList<Guid> journalEntryIds)
+        => item.RecurrenceEnabled &&
+           (state is AutomatedJournalScheduleStateDto.DraftReady or AutomatedJournalScheduleStateDto.NoDraftRequired ||
+            state == AutomatedJournalScheduleStateDto.NeedsInvestigation && journalEntryIds.Count > 0);
+
+    private static AutomatedJournalScheduleWorkItem AdvanceRecurringCycle(
+        AutomatedJournalScheduleWorkItem completed)
+    {
+        var currentToken = completed.PeriodStart.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
+        var nextPeriodStart = completed.PeriodStart.AddMonths(1);
+        var nextToken = nextPeriodStart.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
+        var tokenIndex = completed.PeriodId.IndexOf(currentToken, StringComparison.Ordinal);
+        if (tokenIndex < 0)
+        {
+            throw new InvalidOperationException(
+                $"Recurring schedule '{completed.ScheduleId}' cannot advance period id '{completed.PeriodId}' because it does not contain '{currentToken}'.");
+        }
+
+        var nextPeriodId = string.Concat(
+            completed.PeriodId.AsSpan(0, tokenIndex),
+            nextToken,
+            completed.PeriodId.AsSpan(tokenIndex + currentToken.Length));
+        var nextPeriodEnd = nextPeriodStart.AddMonths(1).AddDays(-1);
+        var dueDaysAfterPeriodEnd = completed.DueDate.DayNumber - completed.PeriodEnd.DayNumber;
+        var nextDueDate = nextPeriodEnd.AddDays(dueDaysAfterPeriodEnd);
+        return completed with
+        {
+            PeriodId = nextPeriodId,
+            PeriodStart = nextPeriodStart,
+            PeriodEnd = nextPeriodEnd,
+            DueDate = nextDueDate,
+            ScheduledForUtc = null,
+            State = AutomatedJournalScheduleStateDto.Scheduled,
+            JournalEntryIds = [],
+            LastSummary = $"Next monthly {completed.Kind} cycle is scheduled for period '{nextPeriodId}'.",
+            EvidenceLinks = [],
+            Blockers = [],
+            BeginningNav = completed.Kind == AutomatedJournalScheduleKind.FeeAccrual ? null : completed.BeginningNav,
+            EndingNavBeforeFees = completed.Kind == AutomatedJournalScheduleKind.FeeAccrual ? null : completed.EndingNavBeforeFees,
+            HighWaterMark = completed.Kind == AutomatedJournalScheduleKind.FeeAccrual ? null : completed.HighWaterMark,
+            CapitalAccountReconciliation = null,
+            LastEvidenceConfidenceScore = null,
+            LastEvidenceQuality = null
+        };
+    }
 
     private static IReadOnlyList<AutomatedJournalScheduleRunHistory> UpsertHistory(
         IReadOnlyList<AutomatedJournalScheduleRunHistory> history,
@@ -366,28 +526,32 @@ public sealed class AutomatedJournalScheduledWorker
             .Append(entry)
             .OrderBy(static item => item.ScheduledForUtc)
             .ToArray();
+
+    private static string? NormalizeScope(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 /// <summary>TimeProvider-driven host loop; <see cref="RunOnceAsync"/> is the deterministic seam.</summary>
 public sealed class AutomatedJournalSchedulerHostedService : BackgroundService
 {
     private static readonly TimeSpan TickInterval = TimeSpan.FromMinutes(1);
-    private readonly AutomatedJournalScheduledWorker _worker;
+    private readonly IServiceProvider _services;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AutomatedJournalSchedulerHostedService> _logger;
 
     public AutomatedJournalSchedulerHostedService(
-        AutomatedJournalScheduledWorker worker,
+        IServiceProvider services,
         TimeProvider timeProvider,
         ILogger<AutomatedJournalSchedulerHostedService> logger)
     {
-        _worker = worker ?? throw new ArgumentNullException(nameof(worker));
+        _services = services ?? throw new ArgumentNullException(nameof(services));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public Task<AutomatedJournalScheduledBatchResult> RunOnceAsync(CancellationToken ct = default)
-        => _worker.RunDueAsync(_timeProvider.GetUtcNow(), ct);
+        => _services.GetRequiredService<AutomatedJournalScheduledWorker>()
+            .RunDueAsync(_timeProvider.GetUtcNow(), ct);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -14,6 +15,32 @@ public enum AutomatedJournalScheduleStateDto
     NoDraftRequired = 5,
     Blocked = 6,
     Failed = 7
+}
+
+/// <summary>
+/// Reviewed capital-account tie-out for the NAV and high-water-mark inputs used by one
+/// monthly fee-accrual cycle. The scheduler verifies the retained values, variance,
+/// confidence, reviewer, source version, and evidence before it can create a draft.
+/// </summary>
+public sealed record AutomatedJournalCapitalAccountReconciliationDto(
+    string ReconciliationId,
+    string PeriodId,
+    string Currency,
+    decimal ReconciledBeginningNav,
+    decimal ReconciledEndingNavBeforeFees,
+    decimal ReconciledHighWaterMark,
+    decimal CapitalAccountOpeningBalance,
+    decimal CapitalAccountEndingBalanceBeforeFees,
+    decimal CapitalAccountHighWaterMark,
+    decimal MaximumVarianceTolerance,
+    decimal ConfidenceScore,
+    bool IsReconciled,
+    string SourceVersion,
+    string ReviewedBy,
+    DateTimeOffset ReviewedAtUtc,
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
+{
+    public IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 }
 
 /// <summary>
@@ -36,7 +63,10 @@ public sealed record AutomatedJournalScheduleStatusDto(
     string Summary,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
     IReadOnlyList<string>? Blockers = null,
-    IReadOnlyList<Guid>? JournalEntryIds = null)
+    IReadOnlyList<Guid>? JournalEntryIds = null,
+    decimal? MinimumEvidenceConfidence = null,
+    AutomatedJournalEvidenceQualityDto? LowestEvidenceQuality = null,
+    int HumanReviewQueueCount = 0)
 {
     public IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 

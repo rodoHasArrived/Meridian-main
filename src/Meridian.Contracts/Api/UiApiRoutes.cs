@@ -797,6 +797,7 @@ public static class UiApiRoutes
     public const string LedgerCloseManagementTaskSignOffs = "/api/ledger/close-management/task-signoffs";
     public const string LedgerCloseManagementEvidenceReview = "/api/ledger/close-management/evidence-review";
     public const string LedgerCloseManagementPeriodLock = "/api/ledger/close-management/period-lock";
+    public const string LedgerCloseManagementPeriodReopen = "/api/ledger/close-management/period-reopen";
     public const string LedgerManualJournalEntryWorkbench = "/api/ledger/journal-entry-workbench";
     public const string LedgerPrivateCapitalActivity = "/api/ledger/private-capital/activity";
     public const string LedgerPrivateCapitalFundEventRecord = "/api/ledger/private-capital/fund-event-record";
@@ -815,6 +816,7 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
     public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
+    public const string LedgerJournalAutomationDailyMarkToMarketBatchLifecycle = "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle";
     public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
     public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";

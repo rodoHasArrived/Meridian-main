@@ -26,17 +26,21 @@ namespace Meridian.Infrastructure.Resilience;
 /// </remarks>
 public sealed class WebSocketConnectionManager : IAsyncDisposable
 {
+    private static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(10);
     private readonly WebSocketConnectionConfig _config;
     private readonly ResiliencePipeline _resiliencePipeline;
     private readonly ProviderConnectionSupervisor _supervisor;
     private readonly ILogger _log;
     private readonly string _providerName;
+    private readonly TimeSpan _shutdownTimeout;
+    private readonly object _disposeSync = new();
 
     private ClientWebSocket? _webSocket;
     private CancellationTokenSource? _connectionCts;
     private CancellationTokenSource? _receiveLoopCts;
     private Task? _receiveTask;
     private WebSocketHeartbeat? _heartbeat;
+    private Task? _disposeTask;
 
     // Transport activity complements the supervisor's lifecycle diagnostics.
     private DateTimeOffset? _lastMessageReceivedAt;
@@ -133,10 +137,23 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         string providerName,
         WebSocketConnectionConfig? config = null,
         ILogger? logger = null)
+        : this(providerName, config, logger, DefaultShutdownTimeout)
     {
+    }
+
+    internal WebSocketConnectionManager(
+        string providerName,
+        WebSocketConnectionConfig? config,
+        ILogger? logger,
+        TimeSpan shutdownTimeout)
+    {
+        if (shutdownTimeout <= TimeSpan.Zero || shutdownTimeout == Timeout.InfiniteTimeSpan)
+            throw new ArgumentOutOfRangeException(nameof(shutdownTimeout));
+
         _providerName = providerName ?? throw new ArgumentNullException(nameof(providerName));
         _config = config ?? WebSocketConnectionConfig.Default;
         _log = logger ?? LoggingSetup.ForContext<WebSocketConnectionManager>();
+        _shutdownTimeout = shutdownTimeout;
         _supervisor = new ProviderConnectionSupervisor(
             _providerName,
             _config.MaxReconnectAttempts,
@@ -518,14 +535,16 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        // Idempotent per the IAsyncDisposable contract: a second dispose must not
-        // re-run DisconnectAsync against the supervisor's already-disposed gates.
-        if (Interlocked.Exchange(ref _disposed, 1) != 0)
-            return;
+        lock (_disposeSync)
+            return new ValueTask(_disposeTask ??= DisposeCoreAsync());
+    }
 
-        using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    private async Task DisposeCoreAsync()
+    {
+        Interlocked.Exchange(ref _disposed, 1);
+        using var shutdownCts = new CancellationTokenSource(_shutdownTimeout);
         try
         {
             await DisconnectAsync(shutdownCts.Token).ConfigureAwait(false);
@@ -539,7 +558,78 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         finally
         {
             _supervisor.StateChanged -= OnSupervisorStateChanged;
-            await _supervisor.DisposeAsync().ConfigureAwait(false);
+            try
+            {
+                await _supervisor.DisposeAsync(shutdownCts.Token).ConfigureAwait(false);
+            }
+            finally
+            {
+                ForceDetachTransport();
+            }
+        }
+    }
+
+    private void ForceDetachTransport()
+    {
+        var heartbeat = _heartbeat;
+        var connectionCts = _connectionCts;
+        var receiveLoopCts = _receiveLoopCts;
+        var receiveTask = _receiveTask;
+        var webSocket = _webSocket;
+
+        _heartbeat = null;
+        _connectionCts = null;
+        _receiveLoopCts = null;
+        _receiveTask = null;
+        _webSocket = null;
+
+        if (heartbeat is not null)
+        {
+            heartbeat.ConnectionLost -= OnConnectionLostAsync;
+            ObserveForcedCleanup(heartbeat.DisposeAsync().AsTask(), "heartbeat");
+        }
+
+        try
+        {
+            connectionCts?.Cancel();
+            receiveLoopCts?.Cancel();
+        }
+        catch (Exception ex)
+        {
+            _log.Debug(ex, "Cancellation source failed during forced {Provider} transport cleanup", _providerName);
+        }
+
+        try
+        {
+            webSocket?.Abort();
+            webSocket?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _log.Debug(ex, "WebSocket failed during forced {Provider} transport cleanup", _providerName);
+        }
+
+        connectionCts?.Dispose();
+        receiveLoopCts?.Dispose();
+        if (receiveTask is not null)
+            ObserveForcedCleanup(receiveTask, "receive loop");
+    }
+
+    private void ObserveForcedCleanup(Task task, string operation)
+        => _ = ObserveForcedCleanupAsync(task, operation);
+
+    private async Task ObserveForcedCleanupAsync(Task task, string operation)
+    {
+        try
+        {
+            await task.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception ex)
+        {
+            _log.Debug(ex, "Deferred {Provider} {Operation} cleanup failed", _providerName, operation);
         }
     }
 

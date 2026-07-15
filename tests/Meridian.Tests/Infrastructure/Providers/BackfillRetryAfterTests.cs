@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
 using Xunit;
 
@@ -11,6 +12,26 @@ namespace Meridian.Tests.Infrastructure.Adapters;
 /// </summary>
 public sealed class BackfillRetryAfterTests
 {
+    [Fact]
+    public void IsRateLimited_MessageOnlySignal_IsNotClassifiedAsRateLimit()
+    {
+        var ex = new InvalidOperationException("provider said rate limit 429 but supplied no typed status");
+
+        Assert.False(BackfillWorkerService.IsRateLimited(ex));
+    }
+
+    [Fact]
+    public void IsRateLimited_TypedAndHttpStatusSignals_AreClassified()
+    {
+        Assert.True(BackfillWorkerService.IsRateLimited(
+            new RateLimitException("quota exhausted", provider: "test")));
+        Assert.True(BackfillWorkerService.IsRateLimited(
+            new HttpRequestException("too many requests", null, HttpStatusCode.TooManyRequests)));
+        Assert.True(BackfillWorkerService.IsRateLimited(new AggregateException(
+            new InvalidOperationException("first provider failed"),
+            new HttpRequestException("second provider throttled", null, HttpStatusCode.TooManyRequests))));
+    }
+
     [Fact]
     public void TryExtractRetryAfter_NoRetryAfterInMessage_ReturnsNull()
     {

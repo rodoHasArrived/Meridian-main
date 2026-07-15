@@ -5,6 +5,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Store;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -12,8 +13,8 @@ namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Persisted, explicitly configured portfolio scope for one daily valuation schedule.
-/// Meridian does not yet have a canonical cross-fund position enumerator, so the scheduler
-/// fails visibly when this governed position scope is absent or empty.
+/// Positions are resolved from named durable account snapshots unless an explicitly timestamped
+/// static override is selected; an unqualified retained position list is never replayed.
 /// </summary>
 public sealed record DailyValuationScheduleWorkItem(
     string ScheduleId,
@@ -44,11 +45,23 @@ public sealed record DailyValuationScheduleWorkItem(
     Guid? JournalEntryId = null,
     string? LastSummary = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
-    IReadOnlyList<string>? Blockers = null)
+    IReadOnlyList<string>? Blockers = null,
+    IReadOnlyList<DailyValuationPositionSnapshotScope>? PositionSnapshotScopes = null,
+    bool UseStaticPositionOverride = false,
+    DateTimeOffset? StaticPositionsAsOfUtc = null,
+    int MaximumPositionAgeDays = 1,
+    string? StaticPositionHash = null,
+    IReadOnlyList<Guid>? JournalEntryIds = null,
+    string? BatchCorrelationId = null)
 {
     public IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 
     public IReadOnlyList<string> Blockers { get; init; } = Blockers ?? [];
+
+    public IReadOnlyList<DailyValuationPositionSnapshotScope> PositionSnapshotScopes { get; init; } =
+        PositionSnapshotScopes ?? [];
+
+    public IReadOnlyList<Guid> JournalEntryIds { get; init; } = JournalEntryIds ?? [];
 }
 
 /// <summary>Durable source of explicitly configured portfolio scopes for EOD valuation.</summary>
@@ -104,6 +117,11 @@ public sealed class InMemoryDailyValuationPortfolioSource :
         var normalized = DailyValuationScheduleProjection.Normalize(workItem);
         lock (_gate)
         {
+            if (_items.TryGetValue(normalized.ScheduleId, out var existing))
+            {
+                DailyValuationScheduleProjection.EnsureOwnershipUnchanged(existing, normalized);
+            }
+
             _items[normalized.ScheduleId] = normalized;
         }
 
@@ -147,6 +165,7 @@ public sealed class FileDailyValuationPortfolioSource :
     public async Task<IReadOnlyList<DailyValuationScheduleWorkItem>> ListAsync(CancellationToken ct = default)
         => await ReadSnapshotAsync(
             snapshot => snapshot.WorkItems
+                .Select(DailyValuationScheduleProjection.HydrateCompatibilityState)
                 .OrderBy(static item => item.NextRunAtUtc)
                 .ThenBy(static item => item.ScheduleId, StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
@@ -159,8 +178,10 @@ public sealed class FileDailyValuationPortfolioSource :
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
         var normalizedScheduleId = scheduleId.Trim();
         return await ReadSnapshotAsync(
-            snapshot => snapshot.WorkItems.FirstOrDefault(item =>
-                string.Equals(item.ScheduleId, normalizedScheduleId, StringComparison.OrdinalIgnoreCase)),
+            snapshot => snapshot.WorkItems
+                .Where(item => string.Equals(item.ScheduleId, normalizedScheduleId, StringComparison.OrdinalIgnoreCase))
+                .Select(DailyValuationScheduleProjection.HydrateCompatibilityState)
+                .FirstOrDefault(),
             ct).ConfigureAwait(false);
     }
 
@@ -172,6 +193,15 @@ public sealed class FileDailyValuationPortfolioSource :
         return await UpdateSnapshotAsync(
             snapshot =>
             {
+                var existing = snapshot.WorkItems.FirstOrDefault(item => string.Equals(
+                    item.ScheduleId,
+                    normalized.ScheduleId,
+                    StringComparison.OrdinalIgnoreCase));
+                if (existing is not null)
+                {
+                    DailyValuationScheduleProjection.EnsureOwnershipUnchanged(existing, normalized);
+                }
+
                 var workItems = snapshot.WorkItems
                     .Where(item => !string.Equals(
                         item.ScheduleId,
@@ -207,7 +237,12 @@ public sealed record DailyValuationScheduledRunResult(
     DailyValuationScheduleStateDto State,
     string Summary,
     Guid? JournalEntryId,
-    IReadOnlyList<string> Blockers);
+    IReadOnlyList<string> Blockers,
+    IReadOnlyList<Guid>? JournalEntryIds = null,
+    string? BatchCorrelationId = null)
+{
+    public IReadOnlyList<Guid> JournalEntryIds { get; init; } = JournalEntryIds ?? [];
+}
 
 public sealed record DailyValuationScheduledBatchResult(
     DateTimeOffset EvaluatedAtUtc,
@@ -221,22 +256,47 @@ public sealed class DailyValuationScheduledWorker
 {
     private readonly IDailyValuationPortfolioSource _portfolioSource;
     private readonly AutomatedJournalIntakeRunner _intakeRunner;
+    private readonly DailyValuationPositionService? _positionService;
     private readonly ILogger<DailyValuationScheduledWorker> _logger;
     private readonly SemaphoreSlim _runGate = new(1, 1);
 
     public DailyValuationScheduledWorker(
         IDailyValuationPortfolioSource portfolioSource,
         AutomatedJournalIntakeRunner intakeRunner,
-        ILogger<DailyValuationScheduledWorker> logger)
+        ILogger<DailyValuationScheduledWorker> logger,
+        DailyValuationPositionService? positionService = null)
     {
         _portfolioSource = portfolioSource ?? throw new ArgumentNullException(nameof(portfolioSource));
         _intakeRunner = intakeRunner ?? throw new ArgumentNullException(nameof(intakeRunner));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _positionService = positionService;
     }
 
     public async Task<DailyValuationScheduledBatchResult> RunDueAsync(
         DateTimeOffset nowUtc,
         CancellationToken ct = default)
+        => await RunDueCoreAsync(nowUtc, scope: null, ct).ConfigureAwait(false);
+
+    /// <summary>
+    /// Executes due schedules owned by exactly one tenant/company scope. This is the operator-route
+    /// seam; the host loop intentionally uses <see cref="RunDueAsync"/> to process every scope.
+    /// </summary>
+    public async Task<DailyValuationScheduledBatchResult> RunDueForScopeAsync(
+        DateTimeOffset nowUtc,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => await RunDueCoreAsync(
+            nowUtc,
+            new DailyValuationOwnerScope(
+                DailyValuationScheduleProjection.NormalizeOptionalScope(tenantId),
+                DailyValuationScheduleProjection.NormalizeOptionalScope(companyId)),
+            ct).ConfigureAwait(false);
+
+    private async Task<DailyValuationScheduledBatchResult> RunDueCoreAsync(
+        DateTimeOffset nowUtc,
+        DailyValuationOwnerScope? scope,
+        CancellationToken ct)
     {
         nowUtc = nowUtc.ToUniversalTime();
         await _runGate.WaitAsync(ct).ConfigureAwait(false);
@@ -244,6 +304,7 @@ public sealed class DailyValuationScheduledWorker
         {
             var due = (await _portfolioSource.ListAsync(ct).ConfigureAwait(false))
                 .Where(static item => item.IsEnabled)
+                .Where(item => scope is null || scope.Matches(item))
                 .Where(item => item.NextRunAtUtc <= nowUtc)
                 .Where(item => item.LastScheduledForUtc != item.NextRunAtUtc ||
                                item.State == DailyValuationScheduleStateDto.Running)
@@ -266,6 +327,13 @@ public sealed class DailyValuationScheduledWorker
         }
     }
 
+    private sealed record DailyValuationOwnerScope(string? TenantId, string? CompanyId)
+    {
+        public bool Matches(DailyValuationScheduleWorkItem item)
+            => string.Equals(item.TenantId, TenantId, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(item.CompanyId, CompanyId, StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task<DailyValuationScheduledRunResult> RunWorkItemAsync(
         DailyValuationScheduleWorkItem item,
         DateTimeOffset nowUtc,
@@ -277,20 +345,24 @@ public sealed class DailyValuationScheduledWorker
             State = DailyValuationScheduleStateDto.Running,
             LastScheduledForUtc = scheduledForUtc,
             LastSummary = $"Daily valuation schedule '{item.ScheduleId}' is running for {scheduledForUtc:O}.",
+            JournalEntryId = null,
+            JournalEntryIds = [],
+            BatchCorrelationId = null,
             EvidenceLinks = [],
             Blockers = []
         };
         await _portfolioSource.SaveAsync(running, ct).ConfigureAwait(false);
 
-        if (item.Positions.Count == 0)
+        if (_positionService is null)
         {
-            const string blocker = "No configured portfolio positions are available for the scheduled daily valuation scope.";
+            const string blocker = "Daily valuation position resolution is unavailable; no static schedule positions will be replayed implicitly.";
             return await CompleteAsync(
                 running,
                 nowUtc,
                 DailyValuationScheduleStateDto.Blocked,
                 blocker,
-                journalEntryId: null,
+                journalEntryIds: [],
+                batchCorrelationId: null,
                 evidenceLinks: [],
                 blockers: [blocker],
                 ct).ConfigureAwait(false);
@@ -298,6 +370,27 @@ public sealed class DailyValuationScheduledWorker
 
         try
         {
+            var positionResolution = await _positionService
+                .ResolveConfiguredAsync(item, scheduledForUtc, ct)
+                .ConfigureAwait(false);
+            if (!positionResolution.IsReady)
+            {
+                var blockedSummary = positionResolution.Blockers.Count == 1
+                    ? positionResolution.Blockers[0]
+                    : $"Daily valuation was blocked by {positionResolution.Blockers.Count} position-scope control(s).";
+                return await CompleteAsync(
+                    running,
+                    nowUtc,
+                    DailyValuationScheduleStateDto.Blocked,
+                    blockedSummary,
+                    journalEntryIds: [],
+                    batchCorrelationId: null,
+                    positionResolution.EvidenceLinks,
+                    positionResolution.Blockers,
+                    ct).ConfigureAwait(false);
+            }
+
+            var batchCorrelationId = BuildBatchCorrelationId(item, scheduledForUtc);
             var run = await _intakeRunner.RunDailyMarkToMarketIntakeAsync(
                 new RunDailyMarkToMarketDraftIntakeRequest(
                     item.FundProfileId,
@@ -306,7 +399,7 @@ public sealed class DailyValuationScheduledWorker
                     item.LedgerBookId,
                     item.PeriodId,
                     scheduledForUtc,
-                    item.Positions,
+                    positionResolution.Positions,
                     item.PolicyId,
                     item.PolicyName,
                     item.ValuationMethod,
@@ -318,17 +411,20 @@ public sealed class DailyValuationScheduledWorker
                     item.RequireCompleteCoverage,
                     item.EntityId,
                     item.TenantId,
-                    item.CompanyId),
+                    item.CompanyId,
+                    batchCorrelationId),
                 ct).ConfigureAwait(false);
+            batchCorrelationId = run.BatchCorrelationId ?? batchCorrelationId;
 
-            var created = run.Intake.Created.FirstOrDefault();
-            var skipped = run.Intake.Skipped.FirstOrDefault();
-            var journalEntryId = created?.JournalEntryId ?? skipped?.JournalEntryId;
-            var evidenceLinks = BuildEvidenceLinks(item, run, nowUtc);
-            var blockers = run.Valuation.UnpricedSymbols
-                .Select(static symbol => $"{symbol}: no trusted closing mark available")
-                .Concat(run.Valuation.StalePricedSymbols
-                    .Select(static symbol => $"{symbol}: closing mark rejected — exceeds maximum mark-age policy"))
+            var journalEntryIds = run.Intake.Created.Select(static draft => draft.JournalEntryId)
+                .Concat(run.Intake.Skipped.Select(static skipped => skipped.JournalEntryId))
+                .Where(static id => id != Guid.Empty)
+                .Distinct()
+                .OrderBy(static id => id)
+                .ToArray();
+            var evidenceLinks = BuildEvidenceLinks(item, run, positionResolution.EvidenceLinks, nowUtc);
+            var blockers = run.Valuation.RejectedMarks
+                .Select(static rejection => $"{rejection.Symbol}: {rejection.Reason}")
                 .ToArray();
 
             if (run.Valuation.Projection is null && blockers.Length > 0)
@@ -338,36 +434,64 @@ public sealed class DailyValuationScheduledWorker
                     nowUtc,
                     DailyValuationScheduleStateDto.Blocked,
                     $"Daily valuation was blocked because {blockers.Length} closing mark(s) failed trust policy.",
-                    journalEntryId,
+                    journalEntryIds,
+                    batchCorrelationId,
                     evidenceLinks,
                     blockers,
                     ct).ConfigureAwait(false);
             }
 
-            if (run.Valuation.Approval is null)
+            if (run.Valuation.Approvals.Count == 0)
             {
                 return await CompleteAsync(
                     running,
                     nowUtc,
                     DailyValuationScheduleStateDto.NoAdjustment,
                     "Daily valuation completed with trusted marks and no unrealized adjustment to draft.",
-                    journalEntryId: null,
+                    journalEntryIds: [],
+                    batchCorrelationId,
                     evidenceLinks,
                     blockers,
                     ct).ConfigureAwait(false);
             }
 
-            var summary = created is not null
-                ? $"Daily valuation created governed draft '{created.JournalEntryId:D}' awaiting human approval."
-                : $"Daily valuation idempotently reused governed draft '{journalEntryId:D}' ({skipped?.Reason}).";
+            if (journalEntryIds.Length != run.Valuation.Approvals.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Daily valuation produced {run.Valuation.Approvals.Count} governed draft(s), but intake retained {journalEntryIds.Length} draft id(s).");
+            }
+
+            var summary = run.Intake.Created.Count > 0
+                ? $"Daily valuation created {run.Intake.Created.Count} governed draft(s) in batch '{batchCorrelationId}' awaiting human approval."
+                : $"Daily valuation idempotently reused {journalEntryIds.Length} governed draft(s) in batch '{batchCorrelationId}'.";
             return await CompleteAsync(
                 running,
                 nowUtc,
                 DailyValuationScheduleStateDto.DraftReady,
                 summary,
-                journalEntryId,
+                journalEntryIds,
+                batchCorrelationId,
                 evidenceLinks,
                 blockers,
+                ct).ConfigureAwait(false);
+        }
+        catch (DailyValuationPendingDraftException ex)
+        {
+            var retainedIds = item.JournalEntryIds
+                .Concat(ex.PendingJournalEntryIds)
+                .Where(static id => id != Guid.Empty)
+                .Distinct()
+                .OrderBy(static id => id)
+                .ToArray();
+            return await CompleteAsync(
+                running,
+                nowUtc,
+                DailyValuationScheduleStateDto.Blocked,
+                ex.Message,
+                retainedIds,
+                item.BatchCorrelationId ?? BuildRecoveredBatchCorrelationId(item, retainedIds),
+                item.EvidenceLinks,
+                [ex.Message],
                 ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -388,7 +512,8 @@ public sealed class DailyValuationScheduledWorker
                 nowUtc,
                 DailyValuationScheduleStateDto.Failed,
                 blocker,
-                journalEntryId: null,
+                journalEntryIds: [],
+                batchCorrelationId: null,
                 evidenceLinks: [],
                 blockers: [blocker],
                 ct).ConfigureAwait(false);
@@ -400,7 +525,8 @@ public sealed class DailyValuationScheduledWorker
         DateTimeOffset nowUtc,
         DailyValuationScheduleStateDto state,
         string summary,
-        Guid? journalEntryId,
+        IReadOnlyList<Guid> journalEntryIds,
+        string? batchCorrelationId,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
         IReadOnlyList<string> blockers,
         CancellationToken ct)
@@ -410,7 +536,9 @@ public sealed class DailyValuationScheduledWorker
             NextRunAtUtc = AdvanceToNextRun(running.NextRunAtUtc, nowUtc),
             State = state,
             LastRunAtUtc = nowUtc,
-            JournalEntryId = journalEntryId,
+            JournalEntryId = journalEntryIds.FirstOrDefault() is var first && first != Guid.Empty ? first : null,
+            JournalEntryIds = journalEntryIds,
+            BatchCorrelationId = batchCorrelationId,
             LastSummary = summary,
             EvidenceLinks = evidenceLinks,
             Blockers = blockers
@@ -421,8 +549,10 @@ public sealed class DailyValuationScheduledWorker
             running.LastScheduledForUtc!.Value,
             state,
             summary,
-            journalEntryId,
-            blockers);
+            completed.JournalEntryId,
+            blockers,
+            journalEntryIds,
+            batchCorrelationId);
     }
 
     private static DateTimeOffset AdvanceToNextRun(DateTimeOffset scheduledForUtc, DateTimeOffset nowUtc)
@@ -439,6 +569,7 @@ public sealed class DailyValuationScheduledWorker
     private static IReadOnlyList<OperationsEvidenceLinkDto> BuildEvidenceLinks(
         DailyValuationScheduleWorkItem item,
         DailyMarkToMarketIntakeRunResult run,
+        IReadOnlyList<OperationsEvidenceLinkDto> positionEvidence,
         DateTimeOffset capturedAtUtc)
     {
         var uris = run.Intake.Created
@@ -448,22 +579,46 @@ public sealed class DailyValuationScheduledWorker
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        return uris.Select((uri, index) => new OperationsEvidenceLinkDto(
+        return positionEvidence.Concat(uris.Select((uri, index) => new OperationsEvidenceLinkDto(
                 $"daily-valuation:{item.ScheduleId}:{index + 1}",
                 "Trusted daily closing mark",
                 uri,
                 "daily-valuation-scheduler",
-                capturedAtUtc))
+                capturedAtUtc)))
             .ToArray();
+    }
+
+    private static string BuildBatchCorrelationId(
+        DailyValuationScheduleWorkItem item,
+        DateTimeOffset scheduledForUtc)
+    {
+        var seed = FormattableString.Invariant(
+            $"daily-valuation-batch|{item.ScheduleId.Trim().ToLowerInvariant()}|{item.FundProfileId.Trim().ToLowerInvariant()}|{item.LedgerBookId:N}|{item.PeriodId:N}|{scheduledForUtc:O}");
+        return new Guid(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed)).AsSpan(0, 16))
+            .ToString("D");
+    }
+
+    private static string BuildRecoveredBatchCorrelationId(
+        DailyValuationScheduleWorkItem item,
+        IReadOnlyList<Guid> journalEntryIds)
+    {
+        var seed = FormattableString.Invariant(
+            $"daily-valuation-recovered-batch|{item.ScheduleId.Trim().ToLowerInvariant()}|{string.Join('|', journalEntryIds.Order())}");
+        return new Guid(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed)).AsSpan(0, 16))
+            .ToString("D");
     }
 }
 
 /// <summary>Minute-cadence host loop for configured EOD valuation schedules.</summary>
 public sealed class DailyValuationSchedulerHostedService(
-    DailyValuationScheduledWorker worker,
+    IServiceProvider services,
     ILogger<DailyValuationSchedulerHostedService> logger) : BackgroundService
 {
     private static readonly TimeSpan TickInterval = TimeSpan.FromMinutes(1);
+
+    public Task<DailyValuationScheduledBatchResult> RunOnceAsync(CancellationToken ct = default)
+        => services.GetRequiredService<DailyValuationScheduledWorker>()
+            .RunDueAsync(DateTimeOffset.UtcNow, ct);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -472,7 +627,7 @@ public sealed class DailyValuationSchedulerHostedService(
         {
             try
             {
-                var batch = await worker.RunDueAsync(DateTimeOffset.UtcNow, stoppingToken).ConfigureAwait(false);
+                var batch = await RunOnceAsync(stoppingToken).ConfigureAwait(false);
                 if (batch.Runs.Count > 0)
                 {
                     logger.LogInformation(
@@ -527,6 +682,24 @@ internal static class DailyValuationScheduleProjection
             throw new ArgumentException("Ledger period id is required.", nameof(workItem));
         if (workItem.MaximumMarkAgeDays < 0)
             throw new ArgumentOutOfRangeException(nameof(workItem), "Maximum mark age cannot be negative.");
+        if (workItem.MaximumPositionAgeDays < 0)
+            throw new ArgumentOutOfRangeException(nameof(workItem), "Maximum position age cannot be negative.");
+
+        var normalizedPositions = workItem.Positions ?? [];
+        var normalizedScopes = (workItem.PositionSnapshotScopes ?? [])
+            .Select(static scope => new DailyValuationPositionSnapshotScope(
+                string.IsNullOrWhiteSpace(scope.RunId)
+                    ? throw new ArgumentException("Position snapshot run id is required.")
+                    : scope.RunId.Trim(),
+                string.IsNullOrWhiteSpace(scope.AccountId)
+                    ? throw new ArgumentException("Position snapshot account id is required.")
+                    : scope.AccountId.Trim()))
+            .Distinct()
+            .OrderBy(static scope => scope.RunId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static scope => scope.AccountId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (normalizedScopes.Length > 0 && workItem.UseStaticPositionOverride)
+            throw new ArgumentException("Choose durable position snapshots or a static override, not both.", nameof(workItem));
 
         return workItem with
         {
@@ -535,7 +708,12 @@ internal static class DailyValuationScheduleProjection
             Currency = workItem.Currency.Trim().ToUpperInvariant(),
             Actor = workItem.Actor.Trim(),
             NextRunAtUtc = workItem.NextRunAtUtc.ToUniversalTime(),
-            Positions = workItem.Positions ?? [],
+            Positions = normalizedPositions,
+            PositionSnapshotScopes = normalizedScopes,
+            StaticPositionsAsOfUtc = workItem.StaticPositionsAsOfUtc?.ToUniversalTime(),
+            StaticPositionHash = workItem.UseStaticPositionOverride
+                ? DailyValuationPositionService.ComputeStaticPositionHash(normalizedPositions)
+                : null,
             PolicyId = workItem.PolicyId.Trim(),
             PolicyName = workItem.PolicyName.Trim(),
             ValuationMethod = workItem.ValuationMethod.Trim(),
@@ -548,7 +726,14 @@ internal static class DailyValuationScheduleProjection
             CompanyId = NormalizeOptional(workItem.CompanyId),
             LastSummary = NormalizeOptional(workItem.LastSummary),
             EvidenceLinks = workItem.EvidenceLinks ?? [],
-            Blockers = workItem.Blockers ?? []
+            Blockers = workItem.Blockers ?? [],
+            JournalEntryIds = (workItem.JournalEntryIds ?? [])
+                .Concat(workItem.JournalEntryId.HasValue ? [workItem.JournalEntryId.Value] : [])
+                .Where(static id => id != Guid.Empty)
+                .Distinct()
+                .OrderBy(static id => id)
+                .ToArray(),
+            BatchCorrelationId = NormalizeOptional(workItem.BatchCorrelationId)
         };
     }
 
@@ -586,7 +771,9 @@ internal static class DailyValuationScheduleProjection
                 MissingScopeMessage,
                 JournalEntryId: null,
                 EvidenceLinks: [],
-                Blockers: [MissingScopeMessage]);
+                Blockers: [MissingScopeMessage],
+                JournalEntryIds: [],
+                BatchCorrelationId: null);
         }
 
         var state = matching.IsEnabled
@@ -612,8 +799,39 @@ internal static class DailyValuationScheduleProjection
             summary,
             matching.JournalEntryId,
             matching.EvidenceLinks,
-            blockers);
+            blockers,
+            matching.JournalEntryIds,
+            matching.BatchCorrelationId);
     }
+
+    public static void EnsureOwnershipUnchanged(
+        DailyValuationScheduleWorkItem existing,
+        DailyValuationScheduleWorkItem replacement)
+    {
+        if (!string.Equals(existing.TenantId, replacement.TenantId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(existing.CompanyId, replacement.CompanyId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Daily valuation schedule '{existing.ScheduleId}' tenant/company ownership is immutable.");
+        }
+    }
+
+    public static string? NormalizeOptionalScope(string? value) => NormalizeOptional(value);
+
+    public static DailyValuationScheduleWorkItem HydrateCompatibilityState(
+        DailyValuationScheduleWorkItem workItem)
+        => workItem with
+        {
+            EvidenceLinks = workItem.EvidenceLinks ?? [],
+            Blockers = workItem.Blockers ?? [],
+            PositionSnapshotScopes = workItem.PositionSnapshotScopes ?? [],
+            JournalEntryIds = (workItem.JournalEntryIds ?? [])
+                .Concat(workItem.JournalEntryId.HasValue ? [workItem.JournalEntryId.Value] : [])
+                .Where(static id => id != Guid.Empty)
+                .Distinct()
+                .OrderBy(static id => id)
+                .ToArray()
+        };
 
     private static bool MatchesPeriod(DailyValuationScheduleWorkItem item, string? periodId)
     {

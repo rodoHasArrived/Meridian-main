@@ -20,11 +20,13 @@
 
 ---
 
-## Status Update (2026-07-13)
+## Status Update (2026-07-15)
 
 The `codex/data-provider-accounting-completion` branch completed ideas #1–#5 during the 2026-07-13
 implementation pass. The narratives below are preserved as the point-in-time analysis of
-2026-07-05, with dated update notes where the premise has changed. Current branch status:
+2026-07-05, with dated update notes where the premise has changed. An independent accounting,
+durability, and tenant-isolation audit reopened #6–#10 on 2026-07-14; those rows remain in progress
+until the corrected invariants compile and their focused tests pass. Current branch status:
 
 | # | Idea | Status | What remains |
 |---|------|--------|--------------|
@@ -32,12 +34,12 @@ implementation pass. The narratives below are preserved as the point-in-time ana
 | 2 | Canonical symbol spine | Done (2026-07-13) | Registry identity is `SecurityId`-aware with provider-scoped aliases; `Legacy`/`Compare`/`Canonical` modes, idempotent migration receipts, mismatch diagnostics, and the browser registry surface are implemented. Focused proof: browser registry tests passed 5/5; Contracts, Storage, and Application builds plus contract-impact, generated-route, and schema checks passed. Added .NET endpoint/collision tests await a serialized rerun; aggregate CI has not run. |
 | 3 | Unified data quality + browser dashboard | Done (2026-07-13) | `CompositeDataQualityReadService` combines stored completeness, streaming freshness, and adapter gap integrity, issues stable opaque gap IDs, and resolves exact provider/range remediation through `AutoGapRemediationService`; browser and WPF consume the shared contract. Focused proof: browser quality tests passed 18/18 and the Application, Ui.Shared, and Ui.Services builds passed. Aggregate CI has not run. |
 | 4 | Backfill feedback loop | Done (2026-07-13) | Live progress carries range, provider, fallback attempt, and retry through typed contracts to browser and WPF; bounded execution history durably retains typed SLA/remediation evidence. Focused proof: browser view-model tests passed 39/39, rendered screen tests passed 26/26, the Contracts build passed, and the WPF XAML parsed. New durable-history/.NET/WPF tests await execution after shared MSBuild contention; aggregate CI has not run. |
-| 5 | Failure & rate-limit hardening | Done (2026-07-13) | The catalog exposes immutable, sanitized registration failures; historical and streaming rate diagnostics use coherent lock-guarded snapshots, and NYSE maps HTTP 429 to typed `RateLimitException`. Browser and WPF show current usage, reset, failure, and retry posture while stating that history is unavailable. Focused ProviderSdk/Infrastructure builds and 24 browser tests passed; added .NET/WPF filters await a serialized rerun. Aggregate CI has not run. |
-| 6 | Mark-to-market wiring | Done (2026-07-13) | Trusted historical-provider close marks retain observed-date and confidence evidence and must pass staleness and coverage gates. Persisted, explicitly scoped daily-valuation schedules run through the due-run host into governed workbench drafts for human approval and durable posting; restart hydration feeds marked statements and NAV, the close cockpit exposes a "Daily valuation" lane, and NAV already computes assets − liabilities. Focused `Meridian.Application` and `Meridian.FinancialOperations` builds passed (the latter with one existing analyzer warning), along with generated-route, static, and diff checks. Added scheduler/E2E, cockpit, and stale/low-confidence tests await execution; `Meridian.Ui.Shared` reached the new code before two sibling `BackfillCoordinator` ambiguities stopped its build. Aggregate CI has not run. |
-| 7 | Automated journal drafts | Done (2026-07-06) | Corporate-action/dividend producers, management/performance-fee accrual (`FeeScheduleAccrualEventProducer` + `RunFeeAccrualIntakeAsync` + endpoint), and dividend withholding-tax accrual (`WithholdingTaxRate` on the dividend intake lane) all land governed drafts in the workbench queue. Operator/cockpit-triggered; recurring scheduling remains optional follow-on. |
-| 8 | Closing entries + retained-earnings roll | Done (2026-07-06) | `AutomatedJournalIntakeRunner.RunPeriodCloseIntakeAsync` projects closing entries from a closed period's trial balance and lands the governed draft in the workbench queue via `/api/ledger/journal-automation/period-close-intake`; open periods are rejected loudly. |
-| 9 | One ledger spine | Done (2026-07-08) | `DurableAutomatedJournalPoster` posts approved drafts through `ILedgerJournalStore`; `LedgerJournalStoreHydrationExtensions` hydrates as-of and book/period projections from the durable journal store; `Ledger` keeps balance/posting snapshots for point-in-time reads; tests cover hydration, durable-first posting, as-of snapshots, and the F#/C# enum-ordinal contract. |
-| 10 | Fill-to-ledger durability | Done | `LedgerPostingConsumer.Publish` now blocks on channel capacity (`WaitToWriteAsync` loop) instead of dropping fills, with a regression test covering the full-channel case. |
+| 5 | Failure & rate-limit hardening | Done (2026-07-15 audit) | The catalog exposes immutable, sanitized registration failures; historical and streaming rate diagnostics use coherent lock-guarded snapshots. NYSE, Alpha Vantage, and OpenFIGI now map provider quota responses to typed `RateLimitException`, and the background worker classifies only typed exceptions or preserved HTTP 429 status—not message text. Browser and WPF show current usage, reset, failure, and retry posture while stating that history is unavailable. The new typed-path tests and aggregate CI still need execution. |
+| 6 | Mark-to-market wiring | In progress (completion audit) | The provider-mark, governed-draft, hydration, NAV, and cockpit foundation exists. The audit found cumulative unrealized P&L being reposted instead of a daily delta, multi-security drafts without posting-guard Security Master lineage, indefinitely reused configured positions, incomplete same-day correction/batch semantics, tenant-scope takeover risk, and stale cockpit readiness. Delta carrying-value hydration, per-security drafts, fresh position scopes, lineage/currency gates, all-entry batch state, and current-run precedence are being implemented and tested. |
+| 7 | Automated journal drafts | In progress (completion audit) | Dividend and fee producers plus a durable schedule foundation exist. Completion now requires truly recurring monthly auto-advance in the configured time zone, durable restart/idempotency proof, immutable tenant/company/identity scope, and explicit capital-account reconciliation and confidence evidence before fee drafts can be ready for approval. |
+| 8 | Closing entries + retained-earnings roll | In progress (completion audit) | The retained-earnings projector and governed close workbench exist. Completion now requires a final ready-gate recheck, an actual ledger hard lock, SoftClosed-only closing-entry mutation, retry-safe controller-gated reopen/reversal, hard-close temporary-account guards, and tenant/company/book/period-isolated API proof. |
+| 9 | One ledger spine | In progress (completion audit) | Durable posting and hydration exist. The audit is completing dimension-aware snapshot indexes for out-of-order/as-of reads and strengthening crash-after-append semantic equivalence so a retry cannot change policy, book, posting kind, command/source identity, metadata, or evidence. |
+| 10 | Fill-to-ledger durability | In progress (completion audit) | Bounded-channel backpressure prevents the original full-channel drop. Completion now requires bounded two-phase shutdown under non-cooperative work, a no-post-after-disposal boundary, deterministic blocked-publisher release, and idempotent repeated disposal proof. |
 
 ## The Two Headline Findings
 
@@ -325,6 +327,15 @@ idea 9.
 > stale/low-confidence mark tests were added but have not executed yet; `Meridian.Ui.Shared`
 > compiled the new scheduler, DI, and cockpit code before stopping on two unrelated sibling
 > `BackfillCoordinator` ambiguities. Aggregate CI has not run.
+
+> **Completion-audit correction (2026-07-15):** the 2026-07-13 foundation did not yet prove a
+> postable, non-compounding multi-security batch. The audit reopened this item after finding that
+> full cumulative unrealized P&L could be posted again on a later day, aggregate drafts lacked the
+> single-security lineage required by the posting guard, configured position lists could become
+> stale, and an older posted draft could mask a blocked current run. The status table above tracks
+> the delta-carrying, position-freshness, Security Master, batch/correction, tenant-isolation, and
+> cockpit-precedence work now in progress; this section must not be read as complete until those
+> paths pass their focused end-to-end tests.
 
 ### 7. Automated Journal Drafts in the Close Cockpit
 

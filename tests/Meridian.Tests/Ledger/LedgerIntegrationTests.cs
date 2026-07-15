@@ -989,6 +989,12 @@ public sealed class LedgerIntegrationTests
             t2,
             lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
         var allFundsAtT1 = ledger.TrialBalanceAsOf(t1, lineDimensions: new LedgerLineDimensionSet());
+        var fundASnapshotAtT1 = ledger.SnapshotAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a"));
+        var fundACoreSnapshotAtT2 = ledger.SnapshotAsOf(
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
 
         fundAAtT1[cash].Should().Be(130m);
         fundAAtT1[revenue].Should().Be(130m);
@@ -996,6 +1002,12 @@ public sealed class LedgerIntegrationTests
         fundACoreAtT2[cash].Should().Be(150m);
         allFundsAtT1[cash].Should().Be(200m,
             "an empty dimension filter retains the existing no-filter semantics");
+        fundASnapshotAtT1.JournalEntryCount.Should().Be(2);
+        fundASnapshotAtT1.LedgerEntryCount.Should().Be(4);
+        fundASnapshotAtT1.Balances[cash].Should().Be(130m);
+        fundACoreSnapshotAtT2.JournalEntryCount.Should().Be(2);
+        fundACoreSnapshotAtT2.LedgerEntryCount.Should().Be(4);
+        fundACoreSnapshotAtT2.Balances[cash].Should().Be(150m);
     }
 
     [Fact]
