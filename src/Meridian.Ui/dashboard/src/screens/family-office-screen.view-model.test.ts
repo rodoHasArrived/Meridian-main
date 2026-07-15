@@ -25,11 +25,11 @@ describe("buildFamilyOfficeScreenViewModel", () => {
       path: "/portfolio/family-office",
       workspaceLabel: "Portfolio",
       label: "Family office",
-      disabledReason: expect.stringContaining("Family office data is not connected yet")
+      disabledReason: expect.stringContaining("Set up family entities")
     });
-    expect(vm.route.emptyState).toContain("Family office data is not connected yet");
-    expect(vm.statusChips.map((chip) => chip.value)).toContain("/portfolio/family-office");
-    expect(vm.statusChips).toContainEqual({ label: "Entity source", value: "Not connected" });
+    expect(vm.route.emptyState).toContain("Set up family entities");
+    expect(vm.statusChips).toContainEqual({ label: "Source", value: "Not connected" });
+    expect(vm.statusChips).toContainEqual({ label: "As of", value: "Unavailable" });
     expect(vm.notConnected).toBe(true);
     expect(vm.emptyActionHref).toBe("/accounting/entity-setup");
     expect(vm.panels).toEqual([]);
@@ -116,7 +116,7 @@ describe("buildFamilyOfficeScreenViewModel", () => {
 
     const vm = buildFamilyOfficeScreenViewModel("trust-a", entityStructure);
 
-    expect(vm.statusChips).toContainEqual({ label: "Entity source", value: "Root Family Office" });
+    expect(vm.statusChips).toContainEqual({ label: "Source", value: "Root Family Office" });
     expect(vm.panels.find((panel) => panel.id === "total-family-net-worth")).toMatchObject({
       value: "$10.0M",
       detail: expect.stringContaining("Root Family Office")

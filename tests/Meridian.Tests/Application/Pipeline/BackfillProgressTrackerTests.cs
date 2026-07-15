@@ -10,7 +10,7 @@ public sealed class BackfillProgressTrackerTests
     public void RegisterSymbol_SetsUpTracking()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         var from = new DateOnly(2024, 1, 1);
         var to = new DateOnly(2024, 1, 10);
 
@@ -32,7 +32,7 @@ public sealed class BackfillProgressTrackerTests
     public void RecordProgress_UpdatesCompletedDays()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         tracker.RegisterSymbol("AAPL", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
 
         // Act
@@ -48,7 +48,7 @@ public sealed class BackfillProgressTrackerTests
     public void RecordProgress_AccumulatesMultipleCalls()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         tracker.RegisterSymbol("SPY", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 20));
 
         // Act
@@ -65,7 +65,7 @@ public sealed class BackfillProgressTrackerTests
     public void MarkCompleted_SetsIsCompletedAndFullProgress()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         tracker.RegisterSymbol("TSLA", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 5));
 
         // Act
@@ -83,7 +83,7 @@ public sealed class BackfillProgressTrackerTests
     public void MarkFailed_SetsIsFailedAndError()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         tracker.RegisterSymbol("GOOG", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 5));
 
         // Act
@@ -100,7 +100,7 @@ public sealed class BackfillProgressTrackerTests
     public void GetSnapshot_CalculatesOverallProgress()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         tracker.RegisterSymbol("SPY", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
         tracker.RegisterSymbol("AAPL", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
 
@@ -119,7 +119,7 @@ public sealed class BackfillProgressTrackerTests
     public void GetSnapshot_CapsPercentAt100()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         tracker.RegisterSymbol("SPY", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 5));
 
         // Act - report more bars than total days
@@ -134,7 +134,7 @@ public sealed class BackfillProgressTrackerTests
     public void Clear_RemovesAllTracking()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         tracker.RegisterSymbol("SPY", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
         tracker.RegisterSymbol("AAPL", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
 
@@ -151,7 +151,7 @@ public sealed class BackfillProgressTrackerTests
     public void GetSnapshot_IsCaseInsensitive()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         tracker.RegisterSymbol("spy", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 10));
 
         // Act
@@ -167,7 +167,7 @@ public sealed class BackfillProgressTrackerTests
     public void MarkFailed_ForUnregisteredSymbol_DoesNotThrow()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
 
         // Act & Assert
         tracker.MarkFailed("UNKNOWN", "some error"); // should not throw
@@ -179,7 +179,7 @@ public sealed class BackfillProgressTrackerTests
     public void GetSnapshot_IncludesTimestamp()
     {
         // Arrange
-        var tracker = new BackfillProgressTracker();
+        using var tracker = new BackfillProgressTracker();
         var before = DateTimeOffset.UtcNow;
 
         // Act
@@ -188,5 +188,125 @@ public sealed class BackfillProgressTrackerTests
         // Assert
         snapshot.Timestamp.Should().BeOnOrAfter(before);
         snapshot.Timestamp.Should().BeOnOrBefore(DateTimeOffset.UtcNow);
+    }
+
+    [Fact]
+    public void Publish_RecordsProviderRangeAndAttemptInSnapshot()
+    {
+        using var tracker = new BackfillProgressTracker();
+        var from = new DateOnly(2026, 7, 1);
+        var to = new DateOnly(2026, 7, 3);
+        tracker.RegisterSymbol("SPY", from, to);
+
+        tracker.Publish(new ProviderBackfillProgress(
+            "SPY",
+            "polygon",
+            BarsDownloaded: 0,
+            TotalSymbols: 1,
+            CurrentSymbolIndex: 1,
+            StartedAt: DateTimeOffset.UtcNow.AddSeconds(-1),
+            CurrentStatus: "trying",
+            RangeStart: from,
+            RangeEnd: to,
+            ProviderAttempt: 2,
+            RetryRound: 1,
+            Operation: "bars",
+            ObservedAt: DateTimeOffset.UtcNow));
+
+        var snapshot = tracker.GetSnapshot();
+        var symbol = snapshot.Symbols["SPY"];
+        symbol.CurrentProvider.Should().Be("polygon");
+        symbol.CurrentStatus.Should().Be("trying");
+        symbol.ProviderAttempt.Should().Be(2);
+        symbol.RetryRound.Should().Be(1);
+        symbol.Operation.Should().Be("bars");
+        snapshot.RecentProviderAttempts.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Publish_WithDownloadedBars_DoesNotTreatBarsAsCompletedCalendarDays()
+    {
+        using var tracker = new BackfillProgressTracker();
+        var from = new DateOnly(2026, 7, 1);
+        var to = new DateOnly(2026, 7, 3);
+        tracker.RegisterSymbol("SPY", from, to);
+
+        tracker.Publish(new ProviderBackfillProgress(
+            "SPY",
+            "polygon",
+            BarsDownloaded: 250,
+            TotalSymbols: 1,
+            CurrentSymbolIndex: 1,
+            StartedAt: DateTimeOffset.UtcNow.AddSeconds(-1),
+            CurrentStatus: "provider-succeeded",
+            RangeStart: from,
+            RangeEnd: to,
+            ProviderAttempt: 1,
+            RetryRound: 0,
+            Operation: "bars",
+            ObservedAt: DateTimeOffset.UtcNow));
+
+        var snapshot = tracker.GetSnapshot();
+        snapshot.Symbols["SPY"].CompletedDays.Should().Be(0);
+        snapshot.Symbols["SPY"].PercentComplete.Should().Be(0);
+        snapshot.OverallPercentComplete.Should().Be(0);
+        snapshot.CompletedSymbols.Should().Be(0);
+        snapshot.RecentProviderAttempts.Should().ContainSingle()
+            .Which.BarsDownloaded.Should().Be(250);
+    }
+
+    [Fact]
+    public async Task Publish_WhenSubscriberIsSlow_DropsOldestWithoutBlockingProducer()
+    {
+        using var tracker = new BackfillProgressTracker(notificationCapacity: 1, historyCapacity: 4);
+        var handlerEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var releaseHandler = new ManualResetEventSlim();
+        tracker.ProgressPublished += _ =>
+        {
+            handlerEntered.TrySetResult();
+            releaseHandler.Wait(TimeSpan.FromSeconds(2));
+        };
+
+        tracker.Publish(CreateProgress(1));
+        await handlerEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        var started = DateTimeOffset.UtcNow;
+        for (var attempt = 2; attempt <= 50; attempt++)
+            tracker.Publish(CreateProgress(attempt));
+        var elapsed = DateTimeOffset.UtcNow - started;
+
+        releaseHandler.Set();
+        elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(250));
+        tracker.GetSnapshot().DroppedProviderNotifications.Should().BeGreaterThan(0);
+
+        static ProviderBackfillProgress CreateProgress(int attempt) => new(
+            "AAPL",
+            "stooq",
+            BarsDownloaded: 0,
+            TotalSymbols: 1,
+            CurrentSymbolIndex: 1,
+            StartedAt: DateTimeOffset.UtcNow,
+            CurrentStatus: "trying",
+            RangeStart: new DateOnly(2026, 7, 1),
+            RangeEnd: new DateOnly(2026, 7, 2),
+            ProviderAttempt: attempt,
+            RetryRound: 1,
+            Operation: "bars",
+            ObservedAt: DateTimeOffset.UtcNow);
+    }
+
+    [Fact]
+    public void MarkSkipped_ReportsTerminalCompletedStateWithoutFailure()
+    {
+        using var tracker = new BackfillProgressTracker();
+        tracker.RegisterSymbol("META", new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 2));
+
+        tracker.MarkSkipped("META");
+
+        var symbol = tracker.GetSnapshot().Symbols["META"];
+        symbol.IsSkipped.Should().BeTrue();
+        symbol.IsCompleted.Should().BeTrue();
+        symbol.IsFailed.Should().BeFalse();
+        symbol.PercentComplete.Should().Be(100);
     }
 }

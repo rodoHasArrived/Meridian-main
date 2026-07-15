@@ -2,6 +2,7 @@ import { Filter, GitBranch, LayoutPanelTop, Link2, Save, Search, ShieldCheck } f
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerBody } from "@/components/ui/drawer";
 import { NumberPassport } from "@/components/meridian/number-passport";
 import { cn } from "@/lib/utils";
 import {
@@ -60,6 +61,7 @@ export function FinancialRecordExplorerShell({
   actions,
   explorer,
   onSaveView,
+  onSelectRecord,
   children,
   className
 }: {
@@ -74,6 +76,7 @@ export function FinancialRecordExplorerShell({
   actions?: FinancialRecordExplorerAction[];
   explorer?: FinancialRecordExplorerDto | null;
   onSaveView?: (request: FinancialRecordExplorerSavedViewSaveRequestDto) => void | Promise<void>;
+  onSelectRecord?: (recordId: string) => void;
   children: ReactNode;
   className?: string;
 }) {
@@ -90,10 +93,12 @@ export function FinancialRecordExplorerShell({
   const activeSavedView = normalizedViews.find((view) => view.active) ?? normalizedViews[0] ?? null;
   const sharedViewState = useMemo(() => readSharedExplorerViewState(dtoMode, getCurrentExplorerSearch()), [dtoMode?.explorerId]);
   const initialViewId = resolveSharedViewId(sharedViewState.viewId, normalizedViews) ?? activeSavedView?.id ?? "";
-  const initialRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []) ?? dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "";
+  const initialSharedRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []);
+  const initialRecordId = initialSharedRecordId ?? dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "";
   const [selectedViewId, setSelectedViewId] = useState(initialViewId);
   const [searchText, setSearchText] = useState(sharedViewState.searchText ?? "");
   const [selectedRecordId, setSelectedRecordId] = useState(initialRecordId);
+  const [inspectorOpen, setInspectorOpen] = useState(Boolean(initialSharedRecordId));
   const [sharedFilterState, setSharedFilterState] = useState(sharedViewState.filters);
   const [viewName, setViewName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -106,9 +111,13 @@ export function FinancialRecordExplorerShell({
     const nextViewId = resolveSharedViewId(sharedViewState.viewId, normalizedViews) ?? activeSavedView?.id ?? "";
     const nextSearchText = sharedViewState.searchText ?? "";
     const nextRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []) ?? dtoMode?.selectedRecord?.recordId ?? dtoMode?.rows[0]?.recordId ?? "";
+    const nextSharedRecordId = resolveSharedRecordId(sharedViewState.recordId, dtoMode?.rows ?? []);
     setSelectedViewId((current) => current === nextViewId ? current : nextViewId);
     setSearchText((current) => current === nextSearchText ? current : nextSearchText);
     setSelectedRecordId((current) => current === nextRecordId ? current : nextRecordId);
+    if (nextSharedRecordId) {
+      setInspectorOpen(true);
+    }
     setSharedFilterState(sharedViewState.filters);
   }, [
     activeSavedView?.id,
@@ -164,6 +173,12 @@ export function FinancialRecordExplorerShell({
   const selectedRow = rows.find((row) => row.recordId === selectedRecordId) ?? rows[0] ?? null;
   const selectedRecord = selectedRow?.detail ?? null;
   const selectedRecordShareId = selectedRow?.recordId ?? selectedRecordId;
+
+  useEffect(() => {
+    if (selectedRow?.recordId) {
+      onSelectRecord?.(selectedRow.recordId);
+    }
+  }, [onSelectRecord, selectedRow?.recordId]);
   const trimmedViewName = viewName.trim();
   const materialChange = Boolean(dtoMode && onSaveView && (trimmedViewName || searchText.trim() || (selectedViewId && selectedViewId !== activeSavedView?.id)));
   const canSaveView = Boolean(materialChange && trimmedViewName);
@@ -225,6 +240,11 @@ export function FinancialRecordExplorerShell({
     }
   }
 
+  function handleSelectRecord(recordId: string) {
+    setSelectedRecordId(recordId);
+    setInspectorOpen(true);
+  }
+
   return (
     <section className={cn("workspace-section-band", className)} aria-labelledby={titleId}>
       <div className="workspace-section-subheader">
@@ -284,7 +304,7 @@ export function FinancialRecordExplorerShell({
       </div>
 
       {dtoMode ? (
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="mt-4 space-y-4">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/60 px-3 py-2">
               <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
@@ -297,11 +317,23 @@ export function FinancialRecordExplorerShell({
               />
               {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{rows.length} rows</Badge>}
             </div>
-            <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={setSelectedRecordId} />
+            <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={handleSelectRecord} />
             <RecordGraph explorer={dtoMode} />
           </div>
-            <ProofDrawer explorer={dtoMode} record={selectedRecord} blockedReason={dtoMode.isBlocked ? dtoMode.blockedReason : ""} />
         </div>
+      ) : null}
+
+      {dtoMode ? (
+        <Drawer
+          open={inspectorOpen && Boolean(selectedRecord)}
+          onClose={() => setInspectorOpen(false)}
+          title={selectedRecord ? `${selectedRecord.title} proof detail` : "Proof detail"}
+          className="max-w-[30rem]"
+        >
+          <DrawerBody>
+            <ProofDrawer explorer={dtoMode} record={selectedRecord} blockedReason={dtoMode.isBlocked ? dtoMode.blockedReason : ""} />
+          </DrawerBody>
+        </Drawer>
       ) : null}
 
       <div className="mt-4">
@@ -412,7 +444,7 @@ function ProofSummary({
         Proof drill-through
       </div>
       <p className="mt-1 text-xs leading-5 text-muted-foreground">
-        Selected records keep links to source records, supporting documents, approvals, reconciliations, report usage, and audit history in the drawer below.
+        Select a record to inspect source links, supporting documents, approvals, reconciliations, report usage, and audit history in the proof drawer.
       </p>
       <div className="mt-3 flex flex-wrap gap-2" aria-label={`${title} proof actions`}>
         {proofActions.length > 0 ? proofActions.map((action) => (
@@ -467,7 +499,10 @@ function ExplorerGrid({
               tabIndex={0}
               aria-current={selectedRecordId === row.recordId}
               className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", selectedRecordId === row.recordId ? "bg-primary/8" : "")}
-              onClick={() => onSelect(row.recordId)}
+              onClick={(event) => {
+                event.currentTarget.focus();
+                onSelect(row.recordId);
+              }}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
@@ -554,7 +589,7 @@ function ProofDrawer({
   }
 
   return (
-    <div role="region" className="space-y-3 rounded-md border border-border/70 bg-background/60 p-4" aria-label={`${record.title} proof detail`}>
+    <div role="region" className="space-y-3" aria-label={`${record.title} proof detail`}>
       <div>
         <Badge variant={toneToBadge(record.tone)}>{record.recordType}</Badge>
         <h3 className="mt-3 text-base font-semibold text-foreground">{record.title}</h3>

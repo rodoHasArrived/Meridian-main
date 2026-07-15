@@ -101,7 +101,10 @@ allowing separate books such as shadow-NAV ledgers to continue independently.
 revenue and expense account is zeroed and the net income is rolled into retained earnings, scoped
 per financial account. `PeriodCloseDraftBuilder` wraps that projection in a governed
 `AutomatedJournalDraft` (kind `PeriodCloseClosingEntries`) so closes post through
-`AutomatedJournalApproval` instead of remaining status-only.
+`AutomatedJournalApproval` instead of remaining status-only. Its idempotency key includes a stable
+fingerprint of the temporary-account residual and full line-dimension scope: an unchanged retry
+reuses the retained draft, while a late adjustment produces a distinct draft for only the remaining
+closing delta without collapsing fund, entity, sleeve, or other dimensions.
 `ShadowNavValidator` compares actual and shadow ledger books at a point in time, reports
 account-level and NAV variances against configured tolerances, and prepares a governed override
 draft when independent fund-admin validation requires review.

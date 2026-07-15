@@ -1,6 +1,8 @@
 using Meridian.Core.Config;
+using Meridian.Contracts.Catalog;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
+using Meridian.Ui.Services.ProviderDiagnostics;
 using Meridian.Ui.Services.Services;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Copy;
@@ -84,10 +86,16 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IDataQualityApiClient, DataQualityApiClient>();
         services.AddSingleton<IDataQualityPresentationService, DataQualityPresentationService>();
         services.AddTransient<IDataQualityRefreshService, DataQualityRefreshService>();
+        services.AddSingleton<IProviderDiagnosticsApiClient, ProviderDiagnosticsApiClient>();
         services.AddTransient<BackfillViewModel>();
         services.AddTransient<ProviderViewModel>();
         services.AddTransient<DataQualityViewModel>();
         services.AddTransient<CollectionSessionViewModel>();
+        services.AddSingleton<SymbolMappingService>(sp =>
+            new SymbolMappingService(sp.GetRequiredService<ICanonicalSymbolRegistry>()));
+        services.AddSingleton<ISymbolMappingClient, SymbolMappingServiceClient>();
+        services.AddTransient<SymbolMappingViewModel>();
+        services.AddTransient<SymbolMappingPage>();
         services.AddTransient<WatchlistViewModel>();
         services.AddSingleton<IQualityArchiveStore, QualityArchiveStore>();
         services.AddTransient<QualityArchiveViewModel>();

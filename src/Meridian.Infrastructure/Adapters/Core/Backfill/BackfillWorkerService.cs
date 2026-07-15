@@ -11,7 +11,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
-using Meridian.Infrastructure.Adapters.OpenFigi;
+using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Policies;
@@ -36,7 +36,7 @@ public sealed class BackfillWorkerService : IDisposable
     private readonly IConnectivityProbeService? _connectivityProbe;
     private readonly CancellationTokenSource _cts = new();
     private readonly SemaphoreSlim _concurrencySemaphore;
-    private readonly BackfillProgressTracker _progressTracker = new();
+    private readonly BackfillProgressTracker _progressTracker;
     private Task? _workerTask;
     private Task? _completionTask;
     private bool _disposed;
@@ -106,6 +106,7 @@ public sealed class BackfillWorkerService : IDisposable
         _jobManager = jobManager;
         _requestQueue = requestQueue;
         _provider = provider;
+        _progressTracker = provider.ProgressTracker;
         _rateLimitTracker = rateLimitTracker;
         _config = config;
         _appConfig = appConfig;
@@ -743,10 +744,12 @@ public sealed class BackfillWorkerService : IDisposable
 public sealed class BackfillServiceFactory
 {
     private readonly ILogger _log;
+    private readonly ISymbolResolver? _symbolResolver;
 
-    public BackfillServiceFactory(ILogger? log = null)
+    public BackfillServiceFactory(ILogger? log = null, ISymbolResolver? symbolResolver = null)
     {
         _log = log ?? LoggingSetup.ForContext<BackfillServiceFactory>();
+        _symbolResolver = symbolResolver;
     }
 
     /// <summary>
@@ -771,17 +774,9 @@ public sealed class BackfillServiceFactory
             rateLimitTracker.RegisterProvider(provider);
         }
 
-        // Create composite provider with symbol resolution wired the same way as the
-        // coordinator and provider-factory paths (BackfillConfig.EnableSymbolResolution).
-        OpenFigiSymbolResolver? symbolResolver = null;
-        if (config.EnableSymbolResolution)
-        {
-            symbolResolver = new OpenFigiSymbolResolver(config.Providers?.OpenFigi?.ApiKey, log: _log);
-        }
-
         var composite = new CompositeHistoricalDataProvider(
             providers,
-            symbolResolver,
+            config.EnableSymbolResolution ? _symbolResolver : null,
             enableRateLimitRotation: config.EnableRateLimitRotation,
             rateLimitRotationThreshold: config.RateLimitRotationThreshold,
             log: _log);
@@ -818,7 +813,7 @@ public sealed class BackfillServiceFactory
             rateLimitTracker,
             composite,
             worker,
-            symbolResolver);
+            ownedSymbolResolver: null);
     }
 }
 

@@ -27,12 +27,13 @@ export interface AccountingWorkbenchContextProps {
 const accountingRouteTabs: { id: string; label: string; route: string; workstreams: AccountingWorkstream[] }[] = [
   { id: "close", label: "Close", route: WORKSTATION_ROUTE_CATALOG.accounting, workstreams: ["ledger"] },
   { id: "reconciliation", label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, workstreams: ["reconciliation"] },
+  { id: "external-gl", label: "External GL", route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation, workstreams: ["external-gl"] },
   { id: "journal-entries", label: "Adjustments", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries, workstreams: ["journal-entries"] },
   { id: "capital-accounts", label: "Capital accounts", route: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts, workstreams: ["capital-accounts"] },
   { id: "exceptions", label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions, workstreams: ["exceptions"] },
   { id: "approvals", label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals, workstreams: ["approvals"] },
-  { id: "security-master", label: "Data health", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, workstreams: ["security-master"] },
-  { id: "configure", label: "Reports", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure, workstreams: ["configure"] },
+  { id: "security-master", label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, workstreams: ["security-master"] },
+  { id: "configure", label: "Configure", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure, workstreams: ["configure"] },
   // The reporting workstream owns the showReporting-gated profile band, so it
   // gets its own tab: a "Reports" tab that navigated to /accounting/configure
   // while selected for /accounting/reporting would hide that band on click.

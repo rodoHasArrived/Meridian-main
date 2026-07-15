@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Infrastructure.Resilience;
 using System.Net;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Security.Authentication;
 using Xunit;
 
@@ -41,6 +42,65 @@ public class WebSocketConnectionManagerTests
 
         // Should not throw even if never connected
         await manager.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DisconnectAsync_WhenReceiveTaskIgnoresCancellation_HonorsShutdownCancellation()
+    {
+        var manager = new WebSocketConnectionManager(
+            providerName: "test-provider");
+        var receiveTaskRelease = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionCts = new CancellationTokenSource();
+        var receiveLoopCts = new CancellationTokenSource();
+        Task? disconnectTask = null;
+
+        SetPrivateField(manager, "_connectionCts", connectionCts);
+        SetPrivateField(manager, "_receiveLoopCts", receiveLoopCts);
+        SetPrivateField(manager, "_receiveTask", receiveTaskRelease.Task);
+
+        try
+        {
+            using var shutdownCts = new CancellationTokenSource();
+            disconnectTask = manager.DisconnectAsync(shutdownCts.Token);
+            shutdownCts.Cancel();
+
+            var completedTask = await Task.WhenAny(
+                disconnectTask,
+                Task.Delay(TimeSpan.FromSeconds(2)));
+
+            completedTask.Should().BeSameAs(
+                disconnectTask,
+                "shutdown cancellation must stop waiting for a cancellation-ignoring receive handler");
+            await FluentActions.Awaiting(() => disconnectTask!)
+                .Should().ThrowAsync<OperationCanceledException>();
+
+            GetPrivateField<Task>(manager, "_receiveTask").Should().BeNull();
+            GetPrivateField<CancellationTokenSource>(manager, "_connectionCts").Should().BeNull();
+            GetPrivateField<CancellationTokenSource>(manager, "_receiveLoopCts").Should().BeNull();
+
+            FluentActions.Invoking(connectionCts.Cancel)
+                .Should().Throw<ObjectDisposedException>();
+            FluentActions.Invoking(receiveLoopCts.Cancel)
+                .Should().Throw<ObjectDisposedException>();
+        }
+        finally
+        {
+            receiveTaskRelease.TrySetResult(true);
+            if (disconnectTask != null)
+            {
+                try
+                {
+                    await disconnectTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when shutdown cancellation wins the receive-task wait.
+                }
+            }
+
+            await manager.DisposeAsync();
+        }
     }
 
     [Fact]
@@ -127,5 +187,26 @@ public class WebSocketConnectionManagerTests
             ProviderFailureKind.MalformedProviderResponse,
             false
         };
+    }
+
+    private static void SetPrivateField<T>(WebSocketConnectionManager manager, string fieldName, T value)
+    {
+        var field = typeof(WebSocketConnectionManager).GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        field.Should().NotBeNull();
+        field!.SetValue(manager, value);
+    }
+
+    private static T? GetPrivateField<T>(WebSocketConnectionManager manager, string fieldName)
+        where T : class
+    {
+        var field = typeof(WebSocketConnectionManager).GetField(
+            fieldName,
+            BindingFlags.Instance | BindingFlags.NonPublic);
+
+        field.Should().NotBeNull();
+        return field!.GetValue(manager) as T;
     }
 }

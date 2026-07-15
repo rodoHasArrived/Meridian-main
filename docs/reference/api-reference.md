@@ -594,6 +594,12 @@ flows. Legacy governance/data-operations aliases remain compatibility routes for
 |--------|-------|-------------|
 | GET | `/api/workstation/accounting` | Accounting workspace payload for ledger, reconciliation, approvals, and accounting-control posture. |
 | GET | `/api/workstation/data` | Data workspace payload for provider posture, backfill, storage, and quality handoffs. |
+| GET | `/api/workstation/data/ingestion-operations` | Filterable durable ingestion-job summary with checkpoint, retry, failure, action, and evidence posture. |
+| GET | `/api/workstation/data/ingestion-operations/{jobId}` | Ingestion job detail with checkpoint and per-symbol progress. |
+| POST | `/api/workstation/data/ingestion-operations/{jobId}/actions/{action}` | Apply a permitted pause, resume, retry, or cancel transition with rationale, idempotency, and retained evidence. |
+| GET | `/api/workstation/data/storage-assurance` | Consolidated storage health, quality, canonicalization, capacity, tier, alert, and permission posture. |
+| POST | `/api/workstation/data/storage-assurance/actions/preview` | Preview a quality check, temporary-file cleanup, or copy-only tier migration. |
+| POST | `/api/workstation/data/storage-assurance/actions/execute` | Execute an unexpired preview after permission, rationale, typed-confirmation, and candidate revalidation checks. |
 | GET | `/api/workstation/trading/readiness` | Trading readiness projection with operator sign-off and accounting-control work-item posture. |
 | GET | `/api/workstation/operator/inbox` | Account-scoped operator queue for readiness + reconciliation work. |
 | GET | `/api/workstation/trading` | Trading shell payload that embeds readiness state. |

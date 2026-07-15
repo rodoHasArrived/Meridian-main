@@ -47,7 +47,8 @@ public sealed record DailyMarkToMarketRequest(
     string BaseCurrency,
     IReadOnlyList<MarkToMarketPosition> Positions,
     string Actor,
-    string Reason);
+    string Reason,
+    MarkPriceQualityPolicy? QualityPolicy = null);
 
 /// <summary>
 /// Outcome of a daily mark-to-market preparation run. <see cref="Approval"/> is a
@@ -57,8 +58,11 @@ public sealed record DailyMarkToMarketRequest(
 public sealed record DailyMarkToMarketRun(
     DailyPortfolioPricingProjection? Projection,
     AutomatedJournalApproval? Approval,
-    IReadOnlyList<string> UnpricedSymbols)
+    IReadOnlyList<string> UnpricedSymbols,
+    IReadOnlyList<MarkPriceRejection>? RejectedMarks = null)
 {
+    public IReadOnlyList<MarkPriceRejection> RejectedMarks { get; init; } = RejectedMarks ?? [];
+
     /// <summary>True when a governed draft was submitted for approval.</summary>
     public bool HasDraft => Approval is not null;
 
@@ -118,7 +122,7 @@ public sealed class DailyMarkToMarketService
             var quote = await _priceSource.GetMarkPriceAsync(position.Symbol, asOfDate, ct).ConfigureAwait(false);
             if (quote is null)
             {
-                unpriced.Add(position.Symbol);
+                rejected.Add(new MarkPriceRejection(position.Symbol, "No closing mark was available."));
                 _log.Warning(
                     "No mark price available for {Symbol} as of {AsOfDate}; position excluded from fair-value draft",
                     position.Symbol, asOfDate);
@@ -201,7 +205,24 @@ public sealed class DailyMarkToMarketService
         _log.Information(
             "Submitted fair-value draft {ApprovalId} for fund {FundId} period {PeriodId}: {LineCount} lines, net unrealized {NetUnrealized} ({UnpricedCount} unpriced)",
             approval.ApprovalId, request.Policy.FundId, request.PeriodId,
-            draft.Lines.Count, projection.NetUnrealizedGainOrLoss, unpriced.Count);
+            draft.Lines.Count, projection.NetUnrealizedGainOrLoss, unpriced.Length);
+
+        return new DailyMarkToMarketRun(projection, approval, unpriced, rejected);
+    }
+
+    private static string? EvaluateMarkQuality(
+        MarkPriceQuote quote,
+        DateOnly asOfDate,
+        MarkPriceQualityPolicy policy)
+    {
+        if (quote.Price <= 0m)
+            return $"Closing mark price must be positive (was {quote.Price}).";
+        if (quote.Confidence < policy.MinimumConfidence)
+            return $"Mark confidence {quote.Confidence} is below required {policy.MinimumConfidence}.";
+        if (!quote.ObservedOn.HasValue)
+            return policy.RequireObservedDate ? "Mark observation date is required." : null;
+        if (quote.ObservedOn.Value > asOfDate)
+            return $"Mark observation date {quote.ObservedOn:yyyy-MM-dd} is after valuation date {asOfDate:yyyy-MM-dd}.";
 
         return new DailyMarkToMarketRun(projection, approval, unpriced) { StalePricedSymbols = stalePriced };
     }

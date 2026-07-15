@@ -5,6 +5,31 @@ import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { openPlaidLink, type PlaidLinkSuccessMetadata } from "@/lib/plaid-link";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
+  buildProviderReadinessSummaryText,
+  credentialToneFromLabel,
+  diagnosticStatusFromReadiness,
+  findField,
+  formatLastGoodProviderResponse,
+  formatProviderReasonLabel,
+  formatProviderRoutingCapability,
+  formatProviderUtcMinute,
+  joinProviderDetailSentences,
+  normalizeProviderToken,
+  normalizeProviderTrustScore,
+  providerCredentialLabel,
+  providerCredentialSourceLabel,
+  providerGateImpactText,
+  providerReadinessStatusLabel,
+  providerRoutingEnvironmentLabel,
+  providerRoutingFallbackLabel,
+  providerRoutingRecommendedAction,
+  providerRoutingVerificationLabel,
+  providerVerificationLabel,
+  splitProviderSetupPascalCase,
+  uniqueStrings,
+  verificationToneFromLabel
+} from "@/screens/data-provider-display-view-model";
+import {
   buildDataLoadingState,
   buildRouteFocusCardState,
   resolveDataWorkstream
@@ -15,6 +40,7 @@ import type {
 } from "@/screens/data-screen.route-state";
 import type {
   BackfillPreviewResult,
+  BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -55,6 +81,8 @@ export type {
   DataOperationsWorkstream,
   DataWorkstationViewState
 } from "@/screens/data-screen.route-state";
+
+export { formatProviderReasonLabel, normalizeProviderTrustScore };
 
 export interface BackfillFormState {
   provider: string;
@@ -152,10 +180,39 @@ export interface BackfillResultCardState {
   errorText: string | null;
 }
 
+export interface BackfillLiveProgressSymbolState {
+  symbol: string;
+  range: string;
+  provider: string;
+  attempt: string;
+  status: string;
+  progress: string;
+  error: string | null;
+}
+
+export interface BackfillLiveProgressAttemptState {
+  id: string;
+  label: string;
+  detail: string;
+  tone: "default" | "warning" | "danger";
+}
+
+export interface BackfillLiveProgressState {
+  ariaLabel: string;
+  title: string;
+  summary: string;
+  active: boolean;
+  overallPercent: number;
+  symbols: BackfillLiveProgressSymbolState[];
+  recentAttempts: BackfillLiveProgressAttemptState[];
+  droppedNotificationWarning: string | null;
+  observedAt: string;
+}
+
 export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillPreviewResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
-  getProgress: () => Promise<BackfillProgressResponse>;
+  getProgress: (signal?: AbortSignal) => Promise<BackfillProgressResponse>;
 }
 
 export interface ProviderSetupLifecycleServices {
@@ -268,6 +325,7 @@ export interface DataOperationsProviderRow {
   note: string;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
+  reasonLabelText: string;
   reasonCodeText: string;
   recommendedActionText: string;
   gateImpactText: string;
@@ -332,6 +390,7 @@ export interface DataOperationsProviderDetailState {
   tabs: DataOperationsProviderTabState[];
   verifyAction: DataOperationsProviderVerifyActionState;
   actionText: string;
+  reasonLabelText: string;
   reasonCodeText: string;
   gateImpactText: string;
 }
@@ -397,6 +456,9 @@ export interface DataOperationsExportDetailState {
   statusVariant: "success" | "warning" | "paper";
   fields: DataOperationsDetailField[];
   actionText: string;
+  actionHref: string;
+  actionLabel: string;
+  actionAriaLabel: string;
 }
 
 export interface DataOperationsPresentationState {
@@ -863,8 +925,9 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
-  getProgress: () => workstationApi.getBackfillProgress()
+  getProgress: (signal) => workstationApi.getBackfillProgress({ signal })
 };
+const BACKFILL_PROGRESS_POLL_INTERVAL_MS = 500;
 const defaultProviderSetupLifecycle: ProviderSetupLifecycleServices = {};
 
 const defaultBackfillForm: BackfillFormState = {
@@ -1063,6 +1126,7 @@ export function useDataViewModel(
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
+  const [liveProgress, setLiveProgress] = useState<BackfillProgressResponse | null>(null);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
@@ -1215,6 +1279,10 @@ export function useDataViewModel(
     () => result ? buildBackfillResultCardState(result, "result") : null,
     [result]
   );
+  const liveProgressState = useMemo(
+    () => buildBackfillLiveProgressState(liveProgress),
+    [liveProgress]
+  );
   const uploadPanelState = useMemo(
     () => buildDataUploadPanelState(
       uploadCatalog,
@@ -1241,6 +1309,7 @@ export function useDataViewModel(
     setDialogOpen(true);
     setPreview(null);
     setResult(null);
+    setLiveProgress(null);
     setError(null);
     setBusy(false);
     setPhase("idle");
@@ -1275,6 +1344,7 @@ export function useDataViewModel(
     setForm((current) => ({ ...current, [field]: value }));
     setPreview(null);
     setResult(null);
+    setLiveProgress(null);
     setError(null);
   }, []);
 
@@ -1396,15 +1466,45 @@ export function useDataViewModel(
     token.safeSetState(setBusy, true);
     token.safeSetState(setPhase, "running");
     token.safeSetState(setError, null);
+    token.safeSetState(setLiveProgress, null);
+
+    const pollingController = new AbortController();
+    const abortPolling = () => pollingController.abort();
+    token.signal.addEventListener("abort", abortPolling, { once: true });
+    const pollProgress = async () => {
+      while (!pollingController.signal.aborted && token.isCurrent()) {
+        try {
+          const progress = await services.getProgress(pollingController.signal);
+          if (!pollingController.signal.aborted && token.isCurrent()) {
+            token.safeSetState(setLiveProgress, progress);
+          }
+        } catch {
+          if (pollingController.signal.aborted || !token.isCurrent()) {
+            break;
+          }
+          // The run remains authoritative; a later poll can recover from a transient read failure.
+        }
+
+        await waitForBackfillProgressPoll(BACKFILL_PROGRESS_POLL_INTERVAL_MS, pollingController.signal);
+      }
+    };
+    let pollingTask: Promise<void>;
 
     try {
-      const nextResult = await services.run(buildBackfillRequest(form));
+      const runRequest = services.run(buildBackfillRequest(form));
+      pollingTask = pollProgress();
+      const nextResult = await runRequest;
       if (!token.isCurrent()) {
         backfillLifecycle.markStale(token.version);
         return;
       }
       token.safeSetState(setResult, nextResult);
-      await services.getProgress().catch(() => null);
+      pollingController.abort();
+      await pollingTask;
+      const finalProgress = await services.getProgress(token.signal).catch(() => null);
+      if (finalProgress && token.isCurrent()) {
+        token.safeSetState(setLiveProgress, finalProgress);
+      }
       backfillLifecycle.succeed(token, { message: "Historical backfill run completed." });
     } catch (err) {
       if (!token.isCurrent()) {
@@ -1414,6 +1514,8 @@ export function useDataViewModel(
       token.safeSetState(setError, buildDataErrorState(err, "Backfill run failed."));
       backfillLifecycle.fail(token, err, { fallback: "Backfill run failed." });
     } finally {
+      pollingController.abort();
+      token.signal.removeEventListener("abort", abortPolling);
       if (token.isCurrent()) {
         token.safeSetState(setBusy, false);
         token.safeSetState(setPhase, "idle");
@@ -1812,6 +1914,7 @@ export function useDataViewModel(
     previewResultCard,
     result,
     runResultCard,
+    liveProgressState,
     error,
     busy,
     phase,
@@ -2098,9 +2201,10 @@ export function buildProviderSection(
   const selectedRowId = selectedRecord ? buildProviderCenterRowId(selectedRecord) : null;
   const rows = records.map((record) => buildProviderRow(record, selectedRowId));
   const selectedDetail = buildSelectedProviderDetail(records, selectedRowId, selectedTab, verifyAction);
-  const blockedCount = evidence.providerReadiness?.blockedProviders ?? rows.filter((row) => row.status === "Blocked").length;
-  const degradedCount = evidence.providerReadiness?.degradedProviders ?? rows.filter((row) => row.status === "Degraded").length;
-  const reviewCount = evidence.providerReadiness?.reviewProviders ?? rows.filter((row) => row.statusTone === "warning").length;
+  const blockedCount = rows.filter((row) => row.status === "Blocked").length;
+  const degradedCount = rows.filter((row) => row.status === "Degraded").length;
+  const reviewCount = rows.filter((row) => row.statusTone === "warning").length;
+  const readyCount = rows.filter((row) => row.statusTone === "success").length;
   const verifiedCount = rows.filter((row) => row.credentialText === "Verified" || row.credentialText === "Not required").length;
   const statusLabel = rows.length === 0
     ? "No providers"
@@ -2122,7 +2226,13 @@ export function buildProviderSection(
   return {
     title: "Provider Management",
     subtitle: "Configure, verify, monitor, and route market-data and brokerage providers used by Meridian.",
-    readinessSummary: buildProviderReadinessSummaryText(evidence.providerReadiness, rows.length),
+    readinessSummary: buildProviderReadinessSummaryText(evidence.providerReadiness, {
+      rowCount: rows.length,
+      readyCount,
+      reviewCount,
+      degradedCount,
+      blockedCount
+    }),
     statusLabel,
     statusTone,
     commandActions: [
@@ -2216,7 +2326,7 @@ export function buildProviderRow(
   const bindings = record.bindings;
   const latencyText = formatProviderValue(providerRecord?.latency, connection ? formatLastGoodProviderResponse(connection) : "Latency not reported");
   const trustScoreText = trust
-    ? `${Math.round(trust.score)}% · ${trust.healthStatus}`
+    ? `${normalizeProviderTrustScore(trust.score)}% · ${trust.healthStatus}`
     : readiness?.degradationScore !== null && readiness?.degradationScore !== undefined
       ? `${Math.round((1 - readiness.degradationScore) * 100)}% · readiness`
       : formatProviderValue(providerRecord?.trustScore, "Trust score not reported");
@@ -2228,6 +2338,7 @@ export function buildProviderRow(
   const reasonCodeText = readiness
     ? `READINESS_${readiness.status.toUpperCase()}`
     : formatProviderValue(providerRecord?.reasonCode, record.routingConnection?.productionReady === false ? "CERTIFICATION_PENDING" : "Reason code not reported");
+  const reasonLabelText = formatProviderReasonLabel(reasonCodeText);
   const recommendedActionText = readiness?.recommendedAction
     ?? (record.routingConnection
       ? providerRoutingRecommendedAction(record.routingConnection, trust, bindings, record.routingConnection.enabled)
@@ -2288,6 +2399,7 @@ export function buildProviderRow(
         value: gateImpactText
       }
     ],
+    reasonLabelText,
     reasonCodeText,
     recommendedActionText,
     gateImpactText,
@@ -2338,7 +2450,7 @@ export function buildSelectedProviderDetail(
     providerId: selected.providerId,
     title: selected.displayName,
     subtitle: row.capability,
-    description: `${row.note} ${row.gateImpactText}.`,
+    description: joinProviderDetailSentences(row.note, row.gateImpactText),
     ariaLabel: `Provider detail for ${selected.displayName}: ${row.status}. ${row.capability}. ${row.recommendedActionText}`,
     status: row.status,
     statusTone: row.statusTone,
@@ -2361,6 +2473,7 @@ export function buildSelectedProviderDetail(
       ariaLabel: `Provider verification unavailable for ${selected.displayName}`
     },
     actionText: row.recommendedActionText,
+    reasonLabelText: row.reasonLabelText,
     reasonCodeText: row.reasonCodeText,
     gateImpactText: row.gateImpactText
   };
@@ -2468,7 +2581,21 @@ function buildProviderCenterRecords(
   for (const provider of providers) {
     const providerKey = normalizeProviderToken(provider.providerId ?? provider.provider);
     if (!matchedWorkspace.has(providerKey)) {
-      records.push(buildProviderCenterRecordFromWorkspace(provider));
+      const routingConnection = findRoutingConnectionForWorkspaceProvider(provider, routingConnections);
+      if (routingConnection) {
+        matchedRouting.add(normalizeProviderToken(routingConnection.connectionId));
+      }
+
+      records.push(buildProviderCenterRecord({
+        providerId: provider.providerId ?? provider.provider,
+        displayName: provider.displayName ?? provider.provider,
+        workspaceProvider: provider,
+        connection: provider.connectionSummary ?? null,
+        readiness: null,
+        routingConnection,
+        routingBindings,
+        trustSnapshots
+      }));
     }
   }
 
@@ -2602,6 +2729,24 @@ function findRoutingConnectionForReadiness(
       routingName === displayName ||
       connectionId.includes(providerId) ||
       providerId.includes(familyId);
+  }) ?? null;
+}
+
+function findRoutingConnectionForWorkspaceProvider(
+  provider: DataProviderRecord,
+  routingConnections: ProviderRoutingConnection[]
+): ProviderRoutingConnection | null {
+  const providerId = normalizeProviderToken(provider.providerId ?? provider.provider);
+  const displayName = normalizeProviderToken(provider.displayName ?? provider.provider);
+  const providerName = normalizeProviderToken(provider.provider);
+  return routingConnections.find((routingConnection) => {
+    const connectionId = normalizeProviderToken(routingConnection.connectionId);
+    const familyId = normalizeProviderToken(routingConnection.providerFamilyId);
+    const routingName = normalizeProviderToken(routingConnection.displayName);
+    return connectionId === providerId ||
+      familyId === providerId ||
+      routingName === displayName ||
+      routingName === providerName;
   }) ?? null;
 }
 
@@ -2771,25 +2916,6 @@ function buildProviderSummaryCards(
     { id: "workflows", label: "Affected Workflows", value: workflows, detail: "Workflow impact before routing changes.", tone: "default" },
     { id: "action", label: "Recommended Action", value: detail.actionText, detail: detail.gateImpactText, tone: detail.statusTone }
   ];
-}
-
-function buildProviderReadinessSummaryText(
-  readiness: ProviderReadinessSummary | null | undefined,
-  rowCount: number
-): string {
-  if (!readiness) {
-    return rowCount > 0
-      ? "Provider readiness is assembled from connection, routing, and workspace evidence while the shared readiness summary is unavailable."
-      : "Provider readiness will appear after the shared provider setup, validation, degradation, and evidence data loads.";
-  }
-
-  const counts = [
-    `${readiness.readyProviders} ready`,
-    `${readiness.reviewProviders} review`,
-    `${readiness.degradedProviders} degraded`,
-    `${readiness.blockedProviders} blocked`
-  ].join(" / ");
-  return `${readiness.summary} ${counts}. Next action: ${readiness.recommendedAction}`;
 }
 
 function buildProviderOverviewFields(
@@ -3026,222 +3152,6 @@ function buildProviderVerifyActionState(
   };
 }
 
-function providerCredentialLabel(value: ProviderConnectionRow["credentialState"]): string {
-  switch (value) {
-    case "NotRequired":
-      return "Not required";
-    default:
-      return splitProviderSetupPascalCase(value);
-  }
-}
-
-function diagnosticStatusFromReadiness(status: ProviderReadinessStatus): DataOperationsProviderDiagnosticRow["status"] {
-  switch (status) {
-    case "Ready":
-      return "pass";
-    case "Blocked":
-      return "fail";
-    case "Degraded":
-      return "warning";
-    default:
-      return "pending";
-  }
-}
-
-function providerReadinessStatusLabel(status: ProviderReadinessStatus): string {
-  switch (status) {
-    case "Ready":
-      return "Ready";
-    case "Review":
-      return "Review";
-    case "Degraded":
-      return "Degraded";
-    case "Blocked":
-      return "Blocked";
-    default:
-      return "Unknown";
-  }
-}
-
-function providerVerificationLabel(value: ProviderConnectionRow["verificationState"]): string {
-  switch (value) {
-    case "NotRequired":
-      return "Not required";
-    case "NotVerified":
-      return "Not verified";
-    default:
-      return splitProviderSetupPascalCase(value);
-  }
-}
-
-function providerCredentialSourceLabel(value: ProviderConnectionRow["credentialSource"]): string {
-  switch (value) {
-    case "LocalEncryptedStore":
-      return "Encrypted local store";
-    case "ExternalVaultReference":
-      return "External vault reference";
-    case "NotRequired":
-      return "Not required";
-    default:
-      return splitProviderSetupPascalCase(value);
-  }
-}
-
-function providerRoutingVerificationLabel(
-  connection: ProviderRoutingConnection | null,
-  trust: ProviderRoutingTrustSnapshot | null
-): string {
-  if (trust?.isCertificationFresh) {
-    return "Certified";
-  }
-
-  if (connection?.productionReady) {
-    return "Production ready";
-  }
-
-  return connection ? "Certification pending" : "Not reported";
-}
-
-function providerRoutingRecommendedAction(
-  connection: ProviderRoutingConnection,
-  trust: ProviderRoutingTrustSnapshot | null,
-  bindings: ProviderRoutingBinding[],
-  enabled: boolean
-): string {
-  if (!enabled) {
-    return "Enable the routing connection before selecting it for provider workflows.";
-  }
-
-  if (bindings.length === 0) {
-    return "Add a provider-routing binding before selecting this connection.";
-  }
-
-  if (!connection.productionReady) {
-    return "Run provider certification before production routing.";
-  }
-
-  if (trust && !trust.isHealthy) {
-    return "Inspect provider health before routing new workflow traffic.";
-  }
-
-  return "Provider routing is ready for supported capabilities.";
-}
-
-function providerGateImpactText(
-  connection: ProviderRoutingConnection | null,
-  trust: ProviderRoutingTrustSnapshot | null
-): string {
-  if (!connection) {
-    return "No routing gate loaded";
-  }
-
-  if (!connection.enabled) {
-    return "Disabled for routing";
-  }
-
-  if (!connection.productionReady) {
-    return "Certification needed";
-  }
-
-  if (trust && !trust.isHealthy) {
-    return "Health gate needs review";
-  }
-
-  return "No gate impact reported";
-}
-
-function providerRoutingFallbackLabel(bindings: ProviderRoutingBinding[]): string {
-  const count = bindings.reduce((total, binding) => total + binding.failoverConnectionIds.length, 0);
-  return count > 0 ? `${count} backup route${count === 1 ? "" : "s"}` : "No backup source active";
-}
-
-function providerRoutingEnvironmentLabel(connection: ProviderRoutingConnection | null): string {
-  if (!connection) {
-    return "Not set";
-  }
-
-  if (connection.connectionMode.toLowerCase().includes("paper")) {
-    return "PAPER";
-  }
-
-  if (connection.connectionMode.toLowerCase().includes("live")) {
-    return "LIVE";
-  }
-
-  return connection.connectionMode;
-}
-
-function formatProviderRoutingCapability(value: string): string {
-  switch (value) {
-    case "RealtimeMarketData":
-      return "Live quotes";
-    case "HistoricalBars":
-      return "Historical backfill";
-    case "ReferenceData":
-      return "Reference data";
-    case "BrokerageOrders":
-      return "Brokerage/order routing";
-    case "PortfolioSync":
-      return "Portfolio sync";
-    case "ReportingExport":
-      return "Reporting exports";
-    default:
-      return splitProviderSetupPascalCase(value);
-  }
-}
-
-function formatLastGoodProviderResponse(connection: ProviderConnectionRow | null): string {
-  return formatProviderUtcMinute(connection?.lastSuccessfulAt ?? connection?.lastVerifiedAt);
-}
-
-function formatProviderUtcMinute(value: string | null | undefined): string {
-  if (!value) {
-    return "Never";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(date);
-}
-
-function normalizeProviderToken(value: string | null | undefined): string {
-  return (value ?? "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function uniqueStrings(values: string[]): string[] {
-  return values.filter((value, index) => values.indexOf(value) === index);
-}
-
-function findField(fields: DataOperationsDetailField[], id: string): string | null {
-  return fields.find((field) => field.id === id)?.value ?? null;
-}
-
-function credentialToneFromLabel(value: string): DataOperationsProviderSummaryCardState["tone"] {
-  return value === "Verified" || value === "Not required"
-    ? "success"
-    : value === "Missing" || value === "Partial" || value === "Invalid"
-      ? "danger"
-      : "warning";
-}
-
-function verificationToneFromLabel(value: string): DataOperationsProviderSummaryCardState["tone"] {
-  return value === "Verified" || value === "Not required"
-    ? "success"
-    : value === "Failed"
-      ? "danger"
-      : "warning";
-}
-
 export function buildBackfillSection(
   backfills: DataBackfillRecord[],
   selectedBackfillId: string | null,
@@ -3410,7 +3320,10 @@ export function buildSelectedExportDetail(
       { id: "rows", label: "Rows", value: selected.rows },
       { id: "updated", label: "Updated", value: selected.updatedAt }
     ],
-    actionText
+    actionText,
+    actionHref: workstationRouteWithQuery("reportingExports", { exportId: selected.exportId }),
+    actionLabel: "Open Reporting exports",
+    actionAriaLabel: `Open Reporting exports for ${selected.exportId}`
   };
 }
 
@@ -3917,6 +3830,97 @@ export function buildBackfillResultCardState(
       !isPreview && (result as BackfillTriggerResult).error ? `Error ${(result as BackfillTriggerResult).error}` : null
     ].filter(Boolean).join(". ")
   };
+}
+
+export function buildBackfillLiveProgressState(
+  response: BackfillProgressResponse | null
+): BackfillLiveProgressState | null {
+  const snapshot = response?.providerProgress;
+  if (!snapshot) {
+    return null;
+  }
+
+  const symbols = Object.values(snapshot.symbols)
+    .sort((left, right) => left.symbol.localeCompare(right.symbol))
+    .map((symbol) => ({
+      symbol: symbol.symbol,
+      range: formatBackfillRange(symbol.rangeStart, symbol.rangeEnd),
+      provider: formatBackfillValue(symbol.currentProvider, "Waiting for provider"),
+      attempt: symbol.providerAttempt > 0
+        ? `Attempt ${symbol.providerAttempt}${symbol.retryRound > 0 ? `, retry ${symbol.retryRound}` : ""}`
+        : "Not started",
+      status: resolveBackfillProviderProgressStatus(symbol),
+      progress: `${clampBackfillProgress(symbol.percentComplete).toLocaleString(undefined, { maximumFractionDigits: 1 })}%`,
+      error: symbol.error
+    }));
+  const recentAttempts = snapshot.recentProviderAttempts.slice(-8).reverse().map((attempt) => ({
+    id: [attempt.symbol, attempt.provider, attempt.providerAttempt, attempt.retryRound, attempt.observedAt].join("-"),
+    label: `${attempt.symbol} · ${attempt.provider}`,
+    detail: [
+      formatBackfillRange(attempt.rangeStart, attempt.rangeEnd),
+      `attempt ${attempt.providerAttempt}${attempt.retryRound > 0 ? `, retry ${attempt.retryRound}` : ""}`,
+      attempt.status ?? attempt.operation ?? "provider update",
+      `${attempt.barsDownloaded.toLocaleString()} bars`,
+      attempt.error
+    ].filter(Boolean).join(" · "),
+    tone: attempt.error
+      ? "danger" as const
+      : attempt.status?.toLowerCase().includes("skip")
+        ? "warning" as const
+        : "default" as const
+  }));
+  const overallPercent = clampBackfillProgress(snapshot.overallPercentComplete);
+  const active = response.isActive ?? response.active ?? false;
+  const observedAt = formatBackfillProgressTimestamp(snapshot.timestamp || response.timestamp);
+
+  return {
+    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })} percent.`,
+    title: active ? "Live provider progress" : "Final provider progress",
+    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${overallPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })}% overall`,
+    active,
+    overallPercent,
+    symbols,
+    recentAttempts,
+    droppedNotificationWarning: snapshot.droppedProviderNotifications > 0
+      ? `${snapshot.droppedProviderNotifications.toLocaleString()} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
+      : null,
+    observedAt
+  };
+}
+
+function resolveBackfillProviderProgressStatus(
+  symbol: BackfillProviderProgressSnapshot["symbols"][string]
+): string {
+  if (symbol.isFailed) return "Failed";
+  if (symbol.isSkipped) return "Skipped";
+  if (symbol.isCompleted) return "Completed";
+  return symbol.currentStatus ?? symbol.operation ?? "Pending";
+}
+
+function clampBackfillProgress(value: number): number {
+  return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
+}
+
+function formatBackfillProgressTimestamp(value: string | null | undefined): string {
+  if (!value) return "Time unavailable";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : `${formatUtcMinute(parsed)} UTC`;
+}
+
+function waitForBackfillProgressPoll(delayMs: number, signal: AbortSignal): Promise<void> {
+  if (signal.aborted) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const complete = () => {
+      window.clearTimeout(timer);
+      signal.removeEventListener("abort", complete);
+      resolve();
+    };
+    const timer = window.setTimeout(complete, delayMs);
+    signal.addEventListener("abort", complete, { once: true });
+  });
 }
 
 export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRequest {
@@ -4724,13 +4728,6 @@ function formatProviderSetupCredentialSource(value: string): string {
   }
 }
 
-function splitProviderSetupPascalCase(value: string): string {
-  return value
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/_/g, " ")
-    .trim() || value;
-}
-
 function isValidEndpointUrl(value: string): boolean {
   try {
     const url = new URL(value.trim());
@@ -4815,7 +4812,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "backfill",
       label: "Preview a backfill",
-      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+      href: WORKSTATION_ROUTE_CATALOG.dataOperations,
       ariaLabel: `Preview a historical backfill after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });

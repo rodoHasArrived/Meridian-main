@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,10 +20,15 @@ import {
 import { ReportingCommandStatusView, type ReportingCommandStatus } from "@/screens/reporting-screen.shared-components";
 import {
   buildExportsReportRunRequest,
-  buildReportRunResultDetails,
-  isExportsOnDemandRun
+  buildReportRunResultDetails
 } from "@/screens/reporting-screen";
-import { buildRunStatusRows, buildTemplateRows } from "@/screens/reporting-screen.view-model";
+import {
+  buildRunStatusRows,
+  buildTemplateRows,
+  presentReportingAsOfDate,
+  presentReportingIdentifier,
+  presentReportingStatusLabel
+} from "@/screens/reporting-screen.view-model";
 import { buildReportRunReadinessGateViewState } from "@/screens/report-run-parameters-screen.view-model";
 import type { AccountingWorkspaceResponse, ManualJournalEntryDraft } from "@/types";
 
@@ -58,20 +63,26 @@ const reportRunSavedViews = [
 
 export function ReportRunParametersScreen({ data, accounting }: ReportRunParametersScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const templateId = searchParams.get("templateId") ?? "";
   const reporting = data?.reporting ?? null;
 
   const templates = useMemo(() => buildTemplateRows(reporting?.templates ?? []), [reporting?.templates]);
-  const runStatusRows = useMemo(() => buildRunStatusRows(reporting?.recentRuns ?? []), [reporting?.recentRuns]);
-  const exportsRunRows = useMemo(() => runStatusRows.filter(isExportsOnDemandRun), [runStatusRows]);
-  const selectedTemplate = templates.find((template) => template.id === templateId) ?? null;
+  const runStatusRows = useMemo(
+    () => buildRunStatusRows(reporting?.recentRuns ?? [], reporting?.templates ?? []),
+    [reporting?.recentRuns, reporting?.templates]
+  );
+  const cloneRunId = searchParams.get("cloneRunId") ?? "";
+  const clonedRun = cloneRunId ? runStatusRows.find((run) => run.id === cloneRunId) ?? null : null;
+  const clonedTemplate = clonedRun
+    ? templates.find((template) => template.templateName === clonedRun.templateId || template.id === clonedRun.templateId) ?? null
+    : null;
+  const requestedTemplateId = searchParams.get("templateId") ?? clonedTemplate?.id ?? "";
 
   const [draft, setDraft] = useState<ExportsReportRunDraftState>(() => ({
-    templateRowId: templateId,
-    asOfDate: todayIsoDate(),
+    templateRowId: requestedTemplateId,
+    asOfDate: clonedRun?.restatementAsOfDate || todayIsoDate(),
     maxRetries: "0",
     requestedBy: "browser-user",
-    datasetSourceId: "",
+    datasetSourceId: clonedRun?.restatementDatasetSourceId ?? "",
     retryReason: "",
     restatementTargetRunId: "",
     restatementTemplateId: "",
@@ -79,6 +90,10 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     restatementAsOfDate: "",
     restatementDatasetSourceId: ""
   }));
+  const hydratedRouteContextRef = useRef<string | null>(null);
+  const selectedTemplate = templates.find((template) => template.id === draft.templateRowId)
+    ?? templates.find((template) => template.id === requestedTemplateId)
+    ?? null;
   const [status, setStatus] = useState<ReportingCommandStatus | null>(null);
   const [manualDrafts, setManualDrafts] = useState<ManualJournalEntryDraft[]>([]);
   const [standardDraft, setStandardDraft] = useState({
@@ -93,6 +108,38 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     includeSchedules: true,
     includeEvidence: true
   });
+
+  useEffect(() => {
+    const routeContextKey = cloneRunId
+      ? `clone:${cloneRunId}`
+      : requestedTemplateId
+        ? `template:${requestedTemplateId}`
+        : null;
+    if (!routeContextKey || hydratedRouteContextRef.current === routeContextKey) {
+      return;
+    }
+
+    if (cloneRunId) {
+      if (!clonedRun || !clonedTemplate) {
+        return;
+      }
+
+      setDraft((current) => ({
+        ...current,
+        templateRowId: clonedTemplate.id,
+        asOfDate: clonedRun.restatementAsOfDate || todayIsoDate(),
+        datasetSourceId: clonedRun.restatementDatasetSourceId ?? ""
+      }));
+    } else {
+      if (!templates.some((template) => template.id === requestedTemplateId)) {
+        return;
+      }
+
+      setDraft((current) => ({ ...current, templateRowId: requestedTemplateId }));
+    }
+
+    hydratedRouteContextRef.current = routeContextKey;
+  }, [cloneRunId, clonedRun, clonedTemplate, requestedTemplateId, templates]);
 
   useEffect(() => {
     let cancelled = false;
@@ -126,6 +173,18 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
 
   const onDraftChange = (field: ExportsReportRunDraftField, value: string) => {
     setDraft((current) => ({ ...current, [field]: value }));
+    if (field === "templateRowId") {
+      setSearchParams((current) => {
+        const next = new URLSearchParams(current);
+        next.delete("cloneRunId");
+        if (value) {
+          next.set("templateId", value);
+        } else {
+          next.delete("templateId");
+        }
+        return next;
+      }, { replace: true });
+    }
   };
 
   const onRestatementTargetChange = (target: RestatementTargetSelection | null) => {
@@ -176,7 +235,12 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
         label: "Report run",
         state: "success",
         message: `${identity.name} run created.`,
-        details: buildReportRunResultDetails(result.run)
+        details: buildReportRunResultDetails(result.run),
+        technicalDetails: {
+          label: "Run reference",
+          description: "Use this retained identifier when reviewing the run audit trail or requesting support.",
+          items: [result.run.runId]
+        }
       });
     } catch (error) {
       const description = describeApiError(error, `${identity.name} run failed.`);
@@ -207,7 +271,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     );
   }
 
-  if (!templateId) {
+  if (!requestedTemplateId) {
     const runnableTemplates = templates.filter((template) => template.canRunOnDemand);
     const recentRuns = runStatusRows.slice(0, 3);
     const primaryTemplate = runnableTemplates[0] ?? templates[0] ?? null;
@@ -215,7 +279,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
       {
         id: "breaks",
         label: "Review breaks",
-        detail: `${readinessGate.items.find((item) => item.id === "reconciliation-breaks")?.count ?? 0} open reconciliation break(s)`,
+        detail: `${readinessGate.items.find((item) => item.id === "open-breaks")?.count ?? 0} open reconciliation break(s)`,
         href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
         tone: readinessGate.isClear ? ("success" as const) : ("warning" as const)
       },
@@ -250,17 +314,17 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
           <div className="space-y-4">
             <section className="grid gap-2 md:grid-cols-3" aria-label="Report run setup scan band">
               <div className="border border-border bg-secondary/20 px-3 py-2">
-                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Templates</div>
+                <div className="font-mono text-xs font-semibold text-muted-foreground">Templates</div>
                 <div className="mt-1 text-lg font-semibold text-foreground">{templates.length}</div>
                 <p className="text-xs text-muted-foreground">{runnableTemplates.length} ready for on-demand runs</p>
               </div>
               <div className="border border-border bg-secondary/20 px-3 py-2">
-                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Readiness</div>
+                <div className="font-mono text-xs font-semibold text-muted-foreground">Readiness</div>
                 <div className="mt-1 text-lg font-semibold text-foreground">{readinessGate.isClear ? "Clear" : "Review"}</div>
                 <p className="text-xs text-muted-foreground">{readinessGate.disclaimer}</p>
               </div>
               <div className="border border-border bg-secondary/20 px-3 py-2">
-                <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent runs</div>
+                <div className="font-mono text-xs font-semibold text-muted-foreground">Recent runs</div>
                 <div className="mt-1 text-lg font-semibold text-foreground">{runStatusRows.length}</div>
                 <p className="text-xs text-muted-foreground">Run history and exceptions stay visible before configuration.</p>
               </div>
@@ -268,7 +332,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
 
             {templates.length > 0 ? (
               <label className="block max-w-xl space-y-1">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Report template</span>
+                <span className="text-xs font-medium text-muted-foreground">Report template</span>
                 <Select
                   value=""
                   onChange={(event) => {
@@ -335,7 +399,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
                     </div>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">{view.detail}</p>
                     <div className="mt-2 flex items-center justify-between gap-2">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{view.cadence}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{view.cadence}</span>
                       {primaryTemplate ? (
                         <Button
                           type="button"
@@ -369,7 +433,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
                       </Link>
                       <Badge variant={action.tone}>{action.id}</Badge>
                     </div>
-                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{action.detail}</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
                   </li>
                 ))}
               </ul>
@@ -392,7 +456,9 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
                   {recentRuns.map((run) => (
                     <li key={run.id} className="border border-border bg-background/50 px-3 py-2">
                       <div className="text-xs font-medium text-foreground">{run.templateLabel}</div>
-                      <div className="text-[11px] text-muted-foreground">{run.status} · {run.asOfDateLabel}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {presentReportingStatusLabel(run.status)} · {presentReportingAsOfDate(run.asOfDateLabel)}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -413,7 +479,9 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Template not found</CardTitle>
-          <CardDescription>No report template matching "{templateId}" was found.</CardDescription>
+          <CardDescription>
+            No report template matching "{presentReportingIdentifier(requestedTemplateId.split(":", 1)[0], "Requested report")}" was found.
+          </CardDescription>
         </CardHeader>
       </Card>
     );
@@ -554,11 +622,12 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
       </section>
 
       <ExportsReportRunner
+        context="run"
         draft={draft}
         templates={templates}
         selectedTemplate={selectedTemplate}
         datasetSources={reporting?.reportWriterDatasetSources ?? []}
-        recentRuns={exportsRunRows}
+        recentRuns={runStatusRows}
         status={status}
         runningTemplateRunId={runningTemplateRunId}
         defaultRequester="browser-user"

@@ -13,6 +13,7 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Synthetic;
@@ -76,7 +77,12 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
                 RegisterStreamingFactories(registry, config, credentialResolver, sp, log);
             }
 
-            RegisterBackfillProviders(registry, config, credentialResolver, log);
+            RegisterBackfillProviders(
+                registry,
+                config,
+                credentialResolver,
+                sp.GetService<ISymbolResolver>(),
+                log);
             RegisterSymbolSearchProviders(registry, config, credentialResolver, log);
             ProviderCatalog.InitializeFromRegistry(
                 () => BuildMergedProviderCatalog(registry, sp.GetServices<IOptionsChainProvider>()),
@@ -101,7 +107,11 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
             var config = LoadPreparedConfig(sp, configStore);
             var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var logger = LoggingSetup.ForContext<ProviderFactory>();
-            return new ProviderFactory(config, credentialResolver, logger);
+            return new ProviderFactory(
+                config,
+                credentialResolver,
+                logger,
+                sp.GetService<ISymbolResolver>());
         });
 
         return services;

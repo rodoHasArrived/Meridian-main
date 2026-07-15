@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import type { SessionInfo } from "@/types";
 
 export interface WorkstationStatusBarItem {
   key: string;
@@ -37,39 +36,20 @@ export function WorkstationStatusBar({ items }: WorkstationStatusBarProps) {
 }
 
 export function buildWorkstationStatusItems({
-  session,
   workspaceLabel,
-  usingDevelopmentFixtures,
   refreshing,
   hasError
 }: {
-  session: Pick<SessionInfo, "environment"> | null;
   workspaceLabel: string;
-  usingDevelopmentFixtures: boolean;
   refreshing: boolean;
   hasError: boolean;
 }): WorkstationStatusBarItem[] {
-  const environment = session?.environment ?? "loading";
-  const connectionStatus: WorkstationStatusBarItem["status"] = hasError ? "err" : session ? "ok" : "warn";
-  const dataStatus: WorkstationStatusBarItem["status"] = usingDevelopmentFixtures ? "warn" : "ok";
-
   return [
     {
-      key: "session",
-      status: connectionStatus,
-      label: "Session",
-      value: session ? environment : "connecting"
-    },
-    {
-      key: "data",
-      status: dataStatus,
-      label: "Data",
-      value: usingDevelopmentFixtures ? "demo fixtures" : "live source"
-    },
-    {
       key: "sync",
+      status: hasError ? "err" : refreshing ? "warn" : "ok",
       label: "Sync",
-      value: refreshing ? "refreshing..." : "up to date"
+      value: hasError ? "attention required" : refreshing ? "refreshing..." : "up to date"
     },
     {
       key: "workspace",

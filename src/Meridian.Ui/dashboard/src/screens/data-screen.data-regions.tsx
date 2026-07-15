@@ -204,28 +204,138 @@ export function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel 
                     key={card.id}
                     role="listitem"
                     className={cn("rounded-md border p-3 text-sm", resultToneClass[card.tone])}
+                    title={card.detail}
                   >
                     <div className="text-xs uppercase tracking-wide">{card.label}</div>
                     <div className="mt-1 font-mono text-lg font-semibold">{card.value}</div>
+                    <div className="mt-1 text-xs opacity-80">{card.detail}</div>
                   </div>
                 ))}
               </div>
-              {panel.model.attentionSymbols.length > 0 && (
+              {panel.model.isPartial ? (
+                <StatusBanner
+                  tone="warning"
+                  title="Partial quality evidence"
+                  detail="Missing or stale source signals are shown explicitly and cannot produce a Green posture."
+                />
+              ) : null}
+              {panel.model.symbols.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold">Symbols needing attention</h3>
-                  <ul className="mt-2 grid gap-1.5">
-                    {panel.model.attentionSymbols.map((row) => (
-                      <li key={row.symbol} className="flex flex-wrap items-center gap-2 text-sm">
-                        <Badge variant={qualityToneBadgeVariant[row.tone]}>{row.health}</Badge>
-                        <span className="font-mono font-semibold">{row.symbol}</span>
-                        <span className="text-muted-foreground">
-                          completeness {row.completenessLabel} · freshness {row.freshnessLabel} ·{" "}
-                          {row.gapCount} gap{row.gapCount === 1 ? "" : "s"} · {row.anomalyCount} anomal
-                          {row.anomalyCount === 1 ? "y" : "ies"}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  <h3 className="text-sm font-semibold">Collected symbols</h3>
+                  <div className="mt-2 overflow-x-auto rounded-md border">
+                    <div className="min-w-[760px] divide-y" role="list" aria-label="Composite quality by symbol">
+                      {panel.model.symbols.map((row) => (
+                        <details key={row.symbol} className="group text-sm" role="listitem">
+                          <summary className="grid cursor-pointer list-none grid-cols-[7rem_7rem_1fr_auto] items-center gap-3 px-3 py-2 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                            <span className="font-mono font-semibold">{row.symbol}</span>
+                            <span className="flex items-center gap-2">
+                              <Badge variant={qualityToneBadgeVariant[row.tone]}>{row.status}</Badge>
+                              <span className="font-mono">{row.scoreLabel}</span>
+                            </span>
+                            <span className="text-muted-foreground">
+                              stored {row.completenessLabel} · streaming {row.freshnessLabel} · adapter {row.adapterLabel}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{row.coverageLabel}</span>
+                          </summary>
+                          <div className="grid gap-3 border-t bg-muted/20 px-4 py-3 lg:grid-cols-2">
+                            <div>
+                              <h4 className="font-semibold">Expected-session evidence</h4>
+                              <p className="mt-1 text-muted-foreground">{row.expectedEventsLabel}</p>
+                              <ul className="mt-2 grid gap-1" aria-label={`${row.symbol} quality components`}>
+                                {row.components.map((component) => (
+                                  <li key={component.kind} className="flex items-start justify-between gap-3">
+                                    <span>
+                                      <span className="font-medium">{component.label}</span>{" "}
+                                      <span className="text-muted-foreground">({component.availability})</span>
+                                      <span className="block text-xs text-muted-foreground">{component.detail}</span>
+                                    </span>
+                                    <span className="font-mono">{component.score === null ? "—" : component.score.toFixed(1)}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold">Provider freshness</h4>
+                              {row.providerFreshness.length === 0 ? (
+                                <p className="mt-1 text-muted-foreground">No provider-specific observation is available.</p>
+                              ) : (
+                                <ul className="mt-1 grid gap-1" aria-label={`${row.symbol} provider freshness`}>
+                                  {row.providerFreshness.map((provider) => (
+                                    <li key={provider.provider} className="flex justify-between gap-3">
+                                      <span className="font-mono">{provider.provider}</span>
+                                      <span className="text-muted-foreground">
+                                        {provider.status} · {provider.lastEventAt ? new Date(provider.lastEventAt).toLocaleString() : "unmeasured"}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                              <p className="mt-2 text-muted-foreground">
+                                {row.gapCount} open gap{row.gapCount === 1 ? "" : "s"} · {row.anomalyCount} anomal
+                                {row.anomalyCount === 1 ? "y" : "ies"}
+                              </p>
+                            </div>
+                            {row.openGaps.length > 0 ? (
+                              <div className="lg:col-span-2">
+                                <h4 className="font-semibold">Open gaps</h4>
+                                <ul className="mt-1 grid gap-1.5" aria-label={`${row.symbol} open gaps`}>
+                                  {row.openGaps.map((gap) => {
+                                    const context = {
+                                      kind: "quality-gap" as const,
+                                      symbol: gap.symbol,
+                                      gapId: gap.gapId,
+                                      dashboardVersion: panel.model?.dashboardVersion ?? "",
+                                      provider: gap.provider,
+                                      from: gap.from,
+                                      to: gap.to,
+                                      canBackfill: gap.canBackfill,
+                                      disabledReason: gap.disabledReason
+                                    };
+                                    return (
+                                      <li
+                                        key={gap.gapId}
+                                        className="group flex flex-wrap items-center gap-2 rounded-sm border bg-background px-2 py-1.5"
+                                        onContextMenu={(event) => cellActions.openFor(event, context)}
+                                      >
+                                        <Badge variant="warning">{gap.severity}</Badge>
+                                        <span className="font-mono">{gap.eventType}</span>
+                                        <span className="min-w-0 flex-1 text-muted-foreground">
+                                          {new Date(gap.from).toLocaleString()} – {new Date(gap.to).toLocaleString()} ·{" "}
+                                          {gap.estimatedMissingEvents.toLocaleString()} estimated missing
+                                        </span>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="sm"
+                                          disabled={!gap.canBackfill || cellActions.running}
+                                          title={gap.disabledReason ?? "Backfill this exact provider and date range"}
+                                          onClick={() => cellActions.run(context, "backfill")}
+                                        >
+                                          {cellActions.running ? "Working…" : "Backfill gap"}
+                                        </Button>
+                                        <CellActionTrigger
+                                          label={`Actions for the ${gap.symbol} quality gap`}
+                                          onOpen={(event) => cellActions.openFor(event, context)}
+                                        />
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
+                            ) : null}
+                            {row.issues.length > 0 ? (
+                              <div className="lg:col-span-2">
+                                <h4 className="font-semibold">Current issues</h4>
+                                <ul className="mt-1 list-disc pl-5 text-muted-foreground">
+                                  {row.issues.map((issue) => <li key={issue}>{issue}</li>)}
+                                </ul>
+                              </div>
+                            ) : null}
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
               {panel.model.unacknowledgedAnomalies.length > 0 && (
@@ -236,18 +346,18 @@ export function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel 
                       const context = {
                         kind: "anomaly" as const,
                         symbol: anomaly.symbol,
-                        anomalyId: anomaly.anomalyId,
-                        anomalyType: anomaly.anomalyType
+                        anomalyId: anomaly.id,
+                        anomalyType: `Type ${anomaly.type}`
                       };
                       return (
                         <li
-                          key={anomaly.anomalyId}
+                          key={anomaly.id}
                           className="group flex items-center gap-2 rounded-[2px] text-sm text-muted-foreground transition-colors hover:bg-muted/40"
                           onContextMenu={(event) => cellActions.openFor(event, context)}
                         >
                           <span className="min-w-0 flex-1 truncate">
                             <span className="font-mono font-semibold text-foreground">{anomaly.symbol}</span>{" "}
-                            {anomaly.anomalyType}: {anomaly.message}
+                            Type {anomaly.type}: {anomaly.description}
                           </span>
                           <CellActionTrigger
                             label={`Actions for the ${anomaly.symbol} anomaly`}

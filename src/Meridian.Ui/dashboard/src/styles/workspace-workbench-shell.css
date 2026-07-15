@@ -48,6 +48,10 @@
 .workspace-workbench-shell-inspector {
   position: sticky;
   top: 0.75rem;
+  max-height: calc(100dvh - 9rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .workspace-workbench-shell-context-rail,
@@ -71,5 +75,7 @@
   .workspace-workbench-shell-context-rail,
   .workspace-workbench-shell-inspector {
     position: static;
+    max-height: none;
+    overflow: visible;
   }
 }

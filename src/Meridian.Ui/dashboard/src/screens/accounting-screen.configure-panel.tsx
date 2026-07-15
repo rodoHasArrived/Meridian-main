@@ -8,6 +8,7 @@ import { Drawer, DrawerBody, DrawerFooter } from "@/components/ui/drawer";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Stepper } from "@/components/ui/stepper";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import type {
@@ -19,6 +20,7 @@ import {
   buildChartPathSegments,
   buildConfigureActivationSummary,
   buildConfigureChangePreview,
+  buildConfigureOperationalReadinessSummary,
   filterConfigureSearch,
   parseConfigureKeyValuePairs,
   serializeConfigureKeyValuePairs,
@@ -597,11 +599,11 @@ export function ConfigureChangePreviewPanel({ view }: { view: AccountingConfigur
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <div className="text-sm font-semibold text-foreground">Review changes before activation</div>
-          <p className="text-xs text-muted-foreground">{preview.headline}</p>
+          <div className="text-sm font-semibold text-foreground">Review pending draft changes</div>
+          <p className="text-xs text-muted-foreground">{preview.currentVersionLabel} · {preview.headline}</p>
         </div>
-        <Badge variant={preview.activationTone === "success" ? "success" : "warning"} dot>
-          {preview.activationTone === "success" ? "Activation ready" : "Activation blocked"}
+        <Badge variant={accountingToolingBadgeVariant(preview.activationTone)} dot>
+          {preview.activationBadgeLabel}
         </Badge>
       </div>
 
@@ -628,6 +630,11 @@ export function ConfigureChangePreviewPanel({ view }: { view: AccountingConfigur
  * Pure presentation over the existing view-model.
  */
 export function ConfigureProductionReadinessCard({ view }: { view: AccountingConfigurationViewModel }): JSX.Element {
+  const readinessSummary = useMemo(
+    () => buildConfigureOperationalReadinessSummary(view),
+    [view]
+  );
+
   return (
       <Card id="configure-section-mappings" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-production-readiness-heading">
         <CardHeader>
@@ -637,32 +644,87 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
                 {view.productionReadiness.title}
               </CardTitle>
-              <CardDescription>{view.productionReadiness.scopeLabel}</CardDescription>
+              <CardDescription>Selected accounting scope and all activation evidence.</CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={accountingToolingBadgeVariant(view.productionReadiness.components.length === 0 ? "default" : view.productionReadiness.components.some((component) => component.tone === "danger") ? "danger" : view.productionReadiness.components.some((component) => component.tone === "warning") ? "warning" : "success")} dot>
-                {view.productionReadiness.statusLabel}
+              <Badge variant={accountingToolingBadgeVariant(readinessSummary.tone)} dot>
+                {readinessSummary.statusLabel}
               </Badge>
-              <Badge variant="outline">{view.productionReadiness.scoreLabel}</Badge>
+              <Badge variant="outline">{readinessSummary.gateLabel}</Badge>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className={cn(
+            "rounded-md border px-3 py-3",
+            accountingToolingBorderClass(readinessSummary.tone)
+          )} role="status" aria-label="Accounting configuration overall readiness">
+            <div className={cn("text-sm font-semibold", toneTextClass(readinessSummary.tone))}>
+              {readinessSummary.issueSummaryLabel}
+            </div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{readinessSummary.explanation}</p>
+            <TechnicalDetails label="Assessment scope and source score" className="mt-2 bg-background/50 text-foreground">
+              <dl className="grid gap-2 text-xs sm:grid-cols-3">
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Scope</dt>
+                  <dd className="mt-1 break-words text-foreground">{view.productionReadiness.scopeLabel}</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Shared status</dt>
+                  <dd className="mt-1 text-foreground">{view.productionReadiness.statusLabel}</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Shared score</dt>
+                  <dd className="mt-1 text-foreground">{view.productionReadiness.scoreLabel}</dd>
+                </div>
+              </dl>
+            </TechnicalDetails>
+          </div>
+
+          {readinessSummary.reviewItems.length > 0 ? (
+            <div className="space-y-2" aria-label="Accounting configuration readiness review items">
+              {readinessSummary.reviewItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => scrollToConfigureAnchor(item.anchorId)}
+                  className={cn(
+                    "flex w-full items-start justify-between gap-3 rounded-md border px-3 py-2 text-left transition-colors hover:bg-secondary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    accountingToolingBorderClass(item.tone)
+                  )}
+                >
+                  <span>
+                    <span className="block text-sm font-semibold text-foreground">{item.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">{item.detail}</span>
+                  </span>
+                  <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary">
+                    Review
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+
           {view.productionReadiness.errorText ? (
             <div role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-              <div className="font-semibold">{view.productionReadiness.errorText}</div>
-              {view.productionReadiness.errorDetails.length > 0 ? (
-                <ul className="mt-2 list-disc pl-4">
-                  {view.productionReadiness.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
-                </ul>
-              ) : null}
+              <div className="font-semibold">Production readiness could not be verified</div>
+              <p className="mt-1 leading-5">Activation and blocker clearance remain unavailable until the shared assessment loads successfully.</p>
+              <TechnicalDetails label="Assessment failure details" className="mt-2 bg-background/50 text-foreground">
+                <p className="break-words text-xs text-foreground">{view.productionReadiness.errorText}</p>
+                {view.productionReadiness.errorDetails.length > 0 ? (
+                  <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
+                    {view.productionReadiness.errorDetails.map((detail) => <li key={detail} className="break-words">{detail}</li>)}
+                  </ul>
+                ) : null}
+              </TechnicalDetails>
             </div>
           ) : null}
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Readiness</div>
-              <div className={cn("mt-2 text-sm font-semibold", view.productionReadiness.blockerIssues.some((issue) => issue.tone === "danger") ? "text-danger" : view.productionReadiness.blockerIssues.length > 0 ? "text-warning" : "text-success")}>{view.productionReadiness.issueSummaryLabel}</div>
+              <div className={cn("mt-2 text-sm font-semibold", toneTextClass(readinessSummary.tone))}>{readinessSummary.issueSummaryLabel}</div>
               <p className="mt-1 text-xs text-muted-foreground">{view.productionReadiness.generatedAtLabel}</p>
             </div>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
@@ -697,6 +759,13 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
             </div>
           </div>
 
+          <details className="group rounded-md border border-border/70 bg-secondary/10">
+            <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+              <span>Production rollout setup and evidence</span>
+              <span className="text-xs font-normal text-muted-foreground group-open:hidden">Open detailed controls</span>
+              <span className="hidden text-xs font-normal text-muted-foreground group-open:inline">Hide detailed controls</span>
+            </summary>
+            <div className="space-y-4 border-t border-border/70 px-3 py-3">
           {view.productionReadiness.productionGapRows.length > 0 ? (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5" role="region" aria-label="Accounting production gap checklist">
               {view.productionReadiness.productionGapRows.map((gap) => (
@@ -1217,6 +1286,8 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               ))}
             </div>
           ) : null}
+            </div>
+          </details>
 
           {view.productionReadiness.blockerIssues.length > 0 ? (
             <div className="space-y-2" aria-label="Accounting production readiness blockers">
@@ -1231,6 +1302,18 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 </div>
               ))}
             </div>
+          ) : view.productionReadiness.errorText ? (
+            <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+              Production-readiness blocker state is unknown because the shared assessment did not load.
+            </p>
+          ) : view.productionReadiness.loading ? (
+            <p role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
+              Production-readiness blockers are still being assessed.
+            </p>
+          ) : readinessSummary.reviewItems.length > 0 ? (
+            <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+              The shared assessment returned no blocker rows, but the overall configuration still has readiness evidence or activation items to review above.
+            </p>
           ) : (
             <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">No production-readiness blockers returned by the shared accounting control-plane assessment.</p>
           )}

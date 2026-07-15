@@ -46,6 +46,7 @@ type ButtonChildProps = React.HTMLAttributes<HTMLElement> & {
   className?: string;
   "aria-busy"?: true;
   "aria-disabled"?: true;
+  "data-design-system-component"?: string;
   tabIndex?: number;
   title?: string;
 };
@@ -83,6 +84,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
   }, ref) => {
     const vm = buildButtonCommandViewModel({ disabled, busy, busyLabel, disabledReason, title });
     const classes = cn(
+      "mds-btn",
       "inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
       buttonVariantClasses[variant],
       buttonSizeClasses[size],
@@ -112,6 +114,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
         className: cn(classes, child.props.className),
         "aria-busy": vm.ariaBusy,
         "aria-disabled": vm.ariaDisabled,
+        "data-design-system-component": "Button",
         tabIndex: vm.asChildTabIndex ?? tabIndex ?? child.props.tabIndex,
         title: vm.title ?? child.props.title,
         onClick: handleClick
@@ -124,6 +127,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
         className={classes}
         disabled={vm.disabled}
         aria-busy={vm.ariaBusy}
+        data-design-system-component="Button"
         onClick={onClick}
         tabIndex={tabIndex}
         title={vm.title}

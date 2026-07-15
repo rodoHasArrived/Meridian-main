@@ -1,10 +1,12 @@
 using System.Text.Json;
 using Meridian.Core.Config;
+using Meridian.Core.Diagnostics;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.DataSources;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -91,7 +93,9 @@ public static class ProviderEndpoints
                 Name: req.Name,
                 Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
                 Enabled: req.Enabled,
-                Type: Enum.TryParse<DataSourceType>(req.Type, ignoreCase: true, out var t) ? t : DataSourceType.RealTime,
+                Type: Enum.TryParse<Meridian.Core.Config.DataSourceType>(req.Type, ignoreCase: true, out var t)
+                    ? t
+                    : Meridian.Core.Config.DataSourceType.RealTime,
                 Priority: req.Priority,
                 Alpaca: req.Alpaca?.ToDomain(),
                 Polygon: req.Polygon?.ToDomain(),
@@ -372,16 +376,27 @@ public static class ProviderEndpoints
                     s.Id,
                     s.Name,
                     s.Provider.ToString());
+                var observedIsConnected = diagnostics?.IsConnected ?? realMetrics?.IsConnected;
+                var connectionState = !s.Enabled
+                    ? "disabled"
+                    : diagnostics is not null
+                        ? ProviderExtendedEndpoints.ResolveConnectionState(
+                            s.Enabled,
+                            diagnostics.LifecycleState,
+                            diagnostics.IsConnected)
+                        : realMetrics is not null
+                            ? realMetrics.IsConnected ? "connected" : "disconnected"
+                            : "unknown";
 
                 return new ProviderStatusResponse(
                     ProviderId: s.Id,
                     Name: s.Name,
                     ProviderType: s.Provider.ToString(),
-                    IsConnected: diagnostics?.IsConnected ?? realMetrics?.IsConnected ?? s.Enabled,
+                    IsConnected: ProviderExtendedEndpoints.ResolveIsConnected(s.Enabled, observedIsConnected),
                     IsEnabled: s.Enabled,
                     Priority: s.Priority,
                     ActiveSubscriptions: diagnostics?.ActiveSubscriptions ?? (int)(realMetrics?.ActiveSubscriptions ?? 0),
-                    LastHeartbeat: diagnostics?.LastHeartbeatReceivedAt ?? realMetrics?.Timestamp ?? DateTimeOffset.UtcNow,
+                    LastHeartbeat: diagnostics?.LastHeartbeatReceivedAt ?? realMetrics?.Timestamp,
                     LifecycleState: diagnostics?.LifecycleState,
                     WebSocketState: diagnostics?.WebSocketState,
                     IsReconnecting: diagnostics?.IsReconnecting,
@@ -392,7 +407,9 @@ public static class ProviderEndpoints
                     LastFailureKind: diagnostics?.LastFailureKind,
                     FailedSubscriptions: diagnostics?.FailedSubscriptions,
                     RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
-                    LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt
+                    LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt,
+                    ConnectionState: connectionState,
+                    DiagnosticsAvailable: diagnostics is not null || realMetrics is not null
                 );
             }).ToList();
 
@@ -417,12 +434,18 @@ public static class ProviderEndpoints
                         diagnosticsByProviderId,
                         provider.Name,
                         provider.DisplayName);
+                    var connectionState = ProviderExtendedEndpoints.ResolveConnectionState(
+                        provider.IsEnabled,
+                        diagnostics?.LifecycleState,
+                        diagnostics?.IsConnected);
 
                     status.Add(new ProviderStatusResponse(
                         ProviderId: provider.Name,
                         Name: provider.DisplayName,
                         ProviderType: provider.ProviderType.ToString(),
-                        IsConnected: diagnostics?.IsConnected ?? provider.IsEnabled,
+                        IsConnected: ProviderExtendedEndpoints.ResolveIsConnected(
+                            provider.IsEnabled,
+                            diagnostics?.IsConnected),
                         IsEnabled: provider.IsEnabled,
                         Priority: provider.Priority,
                         ActiveSubscriptions: diagnostics?.ActiveSubscriptions ?? 0,
@@ -437,7 +460,9 @@ public static class ProviderEndpoints
                         LastFailureKind: diagnostics?.LastFailureKind,
                         FailedSubscriptions: diagnostics?.FailedSubscriptions,
                         RecoveringSubscriptions: diagnostics?.RecoveringSubscriptions,
-                        LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt));
+                        LastSubscriptionMessageAt: diagnostics?.LastSubscriptionMessageAt,
+                        ConnectionState: connectionState,
+                        DiagnosticsAvailable: diagnostics is not null));
                 }
             }
 
@@ -532,7 +557,11 @@ public static class ProviderEndpoints
         // Provider catalog endpoint - centralized metadata for UI consumption
         // Uses ProviderRegistry when available for runtime-derived catalog data,
         // otherwise falls back to static ProviderCatalog
-        group.MapGet(UiApiRoutes.ProviderCatalog, (HttpContext ctx, string? type, [FromServices] ProviderRegistry? registry) =>
+        group.MapGet(UiApiRoutes.ProviderCatalog, (
+            HttpContext ctx,
+            string? type,
+            [FromServices] ProviderRegistry? registry,
+            [FromServices] DataSourceRegistry? dataSourceRegistry) =>
         {
             IReadOnlyList<ProviderCatalogEntry> catalogEntries;
 
@@ -557,17 +586,20 @@ public static class ProviderEndpoints
                 };
             }
 
-            return Results.Json(new
-            {
-                providers = catalogEntries,
-                totalCount = catalogEntries.Count,
-                timestamp = DateTimeOffset.UtcNow,
-                source = registry != null ? "registry" : "static"
-            }, jsonOptions);
+            return Results.Json(
+                new ProviderCatalogResponse(
+                    catalogEntries,
+                    catalogEntries.Count,
+                    DateTimeOffset.UtcNow,
+                    registry != null ? "registry" : "static",
+                    dataSourceRegistry is null
+                        ? null
+                        : CreateRegistrationReportDto(dataSourceRegistry.GetRegistrationReport())),
+                jsonOptions);
         })
         .WithName("GetProviderCatalog")
         .WithDescription("Returns the provider catalog with metadata. Filter by type using ?type=streaming or ?type=backfill.")
-        .Produces(200);
+        .Produces<ProviderCatalogResponse>(200);
 
         // Single provider catalog entry
         // Uses ProviderRegistry when available for runtime-derived catalog data
@@ -630,7 +662,9 @@ public static class ProviderEndpoints
                 Name: req.Name,
                 Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
                 Enabled: req.Enabled,
-                Type: Enum.TryParse<DataSourceType>(req.Type, ignoreCase: true, out var t) ? t : DataSourceType.RealTime,
+                Type: Enum.TryParse<Meridian.Core.Config.DataSourceType>(req.Type, ignoreCase: true, out var t)
+                    ? t
+                    : Meridian.Core.Config.DataSourceType.RealTime,
                 Priority: req.Priority,
                 Alpaca: req.Alpaca?.ToDomain(),
                 Polygon: req.Polygon?.ToDomain(),
@@ -658,6 +692,38 @@ public static class ProviderEndpoints
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+    }
+
+    internal static ProviderRegistrationReportDto CreateRegistrationReportDto(ProviderRegistrationReport report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        var failures = report.Failures
+            .Select(failure => new ProviderRegistrationFailureDto(
+                SanitizePublicDiagnostic(failure.Stage),
+                SanitizePublicDiagnostic(failure.Subject),
+                failure.ModuleId is null ? null : SanitizePublicDiagnostic(failure.ModuleId),
+                SanitizePublicDiagnostic(failure.ErrorType),
+                SanitizePublicDiagnostic(failure.ErrorMessage)))
+            .ToArray();
+
+        return new ProviderRegistrationReportDto(
+            report.GeneratedAt,
+            report.DiscoveredSourceCount,
+            report.ModuleCandidateCount,
+            report.ModuleActivationAttemptCount,
+            report.ModuleRegistrationAttemptCount,
+            report.RegisteredModuleCount,
+            report.SkippedModuleCount,
+            report.FailedModuleCount,
+            report.IsHealthy,
+            failures);
+    }
+
+    private static string SanitizePublicDiagnostic(string? value)
+    {
+        const int maxLength = 512;
+        var sanitized = RuntimeDiagnosticRedactor.SanitizeText(value);
+        return sanitized.Length <= maxLength ? sanitized : sanitized[..maxLength];
     }
 
     private static ProviderMetricsResponse CreateFallbackMetrics(DataSourceConfig source) => new(

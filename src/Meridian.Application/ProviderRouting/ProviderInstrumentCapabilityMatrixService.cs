@@ -1,5 +1,6 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Core.Diagnostics;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
 
@@ -51,11 +52,11 @@ public sealed class ProviderInstrumentCapabilityMatrixService : IProviderInstrum
 
         var failures = _dataSourceRegistry?.Failures
             .Select(static failure => new ProviderDiscoveryFailureDto(
-                failure.Stage,
-                failure.Subject,
-                failure.ModuleId,
-                failure.ErrorType,
-                failure.ErrorMessage))
+                Sanitize(failure.Stage),
+                Sanitize(failure.Subject),
+                failure.ModuleId is null ? null : Sanitize(failure.ModuleId),
+                Sanitize(failure.ErrorType),
+                Sanitize(failure.ErrorMessage)))
             .ToArray() ?? [];
 
         return new ProviderInstrumentCapabilityMatrixDto(
@@ -63,6 +64,13 @@ public sealed class ProviderInstrumentCapabilityMatrixService : IProviderInstrum
             InstrumentTypes: instrumentTypeNames,
             Providers: rows,
             DiscoveryFailures: failures);
+    }
+
+    private static string Sanitize(string value)
+    {
+        const int maxLength = 512;
+        var sanitized = RuntimeDiagnosticRedactor.SanitizeText(value);
+        return sanitized.Length <= maxLength ? sanitized : sanitized[..maxLength];
     }
 
     private static ProviderInstrumentCapabilityCellDto BuildCell(

@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services.Services;
+using Meridian.Contracts.Api.Quality;
 
 namespace Meridian.Ui.Services.DataQuality;
 
@@ -16,9 +17,11 @@ public interface IDataQualityApiClient
     Task<IReadOnlyList<QualityGapResponse>> GetGapsAsync(int count, CancellationToken ct = default);
     Task<IReadOnlyList<QualityAnomalyResponse>> GetAnomaliesAsync(int count, CancellationToken ct = default);
     Task<QualityLatencyStatisticsResponse?> GetLatencyStatisticsAsync(CancellationToken ct = default);
-    Task<QualityProviderComparisonResponse?> GetProviderComparisonAsync(string symbol, CancellationToken ct = default);
+    Task<QualityComparisonResponse?> GetProviderComparisonAsync(string symbol, CancellationToken ct = default);
     Task<bool> AcknowledgeAnomalyAsync(string anomalyId, CancellationToken ct = default);
-    Task<bool> RepairGapAsync(string gapId, CancellationToken ct = default);
-    Task<bool> RepairAllGapsAsync(CancellationToken ct = default);
+    Task<QualityGapRemediationResponse?> RepairGapAsync(
+        string symbol,
+        QualityGapRemediationRequest request,
+        CancellationToken ct = default);
     Task<QualityCheckResult?> RunQualityCheckAsync(string path, CancellationToken ct = default);
 }

@@ -5,6 +5,7 @@ import {
   buildChartPathSegments,
   buildConfigureActivationSummary,
   buildConfigureChangePreview,
+  buildConfigureOperationalReadinessSummary,
   detectChartPathSeparator,
   filterConfigureSearch,
   isConfigureSectionAnchor,
@@ -130,6 +131,8 @@ describe("change preview", () => {
     expect(preview.pendingCount).toBe(2);
     expect(preview.headline).toContain("2 editors");
     expect(preview.activationTone).toBe("warning");
+    expect(preview.currentVersionLabel).toBe("Current saved version: Not active");
+    expect(preview.activationBadgeLabel).toBe("Draft activation blocked");
     expect(preview.activationLabel).toBe("Resolve blockers first");
   });
 
@@ -145,7 +148,154 @@ describe("change preview", () => {
     });
     expect(preview.pendingCount).toBe(0);
     expect(preview.activationTone).toBe("success");
+    expect(preview.activationBadgeLabel).toBe("Draft ready to activate");
     expect(preview.activationLabel).toContain("dry-run preview");
+  });
+
+  it("separates the current active version from unsaved draft editor changes", () => {
+    const preview = buildConfigureChangePreview({
+      chartAccountEditor: editorWithSave(true) as never,
+      productionCertificationProfile: editorWithSave(true) as never,
+      tenantAdministrationProfile: editorWithSave(false) as never,
+      externalGlMappingProfile: editorWithSave(false) as never,
+      canActivate: false,
+      activateDisabledReason: "Current saved accounting configuration is already active.",
+      dryRunPreview: null
+    });
+
+    expect(preview).toMatchObject({
+      pendingCount: 2,
+      currentVersionLabel: "Current saved version: Active",
+      activationBadgeLabel: "Draft promotion blocked",
+      activationTone: "warning"
+    });
+    expect(preview.headline).toBe("2 editors with unsaved draft changes");
+    expect(preview.activationLabel).toContain("current saved version remains active");
+    expect(preview.activationLabel).toContain("pending draft changes");
+  });
+
+  it("does not show a blocked draft when the current version is active and no draft exists", () => {
+    const preview = buildConfigureChangePreview({
+      chartAccountEditor: editorWithSave(false) as never,
+      productionCertificationProfile: editorWithSave(false) as never,
+      tenantAdministrationProfile: editorWithSave(false) as never,
+      externalGlMappingProfile: editorWithSave(false) as never,
+      canActivate: false,
+      activateDisabledReason: "Current saved accounting configuration is already active.",
+      dryRunPreview: null
+    });
+
+    expect(preview).toMatchObject({
+      pendingCount: 0,
+      currentVersionLabel: "Current saved version: Active",
+      activationBadgeLabel: "No draft to activate",
+      activationTone: "default",
+      headline: "No unsaved draft changes"
+    });
+  });
+});
+
+describe("overall configure readiness", () => {
+  const editorWithSave = (canSave: boolean) => ({ canSave });
+
+  it("fails closed when a nominal shared score omits evidence and adjacent gates are unresolved", () => {
+    const summary = buildConfigureOperationalReadinessSummary({
+      productionReadiness: {
+        statusLabel: "Ready",
+        scoreLabel: "100/100",
+        ledgerBookRolloutLabel: "Ledger-book rollout evidence unavailable",
+        tenantAdministrationLabel: "Tenant administration evidence unavailable",
+        dimensionalReportingLabel: "Dimensional reporting evidence unavailable",
+        externalGlLabel: "2 providers | 1 certified mapping | live posting disabled",
+        components: [],
+        blockerIssues: [],
+        loading: false,
+        errorText: null
+      } as never,
+      chartAccountEditor: editorWithSave(true) as never,
+      productionCertificationProfile: editorWithSave(true) as never,
+      tenantAdministrationProfile: editorWithSave(true) as never,
+      externalGlMappingProfile: editorWithSave(true) as never,
+      ruleTestSuite: null,
+      canActivate: false,
+      activateDisabledReason: "Resolve readiness gates before activation."
+    });
+
+    expect(summary).toMatchObject({
+      statusLabel: "Review required",
+      tone: "danger",
+      gateLabel: "8 review items"
+    });
+    expect(summary.issueSummaryLabel).not.toContain("0");
+    expect(summary.reviewItems).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "component-checks-unavailable", tone: "danger" }),
+      expect.objectContaining({ id: "ledger-rollout-evidence", tone: "danger" }),
+      expect.objectContaining({ id: "tenant-administration-evidence", tone: "danger" }),
+      expect.objectContaining({ id: "dimensional-reporting-evidence", tone: "warning" }),
+      expect.objectContaining({ id: "external-gl-guarded-mode", tone: "warning" }),
+      expect.objectContaining({ id: "pending-editor-changes", label: "4 editors have unsaved changes" }),
+      expect.objectContaining({ id: "rule-suite-not-run" }),
+      expect.objectContaining({ id: "activation-gate-closed", tone: "danger" })
+    ]));
+  });
+
+  it("reports ready only when evidence, tests, edits, and the activation gate are clear", () => {
+    const summary = buildConfigureOperationalReadinessSummary({
+      productionReadiness: {
+        statusLabel: "Ready",
+        scoreLabel: "96/100",
+        ledgerBookRolloutLabel: "2 books | 1 open period | 0 rollout blockers | 10/10 workflow controls",
+        tenantAdministrationLabel: "23/23 admin controls",
+        dimensionalReportingLabel: "9/9 ledger/query/report/export dimension controls",
+        externalGlLabel: "2 providers | 2 certified mappings | live posting enabled",
+        components: [{ id: "rules", tone: "success" }],
+        blockerIssues: [],
+        loading: false,
+        errorText: null
+      } as never,
+      chartAccountEditor: editorWithSave(false) as never,
+      productionCertificationProfile: editorWithSave(false) as never,
+      tenantAdministrationProfile: editorWithSave(false) as never,
+      externalGlMappingProfile: editorWithSave(false) as never,
+      ruleTestSuite: { statusTone: "success", summaryLabel: "All tests passed" } as never,
+      canActivate: true,
+      activateDisabledReason: null
+    });
+
+    expect(summary).toMatchObject({
+      statusLabel: "Ready",
+      tone: "success",
+      gateLabel: "All gates clear",
+      issueSummaryLabel: "All readiness evidence and activation gates are clear",
+      reviewItems: []
+    });
+  });
+
+  it("does not treat an already-active version as an activation blocker by itself", () => {
+    const summary = buildConfigureOperationalReadinessSummary({
+      productionReadiness: {
+        statusLabel: "Ready",
+        scoreLabel: "100/100",
+        ledgerBookRolloutLabel: "1 book | 10/10 workflow controls",
+        tenantAdministrationLabel: "23/23 admin controls",
+        dimensionalReportingLabel: "9/9 dimension controls",
+        externalGlLabel: "Guarded export enabled",
+        components: [{ id: "rules", tone: "success" }],
+        blockerIssues: [],
+        loading: false,
+        errorText: null
+      } as never,
+      chartAccountEditor: editorWithSave(false) as never,
+      productionCertificationProfile: editorWithSave(false) as never,
+      tenantAdministrationProfile: editorWithSave(false) as never,
+      externalGlMappingProfile: editorWithSave(false) as never,
+      ruleTestSuite: { statusTone: "success", summaryLabel: "All tests passed" } as never,
+      canActivate: false,
+      activateDisabledReason: "Current saved accounting configuration is already active."
+    });
+
+    expect(summary.statusLabel).toBe("Ready");
+    expect(summary.reviewItems.some((item) => item.id === "activation-gate-closed")).toBe(false);
   });
 });
 

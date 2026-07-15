@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.Accounting;
 using Meridian.Core.Contracts;
 using Meridian.Application.DirectLending;
 using Meridian.DataIntegration.Credentials;
@@ -53,6 +54,7 @@ using Meridian.Ui.Shared.Workflows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
@@ -149,6 +151,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<DesktopWorkstationLaunchService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
+        services.TryAddSingleton<IngestionOperationsService>();
+        services.TryAddSingleton<StorageAssuranceService>();
         services.TryAddSingleton<SensitiveActionPolicyEngine>();
         services.TryAddSingleton<ImmutableAuditLogService>();
         services.TryAddSingleton<AccessReviewService>();
@@ -267,6 +271,13 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
+        // Consolidated risk path: the same service that powers the read-only risk dashboard is the
+        // IRiskValidator the OMS invokes before routing an order. Without this registration
+        // sp.GetService<IRiskValidator>() resolved to null at every composition root and the OMS
+        // pre-trade risk block was dead code — the drawdown circuit breaker and order-rate throttle
+        // never gated an order even while the dashboard reported them.
+        services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
+            sp.GetRequiredService<RiskRuleRuntimeService>());
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
@@ -471,6 +482,21 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
+            new FileDailyValuationPortfolioSource(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "daily-valuation-schedules.json")));
+        services.TryAddSingleton<IDailyValuationPortfolioSource>(sp =>
+            sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton<IDailyValuationScheduleStatusSource>(sp =>
+            sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton<FileAutomatedJournalScheduleStore>(sp =>
+            new FileAutomatedJournalScheduleStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "monthly-automated-journal-schedules.json")));
+        services.TryAddSingleton<IAutomatedJournalScheduleStore>(sp =>
+            sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<IAutomatedJournalScheduleStatusSource>(sp =>
+            sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<TimeProvider>(TimeProvider.System);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             new ManualJournalEntryWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryDraftStore>(),
@@ -479,7 +505,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ContractSecurityMasterQueryService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>(),
-                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>()));
+                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
+                sp.GetService<IGovernedLedgerPostingTarget>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton(sp =>
@@ -490,12 +517,31 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(sp =>
         {
             var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
+            var providerRegistry = sp.GetService<ProviderRegistry>();
             return new AutomatedJournalIntakeRunner(
                 sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
                 new FeeScheduleAccrualEventProducer(),
                 securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster),
-                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>());
+                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
+                providerRegistry is null
+                    ? null
+                    : new DailyMarkToMarketService(new RegisteredHistoricalCloseMarkPriceSource(providerRegistry)));
         });
+        // The durable ledger book service is only registered when a persistence-backed ledger is
+        // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph
+        // still composes without Postgres; the bridge degrades the close-posting gate to Blocked.
+        services.TryAddSingleton<IAccountingClosePostingWorkbench>(sp =>
+            new AccountingClosePostingWorkbenchBridge(
+                sp.GetRequiredService<AutomatedJournalIntakeRunner>(),
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetRequiredService<IManualJournalEntryLifecycleService>(),
+                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>()));
+        services.TryAddSingleton<DailyValuationScheduledWorker>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
+        services.TryAddSingleton<AutomatedJournalScheduledWorker>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, AutomatedJournalSchedulerHostedService>());
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -506,7 +552,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
             new PrivateCapitalCloseCockpitService(
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
-                sp.GetService<IOperationsContinuityWorkflowService>()));
+                sp.GetService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IDailyValuationScheduleStatusSource>(),
+                sp.GetService<IAutomatedJournalScheduleStatusSource>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

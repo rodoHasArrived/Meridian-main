@@ -13,6 +13,7 @@ import {
   buildBackfillProviderOptions,
   buildBackfillNarrative,
   buildBackfillRequest,
+  buildBackfillLiveProgressState,
   buildBackfillResultCardState,
   buildBackfillTriggerState,
   buildDataUploadPanelState,
@@ -20,6 +21,7 @@ import {
   buildDataLoadingState,
   buildDataPresentationState,
   buildExportSection,
+  formatProviderReasonLabel,
   buildProviderRow,
   buildProviderSection,
   buildPlaidInstitutionSearchState,
@@ -453,6 +455,7 @@ describe("data-screen view model", () => {
   it("derives route focus, selected backfill, and detail narrative", () => {
     expect(resolveDataWorkstream("/data/backfills")).toBe("backfills");
     expect(resolveDataWorkstream("/data/providers")).toBe("providers");
+    expect(resolveDataWorkstream("/data/import")).toBe("import");
     expect(resolveDataWorkstream("/data/exports")).toBe("exports");
     expect(resolveDataWorkstream("/data/query")).toBe("query");
     expect(resolveDataWorkstream("/data")).toBe("overview");
@@ -489,6 +492,17 @@ describe("data-screen view model", () => {
       label: "Open Security Master",
       href: "/accounting/security-master",
       ariaLabel: "Open Security Master in Accounting"
+    });
+
+    const importFocus = buildRouteFocusCardState({
+      workstream: "import",
+      selectedBackfillDetail: null,
+      backfillDetailEmptyState: null
+    });
+    expect(importFocus).toMatchObject({
+      ariaLabel: "Data import route focus",
+      eyebrow: "File Intake",
+      title: "Governed file import"
     });
   });
 
@@ -901,6 +915,131 @@ describe("data-screen view model", () => {
     expect(completedCard.tone).toBe("success");
   });
 
+  it("derives exact provider fallback progress without hiding dropped notifications", () => {
+    const state = buildBackfillLiveProgressState({
+      isActive: true,
+      timestamp: "2026-07-13T17:05:00Z",
+      providerProgress: {
+        symbols: {
+          AAPL: {
+            symbol: "AAPL",
+            rangeStart: "2026-07-01",
+            rangeEnd: "2026-07-12",
+            totalDays: 12,
+            completedDays: 6,
+            percentComplete: 50,
+            isCompleted: false,
+            isFailed: false,
+            isSkipped: false,
+            currentProvider: "stooq",
+            currentStatus: "Downloading",
+            providerAttempt: 2,
+            retryRound: 1,
+            operation: "daily-bars",
+            attemptStartedAt: "2026-07-13T17:04:30Z",
+            lastUpdatedAt: "2026-07-13T17:05:00Z",
+            error: null
+          }
+        },
+        recentProviderAttempts: [{
+          symbol: "AAPL",
+          provider: "polygon",
+          rangeStart: "2026-07-01",
+          rangeEnd: "2026-07-12",
+          providerAttempt: 1,
+          retryRound: 0,
+          operation: "daily-bars",
+          status: "Failed",
+          barsDownloaded: 0,
+          startedAt: "2026-07-13T17:04:00Z",
+          observedAt: "2026-07-13T17:04:20Z",
+          error: "HTTP 429"
+        }],
+        overallPercentComplete: 50,
+        totalSymbols: 1,
+        completedSymbols: 0,
+        failedSymbols: 0,
+        droppedProviderNotifications: 3,
+        timestamp: "2026-07-13T17:05:00Z"
+      }
+    });
+
+    expect(state).toMatchObject({
+      active: true,
+      title: "Live provider progress",
+      overallPercent: 50,
+      droppedNotificationWarning: expect.stringContaining("3 older provider notifications")
+    });
+    expect(state?.symbols[0]).toMatchObject({
+      symbol: "AAPL",
+      range: "2026-07-01 to 2026-07-12",
+      provider: "stooq",
+      attempt: "Attempt 2, retry 1",
+      status: "Downloading",
+      progress: "50%"
+    });
+    expect(state?.recentAttempts[0]).toMatchObject({
+      label: "AAPL · polygon",
+      tone: "danger",
+      detail: expect.stringContaining("HTTP 429")
+    });
+  });
+
+  it("polls provider progress while a backfill run is in flight and keeps the final snapshot", async () => {
+    let resolveRun!: (value: BackfillTriggerResult) => void;
+    let runSettled = false;
+    const progressReads = vi.fn(async (): Promise<BackfillProgressResponse> => ({
+      isActive: !runSettled,
+      providerProgress: {
+        symbols: {},
+        recentProviderAttempts: [],
+        overallPercentComplete: runSettled ? 100 : 25,
+        totalSymbols: 1,
+        completedSymbols: runSettled ? 1 : 0,
+        failedSymbols: 0,
+        droppedProviderNotifications: 0,
+        timestamp: "2026-07-13T17:05:00Z"
+      },
+      timestamp: "2026-07-13T17:05:00Z"
+    }));
+    const services = {
+      preview: async () => preview,
+      run: () => new Promise<BackfillTriggerResult>((resolve) => {
+        resolveRun = resolve;
+      }),
+      getProgress: progressReads
+    };
+    const workspace: DataWorkspaceResponse = { metrics: [], providers, backfills: [], exports: [] };
+    const { result } = renderHook(() => useDataViewModel(workspace, "/data/backfills", services));
+
+    await waitFor(() => expect(result.current.form.provider).toBe("polygon"));
+    act(() => result.current.updateBackfillForm("symbols", "AAPL"));
+    await act(async () => result.current.previewBackfill());
+
+    let runPromise!: Promise<void>;
+    act(() => {
+      runPromise = result.current.runBackfill();
+    });
+
+    await waitFor(() => {
+      expect(progressReads).toHaveBeenCalled();
+      expect(result.current.liveProgressState?.overallPercent).toBe(25);
+    });
+
+    await act(async () => {
+      runSettled = true;
+      resolveRun(completedBackfill);
+      await runPromise;
+    });
+
+    expect(result.current.liveProgressState).toMatchObject({
+      active: false,
+      overallPercent: 100,
+      title: "Final provider progress"
+    });
+    expect(progressReads.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
   it("derives failed backfill result cards with danger tone and error evidence", () => {
     const failedCard = buildBackfillResultCardState({
       ...completedBackfill,
@@ -1101,6 +1240,43 @@ describe("data-screen view model", () => {
       label: "Allowed environments",
       value: "Sandbox, Development, Production"
     });
+  });
+
+  it("merges workspace and routing providers while normalizing trust and readiness coverage", () => {
+    const alpacaRoutingConnection: ProviderRoutingConnection = {
+      ...polygonRoutingConnection,
+      connectionId: "alpaca",
+      providerFamilyId: "alpaca",
+      displayName: "Alpaca"
+    };
+    const alpacaTrustSnapshot: ProviderRoutingTrustSnapshot = {
+      ...polygonTrustSnapshot,
+      connectionId: "alpaca",
+      providerFamilyId: "alpaca",
+      score: 0.92,
+      isHealthy: true,
+      healthStatus: "Healthy"
+    };
+
+    const providerSection = buildProviderSection(
+      [...providers, alpacaProvider],
+      "provider-row-alpaca",
+      {
+        providerReadiness,
+        providerConnections: [polygonConnection],
+        providerRoutingConnections: [polygonRoutingConnection, alpacaRoutingConnection],
+        providerRoutingTrustSnapshots: [polygonTrustSnapshot, alpacaTrustSnapshot]
+      }
+    );
+
+    expect(providerSection.rows.filter((row) => row.provider === "Alpaca")).toHaveLength(1);
+    expect(providerSection.rows.find((row) => row.provider === "Alpaca")?.trustFields).toContainEqual({
+      id: "trust-score",
+      label: "Trust score",
+      value: "92% · Healthy"
+    });
+    expect(providerSection.readinessSummary).toContain("Displayed posture: 2 ready / 0 review / 0 degraded / 1 blocked.");
+    expect(providerSection.readinessSummary).toContain("Shared readiness covers 2 of 3 displayed providers.");
   });
 
   it("surfaces verification command state without mutating provider rows", () => {
@@ -1319,7 +1495,7 @@ describe("data-screen view model", () => {
       {
         id: "backfill",
         label: "Preview a backfill",
-        href: "/data/backfills",
+        href: "/data/operations",
         ariaLabel: "Preview a historical backfill after configuring Yahoo Finance",
         variant: "default"
       }
@@ -1465,7 +1641,7 @@ describe("data-screen view model", () => {
       {
         id: "backfill",
         label: "Preview a backfill",
-        href: "/data/backfills",
+        href: "/data/operations",
         ariaLabel: "Preview a historical backfill after configuring Polygon.io",
         variant: "outline"
       },
@@ -1750,7 +1926,16 @@ describe("data-screen view model", () => {
       value: "Trust score not reported"
     });
     expect(row.gateImpactText).toBe("Blocks provider trust gate");
+    expect(row.reasonLabelText).toBe("Checkpoint delay");
+    expect(row.reasonCodeText).toBe("CHECKPOINT_DELAY");
     expect(row.ariaLabel).toContain("Recommended action Review checkpoint freshness");
+  });
+
+  it("presents provider reason enums as operator labels while preserving non-code copy", () => {
+    expect(formatProviderReasonLabel("READINESS_BLOCKED")).toBe("Readiness blocked");
+    expect(formatProviderReasonLabel("TRUST_OK")).toBe("Trust OK");
+    expect(formatProviderReasonLabel("LATENCY_ELEVATED")).toBe("Latency elevated");
+    expect(formatProviderReasonLabel("Reason code not reported")).toBe("Reason code not reported");
   });
 
   it("derives selected backfill detail panel state with stable linkage ids", () => {

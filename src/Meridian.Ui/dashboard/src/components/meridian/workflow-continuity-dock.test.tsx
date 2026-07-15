@@ -145,6 +145,8 @@ describe("WorkflowContinuityDock", () => {
     );
 
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Current route /data/quotes")).toHaveTextContent("/data/quotes");
+    expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
     // The decision brief renders as the masthead status pill, not a dock banner.
     expect(screen.queryByRole("link", { name: "Open provider posture" })).not.toBeInTheDocument();
@@ -154,6 +156,7 @@ describe("WorkflowContinuityDock", () => {
 
     await user.keyboard("{Enter}");
     expect(screen.getByText("Primary operator workflow")).toBeInTheDocument();
+    expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
     expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(

@@ -28,6 +28,7 @@ import {
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
+import { closeCommandCenterTextMatches, humanizeCloseBlockerCode, isCloseChecklistDone, isOpenAccountingBreakStatus } from "./accounting-screen.close-cockpit-presenters";
 import type {
   AccountingCloseCalendarMilestoneViewModel,
   AccountingCloseDependencyGraphRowViewModel,
@@ -3123,7 +3124,7 @@ export function buildCloseCommandCenterViewState({
   const blockerRows = [
     ...closeBlockers.map((blocker) => ({
       id: blocker.code,
-      label: blocker.category ? `${blocker.category} - ${blocker.code}` : blocker.code,
+      label: blocker.category?.trim() || humanizeCloseBlockerCode(blocker.code),
       detail: blocker.message,
       tone: closeCommandCenterSeverityTone(blocker.severity),
       href: blocker.routeHint ?? closeCommandCenterGateRoute(blocker.gate),
@@ -3448,18 +3449,6 @@ function collectCloseCommandCenterBlockers(workflow: OperationsContinuityWorkflo
   return [...byKey.values()];
 }
 
-function isCloseChecklistDone(status: string): boolean {
-  const normalized = status.trim().toLowerCase();
-  return normalized === "done" || normalized === "complete" || normalized === "completed" || normalized === "acknowledged";
-}
-
-function closeCommandCenterTextMatches(left: string | null | undefined, right: string | null | undefined, needle: string): boolean {
-  const normalizedNeedle = needle.toLowerCase();
-  return [left, right]
-    .map((value) => value?.toLowerCase() ?? "")
-    .some((value) => value.includes(normalizedNeedle));
-}
-
 function countCloseCommandCenterValuationIssues(coverage: MultiAssetCoverageSummary | null | undefined): number {
   if (!coverage) {
     return 0;
@@ -3584,9 +3573,4 @@ function buildCloseCommandCenterSummary(
   }
 
   return `The close is at risk with ${formatCount(activeRows.length, "watch item")} across the command center.`;
-}
-
-function isOpenAccountingBreakStatus(status: string): boolean {
-  const normalized = status.trim().toLowerCase();
-  return normalized !== "resolved" && normalized !== "dismissed" && normalized !== "closed";
 }

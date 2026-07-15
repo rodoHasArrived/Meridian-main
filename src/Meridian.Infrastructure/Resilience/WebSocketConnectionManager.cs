@@ -4,7 +4,6 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using Meridian.Core.Logging;
-using Meridian.Core.Resilience;
 using Polly;
 using Serilog;
 
@@ -29,6 +28,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
 {
     private readonly WebSocketConnectionConfig _config;
     private readonly ResiliencePipeline _resiliencePipeline;
+    private readonly ProviderConnectionSupervisor _supervisor;
     private readonly ILogger _log;
     private readonly string _providerName;
 
@@ -38,22 +38,11 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     private Task? _receiveTask;
     private WebSocketHeartbeat? _heartbeat;
 
-    // Reconnection gating - prevents reconnection storms
-    private volatile bool _isReconnecting;
-    private readonly SemaphoreSlim _reconnectGate = new(1, 1);
-    private readonly SemaphoreSlim _connectLock = new(1, 1);
-    private int _reconnectAttempts;
-
-    // Gap tracking for reconnection-aware backfill
-    private DateTimeOffset _lastDisconnectTime;
-    private DateTimeOffset _lastConnectTime;
+    // Transport activity complements the supervisor's lifecycle diagnostics.
     private DateTimeOffset? _lastMessageReceivedAt;
     private DateTimeOffset? _lastHeartbeatReceivedAt;
-    private DateTimeOffset? _lastReconnectAttemptAt;
-    private string? _lastError;
-    private ProviderFailureKind? _lastFailureKind;
-    private volatile ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
-    private volatile bool _isDisconnecting;
+    private int _lastPublishedLifecycleState = (int)ProviderConnectionLifecycleState.Configured;
+    private int _disposed;
 
     /// <summary>
     /// Event raised when connection is lost (heartbeat timeout or WebSocket close).
@@ -88,7 +77,9 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <summary>
     /// Gets whether the WebSocket is currently connected and open.
     /// </summary>
-    public bool IsConnected => _webSocket?.State == WebSocketState.Open;
+    public bool IsConnected => _supervisor.IsConnected && IsTransportConnected;
+
+    internal bool IsTransportConnected => _webSocket?.State == WebSocketState.Open;
 
     /// <summary>
     /// Gets the current WebSocket state.
@@ -98,37 +89,38 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <summary>
     /// Gets whether a reconnection is currently in progress.
     /// </summary>
-    public bool IsReconnecting => _isReconnecting;
+    public bool IsReconnecting => _supervisor.IsReconnecting;
 
     /// <summary>
     /// Gets the current provider lifecycle phase.
     /// </summary>
-    public ProviderConnectionLifecycleState LifecycleState => _lifecycleState;
+    public ProviderConnectionLifecycleState LifecycleState => _supervisor.LifecycleState;
 
     /// <summary>
     /// Gets a safe diagnostics snapshot for logs, health surfaces, and tests.
     /// </summary>
     public WebSocketConnectionDiagnostics GetDiagnosticsSnapshot()
     {
+        var supervisor = _supervisor.GetSnapshot();
         var now = DateTimeOffset.UtcNow;
-        var lastActivity = _lastMessageReceivedAt ?? _lastConnectTime;
+        var lastActivity = _lastMessageReceivedAt ?? supervisor.LastConnectedAt;
 
         return new WebSocketConnectionDiagnostics(
             ProviderName: _providerName,
-            LifecycleState: _lifecycleState,
+            LifecycleState: supervisor.LifecycleState,
             WebSocketState: State,
             IsConnected: IsConnected,
-            IsReconnecting: _isReconnecting,
-            ReconnectAttempts: _reconnectAttempts,
-            LastConnectedAt: _lastConnectTime == default ? null : _lastConnectTime,
-            LastDisconnectedAt: _lastDisconnectTime == default ? null : _lastDisconnectTime,
+            IsReconnecting: supervisor.IsReconnecting,
+            ReconnectAttempts: supervisor.ReconnectAttempts,
+            LastConnectedAt: supervisor.LastConnectedAt,
+            LastDisconnectedAt: supervisor.LastDisconnectedAt,
             LastHeartbeatReceivedAt: _lastHeartbeatReceivedAt,
             LastMessageReceivedAt: _lastMessageReceivedAt,
-            LastReconnectAttemptAt: _lastReconnectAttemptAt,
-            LastError: _lastError,
-            LastFailureKind: _lastFailureKind,
-            ConnectionAge: IsConnected && _lastConnectTime != default ? now - _lastConnectTime : null,
-            IdleDuration: lastActivity == default ? null : now - lastActivity);
+            LastReconnectAttemptAt: supervisor.LastReconnectAttemptAt,
+            LastError: supervisor.LastError,
+            LastFailureKind: supervisor.LastFailureKind,
+            ConnectionAge: supervisor.ConnectionAge,
+            IdleDuration: lastActivity.HasValue ? now - lastActivity.Value : null);
     }
 
     /// <summary>
@@ -145,6 +137,13 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         _providerName = providerName ?? throw new ArgumentNullException(nameof(providerName));
         _config = config ?? WebSocketConnectionConfig.Default;
         _log = logger ?? LoggingSetup.ForContext<WebSocketConnectionManager>();
+        _supervisor = new ProviderConnectionSupervisor(
+            _providerName,
+            _config.MaxReconnectAttempts,
+            _config.RetryBaseDelay,
+            _config.MaxRetryDelay,
+            _log);
+        _supervisor.StateChanged += OnSupervisorStateChanged;
 
         // Create resilience pipeline using centralized configuration
         _resiliencePipeline = WebSocketResiliencePolicy.CreateComprehensivePipeline(
@@ -164,10 +163,30 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <param name="uri">The WebSocket URI to connect to.</param>
     /// <param name="configureSocket">Optional action to configure the ClientWebSocket before connecting.</param>
     /// <param name="ct">Cancellation token.</param>
-    public async Task ConnectAsync(
+    public Task ConnectAsync(
         Uri uri,
         Action<ClientWebSocket>? configureSocket = null,
         CancellationToken ct = default)
+        => ConnectAsync(uri, configureSocket, initializeConnection: null, ct);
+
+    internal Task ConnectAsync(
+        Uri uri,
+        Action<ClientWebSocket>? configureSocket,
+        Func<CancellationToken, Task>? initializeConnection,
+        CancellationToken ct)
+        => ConnectAsync(
+            uri,
+            configureSocket,
+            prepareConnection: null,
+            initializeConnection,
+            ct);
+
+    internal async Task ConnectAsync(
+        Uri uri,
+        Action<ClientWebSocket>? configureSocket,
+        Func<CancellationToken, Task>? prepareConnection,
+        Func<CancellationToken, Task>? initializeConnection,
+        CancellationToken ct)
     {
         if (IsConnected)
         {
@@ -175,68 +194,92 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             return;
         }
 
-        await _connectLock.WaitAsync(ct).ConfigureAwait(false);
+        _log.Information("Connecting to {Provider} WebSocket at {Uri}", _providerName, uri);
+
+        await _supervisor.ConnectAsync(
+            token => ConnectTransportTransactionAsync(
+                uri,
+                configureSocket,
+                prepareConnection,
+                initializeConnection,
+                token),
+            ct).ConfigureAwait(false);
+    }
+
+    private async Task ConnectTransportTransactionAsync(
+        Uri uri,
+        Action<ClientWebSocket>? configureSocket,
+        Func<CancellationToken, Task>? prepareConnection,
+        Func<CancellationToken, Task>? initializeConnection,
+        CancellationToken ct)
+    {
         try
         {
-            // Re-check after acquiring the lock — another thread may have connected first.
-            if (IsConnected)
-            {
-                _log.Debug("{Provider} WebSocket connected by concurrent caller, skipping", _providerName);
-                return;
-            }
+            await CleanupConnectionAsync(CancellationToken.None).ConfigureAwait(false);
 
-            _log.Information("Connecting to {Provider} WebSocket at {Uri}", _providerName, uri);
-            SetLifecycleState(ProviderConnectionLifecycleState.Connecting);
+            if (prepareConnection != null)
+                await prepareConnection(ct).ConfigureAwait(false);
 
             await _resiliencePipeline.ExecuteAsync(async token =>
             {
-                _connectionCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-                _webSocket = new ClientWebSocket();
+                await CleanupConnectionAsync(CancellationToken.None).ConfigureAwait(false);
 
-                // Allow provider-specific configuration (headers, options, etc.)
+                _connectionCts = CancellationTokenSource.CreateLinkedTokenSource(
+                    _supervisor.ConnectionLifetimeToken);
+                _webSocket = new ClientWebSocket();
                 configureSocket?.Invoke(_webSocket);
 
                 try
                 {
                     await _webSocket.ConnectAsync(uri, token).ConfigureAwait(false);
-                    _log.Information("Successfully connected to {Provider} WebSocket", _providerName);
-                    _reconnectAttempts = 0;
-                    _lastConnectTime = DateTimeOffset.UtcNow;
-                    _lastError = null;
-                    _lastFailureKind = null;
-                    SetLifecycleState(ProviderConnectionLifecycleState.Connected);
-                    StateChanged?.Invoke(WebSocketState.Open);
                 }
-                catch (OperationCanceledException)
+                catch
                 {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _lastError = ex.Message;
-                    _lastFailureKind = ProviderFailureClassifier.Classify(ex);
-                    SetLifecycleState(ProviderConnectionLifecycleState.Failed);
-                    _log.Warning(ex, "Connection attempt to {Provider} WebSocket failed. Will retry per policy.", _providerName);
-                    CleanupFailedConnection();
+                    await CleanupConnectionAsync(CancellationToken.None).ConfigureAwait(false);
                     throw;
                 }
             }, ct).ConfigureAwait(false);
 
-            // Start heartbeat monitoring after successful connection
-            if (_webSocket != null)
-            {
-                _heartbeat = new WebSocketHeartbeat(
-                    _webSocket,
-                    _config.HeartbeatInterval,
-                    _config.HeartbeatTimeout);
-                _lastHeartbeatReceivedAt = _heartbeat.LastPongReceived;
-                _heartbeat.ConnectionLost += OnConnectionLostAsync;
-            }
+            _log.Information(
+                "{Provider} WebSocket transport connected; completing provider initialization",
+                _providerName);
+
+            if (initializeConnection != null)
+                await initializeConnection(ct).ConfigureAwait(false);
+
+            if (_webSocket?.State != WebSocketState.Open)
+                throw new WebSocketException("WebSocket closed before provider initialization completed.");
+
+            StartHeartbeat();
         }
-        finally
+        catch (OperationCanceledException)
         {
-            _connectLock.Release();
+            await CleanupConnectionAsync(CancellationToken.None).ConfigureAwait(false);
+            throw;
         }
+        catch (Exception ex)
+        {
+            _supervisor.RecordFailure(ex);
+            _log.Warning(
+                ex,
+                "Complete connection attempt to {Provider} failed. Will retry when policy permits.",
+                _providerName);
+            await CleanupConnectionAsync(CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
+    }
+
+    private void StartHeartbeat()
+    {
+        if (_webSocket == null)
+            throw new InvalidOperationException("WebSocket transport is not connected.");
+
+        _heartbeat = new WebSocketHeartbeat(
+            _webSocket,
+            _config.HeartbeatInterval,
+            _config.HeartbeatTimeout);
+        _lastHeartbeatReceivedAt = _heartbeat.LastPongReceived;
+        _heartbeat.ConnectionLost += OnConnectionLostAsync;
     }
 
     /// <summary>
@@ -262,7 +305,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
 
     /// <summary>
     /// Reads a single text message from the WebSocket.
-    /// Must only be called after <see cref="ConnectAsync"/> and before
+    /// Must only be called after <see cref="ConnectAsync(Uri, Action{ClientWebSocket}, CancellationToken)"/> and before
     /// <see cref="StartReceiveLoop"/> — it reads directly from the socket
     /// for initial handshake sequences (e.g., Polygon "connected" + "auth_success").
     /// </summary>
@@ -304,7 +347,8 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         {
             _log.Warning("Cannot send message - {Provider} WebSocket not open (state: {State})",
                 _providerName, _webSocket?.State);
-            return;
+            throw new WebSocketException(
+                $"Cannot send message because the {_providerName} WebSocket transport is not open.");
         }
 
         var bytes = Encoding.UTF8.GetBytes(message);
@@ -317,98 +361,93 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <param name="ct">Cancellation token.</param>
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
-        if (_isDisconnecting)
-        {
-            _log.Debug("{Provider} disconnect already in progress", _providerName);
-            return;
-        }
-
         _log.Information("Disconnecting from {Provider} WebSocket", _providerName);
-        _isDisconnecting = true;
-        SetLifecycleState(ProviderConnectionLifecycleState.Disconnecting);
+        await _supervisor.DisconnectAsync(DisconnectTransportAsync, ct).ConfigureAwait(false);
+        _log.Information("Disconnected from {Provider} WebSocket", _providerName);
+    }
+
+    private async Task DisconnectTransportAsync(CancellationToken ct)
+    {
+        var heartbeat = _heartbeat;
+        var connectionCts = _connectionCts;
+        var receiveLoopCts = _receiveLoopCts;
+        var receiveTask = _receiveTask;
+        var webSocket = _webSocket;
+
+        _heartbeat = null;
+        _connectionCts = null;
+        _receiveLoopCts = null;
+        _receiveTask = null;
+        _webSocket = null;
+
+        if (heartbeat != null)
+        {
+            heartbeat.ConnectionLost -= OnConnectionLostAsync;
+            await heartbeat.DisposeAsync().ConfigureAwait(false);
+        }
 
         try
         {
-            // Dispose heartbeat first to prevent reconnection attempts
-            if (_heartbeat != null)
-            {
-                _heartbeat.ConnectionLost -= OnConnectionLostAsync;
-                await _heartbeat.DisposeAsync();
-                _heartbeat = null;
-            }
+            connectionCts?.Cancel();
+            receiveLoopCts?.Cancel();
+        }
+        catch (Exception ex)
+        {
+            _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
+        }
 
-            // Cancel receive loop
-            if (_connectionCts != null)
+        if (webSocket != null)
+        {
+            try
             {
-                try
-                { _connectionCts.Cancel(); }
-                catch (OperationCanceledException)
+                if (webSocket.State is WebSocketState.Open or WebSocketState.CloseReceived)
                 {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
+                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
+                        .ConfigureAwait(false);
                 }
             }
-
-            // Close WebSocket gracefully
-            if (_webSocket != null)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
-                try
-                {
-                    if (_webSocket.State is WebSocketState.Open or WebSocketState.CloseReceived)
-                    {
-                        await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
-                            .ConfigureAwait(false);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _log.Warning(ex, "Error during {Provider} WebSocket close", _providerName);
-                }
-                finally
-                {
-                    _webSocket.Dispose();
-                    _webSocket = null;
-                }
+                _log.Warning("{Provider} WebSocket close was cancelled; forcing transport cleanup", _providerName);
             }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Error during {Provider} WebSocket close", _providerName);
+            }
+            finally
+            {
+                webSocket.Dispose();
+            }
+        }
 
-            // Wait for receive loop to complete
-            if (_receiveTask != null)
+        try
+        {
+            if (receiveTask != null)
             {
                 try
-                { await _receiveTask.WaitAsync(ct).ConfigureAwait(false); }
+                {
+                    await receiveTask.WaitAsync(ct).ConfigureAwait(false);
+                }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
-                    _log.Warning("{Provider} receive loop did not finish before disconnect timeout", _providerName);
+                    _log.Warning(
+                        "Cancellation ended the wait for {Provider} receive loop; forcing transport cleanup",
+                        _providerName);
+                    throw;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     _log.Debug(ex, "Receive loop completion error during {Provider} disconnect", _providerName);
                 }
-                _receiveTask = null;
             }
-
-            _receiveLoopCts?.Dispose();
-            _receiveLoopCts = null;
-            _connectionCts?.Dispose();
-            _connectionCts = null;
-
-            _lastDisconnectTime = DateTimeOffset.UtcNow;
-            SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
-
-            StateChanged?.Invoke(WebSocketState.Closed);
-            _log.Information("Disconnected from {Provider} WebSocket", _providerName);
         }
         finally
         {
-            _isDisconnecting = false;
+            receiveLoopCts?.Dispose();
+            connectionCts?.Dispose();
         }
+
+        ct.ThrowIfCancellationRequested();
     }
 
     /// <summary>
@@ -420,121 +459,52 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <param name="onReconnected">Action to execute after successful reconnection (e.g., resubscribe).</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>True if reconnection succeeded, false otherwise.</returns>
-    public async Task<bool> TryReconnectAsync(
+    public Task<bool> TryReconnectAsync(
         Uri uri,
         Action<ClientWebSocket>? configureSocket = null,
         Func<Task>? onReconnected = null,
         CancellationToken ct = default)
-    {
-        // Use the semaphore as the sole gating mechanism.
-        // The previous fast-path check on _isReconnecting without holding
-        // the semaphore allowed two threads to both see false and race,
-        // potentially causing duplicate reconnection attempts.
-        if (!await _reconnectGate.WaitAsync(0, ct).ConfigureAwait(false))
-        {
-            _log.Debug("{Provider} reconnection already in progress, skipping duplicate attempt", _providerName);
-            return false;
-        }
+        => TryReconnectAsync(
+            uri,
+            configureSocket,
+            onReconnected == null
+                ? null
+                : new Func<CancellationToken, Task>(_ => onReconnected()),
+            ct);
 
-        try
-        {
-            _isReconnecting = true;
-            SetLifecycleState(ProviderConnectionLifecycleState.Reconnecting);
+    internal Task<bool> TryReconnectAsync(
+        Uri uri,
+        Action<ClientWebSocket>? configureSocket,
+        Func<CancellationToken, Task>? initializeConnection,
+        CancellationToken ct)
+        => TryReconnectAsync(
+            uri,
+            configureSocket,
+            prepareConnection: null,
+            initializeConnection,
+            ct);
+
+    internal async Task<bool> TryReconnectAsync(
+        Uri uri,
+        Action<ClientWebSocket>? configureSocket,
+        Func<CancellationToken, Task>? prepareConnection,
+        Func<CancellationToken, Task>? initializeConnection,
+        CancellationToken ct)
+    {
+        if (!_supervisor.IsReconnecting)
             _log.Warning("{Provider} WebSocket connection lost, initiating automatic reconnection", _providerName);
 
-            // Clean up existing connection
-            await CleanupConnectionAsync(ct);
-
-            // Attempt reconnection with backoff
-            while (_reconnectAttempts < _config.MaxReconnectAttempts && !ct.IsCancellationRequested)
+        return await _supervisor.ReconnectAsync(
+            async token =>
             {
-                _reconnectAttempts++;
-                _lastReconnectAttemptAt = DateTimeOffset.UtcNow;
-                var delay = CalculateReconnectDelay(_reconnectAttempts);
-
-                _log.Information("{Provider} reconnection attempt {Attempt}/{Max} in {Delay}ms",
-                    _providerName, _reconnectAttempts, _config.MaxReconnectAttempts, delay.TotalMilliseconds);
-
-                await Task.Delay(delay, ct).ConfigureAwait(false);
-
-                try
-                {
-                    await ConnectAsync(uri, configureSocket, ct).ConfigureAwait(false);
-
-                    if (IsConnected && onReconnected != null)
-                    {
-                        await onReconnected().ConfigureAwait(false);
-                    }
-
-                    _lastConnectTime = DateTimeOffset.UtcNow;
-                    _log.Information("{Provider} successfully reconnected after {Attempts} attempts",
-                        _providerName, _reconnectAttempts);
-                    Reconnected?.Invoke(_reconnectAttempts);
-
-                    // Emit gap event so subscribers can trigger backfill
-                    if (_lastDisconnectTime != default)
-                    {
-                        var gap = new ReconnectionGap(
-                            _providerName,
-                            _lastDisconnectTime,
-                            _lastConnectTime,
-                            _reconnectAttempts);
-                        _log.Information(
-                            "{Provider} reconnection gap: {GapDuration}s ({DisconnectTime} to {ReconnectTime})",
-                            _providerName, gap.Duration.TotalSeconds,
-                            gap.DisconnectedAt.ToString("HH:mm:ss.fff"),
-                            gap.ReconnectedAt.ToString("HH:mm:ss.fff"));
-
-                        try
-                        {
-                            GapDetected?.Invoke(gap);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            throw;
-                        }
-                        catch (Exception gapEx)
-                        {
-                            _log.Error(gapEx, "{Provider} error in gap detection handler", _providerName);
-                        }
-                    }
-
-                    return true;
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _lastError = ex.Message;
-                    _lastFailureKind = ProviderFailureClassifier.Classify(ex);
-                    if (!ProviderFailureClassifier.IsRetryable(_lastFailureKind.Value))
-                    {
-                        _log.Error(
-                            ex,
-                            "{Provider} reconnection stopped after non-retryable {FailureKind} failure on attempt {Attempt}",
-                            _providerName,
-                            _lastFailureKind,
-                            _reconnectAttempts);
-                        SetLifecycleState(ProviderConnectionLifecycleState.Failed);
-                        return false;
-                    }
-
-                    _log.Warning(ex, "{Provider} reconnection attempt {Attempt} failed with {FailureKind}", _providerName, _reconnectAttempts, _lastFailureKind);
-                }
-            }
-
-            _log.Error("{Provider} failed to reconnect after {Attempts} attempts. Manual intervention may be required.",
-                _providerName, _reconnectAttempts);
-            SetLifecycleState(ProviderConnectionLifecycleState.Failed);
-            return false;
-        }
-        finally
-        {
-            _isReconnecting = false;
-            _reconnectGate.Release();
-        }
+                await ConnectTransportTransactionAsync(
+                    uri,
+                    configureSocket,
+                    prepareConnection,
+                    initializeConnection,
+                    token).ConfigureAwait(false);
+            },
+            ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -550,10 +520,27 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        // Idempotent per the IAsyncDisposable contract: a second dispose must not
+        // re-run DisconnectAsync against the supervisor's already-disposed gates.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
         using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        await DisconnectAsync(shutdownCts.Token).ConfigureAwait(false);
-        _reconnectGate.Dispose();
-        _connectLock.Dispose();
+        try
+        {
+            await DisconnectAsync(shutdownCts.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (shutdownCts.IsCancellationRequested)
+        {
+            _log.Warning(
+                "Timed out disconnecting {Provider}; completing forced manager disposal",
+                _providerName);
+        }
+        finally
+        {
+            _supervisor.StateChanged -= OnSupervisorStateChanged;
+            await _supervisor.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
 
@@ -624,8 +611,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     }
                     catch (Exception ex)
                     {
-                        _lastError = ex.Message;
-                        _lastFailureKind = ProviderFailureClassifier.Classify(ex);
+                        _supervisor.RecordFailure(ex);
                         _log.Warning(ex, "{Provider} error processing message", _providerName);
                     }
                 }
@@ -637,56 +623,131 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         }
         catch (WebSocketException ex)
         {
-            _lastError = ex.Message;
-            _lastFailureKind = ProviderFailureClassifier.Classify(ex);
+            _supervisor.RecordFailure(ex);
             _log.Error(ex, "{Provider} WebSocket error in receive loop", _providerName);
             StateChanged?.Invoke(WebSocketState.Aborted);
-            await RaiseConnectionLostIfActiveAsync().ConfigureAwait(false);
+            await RaiseConnectionLostIfActiveAsync(ex).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _lastError = ex.Message;
-            _lastFailureKind = ProviderFailureClassifier.Classify(ex);
+            _supervisor.RecordFailure(ex);
             _log.Error(ex, "{Provider} unexpected error in receive loop", _providerName);
-            await RaiseConnectionLostIfActiveAsync().ConfigureAwait(false);
+            await RaiseConnectionLostIfActiveAsync(ex).ConfigureAwait(false);
         }
     }
 
-    private async Task OnConnectionLostAsync()
-    {
-        if (_isDisconnecting)
-            return;
+    private Task OnConnectionLostAsync()
+        => RaiseConnectionLostIfActiveAsync();
 
-        if (ConnectionLost != null)
+    private Task RaiseConnectionLostIfActiveAsync(Exception? error = null)
+    {
+        if (!_supervisor.MarkConnectionLost(error))
+            return Task.CompletedTask;
+
+        var handler = ConnectionLost;
+        if (handler == null)
+            return Task.CompletedTask;
+
+        // Do not execute reconnect cleanup on the receive or heartbeat task that
+        // detected the loss. The supervisor tracks and gates the reconnect itself.
+        _ = Task.Run(async () =>
         {
-            await ConnectionLost.Invoke();
+            try
+            {
+                await handler.Invoke().ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (
+                _supervisor.LifecycleState is ProviderConnectionLifecycleState.Disconnecting or
+                    ProviderConnectionLifecycleState.Disconnected)
+            {
+                // Explicit shutdown cancelled the supervised reconnect.
+            }
+            catch (Exception ex)
+            {
+                _supervisor.RecordFailure(ex);
+                _log.Error(ex, "{Provider} connection-lost handler failed", _providerName);
+            }
+        });
+
+        return Task.CompletedTask;
+    }
+
+    private void OnSupervisorStateChanged(ProviderConnectionSupervisorSnapshot snapshot)
+    {
+        var previousState = (ProviderConnectionLifecycleState)Interlocked.Exchange(
+            ref _lastPublishedLifecycleState,
+            (int)snapshot.LifecycleState);
+
+        if (previousState != snapshot.LifecycleState)
+        {
+            _log.Information(
+                "{Provider} WebSocket lifecycle state changed to {LifecycleState}",
+                _providerName,
+                snapshot.LifecycleState);
+
+            if (snapshot.LifecycleState == ProviderConnectionLifecycleState.Connected &&
+                _webSocket?.State == WebSocketState.Open)
+            {
+                StateChanged?.Invoke(WebSocketState.Open);
+
+                if (previousState == ProviderConnectionLifecycleState.Reconnecting)
+                    PublishReconnectCompletion(snapshot);
+            }
+            else if (snapshot.LifecycleState == ProviderConnectionLifecycleState.Disconnected)
+            {
+                StateChanged?.Invoke(WebSocketState.Closed);
+            }
         }
-    }
 
-    private async Task RaiseConnectionLostIfActiveAsync()
-    {
-        if (_isDisconnecting)
-            return;
-
-        SetLifecycleState(ProviderConnectionLifecycleState.Degraded);
-        await OnConnectionLostAsync().ConfigureAwait(false);
-    }
-
-    private void SetLifecycleState(ProviderConnectionLifecycleState state)
-    {
-        if (_lifecycleState == state)
-            return;
-
-        _lifecycleState = state;
-        _log.Information("{Provider} WebSocket lifecycle state changed to {LifecycleState}", _providerName, state);
         DiagnosticsChanged?.Invoke(GetDiagnosticsSnapshot());
+    }
+
+    private void PublishReconnectCompletion(ProviderConnectionSupervisorSnapshot snapshot)
+    {
+        _log.Information(
+            "{Provider} successfully completed reconnection after {Attempts} attempts",
+            _providerName,
+            snapshot.ReconnectAttempts);
+
+        try
+        {
+            Reconnected?.Invoke(snapshot.ReconnectAttempts);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "{Provider} error in reconnected handler", _providerName);
+        }
+
+        if (snapshot.LastDisconnectedAt is not { } disconnectedAt ||
+            snapshot.LastConnectedAt is not { } connectedAt)
+        {
+            return;
+        }
+
+        var gap = new ReconnectionGap(
+            _providerName,
+            disconnectedAt,
+            connectedAt,
+            snapshot.ReconnectAttempts);
+        _log.Information(
+            "{Provider} reconnection gap: {GapDuration}s ({DisconnectTime} to {ReconnectTime})",
+            _providerName,
+            gap.Duration.TotalSeconds,
+            gap.DisconnectedAt.ToString("HH:mm:ss.fff"),
+            gap.ReconnectedAt.ToString("HH:mm:ss.fff"));
+
+        try
+        {
+            GapDetected?.Invoke(gap);
+        }
+        catch (Exception ex)
+        {
+            _log.Error(ex, "{Provider} error in gap detection handler", _providerName);
+        }
     }
 
     private async Task CleanupConnectionAsync(CancellationToken ct = default)
     {
-        // Record when the disconnect happened for gap tracking
-        _lastDisconnectTime = DateTimeOffset.UtcNow;
-
         var ws = _webSocket;
         var cts = _connectionCts;
         var heartbeat = _heartbeat;
@@ -716,21 +777,14 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         }
 
         // 3. Wait for the receive task to complete before disposing resources it uses.
-        // Avoid self-await if cleanup is executing on the receive loop task itself.
+        // Connection-loss callbacks are queued off the receive/heartbeat task, so this
+        // cleanup never waits on the task that is currently executing it.
         if (receiveTask != null)
         {
-            var currentTaskId = Task.CurrentId;
-            if (currentTaskId.HasValue && receiveTask.Id == currentTaskId.Value)
-            {
-                _log.Debug("{Provider} skipping receive task self-await during cleanup", _providerName);
-            }
-            else
-            {
-                try
-                { await receiveTask.WaitAsync(ct).ConfigureAwait(false); }
-                catch (OperationCanceledException) { throw; }
-                catch (Exception ex) { _log.Debug(ex, "{Provider} receive task failed during cleanup", _providerName); }
-            }
+            try
+            { await receiveTask.WaitAsync(ct).ConfigureAwait(false); }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex) { _log.Debug(ex, "{Provider} receive task failed during cleanup", _providerName); }
         }
 
         // 4. Now safe to dispose CTS and WebSocket — receive loop has exited
@@ -758,24 +812,6 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
             catch (Exception ex) { _log.Debug(ex, "{Provider} WebSocket dispose failed during cleanup", _providerName); }
         }
     }
-
-    private void CleanupFailedConnection()
-    {
-        try
-        { _webSocket?.Dispose(); }
-        catch (OperationCanceledException) { throw; }
-        catch (Exception ex) { _log.Debug(ex, "{Provider} WebSocket dispose failed during connection cleanup", _providerName); }
-        _webSocket = null;
-
-        try
-        { _connectionCts?.Dispose(); }
-        catch (OperationCanceledException) { throw; }
-        catch (Exception ex) { _log.Debug(ex, "{Provider} CTS dispose failed during connection cleanup", _providerName); }
-        _connectionCts = null;
-    }
-
-    private TimeSpan CalculateReconnectDelay(int attempt)
-        => Backoff.ExponentialDelay(attempt, _config.RetryBaseDelay, _config.MaxRetryDelay, jitterFraction: 0.2);
 
 }
 

@@ -2175,9 +2175,10 @@ public static partial class LedgerEndpoints
                 draftStore,
                 configurationService,
                 auditStore,
-                context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
-                context.RequestServices.GetService<ILedgerJournalStore>(),
-                context.RequestServices.GetService<ReportPackWorkflowService>());
+                 context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                 context.RequestServices.GetService<ILedgerJournalStore>(),
+                 context.RequestServices.GetService<ReportPackWorkflowService>(),
+                 postingTarget: context.RequestServices.GetService<IGovernedLedgerPostingTarget>());
     }
 
     private static IManualJournalEntryLifecycleService? ResolveManualJournalEntryLifecycleService(HttpContext context)

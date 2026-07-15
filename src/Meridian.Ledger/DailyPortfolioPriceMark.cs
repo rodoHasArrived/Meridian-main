@@ -1,6 +1,17 @@
 namespace Meridian.Ledger;
 
 /// <summary>
+/// Confidence assigned to a retained portfolio closing mark after provider and
+/// freshness checks. Operational valuation workflows reject marks below policy.
+/// </summary>
+public enum DailyPortfolioPriceConfidence : byte
+{
+    Low = 0,
+    Medium = 1,
+    High = 2
+}
+
+/// <summary>
 /// Daily mark and evidence for one valued portfolio position.
 /// </summary>
 public sealed record DailyPortfolioPriceMark

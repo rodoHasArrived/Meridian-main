@@ -63,6 +63,14 @@ public static class UiApiRoutes
     public const string IngestionJobById = "/api/ingestion/jobs/{jobId}";
     public const string IngestionJobTransition = "/api/ingestion/jobs/{jobId}/transition";
 
+    // Governed Data workspace operations and assurance endpoints
+    public const string WorkstationIngestionOperations = "/api/workstation/data/ingestion-operations";
+    public const string WorkstationIngestionOperationById = "/api/workstation/data/ingestion-operations/{jobId}";
+    public const string WorkstationIngestionOperationAction = "/api/workstation/data/ingestion-operations/{jobId}/actions/{action}";
+    public const string WorkstationStorageAssurance = "/api/workstation/data/storage-assurance";
+    public const string WorkstationStorageMaintenancePreview = "/api/workstation/data/storage-assurance/actions/preview";
+    public const string WorkstationStorageMaintenanceExecute = "/api/workstation/data/storage-assurance/actions/execute";
+
     // Backfill provider metadata and status endpoints
     public const string BackfillProviderMetadata = "/api/backfill/providers/metadata";
     public const string BackfillProviderStatuses = "/api/backfill/providers/statuses";
@@ -160,6 +168,7 @@ public static class UiApiRoutes
     public const string SymbolsSearch = "/api/symbols/search";
     public const string SymbolsBatch = "/api/symbols/batch";
     public const string SymbolMappings = "/api/symbols/mappings";
+    public const string CanonicalSymbolRegistry = "/api/symbols/registry";
 
     // Catalog search and discovery endpoints
     public const string CatalogSearch = "/api/catalog/search";
@@ -354,6 +363,7 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
+    public const string SecurityMasterOperatorOverrideDecision = "/api/security-master/{securityId:guid}/operator-overrides/decision";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
 
@@ -800,6 +810,11 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
+    public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
+    public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
+    public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";

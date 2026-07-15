@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Menu, Search } from "lucide-react";
-import { DesignSystemBadge } from "@/design-system/badge";
 import { DesignSystemTrustStrip } from "@/design-system/trust-strip";
 import type { AppShellTrustStripState } from "@/app-shell.view-model";
 import type { SessionInfo } from "@/types";
@@ -44,7 +43,7 @@ export function DesignSystemMasthead({
   actions
 }: DesignSystemMastheadProps) {
   return (
-    <header className="workstation-masthead">
+    <header className="workstation-masthead mds-masthead" data-design-system-component="Masthead">
       <div className="workstation-brand-group">
         <button
           type="button"
@@ -70,7 +69,7 @@ export function DesignSystemMasthead({
 
       <button
         type="button"
-        className="workstation-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="workstation-search mds-masthead__search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={onOpenCommandPalette}
         aria-label={commandTrigger.label}
         aria-controls={commandTrigger.controlsId}
@@ -92,7 +91,7 @@ export function DesignSystemMasthead({
             role="group"
             aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
           >
-            <DesignSystemBadge variant={session.environment} dot>{session.environment}</DesignSystemBadge>
+            <span className="sr-only">{session.environment}</span>
             <span className="workstation-session-name">{session.displayName}</span>
             <span className="workstation-session-role text-muted-foreground">{session.role}</span>
           </div>

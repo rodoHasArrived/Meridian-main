@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
 using System.Reactive.Subjects;
 using System.Threading;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Core.Resilience;
+using Meridian.ProviderSdk;
 using Serilog;
 
 namespace Meridian.Infrastructure.DataSources;
@@ -11,7 +13,7 @@ namespace Meridian.Infrastructure.DataSources;
 /// Base class providing common functionality for data source implementations.
 /// Handles health tracking, rate limiting, retry logic, and lifecycle management.
 /// </summary>
-public abstract class DataSourceBase : IDataSource
+public abstract class DataSourceBase : IDataSource, IProviderRateLimitDiagnosticsSource
 {
 
     protected readonly ILogger Log;
@@ -19,9 +21,13 @@ public abstract class DataSourceBase : IDataSource
     private readonly HealthTracker _healthTracker;
     private readonly SemaphoreSlim _rateLimiter;
     private readonly Subject<DataSourceHealthChanged> _healthChanges = new();
+    private readonly object _rateLimitSync = new();
+    private readonly TimeProvider _timeProvider;
     private DateTimeOffset _lastRequestTime = DateTimeOffset.MinValue;
     private int _currentRequests;
-    private DateTimeOffset _windowStart = DateTimeOffset.UtcNow;
+    private DateTimeOffset _windowStart;
+    private DateTimeOffset? _providerRateLimitResetAt;
+    private string? _providerRateLimitReason;
     private bool _disposed;
 
 
@@ -83,10 +89,16 @@ public abstract class DataSourceBase : IDataSource
     /// </summary>
     /// <param name="options">Configuration options for this data source.</param>
     /// <param name="logger">Optional logger instance.</param>
-    protected DataSourceBase(DataSourceOptions options, ILogger? logger = null)
+    /// <param name="timeProvider">Clock used for rate-limit enforcement and diagnostics.</param>
+    protected DataSourceBase(
+        DataSourceOptions options,
+        ILogger? logger = null,
+        TimeProvider? timeProvider = null)
     {
         Options = options ?? throw new ArgumentNullException(nameof(options));
         Log = logger ?? LoggingSetup.ForContext(GetType());
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        _windowStart = _timeProvider.GetUtcNow();
         _healthTracker = new HealthTracker(Options.HealthCheck, OnHealthChanged);
         _rateLimiter = new SemaphoreSlim(Options.RateLimits.MaxConcurrentRequests);
     }
@@ -194,6 +206,8 @@ public abstract class DataSourceBase : IDataSource
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            if (ex is RateLimitException rateLimit)
+                RecordProviderRateLimit(rateLimit, operationName);
             _healthTracker.RecordFailure(ex, operationName);
             Log.Error(ex, "{Source} {Operation} failed", Id, operationName);
             throw;
@@ -244,7 +258,7 @@ public abstract class DataSourceBase : IDataSource
                 var delay = CalculateRetryDelay(attempt, baseDelay, maxDelay);
                 Log.Warning(ex, "{Source} {Operation} attempt {Attempt}/{MaxRetries} failed, retrying in {Delay}ms",
                     Id, operationName, attempt + 1, maxRetries + 1, delay);
-                await Task.Delay(delay, ct).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromMilliseconds(delay), _timeProvider, ct).ConfigureAwait(false);
             }
             catch (TimeoutException ex)
             {
@@ -255,7 +269,7 @@ public abstract class DataSourceBase : IDataSource
                 var delay = CalculateRetryDelay(attempt, baseDelay, maxDelay);
                 Log.Warning(ex, "{Source} {Operation} timed out, attempt {Attempt}/{MaxRetries}, retrying in {Delay}ms",
                     Id, operationName, attempt + 1, maxRetries + 1, delay);
-                await Task.Delay(delay, ct).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromMilliseconds(delay), _timeProvider, ct).ConfigureAwait(false);
             }
         }
 
@@ -272,46 +286,73 @@ public abstract class DataSourceBase : IDataSource
 
     private async Task ApplyRateLimitDelayAsync(CancellationToken ct)
     {
-        var timeSinceLastRequest = DateTimeOffset.UtcNow - _lastRequestTime;
-        var minDelay = TimeSpan.FromMilliseconds(Options.RateLimits.MinDelayBetweenRequestsMs);
-
-        if (timeSinceLastRequest < minDelay)
+        while (true)
         {
-            var delayNeeded = minDelay - timeSinceLastRequest;
-            Log.Debug("{Source} enforcing rate limit delay: {Delay}ms", Id, delayNeeded.TotalMilliseconds);
-            await Task.Delay(delayNeeded, ct).ConfigureAwait(false);
-        }
-
-        // Check window-based rate limit
-        CleanupRequestWindow();
-
-        if (_currentRequests >= Options.RateLimits.MaxRequestsPerWindow)
-        {
-            var windowEnd = _windowStart.Add(Options.RateLimits.RateLimitWindow);
-            var waitTime = windowEnd - DateTimeOffset.UtcNow;
-
-            if (waitTime > TimeSpan.Zero)
+            TimeSpan waitTime;
+            string? waitReason;
+            int currentRequests;
+            lock (_rateLimitSync)
             {
-                Status = DataSourceStatus.RateLimited;
-                Log.Warning("{Source} rate limit reached ({Current}/{Max}), waiting {Wait}ms",
-                    Id, _currentRequests, Options.RateLimits.MaxRequestsPerWindow, waitTime.TotalMilliseconds);
-                await Task.Delay(waitTime, ct).ConfigureAwait(false);
-                CleanupRequestWindow();
+                var now = _timeProvider.GetUtcNow();
+                CleanupRequestWindow(now);
+                ClearExpiredProviderRateLimit(now);
+
+                var explicitWait = _providerRateLimitResetAt is { } resetAt && resetAt > now
+                    ? resetAt - now
+                    : TimeSpan.Zero;
+                var minDelay = TimeSpan.FromMilliseconds(Options.RateLimits.MinDelayBetweenRequestsMs);
+                var timeSinceLastRequest = now - _lastRequestTime;
+                var minimumDelayWait = timeSinceLastRequest < minDelay
+                    ? minDelay - timeSinceLastRequest
+                    : TimeSpan.Zero;
+                var windowWait = _currentRequests >= Options.RateLimits.MaxRequestsPerWindow
+                    ? _windowStart.Add(Options.RateLimits.RateLimitWindow) - now
+                    : TimeSpan.Zero;
+
+                waitTime = new[] { explicitWait, minimumDelayWait, windowWait, TimeSpan.Zero }.Max();
+                waitReason = explicitWait == waitTime && explicitWait > TimeSpan.Zero
+                    ? _providerRateLimitReason ?? "provider-response"
+                    : windowWait == waitTime && windowWait > TimeSpan.Zero
+                        ? "configured-window"
+                        : minimumDelayWait > TimeSpan.Zero ? "minimum-delay" : null;
+                currentRequests = _currentRequests;
+                if (waitTime <= TimeSpan.Zero && Status == DataSourceStatus.RateLimited)
+                    Status = DataSourceStatus.Connected;
+                else if (waitTime > TimeSpan.Zero)
+                    Status = DataSourceStatus.RateLimited;
             }
 
-            Status = DataSourceStatus.Connected;
+            if (waitTime <= TimeSpan.Zero)
+                return;
+
+            Log.Warning(
+                "{Source} rate limit delay ({Reason}, {Current}/{Max}), waiting {Wait}ms",
+                Id,
+                waitReason,
+                currentRequests,
+                Options.RateLimits.MaxRequestsPerWindow,
+                waitTime.TotalMilliseconds);
+            await Task.Delay(waitTime, _timeProvider, ct).ConfigureAwait(false);
         }
     }
 
     private void RecordRequest()
     {
-        _lastRequestTime = DateTimeOffset.UtcNow;
-        _currentRequests++;
+        lock (_rateLimitSync)
+        {
+            var now = _timeProvider.GetUtcNow();
+            CleanupRequestWindow(now);
+            _lastRequestTime = now;
+            _currentRequests++;
+            _providerRateLimitResetAt = null;
+            _providerRateLimitReason = null;
+            if (Status == DataSourceStatus.RateLimited)
+                Status = DataSourceStatus.Connected;
+        }
     }
 
-    private void CleanupRequestWindow()
+    private void CleanupRequestWindow(DateTimeOffset now)
     {
-        var now = DateTimeOffset.UtcNow;
         if (now - _windowStart >= Options.RateLimits.RateLimitWindow)
         {
             _windowStart = now;
@@ -321,16 +362,77 @@ public abstract class DataSourceBase : IDataSource
 
     private RateLimitState GetCurrentRateLimitState()
     {
-        CleanupRequestWindow();
-        var remaining = Options.RateLimits.MaxRequestsPerWindow - _currentRequests;
-        var windowEnd = _windowStart.Add(Options.RateLimits.RateLimitWindow);
-        var resetIn = windowEnd - DateTimeOffset.UtcNow;
+        lock (_rateLimitSync)
+        {
+            var now = _timeProvider.GetUtcNow();
+            CleanupRequestWindow(now);
+            ClearExpiredProviderRateLimit(now);
+            var max = Options.RateLimits.MaxRequestsPerWindow;
+            if (_providerRateLimitResetAt is { } providerResetAt && providerResetAt > now)
+                return new RateLimitState(false, 0, max, providerResetAt - now, providerResetAt);
 
-        return RateLimitState.Limited(
-            remaining,
-            Options.RateLimits.MaxRequestsPerWindow,
-            resetIn > TimeSpan.Zero ? resetIn : null
-        );
+            var remaining = Math.Max(0, max - _currentRequests);
+            var windowEnd = _windowStart.Add(Options.RateLimits.RateLimitWindow);
+            var resetIn = windowEnd - now;
+            return new RateLimitState(
+                remaining > 0,
+                remaining,
+                max,
+                resetIn > TimeSpan.Zero ? resetIn : null,
+                resetIn > TimeSpan.Zero ? windowEnd : null);
+        }
+    }
+
+    /// <inheritdoc />
+    public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
+    {
+        lock (_rateLimitSync)
+        {
+            var observedAt = _timeProvider.GetUtcNow();
+            CleanupRequestWindow(observedAt);
+            ClearExpiredProviderRateLimit(observedAt);
+            var max = Options.RateLimits.MaxRequestsPerWindow;
+            var configuredWindowEnd = _windowStart.Add(Options.RateLimits.RateLimitWindow);
+            var explicitlyLimited = _providerRateLimitResetAt is { } explicitResetAt && explicitResetAt > observedAt;
+            var windowLimited = _currentRequests >= max;
+            var resetAt = explicitlyLimited
+                ? _providerRateLimitResetAt
+                : _currentRequests > 0 ? configuredWindowEnd : null;
+            var usageRatio = max > 0 ? Math.Clamp((double)_currentRequests / max, 0, 1) : 0;
+            return new ProviderRateLimitDiagnosticSnapshot(
+                Id,
+                ProviderRateLimitSurfaces.DataSource,
+                observedAt,
+                _currentRequests,
+                max,
+                Options.RateLimits.RateLimitWindow,
+                explicitlyLimited || windowLimited,
+                resetAt,
+                usageRatio,
+                explicitlyLimited ? _providerRateLimitReason : windowLimited ? "configured-window" : null);
+        }
+    }
+
+    private void RecordProviderRateLimit(RateLimitException error, string operationName)
+    {
+        lock (_rateLimitSync)
+        {
+            var retryAfter = error.RetryAfter is { } value && value > TimeSpan.Zero
+                ? value
+                : Options.RateLimits.RateLimitWindow;
+            _providerRateLimitResetAt = _timeProvider.GetUtcNow() + retryAfter;
+            _providerRateLimitReason = $"provider-response:{operationName}";
+            Status = DataSourceStatus.RateLimited;
+        }
+    }
+
+    private void ClearExpiredProviderRateLimit(DateTimeOffset observedAt)
+    {
+        if (_providerRateLimitResetAt is not { } resetAt || observedAt < resetAt)
+            return;
+
+        _providerRateLimitResetAt = null;
+        _providerRateLimitReason = null;
     }
 
 
@@ -543,4 +645,3 @@ public sealed record HealthCheckOptions(
     int TimeoutSeconds = 10,
     int UnhealthyThreshold = 3
 );
-

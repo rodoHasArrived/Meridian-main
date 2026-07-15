@@ -23,6 +23,8 @@ import {
   backfillCheckpointEndpoint,
   backfillCheckpointPendingEndpoint,
   backfillCheckpointResumeEndpoint,
+  workstationIngestionOperationActionEndpoint,
+  workstationIngestionOperationEndpoint,
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
@@ -178,6 +180,16 @@ import {
 } from "@/lib/workstation-endpoints";
 
 describe("workstation API endpoint catalog", () => {
+  it("builds governed Data operations and assurance routes", () => {
+    expect(WORKSTATION_API_ENDPOINTS.ingestionOperations).toBe("/api/workstation/data/ingestion-operations");
+    expect(workstationIngestionOperationEndpoint("job / 1")).toBe("/api/workstation/data/ingestion-operations/job%20%2F%201");
+    expect(workstationIngestionOperationActionEndpoint("job / 1", "retry now")).toBe(
+      "/api/workstation/data/ingestion-operations/job%20%2F%201/actions/retry%20now"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.storageAssurance).toBe("/api/workstation/data/storage-assurance");
+    expect(WORKSTATION_API_ENDPOINTS.storageMaintenancePreview).toBe("/api/workstation/data/storage-assurance/actions/preview");
+    expect(WORKSTATION_API_ENDPOINTS.storageMaintenanceExecute).toBe("/api/workstation/data/storage-assurance/actions/execute");
+  });
   it("keeps canonical workspace bootstrap endpoints in one shared catalog", () => {
     expect(WORKSTATION_API_ENDPOINTS).toMatchObject({
       session: "/api/workstation/session",
@@ -777,6 +789,9 @@ describe("workstation API endpoint catalog", () => {
     expect(backfillCheckpointResumeEndpoint("job / 1")).toBe("/api/backfill/checkpoints/job%20%2F%201/resume");
     expect(PROVIDER_API_ENDPOINTS.configure).toBe("/api/providers/configure");
     expect(PROVIDER_API_ENDPOINTS.status).toBe("/api/providers/status");
+    expect(PROVIDER_API_ENDPOINTS.catalog).toBe("/api/providers/catalog");
+    expect(PROVIDER_API_ENDPOINTS.rateLimits).toBe("/api/providers/rate-limits");
+    expect(PROVIDER_API_ENDPOINTS.health).toBe("/api/providers/health");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.productionReadiness).toBe("/api/accounting-system/production-readiness");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.migrationWorkerPlans).toBe("/api/accounting-system/migration-worker-plans");
     expect(ACCOUNTING_SYSTEM_API_ENDPOINTS.tenantAdministrationProfile).toBe("/api/accounting-system/tenant-administration-profile");

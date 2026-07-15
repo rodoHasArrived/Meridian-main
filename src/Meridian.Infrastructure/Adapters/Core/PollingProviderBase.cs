@@ -1,5 +1,4 @@
 using Meridian.Core.Exceptions;
-using Meridian.Core.Resilience;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Resilience;
 using Microsoft.Extensions.Logging;
@@ -24,11 +23,10 @@ namespace Meridian.Infrastructure.Adapters.Core;
 public abstract class PollingProviderBase
 {
     private readonly string _providerName;
-    private readonly SemaphoreSlim _lifecycleLock = new(1, 1);
+    private readonly ProviderConnectionSupervisor _connectionSupervisor;
 
     private CancellationTokenSource? _pollCts;
     private Task? _pollTask;
-    private volatile bool _connected;
     private volatile bool _disposed;
     private volatile ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
     private DateTimeOffset? _connectedAt;
@@ -37,6 +35,7 @@ public abstract class PollingProviderBase
     private DateTimeOffset? _lastSuccessfulApiCallAt;
     private DateTimeOffset? _lastMessageReceivedAt;
     private string? _lastError;
+    private Exception? _lastPollFailure;
     private int _consecutivePollFailures;
 
     /// <summary>Logger for the derived provider.</summary>
@@ -45,11 +44,23 @@ public abstract class PollingProviderBase
     /// <summary>Interval between poll cycles.</summary>
     protected TimeSpan PollInterval { get; }
 
-    protected PollingProviderBase(string providerName, ILogger logger, TimeSpan pollInterval)
+    protected PollingProviderBase(
+        string providerName,
+        ILogger logger,
+        TimeSpan pollInterval,
+        int maxReconnectAttempts = 5,
+        TimeSpan? retryBaseDelay = null,
+        TimeSpan? maxRetryDelay = null)
     {
         _providerName = providerName;
         Log = logger ?? throw new ArgumentNullException(nameof(logger));
         PollInterval = pollInterval;
+        _connectionSupervisor = new ProviderConnectionSupervisor(
+            providerName,
+            maxReconnectAttempts,
+            retryBaseDelay ?? TimeSpan.FromSeconds(1),
+            maxRetryDelay ?? TimeSpan.FromSeconds(30));
+        _connectionSupervisor.StateChanged += OnConnectionSupervisorStateChanged;
     }
 
     /// <summary>Raised whenever the connection diagnostics change (e.g. a lifecycle transition).</summary>
@@ -61,7 +72,7 @@ public abstract class PollingProviderBase
     // ── Protected state accessors (for provider-specific diagnostics snapshots) ──
 
     protected bool Disposed => _disposed;
-    protected bool Connected => _connected;
+    protected bool Connected => _connectionSupervisor.IsConnected;
     protected ProviderConnectionLifecycleState LifecycleState => _lifecycleState;
     protected DateTimeOffset? ConnectedAt => _connectedAt;
     protected DateTimeOffset? DisconnectedAt => _disconnectedAt;
@@ -86,80 +97,32 @@ public abstract class PollingProviderBase
 
         if (!IsEnabled)
         {
-            SetLifecycleState(ProviderConnectionLifecycleState.NotConfigured);
+            _lifecycleState = ProviderConnectionLifecycleState.NotConfigured;
             _lastError = NotEnabledError;
+            PublishDiagnosticsChanged();
             throw CreateNotEnabledException();
         }
 
-        await _lifecycleLock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            if (_connected)
-                return;
-
-            SetLifecycleState(ProviderConnectionLifecycleState.Connecting);
-            _pollCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            _connected = true;
-            _connectedAt = DateTimeOffset.UtcNow;
-            _lastError = null;
-            _consecutivePollFailures = 0;
-            SetLifecycleState(ProviderConnectionLifecycleState.Connected);
-            _pollTask = RunPollLoopAsync(_pollCts.Token);
-            Log.LogInformation("{Provider} connected (polling interval {Interval})", _providerName, PollInterval);
-        }
-        finally
-        {
-            _lifecycleLock.Release();
-        }
+        await _connectionSupervisor.ConnectAsync(StartPollingTransactionAsync, ct).ConfigureAwait(false);
+        Log.LogInformation("{Provider} connected (polling interval {Interval})", _providerName, PollInterval);
     }
 
     /// <summary>Stops the polling loop and marks the provider disconnected.</summary>
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
-        await _lifecycleLock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            if (!_connected)
-            {
-                if (_lifecycleState is not ProviderConnectionLifecycleState.NotConfigured)
-                    SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
-                return;
-            }
-
-            SetLifecycleState(ProviderConnectionLifecycleState.Disconnecting);
-            _connected = false;
-
-            if (_pollCts is not null)
-            {
-                await _pollCts.CancelAsync().ConfigureAwait(false);
-                if (_pollTask is not null)
-                {
-                    try
-                    { await _pollTask.WaitAsync(ct).ConfigureAwait(false); }
-                    catch (OperationCanceledException) { }
-                }
-                _pollCts.Dispose();
-                _pollCts = null;
-            }
-
-            _pollTask = null;
-            _disconnectedAt = DateTimeOffset.UtcNow;
-            SetLifecycleState(ProviderConnectionLifecycleState.Disconnected);
-            Log.LogInformation("{Provider} disconnected", _providerName);
-        }
-        finally
-        {
-            _lifecycleLock.Release();
-        }
+        await _connectionSupervisor.DisconnectAsync(StopPollingTransactionAsync, ct).ConfigureAwait(false);
+        Log.LogInformation("{Provider} disconnected", _providerName);
     }
 
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
             return;
-        _disposed = true;
+
         await DisconnectAsync().ConfigureAwait(false);
-        _lifecycleLock.Dispose();
+        _connectionSupervisor.StateChanged -= OnConnectionSupervisorStateChanged;
+        await _connectionSupervisor.DisposeAsync().ConfigureAwait(false);
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 
@@ -173,22 +136,28 @@ public abstract class PollingProviderBase
     /// </summary>
     public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
     {
+        var supervisor = _connectionSupervisor.GetSnapshot();
         var now = DateTimeOffset.UtcNow;
+        var lifecycleState = _lifecycleState is ProviderConnectionLifecycleState.NotConfigured
+            || (_lifecycleState == ProviderConnectionLifecycleState.Failed
+                && supervisor.LifecycleState == ProviderConnectionLifecycleState.Configured)
+                ? _lifecycleState
+                : supervisor.LifecycleState;
         return new WebSocketConnectionDiagnostics(
             ProviderName: _providerName,
-            LifecycleState: _lifecycleState,
+            LifecycleState: lifecycleState,
             WebSocketState: System.Net.WebSockets.WebSocketState.None,
-            IsConnected: _connected,
-            IsReconnecting: _connected && _consecutivePollFailures > 0,
-            ReconnectAttempts: _consecutivePollFailures,
-            LastConnectedAt: _connectedAt,
-            LastDisconnectedAt: _disconnectedAt,
+            IsConnected: supervisor.IsConnected,
+            IsReconnecting: supervisor.IsReconnecting,
+            ReconnectAttempts: supervisor.ReconnectAttempts,
+            LastConnectedAt: supervisor.LastConnectedAt ?? _connectedAt,
+            LastDisconnectedAt: supervisor.LastDisconnectedAt ?? _disconnectedAt,
             LastHeartbeatReceivedAt: _lastSuccessfulApiCallAt,
             LastMessageReceivedAt: _lastMessageReceivedAt,
-            LastReconnectAttemptAt: _lastPollAttemptAt,
-            LastError: _lastError,
-            LastFailureKind: null,
-            ConnectionAge: _connected && _connectedAt is { } connectedAt ? now - connectedAt : null,
+            LastReconnectAttemptAt: supervisor.LastReconnectAttemptAt ?? _lastPollAttemptAt,
+            LastError: _lastError ?? supervisor.LastError,
+            LastFailureKind: supervisor.LastFailureKind,
+            ConnectionAge: supervisor.ConnectionAge,
             IdleDuration: _lastMessageReceivedAt is { } lastMessageAt ? now - lastMessageAt : null,
             ActiveSubscriptions: ActiveSubscriptionCount);
     }
@@ -211,19 +180,52 @@ public abstract class PollingProviderBase
     protected void RecordPollAttempt() => _lastPollAttemptAt = DateTimeOffset.UtcNow;
     protected void RecordSuccessfulApiCall() => _lastSuccessfulApiCallAt = DateTimeOffset.UtcNow;
     protected void RecordMessageReceived() => _lastMessageReceivedAt = DateTimeOffset.UtcNow;
-    protected void RecordError(string message) => _lastError = message;
-    protected void ClearError() => _lastError = null;
+    protected void RecordError(string message)
+    {
+        _lastError = message;
+        _lastPollFailure = null;
+    }
+
+    protected void RecordTerminalPollFailure(Exception error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        _lastError = error.Message;
+        _lastPollFailure = error;
+
+        if (_connectionSupervisor.LifecycleState == ProviderConnectionLifecycleState.Configured)
+        {
+            _lifecycleState = ProviderConnectionLifecycleState.Failed;
+            PublishDiagnosticsChanged();
+        }
+    }
+
+    protected void ClearError()
+    {
+        _lastError = null;
+        _lastPollFailure = null;
+    }
     protected void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed, this);
 
-    /// <summary>Transitions the lifecycle state and raises <see cref="ConnectionDiagnosticsChanged"/>.</summary>
-    protected void SetLifecycleState(ProviderConnectionLifecycleState state)
+    private void OnConnectionSupervisorStateChanged(ProviderConnectionSupervisorSnapshot snapshot)
     {
-        if (_lifecycleState == state)
-            return;
+        _lifecycleState = snapshot.LifecycleState;
+        _connectedAt = snapshot.LastConnectedAt;
+        _disconnectedAt = snapshot.LastDisconnectedAt;
+        _consecutivePollFailures = snapshot.IsReconnecting ? snapshot.ReconnectAttempts : 0;
+        if (snapshot.LifecycleState == ProviderConnectionLifecycleState.Connected)
+            _lastError = null;
+        else if (!string.IsNullOrWhiteSpace(snapshot.LastError))
+            _lastError = snapshot.LastError;
 
-        _lifecycleState = state;
-        Log.LogInformation("{Provider} lifecycle state changed to {LifecycleState}", _providerName, state);
+        Log.LogInformation(
+            "{Provider} lifecycle state changed to {LifecycleState}",
+            _providerName,
+            snapshot.LifecycleState);
+        PublishDiagnosticsChanged();
+    }
 
+    private void PublishDiagnosticsChanged()
+    {
         try
         {
             ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
@@ -236,6 +238,48 @@ public abstract class PollingProviderBase
 
     // ── Polling loop ────────────────────────────────────────────────────────
 
+    private Task StartPollingTransactionAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        if (_pollTask is { IsCompleted: false })
+            return Task.CompletedTask;
+
+        _lastError = null;
+        _lastPollFailure = null;
+        _consecutivePollFailures = 0;
+        _pollCts?.Dispose();
+        _pollCts = CancellationTokenSource.CreateLinkedTokenSource(
+            _connectionSupervisor.ConnectionLifetimeToken);
+        _pollTask = RunPollLoopAsync(_pollCts.Token);
+        return Task.CompletedTask;
+    }
+
+    private async Task StopPollingTransactionAsync(CancellationToken ct)
+    {
+        var pollCts = _pollCts;
+        var pollTask = _pollTask;
+        _pollCts = null;
+        _pollTask = null;
+
+        if (pollCts is null)
+            return;
+
+        await pollCts.CancelAsync().ConfigureAwait(false);
+        if (pollTask is not null && pollTask.Id != Task.CurrentId)
+        {
+            try
+            {
+                await pollTask.WaitAsync(ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (pollCts.IsCancellationRequested)
+            {
+            }
+        }
+
+        pollCts.Dispose();
+    }
+
     private async Task RunPollLoopAsync(CancellationToken ct)
     {
         Log.LogInformation("{Provider} poll loop started", _providerName);
@@ -245,32 +289,52 @@ public abstract class PollingProviderBase
             {
                 await Task.Delay(PollInterval, ct).ConfigureAwait(false);
 
-                var pollSucceeded = await PollOnceAsync(ct).ConfigureAwait(false);
+                Exception? pollFailure = null;
+                try
+                {
+                    if (await PollOnceAsync(ct).ConfigureAwait(false))
+                        continue;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    pollFailure = ex;
+                    _lastError = ex.Message;
+                }
 
-                if (pollSucceeded)
-                {
-                    _consecutivePollFailures = 0;
-                    if (_lifecycleState is ProviderConnectionLifecycleState.Degraded)
-                        SetLifecycleState(ProviderConnectionLifecycleState.Connected);
-                }
-                else
-                {
-                    _consecutivePollFailures++;
-                    if (_lifecycleState is not ProviderConnectionLifecycleState.Failed)
-                        SetLifecycleState(ProviderConnectionLifecycleState.Degraded);
-                    var backoff = CalculatePollBackoff(_consecutivePollFailures);
-                    Log.LogWarning(
-                        "{Provider} polling degraded after {Failures} consecutive failed poll cycles; backing off for {Delay}",
-                        _providerName,
-                        _consecutivePollFailures,
-                        backoff);
-                    await Task.Delay(backoff, ct).ConfigureAwait(false);
-                }
+                _consecutivePollFailures++;
+                var failure = pollFailure ?? _lastPollFailure ?? new HttpRequestException(
+                    _lastError ?? $"{_providerName} polling cycle failed.");
+
+                if (!_connectionSupervisor.MarkConnectionLost(failure))
+                    break;
+
+                Log.LogWarning(
+                    "{Provider} polling degraded; starting one bounded supervised recovery transaction",
+                    _providerName);
+
+                var recovered = await _connectionSupervisor.ReconnectAsync(
+                    async token =>
+                    {
+                        if (!await PollOnceAsync(token).ConfigureAwait(false))
+                        {
+                            throw _lastPollFailure ?? new HttpRequestException(
+                                _lastError ?? $"{_providerName} polling recovery probe failed.");
+                        }
+                    },
+                    ct).ConfigureAwait(false);
+
+                if (!recovered)
+                    break;
             }
         }
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
+            _connectionSupervisor.RecordFailure(ex);
             Log.LogError(ex, "{Provider} poll loop failed unexpectedly", _providerName);
         }
         finally
@@ -279,10 +343,4 @@ public abstract class PollingProviderBase
         }
     }
 
-    /// <summary>Exponential backoff (capped at 30s) applied after consecutive failed poll cycles.</summary>
-    private static TimeSpan CalculatePollBackoff(int consecutiveFailures)
-        => Backoff.ExponentialDelay(
-            Math.Clamp(consecutiveFailures, 1, 5),
-            TimeSpan.FromSeconds(1),
-            TimeSpan.FromSeconds(30));
 }

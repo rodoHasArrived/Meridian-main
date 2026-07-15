@@ -244,6 +244,7 @@ export function useQuantLabScreenViewModel(
   const [parameterPhase, setParameterPhase] = useState<QuantParameterPhase>("idle");
   const [selectedTradeRowId, setSelectedTradeRowId] = useState<string | null>(null);
   const sourceRef = useRef(DEFAULT_QUANT_SOURCE);
+  const initialParameterScanScheduledRef = useRef(false);
 
   const updateSource = useCallback((nextSource: string) => {
     sourceRef.current = nextSource;
@@ -280,8 +281,12 @@ export function useQuantLabScreenViewModel(
     }
 
     let cancelled = false;
+    let requestStarted = false;
+    const isInitialScan = !initialParameterScanScheduledRef.current;
+    initialParameterScanScheduledRef.current = true;
     setParameterPhase("extracting");
     const timer = window.setTimeout(() => {
+      requestStarted = true;
       services.extractParameters(source)
         .then((response) => {
           if (cancelled) return;
@@ -293,11 +298,14 @@ export function useQuantLabScreenViewModel(
           if (cancelled) return;
           setParameterPhase("unavailable");
         });
-    }, 600);
+    }, isInitialScan ? 0 : 600);
 
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
+      if (isInitialScan && !requestStarted) {
+        initialParameterScanScheduledRef.current = false;
+      }
     };
   }, [services, source]);
 

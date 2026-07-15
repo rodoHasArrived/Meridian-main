@@ -79,4 +79,16 @@ describe("TrialBalanceTable", () => {
     const table = screen.getByRole("region", { name: "Trial balance" });
     expect(within(table).queryByText("Assets")).toBeNull();
   });
+
+  it("keeps the financial account identifier out of the default table reading path", () => {
+    const cashRow = row("cash", "Cash", "Asset", 100);
+    cashRow.financialAccountId = "acct-cash-internal";
+
+    render(<TrialBalanceTable rows={[cashRow]} />);
+
+    const table = screen.getByRole("region", { name: "Trial balance" });
+    expect(within(table).getByText("Cash")).toBeInTheDocument();
+    expect(within(table).getByText("Fund I")).toBeInTheDocument();
+    expect(within(table).queryByText("acct-cash-internal")).not.toBeInTheDocument();
+  });
 });

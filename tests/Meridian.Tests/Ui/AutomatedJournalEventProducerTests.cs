@@ -2,6 +2,8 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Ledger;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
@@ -40,15 +42,27 @@ public sealed class AutomatedJournalEventProducerTests
 
         production.Skipped.Should().BeEmpty();
         production.Events.Should().HaveCount(2);
+        var partnershipProjection = PartnershipInvestorAccountingProjector.Project(
+            new PartnershipInvestorAllocationInput(
+                "fund-alpha",
+                "2026-Q2",
+                AsOf,
+                BeginningNav: 1_000_000m,
+                EndingNavBeforeFees: 1_100_000m,
+                HighWaterMark: 1_050_000m,
+                ManagementFeeRate: 0.02m,
+                PerformanceFeeRate: 0.20m,
+                [new PartnershipInvestor("fund-alpha-investor", "Fund Alpha investor", 1m)]));
 
         var management = production.Events.Single(e => e.Kind == AutomatedJournalEventKind.ManagementFeeAccrued);
-        management.Amount.Should().Be(20_000m, "management fee is the period rate applied to beginning NAV");
+        management.Amount.Should().Be(partnershipProjection.ManagementFee,
+            "the scheduler and partnership projector must use one management-fee convention");
         management.Symbol.Should().Be("fund-alpha", "the draft projector normalizes symbols downstream");
         management.IdempotencyKey.Should().Be("mgmt-fee|fund-alpha|2026-Q2");
 
         var performance = production.Events.Single(e => e.Kind == AutomatedJournalEventKind.PerformanceFeeAccrued);
-        performance.Amount.Should().Be(6_000m,
-            "performance fee applies to the high-water excess net of the management fee: 20% × (1,100,000 − 1,050,000 − 20,000)");
+        performance.Amount.Should().Be(partnershipProjection.PerformanceFee,
+            "the scheduler and partnership projector must use the same high-water-mark excess net of management fees");
         performance.IdempotencyKey.Should().Be("perf-fee|fund-alpha|2026-Q2");
     }
 
@@ -589,6 +603,41 @@ public sealed class AutomatedJournalEventProducerTests
 
         result.Intake.Created.Should().BeEmpty("a period with no temporary-account balances has nothing to close");
         result.Intake.Skipped.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ClosePostingBridge_FinalizeHardClose_RechecksGateAndLeavesNonReadyPeriodSoftClosed()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+        var bridge = new AccountingClosePostingWorkbenchBridge(
+            runner,
+            fixture.Workbench,
+            (IManualJournalEntryLifecycleService)fixture.Workbench,
+            bookService);
+        var context = new AccountingClosePostingContext(
+            Guid.NewGuid(), "fund-alpha", BookId, "2026-06", "USD");
+        var command = new AccountingClosePostingCommand(
+            "fund-controller",
+            "Finalize the retained close package.",
+            [$"evidence://period/{ClosedPeriodId:D}/book/{BookId:D}/approval/close"],
+            OperationsActionOriginDto.HumanOperator,
+            Role: "Fund Controller");
+
+        var act = () => bridge.FinalizeHardCloseAsync(context, command);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*cannot be hard-closed*closing-entry gate is Required*");
+        await bookService.DidNotReceive().ClosePeriodAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<CloseLedgerPeriodRequest>(),
+            Arg.Any<CancellationToken>());
+        var retained = await bookService.ListPeriodsAsync(
+            new LedgerPeriodQuery(LedgerBookId: BookId));
+        retained.Should().ContainSingle().Which.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
     }
 
     private static ChartOfAccountsNodeDto Node(string path, string name, string type)

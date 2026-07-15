@@ -8,6 +8,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.DataSources;
+using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using NSubstitute;
 using Xunit;
@@ -152,23 +153,54 @@ public sealed class NyseMarketDataClientTests : IAsyncDisposable
     }
 
     [Fact]
-    public async Task ConnectionLoss_ReplacesReconnectCancellationSource()
+    public void StreamingRateLimitDiagnostics_ReflectFeed429AndRetryWindow()
     {
-        await using var reconnectClient = new NyseMarketDataClient(
-            _tradeCollector,
-            _depthCollector,
-            _quoteCollector,
-            CreateMockHttpClientFactory(),
-            new NYSEOptions { MaxReconnectAttempts = 0 });
+        var diagnostics = _client.Should().BeAssignableTo<IProviderRateLimitDiagnosticsSource>().Subject;
 
-        var source = GetSource(reconnectClient);
-        var before = GetReconnectCts(source);
+        InvokeSourceMessage(
+            """{"type":"error","code":429,"message":"Too many requests","retryAfterSeconds":15}""");
 
-        await InvokeConnectionLostAsync(source);
+        var snapshot = diagnostics.GetRateLimitDiagnosticsSnapshot();
+        snapshot.ProviderId.Should().Be("nyse");
+        snapshot.Surface.Should().Be(ProviderRateLimitSurfaces.Streaming);
+        snapshot.IsRateLimited.Should().BeTrue();
+        snapshot.Reason.Should().Be("provider-response");
+        snapshot.ResetAt.Should().NotBeNull();
+        snapshot.ResetAt!.Value.Should().BeAfter(DateTimeOffset.UtcNow.AddSeconds(10));
+    }
 
-        var after = GetReconnectCts(source);
-        after.Should().NotBeSameAs(before,
-            because: "each reconnect session should get a fresh cancellation source");
+    [Fact]
+    public async Task ReplaySubscriptionIntents_ReplaysEveryRealAdapterIntentExactlyOnce()
+    {
+        _client.SubscribeTrades(new SymbolConfig("AAPL"));
+        _client.SubscribeMarketDepth(new SymbolConfig("MSFT"));
+        var replayed = new List<(string Symbol, string Channel)>();
+
+        await GetSource().ReplaySubscriptionIntentsAsync((symbol, channel, _) =>
+        {
+            replayed.Add((symbol, channel));
+            return Task.CompletedTask;
+        });
+
+        replayed.Should().BeEquivalentTo(
+        [
+            ("AAPL", "trades"),
+            ("AAPL", "quotes"),
+            ("MSFT", "depth")
+        ]);
+        replayed.Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public async Task ReplaySubscriptionIntents_WhenOneReplayFails_PropagatesTransactionFailure()
+    {
+        _client.SubscribeTrades(new SymbolConfig("AAPL"));
+
+        var replay = () => GetSource().ReplaySubscriptionIntentsAsync(
+            (_, _, _) => Task.FromException(new IOException("provider rejected replay")));
+
+        await replay.Should().ThrowAsync<IOException>()
+            .WithMessage("*replay*");
     }
 
     private static IHttpClientFactory CreateMockHttpClientFactory()
@@ -207,10 +239,4 @@ public sealed class NyseMarketDataClientTests : IAsyncDisposable
         await task;
     }
 
-    private static CancellationTokenSource GetReconnectCts(NYSEDataSource source)
-    {
-        var field = typeof(NYSEDataSource).GetField("_reconnectCts", BindingFlags.Instance | BindingFlags.NonPublic);
-        field.Should().NotBeNull();
-        return field!.GetValue(source).Should().BeOfType<CancellationTokenSource>().Subject;
-    }
 }

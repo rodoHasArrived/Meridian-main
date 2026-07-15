@@ -17,6 +17,7 @@ using Meridian.Infrastructure.Adapters.Synthetic;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.YahooFinance;
+using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Contracts;
 using Serilog;
 using AlphaVantageBackfillConfig = Meridian.Core.Config.AlphaVantageConfig;
@@ -44,15 +45,18 @@ public sealed class ProviderFactory
 {
     private readonly AppConfig _config;
     private readonly IProviderCredentialResolver _credentialResolver;
+    private readonly ISymbolResolver? _symbolResolver;
     private readonly ILogger _log;
 
     public ProviderFactory(
         AppConfig config,
         IProviderCredentialResolver credentialResolver,
-        ILogger? log = null)
+        ILogger? log = null,
+        ISymbolResolver? symbolResolver = null)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _credentialResolver = credentialResolver ?? throw new ArgumentNullException(nameof(credentialResolver));
+        _symbolResolver = symbolResolver;
         _log = log ?? LoggingSetup.ForContext<ProviderFactory>();
     }
 
@@ -472,18 +476,11 @@ public sealed class ProviderFactory
     public CompositeHistoricalDataProvider CreateCompositeBackfillProvider(
         IReadOnlyList<IHistoricalDataProvider> providers)
     {
-        var openFigiApiKey = _config.Backfill?.Providers?.OpenFigi?.ApiKey;
         var enableSymbolResolution = _config.Backfill?.EnableSymbolResolution ?? true;
-
-        OpenFigiSymbolResolver? symbolResolver = null;
-        if (enableSymbolResolution)
-        {
-            symbolResolver = new OpenFigiSymbolResolver(openFigiApiKey, log: _log);
-        }
 
         return new CompositeHistoricalDataProvider(
             providers,
-            symbolResolver,
+            enableSymbolResolution ? _symbolResolver : null,
             enableCrossValidation: false,
             log: _log);
     }

@@ -648,6 +648,37 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_LockPeriodFailsClosedWhenPostingGateIsUnavailableAfterSignOffsPass()
+    {
+        var workflowId = Guid.Parse("47474747-4747-4747-4747-474747474748");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        var service = new AccountingCloseManagementService(workflowService);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+
+        var result = await service.LockClosePeriodAsync(
+            new LockClosePeriodRequestDto(
+                workflowId,
+                workflow.Version,
+                "controller-reviewer",
+                "Lock after all retained close controls pass.",
+                "report-pack-2026-03",
+                [$"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"]),
+            "controller-reviewer");
+
+        result.Should().NotBeNull();
+        result!.IsLocked.Should().BeFalse();
+        result.Plan!.ClosingEntriesGate.Should().NotBeNull();
+        result.Plan.ClosingEntriesGate!.State.Should().Be(ClosePostingGateStateDto.Unavailable);
+        result.Issues.Should().ContainSingle(issue =>
+            issue.Code == "PeriodClosePostingGateUnavailable" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        await workflowService.DidNotReceiveWithAnyArgs().CloseWorkflowAsync(default, default!, default);
+    }
+
+    [Fact]
     public async Task Scenario_ClosePlan_LockPeriodDelegatesToOperationsWorkflowAfterCloseControlsPass()
     {
         var workflowId = Guid.Parse("48484848-4848-4848-4848-484848484848");
@@ -690,7 +721,41 @@ public sealed class AccountingCloseServicesTests
                 [],
                 [],
                 NewVersion: workflow.Version + 1));
-        var service = new AccountingCloseManagementService(workflowService);
+        var postingWorkbench = Substitute.For<IAccountingClosePostingWorkbench>();
+        var readyGate = new ClosePostingGateDto(
+            "period-close-posting:test",
+            "Post closing entries",
+            ClosePostingGateStateDto.Posted,
+            true,
+            0m,
+            0,
+            "Retained closing entries are posted and temporary balances are zero.");
+        postingWorkbench.EnsureClosingDraftQueuedAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.FinalizeHardCloseAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new LedgerPeriodDto(
+                Guid.Parse("49494949-4949-4949-4949-494949494949"),
+                ledgerBookId,
+                2026,
+                3,
+                "2026-03",
+                new DateOnly(2026, 3, 1),
+                new DateOnly(2026, 3, 31),
+                LedgerPeriodStatusDto.HardClosed,
+                DateTimeOffset.Parse("2026-03-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-04-03T12:09:00Z"),
+                3));
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
         var reconciliationEvidence = $"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff";
         await service.SignOffCloseTaskAsync(
             new SignOffCloseTaskRequestDto(
@@ -752,6 +817,15 @@ public sealed class AccountingCloseServicesTests
                 request.CorrelationId == "close-lock-2026-03" &&
                 request.ChecklistControlApprovals.Count == 2 &&
                 request.EvidenceLinks!.Any(link => link.EvidenceId.Contains("period-lock", StringComparison.OrdinalIgnoreCase))),
+            Arg.Any<CancellationToken>());
+        await postingWorkbench.Received(1).FinalizeHardCloseAsync(
+            Arg.Is<AccountingClosePostingContext>(context =>
+                context.WorkflowId == workflowId &&
+                context.LedgerBookId == ledgerBookId &&
+                context.PeriodId == "2026-03"),
+            Arg.Is<AccountingClosePostingCommand>(command =>
+                command.Actor == "controller-reviewer" &&
+                command.ActionOrigin == OperationsActionOriginDto.HumanOperator),
             Arg.Any<CancellationToken>());
     }
 
@@ -1164,5 +1238,32 @@ public sealed class AccountingCloseServicesTests
             Blockers: [],
             NextActions: [],
             LedgerBookId: Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"));
+    }
+
+    private static async Task ApproveRequiredCloseTasksAsync(
+        AccountingCloseManagementService service,
+        Guid workflowId,
+        Guid ledgerBookId)
+    {
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "reconciliation-review",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained reconciliation close sign-off.",
+                [$"evidence:close-task:reconciliation-review:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
+        await service.SignOffCloseTaskAsync(
+            new SignOffCloseTaskRequestDto(
+                workflowId,
+                "report-certification",
+                "Controller",
+                ManualJournalEntryStatusDto.Approved,
+                "controller-reviewer",
+                "Retained report certification sign-off.",
+                [$"evidence:close-task:report-certification:Controller:2026-03:book:{ledgerBookId:D}:control-signoff"]),
+            "controller-reviewer");
     }
 }

@@ -2,6 +2,9 @@ using System.Text.Json;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Api.Quality;
+using Meridian.Application.Backfill;
+using Meridian.Application.DataQuality;
+using Meridian.Ui.Shared.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -64,10 +67,23 @@ public static class DataQualityEndpoints
     /// </summary>
     public static void MapDataQualityEndpoints(this WebApplication app, DataQualityMonitoringService qualityService)
     {
+        var compositeService = app.Services.GetService(typeof(ICompositeDataQualityReadService))
+            as ICompositeDataQualityReadService;
+        var remediationService = app.Services.GetService(typeof(IDataQualityGapRemediationService))
+            as IDataQualityGapRemediationService;
+
         // ==================== DASHBOARD ====================
 
-        app.MapGet(UiApiRoutes.QualityDashboard, () =>
-            HandleSync(() => Json(ToResponse(qualityService.GetDashboard()))));
+        app.MapGet(UiApiRoutes.QualityDashboard, async (CancellationToken ct) =>
+            await HandleAsync(async () =>
+            {
+                var legacy = ToResponse(qualityService.GetDashboard());
+                var composite = compositeService is null
+                    ? null
+                    : await compositeService.GetDashboardAsync(ct).ConfigureAwait(false);
+                var response = legacy with { Composite = composite };
+                return Results.Json(response, QualityApiJsonContext.Default.QualityDashboardResponse);
+            }, ct));
 
         app.MapGet(UiApiRoutes.QualityMetrics, () =>
             HandleSync(() => Json(qualityService.GetRealTimeMetrics())));
@@ -126,6 +142,59 @@ public static class DataQualityEndpoints
                 var targetDate = ParseDateOrToday(date);
                 return Json(qualityService.GapAnalyzer.AnalyzeGaps(symbol, targetDate));
             }));
+
+        app.MapPost(UiApiRoutes.QualityGapsBySymbol, async (
+            string symbol,
+            QualityGapRemediationRequest request,
+            CancellationToken ct) =>
+            await HandleAsync(async () =>
+            {
+                if (compositeService is null || remediationService is null)
+                {
+                    return Results.Problem(
+                        "Contextual quality-gap remediation is unavailable.",
+                        statusCode: StatusCodes.Status503ServiceUnavailable);
+                }
+
+                if (!compositeService.TryResolveGap(symbol, request.GapId, out var target))
+                {
+                    return Results.NotFound($"Gap {request.GapId} was not found for {symbol}.");
+                }
+
+                if (!string.Equals(request.DashboardVersion, target.DashboardVersion, StringComparison.Ordinal))
+                {
+                    return Results.Conflict(new
+                    {
+                        message = "The data-quality snapshot changed. Refresh before remediating this gap."
+                    });
+                }
+
+                var outcome = await remediationService
+                    .RequestDataQualityGapAsync(target.Gap, target.Provider, ct)
+                    .ConfigureAwait(false);
+                var response = new QualityGapRemediationResponse(
+                    GapId: target.GapId,
+                    Symbol: target.Gap.Symbol,
+                    Status: outcome.Outcome.ToString(),
+                    Provider: outcome.Provider,
+                    From: outcome.From,
+                    To: outcome.To,
+                    IdempotencyKey: outcome.IdempotencyKey,
+                    Message: DescribeRemediationOutcome(outcome.Outcome));
+
+                return outcome.Outcome switch
+                {
+                    AutoRemediationOutcome.Completed => Results.Json(
+                        response,
+                        QualityApiJsonContext.Default.QualityGapRemediationResponse),
+                    AutoRemediationOutcome.None => Results.Accepted(value: response),
+                    AutoRemediationOutcome.Skipped => Results.Conflict(response),
+                    _ => Results.Json(
+                        response,
+                        QualityApiJsonContext.Default.QualityGapRemediationResponse,
+                        statusCode: StatusCodes.Status502BadGateway)
+                };
+            }, ct));
 
         app.MapGet(UiApiRoutes.QualityGapsTimeline, (string symbol, string? date) =>
             HandleSync(() =>
@@ -359,6 +428,15 @@ public static class DataQualityEndpoints
             RecentErrors: dashboard.RecentErrors.Select(ToResponse).ToArray(),
             RecentAnomalies: dashboard.RecentAnomalies.Select(ToResponse).ToArray(),
             StaleSymbols: dashboard.StaleSymbols.ToArray());
+
+    private static string DescribeRemediationOutcome(AutoRemediationOutcome outcome) => outcome switch
+    {
+        AutoRemediationOutcome.Completed => "The gap backfill completed successfully.",
+        AutoRemediationOutcome.Skipped => "The gap was not queued because a remediation guardrail is active.",
+        AutoRemediationOutcome.FailedTransient => "The gap backfill failed with a transient provider error.",
+        AutoRemediationOutcome.FailedPermanent => "The gap backfill failed and requires operator review.",
+        _ => "The gap backfill request was accepted."
+    };
 
     private static QualityRealTimeMetricsResponse ToResponse(RealTimeQualityMetrics metrics) =>
         new(

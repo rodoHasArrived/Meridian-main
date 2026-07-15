@@ -6,7 +6,9 @@ import {
   normalizeLocalWorkstationRoute,
   normalizeWorkspacePath,
   resolveWorkstationRouteBreadcrumbLabel,
+  settingsProviderAdvancedRoute,
   settingsProviderConnectionRoute,
+  settingsProviderSetupRoute,
   WORKSPACES,
   WORKSTATION_PAGE_TAG_ROUTES,
   WORKSTATION_ROUTE_CATALOG,
@@ -48,10 +50,12 @@ describe("workspace metadata", () => {
     expect(workstationRoute("strategyFormulaWorkbench")).toBe("/strategy/formula-workbench");
     expect(workstationRoute("strategyLab")).toBe("/strategy/lab");
     expect(workstationRoute("portfolioAssetDetail")).toBe("/portfolio/asset-detail");
+    expect(workstationRoute("portfolioCashLadder")).toBe("/portfolio/cash-ladder");
     expect(workstationRoute("portfolioFamilyOffice")).toBe("/portfolio/family-office");
     expect(workstationRoute("accountingOperationsContinuity")).toBe("/accounting/operations-continuity");
     expect(workstationRoute("accountingEntitySetup")).toBe("/accounting/entity-setup");
     expect(workstationRoute("accountingExceptions")).toBe("/accounting/exceptions");
+    expect(workstationRoute("accountingExternalGlReconciliation")).toBe("/accounting/reconciliation/external-gl");
     expect(workstationRoute("reportingReportBuilder")).toBe("/reporting/report-builder");
     expect(workstationRoute("reportingScheduled")).toBe("/reporting/scheduled");
     expect(workstationRoute("reportingRunStatus")).toBe("/reporting/run-status");
@@ -59,10 +63,13 @@ describe("workspace metadata", () => {
     expect(workstationRoute("reportingExports")).toBe("/reporting/exports");
     expect(workstationRoute("reportingGovernance")).toBe("/reporting/governance");
     expect(workstationRoute("dataExports")).toBe("/data/exports");
+    expect(workstationRoute("dataImport")).toBe("/data/import");
     expect(workstationRoute("dataQuery")).toBe("/data/query");
     expect(workstationRoute("settingsAccess")).toBe("/settings/access");
+    expect(workstationRoute("settingsAccountingSystems")).toBe("/settings/accounting-systems");
     expect(workstationRoute("settingsProviders")).toBe("/settings/providers");
     expect(workstationRoute("settingsDiagnostics")).toBe("/settings/diagnostics");
+    expect(workstationRoute("settingsDiagnosticsAdvanced")).toBe("/settings/diagnostics/advanced");
     expect(workstationRoute("settingsFeatureCoverage")).toBe("/settings/feature-coverage");
     expect(workstationRoute("settingsAlpacaProviderSetup")).toBe("/settings#alpaca-provider-setup");
     expect(workstationRouteWithQuery("dataQuotes", { symbol: "BRK/B", provider: "Alpaca", empty: null })).toBe(
@@ -74,6 +81,8 @@ describe("workspace metadata", () => {
       "/settings#backend-capability-coverage"
     );
     expect(settingsProviderConnectionRoute("alpaca-paper")).toBe("/settings#provider-alpaca-paper-connection");
+    expect(settingsProviderSetupRoute("Alpaca Paper")).toBe("/settings/providers/alpaca%20paper/setup");
+    expect(settingsProviderAdvancedRoute("Polygon")).toBe("/settings/providers/polygon/advanced");
   });
 
   it("normalizes legacy workspace URLs to canonical roots", () => {
@@ -87,7 +96,10 @@ describe("workspace metadata", () => {
 
   it("preserves legacy suffix, query, and hash when building redirects", () => {
     expect(legacyWorkspaceRedirect("/data-operations/backfills", "?provider=alpaca", "#queue")).toBe(
-      "/data/backfills?provider=alpaca#queue"
+      "/data/operations?provider=alpaca#queue"
+    );
+    expect(legacyWorkspaceRedirect("/data/backfills", "?provider=alpaca", "#queue")).toBe(
+      "/data/operations?provider=alpaca#queue"
     );
     expect(legacyWorkspaceRedirect("/data/security-master/identity", "?query=GS", "#conflicts")).toBe(
       "/accounting/security-master/identity?query=GS#conflicts"
@@ -108,10 +120,21 @@ describe("workspace metadata", () => {
       "Operations Record"
     );
     expect(resolveWorkstationRouteBreadcrumbLabel("/accounting/journal-entries/detail", workspaceForKey("accounting")))
-      .toBe("Journal Entry / Detail");
+      .toBe("Journal Entries / Detail");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/accounting/approvals/inbox", workspaceForKey("accounting")))
+      .toBe("Approvals / Inbox");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/accounting/exceptions", workspaceForKey("accounting")))
+      .toBe("Exceptions");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/accounting/configure", workspaceForKey("accounting")))
+      .toBe("Configure");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/reporting/report-packs", workspaceForKey("reporting")))
+      .toBe("Report Packs");
     expect(resolveWorkstationRouteBreadcrumbLabel("/workstation/data/quotes", workspaceForKey("data"))).toBe("Quotes");
     expect(resolveWorkstationRouteBreadcrumbLabel("/portfolio/custom-beta-route", workspaceForKey("portfolio"))).toBe(
       "Custom Beta Route"
+    );
+    expect(resolveWorkstationRouteBreadcrumbLabel("/settings/accounting-systems", workspaceForKey("settings"))).toBe(
+      "Accounting Systems"
     );
   });
 

@@ -359,3 +359,65 @@ public sealed class SymbolBackfillProgress
         ? CompletedAt.Value - StartedAt.Value
         : null;
 }
+
+/// <summary>
+/// One provider attempt in the live fallback chain for a requested symbol/range.
+/// </summary>
+public sealed record BackfillProviderAttemptProgressDto(
+    string Symbol,
+    string Provider,
+    DateOnly? RangeStart,
+    DateOnly? RangeEnd,
+    int ProviderAttempt,
+    int RetryRound,
+    string? Operation,
+    string? Status,
+    int BarsDownloaded,
+    DateTimeOffset StartedAt,
+    DateTimeOffset ObservedAt,
+    string? Error);
+
+/// <summary>
+/// Current provider-attempt posture for a single symbol in an active or recently completed run.
+/// </summary>
+public sealed record BackfillProviderSymbolProgressDto(
+    string Symbol,
+    DateOnly? RangeStart,
+    DateOnly? RangeEnd,
+    int TotalDays,
+    int CompletedDays,
+    double PercentComplete,
+    bool IsCompleted,
+    bool IsFailed,
+    bool IsSkipped,
+    string? CurrentProvider,
+    string? CurrentStatus,
+    int ProviderAttempt,
+    int RetryRound,
+    string? Operation,
+    DateTimeOffset? AttemptStartedAt,
+    DateTimeOffset? LastUpdatedAt,
+    string? Error);
+
+/// <summary>
+/// Bounded live provider-attempt snapshot shared by browser and desktop clients.
+/// </summary>
+public sealed record BackfillProviderProgressSnapshotDto(
+    IReadOnlyDictionary<string, BackfillProviderSymbolProgressDto> Symbols,
+    IReadOnlyList<BackfillProviderAttemptProgressDto> RecentProviderAttempts,
+    double OverallPercentComplete,
+    int TotalSymbols,
+    int CompletedSymbols,
+    int FailedSymbols,
+    long DroppedProviderNotifications,
+    DateTimeOffset Timestamp);
+
+/// <summary>
+/// Response from <c>/api/backfill/progress</c>. Legacy last-run fields remain available while the
+/// additive provider-progress snapshot exposes current range and fallback-attempt evidence.
+/// </summary>
+public sealed record BackfillRunProgressResponse(
+    BackfillResult? LastRun,
+    bool IsActive,
+    BackfillProviderProgressSnapshotDto ProviderProgress,
+    DateTimeOffset Timestamp);

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import { evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
+import { buildStrategyStatusAnnouncement } from "@/screens/strategy-screen.status-announcement";
 import type {
   MetricSnapshot,
   MetricsDiff,
@@ -264,6 +265,7 @@ export interface StrategyRunInlineDetailState {
   evidenceAction: StrategyEvidenceAction;
   openDetailLabel: string;
   fields: StrategyRunDetailSummaryRow[];
+  technicalFields: StrategyRunDetailSummaryRow[];
 }
 
 export interface StrategyRunDetailState {
@@ -278,6 +280,7 @@ export interface StrategyRunDetailState {
   modeBadgeVariant: StrategyRunDetailBadgeVariant;
   summaryLabel: string;
   summaryRows: StrategyRunDetailSummaryRow[];
+  technicalRows: StrategyRunDetailSummaryRow[];
   notesLabel: string;
   notesText: string;
   closeButtonLabel: string;
@@ -2763,11 +2766,13 @@ export function buildRunDetail(run: StrategyRunRecord): StrategyRunDetailState {
     modeBadgeVariant: modeBadgeVariantFor(run.mode),
     summaryLabel: "Selected strategy run evidence",
     summaryRows: [
-      { id: "run-id", label: "Run ID", value: formatText(run.id) },
       { id: "status", label: "Status", value: statusText },
       { id: "pnl", label: "P&L", value: formatText(run.pnl) },
       { id: "sharpe", label: "Sharpe", value: formatText(run.sharpe) },
       { id: "updated", label: "Updated", value: formatText(run.lastUpdated) }
+    ],
+    technicalRows: [
+      { id: "run-id", label: "Run ID", value: formatText(run.id) }
     ],
     notesLabel: "Operator notes",
     notesText: formatOptionalNotes(run.notes),
@@ -2794,12 +2799,14 @@ export function buildInlineRunDetail(run: StrategyRunRecord, panelId = STRATEGY_
     evidenceAction: buildStrategyEvidenceAction(run)!,
     openDetailLabel: `Open ${title} run detail dialog`,
     fields: [
-      { id: "run-id", label: "Run ID", value: formatText(run.id) },
       { id: "status", label: "Status", value: statusText },
       { id: "pnl", label: "P&L", value: formatText(run.pnl) },
       { id: "sharpe", label: "Sharpe", value: formatText(run.sharpe) },
       { id: "updated", label: "Updated", value: formatText(run.lastUpdated) },
       { id: "notes", label: "Notes", value: formatOptionalNotes(run.notes) }
+    ],
+    technicalFields: [
+      { id: "run-id", label: "Run ID", value: formatText(run.id) }
     ]
   };
 }
@@ -3427,66 +3434,4 @@ function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | 
   }
 
   return undefined;
-}
-
-function buildStrategyStatusAnnouncement({
-  activeCommand,
-  actionError,
-  comparison,
-  runDiff,
-  promotionHistory,
-  comparisonLoaded = false,
-  runDiffLoaded = false,
-  promotionHistoryLoaded = false
-}: {
-  activeCommand: StrategyCommand | null;
-  actionError: string | null;
-  comparison: RunComparisonRow[];
-  runDiff: RunDiff | null;
-  promotionHistory: PromotionRecord[];
-  comparisonLoaded?: boolean;
-  runDiffLoaded?: boolean;
-  promotionHistoryLoaded?: boolean;
-}): string {
-  if (activeCommand === "compare") {
-    return "Comparing selected strategy runs.";
-  }
-
-  if (activeCommand === "diff") {
-    return "Diffing selected strategy runs.";
-  }
-
-  if (activeCommand === "history") {
-    return "Loading promotion history.";
-  }
-
-  if (actionError) {
-    return `Strategy command failed: ${actionError}`;
-  }
-
-  if (runDiff) {
-    return `Run diff ready for ${runDiff.baseStrategyName} and ${runDiff.targetStrategyName}.`;
-  }
-
-  if (runDiffLoaded) {
-    return "No run diff returned for the selected pair.";
-  }
-
-  if (comparison.length > 0) {
-    return `${comparison.length} comparison ${comparison.length === 1 ? "row" : "rows"} loaded.`;
-  }
-
-  if (comparisonLoaded) {
-    return "No comparison rows returned for the selected pair.";
-  }
-
-  if (promotionHistory.length > 0) {
-    return `${promotionHistory.length} promotion history ${promotionHistory.length === 1 ? "record" : "records"} loaded.`;
-  }
-
-  if (promotionHistoryLoaded) {
-    return "No promotion history records returned.";
-  }
-
-  return "";
 }

@@ -36,7 +36,7 @@ public static class DailyPortfolioPricingDraftBuilder
                 RetainedBy: input.Policy.ApprovedBy,
                 SubjectId: line.Symbol,
                 Description: FormattableString.Invariant(
-                    $"{line.Symbol} marked at {line.MarkPrice} via {line.PriceSource}")).Normalize())
+                    $"{line.Symbol} marked at {line.MarkPrice} via {line.PriceSource}; observed {(line.PriceObservedOn.HasValue ? line.PriceObservedOn.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "unknown")}; confidence {line.Confidence}")).Normalize())
             .ToArray();
 
         var description = FormattableString.Invariant(

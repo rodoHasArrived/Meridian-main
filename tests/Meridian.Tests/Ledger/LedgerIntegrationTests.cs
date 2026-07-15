@@ -947,6 +947,58 @@ public sealed class LedgerIntegrationTests
     }
 
     [Fact]
+    public void Ledger_DimensionalAsOfBalanceIndex_PreservesPartialScopeAndOutOfOrderSemantics()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var cash = new LedgerAccount("Assets:Cash", LedgerAccountType.Asset);
+        var revenue = new LedgerAccount("Revenue:Sales", LedgerAccountType.Revenue);
+        var t1 = new DateTimeOffset(2026, 1, 1, 10, 0, 0, TimeSpan.Zero);
+        var t2 = t1.AddHours(1);
+        var fundACore = new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core");
+        var fundAAlternatives = new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "alternatives");
+        var fundBCore = new LedgerLineDimensionSet(FundId: "fund-b", SleeveId: "core");
+
+        ledger.PostLines(t2, "fund A later sale",
+        [
+            (cash, 50m, 0m, fundACore),
+            (revenue, 0m, 50m, fundACore)
+        ]);
+        ledger.PostLines(t1, "fund B sale",
+        [
+            (cash, 70m, 0m, fundBCore),
+            (revenue, 0m, 70m, fundBCore)
+        ]);
+        ledger.PostLines(t1, "fund A core sale",
+        [
+            (cash, 100m, 0m, fundACore),
+            (revenue, 0m, 100m, fundACore)
+        ]);
+        ledger.PostLines(t1, "fund A alternatives sale",
+        [
+            (cash, 30m, 0m, fundAAlternatives),
+            (revenue, 0m, 30m, fundAAlternatives)
+        ]);
+
+        var fundAAtT1 = ledger.TrialBalanceAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: " FUND-A "));
+        var fundACoreAtT1 = ledger.TrialBalanceAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
+        var fundACoreAtT2 = ledger.TrialBalanceAsOf(
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
+        var allFundsAtT1 = ledger.TrialBalanceAsOf(t1, lineDimensions: new LedgerLineDimensionSet());
+
+        fundAAtT1[cash].Should().Be(130m);
+        fundAAtT1[revenue].Should().Be(130m);
+        fundACoreAtT1[cash].Should().Be(100m);
+        fundACoreAtT2[cash].Should().Be(150m);
+        allFundsAtT1[cash].Should().Be(200m,
+            "an empty dimension filter retains the existing no-filter semantics");
+    }
+
+    [Fact]
     public void LedgerEntry_BothZero_ThrowsWithDistinctMessage()
     {
         var journalId = Guid.NewGuid();

@@ -1,9 +1,9 @@
-import { screen } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import * as api from "@/lib/api";
 import { ReportRunParametersScreen } from "@/screens/report-run-parameters-screen";
-import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
 import type { AccountingWorkspaceResponse, ManualJournalEntryWorkbench, ReportingRunResult } from "@/types";
 
 vi.mock("@/lib/api", async () => {
@@ -91,10 +91,50 @@ describe("ReportRunParametersScreen", () => {
     expect(screen.getByRole("region", { name: "Saved report run views" })).toHaveTextContent("Monthly close package");
     expect(screen.getByRole("button", { name: "Configure" })).toBeInTheDocument();
     expect(screen.getByRole("complementary", { name: "Report run setup context" })).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Report run next actions" })).toHaveTextContent("Review breaks");
-    expect(screen.getByRole("list", { name: "Report run readiness cues" })).toHaveTextContent("Open reconciliation breaks");
+    const nextActions = screen.getByRole("list", { name: "Report run next actions" });
+    expect(nextActions).toHaveTextContent("Review breaks");
+    expect(nextActions).toHaveTextContent("1 open reconciliation break(s)");
+    const readinessCues = screen.getByRole("list", { name: "Report run readiness cues" });
+    expect(readinessCues).toHaveTextContent("Open reconciliation breaks");
+    expect(readinessCues).toHaveTextContent("1");
     expect(screen.getByText("No recent report runs are loaded. Select a template to prepare the first run.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Or browse the Report Library" })).toHaveAttribute("href", "/reporting/library");
+  });
+
+  it("presents recent run names and review states without raw slugs", async () => {
+    const reviewData: AccountingWorkspaceResponse = {
+      ...reportingData,
+      reporting: {
+        ...reportingData.reporting,
+        recentRuns: [{
+          runId: "run-tb-review",
+          templateId: "trial-balance-pack",
+          family: "Financial Statements",
+          status: "AwaitingApproval",
+          trigger: "Manual",
+          asOfDate: null,
+          attemptCount: 1,
+          sectionCount: 1,
+          lineageLinkedSections: 1,
+          artifacts: [],
+          auditActions: [],
+          failureReason: null,
+          drilldownLinks: [],
+          nextActions: []
+        }]
+      }
+    };
+
+    renderWithRouter(
+      <ReportRunParametersScreen data={reviewData} accounting={accountingData} />,
+      { initialEntries: ["/reporting/run"] }
+    );
+    await waitForAsyncEffects();
+
+    const recentRuns = screen.getByRole("list", { name: "Recent report runs" });
+    expect(recentRuns).toHaveTextContent("Trial Balance Pack");
+    expect(recentRuns).toHaveTextContent("Awaiting approval · No as-of date retained");
+    expect(recentRuns).not.toHaveTextContent("trial-balance-pack");
   });
 
   it("has no basic accessibility violations in the initial run setup state", async () => {
@@ -130,7 +170,60 @@ describe("ReportRunParametersScreen", () => {
       "trial-balance-pack:1.0"
     );
 
-    expect(await screen.findByRole("region", { name: "Exports report runner" })).toHaveTextContent("Trial Balance Pack");
+    expect(await screen.findByRole("region", { name: "Report run form" })).toHaveTextContent("Trial Balance Pack");
+  });
+
+  it("runs the template selected inside the active parameters form", async () => {
+    const user = userEvent.setup();
+    const selectableData: AccountingWorkspaceResponse = {
+      ...reportingData,
+      reporting: {
+        ...reportingData.reporting,
+        templates: [
+          { ...reportingData.reporting.templates![0], lifecycleStatus: "Approved" },
+          {
+            templateId: "holdings-pack",
+            family: "Holdings",
+            name: "Holdings Pack",
+            version: "2.0",
+            sections: ["holdings"],
+            lifecycleStatus: "Approved"
+          }
+        ]
+      }
+    };
+    vi.mocked(api.runReportingNow).mockResolvedValue({
+      run: {
+        runId: "run-holdings-1",
+        templateId: "holdings-pack",
+        family: "Holdings",
+        status: "Queued",
+        trigger: "Manual",
+        asOfDate: "2026-06-30",
+        attemptCount: 1,
+        sectionCount: 1,
+        lineageLinkedSections: 0,
+        artifacts: [],
+        auditActions: [],
+        failureReason: null,
+        drilldownLinks: [],
+        nextActions: []
+      }
+    });
+
+    renderWithRouter(
+      <ReportRunParametersScreen data={selectableData} accounting={accountingData} />,
+      { initialEntries: ["/reporting/run?templateId=trial-balance-pack%3A1.0"] }
+    );
+    await waitForAsyncEffects();
+
+    await user.selectOptions(screen.getByLabelText("Report run template"), "holdings-pack:2.0");
+    expect(screen.getByLabelText("Report run template")).toHaveValue("holdings-pack:2.0");
+    await user.click(screen.getByRole("button", { name: "Run Holdings Pack" }));
+
+    await waitFor(() => expect(api.runReportingNow).toHaveBeenCalledWith(
+      expect.objectContaining({ templateId: "holdings-pack" })
+    ));
   });
 
   it("renders a template-not-found state for an unknown templateId", async () => {
@@ -139,7 +232,49 @@ describe("ReportRunParametersScreen", () => {
     expect(await screen.findByText("Template not found")).toBeInTheDocument();
   });
 
-  it("renders the readiness gate with open breaks and the exports runner for a known template", async () => {
+  it("hydrates cloned run context into the governed run form", async () => {
+    const cloneData: AccountingWorkspaceResponse = {
+      ...reportingData,
+      reporting: {
+        ...reportingData.reporting,
+        recentRuns: [{
+          runId: "run-tb-released",
+          templateId: "trial-balance-pack",
+          family: "Financial Statements",
+          status: "Released",
+          trigger: "Manual",
+          asOfDate: "2026-05-31",
+          attemptCount: 1,
+          sectionCount: 1,
+          lineageLinkedSections: 1,
+          artifacts: [],
+          auditActions: [],
+          failureReason: null,
+          drilldownLinks: [],
+          nextActions: []
+        }]
+      }
+    };
+
+    const view = renderWithRouter(
+      <ReportRunParametersScreen data={null} accounting={accountingData} />,
+      { initialEntries: ["/reporting/run?cloneRunId=run-tb-released"] }
+    );
+    expect(screen.getByText("Loading report parameters")).toBeInTheDocument();
+
+    view.rerender(
+      <TestMemoryRouter initialEntries={["/reporting/run?cloneRunId=run-tb-released"]}>
+        <ReportRunParametersScreen data={cloneData} accounting={accountingData} />
+      </TestMemoryRouter>
+    );
+    await waitForAsyncEffects();
+
+    expect(screen.getByRole("region", { name: "Report run form" })).toHaveTextContent("Trial Balance Pack");
+    expect(screen.getByLabelText("Report run template")).toHaveValue("trial-balance-pack:1.0");
+    expect(screen.getByLabelText("Report run as-of date")).toHaveValue("2026-05-31");
+  });
+
+  it("renders the readiness gate with open breaks and the governed run form for a known template", async () => {
     await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
 
     expect(screen.getByRole("heading", { name: "Report Parameters" })).toBeInTheDocument();
@@ -153,7 +288,7 @@ describe("ReportRunParametersScreen", () => {
     expect(await screen.findByText("Warnings present")).toBeInTheDocument();
     expect(screen.getByText("Open reconciliation breaks")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Review breaks" })).toHaveAttribute("href", "/accounting/reconciliation");
-    expect(screen.getByRole("region", { name: "Exports report runner" })).toHaveTextContent("Trial Balance Pack");
+    expect(screen.getByRole("region", { name: "Report run form" })).toHaveTextContent("Trial Balance Pack");
   });
 
   it("submits the run and shows the result via the shared status view", async () => {
@@ -177,9 +312,15 @@ describe("ReportRunParametersScreen", () => {
 
     await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
 
-    await user.click(await screen.findByRole("button", { name: "Run Trial Balance Pack from Exports" }));
+    await user.click(await screen.findByRole("button", { name: "Run Trial Balance Pack" }));
 
     expect(await screen.findByText("Trial Balance Pack run created.")).toBeInTheDocument();
+    const status = screen.getByRole("status", { name: "Report run status" });
+    expect(status).toHaveTextContent("Run retained for audit review");
+    const runReference = within(status).getByText("Run reference").closest("details");
+    expect(runReference).not.toBeNull();
+    expect(runReference).not.toHaveAttribute("open");
+    expect(within(runReference as HTMLElement).getByText("run-42")).toBeInTheDocument();
     expect(api.runReportingNow).toHaveBeenCalledWith(
       expect.objectContaining({ templateId: "trial-balance-pack" })
     );

@@ -5,13 +5,14 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/data/empty-state";
+import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   MetricCard,
   KeyValueGrid
 } from "@/components/data/concrete";
 import { ScreenLayout } from "@/components/ui/screen-layout";
-import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
+import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
 import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
@@ -134,13 +135,37 @@ export function FamilyOfficeScreen({ entityStructure = null }: { entityStructure
       title={vm.route.title}
       scope={`${vm.route.workspaceLabel} / ${vm.route.label}`}
       description={vm.route.description}
-      actions={
-        <TrustStrip items={vm.statusChips.map((chip): TrustStripItem => ({ label: chip.label, value: chip.value, state: "muted" }))} />
-      }
     >
-      {vm.route.disabledReason ? (
-        <p className="text-sm text-warning">{vm.route.disabledReason}</p>
-      ) : null}
+      <OperationalTrustSummary
+        label="Family office data confidence"
+        source={{
+          value: entityStructure?.displayName ?? "Not connected",
+          detail: "Entity, portfolio, accounting, and private-asset sources",
+          tone: entityStructure ? "ready" : "blocked"
+        }}
+        scope={{
+          value: entityStructure ? `${entityStructure.entities.length} entities` : "No family entities",
+          detail: entityStructure ? `${entityStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
+          tone: entityStructure?.entities.length ? "ready" : "blocked"
+        }}
+        freshness={{
+          value: entityStructure?.asOfDate ?? "Unavailable",
+          detail: "Latest consolidated family-office evidence",
+          tone: entityStructure?.asOfDate ? "ready" : "unknown"
+        }}
+        completeness={{
+          value: entityStructure
+            ? `${entityStructure.privateAssets.length} private assets · ${entityStructure.commitments.length} commitments`
+            : "No records loaded",
+          detail: "Private-asset and commitment coverage",
+          tone: entityStructure ? "ready" : "blocked"
+        }}
+        blocker={vm.notConnected ? {
+          value: "Entity setup required",
+          detail: "Connect governed sources before using consolidated values for decisions",
+          tone: "blocked"
+        } : undefined}
+      />
 
       {vm.notConnected ? (
       <Card className="panel-surface border-border/80">
