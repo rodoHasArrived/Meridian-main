@@ -53,11 +53,12 @@ export function resolveDataWorkstream(pathname: string): DataOperationsWorkstrea
     return "backfills";
   }
 
-  if (pathname.includes("/operations")) {
+  const segments = pathname.split("/");
+  if (segments.includes("operations")) {
     return "operations";
   }
 
-  if (pathname.includes("/assurance")) {
+  if (segments.includes("assurance")) {
     return "assurance";
   }
 
