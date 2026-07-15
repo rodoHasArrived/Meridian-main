@@ -14,6 +14,14 @@ public enum AutomatedJournalScheduleKind
     DividendCapture = 1
 }
 
+/// <summary>Why a durable schedule-history row was appended.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AutomatedJournalScheduleHistoryKind>))]
+public enum AutomatedJournalScheduleHistoryKind
+{
+    Execution = 0,
+    Rearm = 1
+}
+
 /// <summary>Durable audit entry for one deterministic scheduled execution.</summary>
 public sealed record AutomatedJournalScheduleRunHistory(
     string RunKey,
@@ -29,7 +37,11 @@ public sealed record AutomatedJournalScheduleRunHistory(
     DateOnly? PeriodStart = null,
     DateOnly? PeriodEnd = null,
     decimal? EvidenceConfidenceScore = null,
-    AutomatedJournalEvidenceQualityDto? EvidenceQuality = null)
+    AutomatedJournalEvidenceQualityDto? EvidenceQuality = null,
+    AutomatedJournalScheduleHistoryKind HistoryKind = AutomatedJournalScheduleHistoryKind.Execution,
+    string? Actor = null,
+    long? PreviousVersion = null,
+    long? ResultVersion = null)
 {
     public IReadOnlyList<Guid> JournalEntryIds { get; init; } = JournalEntryIds ?? [];
 
@@ -83,7 +95,8 @@ public sealed record AutomatedJournalScheduleWorkItem(
     string? CreatedBy = null,
     string? LastConfiguredBy = null,
     decimal? LastEvidenceConfidenceScore = null,
-    AutomatedJournalEvidenceQualityDto? LastEvidenceQuality = null)
+    AutomatedJournalEvidenceQualityDto? LastEvidenceQuality = null,
+    long Version = 0)
 {
     public IReadOnlyList<DividendAccrualPosition> Positions { get; init; } = Positions ?? [];
 
@@ -106,6 +119,25 @@ public interface IAutomatedJournalScheduleStore
     Task<AutomatedJournalScheduleWorkItem> SaveAsync(
         AutomatedJournalScheduleWorkItem workItem,
         CancellationToken ct = default);
+}
+
+/// <summary>Raised when a schedule save loses an optimistic-concurrency race.</summary>
+public sealed class AutomatedJournalScheduleConcurrencyException : InvalidOperationException
+{
+    public AutomatedJournalScheduleConcurrencyException(string scheduleId, long expectedVersion, long actualVersion)
+        : base(
+            $"Automated journal schedule '{scheduleId}' version is stale. Expected {expectedVersion}, current {actualVersion}.")
+    {
+        ScheduleId = scheduleId;
+        ExpectedVersion = expectedVersion;
+        ActualVersion = actualVersion;
+    }
+
+    public string ScheduleId { get; }
+
+    public long ExpectedVersion { get; }
+
+    public long ActualVersion { get; }
 }
 
 /// <summary>In-memory source for deterministic tests and lightweight composition.</summary>
@@ -158,6 +190,25 @@ public sealed class InMemoryAutomatedJournalScheduleStore :
                     $"Automated journal schedule '{normalized.ScheduleId}' belongs to a different immutable identity scope.");
             }
 
+            if (existing is null)
+            {
+                if (normalized.Version != 0)
+                {
+                    throw new AutomatedJournalScheduleConcurrencyException(
+                        normalized.ScheduleId,
+                        normalized.Version,
+                        actualVersion: 0);
+                }
+            }
+            else if (normalized.Version != existing.Version)
+            {
+                throw new AutomatedJournalScheduleConcurrencyException(
+                    normalized.ScheduleId,
+                    normalized.Version,
+                    existing.Version);
+            }
+
+            normalized = normalized with { Version = checked((existing?.Version ?? 0) + 1) };
             _items[normalized.ScheduleId] = normalized;
         }
 
@@ -168,12 +219,18 @@ public sealed class InMemoryAutomatedJournalScheduleStore :
         string? fundProfileId,
         Guid? ledgerBookId,
         string? periodId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null,
+        string? entityId = null)
         => AutomatedJournalScheduleProjection.ProjectStatus(
             await ListAsync(ct).ConfigureAwait(false),
             fundProfileId,
             ledgerBookId,
-            periodId);
+            periodId,
+            tenantId,
+            companyId,
+            entityId);
 }
 
 /// <summary>Atomic JSON-backed source with schedule state and run history in one snapshot.</summary>
@@ -238,13 +295,33 @@ public sealed class FileAutomatedJournalScheduleStore :
                         $"Automated journal schedule '{normalized.ScheduleId}' belongs to a different immutable identity scope.");
                 }
 
+                if (existing is null)
+                {
+                    if (normalized.Version != 0)
+                    {
+                        throw new AutomatedJournalScheduleConcurrencyException(
+                            normalized.ScheduleId,
+                            normalized.Version,
+                            actualVersion: 0);
+                    }
+                }
+                else if (normalized.Version != existing.Version)
+                {
+                    throw new AutomatedJournalScheduleConcurrencyException(
+                        normalized.ScheduleId,
+                        normalized.Version,
+                        existing.Version);
+                }
+
+                var versioned = normalized with { Version = checked((existing?.Version ?? 0) + 1) };
+
                 var workItems = snapshot.WorkItems
                     .Where(item => !string.Equals(item.ScheduleId, normalized.ScheduleId, StringComparison.OrdinalIgnoreCase))
-                    .Append(normalized)
+                    .Append(versioned)
                     .OrderBy(static item => item.ScheduledForUtc)
                     .ThenBy(static item => item.ScheduleId, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
-                return (new AutomatedJournalScheduleSnapshot(workItems), normalized);
+                return (new AutomatedJournalScheduleSnapshot(workItems), versioned);
             },
             ct).ConfigureAwait(false);
     }
@@ -253,12 +330,18 @@ public sealed class FileAutomatedJournalScheduleStore :
         string? fundProfileId,
         Guid? ledgerBookId,
         string? periodId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null,
+        string? entityId = null)
         => AutomatedJournalScheduleProjection.ProjectStatus(
             await ListAsync(ct).ConfigureAwait(false),
             fundProfileId,
             ledgerBookId,
-            periodId);
+            periodId,
+            tenantId,
+            companyId,
+            entityId);
 
     public sealed record AutomatedJournalScheduleSnapshot(
         IReadOnlyList<AutomatedJournalScheduleWorkItem> WorkItems);
@@ -347,12 +430,21 @@ internal static class AutomatedJournalScheduleProjection
         IReadOnlyList<AutomatedJournalScheduleWorkItem> items,
         string? fundProfileId,
         Guid? ledgerBookId,
-        string? periodId)
+        string? periodId,
+        string? tenantId,
+        string? companyId,
+        string? entityId)
     {
         var normalizedPeriodId = NormalizeOptional(periodId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        var normalizedEntityId = NormalizeOptional(entityId);
         var scoped = items
+            .Where(item => string.Equals(item.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => string.Equals(item.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .Where(item => string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(item.FundProfileId, fundProfileId.Trim(), StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId.Value)
+            .Where(item => normalizedEntityId is null || string.Equals(item.EntityId, normalizedEntityId, StringComparison.OrdinalIgnoreCase))
             .SelectMany(item => ProjectCycles(item, normalizedPeriodId))
             .ToArray();
         if (scoped.Length == 0)
@@ -370,7 +462,10 @@ internal static class AutomatedJournalScheduleProjection
                 BlockedCount: 0,
                 State: AutomatedJournalScheduleStateDto.NotConfigured,
                 Summary: "Monthly fee-accrual and dividend-capture schedules are not configured for this close scope.",
-                Blockers: ["Configure explicit monthly fee and dividend work items before relying on automated close preparation."]);
+                Blockers: ["Configure explicit monthly fee and dividend work items before relying on automated close preparation."],
+                EntityId: normalizedEntityId,
+                TenantId: normalizedTenantId,
+                CompanyId: normalizedCompanyId);
         }
 
         var state = SelectAggregateState(scoped);
@@ -425,7 +520,10 @@ internal static class AutomatedJournalScheduleProjection
             journalEntryIds,
             confidenceScores.Length == 0 ? null : confidenceScores.Min(),
             evidenceQualities.Length == 0 ? null : evidenceQualities.Min(),
-            journalEntryIds.Length);
+            journalEntryIds.Length,
+            normalizedEntityId,
+            normalizedTenantId,
+            normalizedCompanyId);
     }
 
     private static AutomatedJournalScheduleStateDto SelectAggregateState(
@@ -467,6 +565,7 @@ internal static class AutomatedJournalScheduleProjection
         }
 
         var history = item.RunHistory
+            .Where(static entry => entry.HistoryKind == AutomatedJournalScheduleHistoryKind.Execution)
             .Where(entry => string.Equals(entry.PeriodId ?? item.PeriodId, periodId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(static entry => entry.ScheduledForUtc)
             .FirstOrDefault();
@@ -586,126 +685,5 @@ internal static class AutomatedJournalScheduleProjection
             throw new ArgumentException($"{label} is required for fee-accrual schedules.");
         if (value.Value is < 0m or > 1m)
             throw new ArgumentOutOfRangeException(label, $"{label} must be between 0 and 1.");
-    }
-}
-
-internal sealed record AutomatedJournalFeeEvidenceEvaluation(
-    bool IsReady,
-    AutomatedJournalScheduleStateDto FailureState,
-    AutomatedJournalEvidenceAssessmentDto Assessment,
-    IReadOnlyList<string> Blockers,
-    IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
-
-internal static class AutomatedJournalFeeEvidenceEvaluator
-{
-    public static AutomatedJournalFeeEvidenceEvaluation Evaluate(
-        string periodId,
-        string currency,
-        decimal? beginningNav,
-        decimal? endingNavBeforeFees,
-        decimal? highWaterMark,
-        AutomatedJournalCapitalAccountReconciliationDto? reconciliation,
-        decimal minimumConfidence,
-        DateTimeOffset evaluatedAtUtc)
-    {
-        var missing = new List<string>();
-        var mismatches = new List<string>();
-        if (!beginningNav.HasValue)
-            missing.Add("Beginning NAV is missing for the fee-accrual cycle.");
-        if (!endingNavBeforeFees.HasValue)
-            missing.Add("Ending NAV before fees is missing for the fee-accrual cycle.");
-        if (!highWaterMark.HasValue)
-            missing.Add("High-water mark is missing for the fee-accrual cycle.");
-        if (reconciliation is null)
-        {
-            missing.Add("Reviewed capital-account reconciliation evidence is missing for the fee-accrual cycle.");
-            return Build(false, AutomatedJournalScheduleStateDto.Blocked, 0m, [], missing, mismatches, minimumConfidence);
-        }
-
-        if (reconciliation.EvidenceLinks.Count == 0)
-            missing.Add("Capital-account reconciliation evidence links are missing.");
-        if (string.IsNullOrWhiteSpace(reconciliation.SourceVersion))
-            missing.Add("Capital-account reconciliation source version is missing.");
-        if (string.IsNullOrWhiteSpace(reconciliation.ReviewedBy))
-            missing.Add("Capital-account reconciliation reviewer is missing.");
-        if (reconciliation.ReviewedAtUtc == default)
-            missing.Add("Capital-account reconciliation review time is missing.");
-        else if (reconciliation.ReviewedAtUtc.ToUniversalTime() > evaluatedAtUtc.ToUniversalTime())
-            mismatches.Add("Capital-account reconciliation review time is later than the scheduler evaluation time.");
-
-        if (!string.Equals(reconciliation.PeriodId, periodId, StringComparison.OrdinalIgnoreCase))
-            mismatches.Add($"Capital-account reconciliation period '{reconciliation.PeriodId}' does not match schedule period '{periodId}'.");
-        if (!string.Equals(reconciliation.Currency, currency, StringComparison.OrdinalIgnoreCase))
-            mismatches.Add($"Capital-account reconciliation currency '{reconciliation.Currency}' does not match schedule currency '{currency}'.");
-        if (beginningNav.HasValue && beginningNav.Value != reconciliation.ReconciledBeginningNav)
-            mismatches.Add("Scheduled beginning NAV does not match the reviewed capital-account reconciliation.");
-        if (endingNavBeforeFees.HasValue && endingNavBeforeFees.Value != reconciliation.ReconciledEndingNavBeforeFees)
-            mismatches.Add("Scheduled ending NAV before fees does not match the reviewed capital-account reconciliation.");
-        if (highWaterMark.HasValue && highWaterMark.Value != reconciliation.ReconciledHighWaterMark)
-            mismatches.Add("Scheduled high-water mark does not match the reviewed capital-account reconciliation.");
-
-        var maximumObservedVariance = new[]
-        {
-            decimal.Abs(reconciliation.ReconciledBeginningNav - reconciliation.CapitalAccountOpeningBalance),
-            decimal.Abs(reconciliation.ReconciledEndingNavBeforeFees - reconciliation.CapitalAccountEndingBalanceBeforeFees),
-            decimal.Abs(reconciliation.ReconciledHighWaterMark - reconciliation.CapitalAccountHighWaterMark)
-        }.Max();
-        if (!reconciliation.IsReconciled)
-            mismatches.Add("Capital-account reconciliation is not marked reconciled.");
-        if (maximumObservedVariance > reconciliation.MaximumVarianceTolerance)
-        {
-            mismatches.Add(FormattableString.Invariant(
-                $"Capital-account reconciliation variance {maximumObservedVariance:0.00} exceeds tolerance {reconciliation.MaximumVarianceTolerance:0.00}."));
-        }
-        if (reconciliation.ConfidenceScore < minimumConfidence)
-        {
-            mismatches.Add(FormattableString.Invariant(
-                $"Capital-account reconciliation confidence {reconciliation.ConfidenceScore:P0} is below the configured {minimumConfidence:P0} threshold."));
-        }
-
-        var ready = missing.Count == 0 && mismatches.Count == 0;
-        return Build(
-            ready,
-            missing.Count > 0 ? AutomatedJournalScheduleStateDto.Blocked : AutomatedJournalScheduleStateDto.NeedsInvestigation,
-            reconciliation.ConfidenceScore,
-            reconciliation.EvidenceLinks,
-            missing,
-            mismatches,
-            minimumConfidence);
-    }
-
-    private static AutomatedJournalFeeEvidenceEvaluation Build(
-        bool isReady,
-        AutomatedJournalScheduleStateDto failureState,
-        decimal confidence,
-        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
-        IReadOnlyList<string> missing,
-        IReadOnlyList<string> mismatches,
-        decimal minimumConfidence)
-    {
-        var blockers = missing.Concat(mismatches).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        var quality = confidence >= 0.90m
-            ? AutomatedJournalEvidenceQualityDto.High
-            : confidence >= minimumConfidence
-                ? AutomatedJournalEvidenceQualityDto.Medium
-                : AutomatedJournalEvidenceQualityDto.Low;
-        var summary = isReady
-            ? FormattableString.Invariant(
-                $"Capital-account reconciliation confidence {confidence:P0} satisfies the configured {minimumConfidence:P0} threshold and the fee basis ties within tolerance.")
-            : $"Fee-accrual preparation cannot enter approval: {string.Join(" ", blockers)}";
-        var assessment = new AutomatedJournalEvidenceAssessmentDto(
-            "capital-account-reconciliation-confidence",
-            confidence,
-            quality,
-            RequiresInvestigation: !isReady,
-            summary,
-            blockers,
-            evidenceLinks.Select(static link => link.Route).ToArray());
-        return new AutomatedJournalFeeEvidenceEvaluation(
-            isReady,
-            failureState,
-            assessment,
-            blockers,
-            evidenceLinks);
     }
 }

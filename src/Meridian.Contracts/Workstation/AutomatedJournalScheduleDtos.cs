@@ -66,7 +66,10 @@ public sealed record AutomatedJournalScheduleStatusDto(
     IReadOnlyList<Guid>? JournalEntryIds = null,
     decimal? MinimumEvidenceConfidence = null,
     AutomatedJournalEvidenceQualityDto? LowestEvidenceQuality = null,
-    int HumanReviewQueueCount = 0)
+    int HumanReviewQueueCount = 0,
+    string? EntityId = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     public IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 
@@ -84,5 +87,8 @@ public interface IAutomatedJournalScheduleStatusSource
         string? fundProfileId,
         Guid? ledgerBookId,
         string? periodId,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null,
+        string? entityId = null);
 }

@@ -12,6 +12,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     private readonly IAccountingProjectionQueryService _queryService;
     private readonly IAccountingCloseManagementService? _closeManagementService;
     private ClosePeriodPlanDto? _closePlan;
+    private ClosePostingGateDto? _closingEntriesGate;
     private Guid _closeWorkflowId;
     private long _closeWorkflowVersion;
     private ClosePeriodState _closeState = ClosePeriodState.Open;
@@ -70,6 +71,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         RequestLateAdjustmentCommand = new AsyncRelayCommand(RequestLateAdjustmentAsync, CanRequestLateAdjustment);
         ReviewLateAdjustmentCommand = new AsyncRelayCommand(ReviewLateAdjustmentAsync, CanReviewLateAdjustment);
         ReviewCloseEvidenceCommand = new AsyncRelayCommand(ReviewCloseEvidenceAsync, CanReviewCloseEvidence);
+        QueueClosingEntriesCommand = new AsyncRelayCommand(QueueClosingEntriesAsync, CanQueueClosingEntries);
         LockClosePeriodCommand = new AsyncRelayCommand(LockClosePeriodAsync, CanLockClosePeriod);
     }
 
@@ -85,6 +87,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     public ObservableCollection<AccountingWorkbenchRow> CloseEvidenceReviewRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ClosePeriodLockIssueRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> CloseOperatingCoverageRows { get; } = [];
+    public ObservableCollection<AccountingClosePostingBalanceRow> ClosingEntryBalanceRows { get; } = [];
     public ObservableCollection<CloseWorkflowStep> CloseWorkflowSteps { get; } = [];
     public ObservableCollection<CloseSetupTaskOption> CloseSetupTaskOptions { get; } = [];
     public IReadOnlyList<string> CloseTaskSignOffDecisionOptions { get; } =
@@ -105,6 +108,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     public IAsyncRelayCommand RequestLateAdjustmentCommand { get; }
     public IAsyncRelayCommand ReviewLateAdjustmentCommand { get; }
     public IAsyncRelayCommand ReviewCloseEvidenceCommand { get; }
+    public IAsyncRelayCommand QueueClosingEntriesCommand { get; }
     public IAsyncRelayCommand LockClosePeriodCommand { get; }
 
     public string CloseWorkflowIdText
@@ -633,6 +637,79 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         }
     }
 
+    public ClosePostingGateDto? ClosingEntriesGate
+    {
+        get => _closingEntriesGate;
+        private set
+        {
+            if (!SetProperty(ref _closingEntriesGate, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(ClosingEntriesGateStatusText));
+            RaisePropertyChanged(nameof(ClosingEntriesNetIncomeRollText));
+            RaisePropertyChanged(nameof(ClosingEntriesBalanceCountText));
+            RaisePropertyChanged(nameof(ClosingEntriesLockPostureText));
+            RaisePropertyChanged(nameof(ClosingEntriesDetailText));
+            RaisePropertyChanged(nameof(ClosingEntriesJournalEvidenceText));
+            QueueClosingEntriesCommand.NotifyCanExecuteChanged();
+            LockClosePeriodCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public string ClosingEntriesGateStatusText
+        => ClosingEntriesGate is null
+            ? "Not supplied"
+            : FormatClosePostingGateState(ClosingEntriesGate.State);
+
+    public string ClosingEntriesNetIncomeRollText
+        => ClosingEntriesGate is null
+            ? "Net-income roll unavailable"
+            : string.Format(
+                CultureInfo.InvariantCulture,
+                "{0:+#,##0.00;-#,##0.00;0.00} {1}",
+                ClosingEntriesGate.NetIncomeRoll,
+                _closePlan?.MaterialityPolicy.Currency ?? string.Empty).TrimEnd();
+
+    public string ClosingEntriesBalanceCountText
+        => ClosingEntriesGate is null
+            ? "Scoped balances unavailable"
+            : $"{ClosingEntriesGate.TemporaryAccountBalanceCount:N0} {Pluralize(ClosingEntriesGate.TemporaryAccountBalanceCount, "temporary-account balance", "temporary-account balances")}";
+
+    public string ClosingEntriesLockPostureText
+        => ClosingEntriesGate is null
+            ? "Lock posture unavailable"
+            : ClosingEntriesGate.IsReadyForLock
+                ? "Ready for lock"
+                : "Posting required before lock";
+
+    public string ClosingEntriesDetailText
+        => ClosingEntriesGate?.Detail
+            ?? "The shared close plan did not return the typed closing-entry posting gate.";
+
+    public string ClosingEntriesJournalEvidenceText
+    {
+        get
+        {
+            if (ClosingEntriesGate is not { } gate)
+            {
+                return "No closing-entry draft, batch, reversal, or evidence identifiers were returned.";
+            }
+
+            var draft = gate.DraftJournalEntryId is { } draftId
+                ? $"Draft {draftId:D}{(gate.DraftStatus is { } status ? $" ({status})" : string.Empty)}"
+                : "No draft queued";
+            var closingBatches = gate.ClosingBatchJournalEntryIds.Count == 0
+                ? "no closing batches"
+                : $"closing batches {string.Join(", ", gate.ClosingBatchJournalEntryIds.Select(static id => id.ToString("D")))}";
+            var reversals = gate.ReversalDraftJournalEntryIds.Count == 0
+                ? "no reversal drafts"
+                : $"reversal drafts {string.Join(", ", gate.ReversalDraftJournalEntryIds.Select(static id => id.ToString("D")))}";
+            return $"{draft}; {closingBatches}; {reversals}; {gate.EvidenceLinks.Count:N0} {Pluralize(gate.EvidenceLinks.Count, "evidence link", "evidence links")}.";
+        }
+    }
+
     public SourceLinkedAuditLine? SelectedAuditLine
     {
         get => _selectedAuditLine;
@@ -712,18 +789,24 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
 
     public void ApplyClosePlan(ClosePeriodPlanDto closePlan)
     {
-        ApplyClosePlan(closePlan.Configuration?.WorkflowId ?? Guid.Empty, closePlan);
+        ApplyClosePlan(
+            closePlan.Configuration?.WorkflowId ?? Guid.Empty,
+            closePlan.WorkflowVersion,
+            closePlan);
     }
 
     public void ApplyClosePlan(Guid workflowId, ClosePeriodPlanDto closePlan)
-        => ApplyClosePlan(workflowId, _closeWorkflowVersion, closePlan);
+        => ApplyClosePlan(workflowId, closePlan.WorkflowVersion, closePlan);
 
     public void ApplyClosePlan(Guid workflowId, long workflowVersion, ClosePeriodPlanDto closePlan)
     {
         ArgumentNullException.ThrowIfNull(closePlan);
         _closeWorkflowId = workflowId;
-        _closeWorkflowVersion = Math.Max(0, workflowVersion);
+        _closeWorkflowVersion = closePlan.WorkflowVersion > 0
+            ? closePlan.WorkflowVersion
+            : Math.Max(0, workflowVersion);
         _closePlan = closePlan;
+        ApplyClosingEntriesGate(closePlan);
         ApplyCloseSetupDraft(closePlan);
         ApplyCloseReviewRows(closePlan);
         ClosePlanSetupStatusText = workflowId == Guid.Empty
@@ -735,7 +818,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             ? $"Close plan {closePlan.PeriodId} loaded without workflow context; period lock is disabled."
             : closePlan.IsPeriodLocked
             ? $"Close plan {closePlan.PeriodId} is already locked."
-            : $"Close plan {closePlan.PeriodId} is ready for governed period-lock review.";
+            : ResolveClosePeriodLockStatus(closePlan);
         CloseTaskSignOffStatusText = workflowId == Guid.Empty
             ? $"Close plan {closePlan.PeriodId} loaded without workflow context; task sign-off is disabled."
             : closePlan.IsPeriodLocked
@@ -769,6 +852,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         RequestLateAdjustmentCommand.NotifyCanExecuteChanged();
         ReviewLateAdjustmentCommand.NotifyCanExecuteChanged();
         ReviewCloseEvidenceCommand.NotifyCanExecuteChanged();
+        QueueClosingEntriesCommand.NotifyCanExecuteChanged();
         LockClosePeriodCommand.NotifyCanExecuteChanged();
         RefreshCloseWorkflowSteps();
     }
@@ -997,10 +1081,35 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
            _closePlan is { IsPeriodLocked: false } closePlan &&
            ValidateLateAdjustmentDraft(closePlan) is null;
 
+    private bool CanQueueClosingEntries()
+        => _closeManagementService is not null &&
+           _closeWorkflowId != Guid.Empty &&
+           _closePlan is { IsPeriodLocked: false } &&
+           ClosingEntriesGate?.State == ClosePostingGateStateDto.Required;
+
+    private static string ResolveClosePeriodLockStatus(ClosePeriodPlanDto closePlan)
+        => closePlan.ClosingEntriesGate switch
+        {
+            null => "The shared close plan did not return a closing-entry gate; period lock is disabled.",
+            { State: ClosePostingGateStateDto.Required } =>
+                $"Close plan {closePlan.PeriodId} requires closing entries to be queued before period lock.",
+            { State: ClosePostingGateStateDto.DraftQueued or ClosePostingGateStateDto.Submitted or ClosePostingGateStateDto.Approved } gate =>
+                $"Close plan {closePlan.PeriodId} cannot lock until closing entries advance from {FormatClosePostingGateState(gate.State)} to Posted.",
+            { IsReadyForLock: true, State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired } =>
+                $"Close plan {closePlan.PeriodId} is ready for governed period-lock review.",
+            { } gate =>
+                $"Close plan {closePlan.PeriodId} cannot lock while closing-entry gate state is {FormatClosePostingGateState(gate.State)}."
+        };
+
     private bool CanLockClosePeriod()
         => _closeManagementService is not null &&
            _closeWorkflowId != Guid.Empty &&
-           _closePlan is { IsPeriodLocked: false };
+           _closePlan is { IsPeriodLocked: false } &&
+           ClosingEntriesGate is
+           {
+               IsReadyForLock: true,
+               State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired
+           };
 
     private async Task LoadClosePlanAsync()
     {
@@ -1023,7 +1132,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             return;
         }
 
-        ApplyClosePlan(workflowId, 0, closePlan);
+        ApplyClosePlan(workflowId, closePlan);
         CloseWorkflowIdText = workflowId.ToString("D");
         ClosePlanSetupStatusText = $"Loaded close plan {closePlan.PeriodId} for governed setup retention.";
     }
@@ -1068,7 +1177,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             ClosePlanSetupStatusText = $"Retained close-plan setup for {updated.PeriodId}.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
@@ -1130,7 +1239,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             CloseTaskSignOffStatusText = request.Decision == ManualJournalEntryStatusDto.Approved
                 ? $"Retained {request.Role} sign-off evidence for close task {request.TaskId}."
                 : $"Retained {request.Role} rejection evidence for close task {request.TaskId}.";
@@ -1187,7 +1296,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             LateAdjustmentRequestStatusText = $"Requested retained late adjustment for journal {request.JournalEntryId:D}.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
@@ -1242,7 +1351,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             LateAdjustmentReviewStatusText = $"{request.Decision} late adjustment {request.RequestId} with retained WPF review evidence.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
@@ -1297,12 +1406,79 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             CloseEvidenceReviewStatusText = $"Retained WPF evidence review for blocker {request.IssueCode}.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
             CloseEvidenceReviewStatusText = $"Close evidence review could not be retained: {ex.Message}";
+        }
+    }
+
+    private async Task QueueClosingEntriesAsync()
+    {
+        if (_closeManagementService is null)
+        {
+            ClosePeriodLockStatusText = "Close management service is not registered for this desktop session.";
+            return;
+        }
+
+        if (_closePlan is null || _closeWorkflowId == Guid.Empty)
+        {
+            ClosePeriodLockStatusText = "Load a workflow-scoped close plan before queuing closing entries.";
+            return;
+        }
+
+        if (_closePlan.IsPeriodLocked)
+        {
+            ClosePeriodLockStatusText = $"Close plan {_closePlan.PeriodId} is already locked.";
+            return;
+        }
+
+        if (!CanQueueClosingEntries())
+        {
+            ClosePeriodLockStatusText = ClosingEntriesGate is null
+                ? "The shared close plan did not return a closing-entry gate."
+                : $"Closing entries can only be queued while the gate is Required; current state is {ClosingEntriesGateStatusText}.";
+            return;
+        }
+
+        try
+        {
+            var request = BuildClosePeriodLockRequest(
+                _closeWorkflowId,
+                _closeWorkflowVersion,
+                _closePlan,
+                prepareClosingEntriesOnly: true);
+            var result = await _closeManagementService
+                .LockClosePeriodAsync(request, "wpf-accounting-controller")
+                .ConfigureAwait(true);
+
+            if (result is null)
+            {
+                ClosePeriodLockStatusText = $"Close workflow {_closeWorkflowId:D} was not found.";
+                return;
+            }
+
+            if (result.Plan is not null)
+            {
+                ApplyClosePlan(_closeWorkflowId, result.Plan);
+            }
+
+            ApplyClosePeriodLockIssues(result.Issues);
+            ClosePeriodLockStatusText = result.Plan is
+                {
+                    ClosingEntriesGate.State: ClosePostingGateStateDto.DraftQueued or
+                        ClosePostingGateStateDto.Submitted or
+                        ClosePostingGateStateDto.Approved or
+                        ClosePostingGateStateDto.Posted
+                } preparedPlan
+                    ? $"Prepared closing-entry workflow for close period {preparedPlan.PeriodId}; human approval and posting remain governed."
+                    : $"Closing-entry preparation is blocked by {result.Issues.Count} issue(s).";
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            ClosePeriodLockStatusText = $"Closing entries could not be queued: {ex.Message}";
         }
     }
 
@@ -1332,9 +1508,21 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             return;
         }
 
+        if (!CanLockClosePeriod())
+        {
+            ClosePeriodLockStatusText = ClosingEntriesGate is null
+                ? "The accounting period cannot lock without a shared closing-entry gate."
+                : $"The accounting period cannot lock while closing-entry gate state is {ClosingEntriesGateStatusText}. Post closing entries or resolve the gate first.";
+            return;
+        }
+
         try
         {
-            var request = BuildClosePeriodLockRequest(_closeWorkflowId, _closeWorkflowVersion, _closePlan);
+            var request = BuildClosePeriodLockRequest(
+                _closeWorkflowId,
+                _closeWorkflowVersion,
+                _closePlan,
+                prepareClosingEntriesOnly: false);
             var result = await _closeManagementService
                 .LockClosePeriodAsync(request, "wpf-accounting-controller")
                 .ConfigureAwait(true);
@@ -1347,7 +1535,10 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
 
             if (result.Plan is not null)
             {
-                ApplyClosePlan(_closeWorkflowId, result.Transition?.NewVersion ?? _closeWorkflowVersion, result.Plan);
+                ApplyClosePlan(
+                    _closeWorkflowId,
+                    result.Transition?.NewVersion ?? _closeWorkflowVersion,
+                    result.Plan);
             }
 
             ApplyClosePeriodLockIssues(result.Issues);
@@ -1943,6 +2134,77 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         }
     }
 
+    private void ApplyClosingEntriesGate(ClosePeriodPlanDto closePlan)
+    {
+        ClosingEntryBalanceRows.Clear();
+        ClosingEntriesGate = closePlan.ClosingEntriesGate;
+        foreach (var balance in closePlan.ClosingEntriesGate?.Balances ?? [])
+        {
+            ClosingEntryBalanceRows.Add(new AccountingClosePostingBalanceRow(
+                string.IsNullOrWhiteSpace(balance.Symbol)
+                    ? balance.AccountName
+                    : $"{balance.AccountName} ({balance.Symbol.Trim()})",
+                balance.AccountType,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0:+#,##0.00;-#,##0.00;0.00} {1}",
+                    balance.Balance,
+                    closePlan.MaterialityPolicy.Currency).TrimEnd(),
+                FormatClosePostingBalanceScope(balance.Dimensions),
+                NormalizeOptional(balance.FinancialAccountId) ?? "No financial-account id"));
+        }
+    }
+
+    private static string FormatClosePostingGateState(ClosePostingGateStateDto state)
+        => state switch
+        {
+            ClosePostingGateStateDto.NotRequired => "Not required",
+            ClosePostingGateStateDto.DraftQueued => "Draft queued",
+            ClosePostingGateStateDto.ReversalQueued => "Reversal queued",
+            _ => state.ToString()
+        };
+
+    private static string FormatClosePostingBalanceScope(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return "No scoped dimensions returned";
+        }
+
+        var labels = new List<string>();
+        AddScopeLabel(labels, "Fund", dimensions.FundId);
+        AddScopeLabel(labels, "Entity", dimensions.EntityId);
+        AddScopeLabel(labels, "Sleeve", dimensions.SleeveId);
+        AddScopeLabel(labels, "Strategy", dimensions.StrategyId);
+        AddScopeLabel(labels, "Investor", dimensions.InvestorId);
+        AddScopeLabel(labels, "Capital account", dimensions.CapitalAccountId);
+        AddScopeLabel(labels, "Instrument", dimensions.InstrumentId?.ToString("D"));
+        AddScopeLabel(labels, "Position", dimensions.PositionId?.ToString("D"));
+        AddScopeLabel(labels, "Tax lot", dimensions.TaxLotId);
+        AddScopeLabel(labels, "Cost center", dimensions.CostCenterId);
+        AddScopeLabel(labels, "Counterparty", dimensions.CounterpartyId);
+        AddScopeLabel(labels, "Organization", dimensions.OrganizationId);
+        AddScopeLabel(labels, "Portfolio", dimensions.PortfolioId);
+        AddScopeLabel(labels, "Book", dimensions.BookId);
+        AddScopeLabel(labels, "Account", dimensions.AccountId);
+        foreach (var (key, value) in dimensions.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            AddScopeLabel(labels, $"External {key}", value);
+        }
+
+        return labels.Count == 0
+            ? "No scoped dimensions returned"
+            : string.Join(" | ", labels);
+    }
+
+    private static void AddScopeLabel(ICollection<string> labels, string label, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            labels.Add($"{label}: {value.Trim()}");
+        }
+    }
+
     private static AccountingWorkbenchRow BuildMaterialityPolicyRow(ClosePeriodPlanDto closePlan)
     {
         var materiality = closePlan.MaterialityPolicy;
@@ -2317,7 +2579,8 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     private static LockClosePeriodRequestDto BuildClosePeriodLockRequest(
         Guid workflowId,
         long workflowVersion,
-        ClosePeriodPlanDto closePlan)
+        ClosePeriodPlanDto closePlan,
+        bool prepareClosingEntriesOnly)
     {
         var reportPackId = BuildCloseReportPackId(closePlan);
         var closePackageId = $"close-package-{closePlan.FundProfileId}-{closePlan.PeriodId}";
@@ -2326,15 +2589,20 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             workflowId,
             ExpectedWorkflowVersion: workflowVersion,
             Actor: "wpf-accounting-controller",
-            Rationale: "Lock close period from WPF Accounting Close after checklist, sign-off, reconciliation, and report certification review.",
+            Rationale: prepareClosingEntriesOnly
+                ? "Queue closing entries from WPF Accounting Close without hard-locking the accounting period."
+                : "Lock close period from WPF Accounting Close after checklist, sign-off, reconciliation, report certification, and closing-entry posting review.",
             ReportPackId: reportPackId,
             EvidenceLinks: BuildClosePeriodLockEvidence(workflowId, closePlan, reportPackId, closePackageId, manifestId),
             ChecklistControlApprovals: BuildClosePeriodLockApprovals(closePlan),
-            CorrelationId: $"wpf-close-period-lock-{workflowId:D}",
+            CorrelationId: prepareClosingEntriesOnly
+                ? $"wpf-close-period-prepare-closing-entries-{workflowId:D}"
+                : $"wpf-close-period-lock-{workflowId:D}",
             ClosePackageId: closePackageId,
             ClosePackageManifestId: manifestId,
             ClosePackageRetainedManifestRoute: $"/workstation/reporting/packages/{manifestId}",
-            ActionOrigin: OperationsActionOriginDto.HumanOperator);
+            ActionOrigin: OperationsActionOriginDto.HumanOperator,
+            PrepareClosingEntriesOnly: prepareClosingEntriesOnly);
     }
 
     private SignOffCloseTaskRequestDto BuildCloseTaskSignOffRequest(
@@ -2636,6 +2904,13 @@ public sealed record CloseSetupTaskOption(
     string Owner,
     string DueDate,
     string SignOffSummary);
+
+public sealed record AccountingClosePostingBalanceRow(
+    string AccountName,
+    string AccountType,
+    string Balance,
+    string Scope,
+    string FinancialAccountId);
 
 public sealed record CloseWorkflowStep(
     string StepId,

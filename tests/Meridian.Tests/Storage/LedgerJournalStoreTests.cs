@@ -260,6 +260,21 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_OpenPeriod_RejectsClosingEntryUntilPeriodIsSoftClosed()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*closing entries*soft-closed*");
+    }
+
+    [Fact]
     public void PostingGuard_SoftClosedPeriod_RejectsOriginatingEntry()
     {
         var period = BuildAccountingPeriod("SoftClosed");

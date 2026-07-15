@@ -60,7 +60,9 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         Guid? fundAccountId = null,
         string? periodId = null,
         string? entityId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -68,25 +70,25 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
                         _manualJournalEntryWorkbenchService is null
             ? null
             : await _manualJournalEntryWorkbenchService
-                .GetWorkbenchAsync(fundProfileId, ledgerBookId, ct)
+                .GetWorkbenchAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId)
                 .ConfigureAwait(false);
         var activity = workbench?.PrivateCapitalActivity ?? (_manualJournalEntryWorkbenchService is null
             ? null
             : await _manualJournalEntryWorkbenchService
-                .GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct)
+                .GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId)
                 .ConfigureAwait(false));
         var dailyValuationStatus = _dailyValuationScheduleStatusSource is null
             ? null
             : await _dailyValuationScheduleStatusSource
-                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct)
+                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct, entityId, tenantId, companyId)
                 .ConfigureAwait(false);
         var automatedJournalStatus = _automatedJournalScheduleStatusSource is null
             ? null
             : await _automatedJournalScheduleStatusSource
-                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct)
+                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct, tenantId, companyId, entityId)
                 .ConfigureAwait(false);
         var dailyValuationDrafts = FilterDailyValuationDrafts(workbench, periodId);
-        var automatedJournalDrafts = FilterAutomatedJournalDrafts(workbench, periodId);
+        var automatedJournalDrafts = FilterAutomatedJournalDrafts(workbench, periodId, entityId);
         var workflows = await LoadWorkflowsAsync(fundAccountId, ledgerBookId, periodId, ct).ConfigureAwait(false);
         var records = FilterFundEventRecords(activity, periodId, entityId);
         var subledgers = FilterSubledgers(activity, records);
@@ -146,7 +148,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             PlannedCapabilities: PlannedCapabilities,
             ApprovalHistory: approvalHistory,
             NavSupportPackages: navSupportPackages,
-            EvidencePackages: evidencePackages);
+            EvidencePackages: evidencePackages,
+            DailyValuationStatus: dailyValuationStatus);
     }
 
     private async Task<IReadOnlyList<OperationsContinuityWorkflowDto>> LoadWorkflowsAsync(
@@ -1376,7 +1379,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private static IReadOnlyList<ManualJournalEntryDraftDto> FilterAutomatedJournalDrafts(
         ManualJournalEntryWorkbenchDto? workbench,
-        string? periodId)
+        string? periodId,
+        string? entityId)
     {
         if (workbench is null)
         {
@@ -1384,6 +1388,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         }
 
         var normalizedPeriodId = Normalize(periodId);
+        var normalizedEntityId = Normalize(entityId);
         return workbench.Drafts
             .Where(static draft => draft.TreasuryContext?.IdempotencyKey is { } key &&
                 (key.StartsWith("mgmt-fee|", StringComparison.OrdinalIgnoreCase) ||
@@ -1393,6 +1398,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .Where(draft => normalizedPeriodId is null ||
                             string.Equals(draft.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase) ||
                             MatchesPeriod(draft.AccountingDate, normalizedPeriodId))
+            .Where(draft => normalizedEntityId is null ||
+                            string.Equals(draft.EntityId, normalizedEntityId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
     }
 

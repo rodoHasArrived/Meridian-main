@@ -95,13 +95,24 @@ public sealed record RunDailyMarkToMarketDraftIntakeRequest(
 /// (created drafts and intake-side skips). Empty productions return an empty intake
 /// rather than an error.
 /// </summary>
+public enum AutomatedJournalIntakeReadiness
+{
+    Ready = 0,
+    NeedsInvestigation = 1,
+    Blocked = 2
+}
+
 public sealed record AutomatedJournalIntakeRunResult(
     IReadOnlyList<AutomatedJournalEventProductionSkip> ProducerSkips,
     AutomatedJournalDraftIntakeResult Intake,
-    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null)
+    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null,
+    AutomatedJournalIntakeReadiness Readiness = AutomatedJournalIntakeReadiness.Ready,
+    IReadOnlyList<string>? ReadinessBlockers = null)
 {
     public IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto> EvidenceAssessments { get; init; } =
         EvidenceAssessments ?? new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase);
+
+    public IReadOnlyList<string> ReadinessBlockers { get; init; } = ReadinessBlockers ?? [];
 }
 
 /// <summary>Valuation evidence and workbench intake outcome for one daily-close run.</summary>
@@ -132,6 +143,7 @@ public sealed class AutomatedJournalIntakeRunner
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly DailyMarkToMarketService? _dailyMarkToMarketService;
     private readonly DailyValuationPositionService? _dailyValuationPositionService;
+    private readonly AutomatedJournalEvidencePolicy _evidencePolicy;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
@@ -139,7 +151,8 @@ public sealed class AutomatedJournalIntakeRunner
         CorporateActionDividendEventProducer? dividendProducer = null,
         ILedgerBookService? ledgerBookService = null,
         DailyMarkToMarketService? dailyMarkToMarketService = null,
-        DailyValuationPositionService? dailyValuationPositionService = null)
+        DailyValuationPositionService? dailyValuationPositionService = null,
+        AutomatedJournalEvidencePolicy? evidencePolicy = null)
     {
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
@@ -147,7 +160,12 @@ public sealed class AutomatedJournalIntakeRunner
         _ledgerBookService = ledgerBookService;
         _dailyMarkToMarketService = dailyMarkToMarketService;
         _dailyValuationPositionService = dailyValuationPositionService;
+        _evidencePolicy = evidencePolicy ?? AutomatedJournalEvidencePolicy.Default;
     }
+
+    /// <summary>Whether this process can execute the provider-backed daily valuation lane.</summary>
+    public bool CanRunDailyMarkToMarket =>
+        _dailyMarkToMarketService is not null && _dailyValuationPositionService is not null;
 
     public async Task<AutomatedJournalIntakeRunResult> RunDividendIntakeAsync(
         RunDividendDraftIntakeRequest request,
@@ -163,6 +181,7 @@ public sealed class AutomatedJournalIntakeRunner
         var production = await _dividendProducer.ProduceAsync(
             new CorporateActionDividendRequest(
                 request.Positions,
+                request.Currency,
                 request.WindowStart,
                 request.WindowEnd,
                 request.AsOf ?? DateTimeOffset.UtcNow,
@@ -303,16 +322,22 @@ public sealed class AutomatedJournalIntakeRunner
 
     /// <summary>
     /// Projects closing entries from a closed period's trial balance and admits the
-    /// resulting draft into the workbench queue. The period must already be soft- or
-    /// hard-closed: closing entries are the accounting consequence of a close decision,
-    /// not a way to make one. A period with no temporary-account balances returns an
-    /// empty intake — a correct outcome, not a gap.
+    /// resulting draft into the workbench queue. Mutating intake is allowed only while the
+    /// period is soft-closed; hard-closed periods remain available through the read-only preview
+    /// path but cannot acquire new drafts. A period with no temporary-account balances returns
+    /// an empty intake — a correct outcome, not a gap.
     /// </summary>
     public async Task<AutomatedJournalIntakeRunResult> RunPeriodCloseIntakeAsync(
         RunPeriodCloseDraftIntakeRequest request,
         CancellationToken ct = default)
     {
         var preview = await PreviewPeriodCloseAsync(request, ct).ConfigureAwait(false);
+        if (preview.Period.Status != LedgerPeriodStatusDto.SoftClosed)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{preview.Period.Label}' must be soft-closed before closing-entry drafts can be queued; current status is {preview.Period.Status}.");
+        }
+
         var draft = preview.Draft;
         var intake = draft is null
             ? EmptyIntake
@@ -441,6 +466,33 @@ public sealed class AutomatedJournalIntakeRunner
 
         var eventAsOf = request.AsOf ?? DateTimeOffset.UtcNow;
         var retainedAtUtc = request.EvidenceRetainedAtUtc ?? eventAsOf;
+        var feeEvidence = AutomatedJournalFeeEvidenceEvaluator.Evaluate(
+            request.PeriodId,
+            request.Currency,
+            request.BeginningNav,
+            request.EndingNavBeforeFees,
+            request.HighWaterMark,
+            request.CapitalAccountReconciliation,
+            request.MinimumCapitalAccountConfidence,
+            retainedAtUtc,
+            _evidencePolicy);
+        var feeAssessmentKey = FormattableString.Invariant(
+            $"fee-basis|{request.FundProfileId.Trim().ToLowerInvariant()}|{request.PeriodId.Trim().ToLowerInvariant()}");
+        if (!feeEvidence.IsReady)
+        {
+            return new AutomatedJournalIntakeRunResult(
+                ProducerSkips: [],
+                Intake: EmptyIntake,
+                EvidenceAssessments: new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase)
+                {
+                    [feeAssessmentKey] = feeEvidence.Assessment
+                },
+                Readiness: feeEvidence.FailureState == AutomatedJournalScheduleStateDto.Blocked
+                    ? AutomatedJournalIntakeReadiness.Blocked
+                    : AutomatedJournalIntakeReadiness.NeedsInvestigation,
+                ReadinessBlockers: feeEvidence.Blockers);
+        }
+
         var production = _feeProducer.Produce(new FeeScheduleAccrualRequest(
             request.FundProfileId,
             request.PeriodId,
@@ -452,12 +504,20 @@ public sealed class AutomatedJournalIntakeRunner
             request.PerformanceFeeRate));
         var events = AttachFeeScheduleEvidence(
             production.Events,
-            request.EvidenceLinks,
+            (request.EvidenceLinks ?? [])
+                .Concat(feeEvidence.EvidenceLinks.Select(static link => link.Route))
+                .ToArray(),
             retainedAtUtc,
             request.Actor,
             request.FundProfileId,
             request.PeriodId);
 
+        var evidenceAssessments = events
+            .Where(static journalEvent => !string.IsNullOrWhiteSpace(journalEvent.IdempotencyKey))
+            .ToDictionary(
+                static journalEvent => journalEvent.IdempotencyKey!,
+                _ => feeEvidence.Assessment,
+                StringComparer.OrdinalIgnoreCase);
         var intake = events.Count == 0
             ? EmptyIntake
             : await _intake.IntakeAsync(
@@ -470,10 +530,16 @@ public sealed class AutomatedJournalIntakeRunner
                     request.PeriodId,
                     request.EntityId,
                     request.TenantId,
-                    request.CompanyId),
+                    request.CompanyId,
+                    evidenceAssessments),
                 ct).ConfigureAwait(false);
 
-        return new AutomatedJournalIntakeRunResult(production.Skipped, intake);
+        return new AutomatedJournalIntakeRunResult(
+            production.Skipped,
+            intake,
+            evidenceAssessments,
+            AutomatedJournalIntakeReadiness.Ready,
+            []);
     }
 
     private static IReadOnlyList<AutomatedJournalEvent> AttachFeeScheduleEvidence(

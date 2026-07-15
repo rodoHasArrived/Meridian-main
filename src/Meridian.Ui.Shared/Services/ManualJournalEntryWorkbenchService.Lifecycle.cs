@@ -723,11 +723,37 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 "Select a period that belongs to the journal entry ledger book."));
         }
 
-        // Closing entries are the governed exception: they must post into the (closed) period
-        // being finalized, so the closed-period bar does not apply to them. The posting guard and
-        // the ClosingEntry posting kind carry the governance for this path.
-        if (draft.EntryType != ManualJournalEntryTypeDto.ClosingEntry &&
-            !string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
+        var isGovernedClosingReversal = false;
+        if (draft.EntryType == ManualJournalEntryTypeDto.Reversal &&
+            draft.ReversalOfJournalEntryId is { } reversalSourceId)
+        {
+            var reversalSource = await _draftStore
+                .GetAsync(
+                    draft.FundProfileId,
+                    reversalSourceId,
+                    ct,
+                    draft.TenantId,
+                    draft.CompanyId)
+                .ConfigureAwait(false);
+            isGovernedClosingReversal = reversalSource?.EntryType == ManualJournalEntryTypeDto.ClosingEntry;
+        }
+
+        // Closing entries and their source-linked governed reversals are the mutations accepted
+        // after soft close. They must not enter approval/posting while the period is still open,
+        // and hard close remains the final mutation boundary.
+        if ((draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry || isGovernedClosingReversal) &&
+            !string.Equals(period.Status, "SoftClosed", StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(Issue(
+                "manual-je.closing-period-not-soft-closed",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Ledger period '{periodId:D}' is {period.Status}; closing entries and governed closing-entry reversals require an exactly soft-closed period.",
+                "periodId",
+                "Soft-close the period before approving its closing entry, or use governed reopen before a restatement."));
+        }
+        else if (draft.EntryType != ManualJournalEntryTypeDto.ClosingEntry &&
+                 !isGovernedClosingReversal &&
+                 !string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
         {
             issues.Add(Issue(
                 "manual-je.period-closed",

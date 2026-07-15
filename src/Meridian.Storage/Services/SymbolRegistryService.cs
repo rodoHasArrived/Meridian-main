@@ -380,6 +380,44 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
             .OrderBy(s => s.Canonical);
     }
 
+    public async Task<string?> GetMigrationMarkerAsync(string migrationId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(migrationId);
+
+        await _registryLock.WaitAsync(ct);
+        try
+        {
+            return _registry.MigrationMarkers.TryGetValue(migrationId.Trim(), out var fingerprint)
+                ? fingerprint
+                : null;
+        }
+        finally
+        {
+            _registryLock.Release();
+        }
+    }
+
+    public async Task SetMigrationMarkerAsync(
+        string migrationId,
+        string fingerprint,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(migrationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
+
+        await _registryLock.WaitAsync(ct);
+        try
+        {
+            _registry.MigrationMarkers[migrationId.Trim()] = fingerprint.Trim();
+            _registry.LastUpdatedAt = DateTime.UtcNow;
+            await SaveRegistryAsync(ct);
+        }
+        finally
+        {
+            _registryLock.Release();
+        }
+    }
+
     public async Task SaveRegistryAsync(CancellationToken ct = default)
     {
         var json = JsonSerializer.Serialize(_registry, MarketDataJsonContext.Default.SymbolRegistry);

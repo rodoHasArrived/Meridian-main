@@ -24,7 +24,10 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     private static readonly TimeSpan DefaultCancellationTimeout = TimeSpan.FromSeconds(1);
 
     private readonly Ledger.Ledger _ledger;
-    private readonly Channel<TradeExecutedEvent> _channel;
+    private readonly Channel<PendingTradeFillPosting> _channel;
+    private readonly ITradeFillPostingStore _postingStore;
+    private readonly string _postingScope;
+    private readonly TaskCompletionSource _recoveryLoaded = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
     private readonly ILogger<LedgerPostingConsumer> _logger;
@@ -36,6 +39,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     private readonly object _postingBoundarySync = new();
     private Task? _disposeTask;
     private bool _postingDisabled;
+    private int _disposeStarted;
     private int _cancellationSourceDisposed;
 
     internal Task ProcessingCompletion => _processingTask;
@@ -45,6 +49,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     /// </summary>
     /// <param name="ledger">The double-entry ledger that journal entries will be posted to.</param>
     /// <param name="logger">Logger for diagnostic output.</param>
+    /// <param name="postingStore">Durable accepted-fill handoff owned by the same accounting scope.</param>
+    /// <param name="postingScope">Exact ledger book/period scope represented by the store and ledger.</param>
     /// <param name="channelCapacity">
     ///     Maximum number of un-processed events to buffer before additional publishes block
     ///     until the consumer drains capacity (backpressure).
@@ -61,6 +67,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     public LedgerPostingConsumer(
         Ledger.Ledger ledger,
         ILogger<LedgerPostingConsumer> logger,
+        ITradeFillPostingStore postingStore,
+        string postingScope,
         int channelCapacity = 10_000,
         ISecurityValidationGateService? securityValidationGate = null,
         bool requireSecurityMasterPostingGate = true,
@@ -69,11 +77,21 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(postingStore);
+        ArgumentException.ThrowIfNullOrWhiteSpace(postingScope);
         if (channelCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(channelCapacity));
+        if (!string.Equals(postingStore.PostingScope, postingScope.Trim(), StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"Posting store scope '{postingStore.PostingScope}' does not match ledger scope '{postingScope.Trim()}'.",
+                nameof(postingScope));
+        }
 
         _ledger = ledger;
         _logger = logger;
+        _postingStore = postingStore;
+        _postingScope = postingScope.Trim();
         _securityValidationGate = securityValidationGate;
         _requireSecurityMasterPostingGate = requireSecurityMasterPostingGate;
         _drainTimeout = RequirePositiveTimeout(drainTimeout, DefaultDrainTimeout, nameof(drainTimeout));
@@ -88,24 +106,51 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             SingleWriter = false,
             SingleReader = true
         };
-        _channel = Channel.CreateBounded<TradeExecutedEvent>(options);
+        _channel = Channel.CreateBounded<PendingTradeFillPosting>(options);
         _processingTask = Task.Run(() => ProcessAsync(_cts.Token));
     }
 
     /// <summary>
-    /// Enqueues a <see cref="TradeExecutedEvent"/> for asynchronous ledger posting.
-    /// Returns immediately while the channel has capacity; when the channel is full the call
-    /// blocks until the background consumer frees space, so fills are never dropped.
+    /// Durably accepts a <see cref="TradeExecutedEvent"/> for asynchronous ledger posting.
+    /// Returning means the fill can replay after restart. While the channel has capacity the
+    /// call returns after the WAL append; when full it blocks until the consumer frees space.
     /// </summary>
     /// <exception cref="ChannelClosedException">
-    ///     Disposal has begun and the event could not be enqueued.
+    ///     Disposal prevented acceptance, or the fill was durably accepted but the live channel
+    ///     closed before enqueue; in the latter case the exception message confirms restart replay.
     /// </exception>
     public void Publish(TradeExecutedEvent tradeEvent)
     {
         ArgumentNullException.ThrowIfNull(tradeEvent);
+        if (Volatile.Read(ref _disposeStarted) != 0)
+        {
+            throw new ChannelClosedException(
+                $"LedgerPostingConsumer is disposed; fill {tradeEvent.FillId} for {tradeEvent.Symbol} was not accepted.");
+        }
+
+        // Establish a strict cut between restart replay and live acceptance so a fill cannot
+        // appear in both the recovered snapshot and the channel during consumer startup.
+        _recoveryLoaded.Task.GetAwaiter().GetResult();
+        if (Volatile.Read(ref _disposeStarted) != 0)
+        {
+            throw new ChannelClosedException(
+                $"LedgerPostingConsumer is disposed; fill {tradeEvent.FillId} for {tradeEvent.Symbol} was not accepted.");
+        }
+
+        // The synchronous publisher contract intentionally applies storage backpressure here:
+        // returning means the executed fill is durably replayable even if this process stops.
+        var acceptance = _postingStore
+            .AcceptAsync(tradeEvent, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+        if (!acceptance.ShouldEnqueue)
+            return;
+
+        var posting = acceptance.Posting
+            ?? throw new InvalidOperationException("A newly accepted trade fill is missing its durable posting envelope.");
 
         // Fast path: capacity available.
-        if (_channel.Writer.TryWrite(tradeEvent))
+        if (_channel.Writer.TryWrite(posting))
             return;
 
         // Slow path: channel full. Block the publisher until the consumer drains capacity
@@ -114,13 +159,13 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             "LedgerPostingConsumer channel is full; applying backpressure for fill {FillId} on {Symbol}",
             tradeEvent.FillId, tradeEvent.Symbol);
 
-        while (!_channel.Writer.TryWrite(tradeEvent))
+        while (!_channel.Writer.TryWrite(posting))
         {
             var channelOpen = _channel.Writer.WaitToWriteAsync().AsTask().GetAwaiter().GetResult();
             if (!channelOpen)
             {
                 throw new ChannelClosedException(
-                    $"LedgerPostingConsumer is disposed; fill {tradeEvent.FillId} for {tradeEvent.Symbol} was not enqueued.");
+                    $"LedgerPostingConsumer is disposed; durable fill {tradeEvent.FillId} for {tradeEvent.Symbol} will replay on restart.");
             }
         }
     }
@@ -134,6 +179,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     {
         lock (_disposeSync)
         {
+            Interlocked.Exchange(ref _disposeStarted, 1);
             return new ValueTask(_disposeTask ??= DisposeCoreAsync());
         }
     }
@@ -272,28 +318,90 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
 
     private async Task ProcessAsync(CancellationToken ct)
     {
-        await foreach (var evt in _channel.Reader.ReadAllAsync(ct).ConfigureAwait(false))
+        try
         {
-            try
+            var recovered = await _postingStore.LoadPendingAsync(ct).ConfigureAwait(false);
+            _recoveryLoaded.TrySetResult();
+            foreach (var posting in recovered)
             {
-                await PostEventAsync(evt, ct).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
+                await ProcessPostingAsync(posting, ct).ConfigureAwait(false);
             }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+
+            await foreach (var posting in _channel.Reader.ReadAllAsync(ct).ConfigureAwait(false))
             {
-                throw;
+                await ProcessPostingAsync(posting, ct).ConfigureAwait(false);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Failed to post ledger entries for fill {FillId} ({Symbol})",
-                    evt.FillId, evt.Symbol);
-            }
+        }
+        catch (Exception ex)
+        {
+            _recoveryLoaded.TrySetException(ex);
+            throw;
         }
     }
 
-    private async Task PostEventAsync(TradeExecutedEvent evt, CancellationToken ct)
+    private async Task ProcessPostingAsync(PendingTradeFillPosting posting, CancellationToken ct)
     {
+        var evt = posting.TradeEvent;
+        try
+        {
+            var result = await PostEventAsync(evt, ct).ConfigureAwait(false);
+            if (!result.Posted)
+            {
+                await RecordFailureSafelyAsync(evt, result.Failure!, null).ConfigureAwait(false);
+                return;
+            }
+
+            // Acknowledgement is intentionally not cancellable after ledger mutation. If it
+            // fails, the pending record survives and replay detects the existing fill journals.
+            await _postingStore.MarkPostedAsync(evt.FillId, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await RecordFailureSafelyAsync(evt, ex.Message, ex).ConfigureAwait(false);
+        }
+    }
+
+    private async Task RecordFailureSafelyAsync(
+        TradeExecutedEvent evt,
+        string failure,
+        Exception? exception)
+    {
+        try
+        {
+            await _postingStore.RecordFailureAsync(evt.FillId, failure, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception persistenceException)
+        {
+            _logger.LogError(
+                persistenceException,
+                "Failed to append reconciliation handoff for fill {FillId} ({Symbol}); the original pending WAL record remains unacknowledged",
+                evt.FillId,
+                evt.Symbol);
+        }
+
+        _logger.LogError(
+            exception,
+            "Failed to post ledger entries for fill {FillId} ({Symbol}); the fill remains pending for replay",
+            evt.FillId,
+            evt.Symbol);
+    }
+
+    private async Task<LedgerPostingAttempt> PostEventAsync(TradeExecutedEvent evt, CancellationToken ct)
+    {
+        lock (_postingBoundarySync)
+        {
+            if (_postingDisabled || ct.IsCancellationRequested)
+                throw new OperationCanceledException("Ledger posting consumer is shutting down.", ct);
+            if (HasCompletePosting(evt))
+                return LedgerPostingAttempt.Success;
+        }
+
         var securityGate = await EvaluateSecurityMasterPostingGateAsync(evt, ct).ConfigureAwait(false);
         if (!securityGate.CanPost)
         {
@@ -302,7 +410,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
                 evt.FillId,
                 evt.Symbol,
                 securityGate.Reason);
-            return;
+            return LedgerPostingAttempt.Failed(securityGate.Reason);
         }
 
         ct.ThrowIfCancellationRequested();
@@ -318,23 +426,30 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
                 ? LedgerAccounts.Cash
                 : LedgerAccounts.CashAccount(accountId);
             var metadata = BuildPostingMetadata(evt, securityGate);
+            var existing = _ledger.GetJournalEntries(new LedgerQuery(FillId: evt.FillId));
+            var hasTradePosting = existing.Any(entry => PostingMatches(entry, evt, "trade-fill"));
+            var hasCommissionPosting = evt.Commission <= 0m
+                || existing.Any(entry => PostingMatches(entry, evt, "trade-commission"));
 
-            switch (evt.Side)
+            if (!hasTradePosting)
             {
-                case Sdk.OrderSide.Buy:
-                    PostBuy(evt, cashAccount, accountId, metadata);
-                    break;
+                switch (evt.Side)
+                {
+                    case Sdk.OrderSide.Buy:
+                        PostBuy(evt, cashAccount, accountId, metadata);
+                        break;
 
-                case Sdk.OrderSide.Sell:
-                    PostSell(evt, cashAccount, accountId, metadata);
-                    break;
+                    case Sdk.OrderSide.Sell:
+                        PostSell(evt, cashAccount, accountId, metadata);
+                        break;
 
-                default:
-                    _logger.LogWarning("Unhandled order side {Side} for fill {FillId}", evt.Side, evt.FillId);
-                    break;
+                    default:
+                        return LedgerPostingAttempt.Failed(
+                            $"Order side '{evt.Side}' is not supported for fill '{evt.FillId:D}'.");
+                }
             }
 
-            if (evt.Commission > 0m)
+            if (!hasCommissionPosting)
             {
                 PostCommission(evt, cashAccount, accountId, metadata);
             }
@@ -343,6 +458,33 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         _logger.LogDebug(
             "Posted ledger entries for fill {FillId}: {Side} {Quantity} {Symbol} @ {Price}",
             evt.FillId, evt.Side, evt.FilledQuantity, evt.Symbol, evt.FillPrice);
+        return LedgerPostingAttempt.Success;
+    }
+
+    private bool HasCompletePosting(TradeExecutedEvent evt)
+    {
+        var existing = _ledger.GetJournalEntries(new LedgerQuery(FillId: evt.FillId));
+        var hasTradePosting = existing.Any(entry => PostingMatches(entry, evt, "trade-fill"));
+        var hasCommissionPosting = evt.Commission <= 0m
+            || existing.Any(entry => PostingMatches(entry, evt, "trade-commission"));
+        return hasTradePosting && hasCommissionPosting;
+    }
+
+    private bool PostingMatches(JournalEntry entry, TradeExecutedEvent evt, string activityType)
+    {
+        if (!string.Equals(entry.Metadata.ActivityType, activityType, StringComparison.Ordinal)
+            || !string.Equals(entry.Metadata.Symbol, evt.Symbol, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(
+                entry.Metadata.FinancialAccountId,
+                evt.FinancialAccountId,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return entry.Metadata.Tags is not null
+            && entry.Metadata.Tags.TryGetValue("ledgerPosting.scope", out var retainedScope)
+            && string.Equals(retainedScope, _postingScope, StringComparison.Ordinal);
     }
 
     private async Task<LedgerPostingSecurityGateResult> EvaluateSecurityMasterPostingGateAsync(
@@ -385,7 +527,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             issueCodes);
     }
 
-    private static JournalEntryMetadata BuildPostingMetadata(
+    private JournalEntryMetadata BuildPostingMetadata(
         TradeExecutedEvent evt,
         LedgerPostingSecurityGateResult securityGate)
     {
@@ -396,7 +538,8 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             ["securityMaster.scope"] = securityGate.ValidationScope,
             ["securityMaster.gate"] = "resolved-approved-mapped",
             ["securityMaster.issueCodes"] = string.Join(",", securityGate.IssueCodes),
-            ["source.orderId"] = evt.OrderId
+            ["source.orderId"] = evt.OrderId,
+            ["ledgerPosting.scope"] = _postingScope
         };
 
         return new JournalEntryMetadata(
@@ -517,5 +660,12 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
 
         public static LedgerPostingSecurityGateResult Blocked(string reason)
             => new(false, null, "SecurityMasterResolution", [], reason);
+    }
+
+    private sealed record LedgerPostingAttempt(bool Posted, string? Failure)
+    {
+        public static LedgerPostingAttempt Success { get; } = new(true, null);
+
+        public static LedgerPostingAttempt Failed(string failure) => new(false, failure);
     }
 }

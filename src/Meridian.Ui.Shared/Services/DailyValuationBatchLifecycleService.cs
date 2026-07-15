@@ -62,6 +62,12 @@ public sealed class DailyValuationBatchLifecycleService
             var batchCorrelationId = string.IsNullOrWhiteSpace(schedule.BatchCorrelationId)
                 ? BuildRecoveredBatchCorrelationId(schedule, memberIds)
                 : schedule.BatchCorrelationId.Trim();
+            var lifecycleEvidence = schedule.EvidenceLinks
+                .Select(static link => link.Route)
+                .Concat(request.EvidenceLinks)
+                .Where(static link => !string.IsNullOrWhiteSpace(link))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
             var drafts = new List<ManualJournalEntryDraftDto>(memberIds.Length);
             var blockers = new List<string>();
@@ -78,6 +84,7 @@ public sealed class DailyValuationBatchLifecycleService
 
                 if (draft.LedgerBookId != schedule.LedgerBookId ||
                     !IsDailyValuationDraft(draft) ||
+                    !string.Equals(draft.EntityId, schedule.EntityId, StringComparison.OrdinalIgnoreCase) ||
                     !string.Equals(draft.TenantId, tenantId, StringComparison.OrdinalIgnoreCase) ||
                     !string.Equals(draft.CompanyId, companyId, StringComparison.OrdinalIgnoreCase))
                 {
@@ -122,7 +129,7 @@ public sealed class DailyValuationBatchLifecycleService
                             actor,
                             notes,
                             batchCorrelationId,
-                            request.EvidenceLinks,
+                            lifecycleEvidence,
                             ct).ConfigureAwait(false);
                         drafts[index] = validation.JournalEntry;
                         if (validation.JournalEntry.Status == ManualJournalEntryStatusDto.NeedsFix ||
@@ -150,7 +157,7 @@ public sealed class DailyValuationBatchLifecycleService
                             actor,
                             notes,
                             batchCorrelationId,
-                            request.EvidenceLinks,
+                            lifecycleEvidence,
                             ct).ConfigureAwait(false);
                     }
                     catch (InvalidOperationException ex)

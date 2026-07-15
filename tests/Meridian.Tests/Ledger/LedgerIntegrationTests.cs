@@ -941,6 +941,16 @@ public sealed class LedgerIntegrationTests
         ledger.TrialBalanceAsOf(t1)[revenue].Should().Be(100m);
         ledger.TrialBalanceAsOf(t2)[revenue].Should().Be(150m);
 
+        ledger.Journal.Select(entry => entry.Description)
+            .Should().Equal("first sale", "second sale");
+        ledger.GetJournalEntries().Select(entry => entry.Description)
+            .Should().Equal("first sale", "second sale");
+        var running = ledger.GetRunningBalance(cash);
+        running.Select(point => point.Description)
+            .Should().Equal("first sale", "second sale");
+        running.Select(point => point.Balance)
+            .Should().Equal(100m, 150m);
+
         var snapshot = ledger.SnapshotAsOf(t1);
         snapshot.JournalEntryCount.Should().Be(1);
         snapshot.LedgerEntryCount.Should().Be(2);

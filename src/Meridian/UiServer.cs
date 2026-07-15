@@ -15,6 +15,7 @@ using Meridian.Contracts.Configuration;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
+using Meridian.Execution.Events;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -202,7 +203,8 @@ public sealed class UiServer : IAsyncDisposable
                 auditTrail: sp.GetService<ExecutionAuditTrailService>(),
                 portfolioState: portfolio,
                 sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
-                options: sp.GetRequiredService<OrderManagementSystemOptions>());
+                options: sp.GetRequiredService<OrderManagementSystemOptions>(),
+                tradeEventPublisher: sp.GetService<ITradeEventPublisher>());
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(

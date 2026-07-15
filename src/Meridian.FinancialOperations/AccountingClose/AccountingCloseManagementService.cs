@@ -755,6 +755,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             throw new ArgumentException("WorkflowId is required.", nameof(request));
         }
 
+        await _writeGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
         var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.Actor, "Actor") : actor.Trim();
         var workflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
         if (workflow is null)
@@ -824,6 +827,19 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         plan = AttachClosingEntriesGate(plan, closingGate);
+        if (request.PrepareClosingEntriesOnly)
+        {
+            var preparationIssues = closingGate.State is ClosePostingGateStateDto.Blocked
+                or ClosePostingGateStateDto.Unavailable
+                ? new[] { ClosingEntriesIssue(closingGate) }
+                : Array.Empty<AccountingConfigurationValidationIssueDto>();
+            return new ClosePeriodLockResultDto(
+                false,
+                plan,
+                null,
+                preparationIssues);
+        }
+
         if (!closingGate.IsReadyForLock)
         {
             return new ClosePeriodLockResultDto(
@@ -832,6 +848,29 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 null,
                 [ClosingEntriesIssue(closingGate)]);
         }
+
+        // Closing-entry preparation can await external stores. Re-read the governed workflow at the
+        // irreversible mutation boundary so a concurrent sign-off/configuration/version change cannot
+        // hard-close the ledger against a stale close plan.
+        var boundaryWorkflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+        if (boundaryWorkflow is null)
+        {
+            return null;
+        }
+
+        var boundaryPlan = BuildPeriodPlan(boundaryWorkflow);
+        var boundaryIssues = BuildClosePeriodLockIssues(request, boundaryWorkflow, boundaryPlan);
+        if (boundaryIssues.Count > 0)
+        {
+            return new ClosePeriodLockResultDto(
+                false,
+                AttachClosingEntriesGate(boundaryPlan, closingGate),
+                null,
+                boundaryIssues);
+        }
+
+        workflow = boundaryWorkflow;
+        plan = AttachClosingEntriesGate(boundaryPlan, closingGate);
 
         try
         {
@@ -885,12 +924,23 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             ? Array.Empty<AccountingConfigurationValidationIssueDto>()
             : transition.Blockers
                 .Select(static blocker => ToValidationIssue(blocker))
+                .Append(new AccountingConfigurationValidationIssueDto(
+                    "CloseWorkflowTransitionPendingAfterLedgerHardClose",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "The ledger period is hard-closed, but the workflow close transition did not commit.",
+                    plan.ClosePlanId,
+                    "Refresh the close plan and retry the same close command with the current workflow version; ledger hard close is idempotent."))
                 .ToArray();
         return new ClosePeriodLockResultDto(
             transition.Success && updatedPlan.IsPeriodLocked,
             updatedPlan,
             transition,
             transitionIssues);
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
     }
 
     public Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
@@ -913,6 +963,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             throw new ArgumentException("WorkflowId is required.", nameof(request));
         }
 
+        await _writeGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
         var role = RequireText(request.Role, "Role");
         if (!string.Equals(role, "Controller", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(role, "Fund Controller", StringComparison.OrdinalIgnoreCase))
@@ -976,6 +1029,48 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 [ClosingEntriesIssue(unavailable)]);
         }
 
+        // Re-read immediately before the durable ledger reopen. This prevents a stale version from
+        // reopening the ledger after another close-plan mutation completed while the request waited.
+        var boundaryWorkflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+        if (boundaryWorkflow is null)
+        {
+            return null;
+        }
+
+        var boundaryPlan = BuildPeriodPlan(boundaryWorkflow);
+        if (!boundaryPlan.IsPeriodLocked)
+        {
+            return new ClosePeriodReopenResultDto(
+                false,
+                await AttachClosingEntriesGateAsync(boundaryPlan, boundaryWorkflow, ct, tenantId, companyId).ConfigureAwait(false),
+                null,
+                null,
+                [new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodNotLocked",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Close period '{boundaryPlan.PeriodId}' is no longer locked and cannot enter governed reopen.",
+                    boundaryPlan.ClosePlanId,
+                    "Refresh the close plan before retrying the reopen command.")]);
+        }
+
+        if (boundaryWorkflow.Version != request.ExpectedWorkflowVersion)
+        {
+            return new ClosePeriodReopenResultDto(
+                false,
+                await AttachClosingEntriesGateAsync(boundaryPlan, boundaryWorkflow, ct, tenantId, companyId).ConfigureAwait(false),
+                null,
+                null,
+                [new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodReopenVersionMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Workflow version {boundaryWorkflow.Version} does not match expected version {request.ExpectedWorkflowVersion}.",
+                    boundaryPlan.ClosePlanId,
+                    "Refresh the close plan before reopening the period.")]);
+        }
+
+        workflow = boundaryWorkflow;
+        plan = boundaryPlan;
+
         var reversalGate = await _postingWorkbench.ReopenAndQueueClosingReversalsAsync(
                 RequirePostingContext(workflow, plan, tenantId, companyId),
                 new AccountingClosePostingCommand(
@@ -1011,13 +1106,26 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             : AttachClosingEntriesGate(BuildPeriodPlan(transition.Workflow), reversalGate);
         var reopenIssues = transition.Success
             ? Array.Empty<AccountingConfigurationValidationIssueDto>()
-            : transition.Blockers.Select(static blocker => ToValidationIssue(blocker)).ToArray();
+            : transition.Blockers
+                .Select(static blocker => ToValidationIssue(blocker))
+                .Append(new AccountingConfigurationValidationIssueDto(
+                    "CloseWorkflowReopenPendingAfterLedgerReopen",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    "The ledger period is reopened, but the workflow reopen transition did not commit.",
+                    plan.ClosePlanId,
+                    "Refresh the close plan and retry the exact reopen command with the current workflow version; the retained reversal receipt makes ledger reopen idempotent."))
+                .ToArray();
         return new ClosePeriodReopenResultDto(
             transition.Success,
             updatedPlan,
             transition,
             reversalGate,
             reopenIssues);
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
     }
 
     private ClosePeriodPlanDto BuildPeriodPlan(OperationsContinuityWorkflowDto workflow)
@@ -1072,7 +1180,8 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             BuildCloseCalendar(tasks, isPeriodLocked),
             planConfiguration,
             evidenceReviews,
-            operatingCoverage);
+            operatingCoverage,
+            WorkflowVersion: workflow.Version);
     }
 
     private async Task<ClosePeriodPlanDto> BuildPeriodPlanWithGateAsync(
@@ -1939,6 +2048,15 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                 "Close period lock requires a non-negative expected workflow version.",
                 plan.ClosePlanId,
                 "Refresh the workflow and retry period lock with the current version."));
+        }
+        else if (request.ExpectedWorkflowVersion != workflow.Version)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "ClosePeriodLockVersionMismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Workflow version {workflow.Version} does not match expected version {request.ExpectedWorkflowVersion}.",
+                plan.ClosePlanId,
+                "Refresh the close plan before posting closing entries or locking the period."));
         }
 
         var unique = new List<AccountingConfigurationValidationIssueDto>(issues.Count);

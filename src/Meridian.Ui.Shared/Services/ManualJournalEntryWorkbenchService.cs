@@ -254,13 +254,25 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsurePeriodUnlocked(request.PeriodIsLocked, "save manual journal entry drafts");
+        var requestedTenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId);
+        var requestedCompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId);
+        var existing = await _draftStore.GetAsync(
+            request.Draft.FundProfileId,
+            request.Draft.JournalEntryId,
+            ct,
+            requestedTenantId,
+            requestedCompanyId).ConfigureAwait(false);
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft with
         {
-            TenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId),
-            CompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId)
+            TenantId = requestedTenantId,
+            CompanyId = requestedCompanyId,
+            // Automated evidence grades are server-produced accounting-control facts. A browser or
+            // WPF resave may edit the draft, but cannot clear, replace, or upgrade the retained grade.
+            AutomationEvidenceAssessment = existing is null
+                ? request.Draft.AutomationEvidenceAssessment
+                : existing.AutomationEvidenceAssessment
         }, allowIncomplete: true, ct).ConfigureAwait(false);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
-        var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct, normalizedDraft.TenantId, normalizedDraft.CompanyId).ConfigureAwait(false);
         if (existing is not null)
         {
             EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing);
@@ -1254,8 +1266,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             throw new InvalidOperationException("Manual journal reversal and rebook actions cannot transition the posted entry while the generated correction draft has critical validation issues.");
         }
 
-        await _draftStore.SaveAsync(corrected, ct).ConfigureAwait(false);
-        await _draftStore.SaveAsync(correction, ct).ConfigureAwait(false);
+        // The source transition and its source-linked correction are one accounting mutation.
+        // Retaining either draft without the other creates an unrecoverable workbench state, so
+        // stores must publish both together or leave the prior source unchanged.
+        await _draftStore.SaveBatchAsync([corrected, correction], ct).ConfigureAwait(false);
         await AppendAuditAsync(corrected, reverseSides ? "manual-je.reverse" : "manual-je.rebook", request.Actor, request.CorrelationId, corrected.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         await AppendAuditAsync(correction, auditAction, request.Actor, request.CorrelationId, correction.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         return new JournalEntryLifecycleActionResultDto(corrected, transition, [correction]);

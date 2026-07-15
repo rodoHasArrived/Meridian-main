@@ -118,6 +118,13 @@ public class WebSocketConnectionManagerTests
         supervisor.MarkConnectionLost().Should().BeTrue();
         var reconnectEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var reconnectRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionCts = new CancellationTokenSource();
+        var receiveLoopCts = new CancellationTokenSource();
+        var webSocket = new ClientWebSocket();
+        SetPrivateField(manager, "_connectionCts", connectionCts);
+        SetPrivateField(manager, "_receiveLoopCts", receiveLoopCts);
+        SetPrivateField(manager, "_receiveTask", Task.CompletedTask);
+        SetPrivateField(manager, "_webSocket", webSocket);
         var reconnectTask = supervisor.ReconnectAsync(async _ =>
         {
             reconnectEntered.TrySetResult(true);
@@ -131,11 +138,162 @@ public class WebSocketConnectionManagerTests
 
         elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
         manager.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        GetPrivateField<Task>(manager, "_receiveTask").Should().BeNull();
+        GetPrivateField<CancellationTokenSource>(manager, "_connectionCts").Should().BeNull();
+        GetPrivateField<CancellationTokenSource>(manager, "_receiveLoopCts").Should().BeNull();
+        GetPrivateField<ClientWebSocket>(manager, "_webSocket").Should().BeNull();
+        FluentActions.Invoking(connectionCts.Cancel)
+            .Should().Throw<ObjectDisposedException>();
+        FluentActions.Invoking(receiveLoopCts.Cancel)
+            .Should().Throw<ObjectDisposedException>();
         await manager.DisposeAsync();
 
         reconnectRelease.TrySetResult(true);
         (await reconnectTask.WaitAsync(TimeSpan.FromSeconds(1))).Should().BeFalse();
         manager.IsConnected.Should().BeFalse();
+        webSocket.Dispose();
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WhenReceiveCleanupIgnoresCancellation_ForceDetachesTransport()
+    {
+        var manager = new WebSocketConnectionManager(
+            providerName: "test-provider",
+            config: null,
+            logger: null,
+            shutdownTimeout: TimeSpan.FromMilliseconds(40));
+        var receiveTaskRelease = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionCts = new CancellationTokenSource();
+        var receiveLoopCts = new CancellationTokenSource();
+        var webSocket = new ClientWebSocket();
+
+        SetPrivateField(manager, "_connectionCts", connectionCts);
+        SetPrivateField(manager, "_receiveLoopCts", receiveLoopCts);
+        SetPrivateField(manager, "_receiveTask", receiveTaskRelease.Task);
+        SetPrivateField(manager, "_webSocket", webSocket);
+
+        try
+        {
+            await manager.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(1));
+
+            manager.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+            manager.IsConnected.Should().BeFalse();
+            GetPrivateField<Task>(manager, "_receiveTask").Should().BeNull();
+            GetPrivateField<CancellationTokenSource>(manager, "_connectionCts").Should().BeNull();
+            GetPrivateField<CancellationTokenSource>(manager, "_receiveLoopCts").Should().BeNull();
+            GetPrivateField<ClientWebSocket>(manager, "_webSocket").Should().BeNull();
+
+            FluentActions.Invoking(connectionCts.Cancel)
+                .Should().Throw<ObjectDisposedException>();
+            FluentActions.Invoking(receiveLoopCts.Cancel)
+                .Should().Throw<ObjectDisposedException>();
+        }
+        finally
+        {
+            receiveTaskRelease.TrySetResult(true);
+            await receiveTaskRelease.Task;
+            webSocket.Dispose();
+            await manager.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WhenHeartbeatCleanupIgnoresCancellation_StillReleasesTransportResources()
+    {
+        var manager = new WebSocketConnectionManager(
+            providerName: "test-provider",
+            config: null,
+            logger: null,
+            shutdownTimeout: TimeSpan.FromMilliseconds(40));
+        var heartbeatRelease = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionCts = new CancellationTokenSource();
+        var receiveLoopCts = new CancellationTokenSource();
+        var webSocket = new ClientWebSocket();
+        var heartbeat = new WebSocketHeartbeat(webSocket);
+
+        manager.HeartbeatDisposer = _ => heartbeatRelease.Task;
+        SetPrivateField(manager, "_heartbeat", heartbeat);
+        SetPrivateField(manager, "_connectionCts", connectionCts);
+        SetPrivateField(manager, "_receiveLoopCts", receiveLoopCts);
+        SetPrivateField(manager, "_receiveTask", Task.CompletedTask);
+        SetPrivateField(manager, "_webSocket", webSocket);
+
+        try
+        {
+            await manager.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(1));
+
+            manager.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+            manager.IsConnected.Should().BeFalse();
+            GetPrivateField<WebSocketHeartbeat>(manager, "_heartbeat").Should().BeNull();
+            GetPrivateField<Task>(manager, "_receiveTask").Should().BeNull();
+            GetPrivateField<CancellationTokenSource>(manager, "_connectionCts").Should().BeNull();
+            GetPrivateField<CancellationTokenSource>(manager, "_receiveLoopCts").Should().BeNull();
+            GetPrivateField<ClientWebSocket>(manager, "_webSocket").Should().BeNull();
+
+            FluentActions.Invoking(connectionCts.Cancel)
+                .Should().Throw<ObjectDisposedException>();
+            FluentActions.Invoking(receiveLoopCts.Cancel)
+                .Should().Throw<ObjectDisposedException>();
+        }
+        finally
+        {
+            heartbeatRelease.TrySetResult(true);
+            await heartbeat.DisposeAsync();
+            webSocket.Dispose();
+            await manager.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task DisconnectAsync_WithoutCallerCancellation_WhenHeartbeatCleanupIgnoresCancellation_IsBoundedAndReleasesTransportResources()
+    {
+        var manager = new WebSocketConnectionManager(
+            providerName: "test-provider",
+            config: null,
+            logger: null,
+            shutdownTimeout: TimeSpan.FromMilliseconds(40));
+        var heartbeatRelease = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionCts = new CancellationTokenSource();
+        var receiveLoopCts = new CancellationTokenSource();
+        var webSocket = new ClientWebSocket();
+        var heartbeat = new WebSocketHeartbeat(webSocket);
+
+        manager.HeartbeatDisposer = _ => heartbeatRelease.Task;
+        SetPrivateField(manager, "_heartbeat", heartbeat);
+        SetPrivateField(manager, "_connectionCts", connectionCts);
+        SetPrivateField(manager, "_receiveLoopCts", receiveLoopCts);
+        SetPrivateField(manager, "_receiveTask", Task.CompletedTask);
+        SetPrivateField(manager, "_webSocket", webSocket);
+
+        try
+        {
+            await manager.DisconnectAsync().WaitAsync(TimeSpan.FromSeconds(1));
+
+            heartbeatRelease.Task.IsCompleted.Should().BeFalse(
+                "default disconnect must be bounded even when heartbeat cleanup never completes");
+            manager.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+            manager.IsConnected.Should().BeFalse();
+            GetPrivateField<WebSocketHeartbeat>(manager, "_heartbeat").Should().BeNull();
+            GetPrivateField<Task>(manager, "_receiveTask").Should().BeNull();
+            GetPrivateField<CancellationTokenSource>(manager, "_connectionCts").Should().BeNull();
+            GetPrivateField<CancellationTokenSource>(manager, "_receiveLoopCts").Should().BeNull();
+            GetPrivateField<ClientWebSocket>(manager, "_webSocket").Should().BeNull();
+
+            FluentActions.Invoking(connectionCts.Cancel)
+                .Should().Throw<ObjectDisposedException>();
+            FluentActions.Invoking(receiveLoopCts.Cancel)
+                .Should().Throw<ObjectDisposedException>();
+        }
+        finally
+        {
+            heartbeatRelease.TrySetResult(true);
+            await heartbeat.DisposeAsync();
+            webSocket.Dispose();
+            await manager.DisposeAsync();
+        }
     }
 
     [Fact]

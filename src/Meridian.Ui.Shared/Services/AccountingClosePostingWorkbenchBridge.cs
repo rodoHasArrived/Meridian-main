@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
@@ -92,6 +94,12 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         }
 
         var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
+        if (scope.Period.Status != LedgerPeriodStatusDto.SoftClosed)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{scope.Period.Label}' must be soft-closed before a closing-entry draft can be queued.");
+        }
+
         await _runner.RunPeriodCloseIntakeAsync(
                 ToIntakeRequest(context, scope, command.Actor),
                 ct)
@@ -222,35 +230,97 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             }
         }
 
-        foreach (var batch in activeClosingBatches)
+        var retainedActiveReversals = activeClosingBatches
+            .Where(batch => reversalDrafts.ContainsKey(batch.JournalEntryId))
+            .Select(batch => reversalDrafts[batch.JournalEntryId])
+            .ToArray();
+        if (retainedActiveReversals.Any(draft => !IsSameReopenReplay(draft, command)))
         {
-            if (reversalDrafts.ContainsKey(batch.JournalEntryId))
-            {
-                continue;
-            }
+            throw new InvalidOperationException(
+                "Retained reversal drafts do not match this reopen actor, correlation, reason, and evidence; retry is rejected.");
+        }
 
-            var reversed = await _lifecycle.ApplyLifecycleActionAsync(
-                    new JournalEntryLifecycleActionRequestDto(
-                        batch.JournalEntryId,
-                        scope.FundProfileId,
-                        JournalEntryLifecycleActionDto.Reverse,
-                        command.Actor,
-                        batch.Version,
-                        command.Reason,
-                        command.CorrelationId,
-                        command.EvidenceLinks,
-                        command.ActionOrigin,
-                        PeriodIsLocked: false,
-                        LedgerBookId: context.LedgerBookId,
-                        TenantId: context.TenantId,
-                        CompanyId: context.CompanyId),
-                    ct)
-                .ConfigureAwait(false);
-            var generated = reversed.GeneratedJournalEntries.SingleOrDefault(draft =>
-                draft.ReversalOfJournalEntryId == batch.JournalEntryId)
-                ?? throw new InvalidOperationException(
-                    $"Reversing closing batch '{batch.JournalEntryId:D}' did not retain a source-linked reversal draft.");
-            reversalDrafts[batch.JournalEntryId] = generated;
+        // Retain the exact reopen intent before changing the durable period. If the ledger reopen
+        // succeeds but reversal creation is interrupted, the SoftClosed period and this receipt
+        // form an explicit recoverable state: only an exact command replay may continue.
+        await RetainReopenIntentAsync(
+                context,
+                scope.FundProfileId,
+                period,
+                command,
+                ct)
+            .ConfigureAwait(false);
+
+        if (period.Status == LedgerPeriodStatusDto.HardClosed)
+        {
+            try
+            {
+                await RequireLedgerBookService().ReopenPeriodAsync(
+                        period.PeriodId,
+                        new ReopenLedgerPeriodRequest(
+                            command.Actor,
+                            command.Role!,
+                            command.Reason,
+                            command.ApprovalReference!,
+                            command.EvidenceLinks,
+                            command.ActionOrigin),
+                        ct)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"The governed reopen intent for ledger period '{period.Label}' was retained, but the ledger transition did not complete. Retry the exact reopen command to converge safely.",
+                    ex);
+            }
+        }
+
+        try
+        {
+            foreach (var batch in activeClosingBatches)
+            {
+                if (reversalDrafts.ContainsKey(batch.JournalEntryId))
+                {
+                    continue;
+                }
+
+                var reversed = await _lifecycle.ApplyLifecycleActionAsync(
+                        new JournalEntryLifecycleActionRequestDto(
+                            batch.JournalEntryId,
+                            scope.FundProfileId,
+                            JournalEntryLifecycleActionDto.Reverse,
+                            command.Actor,
+                            batch.Version,
+                            command.Reason,
+                            command.CorrelationId,
+                            command.EvidenceLinks,
+                            command.ActionOrigin,
+                            PeriodIsLocked: false,
+                            LedgerBookId: context.LedgerBookId,
+                            TenantId: context.TenantId,
+                            CompanyId: context.CompanyId),
+                        ct)
+                    .ConfigureAwait(false);
+                var generated = reversed.GeneratedJournalEntries.SingleOrDefault(draft =>
+                    draft.ReversalOfJournalEntryId == batch.JournalEntryId)
+                    ?? throw new InvalidOperationException(
+                        $"Reversing closing batch '{batch.JournalEntryId:D}' did not retain a source-linked reversal draft.");
+                reversalDrafts[batch.JournalEntryId] = generated;
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{period.Label}' was reopened under a retained governed intent, but closing-entry reversal drafting did not complete. Retry the exact reopen command to converge the retained source and reversal state.",
+                ex);
         }
 
         var activeReversals = activeClosingBatches
@@ -263,26 +333,6 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         {
             throw new InvalidOperationException(
                 "Retained reversal drafts do not match this reopen actor, correlation, reason, and evidence; retry is rejected.");
-        }
-
-        if (period.Status == LedgerPeriodStatusDto.SoftClosed)
-        {
-            // The durable period transition already completed on an earlier attempt. The exact
-            // reversal replay match above proves this is a retry, not a new reopen command.
-        }
-        else
-        {
-            await RequireLedgerBookService().ReopenPeriodAsync(
-                    period.PeriodId,
-                    new ReopenLedgerPeriodRequest(
-                        command.Actor,
-                        command.Role!,
-                        command.Reason,
-                        command.ApprovalReference!,
-                        command.EvidenceLinks,
-                        command.ActionOrigin),
-                    ct)
-                .ConfigureAwait(false);
         }
 
         var evaluated = await EvaluateAsync(context, ct).ConfigureAwait(false);
@@ -303,6 +353,74 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         };
     }
 
+    private async Task RetainReopenIntentAsync(
+        AccountingClosePostingContext context,
+        string fundProfileId,
+        LedgerPeriodDto period,
+        AccountingClosePostingCommand command,
+        CancellationToken ct)
+    {
+        if (_workbench is not ManualJournalEntryWorkbenchService receiptStore)
+        {
+            throw new InvalidOperationException(
+                "A governed period reopen requires the durable accounting audit store to retain an exact-command intent receipt.");
+        }
+
+        var commandHash = BuildReopenCommandHash(context, period.PeriodId, command);
+        var retention = await receiptStore.RetainCloseReopenReceiptAsync(
+                fundProfileId,
+                context.LedgerBookId,
+                period.PeriodId,
+                period.Version,
+                command.Actor,
+                command.CorrelationId!,
+                commandHash,
+                command.EvidenceLinks,
+                context.TenantId,
+                context.CompanyId,
+                allowCreate: period.Status == LedgerPeriodStatusDto.HardClosed,
+                ct)
+            .ConfigureAwait(false);
+        if (retention == CloseReopenReceiptRetention.Conflict)
+        {
+            throw new InvalidOperationException(
+                "The retained governed reopen intent does not match this actor, correlation, reason, approval, and evidence; retry is rejected.");
+        }
+
+        if (retention == CloseReopenReceiptRetention.Missing)
+        {
+            throw new InvalidOperationException(
+                "The ledger period is already soft-closed without a retained governed reopen intent; retry fails closed.");
+        }
+    }
+
+    private static string BuildReopenCommandHash(
+        AccountingClosePostingContext context,
+        Guid ledgerPeriodId,
+        AccountingClosePostingCommand command)
+    {
+        var normalizedEvidence = command.EvidenceLinks
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim().ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal);
+        var canonical = string.Join(
+            "|",
+            context.WorkflowId.ToString("D"),
+            context.FundAccountId.ToString("D"),
+            context.LedgerBookId.ToString("D"),
+            ledgerPeriodId.ToString("D"),
+            context.TenantId?.Trim().ToLowerInvariant() ?? string.Empty,
+            context.CompanyId?.Trim().ToLowerInvariant() ?? string.Empty,
+            command.Actor.Trim().ToLowerInvariant(),
+            command.Role?.Trim().ToLowerInvariant() ?? string.Empty,
+            command.Reason.Trim(),
+            command.ApprovalReference?.Trim().ToLowerInvariant() ?? string.Empty,
+            command.CorrelationId?.Trim().ToLowerInvariant() ?? string.Empty,
+            string.Join(';', normalizedEvidence));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+    }
+
     private static bool IsSameReopenReplay(
         ManualJournalEntryDraftDto reversalDraft,
         AccountingClosePostingCommand command)
@@ -317,9 +435,20 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             string.Equals(item.Actor, command.Actor, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(item.CorrelationId, command.CorrelationId, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(item.Notes, command.Reason, StringComparison.Ordinal));
-        return transition is not null && command.EvidenceLinks.All(requested =>
-            transition.EvidenceLinks.Any(retained =>
-                string.Equals(requested, retained, StringComparison.OrdinalIgnoreCase)));
+        if (transition is null)
+        {
+            return false;
+        }
+
+        var requestedEvidence = command.EvidenceLinks
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var retainedEvidence = transition.EvidenceLinks
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return requestedEvidence.SetEquals(retainedEvidence);
     }
 
     private static ClosePostingGateDto BuildGate(
@@ -506,9 +635,10 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             throw new ArgumentException("Period-close posting context requires workflow, fund account, ledger book, and period ids.", nameof(context));
         }
 
-        if (string.IsNullOrWhiteSpace(context.TenantId) != string.IsNullOrWhiteSpace(context.CompanyId))
+        if (string.IsNullOrWhiteSpace(context.TenantId) &&
+            !string.IsNullOrWhiteSpace(context.CompanyId))
         {
-            throw new ArgumentException("Period-close posting context must carry tenant and company scope together.", nameof(context));
+            throw new ArgumentException("Period-close posting context cannot carry company scope without tenant scope.", nameof(context));
         }
     }
 

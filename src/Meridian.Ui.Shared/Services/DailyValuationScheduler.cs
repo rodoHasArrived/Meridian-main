@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using Meridian.Application.Accounting;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Store;
@@ -52,7 +53,9 @@ public sealed record DailyValuationScheduleWorkItem(
     int MaximumPositionAgeDays = 1,
     string? StaticPositionHash = null,
     IReadOnlyList<Guid>? JournalEntryIds = null,
-    string? BatchCorrelationId = null)
+    string? BatchCorrelationId = null,
+    string? CreatedBy = null,
+    string? LastConfiguredBy = null)
 {
     public IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 
@@ -132,12 +135,18 @@ public sealed class InMemoryDailyValuationPortfolioSource :
         string? fundProfileId,
         Guid? ledgerBookId,
         string? periodId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? entityId = null,
+        string? tenantId = null,
+        string? companyId = null)
         => DailyValuationScheduleProjection.ProjectStatus(
             await ListAsync(ct).ConfigureAwait(false),
             fundProfileId,
             ledgerBookId,
-            periodId);
+            periodId,
+            entityId,
+            tenantId,
+            companyId);
 }
 
 /// <summary>Atomic JSON-backed daily valuation schedule source.</summary>
@@ -220,12 +229,18 @@ public sealed class FileDailyValuationPortfolioSource :
         string? fundProfileId,
         Guid? ledgerBookId,
         string? periodId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? entityId = null,
+        string? tenantId = null,
+        string? companyId = null)
         => DailyValuationScheduleProjection.ProjectStatus(
             await ListAsync(ct).ConfigureAwait(false),
             fundProfileId,
             ledgerBookId,
-            periodId);
+            periodId,
+            entityId,
+            tenantId,
+            companyId);
 
     public sealed record DailyValuationScheduleSnapshot(
         IReadOnlyList<DailyValuationScheduleWorkItem> WorkItems);
@@ -316,6 +331,14 @@ public sealed class DailyValuationScheduledWorker
             foreach (var item in due)
             {
                 ct.ThrowIfCancellationRequested();
+                if (!CanExecute(item))
+                {
+                    _logger.LogDebug(
+                        "Daily valuation schedule remains pending because this host lacks its execution dependencies. ScheduleId={ScheduleId}",
+                        item.ScheduleId);
+                    continue;
+                }
+
                 results.Add(await RunWorkItemAsync(item, nowUtc, ct).ConfigureAwait(false));
             }
 
@@ -326,6 +349,11 @@ public sealed class DailyValuationScheduledWorker
             _runGate.Release();
         }
     }
+
+    private bool CanExecute(DailyValuationScheduleWorkItem item)
+        => _positionService is not null &&
+           _positionService.CanResolveConfigured(item) &&
+           _intakeRunner.CanRunDailyMarkToMarket;
 
     private sealed record DailyValuationOwnerScope(string? TenantId, string? CompanyId)
     {
@@ -423,17 +451,33 @@ public sealed class DailyValuationScheduledWorker
                 .OrderBy(static id => id)
                 .ToArray();
             var evidenceLinks = BuildEvidenceLinks(item, run, positionResolution.EvidenceLinks, nowUtc);
-            var blockers = run.Valuation.RejectedMarks
+            var markBlockers = run.Valuation.RejectedMarks
                 .Select(static rejection => $"{rejection.Symbol}: {rejection.Reason}")
                 .ToArray();
+            var intakeBlockers = BuildIntakeBlockers(run.Intake);
+            var blockers = markBlockers.Concat(intakeBlockers).ToArray();
 
-            if (run.Valuation.Projection is null && blockers.Length > 0)
+            if (run.Valuation.Projection is null && markBlockers.Length > 0)
             {
                 return await CompleteAsync(
                     running,
                     nowUtc,
                     DailyValuationScheduleStateDto.Blocked,
-                    $"Daily valuation was blocked because {blockers.Length} closing mark(s) failed trust policy.",
+                    $"Daily valuation was blocked because {markBlockers.Length} closing mark(s) failed trust policy.",
+                    journalEntryIds,
+                    batchCorrelationId,
+                    evidenceLinks,
+                    blockers,
+                    ct).ConfigureAwait(false);
+            }
+
+            if (intakeBlockers.Count > 0)
+            {
+                return await CompleteAsync(
+                    running,
+                    nowUtc,
+                    DailyValuationScheduleStateDto.Blocked,
+                    $"Daily valuation retained {intakeBlockers.Count} draft intake blocker(s); the batch is not ready for approval.",
                     journalEntryIds,
                     batchCorrelationId,
                     evidenceLinks,
@@ -461,13 +505,24 @@ public sealed class DailyValuationScheduledWorker
                     $"Daily valuation produced {run.Valuation.Approvals.Count} governed draft(s), but intake retained {journalEntryIds.Length} draft id(s).");
             }
 
-            var summary = run.Intake.Created.Count > 0
+            var allAlreadyPosted = run.Intake.Created.Count == 0 &&
+                                   run.Intake.Skipped.Count == run.Valuation.Approvals.Count &&
+                                   run.Intake.Skipped.All(static skipped =>
+                                       skipped.Disposition == AutomatedJournalDraftIntakeDisposition.ExistingDraftGoverned &&
+                                       (skipped.ExistingStatus is ManualJournalEntryStatusDto.Posted or
+                                           ManualJournalEntryStatusDto.CloseLocked));
+            var state = allAlreadyPosted
+                ? DailyValuationScheduleStateDto.Posted
+                : DailyValuationScheduleStateDto.DraftReady;
+            var summary = allAlreadyPosted
+                ? $"Daily valuation idempotently confirmed all {journalEntryIds.Length} governed draft(s) in batch '{batchCorrelationId}' were already posted."
+                : run.Intake.Created.Count > 0
                 ? $"Daily valuation created {run.Intake.Created.Count} governed draft(s) in batch '{batchCorrelationId}' awaiting human approval."
                 : $"Daily valuation idempotently reused {journalEntryIds.Length} governed draft(s) in batch '{batchCorrelationId}'.";
             return await CompleteAsync(
                 running,
                 nowUtc,
-                DailyValuationScheduleStateDto.DraftReady,
+                state,
                 summary,
                 journalEntryIds,
                 batchCorrelationId,
@@ -477,7 +532,14 @@ public sealed class DailyValuationScheduledWorker
         }
         catch (DailyValuationPendingDraftException ex)
         {
-            var retainedIds = item.JournalEntryIds
+            var retainedScheduleIds = ex.PendingBatchCorrelationId is not null &&
+                                      string.Equals(
+                                          item.BatchCorrelationId,
+                                          ex.PendingBatchCorrelationId,
+                                          StringComparison.OrdinalIgnoreCase)
+                ? item.JournalEntryIds
+                : [];
+            var retainedIds = retainedScheduleIds
                 .Concat(ex.PendingJournalEntryIds)
                 .Where(static id => id != Guid.Empty)
                 .Distinct()
@@ -489,7 +551,7 @@ public sealed class DailyValuationScheduledWorker
                 DailyValuationScheduleStateDto.Blocked,
                 ex.Message,
                 retainedIds,
-                item.BatchCorrelationId ?? BuildRecoveredBatchCorrelationId(item, retainedIds),
+                ex.PendingBatchCorrelationId ?? BuildRecoveredBatchCorrelationId(item, retainedIds),
                 item.EvidenceLinks,
                 [ex.Message],
                 ct).ConfigureAwait(false);
@@ -553,6 +615,30 @@ public sealed class DailyValuationScheduledWorker
             blockers,
             journalEntryIds,
             batchCorrelationId);
+    }
+
+    internal static IReadOnlyList<string> BuildIntakeBlockers(AutomatedJournalDraftIntakeResult intake)
+    {
+        var blockers = intake.Created
+            .Where(static draft => draft.Status is
+                ManualJournalEntryStatusDto.NeedsFix or
+                ManualJournalEntryStatusDto.Rejected or
+                ManualJournalEntryStatusDto.Reversed or
+                ManualJournalEntryStatusDto.Rebooked)
+            .Select(static draft =>
+                $"Draft '{draft.JournalEntryId:D}' was retained as {draft.Status} and is not ready for approval.")
+            .Concat(intake.Skipped
+                .Where(static skipped => skipped.Disposition is
+                    AutomatedJournalDraftIntakeDisposition.ProjectionFailed or
+                    AutomatedJournalDraftIntakeDisposition.ExistingDraftNeedsFix or
+                    AutomatedJournalDraftIntakeDisposition.ExistingDraftRejected or
+                    AutomatedJournalDraftIntakeDisposition.ExistingDraftTerminal or
+                    AutomatedJournalDraftIntakeDisposition.ExistingDraftReassessmentRequired)
+                .Select(static skipped => skipped.Reason))
+            .Where(static blocker => !string.IsNullOrWhiteSpace(blocker))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        return blockers;
     }
 
     private static DateTimeOffset AdvanceToNextRun(DateTimeOffset scheduledForUtc, DateTimeOffset nowUtc)
@@ -622,6 +708,10 @@ public sealed class DailyValuationSchedulerHostedService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Keep host startup independent from the first valuation tick. Some host/runtime
+        // combinations execute BackgroundService code synchronously until its first yield.
+        await Task.Yield();
+
         using var timer = new PeriodicTimer(TickInterval);
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -724,6 +814,10 @@ internal static class DailyValuationScheduleProjection
             EntityId = NormalizeOptional(workItem.EntityId),
             TenantId = NormalizeOptional(workItem.TenantId),
             CompanyId = NormalizeOptional(workItem.CompanyId),
+            CreatedBy = RequireText(workItem.CreatedBy ?? workItem.Actor, "Schedule creator"),
+            LastConfiguredBy = RequireText(
+                workItem.LastConfiguredBy ?? workItem.CreatedBy ?? workItem.Actor,
+                "Last configured by"),
             LastSummary = NormalizeOptional(workItem.LastSummary),
             EvidenceLinks = workItem.EvidenceLinks ?? [],
             Blockers = workItem.Blockers ?? [],
@@ -741,9 +835,15 @@ internal static class DailyValuationScheduleProjection
         IReadOnlyList<DailyValuationScheduleWorkItem> items,
         string? fundProfileId,
         Guid? ledgerBookId,
-        string? periodId)
+        string? periodId,
+        string? entityId = null,
+        string? tenantId = null,
+        string? companyId = null)
     {
         var normalizedFundProfileId = NormalizeOptional(fundProfileId);
+        var normalizedEntityId = NormalizeOptional(entityId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
         var matching = items
             .Where(item => normalizedFundProfileId is null || string.Equals(
                 item.FundProfileId,
@@ -751,9 +851,17 @@ internal static class DailyValuationScheduleProjection
                 StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId.Value)
             .Where(item => MatchesPeriod(item, periodId))
+            .Where(item => string.Equals(item.EntityId, normalizedEntityId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => string.Equals(item.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => string.Equals(item.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(static item => item.IsEnabled)
+            .ThenByDescending(static item => item.State is
+                DailyValuationScheduleStateDto.Running or
+                DailyValuationScheduleStateDto.Scheduled)
+            .ThenByDescending(static item => item.LastScheduledForUtc ?? item.LastRunAtUtc)
             .ThenByDescending(static item => item.LastRunAtUtc)
             .ThenBy(static item => item.NextRunAtUtc)
+            .ThenBy(static item => item.ScheduleId, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
 
         if (matching is null)
@@ -773,7 +881,10 @@ internal static class DailyValuationScheduleProjection
                 EvidenceLinks: [],
                 Blockers: [MissingScopeMessage],
                 JournalEntryIds: [],
-                BatchCorrelationId: null);
+                BatchCorrelationId: null,
+                normalizedEntityId,
+                normalizedTenantId,
+                normalizedCompanyId);
         }
 
         var state = matching.IsEnabled
@@ -801,7 +912,10 @@ internal static class DailyValuationScheduleProjection
             matching.EvidenceLinks,
             blockers,
             matching.JournalEntryIds,
-            matching.BatchCorrelationId);
+            matching.BatchCorrelationId,
+            matching.EntityId,
+            matching.TenantId,
+            matching.CompanyId);
     }
 
     public static void EnsureOwnershipUnchanged(
@@ -809,10 +923,18 @@ internal static class DailyValuationScheduleProjection
         DailyValuationScheduleWorkItem replacement)
     {
         if (!string.Equals(existing.TenantId, replacement.TenantId, StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(existing.CompanyId, replacement.CompanyId, StringComparison.OrdinalIgnoreCase))
+            !string.Equals(existing.CompanyId, replacement.CompanyId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(existing.FundProfileId, replacement.FundProfileId, StringComparison.OrdinalIgnoreCase) ||
+            existing.LedgerBookId != replacement.LedgerBookId ||
+            !string.Equals(existing.EntityId, replacement.EntityId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(existing.Currency, replacement.Currency, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(
+                existing.CreatedBy ?? existing.Actor,
+                replacement.CreatedBy ?? replacement.Actor,
+                StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
-                $"Daily valuation schedule '{existing.ScheduleId}' tenant/company ownership is immutable.");
+                $"Daily valuation schedule '{existing.ScheduleId}' belongs to a different immutable identity scope.");
         }
     }
 
@@ -852,4 +974,9 @@ internal static class DailyValuationScheduleProjection
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string RequireText(string? value, string label)
+        => string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException($"{label} is required.")
+            : value.Trim();
 }

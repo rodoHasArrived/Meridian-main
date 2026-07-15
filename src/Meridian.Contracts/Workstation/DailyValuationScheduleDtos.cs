@@ -34,7 +34,10 @@ public sealed record DailyValuationScheduleStatusDto(
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
     IReadOnlyList<string> Blockers,
     IReadOnlyList<Guid>? JournalEntryIds = null,
-    string? BatchCorrelationId = null)
+    string? BatchCorrelationId = null,
+    string? EntityId = null,
+    string? TenantId = null,
+    string? CompanyId = null)
 {
     /// <summary>
     /// Every governed draft in the latest valuation batch. <see cref="JournalEntryId"/> remains
@@ -82,5 +85,8 @@ public interface IDailyValuationScheduleStatusSource
         string? fundProfileId,
         Guid? ledgerBookId,
         string? periodId,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? entityId = null,
+        string? tenantId = null,
+        string? companyId = null);
 }

@@ -436,7 +436,7 @@ public sealed class DailyMarkToMarketService
         {
             _log.Warning(
                 "Daily mark-to-market run for fund {FundId} period {PeriodId} priced no positions ({UnpricedCount} unpriced, {StaleCount} stale)",
-                request.Policy.FundId, request.PeriodId, unpriced.Count, stalePriced.Count);
+                request.Policy.FundId, request.PeriodId, unpriced.Length, stalePriced.Count);
             return new DailyMarkToMarketRun(null, null, unpriced, rejected)
             {
                 StalePricedSymbols = stalePriced.Distinct(StringComparer.OrdinalIgnoreCase).ToArray()

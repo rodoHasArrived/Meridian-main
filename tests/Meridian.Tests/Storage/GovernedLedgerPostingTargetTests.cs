@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -158,6 +159,223 @@ public sealed class GovernedLedgerPostingTargetTests
         result.JournalEntryId.Should().Be(original.Entry.JournalEntryId);
     }
 
+    [Fact]
+    public async Task PostAsync_SameCommandWithRegeneratedJournalAndLineIds_ReturnsRetainedJournalId()
+    {
+        var original = BuildCommandWrite();
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(original);
+        normalized.Entry.Metadata.Tags.Should()
+            .ContainKey(AccountingPostingCommandValidator.PostingCommandFingerprintTag);
+        normalized.Entry.Metadata.Tags![AccountingPostingCommandValidator.PostingCommandFingerprintTag]
+            .Should().StartWith("sha256:");
+        var retained = new List<LedgerJournalEntryRecord> { ToRecord(normalized) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+        var regenerated = original with { Entry = RegenerateEntryIds(original.Entry) };
+
+        var result = await target.PostAsync(regenerated);
+
+        result.WasAppended.Should().BeFalse();
+        result.JournalEntryId.Should().Be(normalized.Entry.JournalEntryId);
+        result.JournalEntryId.Should().NotBe(regenerated.Entry.JournalEntryId);
+        store.Verify(
+            candidate => candidate.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task PostAsync_FullPostingCommandFingerprint_RejectsSemanticMutations()
+    {
+        var original = BuildCommandWrite();
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(original);
+        var retained = new List<LedgerJournalEntryRecord> { ToRecord(normalized) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+        var command = original.PostingCommand!;
+        var mutations = new (string Name, AccountingPostingCommandDto Command)[]
+        {
+            ("causation", command with { CausationId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd") }),
+            ("posting date", command with { PostingDate = command.PostingDate.AddMinutes(1) }),
+            ("expected version", command with { ExpectedVersion = command.ExpectedVersion + 1 }),
+            ("operator rationale", command with { OperatorRationale = "Controller approved corrected rationale" }),
+            ("book context", command with
+            {
+                BookContext = command.BookContext! with { DisplayName = "GAAP valuation book - amended" }
+            })
+        };
+
+        foreach (var mutation in mutations)
+        {
+            Func<Task> retry = async () =>
+                await target.PostAsync(original with { PostingCommand = mutation.Command });
+
+            await retry.Should().ThrowAsync<LedgerValidationException>(mutation.Name)
+                .WithMessage("*already retained with different accounting content*");
+        }
+
+        store.Verify(
+            candidate => candidate.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task PostAsync_BookContextMustMatchWriteBookPeriodBasisAndPolicy()
+    {
+        var original = BuildCommandWrite();
+        var command = original.PostingCommand!;
+        var context = command.BookContext!;
+        var store = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
+        using var target = new DurableLedgerPostingTarget(store.Object);
+        var mutations = new (string Name, AccountingBookContextDto Context)[]
+        {
+            ("book", context with { LedgerBookId = Guid.NewGuid() }),
+            ("period", context with { PeriodId = Guid.NewGuid() }),
+            ("missing period", context with { PeriodId = null }),
+            ("basis", context with { AccountingBasis = AccountingBasisKindDto.Tax }),
+            ("policy", context with { AccountingPolicyId = "fair-value-policy-changed" }),
+            ("policy version", context with { AccountingPolicyVersion = "v2" })
+        };
+
+        foreach (var mutation in mutations)
+        {
+            Func<Task> post = async () => await target.PostAsync(original with
+            {
+                PostingCommand = command with { BookContext = mutation.Context }
+            });
+
+            await post.Should().ThrowAsync<LedgerValidationException>(mutation.Name)
+                .WithMessage("*book context*");
+        }
+
+        store.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task PostAsync_GlobalCommandCollision_RejectsAggregateMutationWithRegeneratedIds()
+    {
+        var original = BuildCommandWrite();
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(original);
+        var retained = new List<LedgerJournalEntryRecord> { ToRecord(normalized) };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+        var changedAggregateId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        var retry = original with
+        {
+            AggregateId = changedAggregateId,
+            Entry = RegenerateEntryIds(original.Entry),
+            PostingCommand = original.PostingCommand! with { AggregateId = changedAggregateId }
+        };
+
+        Func<Task> post = async () => await target.PostAsync(retry);
+
+        await post.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*already retained with different accounting content*");
+        store.Verify(
+            candidate => candidate.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task PostAsync_ValidatesEveryRetainedIdentityCollisionBeforeAcceptingRetry()
+    {
+        var original = BuildCommandWrite();
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(original);
+        var regenerated = RegenerateEntryIds(normalized.Entry);
+        var conflicting = normalized with
+        {
+            Entry = CloneEntry(
+                regenerated,
+                regenerated.Metadata with
+                {
+                    EvidenceReferences =
+                    [
+                        new JournalEvidenceReference(
+                            "price-close",
+                            "evidence://provider/AAPL/2026-07-08/conflicting",
+                            "Source",
+                            "trusted-close",
+                            OccurredAt,
+                            "valuation-worker",
+                            ContentHash: "sha256:conflicting")
+                    ]
+                })
+        };
+        var retained = new List<LedgerJournalEntryRecord>
+        {
+            ToRecord(normalized, globalSequence: 1),
+            ToRecord(conflicting, globalSequence: 2)
+        };
+        var store = BuildStore(retained, _ => throw new InvalidOperationException("append must not run"));
+        using var target = new DurableLedgerPostingTarget(store.Object);
+
+        Func<Task> retry = async () => await target.PostAsync(original);
+
+        await retry.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*already retained with different accounting content*");
+        store.Verify(
+            candidate => candidate.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public void GlobalPostingCommandIdentityMigration_ReplacesAggregateCommandIndex()
+    {
+        var sql = ReadMigration("V_ledger_025__global_posting_command_identity.sql");
+
+        sql.Should().Contain("drop index if exists __SCHEMA__.ux_journal_entries_aggregate_command");
+        sql.Should().Contain("create unique index if not exists ux_journal_entries_command");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (command_id)");
+        sql.Should().Contain("where command_id is not null");
+    }
+
+    [Fact]
+    public void PostingIdentityCollisionScope_IsGlobalForJournalAndCommandButAggregateScopedForSourceAndIdempotency()
+    {
+        var write = BuildWrite();
+        var identity = LedgerPostingIdentity.FromWrite(write);
+        var otherAggregate = Guid.Parse("12121212-1212-1212-1212-121212121212");
+        var otherJournal = Guid.Parse("13131313-1313-1313-1313-131313131313");
+        var record = ToRecord(write);
+
+        LedgerPostingIdentityCollisionLookupExtensions.IsCollision(
+                record with { AggregateId = otherAggregate },
+                identity)
+            .Should().BeTrue("journal entry identity is global");
+        LedgerPostingIdentityCollisionLookupExtensions.IsCollision(
+                record with
+                {
+                    AggregateId = otherAggregate,
+                    Entry = RegenerateEntryIds(record.Entry)
+                },
+                identity)
+            .Should().BeTrue("posting command identity is global");
+
+        var sourceOnlyIdentity = identity with
+        {
+            JournalEntryId = otherJournal,
+            CommandId = Guid.NewGuid(),
+            IdempotencyKey = null
+        };
+        LedgerPostingIdentityCollisionLookupExtensions.IsCollision(record, sourceOnlyIdentity)
+            .Should().BeTrue();
+        LedgerPostingIdentityCollisionLookupExtensions.IsCollision(
+                record with { AggregateId = otherAggregate },
+                sourceOnlyIdentity)
+            .Should().BeFalse("source-event identity is aggregate scoped");
+
+        var idempotencyOnlyIdentity = sourceOnlyIdentity with
+        {
+            SourceEventId = Guid.NewGuid(),
+            IdempotencyKey = write.Entry.Metadata.IdempotencyKey
+        };
+        LedgerPostingIdentityCollisionLookupExtensions.IsCollision(record, idempotencyOnlyIdentity)
+            .Should().BeTrue();
+        LedgerPostingIdentityCollisionLookupExtensions.IsCollision(
+                record with { AggregateId = otherAggregate },
+                idempotencyOnlyIdentity)
+            .Should().BeFalse("idempotency identity is aggregate scoped");
+    }
+
     private static Mock<ILedgerJournalStore> BuildStore(
         List<LedgerJournalEntryRecord> retained,
         Action<LedgerJournalEntryWrite> append)
@@ -165,6 +383,15 @@ public sealed class GovernedLedgerPostingTargetTests
         var store = new Mock<ILedgerJournalStore>();
         store.Setup(candidate => candidate.GetByAggregateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => retained.ToArray());
+        store.As<ILedgerPostingIdentityCollisionLookup>()
+            .Setup(candidate => candidate.FindPostingIdentityCollisionsAsync(
+                It.IsAny<LedgerPostingIdentity>(),
+                It.IsAny<CancellationToken>()))
+            .Returns((LedgerPostingIdentity identity, CancellationToken _) =>
+                Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                    retained
+                        .Where(record => LedgerPostingIdentityCollisionLookupExtensions.IsCollision(record, identity))
+                        .ToArray()));
         store.Setup(candidate => candidate.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()))
             .Returns<LedgerJournalEntryWrite, CancellationToken>((write, _) =>
             {
@@ -172,6 +399,55 @@ public sealed class GovernedLedgerPostingTargetTests
                 return Task.CompletedTask;
             });
         return store;
+    }
+
+    private static LedgerJournalEntryWrite BuildCommandWrite()
+    {
+        var write = BuildWrite();
+        var command = new AccountingPostingCommandDto(
+            write.CommandId!.Value,
+            write.AggregateId,
+            write.PeriodId,
+            new DateOnly(2026, 7, 8),
+            OccurredAt,
+            write.Entry.Metadata.IdempotencyKey!,
+            Intent: AccountingPostingIntentDto.Adjustment,
+            SourceEventId: write.SourceEventId,
+            CorrelationId: write.CorrelationId,
+            CausationId: Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+            SourceJournalEntryId: write.SourceJournalEntryId,
+            ExpectedVersion: 7,
+            SourceEventType: "FairValueMarkAdjustment",
+            ApprovalState: AccountingPostingApprovalStateDto.Approved,
+            ApprovalId: "approval-1",
+            OperatorRationale: "Controller approved daily valuation",
+            Evidence:
+            [
+                new AccountingPostingEvidenceReferenceDto(
+                    "price-close",
+                    "evidence://provider/AAPL/2026-07-08",
+                    AccountingPostingEvidenceKindDto.Source,
+                    "trusted-close",
+                    OccurredAt,
+                    "valuation-worker",
+                    ContentHash: "sha256:original")
+            ],
+            LedgerBookId: LedgerBookId)
+        {
+            BookContext = new AccountingBookContextDto(
+                LedgerBookId,
+                "fund-alpha",
+                Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+                FundStructureNodeKindDto.Fund,
+                "GAAP valuation book",
+                "USD",
+                AccountingBasisKindDto.Gaap,
+                write.AccountingPolicyId,
+                write.AccountingPolicyVersion,
+                write.PeriodId)
+        };
+
+        return write with { PostingCommand = command };
     }
 
     private static LedgerJournalEntryWrite BuildWrite()
@@ -258,14 +534,16 @@ public sealed class GovernedLedgerPostingTargetTests
             LedgerBookId: LedgerBookId);
     }
 
-    private static LedgerJournalEntryRecord ToRecord(LedgerJournalEntryWrite write)
+    private static LedgerJournalEntryRecord ToRecord(
+        LedgerJournalEntryWrite write,
+        long globalSequence = 1)
         => new(
             write.Entry,
             write.AggregateId,
             write.PeriodId,
             write.CommandId,
             write.CorrelationId,
-            1,
+            globalSequence,
             OccurredAt,
             write.AccountingBasis,
             write.AccountingPolicyId,
@@ -276,6 +554,29 @@ public sealed class GovernedLedgerPostingTargetTests
             write.SourceJournalEntryId,
             write.PostingKind,
             write.AdjustmentApproval);
+
+    private static JournalEntry RegenerateEntryIds(JournalEntry entry)
+    {
+        var journalEntryId = Guid.NewGuid();
+        var lines = entry.Lines
+            .Select(line => new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                line.Timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                line.Description,
+                line.Dimensions))
+            .Reverse()
+            .ToArray();
+        return new JournalEntry(
+            journalEntryId,
+            entry.Timestamp,
+            entry.Description,
+            lines,
+            entry.Metadata);
+    }
 
     private static JournalEntry CloneEntry(JournalEntry entry, JournalEntryMetadata metadata)
         => new(entry.JournalEntryId, entry.Timestamp, entry.Description, entry.Lines, metadata);
@@ -304,4 +605,25 @@ public sealed class GovernedLedgerPostingTargetTests
                 write.Entry,
                 write.Entry.Metadata with { LedgerBook = ledgerBookId.ToString("D") })
         };
+
+    private static string ReadMigration(string fileName)
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var path = Path.Combine(
+                directory.FullName,
+                "src",
+                "Meridian.Storage",
+                "Ledger",
+                "Migrations",
+                fileName);
+            if (File.Exists(path))
+                return File.ReadAllText(path);
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
+    }
 }

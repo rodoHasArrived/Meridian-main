@@ -78,15 +78,76 @@ public static partial class LedgerEndpoints
                     return EndpointHelpers.Forbidden();
                 }
 
-                if (existing is not null && existing.JournalEntryIds.Count > 0)
+                if (existing?.State == AutomatedJournalScheduleStateDto.Running)
                 {
                     return Results.Conflict(new
                     {
-                        error = $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while its current cycle retains governed drafts. Resolve those drafts before changing the cycle."
+                        error = $"Automated journal schedule '{existing.ScheduleId}' is Running and cannot be reconfigured until its durable claim completes or resumes."
                     });
                 }
 
+                if (existing is not null && request.Version != existing.Version)
+                {
+                    return Results.Conflict(new
+                    {
+                        error = $"Automated journal schedule '{existing.ScheduleId}' version is stale. Expected {request.Version}, current {existing.Version}."
+                    });
+                }
+
+                if (existing is not null && existing.JournalEntryIds.Count > 0)
+                {
+                    var draftStore = context.RequestServices.GetService<IManualJournalEntryDraftStore>();
+                    if (draftStore is null)
+                    {
+                        return ServiceUnavailable();
+                    }
+
+                    foreach (var journalEntryId in existing.JournalEntryIds)
+                    {
+                        var draft = await draftStore.GetAsync(
+                            existing.FundProfileId,
+                            journalEntryId,
+                            context.RequestAborted,
+                            existing.TenantId,
+                            existing.CompanyId).ConfigureAwait(false);
+                        if (draft is null || draft.Status is ManualJournalEntryStatusDto.Draft or
+                            ManualJournalEntryStatusDto.NeedsFix or
+                            ManualJournalEntryStatusDto.Submitted or
+                            ManualJournalEntryStatusDto.Approved)
+                        {
+                            return Results.Conflict(new
+                            {
+                                error = $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while retained draft '{journalEntryId:D}' is pending. Post or reject the current draft before rearming."
+                            });
+                        }
+                    }
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
+                var now = (context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System)
+                    .GetUtcNow()
+                    .ToUniversalTime();
+                var runHistory = existing?.RunHistory ?? [];
+                if (existing is not null)
+                {
+                    var summary = $"Monthly {request.Kind} work was deliberately re-armed by {actor} after configuration review.";
+                    var rearm = new AutomatedJournalScheduleRunHistory(
+                        RunKey: FormattableString.Invariant(
+                            $"rearm|{existing.ScheduleId.Trim().ToLowerInvariant()}|v{existing.Version + 1}|{request.PeriodId.Trim().ToLowerInvariant()}"),
+                        ScheduledForUtc: existing.ScheduledForUtc ?? now,
+                        StartedAtUtc: now,
+                        CompletedAtUtc: now,
+                        State: AutomatedJournalScheduleStateDto.Scheduled,
+                        Summary: summary,
+                        PeriodId: request.PeriodId,
+                        PeriodStart: request.PeriodStart,
+                        PeriodEnd: request.PeriodEnd,
+                        HistoryKind: AutomatedJournalScheduleHistoryKind.Rearm,
+                        Actor: actor,
+                        PreviousVersion: existing.Version,
+                        ResultVersion: checked(existing.Version + 1));
+                    runHistory = runHistory.Append(rearm).ToArray();
+                }
 
                 var saved = await store.SaveAsync(request with
                 {
@@ -101,16 +162,20 @@ public static partial class LedgerEndpoints
                     JournalEntryIds = [],
                     LastSummary = existing is null
                         ? $"Monthly {request.Kind} work is scheduled."
-                        : $"Monthly {request.Kind} work was re-armed by {actor} after configuration review.",
+                        : $"Monthly {request.Kind} work was deliberately re-armed by {actor} after configuration review.",
                     EvidenceLinks = [],
                     Blockers = [],
-                    RunHistory = existing?.RunHistory ?? []
+                    RunHistory = runHistory
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(saved, jsonOptions);
             }
             catch (ArgumentException ex)
             {
                 return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (AutomatedJournalScheduleConcurrencyException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
             }
             catch (InvalidOperationException)
             {
@@ -170,11 +235,11 @@ public static partial class LedgerEndpoints
 
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var schedules = (await source.ListAsync(context.RequestAborted).ConfigureAwait(false))
-                .Where(item => tenantContext.TenantId is null || string.Equals(
+                .Where(item => string.Equals(
                     item.TenantId,
                     tenantContext.TenantId,
                     StringComparison.OrdinalIgnoreCase))
-                .Where(item => tenantContext.CompanyId is null || string.Equals(
+                .Where(item => string.Equals(
                     item.CompanyId,
                     tenantContext.CompanyId,
                     StringComparison.OrdinalIgnoreCase))
@@ -242,6 +307,8 @@ public static partial class LedgerEndpoints
                 var saved = await source.SaveAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
+                    CreatedBy = existing?.CreatedBy ?? existing?.Actor ?? ResolveMutationActor(context, request.Actor),
+                    LastConfiguredBy = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
                     State = DailyValuationScheduleStateDto.Scheduled,

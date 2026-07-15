@@ -42,6 +42,11 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     private WebSocketHeartbeat? _heartbeat;
     private Task? _disposeTask;
 
+    // Test seam for proving bounded cleanup when a heartbeat implementation ignores
+    // shutdown. Production always uses WebSocketHeartbeat.DisposeAsync directly.
+    internal Func<WebSocketHeartbeat, Task> HeartbeatDisposer { get; set; }
+        = static heartbeat => heartbeat.DisposeAsync().AsTask();
+
     // Transport activity complements the supervisor's lifecycle diagnostics.
     private DateTimeOffset? _lastMessageReceivedAt;
     private DateTimeOffset? _lastHeartbeatReceivedAt;
@@ -373,13 +378,52 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     }
 
     /// <summary>
-    /// Disconnects from the WebSocket gracefully.
+    /// Disconnects from the WebSocket gracefully. Calls without a caller cancellation token use
+    /// the manager shutdown timeout so non-cooperative heartbeat cleanup cannot block forever.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
         _log.Information("Disconnecting from {Provider} WebSocket", _providerName);
-        await _supervisor.DisconnectAsync(DisconnectTransportAsync, ct).ConfigureAwait(false);
+
+        if (ct.CanBeCanceled)
+        {
+            await _supervisor.DisconnectAsync(DisconnectTransportAsync, ct).ConfigureAwait(false);
+            _log.Information("Disconnected from {Provider} WebSocket", _providerName);
+            return;
+        }
+
+        Task? transportCleanupTask = null;
+        using var shutdownCts = new CancellationTokenSource(_shutdownTimeout);
+        try
+        {
+            await _supervisor.DisconnectAsync(
+                    token => transportCleanupTask = DisconnectTransportAsync(token),
+                    shutdownCts.Token)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (shutdownCts.IsCancellationRequested)
+        {
+            if (transportCleanupTask is not null)
+            {
+                // The supervisor may stop waiting as soon as its timeout token is cancelled.
+                // Wait for the transport transaction's non-blocking finally block so its
+                // detached socket and cancellation sources are released before we return.
+                await ObserveForcedCleanupAsync(transportCleanupTask, "disconnect transport")
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                // Cancellation can occur while a reconnect operation still owns the supervisor
+                // gate, before the transport transaction starts.
+                ForceDetachTransport();
+            }
+
+            _log.Warning(
+                "Timed out disconnecting {Provider}; completed forced transport cleanup",
+                _providerName);
+        }
+
         _log.Information("Disconnected from {Provider} WebSocket", _providerName);
     }
 
@@ -390,6 +434,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         var receiveLoopCts = _receiveLoopCts;
         var receiveTask = _receiveTask;
         var webSocket = _webSocket;
+        Task? heartbeatDisposeTask = null;
 
         _heartbeat = null;
         _connectionCts = null;
@@ -397,48 +442,45 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         _receiveTask = null;
         _webSocket = null;
 
-        if (heartbeat != null)
-        {
-            heartbeat.ConnectionLost -= OnConnectionLostAsync;
-            await heartbeat.DisposeAsync().ConfigureAwait(false);
-        }
-
         try
         {
-            connectionCts?.Cancel();
-            receiveLoopCts?.Cancel();
-        }
-        catch (Exception ex)
-        {
-            _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
-        }
+            if (heartbeat != null)
+            {
+                heartbeat.ConnectionLost -= OnConnectionLostAsync;
+                heartbeatDisposeTask = HeartbeatDisposer(heartbeat);
+                await heartbeatDisposeTask.WaitAsync(ct).ConfigureAwait(false);
+            }
 
-        if (webSocket != null)
-        {
             try
             {
-                if (webSocket.State is WebSocketState.Open or WebSocketState.CloseReceived)
-                {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
-                        .ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                _log.Warning("{Provider} WebSocket close was cancelled; forcing transport cleanup", _providerName);
+                connectionCts?.Cancel();
+                receiveLoopCts?.Cancel();
             }
             catch (Exception ex)
             {
-                _log.Warning(ex, "Error during {Provider} WebSocket close", _providerName);
+                _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
             }
-            finally
-            {
-                webSocket.Dispose();
-            }
-        }
 
-        try
-        {
+            if (webSocket != null)
+            {
+                try
+                {
+                    if (webSocket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                    {
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
+                            .ConfigureAwait(false);
+                    }
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    _log.Warning("{Provider} WebSocket close was cancelled; forcing transport cleanup", _providerName);
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning(ex, "Error during {Provider} WebSocket close", _providerName);
+                }
+            }
+
             if (receiveTask != null)
             {
                 try
@@ -457,14 +499,40 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     _log.Debug(ex, "Receive loop completion error during {Provider} disconnect", _providerName);
                 }
             }
+
+            ct.ThrowIfCancellationRequested();
         }
         finally
         {
+            if (heartbeatDisposeTask is { IsCompleted: false })
+                ObserveForcedCleanup(heartbeatDisposeTask, "heartbeat");
+
+            try
+            {
+                connectionCts?.Cancel();
+                receiveLoopCts?.Cancel();
+            }
+            catch (Exception ex)
+            {
+                _log.Debug(ex, "Cancellation source failed during final {Provider} transport cleanup", _providerName);
+            }
+
+            try
+            {
+                if (ct.IsCancellationRequested)
+                    webSocket?.Abort();
+                webSocket?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _log.Debug(ex, "WebSocket failed during final {Provider} transport cleanup", _providerName);
+            }
+
             receiveLoopCts?.Dispose();
             connectionCts?.Dispose();
+            if (receiveTask is { IsCompleted: false })
+                ObserveForcedCleanup(receiveTask, "receive loop");
         }
-
-        ct.ThrowIfCancellationRequested();
     }
 
     /// <summary>
@@ -586,7 +654,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         if (heartbeat is not null)
         {
             heartbeat.ConnectionLost -= OnConnectionLostAsync;
-            ObserveForcedCleanup(heartbeat.DisposeAsync().AsTask(), "heartbeat");
+            ObserveForcedCleanup(HeartbeatDisposer(heartbeat), "heartbeat");
         }
 
         try
@@ -906,39 +974,6 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
 }
 
 /// <summary>
-/// Shared lifecycle states for provider connection supervision.
-/// </summary>
-public enum ProviderConnectionLifecycleState
-{
-    NotConfigured = 0,
-    Configured = 1,
-    Connecting = 2,
-    Connected = 3,
-    Degraded = 4,
-    Reconnecting = 5,
-    Disconnecting = 6,
-    Disconnected = 7,
-    Failed = 8,
-    Disabled = 9
-}
-
-/// <summary>
-/// Normalized provider failure categories used by retry policy, diagnostics, and health surfaces.
-/// </summary>
-public enum ProviderFailureKind
-{
-    Unknown = 0,
-    TransientNetworkFailure = 1,
-    ProviderRateLimit = 2,
-    AuthenticationOrAuthorizationFailure = 3,
-    InvalidSubscription = 4,
-    ProviderOutage = 5,
-    MalformedProviderResponse = 6,
-    LocalConfigurationError = 7,
-    Cancelled = 8
-}
-
-/// <summary>
 /// Classifies provider failures so reconnection loops can distinguish transient errors
 /// from credential/configuration failures that need operator action.
 /// </summary>
@@ -986,31 +1021,6 @@ public static class ProviderFailureClassifier
             || message.Contains("configuration", StringComparison.OrdinalIgnoreCase);
     }
 }
-
-/// <summary>
-/// Safe provider WebSocket diagnostics snapshot. It intentionally excludes URIs,
-/// credentials, headers, account IDs, and payload data.
-/// </summary>
-public sealed record WebSocketConnectionDiagnostics(
-    string ProviderName,
-    ProviderConnectionLifecycleState LifecycleState,
-    WebSocketState WebSocketState,
-    bool IsConnected,
-    bool IsReconnecting,
-    int ReconnectAttempts,
-    DateTimeOffset? LastConnectedAt,
-    DateTimeOffset? LastDisconnectedAt,
-    DateTimeOffset? LastHeartbeatReceivedAt,
-    DateTimeOffset? LastMessageReceivedAt,
-    DateTimeOffset? LastReconnectAttemptAt,
-    string? LastError,
-    ProviderFailureKind? LastFailureKind,
-    TimeSpan? ConnectionAge,
-    TimeSpan? IdleDuration,
-    int ActiveSubscriptions = 0,
-    int FailedSubscriptions = 0,
-    int RecoveringSubscriptions = 0,
-    DateTimeOffset? LastSubscriptionMessageAt = null);
 
 /// <summary>
 /// Represents a gap in data caused by a WebSocket disconnection and reconnection.

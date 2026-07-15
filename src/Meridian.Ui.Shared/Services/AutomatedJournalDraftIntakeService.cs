@@ -10,14 +10,20 @@ internal sealed class DailyValuationPendingDraftException : InvalidOperationExce
     public DailyValuationPendingDraftException(
         IReadOnlyList<Guid> pendingJournalEntryIds,
         ManualJournalEntryStatusDto pendingStatus,
-        string scope)
+        string scope,
+        string? pendingBatchCorrelationId)
         : base(
             $"Daily valuation correction for {scope} is blocked while {pendingJournalEntryIds.Count} prior same-day draft(s), including '{pendingJournalEntryIds[0]:D}', remain pending ({pendingStatus}); post or reject the pending batch before creating a corrected mark.")
     {
         PendingJournalEntryIds = pendingJournalEntryIds;
+        PendingBatchCorrelationId = string.IsNullOrWhiteSpace(pendingBatchCorrelationId)
+            ? null
+            : pendingBatchCorrelationId.Trim();
     }
 
     public IReadOnlyList<Guid> PendingJournalEntryIds { get; }
+
+    public string? PendingBatchCorrelationId { get; }
 }
 
 /// <summary>
@@ -58,10 +64,29 @@ public sealed record AutomatedJournalPreparedDraftIntakeRequest(
 /// <summary>
 /// One event the intake did not turn into a new draft, with the reason it was skipped.
 /// </summary>
+public enum AutomatedJournalDraftIntakeDisposition
+{
+    ProjectionFailed = 0,
+    ExistingDraftReady = 1,
+    ExistingDraftNeedsFix = 2,
+    ExistingDraftRejected = 3,
+    ExistingDraftGoverned = 4,
+    ExistingDraftTerminal = 5,
+    ExistingDraftReassessmentRequired = 6
+}
+
 public sealed record AutomatedJournalDraftIntakeSkip(
     Guid JournalEntryId,
     string IdempotencyKey,
-    string Reason);
+    string Reason,
+    AutomatedJournalDraftIntakeDisposition Disposition = AutomatedJournalDraftIntakeDisposition.ProjectionFailed,
+    ManualJournalEntryStatusDto? ExistingStatus = null,
+    AutomatedJournalEvidenceAssessmentDto? ExistingEvidenceAssessment = null)
+{
+    public bool IsReadyDuplicate => Disposition is
+        AutomatedJournalDraftIntakeDisposition.ExistingDraftReady or
+        AutomatedJournalDraftIntakeDisposition.ExistingDraftGoverned;
+}
 
 /// <summary>
 /// Outcome of an automated journal intake run. Created drafts land in the workbench queue
@@ -184,17 +209,25 @@ public sealed class AutomatedJournalDraftIntakeService
             ct.ThrowIfCancellationRequested();
 
             var idempotencyKey = draft.Event.IdempotencyKey ?? BuildFallbackIdempotencyKey(draft.Event);
-            var journalEntryId = BuildDeterministicJournalEntryId(request.FundProfileId, idempotencyKey);
+            var journalEntryId = BuildDeterministicJournalEntryId(request, idempotencyKey);
 
             var existing = await _draftStore
                 .GetAsync(request.FundProfileId, journalEntryId, ct, request.TenantId, request.CompanyId)
                 .ConfigureAwait(false);
             if (existing is not null)
             {
+                var incomingAssessment = request.EvidenceAssessments is not null &&
+                                         request.EvidenceAssessments.TryGetValue(idempotencyKey, out var candidateAssessment)
+                    ? candidateAssessment
+                    : null;
+                var disposition = ClassifyExistingDraft(existing, incomingAssessment);
                 skipped.Add(new AutomatedJournalDraftIntakeSkip(
                     journalEntryId,
                     idempotencyKey,
-                    $"Draft already exists with status {existing.Status}."));
+                    BuildExistingDraftReason(existing, disposition),
+                    disposition,
+                    existing.Status,
+                    existing.AutomationEvidenceAssessment));
                 continue;
             }
 
@@ -244,7 +277,7 @@ public sealed class AutomatedJournalDraftIntakeService
             var idempotencyKey = string.IsNullOrWhiteSpace(draft.Metadata.IdempotencyKey)
                 ? BuildFallbackIdempotencyKey(draft.Event)
                 : draft.Metadata.IdempotencyKey.Trim();
-            var journalEntryId = BuildDeterministicJournalEntryId(request.FundProfileId, idempotencyKey);
+            var journalEntryId = BuildDeterministicJournalEntryId(request, idempotencyKey);
             if (existingDrafts.Any(existing => existing.JournalEntryId == journalEntryId))
             {
                 continue;
@@ -256,27 +289,58 @@ public sealed class AutomatedJournalDraftIntakeService
                 IsPendingDailyValuationDraft(existingDraft) &&
                 existingDraft.AccountingDate == effectiveDate &&
                 string.Equals(existingDraft.PeriodId, request.PeriodId, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(existingDraft.EntityId, request.EntityId, StringComparison.OrdinalIgnoreCase) &&
                 HasOverlappingValuationScope(existingDraft, draft));
             if (pendingOverlap is not null)
             {
-                var pendingIds = existingDrafts
-                    .Where(IsPendingDailyValuationDraft)
-                    .Where(existingDraft => existingDraft.AccountingDate == effectiveDate)
-                    .Where(existingDraft => string.Equals(
-                        existingDraft.PeriodId,
-                        request.PeriodId,
-                        StringComparison.OrdinalIgnoreCase))
-                    .Select(static existingDraft => existingDraft.JournalEntryId)
-                    .Where(static id => id != Guid.Empty)
-                    .Distinct()
-                    .OrderBy(static id => id)
-                    .ToArray();
+                var pendingIds = SelectPendingCorrectionBatchIds(
+                    existingDrafts,
+                    pendingOverlap,
+                    draft,
+                    effectiveDate,
+                    request.PeriodId,
+                    request.EntityId);
                 throw new DailyValuationPendingDraftException(
                     pendingIds,
                     pendingOverlap.Status,
-                    DescribeValuationScope(draft));
+                    DescribeValuationScope(draft),
+                    pendingOverlap.TreasuryContext?.BatchCorrelationId);
             }
         }
+    }
+
+    internal static IReadOnlyList<Guid> SelectPendingCorrectionBatchIds(
+        IReadOnlyList<ManualJournalEntryDraftDto> existingDrafts,
+        ManualJournalEntryDraftDto pendingOverlap,
+        AutomatedJournalDraft candidate,
+        DateOnly effectiveDate,
+        string? periodId,
+        string? entityId)
+    {
+        var pendingBatchCorrelationId = NormalizeText(
+            pendingOverlap.TreasuryContext?.BatchCorrelationId);
+        return existingDrafts
+            .Where(IsPendingDailyValuationDraft)
+            .Where(existingDraft => existingDraft.AccountingDate == effectiveDate)
+            .Where(existingDraft => string.Equals(
+                existingDraft.PeriodId,
+                periodId,
+                StringComparison.OrdinalIgnoreCase))
+            .Where(existingDraft => string.Equals(
+                existingDraft.EntityId,
+                entityId,
+                StringComparison.OrdinalIgnoreCase))
+            .Where(existingDraft => pendingBatchCorrelationId is not null
+                ? string.Equals(
+                    NormalizeText(existingDraft.TreasuryContext?.BatchCorrelationId),
+                    pendingBatchCorrelationId,
+                    StringComparison.OrdinalIgnoreCase)
+                : HasOverlappingValuationScope(existingDraft, candidate))
+            .Select(static existingDraft => existingDraft.JournalEntryId)
+            .Where(static id => id != Guid.Empty)
+            .Distinct()
+            .OrderBy(static id => id)
+            .ToArray();
     }
 
     private static bool IsPendingDailyValuationDraft(ManualJournalEntryDraftDto draft)
@@ -321,6 +385,9 @@ public sealed class AutomatedJournalDraftIntakeService
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpperInvariant();
+
+    private static string? NormalizeText(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ValuationScopeKey(Guid? SecurityId, string? Symbol, string? FinancialAccountId);
 
@@ -379,7 +446,8 @@ public sealed class AutomatedJournalDraftIntakeService
             EntryType: MapEntryType(draft.Event.Kind),
             TreasuryContext: new TreasuryLedgerContextDto(
                 EffectiveDate: effectiveDate,
-                IdempotencyKey: idempotencyKey),
+                IdempotencyKey: idempotencyKey,
+                BatchCorrelationId: NormalizeText(request.BatchCorrelationId)),
             AutomationEvidenceAssessment: evidenceAssessment);
     }
 
@@ -405,13 +473,83 @@ public sealed class AutomatedJournalDraftIntakeService
             $"{journalEvent.Kind}|{journalEvent.Symbol.Trim().ToUpperInvariant()}|{journalEvent.Amount}|{effectiveDate:yyyy-MM-dd}|{journalEvent.FinancialAccountId ?? "-"}");
     }
 
-    private static Guid BuildDeterministicJournalEntryId(string fundProfileId, string idempotencyKey)
+    private static Guid BuildDeterministicJournalEntryId(
+        AutomatedJournalPreparedDraftIntakeRequest request,
+        string idempotencyKey)
     {
         var seed = FormattableString.Invariant(
-            $"automated-journal|{fundProfileId.Trim().ToLowerInvariant()}|{idempotencyKey.Trim().ToLowerInvariant()}");
+            $"automated-journal|tenant={NormalizeIdentity(request.TenantId)}|company={NormalizeIdentity(request.CompanyId)}|fund={NormalizeIdentity(request.FundProfileId)}|book={request.LedgerBookId?.ToString("N") ?? "-"}|entity={NormalizeIdentity(request.EntityId)}|currency={NormalizeIdentity(request.Currency)}|event={idempotencyKey.Trim().ToLowerInvariant()}");
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(seed));
         return new Guid(hash.AsSpan(0, 16));
     }
+
+    private static AutomatedJournalDraftIntakeDisposition ClassifyExistingDraft(
+        ManualJournalEntryDraftDto existing,
+        AutomatedJournalEvidenceAssessmentDto? incomingAssessment)
+    {
+        if (existing.Status == ManualJournalEntryStatusDto.Rejected)
+            return AutomatedJournalDraftIntakeDisposition.ExistingDraftRejected;
+        if (existing.Status is ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked)
+            return AutomatedJournalDraftIntakeDisposition.ExistingDraftTerminal;
+        if (existing.Status is ManualJournalEntryStatusDto.Submitted or
+            ManualJournalEntryStatusDto.Approved or
+            ManualJournalEntryStatusDto.Posted or
+            ManualJournalEntryStatusDto.CloseLocked)
+        {
+            return AutomatedJournalDraftIntakeDisposition.ExistingDraftGoverned;
+        }
+
+        if (incomingAssessment is not null &&
+            !EvidenceAssessmentsEquivalent(existing.AutomationEvidenceAssessment, incomingAssessment))
+        {
+            return AutomatedJournalDraftIntakeDisposition.ExistingDraftReassessmentRequired;
+        }
+
+        if (existing.Status == ManualJournalEntryStatusDto.NeedsFix ||
+            existing.AutomationEvidenceAssessment?.RequiresInvestigation == true ||
+            existing.ValidationIssues.Any(static issue =>
+                issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
+        {
+            return AutomatedJournalDraftIntakeDisposition.ExistingDraftNeedsFix;
+        }
+
+        return AutomatedJournalDraftIntakeDisposition.ExistingDraftReady;
+    }
+
+    private static string BuildExistingDraftReason(
+        ManualJournalEntryDraftDto existing,
+        AutomatedJournalDraftIntakeDisposition disposition)
+        => disposition switch
+        {
+            AutomatedJournalDraftIntakeDisposition.ExistingDraftReady =>
+                $"Draft already exists with status {existing.Status} and remains ready for human review.",
+            AutomatedJournalDraftIntakeDisposition.ExistingDraftGoverned =>
+                $"Draft already exists with governed status {existing.Status}; no duplicate was created.",
+            AutomatedJournalDraftIntakeDisposition.ExistingDraftNeedsFix =>
+                $"Draft already exists with status {existing.Status} and still requires fixes or evidence investigation.",
+            AutomatedJournalDraftIntakeDisposition.ExistingDraftRejected =>
+                "Draft already exists with status Rejected and cannot be reported as ready by a scheduler retry.",
+            AutomatedJournalDraftIntakeDisposition.ExistingDraftTerminal =>
+                $"Draft already exists with terminal correction status {existing.Status} and cannot be reported as ready.",
+            AutomatedJournalDraftIntakeDisposition.ExistingDraftReassessmentRequired =>
+                "Draft already exists with a different immutable automated-evidence assessment; retain the original assessment and route an explicit reassessment before readiness can change.",
+            _ => $"Draft already exists with status {existing.Status}."
+        };
+
+    private static bool EvidenceAssessmentsEquivalent(
+        AutomatedJournalEvidenceAssessmentDto? existing,
+        AutomatedJournalEvidenceAssessmentDto incoming)
+        => existing is not null &&
+           string.Equals(existing.AssessmentCode, incoming.AssessmentCode, StringComparison.Ordinal) &&
+           existing.ConfidenceScore == incoming.ConfidenceScore &&
+           existing.Quality == incoming.Quality &&
+           existing.RequiresInvestigation == incoming.RequiresInvestigation &&
+           string.Equals(existing.Summary, incoming.Summary, StringComparison.Ordinal) &&
+           existing.Reasons.SequenceEqual(incoming.Reasons, StringComparer.Ordinal) &&
+           existing.EvidenceLinks.SequenceEqual(incoming.EvidenceLinks, StringComparer.Ordinal);
+
+    private static string NormalizeIdentity(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "-" : value.Trim().ToLowerInvariant();
 
     /// <summary>
     /// Resolves ledger accounts to chart-of-accounts paths: an exact match on

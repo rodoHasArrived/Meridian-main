@@ -236,6 +236,14 @@ public static partial class LedgerEndpoints
 
             try
             {
+                if (request.CloseKind != LedgerPeriodCloseKindDto.SoftClose)
+                {
+                    return Results.BadRequest(new
+                    {
+                        error = "The generic ledger-period endpoint supports soft close only. Use the governed close-management period-lock workflow for hard close."
+                    });
+                }
+
                 var result = await service
                     .ClosePeriodAsync(
                         periodId,
@@ -2389,7 +2397,14 @@ public static partial class LedgerEndpoints
         var plan = await service
             .GetPeriodPlanScopedAsync(workflowId, tenant.TenantId, tenant.CompanyId, context.RequestAborted)
             .ConfigureAwait(false);
-        if (plan is null || !tenant.HasTenantScope)
+        if (!tenant.HasTenantScope ||
+            string.IsNullOrWhiteSpace(tenant.TenantId) ||
+            string.IsNullOrWhiteSpace(tenant.CompanyId))
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+
+        if (plan is null)
         {
             return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: true);
         }
@@ -2401,6 +2416,13 @@ public static partial class LedgerEndpoints
 
         var ledgerBookService = context.RequestServices.GetService<ILedgerBookService>();
         if (ledgerBookService is null)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+
+        var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+        var guard = context.RequestServices.GetService<IFundProfileTenantGuard>();
+        if (registry is null)
         {
             return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
         }
@@ -2428,21 +2450,15 @@ public static partial class LedgerEndpoints
                 return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
             }
 
-            var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
-            if (registry is not null)
+            // FundProfileId on the close plan identifies the operations fund account. The
+            // authoritative tenant owner is the ledger book's fund profile, after proving that the
+            // book belongs to that exact fund-account node.
+            var owner = await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
+            if (owner is null || !CloseWorkflowOwnerMatches(owner, tenant))
             {
-                var owner = await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
-                if (owner is not null &&
-                    (!owner.IsHeldBy(tenant.TenantId) ||
-                     (!string.IsNullOrWhiteSpace(owner.CompanyId) &&
-                      !string.IsNullOrWhiteSpace(tenant.CompanyId) &&
-                      !string.Equals(owner.CompanyId, tenant.CompanyId, StringComparison.OrdinalIgnoreCase))))
-                {
-                    return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
-                }
+                return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
             }
 
-            var guard = context.RequestServices.GetService<IFundProfileTenantGuard>();
             if (guard is not null)
             {
                 var decision = await guard
@@ -2461,6 +2477,14 @@ public static partial class LedgerEndpoints
             return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
         }
     }
+
+    private static bool CloseWorkflowOwnerMatches(
+        FundProfileOwnership owner,
+        WorkstationTenantContext tenant)
+        => owner.IsHeldBy(tenant.TenantId) &&
+           !string.IsNullOrWhiteSpace(owner.CompanyId) &&
+           !string.IsNullOrWhiteSpace(tenant.CompanyId) &&
+           string.Equals(owner.CompanyId.Trim(), tenant.CompanyId.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private static IResult CloseWorkflowScopeDenied()
         => Results.Problem(

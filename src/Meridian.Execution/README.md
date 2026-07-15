@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-15
 ---
 
 # src/Meridian.Execution
@@ -40,9 +40,24 @@ rejection instead of a broker submit.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
-Ledger posting from trade-fill events is Security Master gated: postings require a configured
-validation gate, resolved Security Master identity, non-blocked validation, and journal metadata
-that preserves the Security Master ID, fill ID, symbol, and gate evidence for provenance.
+Ledger posting from trade-fill events is explicit and Security Master gated. `AddBrokerageExecution`
+injects an `ITradeEventPublisher` into the OMS only when one has been composed; the execution host
+does not infer an accounting book or period. A book-owning composition root can call
+`AddTradeFillLedgerPosting` with a ledger factory, exact posting scope, and caller-owned
+`ITradeFillPostingStore`. `WalTradeFillPostingStore` durably accepts each fill before publication
+returns, retains per-fill failure/reconciliation records, replays unacknowledged fills after restart,
+and acknowledges only after the required trade and commission journals exist. Postings still require
+a configured validation gate, resolved Security Master identity, non-blocked validation, and journal
+metadata that preserves the Security Master ID, fill ID, symbol, posting scope, and gate evidence for
+provenance. `UiServer` intentionally supplies no ledger consumer by default because its paper
+portfolios may own session ledgers and the host has no safe global book/period scope.
+The book-owning caller must provide the ledger's persistence/hydration lifecycle and must not attach
+this publisher to a `PaperTradingPortfolio` that already posts the same fills into that ledger.
+For sell accounting, the caller must also attach portfolio state that supplies the fill's realized
+P&amp;L, or publish an enriched `TradeExecutedEvent` through the abstraction instead of relying on
+the OMS fallback value.
+The OMS sends only fills for its own tracked orders to the accounting publisher; untracked broker
+stream reports remain observable through `ExecutionReports` but cannot contaminate the configured book.
 Live execution controls include persisted circuit-breaker state, position limits, and manual
 overrides. Run-scoped manual overrides are matched against order `runId` metadata, and submitted
 paper orders that use an override carry the applied override ID, run/strategy/symbol scope, and
@@ -62,6 +77,8 @@ state.
 OMS runtime guardrails are configuration-backed under `Execution:OrderManagement`:
 `MaxRetainedOrders`, `ExecutionChannelCapacity`, and `CancelAllMaxConcurrency`. Reg T margin rates
 are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
+Fill-report publication observes bounded-channel `WriteAsync` backpressure, and duplicate gateway
+reports resume only unfinished portfolio, durable-accounting, session, or subscriber side effects.
 
 ## Diagrams
 

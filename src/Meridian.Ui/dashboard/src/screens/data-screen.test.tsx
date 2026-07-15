@@ -13,13 +13,15 @@ import {
 import { renderWithRouter } from "@/test/render";
 import type {
   BackfillProgressResponse,
+  BackfillExecutionHistoryResponse,
   BackfillPreviewResult,
   BackfillTriggerResult,
   DataWorkspaceResponse,
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
   ProviderReadinessSummary,
-  ProviderSetupResult
+  ProviderSetupResult,
+  QualityDashboardResponse
 } from "@/types";
 
 const data: DataWorkspaceResponse = {
@@ -313,6 +315,272 @@ describe("DataScreen", () => {
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Backfill queue" })).not.toBeInTheDocument();
+  });
+
+  it("renders composite quality evidence and submits the exact stable gap remediation request", async () => {
+    const user = userEvent.setup();
+    const actionableGap = {
+      gapId: "gap-actionable-0001",
+      symbol: "TSLA",
+      provider: "polygon",
+      eventType: "Trade",
+      from: "2026-07-01T14:00:00Z",
+      to: "2026-07-01T14:07:00Z",
+      estimatedMissingEvents: 11,
+      severity: "Significant",
+      status: "Open" as const,
+      canBackfill: true,
+      disabledReason: null
+    };
+    const disabledGap = {
+      ...actionableGap,
+      gapId: "gap-disabled-0002",
+      provider: null,
+      eventType: "Quote",
+      estimatedMissingEvents: 23,
+      canBackfill: false,
+      disabledReason: "No configured provider supports quote replay for this interval."
+    };
+    const qualityDashboard: QualityDashboardResponse = {
+      timestamp: "2026-07-15T12:00:00Z",
+      composite: {
+        version: "quality-dashboard-v17",
+        observedAt: "2026-07-15T12:00:00Z",
+        compositeScore: 72.5,
+        status: "Amber",
+        isPartial: true,
+        coverageWeight: 0.75,
+        components: [
+          {
+            kind: "StoredCompleteness",
+            label: "Stored completeness",
+            weight: 0.4,
+            score: 91,
+            availability: "Measured",
+            observedAt: "2026-07-15T12:00:00Z",
+            issueCount: 0,
+            detail: "Stored bars were measured against expected sessions."
+          },
+          {
+            kind: "StreamingFreshness",
+            label: "Streaming freshness",
+            weight: 0.35,
+            score: 64,
+            availability: "Partial",
+            observedAt: "2026-07-15T11:59:00Z",
+            issueCount: 1,
+            detail: "One tracked feed is stale."
+          },
+          {
+            kind: "AdapterGapIntegrity",
+            label: "Adapter gap integrity",
+            weight: 0.25,
+            score: 48,
+            availability: "Measured",
+            observedAt: "2026-07-15T12:00:00Z",
+            issueCount: 2,
+            detail: "Two stable adapter gaps remain open."
+          }
+        ],
+        symbols: [
+          {
+            symbol: "TSLA",
+            compositeScore: 54,
+            status: "Red",
+            isPartial: true,
+            coverageWeight: 0.67,
+            expectedEvents: null,
+            observedEvents: null,
+            anomalyCount: 0,
+            components: [
+              {
+                kind: "StoredCompleteness",
+                label: "Stored completeness",
+                weight: 0.4,
+                score: 78,
+                availability: "Partial",
+                observedAt: "2026-07-15T12:00:00Z",
+                issueCount: 2,
+                detail: "Stored history contains two retained gaps."
+              },
+              {
+                kind: "StreamingFreshness",
+                label: "Streaming freshness",
+                weight: 0.35,
+                score: null,
+                availability: "Unavailable",
+                observedAt: null,
+                issueCount: 1,
+                detail: "No streaming observation is available."
+              },
+              {
+                kind: "AdapterGapIntegrity",
+                label: "Adapter gap integrity",
+                weight: 0.25,
+                score: 44,
+                availability: "Measured",
+                observedAt: "2026-07-15T12:00:00Z",
+                issueCount: 2,
+                detail: "Exact retained gap evidence is available."
+              }
+            ],
+            openGaps: [actionableGap, disabledGap],
+            providerFreshness: [
+              {
+                provider: "polygon",
+                lastEventAt: "2026-07-15T11:59:00Z",
+                ageMilliseconds: 60_000,
+                status: "Stale",
+                completenessScore: 78,
+                gapCount: 2
+              }
+            ],
+            issues: ["Streaming evidence is unavailable."]
+          }
+        ],
+        openGaps: [actionableGap, disabledGap],
+        anomalyCount: 0
+      },
+      recentGaps: [],
+      recentAnomalies: []
+    };
+    const getQualityDashboard = vi.fn().mockResolvedValue(qualityDashboard);
+    const remediateQualityGap = vi.fn().mockResolvedValue({
+      gapId: actionableGap.gapId,
+      symbol: actionableGap.symbol,
+      status: "Completed",
+      provider: actionableGap.provider,
+      from: actionableGap.from,
+      to: actionableGap.to,
+      idempotencyKey: "gap-actionable-0001|quality-dashboard-v17",
+      message: "Exact gap remediation completed."
+    });
+
+    renderWithRouter(
+      <DataScreen
+        data={data}
+        dataQualityFetcher={getQualityDashboard}
+        dataQualityActionApi={{ remediateQualityGap }}
+      />,
+      { initialEntries: ["/data"] }
+    );
+    await user.click(screen.getByText("Review data diagnostics"));
+
+    const qualityRegion = await screen.findByRole("region", { name: "Data quality" });
+    expect(getQualityDashboard).toHaveBeenCalled();
+    const scoreCards = within(qualityRegion).getByRole("list", { name: "Data quality scores" });
+    expect(within(scoreCards).getByText("72.5")).toBeInTheDocument();
+    expect(within(scoreCards).getByText("91.0")).toBeInTheDocument();
+    expect(within(scoreCards).getByText("64.0")).toBeInTheDocument();
+    expect(within(scoreCards).getByText("48.0")).toBeInTheDocument();
+    expect(within(qualityRegion).getByText("Partial quality evidence")).toBeInTheDocument();
+
+    await user.click(within(qualityRegion).getByText("TSLA"));
+    expect(within(qualityRegion).getByText(/stored 78\.0 · streaming Unavailable · adapter 44\.0/i))
+      .toBeInTheDocument();
+    expect(within(qualityRegion).getByText("Expected-session counts unavailable")).toBeInTheDocument();
+    expect(within(qualityRegion).getByText("No streaming observation is available.")).toBeInTheDocument();
+
+    const gaps = within(qualityRegion).getByRole("list", { name: "TSLA open gaps" });
+    expect(within(gaps).getByText("gap-actionable-0001")).toBeInTheDocument();
+    expect(within(gaps).getByText("gap-disabled-0002")).toBeInTheDocument();
+    expect(within(gaps).getByText("Remediation unavailable: No configured provider supports quote replay for this interval."))
+      .toBeInTheDocument();
+    expect(within(gaps).getByRole("button", {
+      name: "Backfill gap gap-disabled-0002 unavailable: No configured provider supports quote replay for this interval."
+    })).toBeDisabled();
+
+    await user.click(within(gaps).getByRole("button", { name: "Backfill gap gap-actionable-0001 for TSLA" }));
+    await waitFor(() => expect(remediateQualityGap).toHaveBeenCalledWith("TSLA", {
+      gapId: "gap-actionable-0001",
+      dashboardVersion: "quality-dashboard-v17"
+    }));
+  });
+
+  it("renders the durable remediation SLA queue and sorts tier and deadline columns", async () => {
+    const user = userEvent.setup();
+    const history: BackfillExecutionHistoryResponse = {
+      executions: [
+        {
+          executionId: "standard-sooner",
+          scheduleName: "Gap repair",
+          trigger: "AutoRemediation",
+          scheduleId: "",
+          status: "Completed",
+          startedAt: "2026-07-15T09:00:00Z",
+          completedAt: "2026-07-15T09:01:00Z",
+          symbolsProcessed: 1,
+          barsDownloaded: 5,
+          errorMessage: null,
+          fromDate: "2026-07-10",
+          toDate: "2026-07-11",
+          symbols: ["AAPL"],
+          autoRemediationTriggerReason: "StoredGap",
+          autoRemediationAttemptCount: 1,
+          autoRemediationLastOutcome: "Completed",
+          autoRemediationIdempotencyKey: "aapl|polygon",
+          autoRemediationSla: {
+            tier: "Standard",
+            status: "Completed",
+            dueAtUtc: "2026-07-16T12:00:00Z",
+            requiresOwnerAssignment: false,
+            downstreamWorkflow: "research",
+            reasonCode: "StandardGap",
+            provider: "",
+            triggerSource: "GapAnalyzerScan",
+            isCompatibilityDerived: false
+          }
+        },
+        {
+          executionId: "critical-later",
+          scheduleName: "Accounting repair",
+          trigger: "AutoRemediation",
+          scheduleId: "",
+          status: "Failed",
+          startedAt: "2026-07-15T10:00:00Z",
+          completedAt: "2026-07-15T10:01:00Z",
+          symbolsProcessed: 1,
+          barsDownloaded: 0,
+          errorMessage: "provider unavailable",
+          fromDate: "2026-07-12",
+          toDate: "2026-07-13",
+          symbols: ["MSFT"],
+          autoRemediationTriggerReason: "CriticalWorkflow",
+          autoRemediationAttemptCount: 2,
+          autoRemediationLastOutcome: "FailedTransient",
+          autoRemediationIdempotencyKey: "msft|stooq",
+          autoRemediationSla: {
+            tier: "SameBusinessDay",
+            status: "Overdue",
+            dueAtUtc: "2026-07-17T12:00:00Z",
+            requiresOwnerAssignment: true,
+            downstreamWorkflow: "accounting",
+            reasonCode: "CriticalWorkflow",
+            provider: "stooq",
+            triggerSource: "QualityAlert",
+            isCompatibilityDerived: true
+          }
+        }
+      ],
+      total: 2,
+      autoRemediation: { total: 2, withReason: 2, lastOutcome: "FailedTransient", defaultProvider: "polygon" },
+      timestamp: "2026-07-15T12:00:00Z"
+    };
+    vi.spyOn(api, "getBackfillExecutionHistory").mockResolvedValueOnce(history);
+
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
+
+    const table = await screen.findByRole("table", { name: "Backfill remediation SLA queue" });
+    expect(within(table).getByText("Same business day")).toBeInTheDocument();
+    expect(within(table).getByText("Assignment required")).toBeInTheDocument();
+    expect(within(table).getByText("Compatibility-derived legacy evidence", { exact: false })).toBeInTheDocument();
+
+    const dataRows = () => within(table).getAllByRole("row").slice(1);
+    expect(dataRows()[0]).toHaveTextContent("critical-later");
+    await user.click(within(table).getByRole("button", { name: /Deadline/i }));
+    expect(dataRows()[0]).toHaveTextContent("standard-sooner");
+    await user.click(within(table).getByRole("button", { name: /SLA tier/i }));
+    expect(dataRows()[0]).toHaveTextContent("critical-later");
   });
 
   it("runs SQL queries with paged results and export actions", async () => {

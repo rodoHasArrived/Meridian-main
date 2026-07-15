@@ -24,6 +24,12 @@ public static class LedgerPeriodPostingGuard
 
         if (string.Equals(period.Status, "Open", StringComparison.Ordinal))
         {
+            if (entry.PostingKind == LedgerPostingKindDto.ClosingEntry)
+            {
+                throw new LedgerValidationException(
+                    $"Accounting period '{period.Label}' is open; ClosingEntry postings are accepted only while the period is soft-closed.");
+            }
+
             return;
         }
 
@@ -50,7 +56,7 @@ public static class LedgerPeriodPostingGuard
             }
 
             throw new LedgerValidationException(
-                $"Accounting period '{period.Label}' is soft-closed; only Adjustment postings are accepted.");
+                $"Accounting period '{period.Label}' is soft-closed; only ClosingEntry and approved Adjustment postings are accepted.");
         }
 
         if (string.Equals(period.Status, "HardClosed", StringComparison.Ordinal))

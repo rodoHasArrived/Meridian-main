@@ -35,16 +35,19 @@ public sealed class AutomatedJournalScheduledWorker
     private readonly IAutomatedJournalScheduleStore _store;
     private readonly AutomatedJournalIntakeRunner _intakeRunner;
     private readonly ILogger<AutomatedJournalScheduledWorker> _logger;
+    private readonly AutomatedJournalEvidencePolicy _evidencePolicy;
     private readonly SemaphoreSlim _runGate = new(1, 1);
 
     public AutomatedJournalScheduledWorker(
         IAutomatedJournalScheduleStore store,
         AutomatedJournalIntakeRunner intakeRunner,
-        ILogger<AutomatedJournalScheduledWorker> logger)
+        ILogger<AutomatedJournalScheduledWorker> logger,
+        AutomatedJournalEvidencePolicy? evidencePolicy = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _intakeRunner = intakeRunner ?? throw new ArgumentNullException(nameof(intakeRunner));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _evidencePolicy = evidencePolicy ?? AutomatedJournalEvidencePolicy.Default;
     }
 
     public async Task<AutomatedJournalScheduledBatchResult> RunDueAsync(
@@ -85,9 +88,9 @@ public sealed class AutomatedJournalScheduledWorker
                 .Where(static item => item.ScheduledForUtc.HasValue)
                 .Where(item => item.ScheduledForUtc!.Value <= nowUtc)
                 .Where(item =>
-                    item.State == AutomatedJournalScheduleStateDto.Running ||
+                    IsIncompleteRunningClaim(item) ||
                     item.LastScheduledForUtc != item.ScheduledForUtc)
-                .Where(item => item.State is AutomatedJournalScheduleStateDto.Scheduled or AutomatedJournalScheduleStateDto.Running)
+                .Where(item => item.State == AutomatedJournalScheduleStateDto.Scheduled || IsIncompleteRunningClaim(item))
                 .OrderBy(static item => item.ScheduledForUtc)
                 .ThenBy(static item => item.ScheduleId, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
@@ -150,7 +153,8 @@ public sealed class AutomatedJournalScheduledWorker
                     item.HighWaterMark,
                     item.CapitalAccountReconciliation,
                     item.MinimumCapitalAccountConfidence,
-                    nowUtc);
+                    nowUtc,
+                    _evidencePolicy);
                 if (!feeEvidence.IsReady)
                 {
                     return await CompleteAsync(
@@ -277,11 +281,23 @@ public sealed class AutomatedJournalScheduledWorker
         DateTimeOffset nowUtc,
         CancellationToken ct)
     {
-        var duplicateSkips = run.Intake.Skipped
-            .Where(static skip => skip.Reason.StartsWith("Draft already exists", StringComparison.OrdinalIgnoreCase))
+        var readyDuplicateSkips = run.Intake.Skipped
+            .Where(static skip => skip.IsReadyDuplicate)
             .ToArray();
         var intakeBlockers = run.Intake.Skipped
-            .Except(duplicateSkips)
+            .Where(static skip => skip.Disposition == AutomatedJournalDraftIntakeDisposition.ProjectionFailed)
+            .Select(static skip => $"{skip.IdempotencyKey}: {skip.Reason}")
+            .ToArray();
+        var duplicateInvestigationBlockers = run.Intake.Skipped
+            .Where(static skip => skip.Disposition is
+                AutomatedJournalDraftIntakeDisposition.ExistingDraftNeedsFix or
+                AutomatedJournalDraftIntakeDisposition.ExistingDraftReassessmentRequired)
+            .Select(static skip => $"{skip.IdempotencyKey}: {skip.Reason}")
+            .ToArray();
+        var duplicateTerminalBlockers = run.Intake.Skipped
+            .Where(static skip => skip.Disposition is
+                AutomatedJournalDraftIntakeDisposition.ExistingDraftRejected or
+                AutomatedJournalDraftIntakeDisposition.ExistingDraftTerminal)
             .Select(static skip => $"{skip.IdempotencyKey}: {skip.Reason}")
             .ToArray();
         var producerBlockers = run.ProducerSkips
@@ -302,7 +318,14 @@ public sealed class AutomatedJournalScheduledWorker
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var journalEntryIds = run.Intake.Created.Select(static draft => draft.JournalEntryId)
-            .Concat(duplicateSkips.Select(static skip => skip.JournalEntryId))
+            .Concat(readyDuplicateSkips.Select(static skip => skip.JournalEntryId))
+            .Concat(run.Intake.Skipped
+                .Where(static skip => skip.Disposition is
+                    AutomatedJournalDraftIntakeDisposition.ExistingDraftNeedsFix or
+                    AutomatedJournalDraftIntakeDisposition.ExistingDraftRejected or
+                    AutomatedJournalDraftIntakeDisposition.ExistingDraftTerminal or
+                    AutomatedJournalDraftIntakeDisposition.ExistingDraftReassessmentRequired)
+                .Select(static skip => skip.JournalEntryId))
             .Where(static id => id != Guid.Empty)
             .Distinct()
             .ToArray();
@@ -317,16 +340,39 @@ public sealed class AutomatedJournalScheduledWorker
         AutomatedJournalScheduleStateDto state;
         string summary;
         IReadOnlyList<string> blockers;
-        if (investigationAssessments.Length > 0 || producerBlockers.Length > 0)
+        if (run.Readiness != AutomatedJournalIntakeReadiness.Ready)
+        {
+            state = run.Readiness == AutomatedJournalIntakeReadiness.Blocked
+                ? AutomatedJournalScheduleStateDto.Blocked
+                : AutomatedJournalScheduleStateDto.NeedsInvestigation;
+            blockers = run.ReadinessBlockers
+                .Concat(investigationBlockers)
+                .Concat(producerBlockers)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            summary = state == AutomatedJournalScheduleStateDto.Blocked
+                ? $"Monthly {running.Kind} intake is blocked by server-owned evidence policy."
+                : $"Monthly {running.Kind} intake needs evidence investigation before approval.";
+        }
+        else if (investigationAssessments.Length > 0 || producerBlockers.Length > 0 || duplicateInvestigationBlockers.Length > 0)
         {
             state = AutomatedJournalScheduleStateDto.NeedsInvestigation;
-            blockers = investigationBlockers.Concat(producerBlockers).Concat(intakeBlockers).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            blockers = investigationBlockers
+                .Concat(producerBlockers)
+                .Concat(duplicateInvestigationBlockers)
+                .Concat(intakeBlockers)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
             summary = $"Monthly {running.Kind} produced {journalEntryIds.Length} governed draft(s), but source evidence needs investigation before approval.";
         }
-        else if (intakeBlockers.Length > 0 || validationBlockers.Length > 0)
+        else if (duplicateTerminalBlockers.Length > 0 || intakeBlockers.Length > 0 || validationBlockers.Length > 0)
         {
             state = AutomatedJournalScheduleStateDto.Blocked;
-            blockers = intakeBlockers.Concat(validationBlockers).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            blockers = duplicateTerminalBlockers
+                .Concat(intakeBlockers)
+                .Concat(validationBlockers)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
             summary = $"Monthly {running.Kind} intake is blocked; no journal can enter approval until the listed issues are resolved.";
         }
         else if (journalEntryIds.Length > 0)
@@ -527,6 +573,19 @@ public sealed class AutomatedJournalScheduledWorker
             .OrderBy(static item => item.ScheduledForUtc)
             .ToArray();
 
+    private static bool IsIncompleteRunningClaim(AutomatedJournalScheduleWorkItem item)
+    {
+        if (item.State != AutomatedJournalScheduleStateDto.Running || !item.ScheduledForUtc.HasValue)
+            return false;
+
+        var runKey = BuildRunKey(item, item.ScheduledForUtc.Value.ToUniversalTime());
+        return item.RunHistory.Any(history =>
+            string.Equals(history.RunKey, runKey, StringComparison.OrdinalIgnoreCase) &&
+            history.HistoryKind == AutomatedJournalScheduleHistoryKind.Execution &&
+            history.State == AutomatedJournalScheduleStateDto.Running &&
+            history.CompletedAtUtc is null);
+    }
+
     private static string? NormalizeScope(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
@@ -555,6 +614,10 @@ public sealed class AutomatedJournalSchedulerHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Keep host startup independent from the first journal tick. Some host/runtime
+        // combinations execute BackgroundService code synchronously until its first yield.
+        await Task.Yield();
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try

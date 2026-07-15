@@ -560,6 +560,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
+        services.TryAddSingleton(AutomatedJournalEvidencePolicy.Default);
         services.TryAddSingleton(sp =>
             new AutomatedJournalDraftIntakeService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -581,7 +582,8 @@ public static class WorkstationServiceCollectionExtensions
                     : new DailyMarkToMarketService(
                         new RegisteredHistoricalCloseMarkPriceSource(providerRegistry),
                         new LedgerMarkToMarketCarryingValueSource(journalStore)),
-                positionService);
+                positionService,
+                sp.GetRequiredService<AutomatedJournalEvidencePolicy>());
         });
         // The durable ledger book service is only registered when a persistence-backed ledger is
         // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph

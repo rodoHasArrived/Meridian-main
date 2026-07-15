@@ -34,6 +34,7 @@ import type {
   AccountingCloseDependencyGraphRowViewModel,
   AccountingCloseEvidenceReviewRowViewModel,
   AccountingCloseOperatingCoverageRowViewModel,
+  AccountingClosePostingGateViewModel,
   AccountingClosePlanTaskRowViewModel,
   AccountingCloseReportPackageServices,
   AccountingCloseReportPackageViewModel,
@@ -71,10 +72,13 @@ import type {
   CloseCalendarMilestone,
   CloseDependency,
   ClosePeriodPlan,
+  ClosePostingGateState,
   CloseSignOffRequirement,
   CloseTask,
+  DailyValuationScheduleWorkItem,
   FinancialOperationsCommandCenter,
   LateAdjustmentRequest,
+  LedgerDimensionSet,
   LockClosePeriodRequest,
   MultiAssetCoverageSummary,
   OperationsContinuityWorkflow,
@@ -132,6 +136,9 @@ export function useAccountingCloseReportPackageViewModel(
   const [lockClosePeriodBusy, setLockClosePeriodBusy] = useState(false);
   const [lockClosePeriodStatusText, setLockClosePeriodStatusText] = useState<string | null>(null);
   const [lockClosePeriodStatusTone, setLockClosePeriodStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [queueClosingEntriesBusy, setQueueClosingEntriesBusy] = useState(false);
+  const [queueClosingEntriesStatusText, setQueueClosingEntriesStatusText] = useState<string | null>(null);
+  const [queueClosingEntriesStatusTone, setQueueClosingEntriesStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
   const [configureClosePlanBusy, setConfigureClosePlanBusy] = useState(false);
   const [configureClosePlanStatusText, setConfigureClosePlanStatusText] = useState<string | null>(null);
   const [configureClosePlanStatusTone, setConfigureClosePlanStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
@@ -303,6 +310,67 @@ export function useAccountingCloseReportPackageViewModel(
     }
   }, [closePlan, closeSignOffDraft, services, workflow]);
 
+  const queueClosingEntries = useCallback(async () => {
+    if (!workflow || !closePlan) {
+      setQueueClosingEntriesStatusText("A close plan is required before queueing closing entries.");
+      setQueueClosingEntriesStatusTone("danger");
+      return;
+    }
+
+    if (closePlan.isPeriodLocked) {
+      setQueueClosingEntriesStatusText("The period is already locked; closing entries cannot be queued.");
+      setQueueClosingEntriesStatusTone("danger");
+      return;
+    }
+
+    if (closePlan.closingEntriesGate?.state !== "Required") {
+      const stateLabel = closePlan.closingEntriesGate
+        ? formatClosePostingGateState(closePlan.closingEntriesGate.state).label
+        : "Not supplied";
+      setQueueClosingEntriesStatusText(`Closing entries can only be queued from Required state; current state is ${stateLabel}.`);
+      setQueueClosingEntriesStatusTone("danger");
+      return;
+    }
+
+    const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
+    setQueueClosingEntriesBusy(true);
+    setQueueClosingEntriesStatusText(null);
+    setQueueClosingEntriesStatusTone("neutral");
+    try {
+      const result = await services.lockClosePeriod(
+        buildClosePeriodLockRequest(workflow, closePlan, selectedBundle, true)
+      );
+      if (result.plan) {
+        setClosePlan(result.plan);
+      }
+
+      const blockingIssueCount = result.issues.filter((issue) => issue.severity === "Critical").length;
+      const preparedState = result.plan?.closingEntriesGate?.state;
+      if (blockingIssueCount > 0) {
+        setQueueClosingEntriesStatusText(`Closing-entry preparation blocked by ${formatCount(blockingIssueCount, "critical issue")}.`);
+        setQueueClosingEntriesStatusTone("danger");
+      } else if (preparedState && preparedState !== "Required" && preparedState !== "Blocked" && preparedState !== "Unavailable") {
+        setQueueClosingEntriesStatusText(
+          `Queued closing entries for ${result.plan?.periodId ?? closePlan.periodId}; state is ${formatClosePostingGateState(preparedState).label}.`
+        );
+        setQueueClosingEntriesStatusTone("success");
+      } else if (result.issues.length > 0) {
+        setQueueClosingEntriesStatusText(result.issues.map((issue) => issue.message).join(" "));
+        setQueueClosingEntriesStatusTone("neutral");
+      } else {
+        setQueueClosingEntriesStatusText("Closing-entry preparation did not advance beyond Required state.");
+        setQueueClosingEntriesStatusTone("danger");
+      }
+
+      await refresh();
+    } catch (error) {
+      setQueueClosingEntriesStatusText(formatAccountingWorkflowError(error, "Closing entries could not be queued."));
+      setQueueClosingEntriesStatusTone("danger");
+    } finally {
+      setQueueClosingEntriesBusy(false);
+    }
+  }, [closePlan, packages, refresh, selectedPackageId, services, workflow]);
+
   const lockClosePeriod = useCallback(async () => {
     if (!workflow || !closePlan) {
       setLockClosePeriodStatusText("A close plan is required before locking the close period.");
@@ -316,12 +384,23 @@ export function useAccountingCloseReportPackageViewModel(
       return;
     }
 
+    if (!isClosePostingGateReadyForHardLock(closePlan.closingEntriesGate ?? null)) {
+      const stateLabel = closePlan.closingEntriesGate
+        ? formatClosePostingGateState(closePlan.closingEntriesGate.state).label
+        : "Not supplied";
+      setLockClosePeriodStatusText(`Closing entries are not ready for period lock; current state is ${stateLabel}.`);
+      setLockClosePeriodStatusTone("danger");
+      return;
+    }
+
     const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
     setLockClosePeriodBusy(true);
     setLockClosePeriodStatusText(null);
     setLockClosePeriodStatusTone("neutral");
     try {
-      const result = await services.lockClosePeriod(buildClosePeriodLockRequest(workflow, closePlan, selectedBundle));
+      const result = await services.lockClosePeriod(
+        buildClosePeriodLockRequest(workflow, closePlan, selectedBundle, false)
+      );
       if (result.plan) {
         setClosePlan(result.plan);
       }
@@ -680,6 +759,9 @@ export function useAccountingCloseReportPackageViewModel(
       lockClosePeriodBusy,
       lockClosePeriodStatusText,
       lockClosePeriodStatusTone,
+      queueClosingEntriesBusy,
+      queueClosingEntriesStatusText,
+      queueClosingEntriesStatusTone,
       configureClosePlanBusy,
       configureClosePlanStatusText,
       configureClosePlanStatusTone,
@@ -703,6 +785,7 @@ export function useAccountingCloseReportPackageViewModel(
       buildReportPackage,
       certifyPackage,
       lockClosePeriod,
+      queueClosingEntries,
       configureClosePlan,
       signOffNextTask,
       updateCloseSetupDraft,
@@ -734,6 +817,10 @@ export function useAccountingCloseReportPackageViewModel(
       lockClosePeriodBusy,
       lockClosePeriodStatusText,
       lockClosePeriodStatusTone,
+      queueClosingEntries,
+      queueClosingEntriesBusy,
+      queueClosingEntriesStatusText,
+      queueClosingEntriesStatusTone,
       configureClosePlan,
       configureClosePlanBusy,
       configureClosePlanStatusText,
@@ -1025,6 +1112,9 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriodBusy,
   lockClosePeriodStatusText,
   lockClosePeriodStatusTone,
+  queueClosingEntriesBusy,
+  queueClosingEntriesStatusText,
+  queueClosingEntriesStatusTone,
   createLateAdjustmentBusy,
   createLateAdjustmentStatusText,
   createLateAdjustmentStatusTone,
@@ -1048,6 +1138,7 @@ function buildAccountingCloseReportPackageViewState({
   buildReportPackage,
   certifyPackage,
   lockClosePeriod,
+  queueClosingEntries,
       configureClosePlan,
       signOffNextTask,
       updateCloseSetupDraft,
@@ -1083,6 +1174,9 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriodBusy: boolean;
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
+  queueClosingEntriesBusy: boolean;
+  queueClosingEntriesStatusText: string | null;
+  queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
   createLateAdjustmentBusy: boolean;
   createLateAdjustmentStatusText: string | null;
   createLateAdjustmentStatusTone: "neutral" | "success" | "danger";
@@ -1106,6 +1200,7 @@ function buildAccountingCloseReportPackageViewState({
   buildReportPackage: () => Promise<void>;
   certifyPackage: () => Promise<void>;
   lockClosePeriod: () => Promise<void>;
+  queueClosingEntries: () => Promise<void>;
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
   updateCloseSetupDraft: (patch: Partial<AccountingCloseSetupDraftViewModel>) => void;
@@ -1136,6 +1231,7 @@ function buildAccountingCloseReportPackageViewState({
   const dependencyGraphRows = closePlan ? buildCloseDependencyGraphRows(closePlan) : [];
   const signOffMatrixRows = closePlan ? buildCloseSignOffMatrixRows(closePlan) : [];
   const operatingCoverageRows = closePlan ? buildCloseOperatingCoverageRows(closePlan) : [];
+  const closingEntriesGate = closePlan ? buildClosePostingGateViewModel(closePlan) : null;
   const closeSetupTaskOptions = closePlan ? buildCloseSetupTaskOptions(closePlan, closeSetupDraft.taskId) : [];
   const closeSetupDependencyOptions = closePlan ? buildCloseSetupDependencyOptions(closePlan, closeSetupDraft) : [];
   const closeSetupSignOffRoleOptions = closePlan ? buildCloseSetupSignOffRoleOptions(closePlan, closeSetupDraft) : [];
@@ -1181,7 +1277,7 @@ function buildAccountingCloseReportPackageViewState({
     : "Materiality policy pending";
   const buildDisabledReason = !workflow
     ? "A close workflow must be loaded before building a package."
-    : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
+    : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
       ? "Close/report package refresh is running."
       : null;
   const criticalIssueCount = [...closeValidationIssues, ...packageValidationIssues].filter((issue) => issue.severity === "Critical").length;
@@ -1193,7 +1289,7 @@ function buildAccountingCloseReportPackageViewState({
         ? `Certification requires Ready for review state; current state is ${formatAccountingCertificationState(selectedBundle.certification.state)}.`
         : criticalIssueCount > 0
           ? "Critical validation issues must be cleared before certification."
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
             ? "Close/report package certification is running."
             : null;
   const signOffTarget = closePlan ? resolveCloseTaskSignOffDraftTarget(closePlan, closeSignOffDraft) : null;
@@ -1206,20 +1302,42 @@ function buildAccountingCloseReportPackageViewState({
         ? "The period is locked; close task sign-off is disabled."
         : signOffDraftValidation
           ? signOffDraftValidation
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
             ? "Close/report package action is running."
             : null;
+  const queueClosingEntriesDisabledReason = !workflow
+    ? "A close workflow must be loaded before queueing closing entries."
+    : !closePlan
+      ? "A close plan must be loaded before queueing closing entries."
+      : locked
+        ? "The close period is already locked."
+        : closePlan.closingEntriesGate?.state !== "Required"
+          ? closePlan.closingEntriesGate
+            ? `Closing entries can only be queued from Required state; current state is ${formatClosePostingGateState(closePlan.closingEntriesGate.state).label}.`
+            : "The close plan must supply the typed closing-entry gate before entries can be queued."
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
+            ? "Close/report package action is running."
+            : null;
+  const closingEntriesLockDisabledReason = closePlan && !isClosePostingGateReadyForHardLock(closePlan.closingEntriesGate ?? null)
+    ? closePlan.closingEntriesGate
+      ? closePlan.closingEntriesGate.state === "Required"
+        ? "Queue and post closing entries before locking the period."
+        : `Closing entries must be Posted or Not required before period lock; current state is ${formatClosePostingGateState(closePlan.closingEntriesGate.state).label}.`
+      : "The close plan must supply the typed closing-entry gate before period lock."
+    : null;
   const lockClosePeriodDisabledReason = !workflow
     ? "A close workflow must be loaded before locking the period."
     : !closePlan
       ? "A close plan must be loaded before locking the period."
       : locked
         ? "The close period is already locked."
-        : !selectedBundle
-          ? "A report package must be built before locking the period."
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
-            ? "Close/report package action is running."
-            : null;
+        : closingEntriesLockDisabledReason
+          ? closingEntriesLockDisabledReason
+          : !selectedBundle
+            ? "A report package must be built before locking the period."
+            : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
+              ? "Close/report package action is running."
+              : null;
   const configureClosePlanDisabledReason = !workflow
     ? "A close workflow must be loaded before configuring close setup."
     : !closePlan
@@ -1229,7 +1347,7 @@ function buildAccountingCloseReportPackageViewState({
         : validateCloseSetupMaterialityDraft(closeSetupDraft)
           ?? validateCloseSetupTaskSelection(closePlan, closeSetupDraft)
           ?? validateCloseSetupSignOffDraft(closeSetupDraft)
-          ?? (loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || configureClosePlanBusy
+          ?? (loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || configureClosePlanBusy
             ? "Close/report package action is running."
             : null);
   const createLateAdjustmentAmount = Number(lateAdjustmentDraft.amount);
@@ -1245,7 +1363,7 @@ function buildAccountingCloseReportPackageViewState({
             ? "Enter a non-zero late adjustment amount."
             : !lateAdjustmentDraft.reason.trim()
               ? "Enter the late adjustment reason."
-              : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
+              : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
                 ? "Close/report package action is running."
                 : null;
   const reviewLateAdjustmentDisabledReason = !workflow
@@ -1256,7 +1374,7 @@ function buildAccountingCloseReportPackageViewState({
         ? "The period is locked; late-adjustment review is disabled."
         : !lateAdjustments.some((adjustment) => adjustment.reviewDisabledReason === null)
           ? "No submitted late adjustment is ready for review."
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
             ? "Close/report package action is running."
             : null;
   const reviewCloseEvidenceDisabledReason = !workflow
@@ -1267,7 +1385,7 @@ function buildAccountingCloseReportPackageViewState({
         ? "The period is locked; evidence review changes require a governed reopen workflow."
         : !evidenceReviewRows.some((row) => row.issueCode && !row.reviewDisabledReason)
           ? "No active close blocker is ready for evidence review."
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || reviewCloseEvidenceBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || reviewCloseEvidenceBusy
             ? "Close/report package action is running."
             : null;
   const selectedExportArtifact = selectedBundle?.exportArtifacts?.[0] ?? null;
@@ -1275,7 +1393,7 @@ function buildAccountingCloseReportPackageViewState({
     ? "A report package must be selected before export manifest inspection."
     : !selectedExportArtifact
       ? "The selected report package has no retained export artifacts."
-      : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || reviewLateAdjustmentBusy || exportManifestBusy
+      : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || reviewLateAdjustmentBusy || exportManifestBusy
         ? "Close/report package action is running."
         : null;
   const closeWorkflowSteps = buildAccountingCloseWorkflowSteps({
@@ -1325,6 +1443,9 @@ function buildAccountingCloseReportPackageViewState({
     lockClosePeriodBusy,
     lockClosePeriodStatusText,
     lockClosePeriodStatusTone,
+    queueClosingEntriesBusy,
+    queueClosingEntriesStatusText,
+    queueClosingEntriesStatusTone,
     configureClosePlanBusy,
     configureClosePlanStatusText,
     configureClosePlanStatusTone,
@@ -1349,6 +1470,8 @@ function buildAccountingCloseReportPackageViewState({
     signOffDisabledReason,
     lockClosePeriodButtonLabel: locked ? "Period locked" : "Lock period",
     lockClosePeriodDisabledReason,
+    queueClosingEntriesButtonLabel: "Queue closing entries",
+    queueClosingEntriesDisabledReason,
     configureClosePlanButtonLabel: closePlan ? "Retain close setup" : "Configure close setup",
     configureClosePlanDisabledReason,
     createLateAdjustmentDisabledReason,
@@ -1410,17 +1533,19 @@ function buildAccountingCloseReportPackageViewState({
     signOffMatrixRows,
     evidenceReviewRows,
     operatingCoverageRows,
+    closingEntriesGate,
     lateAdjustments,
     packageRows,
     selectedPackage,
     certificationSafeguards: buildAccountingReportCertificationSafeguards(closePlan, selectedBundle, criticalIssueCount),
     closeWorkflowSteps,
     validationIssues,
-    liveRegionText: `Close report package ${statusLabel}. ${formatCount(openTaskCount, "open task")}. ${formatCount(packageRows.length, "package")}. ${formatCount(closeWorkflowSteps.filter((step) => step.tone === "danger" || step.tone === "warning").length, "workflow step")} needs review.`,
+    liveRegionText: `Close report package ${statusLabel}. ${formatCount(openTaskCount, "open task")}. ${formatCount(packageRows.length, "package")}. ${formatCount(closeWorkflowSteps.filter((step) => step.tone === "danger" || step.tone === "warning").length, "workflow step")} needs review.${closingEntriesGate ? ` Closing entries ${closingEntriesGate.statusLabel}.` : ""}`,
     refresh,
     buildReportPackage,
     certifyPackage,
     lockClosePeriod,
+    queueClosingEntries,
     configureClosePlan,
     signOffNextTask,
     updateCloseSetupDraft,
@@ -2489,6 +2614,116 @@ function buildCloseOperatingCoverageRows(closePlan: ClosePeriodPlan): Accounting
   }));
 }
 
+function buildClosePostingGateViewModel(closePlan: ClosePeriodPlan): AccountingClosePostingGateViewModel | null {
+  const gate = closePlan.closingEntriesGate;
+  if (!gate) {
+    return null;
+  }
+
+  const { label: statusLabel, tone: statusTone } = formatClosePostingGateState(gate.state);
+  const currency = closePlan.materialityPolicy.currency;
+  const closingBatchIds = gate.closingBatchJournalEntryIds ?? [];
+  const reversalDraftIds = gate.reversalDraftJournalEntryIds ?? [];
+  const balances = (gate.balances ?? []).map((balance, index) => ({
+    rowId: `${gate.gateId}:${balance.financialAccountId?.trim() || balance.accountName}:${index}`,
+    accountLabel: balance.symbol?.trim()
+      ? `${balance.accountName} (${balance.symbol.trim()})`
+      : balance.accountName,
+    accountTypeLabel: balance.accountType,
+    balanceLabel: formatCurrencyWithCode(balance.balance, currency, true),
+    scopeLabel: formatClosePostingBalanceScope(balance.dimensions),
+    financialAccountLabel: balance.financialAccountId?.trim() || "No financial-account id"
+  }));
+
+  return {
+    gateId: gate.gateId,
+    label: gate.label,
+    statusLabel,
+    statusTone,
+    isReadyForLock: isClosePostingGateReadyForHardLock(gate),
+    netIncomeRollLabel: formatCurrencyWithCode(gate.netIncomeRoll, currency, true),
+    temporaryAccountBalanceLabel: formatCount(gate.temporaryAccountBalanceCount, "temporary-account balance"),
+    detail: gate.detail,
+    draftLabel: gate.draftJournalEntryId
+      ? `Draft ${gate.draftJournalEntryId}${gate.draftStatus ? ` | ${gate.draftStatus}` : ""}`
+      : "No closing-entry draft queued",
+    idempotencyLabel: gate.idempotencyKey?.trim()
+      ? `Idempotency ${gate.idempotencyKey.trim()}`
+      : "No idempotency key returned",
+    closingBatchLabel: closingBatchIds.length > 0
+      ? `${formatCount(closingBatchIds.length, "closing batch journal entry")}: ${closingBatchIds.join(", ")}`
+      : "No posted closing batch journal entries",
+    reversalDraftLabel: reversalDraftIds.length > 0
+      ? `${formatCount(reversalDraftIds.length, "reversal draft journal entry")}: ${reversalDraftIds.join(", ")}`
+      : "No reversal drafts queued",
+    evidenceLabel: formatCount((gate.evidenceLinks ?? []).length, "evidence link"),
+    balances
+  };
+}
+
+function isClosePostingGateReadyForHardLock(
+  gate: NonNullable<ClosePeriodPlan["closingEntriesGate"]> | null
+): boolean {
+  if (!gate) {
+    return false;
+  }
+
+  return gate.isReadyForLock && (gate.state === "Posted" || gate.state === "NotRequired");
+}
+
+function formatClosePostingGateState(state: ClosePostingGateState): { label: string; tone: AccountingToolingTone } {
+  switch (state) {
+    case "NotRequired":
+      return { label: "Not required", tone: "success" };
+    case "Posted":
+      return { label: "Posted", tone: "success" };
+    case "DraftQueued":
+      return { label: "Draft queued", tone: "warning" };
+    case "Submitted":
+      return { label: "Submitted", tone: "warning" };
+    case "Approved":
+      return { label: "Approved", tone: "warning" };
+    case "ReversalQueued":
+      return { label: "Reversal queued", tone: "warning" };
+    case "Required":
+      return { label: "Required", tone: "danger" };
+    case "Blocked":
+      return { label: "Blocked", tone: "danger" };
+    case "Unavailable":
+    default:
+      return { label: "Unavailable", tone: "danger" };
+  }
+}
+
+function formatClosePostingBalanceScope(dimensions: LedgerDimensionSet | null | undefined): string {
+  const labels = [
+    ["Fund", dimensions?.fundId],
+    ["Entity", dimensions?.entityId],
+    ["Sleeve", dimensions?.sleeveId],
+    ["Strategy", dimensions?.strategyId],
+    ["Investor", dimensions?.investorId],
+    ["Capital account", dimensions?.capitalAccountId],
+    ["Instrument", dimensions?.instrumentId],
+    ["Position", dimensions?.positionId],
+    ["Tax lot", dimensions?.taxLotId],
+    ["Cost center", dimensions?.costCenterId],
+    ["Counterparty", dimensions?.counterpartyId],
+    ["Organization", dimensions?.organizationId],
+    ["Portfolio", dimensions?.portfolioId],
+    ["Book", dimensions?.bookId],
+    ["Account", dimensions?.accountId]
+  ]
+    .filter((entry): entry is [string, string] => Boolean(entry[1]?.trim()))
+    .map(([label, value]) => `${label}: ${value.trim()}`);
+  for (const [key, value] of Object.entries(dimensions?.externalGlDimensions ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
+    if (value?.trim()) {
+      labels.push(`External ${key}: ${value.trim()}`);
+    }
+  }
+
+  return labels.length > 0 ? labels.join(" | ") : "No scoped dimensions returned";
+}
+
 function buildCloseEvidenceReviewRows(
   closePlan: ClosePeriodPlan | null,
   bundle: AccountingReportPackageBundle | null,
@@ -2816,15 +3051,17 @@ function buildClosePlanConfigurationRequest(
 function buildClosePeriodLockRequest(
   workflow: OperationsContinuityWorkflow,
   closePlan: ClosePeriodPlan,
-  selectedBundle: AccountingReportPackageBundle | null
+  selectedBundle: AccountingReportPackageBundle | null,
+  prepareClosingEntriesOnly: boolean
 ): LockClosePeriodRequest {
   const reportPackId = selectedBundle?.financialStatements.packageId
     ?? workflow.reportPackReadiness.reportPackId
     ?? `report-pack-${closePlan.fundProfileId}-${closePlan.periodId}`;
   const evidenceLinks = collectAccountingCloseEvidenceLinks(workflow, closePlan);
+  const actionSegment = prepareClosingEntriesOnly ? "closing-entry-preparation" : "period-lock";
   evidenceLinks.push(
-    `browser://accounting/close/period-lock/${workflow.workflowId}`,
-    `evidence://close-package/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${closePlan.ledgerBookId ?? "primary"}/period-lock`,
+    `browser://accounting/close/${actionSegment}/${workflow.workflowId}`,
+    `evidence://close-package/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${closePlan.ledgerBookId ?? "primary"}/${actionSegment}`,
     `evidence://report-package/${reportPackId}/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${closePlan.ledgerBookId ?? "primary"}`
   );
   selectedBundle?.financialStatements.evidenceLinks.forEach((link) => evidenceLinks.push(link));
@@ -2833,19 +3070,24 @@ function buildClosePeriodLockRequest(
 
   return {
     workflowId: workflow.workflowId,
-    expectedWorkflowVersion: workflow.version,
+    expectedWorkflowVersion: closePlan.workflowVersion ?? workflow.version,
     actor: "browser-accounting-controller",
-    rationale: `Lock close period ${closePlan.periodId} after close checklist and report package review.`,
+    rationale: prepareClosingEntriesOnly
+      ? `Prepare closing entries for close period ${closePlan.periodId} before period lock.`
+      : `Lock close period ${closePlan.periodId} after close checklist and report package review.`,
     reportPackId,
     evidenceLinks: Array.from(new Set(evidenceLinks)),
     checklistControlApprovals: buildClosePeriodChecklistApprovals(closePlan),
-    correlationId: `browser-close-period-lock-${workflow.workflowId}`,
+    correlationId: prepareClosingEntriesOnly
+      ? `browser-close-period-closing-entries-${workflow.workflowId}`
+      : `browser-close-period-lock-${workflow.workflowId}`,
     closePackageId: workflow.closePackage?.closePackageId ?? `close-package-${closePlan.periodId}`,
     closePackageManifestId: workflow.closePackage?.retainedManifestId ?? `close-manifest-${closePlan.periodId}`,
     closePackageRetainedManifestRoute: workflow.closePackage?.retainedManifestRoute
       ?? selectedBundle?.exportArtifacts?.[0]?.route
       ?? `/workstation/accounting/close/${closePlan.periodId}`,
-    actionOrigin: "HumanOperator"
+    actionOrigin: "HumanOperator",
+    prepareClosingEntriesOnly
   };
 }
 
@@ -2991,7 +3233,8 @@ export function buildCloseCommandCenterViewState({
   accountingSystemProviders,
   accountingSystemImport,
   accountingSystemReconciliation,
-  multiAssetCoverage
+  multiAssetCoverage,
+  currentDailyValuationSchedule
 }: {
   data: AccountingWorkspaceResponse;
   commandCenter?: FinancialOperationsCommandCenter | null;
@@ -3004,9 +3247,15 @@ export function buildCloseCommandCenterViewState({
   accountingSystemImport: AccountingSystemImportDetail | null;
   accountingSystemReconciliation: AccountingSystemReconciliationSummary | null;
   multiAssetCoverage: MultiAssetCoverageSummary | null | undefined;
+  currentDailyValuationSchedule?: DailyValuationScheduleWorkItem | null;
 }): CloseCommandCenterViewState {
   if (commandCenter) {
-    return buildSharedFinancialOperationsCommandCenterViewState(commandCenter, commandCenterLoading ?? workflowLoading, commandCenterError ?? workflowError);
+    return buildSharedFinancialOperationsCommandCenterViewState(
+      commandCenter,
+      commandCenterLoading ?? workflowLoading,
+      commandCenterError ?? workflowError,
+      currentDailyValuationSchedule ?? null
+    );
   }
 
   const openBreakCount = data.breakQueue.filter((item) => isOpenAccountingBreakStatus(item.status)).length;
@@ -3210,7 +3459,8 @@ export function buildCloseCommandCenterViewState({
 function buildSharedFinancialOperationsCommandCenterViewState(
   commandCenter: FinancialOperationsCommandCenter,
   loading: boolean,
-  errorText: string | null
+  errorText: string | null,
+  currentDailyValuationSchedule: DailyValuationScheduleWorkItem | null
 ): CloseCommandCenterViewState {
   const status = mapCommandCenterStatus(commandCenter.status, loading);
   const statusTone = closeCommandCenterStatusTone(status);
@@ -3308,7 +3558,7 @@ function buildSharedFinancialOperationsCommandCenterViewState(
   const routedDecisionRows = (closeSupportDecision?.decisions ?? [])
     .filter((decision) => localCommandCenterRoute(decision.routeHint, decision.category))
     .slice(0, 3);
-  const actionRows: CloseCommandCenterActionViewModel[] = routedRows.length > 0
+  const baseActionRows: CloseCommandCenterActionViewModel[] = routedRows.length > 0
     ? routedRows.map((row) => ({
       id: row.queueId,
       label: row.actionLabel || row.title,
@@ -3333,6 +3583,77 @@ function buildSharedFinancialOperationsCommandCenterViewState(
         tone: commandCenter.isReadyToComplete ? "success" : "warning"
       }
     ];
+  const dailyValuationStatus = commandCenter.privateCapitalCloseCockpit?.dailyValuationStatus ?? null;
+  const hasRetainedValuationBatch = Boolean(dailyValuationStatus?.batchCorrelationId) &&
+    (dailyValuationStatus?.journalEntryIds.length ?? 0) > 0;
+  const configureScheduleDisabledReason = !currentDailyValuationSchedule
+    ? "No server-retained daily valuation schedule is loaded for this close scope."
+    : dailyValuationStatus?.state === "Running"
+      ? "Wait for the running daily valuation schedule to finish before reconfiguring it."
+      : dailyValuationStatus?.state === "DraftReady" ||
+          (dailyValuationStatus?.state === "Blocked" && hasRetainedValuationBatch)
+        ? "Complete or correct the retained daily valuation batch before reconfiguring its schedule."
+        : null;
+  const runDueScheduleDisabledReason = !currentDailyValuationSchedule || !dailyValuationStatus?.isConfigured
+    ? "Configure a retained daily valuation schedule before running due work."
+    : !dailyValuationStatus.isEnabled
+      ? "Enable the retained daily valuation schedule before running due work."
+      : dailyValuationStatus.state !== "Scheduled"
+        ? `Run due is available only from Scheduled state; current state is ${dailyValuationStatus.state}.`
+        : null;
+  const dailyValuationScheduleActions: CloseCommandCenterActionViewModel[] = dailyValuationStatus || currentDailyValuationSchedule ? [
+    {
+      id: "daily-valuation-configure",
+      label: currentDailyValuationSchedule ? "Configure current valuation schedule" : "Configure valuation schedule",
+      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+      ariaLabel: "Configure the server-retained daily valuation schedule for the current close scope",
+      tone: configureScheduleDisabledReason ? "warning" : "success",
+      command: "configure-daily-valuation-schedule",
+      busyLabel: "Configuring daily valuation schedule",
+      disabledReason: configureScheduleDisabledReason
+    },
+    {
+      id: "daily-valuation-run-due",
+      label: "Run due valuation schedules",
+      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+      ariaLabel: "Run due daily valuation schedules for the current tenant scope",
+      tone: runDueScheduleDisabledReason ? "warning" : "success",
+      command: "run-due-daily-valuation-schedules",
+      busyLabel: "Running due daily valuation schedules",
+      disabledReason: runDueScheduleDisabledReason
+    }
+  ] : [];
+  const dailyValuationLifecycleAction: CloseCommandCenterActionViewModel[] =
+    dailyValuationStatus?.state === "DraftReady" &&
+    Boolean(dailyValuationStatus.scheduleId) &&
+    Boolean(dailyValuationStatus.fundProfileId) &&
+    dailyValuationStatus.journalEntryIds.length > 0
+      ? [{
+        id: "daily-valuation-approve-post",
+        label: `Approve and post ${formatCount(dailyValuationStatus.journalEntryIds.length, "valuation draft")}`,
+        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+        ariaLabel: "Approve and post the complete retained daily valuation batch",
+        tone: "warning",
+        command: "approve-daily-valuation-batch",
+        busyLabel: "Approving and posting daily valuation batch",
+        disabledReason: null
+      }]
+      : dailyValuationStatus?.state === "Blocked" &&
+          Boolean(dailyValuationStatus.scheduleId) &&
+          Boolean(dailyValuationStatus.fundProfileId) &&
+          hasRetainedValuationBatch
+        ? [{
+          id: "daily-valuation-retry-batch",
+          label: `Correct and retry ${formatCount(dailyValuationStatus.journalEntryIds.length, "valuation draft")}`,
+          href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries,
+          ariaLabel: "Correct and retry the incomplete retained daily valuation batch",
+          tone: "warning",
+          command: "retry-daily-valuation-batch",
+          busyLabel: "Retrying daily valuation batch",
+          disabledReason: null
+        }]
+        : [];
+  const actionRows = [...dailyValuationScheduleActions, ...dailyValuationLifecycleAction, ...baseActionRows].slice(0, 4);
 
   return {
     title: "CFO / Controller close command center",

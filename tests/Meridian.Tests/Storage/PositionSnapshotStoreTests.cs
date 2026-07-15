@@ -55,6 +55,52 @@ public sealed class PositionSnapshotStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAndGetLatest_OwnedScope_DoesNotFallBackAcrossTenant()
+    {
+        var owner = new PositionSnapshotOwnerScope(
+            "tenant-a",
+            "company-a",
+            "fund-a",
+            Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
+            "entity-a");
+        var snapshot = BuildSnapshot("run-owned", "acc-owned", cash: 50_000m) with
+        {
+            TenantId = owner.TenantId,
+            CompanyId = owner.CompanyId,
+            FundProfileId = owner.FundProfileId,
+            LedgerBookId = owner.LedgerBookId,
+            EntityId = owner.EntityId
+        };
+
+        await _store.SaveSnapshotAsync(snapshot);
+
+        var owned = await _store.GetLatestSnapshotAsync("run-owned", "acc-owned", owner);
+        var otherTenant = await _store.GetLatestSnapshotAsync(
+            "run-owned",
+            "acc-owned",
+            owner with { TenantId = "tenant-b" });
+
+        owned.Should().Be(snapshot);
+        otherTenant.Should().BeNull();
+        (await _store.GetLatestSnapshotAsync("run-owned", "acc-owned")).Should().BeNull(
+            "owned snapshots must not be exposed through the legacy unscoped lookup");
+    }
+
+    [Fact]
+    public async Task SaveSnapshot_PartialOwnership_FailsClosed()
+    {
+        var partial = BuildSnapshot("run-partial", "acc-partial", cash: 0m) with
+        {
+            TenantId = "tenant-a"
+        };
+
+        var act = () => _store.SaveSnapshotAsync(partial);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*tenant, company, fund profile, ledger book, and entity together*");
+    }
+
+    [Fact]
     public async Task GetLatestSnapshot_MultipleWrites_ReturnsNewest()
     {
         var first = BuildSnapshot("run-1", "acc-1", cash: 10_000m, minutesAgo: 5);

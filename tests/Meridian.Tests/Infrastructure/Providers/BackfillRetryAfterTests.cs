@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using FluentAssertions;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
 using Xunit;
@@ -30,6 +31,43 @@ public sealed class BackfillRetryAfterTests
         Assert.True(BackfillWorkerService.IsRateLimited(new AggregateException(
             new InvalidOperationException("first provider failed"),
             new HttpRequestException("second provider throttled", null, HttpStatusCode.TooManyRequests))));
+    }
+
+    [Fact]
+    public void TryExtractRetryAfter_NestedAggregateSecondBranch_ExtractsTypedMetadata()
+    {
+        var ex = new AggregateException(
+            new InvalidOperationException("first provider failed"),
+            new AggregateException(
+                new InvalidOperationException("fallback failed"),
+                new RateLimitException(
+                    "final provider throttled",
+                    provider: "alphavantage",
+                    symbol: "AAPL",
+                    retryAfter: TimeSpan.FromSeconds(37))));
+
+        BackfillWorkerService.TryExtractRetryAfter(ex).Should().Be(TimeSpan.FromSeconds(37));
+        BackfillWorkerService.ResolveRateLimitedProvider(ex, "first-provider").Should().Be("alphavantage");
+    }
+
+    [Fact]
+    public void ResolveRateLimitedProvider_TypedProviderMissing_FallsBackToAssignedProvider()
+    {
+        var ex = new RateLimitException("quota exhausted", retryAfter: TimeSpan.FromSeconds(10));
+
+        BackfillWorkerService.ResolveRateLimitedProvider(ex, "assigned-provider")
+            .Should().Be("assigned-provider");
+    }
+
+    [Fact]
+    public void ResolveRateLimitedProvider_LaterAggregateBranchHasProvider_UsesTypedProvider()
+    {
+        var ex = new AggregateException(
+            new RateLimitException("first provider omitted identity"),
+            new RateLimitException("fallback provider throttled", provider: "alphavantage"));
+
+        BackfillWorkerService.ResolveRateLimitedProvider(ex, "assigned-provider")
+            .Should().Be("alphavantage");
     }
 
     [Fact]

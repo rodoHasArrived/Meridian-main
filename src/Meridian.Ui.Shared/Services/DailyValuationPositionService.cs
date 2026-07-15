@@ -9,7 +9,10 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
 
-/// <summary>One explicit durable run/account position-snapshot scope.</summary>
+/// <summary>
+/// One explicit durable run/account position-snapshot scope. Accounting ownership is inherited
+/// from the immutable schedule identity and must match the retained snapshot exactly.
+/// </summary>
 public sealed record DailyValuationPositionSnapshotScope(string RunId, string AccountId);
 
 /// <summary>Fail-closed result of resolving the positions for one valuation run.</summary>
@@ -62,6 +65,13 @@ public sealed class DailyValuationPositionService
                 return Blocked("Durable position snapshots are configured, but the position snapshot store is unavailable.");
             }
 
+            var ownerScope = BuildOwnerScope(workItem);
+            if (ownerScope is null)
+            {
+                return Blocked(
+                    "Durable position snapshots require tenant, company, fund profile, ledger book, and entity ownership on the valuation schedule.");
+            }
+
             var positions = new List<MarkToMarketPosition>();
             var evidence = new List<OperationsEvidenceLinkDto>();
             var blockers = new List<string>();
@@ -69,11 +79,26 @@ public sealed class DailyValuationPositionService
             {
                 ct.ThrowIfCancellationRequested();
                 var snapshot = await _snapshotStore
-                    .GetLatestSnapshotAsync(scope.RunId, scope.AccountId, ct)
+                    .GetLatestSnapshotAsync(scope.RunId, scope.AccountId, ownerScope, ct)
                     .ConfigureAwait(false);
                 if (snapshot is null)
                 {
                     blockers.Add($"No durable position snapshot exists for run '{scope.RunId}' and account '{scope.AccountId}'.");
+                    continue;
+                }
+
+                if (!string.Equals(snapshot.RunId?.Trim(), scope.RunId, StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(snapshot.AccountId?.Trim(), scope.AccountId, StringComparison.OrdinalIgnoreCase))
+                {
+                    blockers.Add(
+                        $"Position snapshot store returned scope '{snapshot.RunId}/{snapshot.AccountId}' for requested scope '{scope.RunId}/{scope.AccountId}'.");
+                    continue;
+                }
+
+                if (!IsOwnedBy(snapshot, ownerScope))
+                {
+                    blockers.Add(
+                        $"Position snapshot '{scope.RunId}/{scope.AccountId}' does not match the valuation schedule's immutable tenant/company/fund/book/entity ownership.");
                     continue;
                 }
 
@@ -166,6 +191,20 @@ public sealed class DailyValuationPositionService
         DateTimeOffset valuationAsOfUtc,
         CancellationToken ct = default)
         => ResolveSecurityMasterAsync(positions, baseCurrency, valuationAsOfUtc.ToUniversalTime(), [], ct);
+
+    /// <summary>
+    /// Returns whether this process has the dependencies required by one retained schedule.
+    /// Scheduler hosts use this before claiming due work so an optional desktop composition
+    /// cannot turn a healthy retained schedule into a durable Blocked state.
+    /// </summary>
+    public bool CanResolveConfigured(DailyValuationScheduleWorkItem workItem)
+    {
+        ArgumentNullException.ThrowIfNull(workItem);
+        if (_symbolRegistry is null || _securityMaster is null)
+            return false;
+
+        return workItem.PositionSnapshotScopes.Count == 0 || _snapshotStore is not null;
+    }
 
     public static string ComputeStaticPositionHash(IReadOnlyList<MarkToMarketPosition> positions)
     {
@@ -309,6 +348,32 @@ public sealed class DailyValuationPositionService
         DailyValuationPositionSnapshotScope scope,
         DateTimeOffset snapshotAsOfUtc)
         => $"evidence://position-snapshots/{Uri.EscapeDataString(scope.RunId)}/{Uri.EscapeDataString(scope.AccountId)}?asOf={Uri.EscapeDataString(snapshotAsOfUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture))}";
+
+    private static PositionSnapshotOwnerScope? BuildOwnerScope(DailyValuationScheduleWorkItem workItem)
+    {
+        if (string.IsNullOrWhiteSpace(workItem.TenantId) ||
+            string.IsNullOrWhiteSpace(workItem.CompanyId) ||
+            string.IsNullOrWhiteSpace(workItem.FundProfileId) ||
+            workItem.LedgerBookId == Guid.Empty ||
+            string.IsNullOrWhiteSpace(workItem.EntityId))
+        {
+            return null;
+        }
+
+        return new PositionSnapshotOwnerScope(
+            workItem.TenantId.Trim(),
+            workItem.CompanyId.Trim(),
+            workItem.FundProfileId.Trim(),
+            workItem.LedgerBookId,
+            workItem.EntityId.Trim());
+    }
+
+    private static bool IsOwnedBy(AccountSnapshotRecord snapshot, PositionSnapshotOwnerScope ownerScope)
+        => string.Equals(snapshot.TenantId?.Trim(), ownerScope.TenantId, StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(snapshot.CompanyId?.Trim(), ownerScope.CompanyId, StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(snapshot.FundProfileId?.Trim(), ownerScope.FundProfileId, StringComparison.OrdinalIgnoreCase) &&
+           snapshot.LedgerBookId == ownerScope.LedgerBookId &&
+           string.Equals(snapshot.EntityId?.Trim(), ownerScope.EntityId, StringComparison.OrdinalIgnoreCase);
 
     private static bool SecurityContainsSymbol(SecurityDetailDto security, params string[] candidates)
     {

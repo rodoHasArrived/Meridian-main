@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain;
@@ -223,6 +224,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
             if (!response.IsSuccessStatusCode)
             {
+                if (CreateRateLimitException(response, query) is { } rateLimit)
+                    throw rateLimit;
+
                 Log.Warning("{Provider} search returned {Status} for query {Query}",
                     Name, response.StatusCode, query);
                 return Array.Empty<SymbolSearchResult>();
@@ -238,6 +242,10 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
                 .OrderByDescending(r => r.MatchScore)
                 .Take(limit)
                 .ToList();
+        }
+        catch (RateLimitException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -270,6 +278,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
             if (!response.IsSuccessStatusCode)
             {
+                if (CreateRateLimitException(response, symbolValue) is { } rateLimit)
+                    throw rateLimit;
+
                 Log.Debug("{Provider} details returned {Status} for {Symbol}",
                     Name, response.StatusCode, symbol);
                 return null;
@@ -277,6 +288,10 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             return await DeserializeDetailsAsync(json, symbolValue, ct).ConfigureAwait(false);
+        }
+        catch (RateLimitException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -318,6 +333,15 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Symbol details or null if not found.</returns>
     protected abstract Task<SymbolDetails?> DeserializeDetailsAsync(string json, string symbol, CancellationToken ct);
+
+    /// <summary>
+    /// Allows providers that expose actionable throttle metadata to preserve it
+    /// instead of reducing every non-success response to an empty result.
+    /// </summary>
+    protected virtual RateLimitException? CreateRateLimitException(
+        HttpResponseMessage response,
+        string symbol)
+        => null;
 
 
 

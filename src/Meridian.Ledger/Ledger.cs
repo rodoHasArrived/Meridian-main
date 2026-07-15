@@ -62,7 +62,8 @@ public sealed class Ledger : IReadOnlyLedger
 
         ValidateJournalEntry(entry);
 
-        _journal.Add(entry);
+        var postingSequence = ++_journalPostingSequence;
+        InsertJournalEntry(entry);
         _journalEntryIds.Add(entry.JournalEntryId);
 
         foreach (var line in entry.Lines)
@@ -78,7 +79,7 @@ public sealed class Ledger : IReadOnlyLedger
             AddScopedPostingIndexes(entry.JournalEntryId, line, snapshot.Sequence);
         }
 
-        AddPostingCountSnapshot(entry);
+        AddPostingCountSnapshot(entry, postingSequence);
     }
 
     /// <summary>Returns all individual ledger lines posted to <paramref name="account"/>.</summary>
@@ -794,11 +795,27 @@ public sealed class Ledger : IReadOnlyLedger
         }
     }
 
-    private void AddPostingCountSnapshot(JournalEntry entry)
+    private void InsertJournalEntry(JournalEntry entry)
+    {
+        var low = 0;
+        var high = _journal.Count;
+        while (low < high)
+        {
+            var mid = low + ((high - low) / 2);
+            if (_journal[mid].Timestamp <= entry.Timestamp)
+                low = mid + 1;
+            else
+                high = mid;
+        }
+
+        _journal.Insert(low, entry);
+    }
+
+    private void AddPostingCountSnapshot(JournalEntry entry, long postingSequence)
     {
         var snapshot = new LedgerPostingCountSnapshot(
             entry.Timestamp,
-            ++_journalPostingSequence,
+            postingSequence,
             JournalDelta: 1,
             LedgerEntryDelta: entry.Lines.Count,
             JournalCount: 0,

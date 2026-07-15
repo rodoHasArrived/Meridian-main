@@ -2304,7 +2304,9 @@ public sealed class FundLedgerViewModelTests
             Guid? fundAccountId = null,
             string? periodId = null,
             string? entityId = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
             RequestedFundProfileId = fundProfileId;

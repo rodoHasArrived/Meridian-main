@@ -1,5 +1,6 @@
 import type {
   BackfillPreviewResult,
+  BackfillExecutionHistoryResponse,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -56,6 +57,10 @@ import type {
   DataUploadTemplateCatalog,
   DataUploadWorkbookPreviewResult,
   DataWorkspaceResponse,
+  DailyValuationBatchLifecycleRequest,
+  DailyValuationBatchLifecycleResult,
+  DailyValuationScheduleWorkItem,
+  DailyValuationScheduledBatchResult,
   EquityCurveSummary,
   EvidenceCompleteness,
   EvidenceGraph,
@@ -2177,6 +2182,43 @@ export function applyManualJournalEntryLifecycleAction(
   return postJson<JournalEntryLifecycleActionResult>(WORKSTATION_API_ENDPOINTS.manualJournalEntryLifecycleAction, request, options);
 }
 
+export function listDailyValuationSchedules(options: ApiRequestOptions = {}) {
+  return getJson<DailyValuationScheduleWorkItem[]>(
+    WORKSTATION_API_ENDPOINTS.dailyValuationSchedules,
+    options
+  );
+}
+
+export function configureDailyValuationSchedule(
+  request: DailyValuationScheduleWorkItem,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<DailyValuationScheduleWorkItem>(
+    WORKSTATION_API_ENDPOINTS.dailyValuationSchedules,
+    request,
+    options
+  );
+}
+
+export function runDueDailyValuationSchedules(options: ApiRequestOptions = {}) {
+  return postJson<DailyValuationScheduledBatchResult>(
+    WORKSTATION_API_ENDPOINTS.dailyValuationRunDue,
+    undefined,
+    options
+  );
+}
+
+export function approveAndPostDailyValuationBatch(
+  request: DailyValuationBatchLifecycleRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<DailyValuationBatchLifecycleResult>(
+    WORKSTATION_API_ENDPOINTS.dailyValuationBatchLifecycle,
+    request,
+    options
+  );
+}
+
 export function getAccountingSystemProviders(options: ApiRequestOptions = {}) {
   return getJson<AccountingSystemProvider[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.providers, options);
 }
@@ -3271,6 +3313,11 @@ export function getReconciliationCalibrationSummary() {
 
 export function getBackfillProgress(options: ApiRequestOptions = {}) {
   return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress, options);
+}
+
+export function getBackfillExecutionHistory(limit = 100, options: ApiRequestOptions = {}) {
+  const query = new URLSearchParams({ limit: String(Math.max(1, Math.min(limit, 1000))) });
+  return getJson<BackfillExecutionHistoryResponse>(`${BACKFILL_API_ENDPOINTS.executions}?${query}`, options);
 }
 
 export function triggerBackfill(request: BackfillTriggerRequest) {

@@ -347,12 +347,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         ValidateTransition(current, targetStatus);
 
-        if (string.Equals(targetStatus, HardClosedStatus, StringComparison.Ordinal))
-        {
-            var preLockFinancials = await BuildFinancialsAsync(current, ct).ConfigureAwait(false);
-            EnsureTemporaryAccountsAreClosed(current, preLockFinancials);
-        }
-
         var now = DateTimeOffset.UtcNow;
         var closeEvent = new PeriodCloseEventRecord(
             EventId: Guid.NewGuid(),
@@ -370,9 +364,25 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                 ? now
                 : current.ClosedAt
         };
-        var saved = await _store
-            .SavePeriodAsync(updated, current.Version, closeEvent, ct)
-            .ConfigureAwait(false);
+        LedgerAccountingPeriod saved;
+        if (string.Equals(targetStatus, HardClosedStatus, StringComparison.Ordinal))
+        {
+            if (_store is not IAtomicLedgerPeriodCloseStore atomicCloseStore)
+            {
+                throw new LedgerBookValidationException(
+                    "Hard-close requires a ledger store that can recheck temporary-account balances and persist the period transition atomically.");
+            }
+
+            saved = await atomicCloseStore
+                .SaveHardClosedPeriodAsync(updated, current.Version, closeEvent, ct)
+                .ConfigureAwait(false);
+        }
+        else
+        {
+            saved = await _store
+                .SavePeriodAsync(updated, current.Version, closeEvent, ct)
+                .ConfigureAwait(false);
+        }
 
         var requiredRole = NormalizeOptional(request.RequiredSignoffRole) ?? "Fund Controller";
         var toleranceProfile = NormalizeOptional(request.ToleranceProfileId) ?? "standard-recon-tolerance";
@@ -484,7 +494,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var isValid = (period.Status, targetStatus) switch
         {
             (OpenStatus, SoftClosedStatus) => true,
-            (OpenStatus, HardClosedStatus) => true,
             (SoftClosedStatus, HardClosedStatus) => true,
             _ => false
         };
@@ -494,31 +503,6 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             throw new LedgerPeriodTransitionException(
                 $"Cannot transition period '{period.Label}' from {period.Status} to {targetStatus}.");
         }
-    }
-
-    private static void EnsureTemporaryAccountsAreClosed(
-        LedgerAccountingPeriod period,
-        LedgerPeriodFinancials financials)
-    {
-        var residuals = financials.TrialBalance
-            .Where(static row =>
-                row.Balance != 0m &&
-                (string.Equals(row.AccountType, nameof(LedgerAccountType.Revenue), StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(row.AccountType, nameof(LedgerAccountType.Expense), StringComparison.OrdinalIgnoreCase)))
-            .OrderBy(static row => row.AccountName, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static row => row.FinancialAccountId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        if (residuals.Length == 0)
-        {
-            return;
-        }
-
-        var preview = string.Join(
-            "; ",
-            residuals.Take(5).Select(static row =>
-                FormattableString.Invariant($"{row.AccountName}={row.Balance}")));
-        throw new LedgerBookValidationException(
-            $"Accounting period '{period.Label}' cannot be hard-closed while {residuals.Length} revenue/expense balance(s) remain non-zero ({preview}). Post and approve the closing-entry draft before period lock.");
     }
 
     private static bool HasScopedRestatementEvidence(

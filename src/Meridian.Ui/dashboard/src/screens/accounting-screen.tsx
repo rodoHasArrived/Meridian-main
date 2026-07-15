@@ -20,21 +20,26 @@ import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
 import { ReconciliationComparisonPanel, TrialBalanceTable } from "@/components/accounting";
 import {
+  approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
   certifyAccountingSystemExportPackage,
+  configureDailyValuationSchedule,
   createAccountingSystemExportPackage,
   getAccountingSystemExportPackageManifest,
   getAccountingSystemMappingProfiles,
   getAccountingSystemProviders,
   getFinancialOperationsCommandCenter,
+  getPrivateCapitalCloseCockpit,
   getLatestAccountingSystemImport,
   getLatestAccountingSystemReconciliation,
   getFinancialRecordExplorer,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
   listAccountingSystemExportPackages,
+  listDailyValuationSchedules,
   previewAccountingSystemImport,
   rejectOperationsContinuityWorkflow,
+  runDueDailyValuationSchedules,
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -109,6 +114,7 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  DailyValuationScheduleWorkItem,
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialOperationsCommandCenter,
@@ -117,6 +123,7 @@ import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsTimelineEntry,
+  PrivateCapitalCloseCockpit,
 } from "@/types";
 import {
   approvalBlockedReason,
@@ -1063,7 +1070,15 @@ function mergeExternalGlExportPackage(
   return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
-function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } {
+interface CloseWorkflowQuery {
+  fundProfileId?: string;
+  fundAccountId?: string;
+  ledgerBookId?: string;
+  periodId?: string;
+  status?: string;
+}
+
+function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
   const params = new URLSearchParams(search);
   return {
     fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
@@ -1072,6 +1087,32 @@ function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fund
     periodId: normalizeOptionalQueryValue(params.get("periodId")),
     status: normalizeOptionalQueryValue(params.get("workflowStatus"))
   };
+}
+
+function selectCurrentDailyValuationSchedule(
+  schedules: DailyValuationScheduleWorkItem[],
+  status: PrivateCapitalCloseCockpit["dailyValuationStatus"] | null | undefined,
+  query: CloseWorkflowQuery
+): DailyValuationScheduleWorkItem | null {
+  const expectedScheduleId = status?.scheduleId?.trim() || null;
+  const expectedFundProfileId = status?.fundProfileId?.trim() || query.fundProfileId || null;
+  const expectedLedgerBookId = status?.ledgerBookId?.trim() || query.ledgerBookId || null;
+  const expectedPeriodId = status?.periodId?.trim() || query.periodId || null;
+  const expectedEntityId = status?.entityId?.trim() || null;
+  const expectedTenantId = status?.tenantId?.trim() || null;
+  const expectedCompanyId = status?.companyId?.trim() || null;
+  const matches = (actual: string | null | undefined, expected: string | null) =>
+    !expected || actual?.trim().localeCompare(expected, undefined, { sensitivity: "accent" }) === 0;
+
+  return schedules.find((schedule) =>
+    matches(schedule.scheduleId, expectedScheduleId) &&
+    matches(schedule.fundProfileId, expectedFundProfileId) &&
+    matches(schedule.ledgerBookId, expectedLedgerBookId) &&
+    matches(schedule.periodId, expectedPeriodId) &&
+    matches(schedule.entityId, expectedEntityId) &&
+    matches(schedule.tenantId, expectedTenantId) &&
+    matches(schedule.companyId, expectedCompanyId)
+  ) ?? null;
 }
 
 function normalizeOptionalQueryValue(value: string | null): string | undefined {
@@ -1693,6 +1734,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [financialOperationsCommandCenter, setFinancialOperationsCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
   const [financialOperationsCommandCenterLoading, setFinancialOperationsCommandCenterLoading] = useState(false);
   const [financialOperationsCommandCenterError, setFinancialOperationsCommandCenterError] = useState<string | null>(null);
+  const [privateCapitalCloseCockpit, setPrivateCapitalCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
+  const [dailyValuationSchedules, setDailyValuationSchedules] = useState<DailyValuationScheduleWorkItem[]>([]);
+  const [activeDailyValuationCommand, setActiveDailyValuationCommand] = useState<NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]> | null>(null);
+  const [dailyValuationBatchStatusText, setDailyValuationBatchStatusText] = useState<string | null>(null);
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
@@ -2105,6 +2150,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     if (!data) {
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
+      setPrivateCapitalCloseCockpit(null);
+      setDailyValuationSchedules([]);
       return;
     }
 
@@ -2113,17 +2160,24 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     setCloseWorkflowError(null);
     setFinancialOperationsCommandCenterError(null);
     try {
-      const [commandCenter, rows] = await Promise.all([
+      const [commandCenter, closeCockpit, rows, schedules] = await Promise.all([
         getFinancialOperationsCommandCenter(closeWorkflowQuery).catch(err => {
           setFinancialOperationsCommandCenterError(formatApprovalError(err, "Financial Operations command center could not be loaded."));
+          return null;
+        }),
+        getPrivateCapitalCloseCockpit(closeWorkflowQuery).catch(err => {
+          setFinancialOperationsCommandCenterError(formatApprovalError(err, "Private-capital close cockpit could not be loaded."));
           return null;
         }),
         getOperationsContinuityWorkflows(closeWorkflowQuery).catch(err => {
           setCloseWorkflowError(formatApprovalError(err, "Close workflow detail could not be loaded."));
           return [];
-        })
+        }),
+        listDailyValuationSchedules().catch(() => [])
       ]);
       setFinancialOperationsCommandCenter(commandCenter);
+      setPrivateCapitalCloseCockpit(closeCockpit);
+      setDailyValuationSchedules(schedules);
       const selected = selectCloseWorkflowSummary(rows, closeWorkflowQuery);
       if (!selected) {
         setCloseWorkflow(null);
@@ -2135,10 +2189,107 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     } catch (error) {
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
+      setPrivateCapitalCloseCockpit(null);
+      setDailyValuationSchedules([]);
       setCloseWorkflowError(formatApprovalError(error, "Close workflow detail could not be loaded."));
     } finally {
       setCloseWorkflowLoading(false);
       setFinancialOperationsCommandCenterLoading(false);
+    }
+  };
+
+  const effectiveDailyValuationStatus = privateCapitalCloseCockpit?.dailyValuationStatus
+    ?? financialOperationsCommandCenter?.privateCapitalCloseCockpit?.dailyValuationStatus
+    ?? null;
+  const currentDailyValuationSchedule = useMemo(
+    () => selectCurrentDailyValuationSchedule(dailyValuationSchedules, effectiveDailyValuationStatus, closeWorkflowQuery),
+    [closeWorkflowQuery, dailyValuationSchedules, effectiveDailyValuationStatus]
+  );
+
+  const runCloseCommand = async (
+    command: NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]>
+  ) => {
+    const status = effectiveDailyValuationStatus;
+    const hasRetainedBatch = Boolean(status?.batchCorrelationId) && (status?.journalEntryIds.length ?? 0) > 0;
+    if (command === "configure-daily-valuation-schedule" && !currentDailyValuationSchedule) {
+      setDailyValuationBatchStatusText("No server-retained daily valuation schedule is loaded for this close scope.");
+      return;
+    }
+    if (command === "configure-daily-valuation-schedule" &&
+        (status?.state === "Running" || status?.state === "DraftReady" ||
+          (status?.state === "Blocked" && hasRetainedBatch))) {
+      setDailyValuationBatchStatusText("Complete or correct the retained daily valuation batch before reconfiguring its schedule.");
+      return;
+    }
+    if (command === "run-due-daily-valuation-schedules" &&
+        (!currentDailyValuationSchedule || !status?.isConfigured || !status.isEnabled || status.state !== "Scheduled")) {
+      setDailyValuationBatchStatusText("The current close scope does not have an enabled Scheduled daily valuation configuration.");
+      return;
+    }
+    if ((command === "approve-daily-valuation-batch" && status?.state !== "DraftReady") ||
+        (command === "retry-daily-valuation-batch" && (status?.state !== "Blocked" || !hasRetainedBatch)) ||
+        ((command === "approve-daily-valuation-batch" || command === "retry-daily-valuation-batch") &&
+          (!status?.scheduleId || !status.fundProfileId || status.journalEntryIds.length === 0))) {
+      setDailyValuationBatchStatusText("No retained daily valuation batch is available for this command.");
+      return;
+    }
+
+    setActiveDailyValuationCommand(command);
+    setDailyValuationBatchStatusText(null);
+    try {
+      if (command === "configure-daily-valuation-schedule") {
+        const configured = await configureDailyValuationSchedule({
+          ...currentDailyValuationSchedule!,
+          actor: "close-cockpit-operator"
+        });
+        setDailyValuationBatchStatusText(
+          `Configured daily valuation schedule ${configured.scheduleId} for ${configured.nextRunAtUtc}.`
+        );
+        await refreshCloseWorkflow();
+        return;
+      }
+
+      if (command === "run-due-daily-valuation-schedules") {
+        const result = await runDueDailyValuationSchedules();
+        const currentRun = result.runs.find((run) => run.scheduleId === currentDailyValuationSchedule!.scheduleId);
+        setDailyValuationBatchStatusText(currentRun
+          ? `Daily valuation schedule ${currentRun.scheduleId} finished in ${currentRun.state}: ${currentRun.summary}`
+          : result.runs.length > 0
+            ? `Ran ${result.runs.length} due daily valuation schedule(s); the current schedule was not due.`
+            : "No daily valuation schedules were due for the current tenant scope.");
+        await refreshCloseWorkflow();
+        return;
+      }
+
+      const isRetry = command === "retry-daily-valuation-batch";
+      const result = await approveAndPostDailyValuationBatch({
+        scheduleId: status!.scheduleId!,
+        fundProfileId: status!.fundProfileId!,
+        actor: "close-cockpit-operator",
+        notes: isRetry
+          ? "Retried the incomplete retained daily valuation batch from the controller close cockpit."
+          : "Approved the complete retained daily valuation batch from the controller close cockpit.",
+        evidenceLinks: status!.evidenceLinks
+          .map((link) => link.route)
+          .filter((route): route is string => Boolean(route)),
+        tenantId: status!.tenantId ?? null,
+        companyId: status!.companyId ?? null
+      });
+      setDailyValuationBatchStatusText(result.isComplete
+        ? `${isRetry ? "Retried and posted" : "Posted"} all ${result.postedJournalEntryIds.length} daily valuation drafts in batch ${result.batchCorrelationId}.`
+        : `Daily valuation batch ${isRetry ? "retry " : ""}remains blocked: ${result.blockers.join(" ")}`);
+      await refreshCloseWorkflow();
+    } catch (error) {
+      const fallback = command === "configure-daily-valuation-schedule"
+        ? "Daily valuation schedule could not be configured."
+        : command === "run-due-daily-valuation-schedules"
+          ? "Due daily valuation schedules could not be run."
+          : command === "retry-daily-valuation-batch"
+            ? "Daily valuation batch correction and retry could not complete."
+            : "Daily valuation batch could not be approved and posted.";
+      setDailyValuationBatchStatusText(formatApprovalError(error, fallback));
+    } finally {
+      setActiveDailyValuationCommand(null);
     }
   };
 
@@ -2153,7 +2304,13 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const closeCommandCenter = useMemo(
     () => data ? buildCloseCommandCenterViewState({
       data,
-      commandCenter: financialOperationsCommandCenter,
+      commandCenter: financialOperationsCommandCenter
+        ? {
+          ...financialOperationsCommandCenter,
+          privateCapitalCloseCockpit: privateCapitalCloseCockpit
+            ?? financialOperationsCommandCenter.privateCapitalCloseCockpit
+        }
+        : null,
       commandCenterLoading: financialOperationsCommandCenterLoading,
       commandCenterError: financialOperationsCommandCenterError,
       workflow: closeWorkflow,
@@ -2162,7 +2319,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       accountingSystemProviders,
       accountingSystemImport,
       accountingSystemReconciliation,
-      multiAssetCoverage
+      multiAssetCoverage,
+      currentDailyValuationSchedule
     }) : null,
     [
       accountingSystemImport,
@@ -2175,7 +2333,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       financialOperationsCommandCenter,
       financialOperationsCommandCenterError,
       financialOperationsCommandCenterLoading,
-      multiAssetCoverage
+      multiAssetCoverage,
+      privateCapitalCloseCockpit,
+      currentDailyValuationSchedule
     ]
   );
   const closeReportPackage = useAccountingCloseReportPackageViewModel(closeWorkflow);
@@ -2283,7 +2443,15 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           <TechnicalDetails label="System details" className="panel-surface">
             <div className="space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
-              {closeCommandCenter ? <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} /> : null}
+              {closeCommandCenter ? (
+                <CloseCommandCenterPanel
+                  view={closeCommandCenter}
+                  onRefresh={() => void refreshCloseWorkflow()}
+                  onCommand={(command) => void runCloseCommand(command)}
+                  activeCommand={activeDailyValuationCommand}
+                  commandStatusText={dailyValuationBatchStatusText}
+                />
+              ) : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
               <AccountingTaskModeLauncher />
             </div>
@@ -2294,7 +2462,13 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       {sectionVisibility.showWorkflowDetails && workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 
       {sectionVisibility.showWorkflowDetails && closeCommandCenter ? (
-        <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} />
+        <CloseCommandCenterPanel
+          view={closeCommandCenter}
+          onRefresh={() => void refreshCloseWorkflow()}
+          onCommand={(command) => void runCloseCommand(command)}
+          activeCommand={activeDailyValuationCommand}
+          commandStatusText={dailyValuationBatchStatusText}
+        />
       ) : null}
 
       {sectionVisibility.showWorkflowDetails ? <AccountingCloseReportPackagePanel view={closeReportPackage} /> : null}

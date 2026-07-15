@@ -1,4 +1,5 @@
 using Meridian.Ledger;
+using Npgsql;
 
 namespace Meridian.Storage.Ledger;
 
@@ -20,8 +21,9 @@ public sealed record GovernedLedgerPostingResult(
 
 /// <summary>
 /// Serializes the check-and-append handoff for one process and treats an equivalent
-/// retained journal entry as a successful retry. A reused journal id with different
-/// accounting content fails closed.
+/// retained posting identity as a successful retry. Global journal/command collisions
+/// and aggregate-scoped source/idempotency collisions with different accounting content
+/// fail closed.
 /// </summary>
 public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, IDisposable
 {
@@ -44,18 +46,31 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var retained = await _store
-                .GetByAggregateAsync(write.AggregateId, ct)
+            var identity = LedgerPostingIdentity.FromWrite(write);
+            var collisions = await _store
+                .FindPostingIdentityCollisionsAsync(identity, ct)
                 .ConfigureAwait(false);
-            var existing = retained.FirstOrDefault(record =>
-                record.Entry.JournalEntryId == write.Entry.JournalEntryId);
-            if (existing is not null)
+            if (collisions.Count > 0)
             {
-                EnsureEquivalent(existing, write);
-                return new GovernedLedgerPostingResult(write.Entry.JournalEntryId, WasAppended: false);
+                return ResolveRetainedCollision(collisions, write);
             }
 
-            await _store.AppendAsync(write, ct).ConfigureAwait(false);
+            try
+            {
+                await _store.AppendAsync(write, ct).ConfigureAwait(false);
+            }
+            catch (PostgresException exception)
+                when (exception.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                collisions = await _store
+                    .FindPostingIdentityCollisionsAsync(identity, ct)
+                    .ConfigureAwait(false);
+                if (collisions.Count == 0)
+                    throw;
+
+                return ResolveRetainedCollision(collisions, write);
+            }
+
             return new GovernedLedgerPostingResult(write.Entry.JournalEntryId, WasAppended: true);
         }
         finally
@@ -65,6 +80,23 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
     }
 
     public void Dispose() => _writeGate.Dispose();
+
+    private static GovernedLedgerPostingResult ResolveRetainedCollision(
+        IReadOnlyList<LedgerJournalEntryRecord> collisions,
+        LedgerJournalEntryWrite requested)
+    {
+        foreach (var collision in collisions)
+        {
+            EnsureEquivalent(collision, requested);
+        }
+
+        var retained = collisions
+            .OrderBy(static record => record.GlobalSequence)
+            .ThenBy(static record => record.CreatedAt)
+            .ThenBy(static record => record.Entry.JournalEntryId)
+            .First();
+        return new GovernedLedgerPostingResult(retained.Entry.JournalEntryId, WasAppended: false);
+    }
 
     private static void EnsureEquivalent(
         LedgerJournalEntryRecord existing,
@@ -85,12 +117,10 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             && existing.SourceJournalEntryId == requested.SourceJournalEntryId
             && existing.PostingKind == requested.PostingKind
             && existing.AdjustmentApproval == requested.AdjustmentApproval
-            && retained.JournalEntryId == candidate.JournalEntryId
             && retained.Timestamp == candidate.Timestamp
             && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
             && MetadataEquivalent(retained.Metadata, candidate.Metadata)
-            && retained.Lines.Count == candidate.Lines.Count
-            && retained.Lines.Zip(candidate.Lines, LinesEquivalent).All(static matches => matches);
+            && JournalLinesEquivalent(retained.Lines, candidate.Lines);
 
         if (!equivalent)
         {
@@ -99,10 +129,37 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         }
     }
 
+    private static bool JournalLinesEquivalent(
+        IReadOnlyList<LedgerEntry> retained,
+        IReadOnlyList<LedgerEntry> candidate)
+    {
+        if (retained.Count != candidate.Count)
+            return false;
+
+        var matched = new bool[candidate.Count];
+        foreach (var retainedLine in retained)
+        {
+            var matchIndex = -1;
+            for (var index = 0; index < candidate.Count; index++)
+            {
+                if (!matched[index] && LinesEquivalent(retainedLine, candidate[index]))
+                {
+                    matchIndex = index;
+                    break;
+                }
+            }
+
+            if (matchIndex < 0)
+                return false;
+
+            matched[matchIndex] = true;
+        }
+
+        return true;
+    }
+
     private static bool LinesEquivalent(LedgerEntry retained, LedgerEntry candidate)
-        => retained.EntryId == candidate.EntryId
-           && retained.JournalEntryId == candidate.JournalEntryId
-           && retained.Timestamp == candidate.Timestamp
+        => retained.Timestamp == candidate.Timestamp
            && retained.Account.AccountType == candidate.Account.AccountType
            && string.Equals(retained.Account.Name, candidate.Account.Name, StringComparison.Ordinal)
            && string.Equals(retained.Account.Symbol, candidate.Account.Symbol, StringComparison.OrdinalIgnoreCase)
@@ -183,14 +240,21 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
         IReadOnlyDictionary<string, string>? retained,
         IReadOnlyDictionary<string, string>? candidate)
     {
-        retained ??= new Dictionary<string, string>();
-        candidate ??= new Dictionary<string, string>();
-        if (retained.Count != candidate.Count)
+        var ignoreLineDimensionCompatibilityTags =
+            ContainsTag(retained, AccountingPostingCommandValidator.PostingCommandFingerprintTag) &&
+            ContainsTag(candidate, AccountingPostingCommandValidator.PostingCommandFingerprintTag);
+        var retainedPairs = (retained ?? new Dictionary<string, string>())
+            .Where(pair => !ignoreLineDimensionCompatibilityTags || !IsLineDimensionCompatibilityTag(pair.Key))
+            .ToArray();
+        var candidatePairs = (candidate ?? new Dictionary<string, string>())
+            .Where(pair => !ignoreLineDimensionCompatibilityTags || !IsLineDimensionCompatibilityTag(pair.Key))
+            .ToArray();
+        if (retainedPairs.Length != candidatePairs.Length)
             return false;
 
-        foreach (var (key, retainedValue) in retained)
+        foreach (var (key, retainedValue) in retainedPairs)
         {
-            var candidatePair = candidate.FirstOrDefault(pair =>
+            var candidatePair = candidatePairs.FirstOrDefault(pair =>
                 string.Equals(pair.Key, key, StringComparison.OrdinalIgnoreCase));
             if (candidatePair.Key is null ||
                 !string.Equals(retainedValue, candidatePair.Value, StringComparison.Ordinal))
@@ -201,6 +265,14 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
 
         return true;
     }
+
+    private static bool ContainsTag(
+        IReadOnlyDictionary<string, string>? tags,
+        string key)
+        => tags?.Keys.Any(candidate => string.Equals(candidate, key, StringComparison.OrdinalIgnoreCase)) == true;
+
+    private static bool IsLineDimensionCompatibilityTag(string? key)
+        => key?.StartsWith("lineDimensions.", StringComparison.OrdinalIgnoreCase) == true;
 
     private static bool EvidenceEquivalent(
         IReadOnlyList<JournalEvidenceReference> retained,
