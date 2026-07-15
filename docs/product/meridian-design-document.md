@@ -670,6 +670,93 @@ Accounting/Reporting read models from
 `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` so operator actions, approval blockers,
 and release readiness remain consistent.
 
+### Fund Event Command Center
+
+The Fund Event Command Center is a planned private-capital operating surface for creating,
+reviewing, reconciling, approving, reporting, and locking fund events as auditable operational
+records. It should remain roadmap-candidate language until the roadmap registry accepts a matching
+item and evidence gates; do not present it as shipped, accepted, or part of the closed W1-W5
+baseline before that registry acceptance exists.
+
+#### Supported Event Types
+
+The initial event taxonomy should support these fund-event records:
+
+* Formation
+* Close
+* Subscription
+* Capital call
+* Contribution receipt
+* Investment
+* Distribution
+* Valuation
+* Fee
+* Expense
+* Tax request
+* Audit request
+* Dissolution
+* Wind-down
+
+#### Event Lifecycle States
+
+Every command-center event should move through explicit, auditable lifecycle states:
+
+* Draft
+* Evidence pending
+* Validation blocked
+* Reconciliation blocked
+* Journal pending
+* Approval pending
+* Report pending
+* Delivered
+* Locked
+* Amended
+* Restated
+
+#### Event Detail Page Layout
+
+Each event detail page should use a consistent evidence-first layout:
+
+* **Event header:** fund, vehicle, entity, event type, materiality, owner, effective date, due date,
+  current lifecycle state, and amendment/restatement lineage.
+* **Proof ribbon:** compact readiness indicators for evidence completeness, validation,
+  reconciliation, journal state, approval state, report use, lock state, and audit coverage.
+* **Evidence panel:** source documents, import runs, administrator files, signed notices, source
+  hashes, lineage references, reviewer notes, retention class, and legal-hold markers.
+* **Ledger impact:** journal drafts, posted journals, reversals, accruals, realized/unrealized
+  effects, cash movements, book/period scope, and blocked-posting reasons.
+* **Capital-account impact:** investor allocations, commitments, contributions, distributions, fees,
+  expenses, tax lots where relevant, capital roll-forward, and statement-line effects.
+* **Workflow tasks:** assignments, due dates, blocker reasons, reviewer decisions, approval chain,
+  escalation history, and segregation-of-duties checks.
+* **Report usage:** report packs, investor statements, notices, tax/audit support files, board
+  packages, delivery status, recipient entitlement scope, and amendment/restatement dependencies.
+* **Audit timeline:** immutable event history for creation, evidence receipt, validation,
+  reconciliation, journal actions, approvals, report generation, delivery, locks, amendments,
+  restatements, and evidence-retention actions.
+
+#### Workspace Entry Points
+
+The command center should be reachable from existing root operator workspaces without introducing a
+new root navigation lane:
+
+* **Portfolio:** open event records from fund, vehicle, holding, investment, valuation,
+  distribution, and liquidity-review contexts.
+* **Accounting:** open event records from close cockpit, ledger explorer, journal queues,
+  capital-account workbench, reconciliation cases, and period-lock workflows.
+* **Reporting:** open event records from package builders, investor statements, notices, tax/audit
+  support requests, delivery evidence, amendment, and restatement workflows.
+* **Data:** open event records from import runs, administrator files, provider validation, lineage
+  manifests, reconciliation inputs, source-evidence repair, and certified dataset release flows.
+
+#### Roadmap Candidate Boundary
+
+Use this feature as a roadmap candidate only until a registry-backed item is accepted. Candidate
+acceptance should name the owning roadmap ID, event registry schema, lifecycle transition rules,
+workspace routes, evidence requirements, audit-event coverage, reporting dependencies, and validation
+commands. Until then, documents and product copy should say "planned Fund Event Command Center" or
+"roadmap candidate" rather than "implemented", "accepted", or "available".
+
 ---
 
 ## 5.3 Treasury & Payments
