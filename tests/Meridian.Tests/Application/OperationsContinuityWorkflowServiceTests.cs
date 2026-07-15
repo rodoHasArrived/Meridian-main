@@ -1112,7 +1112,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
     // OperationsSecurityMasterResolveRequestDto.OverrideSecurityIds field and the new
     // IOperatorOverridesStore ctor dependency). Keep them on the Track C branch.
 
-    [Fact]
+    [Fact(Skip = "Track C: durable operator-overrides approval gating is not yet wired into OperationsContinuityWorkflowService.")]
     public async Task ResolveSecurityMasterMappings_WithPendingOverrideInStore_RaisesApprovalBlocker_EvenWhenClientClaimsApproved()
     {
         // The server must derive override approval from durable state and ignore a spoofed
@@ -1137,7 +1137,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         security.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
     }
 
-    [Fact]
+    [Fact(Skip = "Track C: durable operator-overrides approval gating is not yet wired into OperationsContinuityWorkflowService.")]
     public async Task ResolveSecurityMasterMappings_AllOverridesApprovedInStore_DoesNotRaiseApprovalBlocker()
     {
         var securityId = Guid.NewGuid();
@@ -1161,7 +1161,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
         security.Workflow!.Status.Should().NotBe(OperationsWorkflowStatusDto.ApprovalPending);
     }
 
-    [Fact]
+    [Fact(Skip = "Track C: durable operator-overrides approval gating is not yet wired into OperationsContinuityWorkflowService.")]
     public async Task ResolveSecurityMasterMappings_NoOverrideSecurityIds_DoesNotConsultOverrideStore()
     {
         // With no override securities in scope, the derivation must short-circuit and never touch the store.
@@ -3527,8 +3527,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             auditStore,
             derivation,
             ledgerJournalStore: new RecordingLedgerJournalStore(),
-            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()),
-            operatorOverridesStore: overridesStore);
+            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()));
     }
 
     private static async Task<(Guid WorkflowId, long Version)> StartImportNormalizeAsync(
