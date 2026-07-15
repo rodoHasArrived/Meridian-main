@@ -174,7 +174,7 @@ public sealed class ReportingArtifactCatalogAuditStoreTests : IClassFixture<Repo
                 package_id, artifact_id, previous_hash, entry_hash, event_payload)
             values (
                 @sequence, @event_id, @occurred_at_utc, 'ContentAccessed', 'actor-tenant', 'target-tenant',
-                'package', 'artifact', @previous_hash, @entry_hash, '{{}}');
+                'package', 'artifact', @previous_hash, @entry_hash, jsonb_build_object()::text);
             """,
             ("sequence", auditReceipt.Sequence + 10),
             ("event_id", NewId("forged-event")),

@@ -210,7 +210,7 @@ public sealed class PostgresOperatorOverridesStoreTests
         command.CommandText =
             $"""
             insert into {_fixture.Options.Schema}.security_operator_overrides (security_id, values, updated_by, updated_at)
-            values (@security_id, '{{}}'::jsonb, 'legacy-operator', now());
+            values (@security_id, jsonb_build_object(), 'legacy-operator', now());
             """;
         command.Parameters.AddWithValue("security_id", securityId);
         await command.ExecuteNonQueryAsync();

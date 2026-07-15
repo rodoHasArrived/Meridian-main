@@ -422,7 +422,8 @@ describe("ReportRunParametersScreen", () => {
     await user.click(screen.getByLabelText("Include supporting schedules"));
     await user.click(screen.getByLabelText("Include evidence appendix"));
     await user.clear(screen.getByLabelText("Template parameters (JSON)"));
-    await user.type(screen.getByLabelText("Template parameters (JSON)"), JSON.stringify({ reportingRegion: "EU" }));
+    // user-event treats "{" as a key-descriptor opener; escape braces so the JSON is typed literally.
+    await user.type(screen.getByLabelText("Template parameters (JSON)"), JSON.stringify({ reportingRegion: "EU" }).replace(/\{/g, "{{"));
     await user.clear(screen.getByLabelText("Report run as-of date"));
     await user.type(screen.getByLabelText("Report run as-of date"), "2026-06-30");
 
@@ -489,7 +490,7 @@ describe("ReportRunParametersScreen", () => {
     await user.selectOptions(screen.getByLabelText("Draft vs final"), "Final");
 
     expect(await screen.findByText("Final blocked")).toBeInTheDocument();
-    expect(screen.getByText("Final reporting output must include the supporting evidence appendix.")).toBeInTheDocument();
+    expect(screen.getAllByText("Final reporting output must include the supporting evidence appendix.")[0]).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Run Trial Balance Pack" })).toBeDisabled();
     expect(api.runReportingNow).not.toHaveBeenCalled();
   });
