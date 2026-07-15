@@ -563,6 +563,9 @@ public sealed class ParquetStorageSink : IStorageSink
             }
 
             using var groupWriter = await ParquetWriter.CreateAsync(schema, tempStream, append: appendToExisting).ConfigureAwait(false);
+            // Honour the configured compression method (previously ignored, so every file was written
+            // with the Parquet default regardless of ParquetStorageOptions.CompressionMethod).
+            groupWriter.CompressionMethod = _parquetOptions.CompressionMethod;
             using var rowGroupWriter = groupWriter.CreateRowGroup();
 
             foreach (var column in columns)
@@ -713,6 +716,8 @@ public sealed class ParquetStorageOptions
     /// <summary>
     /// Row group size for Parquet files.
     /// </summary>
+    [Obsolete("RowGroupSize is not honored by ParquetStorageSink; the row group is bounded by BufferSize. " +
+        "This property will be removed in a future release.")]
     public int RowGroupSize { get; init; } = 50000;
 
     public static ParquetStorageOptions Default => new();

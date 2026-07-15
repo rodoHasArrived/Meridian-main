@@ -228,9 +228,21 @@ public sealed class PaperTradingGateway : IOrderGateway
         await Task.Yield();
         var orderId = request.ClientOrderId ?? throw new InvalidOperationException("Paper orders must have a client order id before fill simulation.");
 
+        bool stillWorking;
         lock (_lock)
         {
-            _workingOrders.Remove(orderId);
+            stillWorking = _workingOrders.Remove(orderId);
+        }
+
+        if (!stillWorking)
+        {
+            // The order left the working set before this simulated fill ran — it was cancelled
+            // (CancelAsync removes it and emits a terminal Cancelled update) or already filled.
+            // Emitting a Filled update here would contradict that terminal state.
+            _logger.LogDebug(
+                "Paper fill skipped for {OrderId}: order is no longer working (cancelled or already filled).",
+                orderId);
+            return;
         }
 
         // For limit orders use the limit price; for market orders use the scaffold notional price.

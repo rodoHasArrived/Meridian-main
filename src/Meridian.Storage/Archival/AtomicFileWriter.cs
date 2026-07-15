@@ -397,10 +397,12 @@ public static partial class AtomicFileWriter
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Write checksum sidecar file (post-commit: non-cancellable so a cancelled token
-            // cannot report the already-renamed payload as a failed write).
+            // Write the checksum sidecar atomically (temp + fsync + rename). A bare
+            // File.WriteAllTextAsync could leave a torn sidecar on a crash mid-write, which a later
+            // health check would misread as payload corruption. Post-commit: non-cancellable so a
+            // cancelled token cannot report the already-renamed payload as a failed write.
             var checksumPath = destinationPath + ".sha256";
-            await File.WriteAllTextAsync(
+            await WriteAsync(
                 checksumPath, $"{checksum}  {Path.GetFileName(destinationPath)}", CancellationToken.None);
 
             // Sync directory (post-commit: non-cancellable)

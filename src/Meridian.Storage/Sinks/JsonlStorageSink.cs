@@ -222,7 +222,24 @@ public sealed class JsonlStorageSink : IStorageSink
         // Flush if buffer is full
         if (buffer.ShouldFlush(_batchOptions.BatchSize))
         {
+            await FlushBufferUnderGateAsync(path, buffer, ct).ConfigureAwait(false);
+        }
+    }
+
+    // Size-triggered flushes must hold the same _flushGate as the periodic and disposal
+    // flush paths. EventBuffer.DrainAll hands back its internal swap-buffer, which the next
+    // DrainAll clears and reuses; without the gate a concurrent periodic/size flush could
+    // clear the very list an in-flight WriteBatchAsync is still reading.
+    private async Task FlushBufferUnderGateAsync(string path, MarketEventBuffer buffer, CancellationToken ct)
+    {
+        await _flushGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
             await FlushBufferAsync(path, buffer, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _flushGate.Release();
         }
     }
 
@@ -347,21 +364,31 @@ public sealed class JsonlStorageSink : IStorageSink
         // 3. Final flush — guaranteed no concurrent timer flushes after timer disposal
         if (_batchOptions.Enabled)
         {
+            var gateAcquired = false;
             try
             {
-                await _flushGate.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-                try
+                // WaitAsync(timeout) returns false when the gate could not be acquired in time.
+                // The result must be honoured: flushing without the gate races the swap-buffer,
+                // and releasing a semaphore that was never acquired corrupts its count.
+                gateAcquired = await _flushGate.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                if (gateAcquired)
                 {
                     await FlushBufferedBatchesUnderGateAsync(CancellationToken.None).ConfigureAwait(false);
                 }
-                finally
+                else
                 {
-                    _flushGate.Release();
+                    _logger.LogWarning(
+                        "Final buffer flush during disposal skipped: could not acquire the flush gate within the timeout.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Final buffer flush during disposal failed");
+            }
+            finally
+            {
+                if (gateAcquired)
+                    _flushGate.Release();
             }
         }
 

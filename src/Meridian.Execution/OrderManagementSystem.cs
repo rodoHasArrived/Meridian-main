@@ -1079,11 +1079,3 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
     }
 }
-
-/// <summary>Placeholder attribute for ADR traceability.</summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-internal sealed class ImplementsAdrAttribute(string adr, string reason) : Attribute
-{
-    public string Adr { get; } = adr;
-    public string Reason { get; } = reason;
-}

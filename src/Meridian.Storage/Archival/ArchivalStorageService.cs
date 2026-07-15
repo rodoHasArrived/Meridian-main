@@ -111,17 +111,36 @@ public sealed class ArchivalStorageService : IStorageSink, IFlushable
 
             _log.Debug("Flushing {Count} events to primary storage", eventsToFlush.Count);
 
-            // Write to primary storage
-            foreach (var pending in eventsToFlush.OrderBy(e => e.WalSequence))
+            try
             {
-                await _primaryStorage.AppendAsync(pending.Event, ct);
+                // Write to primary storage
+                foreach (var pending in eventsToFlush.OrderBy(e => e.WalSequence))
+                {
+                    await _primaryStorage.AppendAsync(pending.Event, ct);
+                }
+
+                // Flush primary storage
+                await _primaryStorage.FlushAsync(ct);
+
+                // Commit the WAL
+                await _wal.CommitAsync(maxSequence, ct);
             }
+            catch (Exception ex)
+            {
+                // Re-enqueue the drained events so a failed flush does not silently lose them.
+                // Previously the drained batch was dropped (recoverable only by a restart replaying
+                // the still-uncommitted WAL) and _pendingEvents was left inflated. The counter is
+                // only decremented on success below, so re-enqueuing without touching it keeps the
+                // pending count accurate. The next flush re-orders by WAL sequence, so restoring at
+                // the tail does not reorder events, and the WAL stays uncommitted (at-least-once).
+                foreach (var pending in eventsToFlush)
+                {
+                    _buffer.Enqueue(pending);
+                }
 
-            // Flush primary storage
-            await _primaryStorage.FlushAsync(ct);
-
-            // Commit the WAL
-            await _wal.CommitAsync(maxSequence, ct);
+                _log.Error(ex, "Flush to primary storage failed; re-enqueued {Count} events for retry", eventsToFlush.Count);
+                throw;
+            }
 
             _lastCommittedSequence = maxSequence;
             Interlocked.Add(ref _pendingEvents, -eventsToFlush.Count);
