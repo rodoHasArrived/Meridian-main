@@ -1150,6 +1150,7 @@ Meridian-main
 │       │   ├── install-web-workstation.ps1
 │       │   ├── install.ps1
 │       │   ├── install.sh
+│       │   ├── package-desktop-msix.ps1
 │       │   └── smoke-web-workstation-install.ps1
 │       ├── lib
 │       │   ├── ArtifactRetention.psm1
@@ -3490,6 +3491,7 @@ Meridian-main
 │   │   ├── BacktestResult.cs
 │   │   ├── BacktestStage.cs
 │   │   ├── BacktestStageTelemetryDto.cs
+│   │   ├── BacktestStrategyBase.cs
 │   │   ├── CanonicalBacktestResultNormalizer.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
@@ -6035,6 +6037,8 @@ Meridian-main
 │   │   │   │   │   ├── trial-balance-screen.view-model.ts
 │   │   │   │   │   ├── w4-acceptance-parity.test.ts
 │   │   │   │   │   ├── watchlist-screen.a11y.test.tsx
+│   │   │   │   │   ├── watchlist-screen.row-actions.test.tsx
+│   │   │   │   │   ├── watchlist-screen.row-actions.tsx
 │   │   │   │   │   ├── watchlist-screen.test.tsx
 │   │   │   │   │   ├── watchlist-screen.tsx
 │   │   │   │   │   ├── watchlist-screen.view-model.test.ts
@@ -6670,6 +6674,8 @@ Meridian-main
 │   │   │   ├── SectionHeaderBar.xaml.cs
 │   │   │   ├── ToneBadge.xaml
 │   │   │   ├── ToneBadge.xaml.cs
+│   │   │   ├── WorkspaceAttentionRibbon.xaml
+│   │   │   ├── WorkspaceAttentionRibbon.xaml.cs
 │   │   │   ├── WorkspaceQueueCard.xaml
 │   │   │   └── WorkspaceQueueCard.xaml.cs
 │   │   ├── Converters
@@ -8662,6 +8668,7 @@ Meridian-main
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
 │   │   │   ├── WelcomePageViewModelTests.cs
 │   │   │   ├── WorkflowLibraryViewModelTests.cs
+│   │   │   ├── WorkspaceAttentionRibbonViewModelTests.cs
 │   │   │   ├── WorkspaceCockpitShellViewModelTests.cs
 │   │   │   └── WorkspacePageViewModelTests.cs
 │   │   ├── Views
@@ -8736,6 +8743,7 @@ Meridian-main
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_compare_run_contract.py
 │   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_render_determinism.py
