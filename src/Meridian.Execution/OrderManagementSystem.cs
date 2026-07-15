@@ -111,6 +111,33 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 request.Symbol);
         }
 
+        // Reject a duplicate client order id that is still open before anything writes _orders[orderId]:
+        // that dictionary is keyed by order id, so placing over an existing open order would clobber
+        // its tracked state and — once the gateway rejects the duplicate — mark the still-live original
+        // as rejected. Orders in a terminal state may reuse their id.
+        if (_orders.TryGetValue(orderId, out var existingOpenOrder)
+            && existingOpenOrder.Status is not (OrderStatus.Filled or OrderStatus.Cancelled
+                or OrderStatus.Rejected or OrderStatus.Expired))
+        {
+            var duplicateReason = $"An order with client order id '{orderId}' is already open.";
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderPlaceRejected",
+                outcome: "Rejected",
+                orderId: orderId,
+                state: existingOpenOrder,
+                report: null,
+                message: duplicateReason,
+                ct: ct).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = existingOpenOrder,
+                ErrorMessage = duplicateReason
+            };
+        }
+
         var placementGate = BrokerageOrderPlacementGate.Evaluate(
             _brokerageConfiguration,
             _gateway.GatewayId,
