@@ -21,9 +21,14 @@ public static partial class WorkstationEndpoints
     private const long DataUploadWorkbookMaxFileBytes = 15 * 1024 * 1024;
 
     // Defenses against decompression bombs: the multipart check only bounds the compressed .xlsx,
-    // so cap the decompressed size of each part and the number of rows materialized per sheet.
+    // so cap the decompressed size of each part, the worksheet width, and the number of rows and
+    // cells materialized per sheet. A lone far-right cell (e.g. XFD1) would otherwise force
+    // gap-filling of thousands of empty cells per row, and many such rows can still exhaust memory
+    // while staying under the byte cap.
     private const long MaxWorkbookPartUncompressedBytes = 64 * 1024 * 1024;
+    private const int MaxWorkbookColumns = 256;
     private const int MaxWorkbookRowsPerSheet = 200_000;
+    private const int MaxWorkbookCellsPerSheet = 1_000_000;
 
     private const string OnboardingWorkbookSchemaVersion = "1";
     private const string OnboardingWorkbookFileName = "meridian-onboarding-workbook.xlsx";
@@ -380,10 +385,12 @@ public static partial class WorkstationEndpoints
 
         if (sheet.Truncated)
         {
+            // Blocking, not a warning: rows past the cap were never read, so the sheet cannot be
+            // certified review-ready or committable with unvalidated rows behind it.
             issues.Add(new DataUploadValidationIssueDto(
-                "Warning",
+                "Error",
                 "rows",
-                $"Sheet '{sheet.Name}' exceeds {MaxWorkbookRowsPerSheet} rows; preview and validation cover the first {MaxWorkbookRowsPerSheet} rows only.",
+                $"Sheet '{sheet.Name}' is too large to validate in full (over {MaxWorkbookRowsPerSheet} rows or {MaxWorkbookCellsPerSheet} cells); rows beyond the cap were not read. Split it into smaller uploads and re-upload.",
                 RowNumber: null,
                 SheetName: sheet.Name,
                 CellReference: null));
@@ -754,17 +761,20 @@ public static partial class WorkstationEndpoints
             var document = LoadWorkbookXml(entry);
             var rows = new List<IReadOnlyList<string>>();
             var truncated = false;
+            var cellCount = 0;
             foreach (var rowElement in document
                 .Descendants(WorkbookSpreadsheetNamespace + "sheetData")
                 .Elements(WorkbookSpreadsheetNamespace + "row"))
             {
-                if (rows.Count >= MaxWorkbookRowsPerSheet)
+                if (rows.Count >= MaxWorkbookRowsPerSheet || cellCount >= MaxWorkbookCellsPerSheet)
                 {
                     truncated = true;
                     break;
                 }
 
-                rows.Add(ReadWorkbookRowValues(rowElement, sharedStrings).ToArray());
+                var values = ReadWorkbookRowValues(rowElement, sharedStrings).ToArray();
+                cellCount += values.Length;
+                rows.Add(values);
             }
 
             sheets.Add(new WorkbookSheetContent(name, rows, truncated));
@@ -899,6 +909,14 @@ public static partial class WorkstationEndpoints
         foreach (var cell in row.Elements(WorkbookSpreadsheetNamespace + "c"))
         {
             var column = ResolveWorkbookColumnFromReference(cell.Attribute("r")?.Value) ?? nextColumn;
+            if (column > MaxWorkbookColumns)
+            {
+                // Cells are written in ascending column order, so a reference beyond the safe
+                // worksheet width means the rest of the row is out of range too. Stop here instead
+                // of gap-filling thousands of empty cells for a lone far-right value.
+                break;
+            }
+
             while (nextColumn < column)
             {
                 yield return string.Empty;
