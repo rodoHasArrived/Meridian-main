@@ -74,20 +74,21 @@ jobs:
           CANDIDATE_KERNEL_VERSION: ${{ inputs.candidate_kernel_version }}
           BASELINE_KERNEL_VERSION: ${{ inputs.baseline_kernel_version }}
         run: |
-          $bundleArgs = @()
+          $bundleArgs = @{
+            PrepareOperatorSignoff = $true
+          }
           if ($env:DATE_STAMP -ne '') {
-            $bundleArgs += '-DateStamp', $env:DATE_STAMP
+            $bundleArgs.DateStamp = $env:DATE_STAMP
           }
           if ($env:SKIP_WAVE1 -eq 'true') {
-            $bundleArgs += '-SkipWave1'
+            $bundleArgs.SkipWave1 = $true
           }
           if ($env:CANDIDATE_KERNEL_VERSION -ne '') {
-            $bundleArgs += '-CandidateKernelVersion', $env:CANDIDATE_KERNEL_VERSION
+            $bundleArgs.CandidateKernelVersion = $env:CANDIDATE_KERNEL_VERSION
           }
           if ($env:BASELINE_KERNEL_VERSION -ne '' -and $env:BASELINE_KERNEL_VERSION -ne 'default') {
-            $bundleArgs += '-BaselineKernelVersion', $env:BASELINE_KERNEL_VERSION
+            $bundleArgs.BaselineKernelVersion = $env:BASELINE_KERNEL_VERSION
           }
-          $bundleArgs += '-PrepareOperatorSignoff'
           & scripts/dev/run-provider-validation-evidence-bundle.ps1 @bundleArgs
 
       - name: Upload provider validation artifacts

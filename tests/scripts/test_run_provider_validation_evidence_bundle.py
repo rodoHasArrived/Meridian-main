@@ -16,9 +16,18 @@ from tests.scripts.test_generate_dk1_pilot_parity_packet import (
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "dev" / "run-provider-validation-evidence-bundle.ps1"
+WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "provider-validation.yml"
 
 
 class RunProviderValidationEvidenceBundleTests(unittest.TestCase):
+    def test_workflow_uses_named_splatting_for_pending_signoff_mode(self) -> None:
+        workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+
+        self.assertIn("$bundleArgs = @{", workflow)
+        self.assertIn("PrepareOperatorSignoff = $true", workflow)
+        self.assertIn("$bundleArgs.SkipWave1 = $true", workflow)
+        self.assertNotIn("$bundleArgs += '-PrepareOperatorSignoff'", workflow)
+
     def test_prepare_operator_signoff_succeeds_without_claiming_dk1_exit(self) -> None:
         pwsh = shutil.which("pwsh")
         if pwsh is None:
