@@ -19,13 +19,13 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 578 |
-| Total lines | 97,113 |
-| Average file size (lines) | 168.0 |
-| Orphaned files | 245 |
+| Total documentation files | 586 |
+| Total lines | 101,337 |
+| Average file size (lines) | 172.9 |
+| Orphaned files | 244 |
 | Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 204 |
+| TODO/FIXME markers | 203 |
 | **Health score** | **78/100** |
 
 ### Score Breakdown
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `Meridian Design System/SKILL.md`
 - `Meridian Design System/VISUAL_FOUNDATIONS.md`
 - `Meridian Design System/components/accounting/AccountTree.prompt.md`
-- ... and 225 more
+- ... and 224 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 78 | 578 | 245 | 0 |
+| 1970-01-01 | 78 | 586 | 244 | 0 |
 
 ---
 
