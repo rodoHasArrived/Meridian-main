@@ -130,7 +130,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   FundStructureSetup: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup,
   OperationsClose: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
   Backtest: WORKSTATION_ROUTE_CATALOG.strategy,
-  Backfill: WORKSTATION_ROUTE_CATALOG.dataOperations,
+  Backfill: WORKSTATION_ROUTE_CATALOG.dataBackfills,
   BrokerageSync: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   DataShell: WORKSTATION_ROUTE_CATALOG.data,
   DataOperationsShell: WORKSTATION_ROUTE_CATALOG.data,

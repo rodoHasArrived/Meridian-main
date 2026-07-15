@@ -882,7 +882,7 @@ describe("command palette view model", () => {
     const workflowItems = model.items.filter((item) => item.id.startsWith("workflow:primary-operator-workflow:"));
     expect(workflowItems.map((item) => [item.label, item.route])).toEqual([
       ["Import", "/data"],
-      ["Validate", "/data/operations"],
+      ["Validate", "/data/backfills"],
       ["Reconcile", "/accounting/reconciliation"],
       ["Investigate", "/portfolio"],
       ["Approve", "/accounting/operations-continuity"],

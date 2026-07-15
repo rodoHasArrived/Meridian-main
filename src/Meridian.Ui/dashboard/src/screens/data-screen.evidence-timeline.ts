@@ -12,7 +12,7 @@ export function buildDataEvidenceTimelineItems(data: DataWorkspaceResponse | nul
       id: `data-backfill:${backfill.jobId}`,
       label: `${backfill.scope} backfill ${backfill.status.toLowerCase()}`,
       detail: `${backfill.provider} backfill progress: ${backfill.progress}.`,
-      route: WORKSTATION_ROUTE_CATALOG.dataOperations,
+      route: WORKSTATION_ROUTE_CATALOG.dataBackfills,
       workspaceLabel: "Data",
       timestamp: backfill.updatedAt,
       tone: backfill.status === "Review" ? "review" : "pending",
