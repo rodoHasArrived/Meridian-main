@@ -488,6 +488,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
         services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
+        services.TryAddSingleton<IAutomatedJournalCapitalAccountReconciliationResolver>(sp =>
+            new AccountingReportPackageCapitalAccountReconciliationResolver(
+                () => sp.GetRequiredService<IAccountingReportPackageService>()));
 
         services.TryAddSingleton<IReconciliationRunRepository>(sp =>
             new FileReconciliationRunRepository(
@@ -546,6 +549,9 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
         services.TryAddSingleton<IAutomatedJournalScheduleStatusSource>(sp =>
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<IAutomatedJournalDividendPositionResolver>(sp =>
+            new PositionSnapshotAutomatedJournalDividendPositionResolver(
+                sp.GetService<IPositionSnapshotStore>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             new ManualJournalEntryWorkbenchService(
@@ -583,7 +589,9 @@ public static class WorkstationServiceCollectionExtensions
                         new RegisteredHistoricalCloseMarkPriceSource(providerRegistry),
                         new LedgerMarkToMarketCarryingValueSource(journalStore)),
                 positionService,
-                sp.GetRequiredService<AutomatedJournalEvidencePolicy>());
+                sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
+                sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
+                sp.GetRequiredService<TimeProvider>());
         });
         // The durable ledger book service is only registered when a persistence-backed ledger is
         // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph

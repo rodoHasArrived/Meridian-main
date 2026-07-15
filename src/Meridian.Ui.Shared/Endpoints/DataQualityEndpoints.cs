@@ -169,6 +169,14 @@ public static class DataQualityEndpoints
                     });
                 }
 
+                if (string.IsNullOrWhiteSpace(target.Provider))
+                {
+                    return Results.Conflict(new
+                    {
+                        message = "The originating provider is unavailable. Refresh after provider-attributed quality evidence is available."
+                    });
+                }
+
                 var outcome = await remediationService
                     .RequestDataQualityGapAsync(target.Gap, target.Provider, ct)
                     .ConfigureAwait(false);

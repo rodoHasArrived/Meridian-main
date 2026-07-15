@@ -1340,7 +1340,7 @@ export interface QualityCompositeSymbolResponse {
 export interface QualityCompositeDashboardResponse {
   version: string;
   observedAt: string;
-  compositeScore: number;
+  compositeScore: number | null;
   status: "Green" | "Amber" | "Red" | "Unavailable";
   isPartial: boolean;
   coverageWeight: number;

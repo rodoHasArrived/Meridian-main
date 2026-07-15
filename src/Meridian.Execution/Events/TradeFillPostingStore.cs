@@ -1,4 +1,6 @@
 using System.Runtime.ExceptionServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
@@ -9,7 +11,63 @@ namespace Meridian.Execution.Events;
 /// <summary>Configuration for the durable trade-fill-to-ledger handoff.</summary>
 public sealed record TradeFillPostingStoreOptions(string RootDirectory, string PostingScope)
 {
-    public string WalDirectory => Path.Combine(RootDirectory, "wal");
+    public int CompactionRecordThreshold { get; init; } = 128;
+
+    public long MaxWalFileSizeBytes { get; init; } = 512 * 1024;
+
+    public int MaxRememberedPostedFillIds { get; init; } = 4_096;
+
+    /// <summary>
+    /// Stable partition for one exact posting scope. A book/period rollover therefore opens a new
+    /// WAL rather than attempting to interpret a prior period's records under a new scope.
+    /// </summary>
+    public string ScopeStorageKey => BuildScopeStorageKey(PostingScope);
+
+    public string ScopeDirectory => Path.Combine(RootDirectory, "scopes", ScopeStorageKey);
+
+    public string WalDirectory => Path.Combine(ScopeDirectory, "wal");
+
+    public string SnapshotPath => Path.Combine(ScopeDirectory, "pending.snapshot.json");
+
+    internal Func<string, string, CancellationToken, Task<WalRecord>>? WalAppendOverride { get; init; }
+
+    internal Func<string, CancellationToken, Task>? SnapshotWriteOverride { get; init; }
+
+    internal TradeFillPostingStoreOptions Validate()
+    {
+        if (string.IsNullOrWhiteSpace(RootDirectory))
+            throw new ArgumentException("A durable trade-fill store root is required.", nameof(RootDirectory));
+        if (string.IsNullOrWhiteSpace(PostingScope))
+            throw new ArgumentException("A ledger posting scope is required.", nameof(PostingScope));
+        if (CompactionRecordThreshold <= 0)
+            throw new ArgumentOutOfRangeException(nameof(CompactionRecordThreshold));
+        if (MaxWalFileSizeBytes < 1_024)
+            throw new ArgumentOutOfRangeException(nameof(MaxWalFileSizeBytes));
+        if (MaxRememberedPostedFillIds <= 0)
+            throw new ArgumentOutOfRangeException(nameof(MaxRememberedPostedFillIds));
+
+        return this with
+        {
+            RootDirectory = Path.GetFullPath(RootDirectory.Trim()),
+            PostingScope = PostingScope.Trim()
+        };
+    }
+
+    private static string BuildScopeStorageKey(string postingScope)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(postingScope);
+        var normalized = postingScope.Trim();
+        var readable = new string(normalized
+            .Select(static character => char.IsLetterOrDigit(character) || character is '-' or '_' or '.'
+                ? character
+                : '_')
+            .Take(48)
+            .ToArray());
+        if (string.IsNullOrWhiteSpace(readable))
+            readable = "scope";
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized)))[..16];
+        return $"{readable}-{hash}";
+    }
 }
 
 /// <summary>
@@ -50,27 +108,35 @@ public interface ITradeFillPostingStore : IAsyncDisposable
 }
 
 /// <summary>
-/// Execution-owned fill handoff backed by Meridian's write-ahead log. Pending, failure, and
-/// per-fill acknowledgement records are append-only so one failed fill cannot be accidentally
-/// committed by a later successful fill.
+/// Execution-owned fill handoff backed by a scope-partitioned WAL and an atomically replaced
+/// pending-state snapshot. The snapshot is written before acceptance is reported, so a transient
+/// WAL append outage still leaves a fail-closed retained handoff that can replay after restart.
+/// Periodic WAL commit/truncation bounds completed history while pending fills remain lossless.
 /// </summary>
 public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
 {
+    private const int SnapshotVersion = 1;
     private const string PendingRecordType = "TradeFillPending";
     private const string FailureRecordType = "TradeFillFailure";
     private const string PostedRecordType = "TradeFillPosted";
     private const int MaximumFailureLength = 4_096;
 
+    private readonly TradeFillPostingStoreOptions _options;
     private readonly WriteAheadLog _wal;
     private readonly ILogger<WalTradeFillPostingStore> _logger;
     private readonly SemaphoreSlim _operationGate = new(1, 1);
     private readonly object _initializationSync = new();
     private readonly object _disposeSync = new();
     private readonly Dictionary<Guid, PendingTradeFillPosting> _pending = [];
+    private readonly HashSet<Guid> _walAccepted = [];
     private readonly HashSet<Guid> _posted = [];
-    private readonly Dictionary<Guid, TradeExecutedEvent> _acceptedEvents = [];
+    private readonly Queue<Guid> _postedOrder = [];
     private Task? _initializationTask;
     private Task? _disposeTask;
+    private long _lastAppliedWalSequence;
+    private long _snapshotAppliedThroughWalSequence;
+    private long _nextStoreSequence;
+    private int _recordsSinceCompaction;
     private int _disposeStarted;
 
     public WalTradeFillPostingStore(
@@ -78,21 +144,17 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         ILogger<WalTradeFillPostingStore> logger)
     {
         ArgumentNullException.ThrowIfNull(options);
+        _options = options.Validate();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        if (string.IsNullOrWhiteSpace(options.RootDirectory))
-            throw new ArgumentException("A durable trade-fill store root is required.", nameof(options));
-        if (string.IsNullOrWhiteSpace(options.PostingScope))
-            throw new ArgumentException("A ledger posting scope is required.", nameof(options));
-
-        PostingScope = options.PostingScope.Trim();
+        PostingScope = _options.PostingScope;
         _wal = new WriteAheadLog(
-            options.WalDirectory,
+            _options.WalDirectory,
             new WalOptions
             {
                 SyncMode = WalSyncMode.EveryWrite,
                 ArchiveAfterTruncate = false,
-                MaxWalFileAge = TimeSpan.FromDays(1),
-                MaxWalFileSizeBytes = 5 * 1024 * 1024,
+                MaxWalFileAge = TimeSpan.FromMinutes(15),
+                MaxWalFileSizeBytes = _options.MaxWalFileSizeBytes,
                 CorruptionMode = WalCorruptionMode.Halt
             });
     }
@@ -113,35 +175,72 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         try
         {
             ThrowIfDisposing();
-            if (_acceptedEvents.TryGetValue(tradeEvent.FillId, out var acceptedEvent)
-                && acceptedEvent != tradeEvent)
-            {
-                throw new InvalidOperationException(
-                    $"Fill '{tradeEvent.FillId:D}' was replayed with different economic content.");
-            }
             if (_posted.Contains(tradeEvent.FillId))
-            {
                 return new TradeFillPostingAcceptance(null, ShouldEnqueue: false, WasAlreadyPosted: true);
-            }
-
             if (_pending.TryGetValue(tradeEvent.FillId, out var retained))
             {
+                EnsureSameEconomics(retained.TradeEvent, tradeEvent);
                 return new TradeFillPostingAcceptance(retained, ShouldEnqueue: false, WasAlreadyPosted: false);
             }
 
+            ct.ThrowIfCancellationRequested();
             var acceptedAtUtc = DateTimeOffset.UtcNow;
-            var payload = new TradeFillPendingWalPayload(PostingScope, tradeEvent, acceptedAtUtc);
-            var json = JsonSerializer.Serialize(
-                payload,
-                ExecutionJsonContext.Default.TradeFillPendingWalPayload);
-            var walRecord = await _wal.AppendAsync(json, PendingRecordType, ct).ConfigureAwait(false);
             var posting = new PendingTradeFillPosting(
-                walRecord.Sequence,
+                ++_nextStoreSequence,
                 PostingScope,
                 tradeEvent,
                 acceptedAtUtc);
+
+            // Try both independent durability paths. Acceptance is reported when either the atomic
+            // snapshot or WAL commits; if both fail the OMS receives a fail-closed publisher error.
             _pending.Add(tradeEvent.FillId, posting);
-            _acceptedEvents.Add(tradeEvent.FillId, tradeEvent);
+            Exception? snapshotFailure = null;
+            try
+            {
+                await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                snapshotFailure = ex;
+            }
+
+            try
+            {
+                var payload = new TradeFillPendingWalPayload(
+                    PostingScope,
+                    tradeEvent,
+                    acceptedAtUtc,
+                    posting.StoreSequence);
+                var record = await AppendWalAsync(
+                        JsonSerializer.Serialize(payload, ExecutionJsonContext.Default.TradeFillPendingWalPayload),
+                        PendingRecordType,
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+                _walAccepted.Add(tradeEvent.FillId);
+                _lastAppliedWalSequence = Math.Max(_lastAppliedWalSequence, record.Sequence);
+                _recordsSinceCompaction++;
+                await PersistSnapshotAfterCommitSafelyAsync().ConfigureAwait(false);
+                await CompactSafelyAsync().ConfigureAwait(false);
+            }
+            catch (Exception walFailure)
+            {
+                if (snapshotFailure is not null)
+                {
+                    _pending.Remove(tradeEvent.FillId);
+                    _nextStoreSequence--;
+                    throw new AggregateException(
+                        $"Neither durable trade-fill acceptance path retained fill '{tradeEvent.FillId:D}'.",
+                        snapshotFailure,
+                        walFailure);
+                }
+
+                _logger.LogError(
+                    walFailure,
+                    "Trade-fill WAL append failed for {FillId} in scope {PostingScope}; the atomic pending snapshot retained the accounting handoff for restart replay",
+                    tradeEvent.FillId,
+                    PostingScope);
+            }
+
             return new TradeFillPostingAcceptance(posting, ShouldEnqueue: true, WasAlreadyPosted: false);
         }
         finally
@@ -158,9 +257,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         try
         {
             ThrowIfDisposing();
-            return _pending.Values
-                .OrderBy(static posting => posting.StoreSequence)
-                .ToArray();
+            return _pending.Values.OrderBy(static posting => posting.StoreSequence).ToArray();
         }
         finally
         {
@@ -181,16 +278,60 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
             ThrowIfDisposing();
             if (_posted.Contains(fillId))
                 return;
-            if (!_pending.ContainsKey(fillId))
+            if (!_pending.TryGetValue(fillId, out var posting))
                 throw new InvalidOperationException($"Fill '{fillId:D}' is not pending and cannot be acknowledged.");
 
-            var payload = new TradeFillStatusWalPayload(PostingScope, fillId, DateTimeOffset.UtcNow, null);
-            var json = JsonSerializer.Serialize(
-                payload,
-                ExecutionJsonContext.Default.TradeFillStatusWalPayload);
-            await _wal.AppendAsync(json, PostedRecordType, ct).ConfigureAwait(false);
+            var wasWalAccepted = _walAccepted.Contains(fillId);
+            var walAcknowledgementPersisted = false;
+            if (wasWalAccepted)
+            {
+                try
+                {
+                    var payload = new TradeFillStatusWalPayload(PostingScope, fillId, DateTimeOffset.UtcNow, null);
+                    var record = await AppendWalAsync(
+                            JsonSerializer.Serialize(payload, ExecutionJsonContext.Default.TradeFillStatusWalPayload),
+                            PostedRecordType,
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                    _lastAppliedWalSequence = Math.Max(_lastAppliedWalSequence, record.Sequence);
+                    _recordsSinceCompaction++;
+                    walAcknowledgementPersisted = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Trade-fill acknowledgement WAL append failed for {FillId}; committing the acknowledgement through the atomic snapshot",
+                        fillId);
+                }
+            }
+
             _pending.Remove(fillId);
-            _posted.Add(fillId);
+            _walAccepted.Remove(fillId);
+            try
+            {
+                // This is the durable acknowledgement. It is reached only after the consumer's
+                // authoritative posting target has completed and read the journal back.
+                await PersistSnapshotAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception snapshotFailure)
+            {
+                if (!walAcknowledgementPersisted)
+                {
+                    _pending.Add(fillId, posting);
+                    if (wasWalAccepted)
+                        _walAccepted.Add(fillId);
+                    throw;
+                }
+
+                _logger.LogError(
+                    snapshotFailure,
+                    "Trade-fill acknowledgement snapshot failed for {FillId}; the posted WAL record remains authoritative and replayable",
+                    fillId);
+            }
+
+            RememberPosted(fillId);
+            await CompactSafelyAsync().ConfigureAwait(false);
         }
         finally
         {
@@ -219,21 +360,61 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
             var normalizedFailure = failure.Trim();
             if (normalizedFailure.Length > MaximumFailureLength)
                 normalizedFailure = normalizedFailure[..MaximumFailureLength];
-            var payload = new TradeFillStatusWalPayload(
-                PostingScope,
-                fillId,
-                occurredAtUtc,
-                normalizedFailure);
-            var json = JsonSerializer.Serialize(
-                payload,
-                ExecutionJsonContext.Default.TradeFillStatusWalPayload);
-            await _wal.AppendAsync(json, FailureRecordType, ct).ConfigureAwait(false);
-            _pending[fillId] = posting with
+
+            var walFailurePersisted = false;
+            if (_walAccepted.Contains(fillId))
+            {
+                try
+                {
+                    var payload = new TradeFillStatusWalPayload(
+                        PostingScope,
+                        fillId,
+                        occurredAtUtc,
+                        normalizedFailure);
+                    var record = await AppendWalAsync(
+                            JsonSerializer.Serialize(payload, ExecutionJsonContext.Default.TradeFillStatusWalPayload),
+                            FailureRecordType,
+                            CancellationToken.None)
+                        .ConfigureAwait(false);
+                    _lastAppliedWalSequence = Math.Max(_lastAppliedWalSequence, record.Sequence);
+                    _recordsSinceCompaction++;
+                    walFailurePersisted = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "Trade-fill failure WAL append failed for {FillId}; retaining the reconciliation state in the atomic snapshot",
+                        fillId);
+                }
+            }
+
+            var updated = posting with
             {
                 FailureCount = posting.FailureCount + 1,
                 LastFailure = normalizedFailure,
                 LastAttemptAtUtc = occurredAtUtc
             };
+            _pending[fillId] = updated;
+            try
+            {
+                await PersistSnapshotAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception snapshotFailure)
+            {
+                if (!walFailurePersisted)
+                {
+                    _pending[fillId] = posting;
+                    throw;
+                }
+
+                _logger.LogError(
+                    snapshotFailure,
+                    "Trade-fill failure snapshot failed for {FillId}; the WAL failure record remains authoritative and replayable",
+                    fillId);
+            }
+
+            await CompactSafelyAsync().ConfigureAwait(false);
         }
         finally
         {
@@ -265,66 +446,24 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
 
     private async Task InitializeCoreAsync()
     {
+        await LoadSnapshotAsync().ConfigureAwait(false);
         await _wal.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        var replayed = 0;
         await foreach (var record in _wal.GetUncommittedRecordsAsync(CancellationToken.None).ConfigureAwait(false))
         {
-            if (record.RecordType == PendingRecordType)
-            {
-                var payload = DeserializePending(record);
-                EnsureScope(payload.PostingScope);
-                if (payload.TradeEvent.FillId == Guid.Empty)
-                    throw new InvalidDataException($"Trade-fill WAL record {record.Sequence} has an empty fill id.");
-                if (_acceptedEvents.TryGetValue(payload.TradeEvent.FillId, out var acceptedEvent)
-                    && acceptedEvent != payload.TradeEvent)
-                {
-                    throw new InvalidDataException(
-                        $"Trade-fill WAL contains conflicting economics for fill '{payload.TradeEvent.FillId:D}'.");
-                }
-                _acceptedEvents.TryAdd(payload.TradeEvent.FillId, payload.TradeEvent);
-                if (_posted.Contains(payload.TradeEvent.FillId))
-                    continue;
-                if (_pending.ContainsKey(payload.TradeEvent.FillId))
-                    continue;
-
-                _pending.Add(payload.TradeEvent.FillId, new PendingTradeFillPosting(
-                    record.Sequence,
-                    PostingScope,
-                    payload.TradeEvent,
-                    payload.AcceptedAtUtc));
+            if (record.Sequence <= _lastAppliedWalSequence)
                 continue;
-            }
 
-            if (record.RecordType is FailureRecordType or PostedRecordType)
-            {
-                var payload = DeserializeStatus(record);
-                EnsureScope(payload.PostingScope);
-                if (payload.FillId == Guid.Empty || !_acceptedEvents.ContainsKey(payload.FillId))
-                {
-                    throw new InvalidDataException(
-                        $"Trade-fill WAL status record {record.Sequence} does not reference an accepted fill.");
-                }
-                if (record.RecordType == PostedRecordType)
-                {
-                    if (payload.Failure is not null)
-                        throw new InvalidDataException($"Trade-fill acknowledgement record {record.Sequence} contains failure data.");
-                    _pending.Remove(payload.FillId);
-                    _posted.Add(payload.FillId);
-                    continue;
-                }
+            ApplyWalRecord(record);
+            _lastAppliedWalSequence = record.Sequence;
+            replayed++;
+        }
 
-                if (string.IsNullOrWhiteSpace(payload.Failure))
-                    throw new InvalidDataException($"Trade-fill failure record {record.Sequence} has no failure detail.");
-
-                if (_pending.TryGetValue(payload.FillId, out var posting))
-                {
-                    _pending[payload.FillId] = posting with
-                    {
-                        FailureCount = posting.FailureCount + 1,
-                        LastFailure = payload.Failure,
-                        LastAttemptAtUtc = payload.OccurredAtUtc
-                    };
-                }
-            }
+        if (replayed > 0)
+        {
+            _recordsSinceCompaction += replayed;
+            await PersistSnapshotAsync(CancellationToken.None).ConfigureAwait(false);
+            await CompactSafelyAsync(force: true).ConfigureAwait(false);
         }
 
         _logger.LogInformation(
@@ -332,6 +471,181 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
             _pending.Count,
             PostingScope);
     }
+
+    private async Task LoadSnapshotAsync()
+    {
+        if (!File.Exists(_options.SnapshotPath))
+            return;
+
+        TradeFillPostingSnapshot snapshot;
+        try
+        {
+            var json = await File.ReadAllTextAsync(_options.SnapshotPath, CancellationToken.None)
+                .ConfigureAwait(false);
+            snapshot = JsonSerializer.Deserialize(
+                           json,
+                           ExecutionJsonContext.Default.TradeFillPostingSnapshot)
+                       ?? throw new InvalidDataException("Trade-fill posting snapshot is empty.");
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException("Trade-fill posting snapshot is invalid.", ex);
+        }
+
+        if (snapshot.Version != SnapshotVersion)
+            throw new InvalidDataException($"Unsupported trade-fill posting snapshot version {snapshot.Version}.");
+        EnsureScope(snapshot.PostingScope);
+        if (snapshot.AppliedThroughWalSequence < 0 || snapshot.NextStoreSequence < 0)
+            throw new InvalidDataException("Trade-fill posting snapshot has invalid sequence state.");
+
+        _lastAppliedWalSequence = snapshot.AppliedThroughWalSequence;
+        _snapshotAppliedThroughWalSequence = snapshot.AppliedThroughWalSequence;
+        _nextStoreSequence = snapshot.NextStoreSequence;
+        foreach (var item in snapshot.Pending)
+        {
+            EnsureScope(item.Posting.PostingScope);
+            if (item.Posting.TradeEvent.FillId == Guid.Empty)
+                throw new InvalidDataException("Trade-fill posting snapshot contains an empty fill id.");
+            if (!_pending.TryAdd(item.Posting.TradeEvent.FillId, item.Posting))
+                throw new InvalidDataException($"Trade-fill posting snapshot repeats fill '{item.Posting.TradeEvent.FillId:D}'.");
+            if (item.WalAccepted)
+                _walAccepted.Add(item.Posting.TradeEvent.FillId);
+            _nextStoreSequence = Math.Max(_nextStoreSequence, item.Posting.StoreSequence);
+        }
+    }
+
+    private void ApplyWalRecord(WalRecord record)
+    {
+        if (record.RecordType == PendingRecordType)
+        {
+            var payload = DeserializePending(record);
+            EnsureScope(payload.PostingScope);
+            if (payload.TradeEvent.FillId == Guid.Empty)
+                throw new InvalidDataException($"Trade-fill WAL record {record.Sequence} has an empty fill id.");
+            if (_posted.Contains(payload.TradeEvent.FillId))
+                return;
+
+            if (_pending.TryGetValue(payload.TradeEvent.FillId, out var existing))
+            {
+                EnsureSameEconomics(existing.TradeEvent, payload.TradeEvent);
+            }
+            else
+            {
+                var storeSequence = payload.StoreSequence > 0
+                    ? payload.StoreSequence
+                    : ++_nextStoreSequence;
+                _pending.Add(payload.TradeEvent.FillId, new PendingTradeFillPosting(
+                    storeSequence,
+                    PostingScope,
+                    payload.TradeEvent,
+                    payload.AcceptedAtUtc));
+                _nextStoreSequence = Math.Max(_nextStoreSequence, storeSequence);
+            }
+
+            _walAccepted.Add(payload.TradeEvent.FillId);
+            return;
+        }
+
+        if (record.RecordType is not (FailureRecordType or PostedRecordType))
+            throw new InvalidDataException($"Trade-fill WAL record {record.Sequence} has unknown type '{record.RecordType}'.");
+
+        var status = DeserializeStatus(record);
+        EnsureScope(status.PostingScope);
+        if (status.FillId == Guid.Empty)
+            throw new InvalidDataException($"Trade-fill WAL status record {record.Sequence} has an empty fill id.");
+        if (record.RecordType == PostedRecordType)
+        {
+            if (status.Failure is not null)
+                throw new InvalidDataException($"Trade-fill acknowledgement record {record.Sequence} contains failure data.");
+            if (_posted.Contains(status.FillId))
+                return;
+            if (!_pending.Remove(status.FillId))
+            {
+                throw new InvalidDataException(
+                    $"Trade-fill WAL acknowledgement record {record.Sequence} does not reference a pending fill.");
+            }
+            _walAccepted.Remove(status.FillId);
+            RememberPosted(status.FillId);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(status.Failure))
+            throw new InvalidDataException($"Trade-fill failure record {record.Sequence} has no failure detail.");
+        if (!_pending.TryGetValue(status.FillId, out var posting))
+        {
+            throw new InvalidDataException(
+                $"Trade-fill WAL failure record {record.Sequence} does not reference a pending fill.");
+        }
+        _pending[status.FillId] = posting with
+        {
+            FailureCount = posting.FailureCount + 1,
+            LastFailure = status.Failure,
+            LastAttemptAtUtc = status.OccurredAtUtc
+        };
+    }
+
+    private async Task PersistSnapshotAsync(CancellationToken ct)
+    {
+        var snapshot = new TradeFillPostingSnapshot(
+            SnapshotVersion,
+            PostingScope,
+            _lastAppliedWalSequence,
+            _nextStoreSequence,
+            _pending.Values
+                .OrderBy(static posting => posting.StoreSequence)
+                .Select(posting => new TradeFillPostingSnapshotItem(
+                    posting,
+                    _walAccepted.Contains(posting.TradeEvent.FillId)))
+                .ToArray());
+        var json = JsonSerializer.Serialize(snapshot, ExecutionJsonContext.Default.TradeFillPostingSnapshot);
+        if (_options.SnapshotWriteOverride is { } snapshotWriteOverride)
+            await snapshotWriteOverride(json, ct).ConfigureAwait(false);
+        else
+            await AtomicFileWriter.WriteAsync(_options.SnapshotPath, json, ct).ConfigureAwait(false);
+        _snapshotAppliedThroughWalSequence = _lastAppliedWalSequence;
+    }
+
+    private async Task PersistSnapshotAfterCommitSafelyAsync()
+    {
+        try
+        {
+            await PersistSnapshotAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Could not advance the trade-fill snapshot WAL watermark; the earlier snapshot and WAL record remain replayable");
+        }
+    }
+
+    private async Task CompactSafelyAsync(bool force = false)
+    {
+        if (_snapshotAppliedThroughWalSequence <= 0
+            || (!force && _recordsSinceCompaction < _options.CompactionRecordThreshold))
+        {
+            return;
+        }
+
+        try
+        {
+            await _wal.CommitAsync(_snapshotAppliedThroughWalSequence, CancellationToken.None).ConfigureAwait(false);
+            await _wal.TruncateAsync(_snapshotAppliedThroughWalSequence, CancellationToken.None).ConfigureAwait(false);
+            _recordsSinceCompaction = 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Trade-fill WAL compaction failed at sequence {Sequence}; retained records remain replayable",
+                _snapshotAppliedThroughWalSequence);
+        }
+    }
+
+    private Task<WalRecord> AppendWalAsync(string json, string recordType, CancellationToken ct)
+        => _options.WalAppendOverride is { } appendOverride
+            ? appendOverride(json, recordType, ct)
+            : _wal.AppendAsync(json, recordType, ct);
 
     private async Task DisposeCoreAsync()
     {
@@ -357,6 +671,8 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         await _operationGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
         try
         {
+            if (initializationFailure is null)
+                await CompactSafelyAsync(force: true).ConfigureAwait(false);
             await _wal.DisposeAsync().ConfigureAwait(false);
         }
         finally
@@ -403,12 +719,33 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         }
     }
 
+    private void RememberPosted(Guid fillId)
+    {
+        if (!_posted.Add(fillId))
+            return;
+        _postedOrder.Enqueue(fillId);
+        while (_postedOrder.Count > _options.MaxRememberedPostedFillIds
+            && _postedOrder.TryDequeue(out var forgotten))
+        {
+            _posted.Remove(forgotten);
+        }
+    }
+
     private void EnsureScope(string retainedScope)
     {
         if (!string.Equals(retainedScope, PostingScope, StringComparison.Ordinal))
         {
             throw new InvalidDataException(
                 $"Trade-fill WAL scope '{retainedScope}' does not match configured posting scope '{PostingScope}'.");
+        }
+    }
+
+    private static void EnsureSameEconomics(TradeExecutedEvent retained, TradeExecutedEvent candidate)
+    {
+        if (retained != candidate)
+        {
+            throw new InvalidOperationException(
+                $"Fill '{candidate.FillId:D}' was replayed with different economic content.");
         }
     }
 
@@ -422,10 +759,22 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
 internal sealed record TradeFillPendingWalPayload(
     string PostingScope,
     TradeExecutedEvent TradeEvent,
-    DateTimeOffset AcceptedAtUtc);
+    DateTimeOffset AcceptedAtUtc,
+    long StoreSequence = 0);
 
 internal sealed record TradeFillStatusWalPayload(
     string PostingScope,
     Guid FillId,
     DateTimeOffset OccurredAtUtc,
     string? Failure);
+
+internal sealed record TradeFillPostingSnapshot(
+    int Version,
+    string PostingScope,
+    long AppliedThroughWalSequence,
+    long NextStoreSequence,
+    IReadOnlyList<TradeFillPostingSnapshotItem> Pending);
+
+internal sealed record TradeFillPostingSnapshotItem(
+    PendingTradeFillPosting Posting,
+    bool WalAccepted);

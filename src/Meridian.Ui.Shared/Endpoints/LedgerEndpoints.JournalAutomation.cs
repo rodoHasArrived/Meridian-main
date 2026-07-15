@@ -165,7 +165,8 @@ public static partial class LedgerEndpoints
                         : $"Monthly {request.Kind} work was deliberately re-armed by {actor} after configuration review.",
                     EvidenceLinks = [],
                     Blockers = [],
-                    RunHistory = runHistory
+                    RunHistory = runHistory,
+                    CapitalAccountReconciliation = null
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(saved, jsonOptions);
             }
@@ -188,6 +189,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -217,6 +219,7 @@ public static partial class LedgerEndpoints
         .Produces<AutomatedJournalScheduledBatchResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -338,6 +341,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -367,6 +371,7 @@ public static partial class LedgerEndpoints
         .Produces<DailyValuationScheduledBatchResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -415,6 +420,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -457,6 +463,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -499,6 +506,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -522,7 +530,9 @@ public static partial class LedgerEndpoints
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
                     TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
+                    CompanyId = tenantContext.CompanyId,
+                    EvidenceRetainedAtUtc = null,
+                    CapitalAccountReconciliation = null
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -541,6 +551,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
@@ -583,6 +594,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

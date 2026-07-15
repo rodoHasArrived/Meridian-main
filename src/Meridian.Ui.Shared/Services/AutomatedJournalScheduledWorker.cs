@@ -35,19 +35,19 @@ public sealed class AutomatedJournalScheduledWorker
     private readonly IAutomatedJournalScheduleStore _store;
     private readonly AutomatedJournalIntakeRunner _intakeRunner;
     private readonly ILogger<AutomatedJournalScheduledWorker> _logger;
-    private readonly AutomatedJournalEvidencePolicy _evidencePolicy;
+    private readonly IAutomatedJournalDividendPositionResolver? _dividendPositionResolver;
     private readonly SemaphoreSlim _runGate = new(1, 1);
 
     public AutomatedJournalScheduledWorker(
         IAutomatedJournalScheduleStore store,
         AutomatedJournalIntakeRunner intakeRunner,
         ILogger<AutomatedJournalScheduledWorker> logger,
-        AutomatedJournalEvidencePolicy? evidencePolicy = null)
+        IAutomatedJournalDividendPositionResolver? dividendPositionResolver = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _intakeRunner = intakeRunner ?? throw new ArgumentNullException(nameof(intakeRunner));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _evidencePolicy = evidencePolicy ?? AutomatedJournalEvidencePolicy.Default;
+        _dividendPositionResolver = dividendPositionResolver;
     }
 
     public async Task<AutomatedJournalScheduledBatchResult> RunDueAsync(
@@ -143,55 +143,58 @@ public sealed class AutomatedJournalScheduledWorker
 
         try
         {
-            if (item.Kind == AutomatedJournalScheduleKind.FeeAccrual)
+            AutomatedJournalDividendPositionResolution? dividendPositions = null;
+            if (item.Kind == AutomatedJournalScheduleKind.DividendCapture)
             {
-                var feeEvidence = AutomatedJournalFeeEvidenceEvaluator.Evaluate(
-                    item.PeriodId,
-                    item.Currency,
-                    item.BeginningNav,
-                    item.EndingNavBeforeFees,
-                    item.HighWaterMark,
-                    item.CapitalAccountReconciliation,
-                    item.MinimumCapitalAccountConfidence,
-                    nowUtc,
-                    _evidencePolicy);
-                if (!feeEvidence.IsReady)
+                if (_dividendPositionResolver is null)
                 {
+                    const string blocker = "The server-owned dividend position resolver is unavailable.";
+                    return await CompleteAsync(
+                        running, runKey, nowUtc, AutomatedJournalScheduleStateDto.Blocked, blocker,
+                        [], [], [blocker], null, null, ct).ConfigureAwait(false);
+                }
+
+                dividendPositions = await _dividendPositionResolver
+                    .ResolveAsync(item, nowUtc, ct)
+                    .ConfigureAwait(false);
+                if (!dividendPositions.IsReady)
+                {
+                    const string summary = "Monthly dividend capture is blocked because authoritative ex-date position history is unavailable.";
                     return await CompleteAsync(
                         running,
                         runKey,
                         nowUtc,
-                        feeEvidence.FailureState,
-                        feeEvidence.Assessment.Summary,
+                        AutomatedJournalScheduleStateDto.Blocked,
+                        summary,
                         [],
-                        BuildScheduleEvidenceLinks(running, feeEvidence.EvidenceLinks, nowUtc),
-                        feeEvidence.Blockers,
-                        feeEvidence.Assessment.ConfidenceScore,
-                        feeEvidence.Assessment.Quality,
+                        dividendPositions.EvidenceLinks,
+                        dividendPositions.Blockers,
+                        null,
+                        null,
+                        ct).ConfigureAwait(false);
+                }
+
+                if (dividendPositions.Positions.Count == 0)
+                {
+                    const string summary = "Authoritative position history confirms that no open ex-date holdings require a dividend draft for this cycle.";
+                    return await CompleteAsync(
+                        running,
+                        runKey,
+                        nowUtc,
+                        AutomatedJournalScheduleStateDto.NoDraftRequired,
+                        summary,
+                        [],
+                        dividendPositions.EvidenceLinks,
+                        [],
+                        null,
+                        null,
                         ct).ConfigureAwait(false);
                 }
             }
 
-            if (item.Kind == AutomatedJournalScheduleKind.DividendCapture && item.Positions.Count == 0)
-            {
-                const string blocker = "No positions are configured for the monthly dividend-capture scope.";
-                return await CompleteAsync(
-                    running,
-                    runKey,
-                    nowUtc,
-                    AutomatedJournalScheduleStateDto.Blocked,
-                    blocker,
-                    [],
-                    [],
-                    [blocker],
-                    null,
-                    null,
-                    ct).ConfigureAwait(false);
-            }
-
             var run = item.Kind == AutomatedJournalScheduleKind.FeeAccrual
-                ? await RunFeeAccrualAsync(item, scheduledForUtc, ct).ConfigureAwait(false)
-                : await RunDividendCaptureAsync(item, scheduledForUtc, ct).ConfigureAwait(false);
+                ? await RunFeeAccrualAsync(item, nowUtc, ct).ConfigureAwait(false)
+                : await RunDividendCaptureAsync(item, dividendPositions!.Positions, nowUtc, ct).ConfigureAwait(false);
             return await CompleteFromIntakeAsync(running, runKey, run, nowUtc, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -225,9 +228,9 @@ public sealed class AutomatedJournalScheduledWorker
 
     private Task<AutomatedJournalIntakeRunResult> RunFeeAccrualAsync(
         AutomatedJournalScheduleWorkItem item,
-        DateTimeOffset scheduledForUtc,
+        DateTimeOffset evaluatedAtUtc,
         CancellationToken ct)
-        => _intakeRunner.RunFeeAccrualIntakeAsync(
+        => _intakeRunner.RunFeeAccrualIntakeAtAsync(
             new RunFeeAccrualDraftIntakeRequest(
                 FundProfileId: item.FundProfileId,
                 Currency: item.Currency,
@@ -247,21 +250,21 @@ public sealed class AutomatedJournalScheduledWorker
                 [
                     $"{UiApiRoutes.LedgerJournalAutomationMonthlySchedules}?scheduleId={Uri.EscapeDataString(item.ScheduleId)}"
                 ],
-                EvidenceRetainedAtUtc: scheduledForUtc,
-                CapitalAccountReconciliation: item.CapitalAccountReconciliation,
                 MinimumCapitalAccountConfidence: item.MinimumCapitalAccountConfidence),
+            evaluatedAtUtc,
             ct);
 
     private Task<AutomatedJournalIntakeRunResult> RunDividendCaptureAsync(
         AutomatedJournalScheduleWorkItem item,
-        DateTimeOffset scheduledForUtc,
+        IReadOnlyList<DividendAccrualPosition> positions,
+        DateTimeOffset evaluatedAtUtc,
         CancellationToken ct)
         => _intakeRunner.RunDividendIntakeAsync(
             new RunDividendDraftIntakeRequest(
                 FundProfileId: item.FundProfileId,
                 Currency: item.Currency,
                 Actor: item.Actor,
-                Positions: item.Positions,
+                Positions: positions,
                 WindowStart: item.PeriodStart,
                 WindowEnd: item.PeriodEnd,
                 LedgerBookId: item.LedgerBookId,
@@ -270,8 +273,9 @@ public sealed class AutomatedJournalScheduledWorker
                 TenantId: item.TenantId,
                 CompanyId: item.CompanyId,
                 WithholdingTaxRate: item.WithholdingTaxRate,
-                AsOf: scheduledForUtc,
-                MinimumEvidenceConfidence: item.MinimumCorporateActionConfidence),
+                AsOf: evaluatedAtUtc,
+                MinimumEvidenceConfidence: item.MinimumCorporateActionConfidence,
+                MaximumPositionAgeDays: item.MaximumPositionAgeDays),
             ct);
 
     private async Task<AutomatedJournalScheduledRunResult> CompleteFromIntakeAsync(
@@ -483,24 +487,6 @@ public sealed class AutomatedJournalScheduledWorker
                 route,
                 "automated-journal-scheduler",
                 capturedAtUtc))
-            .ToList();
-        evidence.Add(new OperationsEvidenceLinkDto(
-            $"automated-journal-schedule:{item.ScheduleId}",
-            "Monthly automated-journal schedule and run history",
-            $"{UiApiRoutes.LedgerJournalAutomationMonthlySchedules}?scheduleId={Uri.EscapeDataString(item.ScheduleId)}",
-            "automated-journal-scheduler",
-            capturedAtUtc));
-        return evidence;
-    }
-
-    private static IReadOnlyList<OperationsEvidenceLinkDto> BuildScheduleEvidenceLinks(
-        AutomatedJournalScheduleWorkItem item,
-        IReadOnlyList<OperationsEvidenceLinkDto> retainedEvidence,
-        DateTimeOffset capturedAtUtc)
-    {
-        var evidence = retainedEvidence
-            .Where(static link => !string.IsNullOrWhiteSpace(link.Route))
-            .DistinctBy(static link => $"{link.EvidenceId}|{link.Route}", StringComparer.OrdinalIgnoreCase)
             .ToList();
         evidence.Add(new OperationsEvidenceLinkDto(
             $"automated-journal-schedule:{item.ScheduleId}",

@@ -37,9 +37,11 @@ public sealed class UiApiClientTests
               "executions": [
                 {
                   "executionId": "execution-17",
-                  "provider": "polygon",
-                  "triggerSource": "data-quality-remediation",
-                  "isCompatibilityDerived": false
+                  "autoRemediationSla": {
+                    "provider": "polygon",
+                    "triggerSource": "data-quality-remediation",
+                    "isCompatibilityDerived": false
+                  }
                 }
               ],
               "total": 1,
@@ -59,7 +61,7 @@ public sealed class UiApiClientTests
         history.Should().NotBeNull();
         history!.Total.Should().Be(1);
         history.Executions.Should().ContainSingle(execution =>
-            execution.Id == "execution-17" && execution.Provider == "polygon");
+            execution.Id == "execution-17" && execution.AutoRemediationSla!.Provider == "polygon");
         history.AutoRemediation.LastOutcome.Should().Be("Completed");
     }
 

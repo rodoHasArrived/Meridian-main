@@ -160,6 +160,41 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         }
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<AccountSnapshotRecord> GetSnapshotHistoryAsync(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope,
+        DateTimeOffset from,
+        DateTimeOffset to,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+        ArgumentNullException.ThrowIfNull(ownerScope);
+        ValidateOwnerScope(ownerScope);
+
+        var path = GetSnapshotPath(runId, accountId, ownerScope);
+        if (!File.Exists(path))
+            yield break;
+
+        await foreach (var line in ReadLinesForwardAsync(path, ct))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var snapshot = TryDeserialize(line);
+            if (snapshot is not null &&
+                IsOwnedBy(snapshot, ownerScope) &&
+                snapshot.AsOf >= from &&
+                snapshot.AsOf <= to)
+            {
+                yield return snapshot;
+            }
+        }
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private string GetSnapshotPath(string runId, string accountId)

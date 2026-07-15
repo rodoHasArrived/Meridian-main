@@ -38,7 +38,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     private readonly AutoConfigurationService _autoConfig;
     private readonly ProviderCredentialResolver _credentialResolver;
     private readonly ConfigurationPipeline _pipeline;
-    private readonly IBestOfBreedProviderSelector? _providerSelector;
+    private readonly Func<IBestOfBreedProviderSelector?> _providerSelectorAccessor;
     private readonly Func<bool> _ibGatewayAvailabilityProbe;
     private ConfigWatcher? _watcher;
 
@@ -48,7 +48,8 @@ public sealed class ConfigurationService : IAsyncDisposable
         AutoConfigurationService? autoConfig = null,
         ProviderCredentialResolver? credentialResolver = null,
         IBestOfBreedProviderSelector? providerSelector = null,
-        Func<bool>? ibGatewayAvailabilityProbe = null)
+        Func<bool>? ibGatewayAvailabilityProbe = null,
+        Func<IBestOfBreedProviderSelector?>? providerSelectorAccessor = null)
     {
         _log = log ?? LoggingSetup.ForContext<ConfigurationService>();
         _wizard = wizard ?? new ConfigurationWizard();
@@ -56,7 +57,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         _credentialResolver = credentialResolver ?? new ProviderCredentialResolver(_log);
         _ibGatewayAvailabilityProbe = ibGatewayAvailabilityProbe ?? IsIBGatewayAvailable;
         _pipeline = new ConfigurationPipeline(_log, _credentialResolver, _ibGatewayAvailabilityProbe);
-        _providerSelector = providerSelector;
+        _providerSelectorAccessor = providerSelectorAccessor ?? (() => providerSelector);
     }
 
     /// <summary>
@@ -130,10 +131,11 @@ public sealed class ConfigurationService : IAsyncDisposable
         if (eligibleProviders.Count == 0)
             return null;
 
-        if (_providerSelector is null)
+        var providerSelector = _providerSelectorAccessor();
+        if (providerSelector is null)
             return eligibleProviders.OrderBy(static p => p.SuggestedPriority).FirstOrDefault();
 
-        var selection = _providerSelector.SelectAsync(
+        var selection = providerSelector.SelectAsync(
                 new ProviderRouteContext(ProviderCapabilityKind.RealtimeMarketData))
             .ConfigureAwait(false)
             .GetAwaiter()

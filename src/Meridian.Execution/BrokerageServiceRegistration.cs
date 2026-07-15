@@ -1,4 +1,5 @@
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.Events;
 using Meridian.Execution.Interfaces;
@@ -96,7 +97,8 @@ public static class BrokerageServiceRegistration
                 brokerageConfiguration: brokerageConfiguration,
                 liveOrderReadinessGate: liveOrderReadinessGate,
                 options: orderManagementOptions,
-                tradeEventPublisher: sp.GetService<ITradeEventPublisher>());
+                tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
+                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
@@ -106,22 +108,26 @@ public static class BrokerageServiceRegistration
 
     /// <summary>
     /// Explicitly composes accepted execution fills into one caller-owned ledger scope.
-    /// This registration deliberately requires ledger and durable-store factories because
-    /// brokerage execution alone cannot infer the correct accounting book or period.
+    /// This registration deliberately requires an authoritative durable posting target and
+    /// durable handoff store because brokerage execution cannot infer or fake an accounting book.
+    /// An in-memory ledger is optional and is updated only as a projection after persistence.
     /// </summary>
     public static IServiceCollection AddTradeFillLedgerPosting(
         this IServiceCollection services,
-        string postingScope,
-        Func<IServiceProvider, Ledger.Ledger> ledgerFactory,
+        TradeFillLedgerPostingContext postingContext,
+        Func<IServiceProvider, ITradeFillLedgerPostingTarget> postingTargetFactory,
         Func<IServiceProvider, ITradeFillPostingStore> postingStoreFactory,
+        Func<IServiceProvider, ITradeFillHandoffFailureStore> handoffFailureStoreFactory,
+        Func<IServiceProvider, Ledger.Ledger?>? projectionLedgerFactory = null,
         Action<TradeFillLedgerPostingOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentException.ThrowIfNullOrWhiteSpace(postingScope);
-        ArgumentNullException.ThrowIfNull(ledgerFactory);
+        ArgumentNullException.ThrowIfNull(postingContext);
+        ArgumentNullException.ThrowIfNull(postingTargetFactory);
         ArgumentNullException.ThrowIfNull(postingStoreFactory);
+        ArgumentNullException.ThrowIfNull(handoffFailureStoreFactory);
 
-        var normalizedScope = postingScope.Trim();
+        postingContext = postingContext.Validate();
         var options = new TradeFillLedgerPostingOptions();
         configure?.Invoke(options);
         if (options.ChannelCapacity <= 0)
@@ -139,6 +145,8 @@ public static class BrokerageServiceRegistration
         if (services.Any(static descriptor =>
                 descriptor.ServiceType == typeof(ITradeEventPublisher)
                 || descriptor.ServiceType == typeof(ITradeFillPostingStore)
+                || descriptor.ServiceType == typeof(ITradeFillLedgerPostingTarget)
+                || descriptor.ServiceType == typeof(ITradeFillHandoffFailureStore)
                 || descriptor.ServiceType == typeof(LedgerPostingConsumer)))
         {
             throw new InvalidOperationException(
@@ -146,15 +154,18 @@ public static class BrokerageServiceRegistration
         }
 
         services.AddSingleton<ITradeFillPostingStore>(postingStoreFactory);
+        services.AddSingleton<ITradeFillLedgerPostingTarget>(postingTargetFactory);
+        services.AddSingleton<ITradeFillHandoffFailureStore>(handoffFailureStoreFactory);
         services.AddSingleton<LedgerPostingConsumer>(sp =>
         {
             var securityGate = sp.GetRequiredService<ISecurityValidationGateService>();
 
             return new LedgerPostingConsumer(
-                ledgerFactory(sp),
+                sp.GetRequiredService<ITradeFillLedgerPostingTarget>(),
                 sp.GetRequiredService<ILogger<LedgerPostingConsumer>>(),
                 sp.GetRequiredService<ITradeFillPostingStore>(),
-                normalizedScope,
+                postingContext,
+                projectionLedger: projectionLedgerFactory?.Invoke(sp),
                 channelCapacity: options.ChannelCapacity,
                 securityValidationGate: securityGate,
                 requireSecurityMasterPostingGate: true,

@@ -94,7 +94,10 @@ internal static class AutomatedJournalFeeEvidenceEvaluator
             return Build(false, AutomatedJournalScheduleStateDto.Blocked, 0m, [], missing, mismatches, minimumConfidence, policy.MaximumCapitalAccountVarianceTolerance);
         }
 
-        if (reconciliation.EvidenceLinks.Count == 0)
+        if (string.IsNullOrWhiteSpace(reconciliation.ReconciliationId))
+            missing.Add("Capital-account reconciliation id is missing.");
+        if (reconciliation.EvidenceLinks.Count == 0 ||
+            reconciliation.EvidenceLinks.All(static link => string.IsNullOrWhiteSpace(link.Route)))
             missing.Add("Capital-account reconciliation evidence links are missing.");
         if (string.IsNullOrWhiteSpace(reconciliation.SourceVersion))
             missing.Add("Capital-account reconciliation source version is missing.");
@@ -103,7 +106,7 @@ internal static class AutomatedJournalFeeEvidenceEvaluator
         if (reconciliation.ReviewedAtUtc == default)
             missing.Add("Capital-account reconciliation review time is missing.");
         else if (reconciliation.ReviewedAtUtc.ToUniversalTime() > evaluatedAtUtc.ToUniversalTime())
-            mismatches.Add("Capital-account reconciliation review time is later than the scheduler evaluation time.");
+            mismatches.Add("Capital-account reconciliation review time is later than the actual execution evaluation time.");
 
         if (!string.Equals(reconciliation.PeriodId, periodId, StringComparison.OrdinalIgnoreCase))
             mismatches.Add($"Capital-account reconciliation period '{reconciliation.PeriodId}' does not match schedule period '{periodId}'.");
@@ -115,6 +118,17 @@ internal static class AutomatedJournalFeeEvidenceEvaluator
             mismatches.Add("Scheduled ending NAV before fees does not match the reviewed capital-account reconciliation.");
         if (highWaterMark.HasValue && highWaterMark.Value != reconciliation.ReconciledHighWaterMark)
             mismatches.Add("Scheduled high-water mark does not match the reviewed capital-account reconciliation.");
+        if (reconciliation.ConfidenceScore is < 0m or > 1m)
+            mismatches.Add("Capital-account reconciliation confidence must be between 0% and 100%.");
+        if (reconciliation.ReconciledBeginningNav < 0m ||
+            reconciliation.ReconciledEndingNavBeforeFees < 0m ||
+            reconciliation.ReconciledHighWaterMark < 0m ||
+            reconciliation.CapitalAccountOpeningBalance < 0m ||
+            reconciliation.CapitalAccountEndingBalanceBeforeFees < 0m ||
+            reconciliation.CapitalAccountHighWaterMark < 0m)
+        {
+            mismatches.Add("Capital-account reconciliation balances cannot be negative.");
+        }
 
         var maximumObservedVariance = new[]
         {
@@ -122,8 +136,11 @@ internal static class AutomatedJournalFeeEvidenceEvaluator
             decimal.Abs(reconciliation.ReconciledEndingNavBeforeFees - reconciliation.CapitalAccountEndingBalanceBeforeFees),
             decimal.Abs(reconciliation.ReconciledHighWaterMark - reconciliation.CapitalAccountHighWaterMark)
         }.Max();
-        var effectiveVarianceTolerance = policy.ResolveMaximumCapitalAccountVarianceTolerance(
-            reconciliation.MaximumVarianceTolerance);
+        var effectiveVarianceTolerance = reconciliation.MaximumVarianceTolerance < 0m
+            ? policy.MaximumCapitalAccountVarianceTolerance
+            : policy.ResolveMaximumCapitalAccountVarianceTolerance(reconciliation.MaximumVarianceTolerance);
+        if (reconciliation.MaximumVarianceTolerance < 0m)
+            mismatches.Add("Capital-account reconciliation tolerance cannot be negative.");
         if (!reconciliation.IsReconciled)
             mismatches.Add("Capital-account reconciliation is not marked reconciled.");
         if (maximumObservedVariance > effectiveVarianceTolerance)

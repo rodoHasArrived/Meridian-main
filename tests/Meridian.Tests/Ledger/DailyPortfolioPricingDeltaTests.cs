@@ -82,7 +82,7 @@ public sealed class DailyPortfolioPricingDeltaTests
         first.Select(draft => draft.Metadata.SecurityId).Should().BeEquivalentTo([aaplSecurityId, msftSecurityId]);
         first.Should().OnlyContain(draft => draft.Lines.Count == 2 && draft.IsBalanced);
         first.Should().OnlyContain(draft => draft.Lines.All(line =>
-            line.dimensions is not null
+            line.dimensions != null
             && line.dimensions.InstrumentId == draft.Metadata.SecurityId
             && line.dimensions.FundId == Policy.FundId
             && line.dimensions.AccountId == "broker-1"));
@@ -130,7 +130,7 @@ public sealed class DailyPortfolioPricingDeltaTests
         drafts.Select(draft => draft.Metadata.FinancialAccountId)
             .Should().BeEquivalentTo(["broker-1", "broker-2"]);
         drafts.Should().OnlyContain(draft => draft.Lines.All(line =>
-            line.dimensions is not null
+            line.dimensions != null
             && line.dimensions.InstrumentId == securityId
             && line.dimensions.AccountId == draft.Metadata.FinancialAccountId
             && line.account.FinancialAccountId == draft.Metadata.FinancialAccountId));

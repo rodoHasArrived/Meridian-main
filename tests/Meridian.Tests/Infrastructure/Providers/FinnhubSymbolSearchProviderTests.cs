@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Tests.TestHelpers;
 
@@ -127,16 +128,18 @@ public sealed class FinnhubSymbolSearchProviderTests
     }
 
     [Fact]
-    public async Task SearchAsync_WithRateLimitResponse_ReturnsEmptyList()
+    public async Task SearchAsync_WithRateLimitResponse_ThrowsProviderAttributedFailure()
     {
         using var handler = new StubHttpMessageHandler(_ =>
             new HttpResponseMessage(HttpStatusCode.TooManyRequests));
         using var httpClient = new HttpClient(handler);
         using var provider = new FinnhubSymbolSearchProvider(ApiKey, httpClient);
 
-        var results = await provider.SearchAsync("AAPL", 10, CancellationToken.None);
+        var act = () => provider.SearchAsync("AAPL", 10, CancellationToken.None);
 
-        results.Should().BeEmpty();
+        var exception = await act.Should().ThrowAsync<RateLimitException>();
+        exception.Which.Provider.Should().Be("finnhub");
+        exception.Which.Symbol.Should().Be("AAPL");
     }
 
     [Fact]

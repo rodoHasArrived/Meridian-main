@@ -23,7 +23,8 @@ public sealed record RunDividendDraftIntakeRequest(
     string? CompanyId = null,
     decimal WithholdingTaxRate = 0m,
     DateTimeOffset? AsOf = null,
-    decimal MinimumEvidenceConfidence = 0.75m);
+    decimal MinimumEvidenceConfidence = 0.75m,
+    int MaximumPositionAgeDays = 7);
 
 /// <summary>
 /// Request to accrue period fees from fund fee terms and land the drafts in the manual
@@ -144,6 +145,8 @@ public sealed class AutomatedJournalIntakeRunner
     private readonly DailyMarkToMarketService? _dailyMarkToMarketService;
     private readonly DailyValuationPositionService? _dailyValuationPositionService;
     private readonly AutomatedJournalEvidencePolicy _evidencePolicy;
+    private readonly IAutomatedJournalCapitalAccountReconciliationResolver? _capitalAccountReconciliationResolver;
+    private readonly TimeProvider _timeProvider;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
@@ -152,7 +155,9 @@ public sealed class AutomatedJournalIntakeRunner
         ILedgerBookService? ledgerBookService = null,
         DailyMarkToMarketService? dailyMarkToMarketService = null,
         DailyValuationPositionService? dailyValuationPositionService = null,
-        AutomatedJournalEvidencePolicy? evidencePolicy = null)
+        AutomatedJournalEvidencePolicy? evidencePolicy = null,
+        IAutomatedJournalCapitalAccountReconciliationResolver? capitalAccountReconciliationResolver = null,
+        TimeProvider? timeProvider = null)
     {
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
@@ -161,6 +166,8 @@ public sealed class AutomatedJournalIntakeRunner
         _dailyMarkToMarketService = dailyMarkToMarketService;
         _dailyValuationPositionService = dailyValuationPositionService;
         _evidencePolicy = evidencePolicy ?? AutomatedJournalEvidencePolicy.Default;
+        _capitalAccountReconciliationResolver = capitalAccountReconciliationResolver;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     /// <summary>Whether this process can execute the provider-backed daily valuation lane.</summary>
@@ -186,7 +193,8 @@ public sealed class AutomatedJournalIntakeRunner
                 request.WindowEnd,
                 request.AsOf ?? DateTimeOffset.UtcNow,
                 request.WithholdingTaxRate,
-                request.MinimumEvidenceConfidence),
+                request.MinimumEvidenceConfidence,
+                request.MaximumPositionAgeDays),
             ct).ConfigureAwait(false);
 
         var intake = production.Events.Count == 0
@@ -458,24 +466,47 @@ public sealed class AutomatedJournalIntakeRunner
             : key;
     }
 
-    public async Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(
+    public Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(
         RunFeeAccrualDraftIntakeRequest request,
+        CancellationToken ct = default)
+        => RunFeeAccrualIntakeAtAsync(request, _timeProvider.GetUtcNow(), ct);
+
+    internal async Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAtAsync(
+        RunFeeAccrualDraftIntakeRequest request,
+        DateTimeOffset evaluatedAtUtc,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var eventAsOf = request.AsOf ?? DateTimeOffset.UtcNow;
-        var retainedAtUtc = request.EvidenceRetainedAtUtc ?? eventAsOf;
+        evaluatedAtUtc = evaluatedAtUtc.ToUniversalTime();
+        var eventAsOf = request.AsOf ?? evaluatedAtUtc;
+        var (reconciliation, sourceBlocker) = await ResolveCapitalAccountReconciliationAsync(
+            request,
+            evaluatedAtUtc,
+            ct).ConfigureAwait(false);
         var feeEvidence = AutomatedJournalFeeEvidenceEvaluator.Evaluate(
             request.PeriodId,
             request.Currency,
             request.BeginningNav,
             request.EndingNavBeforeFees,
             request.HighWaterMark,
-            request.CapitalAccountReconciliation,
+            reconciliation,
             request.MinimumCapitalAccountConfidence,
-            retainedAtUtc,
+            evaluatedAtUtc,
             _evidencePolicy);
+        var readinessBlockers = sourceBlocker is null
+            ? feeEvidence.Blockers
+            : feeEvidence.Blockers
+                .Append(sourceBlocker)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        var assessment = sourceBlocker is null
+            ? feeEvidence.Assessment
+            : feeEvidence.Assessment with
+            {
+                Summary = $"{feeEvidence.Assessment.Summary} {sourceBlocker}",
+                Reasons = readinessBlockers
+            };
         var feeAssessmentKey = FormattableString.Invariant(
             $"fee-basis|{request.FundProfileId.Trim().ToLowerInvariant()}|{request.PeriodId.Trim().ToLowerInvariant()}");
         if (!feeEvidence.IsReady)
@@ -485,12 +516,12 @@ public sealed class AutomatedJournalIntakeRunner
                 Intake: EmptyIntake,
                 EvidenceAssessments: new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase)
                 {
-                    [feeAssessmentKey] = feeEvidence.Assessment
+                    [feeAssessmentKey] = assessment
                 },
                 Readiness: feeEvidence.FailureState == AutomatedJournalScheduleStateDto.Blocked
                     ? AutomatedJournalIntakeReadiness.Blocked
                     : AutomatedJournalIntakeReadiness.NeedsInvestigation,
-                ReadinessBlockers: feeEvidence.Blockers);
+                ReadinessBlockers: readinessBlockers);
         }
 
         var production = _feeProducer.Produce(new FeeScheduleAccrualRequest(
@@ -504,10 +535,8 @@ public sealed class AutomatedJournalIntakeRunner
             request.PerformanceFeeRate));
         var events = AttachFeeScheduleEvidence(
             production.Events,
-            (request.EvidenceLinks ?? [])
-                .Concat(feeEvidence.EvidenceLinks.Select(static link => link.Route))
-                .ToArray(),
-            retainedAtUtc,
+            feeEvidence.EvidenceLinks.Select(static link => link.Route).ToArray(),
+            evaluatedAtUtc,
             request.Actor,
             request.FundProfileId,
             request.PeriodId);
@@ -516,7 +545,7 @@ public sealed class AutomatedJournalIntakeRunner
             .Where(static journalEvent => !string.IsNullOrWhiteSpace(journalEvent.IdempotencyKey))
             .ToDictionary(
                 static journalEvent => journalEvent.IdempotencyKey!,
-                _ => feeEvidence.Assessment,
+                _ => assessment,
                 StringComparer.OrdinalIgnoreCase);
         var intake = events.Count == 0
             ? EmptyIntake
@@ -540,6 +569,57 @@ public sealed class AutomatedJournalIntakeRunner
             evidenceAssessments,
             AutomatedJournalIntakeReadiness.Ready,
             []);
+    }
+
+    private async Task<(AutomatedJournalCapitalAccountReconciliationDto? Reconciliation, string? Blocker)>
+        ResolveCapitalAccountReconciliationAsync(
+            RunFeeAccrualDraftIntakeRequest request,
+            DateTimeOffset evaluatedAtUtc,
+            CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.TenantId) ||
+            string.IsNullOrWhiteSpace(request.CompanyId) ||
+            string.IsNullOrWhiteSpace(request.FundProfileId) ||
+            !request.LedgerBookId.HasValue ||
+            request.LedgerBookId.Value == Guid.Empty ||
+            string.IsNullOrWhiteSpace(request.EntityId) ||
+            string.IsNullOrWhiteSpace(request.PeriodId) ||
+            string.IsNullOrWhiteSpace(request.Currency))
+        {
+            return (null, "Server-owned capital-account reconciliation requires exact tenant, company, fund, ledger-book, entity, period, and currency scope.");
+        }
+
+        if (_capitalAccountReconciliationResolver is null)
+        {
+            return (null, "The server-owned capital-account reconciliation source is unavailable.");
+        }
+
+        try
+        {
+            var scope = new AutomatedJournalCapitalAccountReconciliationScope(
+                request.TenantId.Trim(),
+                request.CompanyId.Trim(),
+                request.FundProfileId.Trim(),
+                request.LedgerBookId.Value,
+                request.EntityId.Trim(),
+                request.PeriodId.Trim(),
+                request.Currency.Trim().ToUpperInvariant(),
+                evaluatedAtUtc);
+            var reconciliation = await _capitalAccountReconciliationResolver
+                .ResolveAsync(scope, ct)
+                .ConfigureAwait(false);
+            return reconciliation is null
+                ? (null, "No server-owned capital-account reconciliation was available for the exact fee-accrual execution scope.")
+                : (reconciliation, null);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return (null, "The server-owned capital-account reconciliation source could not be read; fee-accrual preparation is blocked.");
+        }
     }
 
     private static IReadOnlyList<AutomatedJournalEvent> AttachFeeScheduleEvidence(
