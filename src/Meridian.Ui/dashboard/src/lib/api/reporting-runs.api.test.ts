@@ -1,5 +1,5 @@
 import { createReportingRunsApi } from "@/lib/api/reporting-runs.api";
-import { FUND_STRUCTURE_API_ENDPOINTS } from "@/lib/ui-api-routes.generated";
+import { FUND_STRUCTURE_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type { ReportingRunRequest } from "@/types";
 
 const request = { templateId: "monthly-investor-report" } as ReportingRunRequest;

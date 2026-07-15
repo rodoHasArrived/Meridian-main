@@ -330,7 +330,7 @@ function Invoke-DesktopBuild {
 
     Write-Log "Building desktop project $ProjectPath ($Configuration, $Framework)."
     & dotnet restore $ProjectPath --verbosity minimal @(
-        Get-MeridianBuildArguments -IsolationKey $BuildIsolationKey -TargetFramework $Framework -EnableFullWpfBuild
+        Get-MeridianBuildArguments -IsolationKey $BuildIsolationKey -EnableFullWpfBuild
     )
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet restore failed for $ProjectPath"

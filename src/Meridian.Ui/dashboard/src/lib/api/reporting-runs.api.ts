@@ -1,5 +1,5 @@
 import type { ApiRequestOptions } from "@/lib/api";
-import { FUND_STRUCTURE_API_ENDPOINTS } from "@/lib/ui-api-routes.generated";
+import { FUND_STRUCTURE_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type { ReportingRunReadiness, ReportingRunRequest, ReportingRunResult } from "@/types";
 
 type PostJson = <T>(path: string, body?: unknown, options?: ApiRequestOptions) => Promise<T>;
