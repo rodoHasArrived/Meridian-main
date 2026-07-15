@@ -753,11 +753,22 @@ function Wait-ForShellReady {
     $selectionMarkers = @("Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
     $shellMarkers = @("Strategy Workspace", "Trading Workspace", "Data Workspace", "Accounting Workspace")
     $initialMarkers = $selectionMarkers + $shellMarkers + $PageMarkers
+    $startupContinuationInvoked = $false
 
     $state = Wait-Until -TimeoutSeconds $TimeoutSeconds -FailureMessage "Timed out waiting for Meridian startup." -Condition {
         $failure = Find-FirstElementByPartialNames -Root $Root -Patterns @("Unable to open", "Object reference not set to an instance")
         if ($null -ne $failure) {
             throw "Desktop surfaced a page-load error during startup: $($failure.Current.Name)"
+        }
+
+        if (-not $startupContinuationInvoked) {
+            $continueWithoutCredentials = Find-ElementByExactName -Root $Root -Name "Continue without credentials"
+            if ($null -ne $continueWithoutCredentials) {
+                Write-Log "Optional development authentication detected. Continuing without credentials."
+                Invoke-OrClickElement -Element $continueWithoutCredentials
+                $startupContinuationInvoked = $true
+                return $null
+            }
         }
 
         $match = Find-FirstElementByNames -Root $Root -Names $initialMarkers

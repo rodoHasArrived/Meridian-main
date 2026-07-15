@@ -59,6 +59,11 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('DOTNET_ENVIRONMENT     = "Development"', environment)
         self.assertIn('ASPNETCORE_ENVIRONMENT = "Development"', environment)
 
+    def test_startup_continues_through_optional_development_authentication(self) -> None:
+        self.assertIn('$startupContinuationInvoked = $false', self.script)
+        self.assertIn('Find-ElementByExactName -Root $Root -Name "Continue without credentials"', self.script)
+        self.assertIn('Invoke-OrClickElement -Element $continueWithoutCredentials', self.script)
+
 
 if __name__ == "__main__":
     unittest.main()
