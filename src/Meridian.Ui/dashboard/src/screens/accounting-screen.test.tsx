@@ -3050,8 +3050,8 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
     vi.mocked(api.getLedgerCloseManagementPeriodPlan)
       .mockResolvedValueOnce(closePlan)
-      .mockResolvedValueOnce(queuedClosePlan);
-    vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValueOnce([]);
+      .mockResolvedValue(queuedClosePlan);
+    vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValue([]);
     vi.mocked(api.configureLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
     vi.mocked(api.lockLedgerCloseManagementPeriod).mockResolvedValueOnce({
       isLocked: false,
@@ -3067,7 +3067,7 @@ describe("AccountingScreen", () => {
     expect(await within(cockpit).findByText("$1,000 USD or 1% review by Controller")).toBeInTheDocument();
     const closingEntriesGate = within(cockpit).getByRole("region", { name: "Post closing entries gate" });
     expect(within(closingEntriesGate).getByText("Required")).toBeInTheDocument();
-    expect(within(closingEntriesGate).getByText("+$1,500 USD")).toBeInTheDocument();
+    expect(within(closingEntriesGate).getAllByText("+$1,500.00 USD")).toHaveLength(2);
     expect(within(closingEntriesGate).getByText("Posting required before lock")).toBeInTheDocument();
     const scopedBalances = within(closingEntriesGate).getByRole("table", { name: "Scoped temporary-account balances" });
     expect(within(scopedBalances).getByText("Advisory fee revenue (ADV-FEE)")).toBeInTheDocument();
@@ -3091,7 +3091,12 @@ describe("AccountingScreen", () => {
         "evidence://close-package/workflow/workflow-approval-1/period/2026-05/book/book-alpha/closing-entry-preparation"
       ])
     }));
-    await waitFor(() => expect(within(closingEntriesGate).getByRole("button", { name: "Queue closing entries" })).toBeDisabled());
+    await waitFor(
+      () => expect(within(
+        within(cockpit).getByRole("region", { name: "Post closing entries gate" })
+      ).getByRole("button", { name: "Queue closing entries" })).toBeDisabled(),
+      { timeout: 5_000 }
+    );
     expect(within(cockpit).getByRole("button", { name: "Lock period" })).toBeDisabled();
     await waitFor(() => expect(screen.getByRole("button", { name: "Retain close setup" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Retain close setup" }));
