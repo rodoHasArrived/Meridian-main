@@ -365,7 +365,7 @@ public sealed class LedgerBookServiceTests
             period.PeriodId,
             revenue: 1_000m,
             expense: 250m,
-            timestamp: DateTimeOffset.Parse("2026-04-30T21:00:00Z")));
+            timestamp: new DateTimeOffset(2026, 4, 30, 21, 0, 0, TimeSpan.Zero)));
         await service.ClosePeriodAsync(
             period.PeriodId,
             new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));

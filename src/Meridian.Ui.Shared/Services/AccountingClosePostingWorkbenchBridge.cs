@@ -31,16 +31,24 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         _ledgerBookService = ledgerBookService;
     }
 
+    private const string LedgerUnavailableDetail =
+        "The durable ledger book service is not configured; period-close posting requires a persistence-backed ledger.";
+
     private ILedgerBookService RequireLedgerBookService()
-        => _ledgerBookService
-            ?? throw new InvalidOperationException(
-                "The durable ledger book service is not configured; period-close posting requires a persistence-backed ledger.");
+        => _ledgerBookService ?? throw new InvalidOperationException(LedgerUnavailableDetail);
 
     public async Task<ClosePostingGateDto> EvaluateAsync(
         AccountingClosePostingContext context,
         CancellationToken ct = default)
     {
         ValidateContext(context);
+        // Without a persistence-backed ledger the gate cannot resolve periods; degrade the read path
+        // to Blocked explicitly rather than surfacing an exception through the catch below.
+        if (_ledgerBookService is null)
+        {
+            return Blocked(context, LedgerUnavailableDetail);
+        }
+
         try
         {
             var period = await ResolvePeriodAsync(context, ct).ConfigureAwait(false);
