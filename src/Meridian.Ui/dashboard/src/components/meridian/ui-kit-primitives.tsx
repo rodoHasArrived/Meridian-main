@@ -8,6 +8,7 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode
 } from "react";
 import {
@@ -128,6 +129,12 @@ export interface DenseDataTableProps<T> {
   virtualization?: DenseDataTableVirtualization | null;
   /** Per-row text used for keyboard type-ahead; defaults to `getRowAriaLabel`. */
   getRowTypeaheadText?: (row: T) => string | undefined;
+  /**
+   * Right-click (context-menu gesture) on a data row. Receives the row and the
+   * originating event so callers can open a positioned context menu at the
+   * pointer. Optional; when omitted rows carry no context-menu behaviour.
+   */
+  onRowContextMenu?: (row: T, event: ReactMouseEvent<HTMLTableRowElement>) => void;
 }
 
 function DenseDataTableComponent<T>({
@@ -149,7 +156,8 @@ function DenseDataTableComponent<T>({
   onToggleSort,
   maxVisibleRows = DEFAULT_DENSE_TABLE_ROW_CAP,
   virtualization = null,
-  getRowTypeaheadText
+  getRowTypeaheadText,
+  onRowContextMenu
 }: DenseDataTableProps<T>) {
   const generatedKeyboardInstructionsId = useId();
   const [showAllRows, setShowAllRows] = useState(false);
@@ -442,6 +450,7 @@ function DenseDataTableComponent<T>({
                     if (isInteractiveTableTarget(event.target)) return;
                     selectDenseRow(row, rowAriaLabel, getRowAriaControls?.(row), false, onRowSelect, setSelectionAnnouncement);
                   } : undefined}
+                  onContextMenu={onRowContextMenu ? (event) => onRowContextMenu(row, event) : undefined}
                   onKeyDown={selectable ? (event) => handleRowKeyDown(event, absoluteIndex) : undefined}
                 >
                   {columns.map((column) => (

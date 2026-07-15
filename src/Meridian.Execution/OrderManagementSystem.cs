@@ -111,6 +111,33 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 request.Symbol);
         }
 
+        // Reject a duplicate client order id that is still open before anything writes _orders[orderId]:
+        // that dictionary is keyed by order id, so placing over an existing open order would clobber
+        // its tracked state and — once the gateway rejects the duplicate — mark the still-live original
+        // as rejected. Orders in a terminal state may reuse their id.
+        if (_orders.TryGetValue(orderId, out var existingOpenOrder)
+            && existingOpenOrder.Status is not (OrderStatus.Filled or OrderStatus.Cancelled
+                or OrderStatus.Rejected or OrderStatus.Expired))
+        {
+            var duplicateReason = $"An order with client order id '{orderId}' is already open.";
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderPlaceRejected",
+                outcome: "Rejected",
+                orderId: orderId,
+                state: existingOpenOrder,
+                report: null,
+                message: duplicateReason,
+                ct: ct).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = existingOpenOrder,
+                ErrorMessage = duplicateReason
+            };
+        }
+
         var placementGate = BrokerageOrderPlacementGate.Evaluate(
             _brokerageConfiguration,
             _gateway.GatewayId,
@@ -246,7 +273,38 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             StrategyId = safeRequest.StrategyId
         };
 
-        _orders[orderId] = orderState;
+        // Atomic reservation closes the concurrent-duplicate race the early guard cannot: if two
+        // placements with the same id race past that read-only guard, only one wins this slot. A
+        // placement that finds an already-open order here rejects instead of overwriting it; a
+        // terminal order at the key is a legitimate id reuse and is replaced.
+        var reserved = _orders.AddOrUpdate(
+            orderId,
+            orderState,
+            (_, existing) => existing.Status is OrderStatus.Filled or OrderStatus.Cancelled
+                or OrderStatus.Rejected or OrderStatus.Expired
+                ? orderState
+                : existing);
+        if (!ReferenceEquals(reserved, orderState))
+        {
+            var duplicateReason = $"An order with client order id '{orderId}' is already open.";
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderPlaceRejected",
+                outcome: "Rejected",
+                orderId: orderId,
+                state: reserved,
+                report: null,
+                message: duplicateReason,
+                ct: ct).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = reserved,
+                ErrorMessage = duplicateReason
+            };
+        }
+
         TrimRetainedOrdersIfNeeded();
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
@@ -436,13 +494,37 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
 
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
+        if (report.OrderStatus is OrderStatus.Rejected)
+        {
+            // Do not apply a rejected modify to order state: ApplyReport would let the terminal
+            // Rejected overwrite a completed Filled/Cancelled order, and returning Success would
+            // misreport that overwrite as a successful modify. Mirror the cancel path and fail.
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderModifyRejected",
+                outcome: report.OrderStatus.ToString(),
+                orderId: orderId,
+                state: state,
+                report: report,
+                message: report.RejectReason ?? "Modify request rejected",
+                metadata: BuildOrderModificationAuditMetadata(modification, state, report),
+                ct: ct).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = state,
+                ErrorMessage = report.RejectReason ?? "Modify request rejected"
+            };
+        }
+
         var updated = _orders.AddOrUpdate(
             orderId,
             _ => ApplyReport(state, report),
             (_, existing) => ApplyReport(existing, report));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
-            action: report.OrderStatus is OrderStatus.Rejected ? "OrderModifyRejected" : "OrderModified",
+            action: "OrderModified",
             outcome: updated.Status.ToString(),
             orderId: orderId,
             state: updated,
@@ -1078,12 +1160,4 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             _orderSessionIds.TryRemove(removableOrderId, out _);
         }
     }
-}
-
-/// <summary>Placeholder attribute for ADR traceability.</summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-internal sealed class ImplementsAdrAttribute(string adr, string reason) : Attribute
-{
-    public string Adr { get; } = adr;
-    public string Reason { get; } = reason;
 }

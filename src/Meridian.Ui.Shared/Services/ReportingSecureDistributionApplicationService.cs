@@ -704,8 +704,8 @@ public sealed class ReportingSecureDistributionApplicationService
     {
         var normalized = NormalizeRequired(path, parameterName, 1_024);
         if (!normalized.StartsWith("/", StringComparison.Ordinal)
-            || normalized.Contains("?", StringComparison.Ordinal)
-            || normalized.Contains("#", StringComparison.Ordinal)
+            || normalized.Contains('?', StringComparison.Ordinal)
+            || normalized.Contains('#', StringComparison.Ordinal)
             || ContainsBearer(normalized))
         {
             throw new ArgumentException("Reporting access paths must be application-root relative and token-free.", parameterName);

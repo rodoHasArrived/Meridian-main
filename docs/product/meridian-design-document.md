@@ -526,6 +526,90 @@ Receive Activity
 * Evidence packages
 * Approval history
 
+### Exception Case Model
+
+Financial Operations exceptions should be treated as governed operating cases, not just break rows.
+Each exception should expose enough structured metadata for operators, controllers, reviewers, and
+auditors to understand who owns the issue, why it matters, what it blocks, and what evidence proves
+its resolution.
+
+Required exception fields include:
+
+| Field | Purpose |
+| --- | --- |
+| Owner | Named accountable operator, team, or reviewer responsible for next action. |
+| Queue | Current operating queue or work lane used for triage, assignment, escalation, and reporting. |
+| SLA due date | Date and time by which the exception must be resolved, escalated, waived, or re-baselined. |
+| Severity | Operational urgency such as informational, low, medium, high, or critical. |
+| Materiality | Financial significance using configured amount, percentage, fund, investor, report, or close thresholds. |
+| Root cause | Classified cause such as missing evidence, source mismatch, stale valuation, late file, booking error, timing difference, mapping issue, approval delay, or external-system defect. |
+| Source system | Originating custodian, administrator, bank, GL, provider, file, API, manual input, or derived Meridian process. |
+| Affected fund/book/period | Scoped fund, legal entity, portfolio, account, book, close period, and as-of date impacted by the exception. |
+| Blocked outputs | Close lane, journal posting, report approval, package delivery, NAV support, capital account statement, tax package, audit package, certified data mart export, or other output that cannot proceed while the exception is unresolved. |
+| Evidence status | Evidence posture such as missing, requested, received, validated, disputed, approved, frozen in manifest, or waived with approval. |
+
+Exception records should link directly to the Evidence Vault for support documents and request-list
+status, Ledger Explorer for journal and ledger impact, Report-Line Provenance Explorer for affected
+report numbers and packages, and the Operational Evidence Graph for the full source-to-output proof
+chain.
+
+### Exception Queue Views
+
+The Financial Operations control center should provide queue views that preserve one shared exception
+state model while letting operators focus on the next action required:
+
+| Queue view | Operating meaning |
+| --- | --- |
+| New | Newly created exceptions that need triage, owner assignment, materiality review, and blocked-output identification. |
+| Assigned | Exceptions with an accountable owner or team actively working the case. |
+| Waiting on evidence | Exceptions blocked by missing source records, documents, confirmations, administrator files, bank evidence, or reviewer support. |
+| Waiting on approval | Exceptions that have a proposed resolution, waiver, journal, report impact, or evidence package awaiting authorized approval. |
+| Resolved | Exceptions whose root cause, evidence, ledger/report impact, and audit trail are complete enough to unblock downstream outputs. |
+| Reopened | Previously resolved or waived exceptions returned to active work because new evidence, late activity, restatement, failed control, or reviewer challenge changed the conclusion. |
+| Waived | Exceptions intentionally accepted under a permissioned waiver with materiality rationale, approver, expiration or review date, blocked-output impact, and retained evidence. |
+
+### Escalation Behavior
+
+Escalation should be automatic and auditable when an exception blocks production financial outputs.
+If a case blocks period close, Meridian should mark the affected close lane as blocked, notify the
+owner and controller, show the blocker in close readiness, and prevent close sign-off until the case
+is resolved or formally waived. If a case blocks journal posting, Meridian should hold the journal in
+draft or pending state, prevent posting into locked or unsupported periods, and require evidence and
+approval before posting, reversal, or adjustment. If a case blocks report approval, Meridian should
+flag affected report lines and packages, route reviewers to the Report-Line Provenance Explorer, and
+prevent approval until the exception is resolved, waived, or documented as immaterial under policy.
+If a case blocks package delivery, Meridian should stop delivery release for affected recipients or
+packages, expose the blocked package in delivery readiness, and retain the escalation, waiver, or
+release decision in the audit trail.
+
+Every escalation should preserve the exception owner, queue, SLA due date, severity, materiality,
+root cause, source system, affected fund/book/period, blocked outputs, and evidence status so the
+Operational Evidence Graph can reconstruct the control decision later.
+
+### Roadmap Acceptance Criteria
+
+If the Financial Operations exception work becomes a committed roadmap item, a delivery row should
+be considered acceptable only when:
+
+* Exceptions can be created or derived from reconciliation, close, journal, report, delivery, and
+  evidence workflows with all required exception fields captured or explicitly marked unknown.
+* Operators can filter and manage new, assigned, waiting-on-evidence, waiting-on-approval, resolved,
+  reopened, and waived queues from the Financial Operations control center.
+* SLA, severity, materiality, owner, queue, root-cause, source-system, affected-scope,
+  blocked-output, and evidence-status changes are audit logged with timestamps and actors.
+* Close sign-off, journal posting, report approval, and package delivery surfaces show blocking
+  exceptions and enforce configured resolve-or-waive gates before production release.
+* Each exception links to relevant Evidence Vault records, Ledger Explorer records, Report-Line
+  Provenance Explorer records, and the Operational Evidence Graph without duplicating business
+  state across surfaces.
+* Waivers require permissioned approval, materiality rationale, retained evidence, and clear output
+  impact; reopened exceptions preserve the earlier resolution or waiver history.
+* Dashboards expose workload, aging, SLA breach, materiality, blocked-output, source-system, and
+  root-cause summaries by tenant, fund, book, period, owner, and queue.
+* Tests or acceptance evidence demonstrate at least one exception blocking close, one blocking
+  journal posting, one blocking report approval, and one blocking package delivery through resolve
+  or waive paths.
+
 ### Roadmap Productization
 
 `W5X-FINOPS-001` is the completed Financial Operations control-center milestone that turns
@@ -585,6 +669,93 @@ own a divergent close state; both the browser and WPF workstations consume share
 Accounting/Reporting read models from
 `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` so operator actions, approval blockers,
 and release readiness remain consistent.
+
+### Fund Event Command Center
+
+The Fund Event Command Center is a planned private-capital operating surface for creating,
+reviewing, reconciling, approving, reporting, and locking fund events as auditable operational
+records. It should remain roadmap-candidate language until the roadmap registry accepts a matching
+item and evidence gates; do not present it as shipped, accepted, or part of the closed W1-W5
+baseline before that registry acceptance exists.
+
+#### Supported Event Types
+
+The initial event taxonomy should support these fund-event records:
+
+* Formation
+* Close
+* Subscription
+* Capital call
+* Contribution receipt
+* Investment
+* Distribution
+* Valuation
+* Fee
+* Expense
+* Tax request
+* Audit request
+* Dissolution
+* Wind-down
+
+#### Event Lifecycle States
+
+Every command-center event should move through explicit, auditable lifecycle states:
+
+* Draft
+* Evidence pending
+* Validation blocked
+* Reconciliation blocked
+* Journal pending
+* Approval pending
+* Report pending
+* Delivered
+* Locked
+* Amended
+* Restated
+
+#### Event Detail Page Layout
+
+Each event detail page should use a consistent evidence-first layout:
+
+* **Event header:** fund, vehicle, entity, event type, materiality, owner, effective date, due date,
+  current lifecycle state, and amendment/restatement lineage.
+* **Proof ribbon:** compact readiness indicators for evidence completeness, validation,
+  reconciliation, journal state, approval state, report use, lock state, and audit coverage.
+* **Evidence panel:** source documents, import runs, administrator files, signed notices, source
+  hashes, lineage references, reviewer notes, retention class, and legal-hold markers.
+* **Ledger impact:** journal drafts, posted journals, reversals, accruals, realized/unrealized
+  effects, cash movements, book/period scope, and blocked-posting reasons.
+* **Capital-account impact:** investor allocations, commitments, contributions, distributions, fees,
+  expenses, tax lots where relevant, capital roll-forward, and statement-line effects.
+* **Workflow tasks:** assignments, due dates, blocker reasons, reviewer decisions, approval chain,
+  escalation history, and segregation-of-duties checks.
+* **Report usage:** report packs, investor statements, notices, tax/audit support files, board
+  packages, delivery status, recipient entitlement scope, and amendment/restatement dependencies.
+* **Audit timeline:** immutable event history for creation, evidence receipt, validation,
+  reconciliation, journal actions, approvals, report generation, delivery, locks, amendments,
+  restatements, and evidence-retention actions.
+
+#### Workspace Entry Points
+
+The command center should be reachable from existing root operator workspaces without introducing a
+new root navigation lane:
+
+* **Portfolio:** open event records from fund, vehicle, holding, investment, valuation,
+  distribution, and liquidity-review contexts.
+* **Accounting:** open event records from close cockpit, ledger explorer, journal queues,
+  capital-account workbench, reconciliation cases, and period-lock workflows.
+* **Reporting:** open event records from package builders, investor statements, notices, tax/audit
+  support requests, delivery evidence, amendment, and restatement workflows.
+* **Data:** open event records from import runs, administrator files, provider validation, lineage
+  manifests, reconciliation inputs, source-evidence repair, and certified dataset release flows.
+
+#### Roadmap Candidate Boundary
+
+Use this feature as a roadmap candidate only until a registry-backed item is accepted. Candidate
+acceptance should name the owning roadmap ID, event registry schema, lifecycle transition rules,
+workspace routes, evidence requirements, audit-event coverage, reporting dependencies, and validation
+commands. Until then, documents and product copy should say "planned Fund Event Command Center" or
+"roadmap candidate" rather than "implemented", "accepted", or "available".
 
 ---
 
@@ -1584,6 +1755,28 @@ Meridian should reconcile across three dimensions.
 | Source-to-Source     | Custodian position vs administrator position |
 | Expected-to-Actual   | Expected coupon vs actual coupon received    |
 | Internal-to-Official | Meridian record vs general ledger            |
+
+Reconciliation output should flow into Financial Operations exception casework whenever an
+unmatched item, tolerance breach, stale input, missing document, disputed source value, approval
+gap, or ledger/report variance can affect close, journal posting, report approval, package
+delivery, NAV support, capital accounts, tax support, audit evidence, or certified exports.
+
+Each reconciliation exception should carry the same required case fields: owner, queue, SLA due
+date, severity, materiality, root cause, source system, affected fund/book/period, blocked outputs,
+and evidence status. These fields make reconciliation queues operationally useful rather than just
+analytical, and they allow managers to review workload, aging, breach risk, and production blockers
+by fund, book, period, owner, source system, and output type.
+
+Reconciliation queues should include views for new, assigned, waiting on evidence, waiting on
+approval, resolved, reopened, and waived exceptions. Resolution should require a root-cause
+classification, supporting evidence or approved waiver, explicit ledger/report/close impact, and a
+retained audit trail. Reopened exceptions should preserve the original resolution history and explain
+what new evidence, late activity, restatement, or reviewer challenge changed the state.
+
+Reconciliation should be linked into the proof surfaces that operators use to complete downstream
+work: Evidence Vault for source support and request lists, Ledger Explorer for journal and ledger
+impact, Report-Line Provenance Explorer for affected report numbers and packages, and the
+Operational Evidence Graph for source-to-output reconstruction.
 
 ## 10.7 Treasury Ledger Principles
 
@@ -2954,6 +3147,65 @@ Fund events remain private-capital specializations of that spine. The event is n
 because accounting output exists; it is complete when the event's evidence, approvals, journals,
 account or investor impact, reporting outputs, delivery records, and support package can be
 reconstructed.
+
+### Capital Account Workbench
+
+The Capital Account Workbench should be the operator surface for proving investor economics rather
+than a standalone investor portal. It should scope every view by tenant, organization, fund, legal
+entity, investor, investment vehicle, class or series, capital account, book, period, and report
+package so that a fund accountant can distinguish fund-level economics from investor-specific,
+entity-specific, and statement-specific results. Saved views should preserve that scope and expose
+whether the user is reviewing production records, an amendment candidate, a restatement package, or
+a tax/audit support request.
+
+The workbench should provide coordinated views for the core capital-account lifecycle:
+
+* Commitment view: subscription commitment, remaining commitment, unfunded balance, side-letter or
+  class terms, effective dates, subscription-document evidence, and related closing fund event.
+* Contribution view: capital calls, contribution notices, expected cash, bank receipt evidence,
+  contribution journal entries, true-up activity, and late or short funding exceptions.
+* Distribution view: distribution allocations, notices, expected payment intent, bank/custodian
+  confirmation, withholding or tax support, distribution journal entries, and returned or amended
+  payment evidence.
+* Allocation view: income, expense, realized gain/loss, unrealized gain/loss, fee, carry, special
+  allocation, and class/series rule application with allocation-rule version and reviewer state.
+* Fee view: management fee, incentive fee, carried-interest, waiver, offset, reimbursement, and
+  expense-allocation support linked to fee calculations and Meridian-owned journals.
+* NAV view: opening capital, period activity, valuation support, NAV share, roll-forward, shadow NAV
+  or administrator tie-out variance, close blockers, and reviewer sign-off.
+* Statement view: statement contents, template version, dataset version, report-line provenance,
+  delivery status, amendment/restatement state, recipient entitlement, and support manifest.
+
+Every capital-account row should tie out to Meridian-owned journal entries and fund events before it
+can be treated as reportable. The workbench should show the fund event that created or changed the
+activity, the draft or posted journal entries that carry the accounting impact, the reversal or
+adjustment chain for corrections, the period-lock state, and any reconciliation case blocking the
+capital-account roll-forward. External administrator, bank, tax, audit, or investor-portal records
+may provide evidence or comparison points, but the governed capital-account projection is derived
+from Meridian-owned fund events, journals, allocation rules, and approved valuations.
+
+Evidence links should be first-class fields, not notes. The workbench should attach and display
+subscription documents, investor notices, capital-call support, contribution receipt support,
+distribution support, valuation support, tax/K-1 support, audit-request files, and reviewer
+workpapers. Each evidence link should retain source, receipt timestamp, hash or immutable document
+version, extraction/review state, related fund event, related journal entry, related report line,
+and inclusion status in close, tax, audit, or governed reporting manifests.
+
+Investor statement amendments and restatements should be controlled lifecycle events. An amendment
+updates a not-yet-final or non-economic presentation issue while preserving the original statement
+version, reason, approver, recipient list, and delivery evidence. A restatement changes a released
+or economically material statement and must link to the correcting fund event, reversing or
+adjusting journal entries, revised capital-account roll-forward, affected report lines, reissued
+package, recipient notification, and audit event chain. Neither path may overwrite the original
+statement; users should see superseded, current, pending-amendment, and restated states side by side
+with variance explanations and release approvals.
+
+Required report links should connect each investor statement and capital-account roll-forward to the
+governed reporting package that consumed it. The workbench should expose report package ID, report
+line ID, package approval state, template version, dataset version, report-line provenance, delivery
+record, restatement lineage, and downstream tax or audit support package usage. A report line is
+ready only when the capital-account source rows, journals, fund events, evidence links, and reviewer
+approvals can be traced from the statement back through the Operational Evidence Graph.
 
 The Private-Capital Close Cockpit should operate by fund, book, period, and entity. A close lane is
 ready only when required data arrived, imports validated, reconciliation blockers cleared, journals

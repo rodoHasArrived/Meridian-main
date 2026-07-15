@@ -115,7 +115,14 @@ public sealed class PaperTradingGateway : IOrderGateway
         {
             ObjectDisposedException.ThrowIf(IsDisposed, this);
             var trackedRequest = request with { ClientOrderId = orderId };
-            _workingOrders[orderId] = trackedRequest;
+            // Reject a duplicate id rather than overwriting the working entry: two fill tasks would
+            // share one dictionary key, and once the first removes it the second would skip its
+            // terminal update, leaving an accepted order with no fill or cancel event.
+            if (!_workingOrders.TryAdd(orderId, trackedRequest))
+            {
+                throw new UnsupportedOrderRequestException(
+                    $"An order with client order id '{orderId}' is already working in the paper gateway.");
+            }
             TrackFillSimulationLocked(orderId, trackedRequest);
         }
 
@@ -228,9 +235,21 @@ public sealed class PaperTradingGateway : IOrderGateway
         await Task.Yield();
         var orderId = request.ClientOrderId ?? throw new InvalidOperationException("Paper orders must have a client order id before fill simulation.");
 
+        bool stillWorking;
         lock (_lock)
         {
-            _workingOrders.Remove(orderId);
+            stillWorking = _workingOrders.Remove(orderId);
+        }
+
+        if (!stillWorking)
+        {
+            // The order left the working set before this simulated fill ran — it was cancelled
+            // (CancelAsync removes it and emits a terminal Cancelled update) or already filled.
+            // Emitting a Filled update here would contradict that terminal state.
+            _logger.LogDebug(
+                "Paper fill skipped for {OrderId}: order is no longer working (cancelled or already filled).",
+                orderId);
+            return;
         }
 
         // For limit orders use the limit price; for market orders use the scaffold notional price.
