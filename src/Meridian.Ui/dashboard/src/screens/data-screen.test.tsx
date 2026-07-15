@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
+import * as dataOpsApi from "@/lib/api/data-operations-assurance.api";
 import * as plaidLink from "@/lib/plaid-link";
 import { DataScreen } from "@/screens/data-screen";
 import {
@@ -313,6 +314,57 @@ describe("DataScreen", () => {
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Backfill queue" })).not.toBeInTheDocument();
+  });
+
+  it("renders ingestion operations and storage assurance workstreams on their own routes", async () => {
+    vi.spyOn(dataOpsApi, "getIngestionOperations").mockResolvedValue({
+      generatedAt: "2026-07-14T18:00:00Z",
+      summary: { total: 1, queued: 0, running: 1, paused: 0, failed: 0, completed: 0, cancelled: 0, resumable: 1 },
+      providers: ["databento"],
+      jobs: [{
+        jobId: "ING-4102",
+        workloadType: "Historical backfill",
+        state: "Running",
+        provider: "databento",
+        symbols: ["AAPL"],
+        createdAt: "2026-07-14T16:40:00Z",
+        startedAt: "2026-07-14T16:41:00Z",
+        completedAt: null,
+        progressPercent: 62.5,
+        isResumable: true,
+        attemptCount: 1,
+        maxRetries: 3,
+        nextRetryAt: null,
+        errorMessage: null,
+        evidenceRoute: "/data/evidence?subjectId=ING-4102",
+        actions: [{ action: "pause", label: "Pause", enabled: true, disabledReason: null }]
+      }]
+    });
+    vi.spyOn(dataOpsApi, "getStorageAssurance").mockResolvedValue({
+      generatedAt: "2026-07-14T18:00:00Z",
+      health: { status: "Healthy", rootLabel: "meridian-data", totalBytes: 2048, fileCount: 2, readable: true, writable: true, orphanCount: 0, temporaryFileCount: 1, message: null },
+      quality: { status: "Available", filesAnalyzed: 2, averageScore: 0.98, lowQualityFileCount: 0, recommendations: [], message: null },
+      canonicalization: { enabled: true, version: 2, eventsTotal: 100, successTotal: 99, softFailTotal: 1, hardFailTotal: 0, matchRatePercent: 99, providers: [] },
+      capacity: { usedBytes: 2048, availableBytes: 4096, usedPercent: 33.3, estimatedDaysRemaining: null, status: "Healthy" },
+      tiers: [],
+      alerts: [],
+      permissions: { canView: true, canRunQualityCheck: true, canMigrate: true, canDelete: true }
+    });
+
+    const operations = renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/operations"] });
+
+    expect(await screen.findByText("Ingestion Operations Center")).toBeInTheDocument();
+    expect(await screen.findByText("ING-4102")).toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Backfill queue" })).not.toBeInTheDocument();
+
+    operations.unmount();
+
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/assurance"] });
+
+    expect(await screen.findByText("Storage & Data Assurance")).toBeInTheDocument();
+    expect(screen.getByText("Assurance signals")).toBeInTheDocument();
+    expect(screen.getByText("Guarded maintenance")).toBeInTheDocument();
   });
 
   it("runs SQL queries with paged results and export actions", async () => {

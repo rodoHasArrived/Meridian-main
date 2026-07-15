@@ -144,7 +144,6 @@ jobs:
           echo "safe_output_dir=$resolved" >> "$GITHUB_OUTPUT"
       - name: Capture web screenshots
         id: capture_web
-        continue-on-error: true
         env:
           OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
           ROUTES_CONFIG: ${{ inputs.config }}
