@@ -34,8 +34,6 @@ import type {
   BrokerageConnectionStatus,
   CellExecuteRequest,
   CellExecuteResult,
-  CellExecutionContext,
-  CellOutput,
   BrokerageHouseholdPortfolio,
   ChiefOfStaffDecisionRequest,
   ChiefOfStaffEvidenceExport,

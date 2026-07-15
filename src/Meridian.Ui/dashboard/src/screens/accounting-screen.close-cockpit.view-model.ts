@@ -12,10 +12,7 @@ import {
   reviewLedgerCloseManagementLateAdjustment,
   signOffLedgerCloseManagementTask,
 } from "@/lib/api";
-import {
-  normalizeLocalWorkstationRoute,
-  WORKSTATION_ROUTE_CATALOG,
-} from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   accountingWorkstreamHref,
   buildAccountingTaskMode,
@@ -28,7 +25,7 @@ import {
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
-import { closeCommandCenterTextMatches, humanizeCloseBlockerCode, isCloseChecklistDone, isOpenAccountingBreakStatus } from "./accounting-screen.close-cockpit-presenters";
+import { isOpenAccountingBreakStatus } from "./accounting-screen.close-cockpit-presenters";
 import type {
   AccountingCloseCalendarMilestoneViewModel,
   AccountingCloseDependencyGraphRowViewModel,
@@ -59,9 +56,6 @@ import type {
   AccountingWorkflowActionViewModel,
   AccountingWorkflowLaunchViewState,
   AccountingWorkflowStepViewModel,
-  CloseCommandCenterActionViewModel,
-  CloseCommandCenterMetricViewModel,
-  CloseCommandCenterStatus,
   CloseCommandCenterViewState,
 } from "./accounting-screen.view-model";
 import type {
@@ -75,20 +69,13 @@ import type {
   ClosePostingGateState,
   CloseSignOffRequirement,
   CloseTask,
-  DailyValuationScheduleWorkItem,
-  FinancialOperationsCommandCenter,
   LateAdjustmentRequest,
   LedgerDimensionSet,
   LockClosePeriodRequest,
-  MultiAssetCoverageSummary,
   OperationsContinuityWorkflow,
-  OperationsWorkflowBlocker,
   ReportExportArtifact,
   ReportExportArtifactManifest,
   UpsertClosePeriodPlanConfigurationRequest,
-  AccountingSystemImportDetail,
-  AccountingSystemProvider,
-  AccountingSystemReconciliationSummary,
   AccountingCertificationState,
 } from "@/types";
 

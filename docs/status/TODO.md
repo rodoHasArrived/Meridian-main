@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **223**
+Total items: **218**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -10,11 +10,6 @@ Total items: **223**
 | `.codex/agents/meridian-cleanup.toml` | 417 | `TODO` | ❌ | - Open-work comments (for example, `// TODO:` or `// FIXME:`) that describe genuine pending tasks — flag them\r |
 | `.github/agents/cleanup-agent.md` | 385 | `TODO` | ❌ | - placeholder implementation comments (for example, `// TODO: implement`) in methods that are already implemented. |
 | `.github/agents/cleanup-agent.md` | 393 | `TODO` | ❌ | - Open-work comments (for example, `// TODO:` or `// FIXME:`) that describe genuine pending tasks — flag |
-| `.tmp/gitleaks-8.24.3/README.md` | 132 | `NOTE` | ❌ | Note: to disable the gitleaks pre-commit hook you can prepend `SKIP=gitleaks` to the commit command |
-| `.tmp/gitleaks-8.24.3/README.md` | 344 | `NOTE` | ❌ | # note: stopwords targets the extracted secret, not the entire regex match |
-| `.tmp/gitleaks-8.24.3/README.md` | 355 | `NOTE` | ❌ | # note: \|regexes\| defaults to check the _Secret_ in the finding. |
-| `.tmp/gitleaks-8.24.3/README.md` | 382 | `NOTE` | ❌ | # note: (global) regexTarget defaults to check the _Secret_ in the finding. |
-| `.tmp/gitleaks-8.24.3/README.md` | 391 | `NOTE` | ❌ | # note: stopwords targets the extracted secret, not the entire regex match |
 | `CLAUDE.md` | 140 | `NOTE` | ❌ | > Note: the out-of-process Chief of Staff (CoS) ADK runtime that previously owned this heavy-duty |
 | `Meridian Design System/components/core/ContextMenu.d.ts` | 68 | `NOTE` | ❌ | * NOTE: bundle-internal — like `useToast` / `useTableState`, this lowercase helper is NOT on the |
 | `Meridian Design System/components/core/MultiSelect.jsx` | 23 | `NOTE` | ❌ | // Note: caller must provide all IDs; this component only tracks selection state. |
