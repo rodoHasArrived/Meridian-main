@@ -20,6 +20,16 @@ validator confirmed that the route manifest and PNG inventory agree.
 | Settings | 11 | Preferences, access, provider setup, accounting systems, and diagnostics are distinct routes; stale provider evidence fails closed rather than appearing production-ready. |
 | **Total** | **75** | **Complete current-run catalog.** |
 
+## 2026-07-15 Update — Data ingestion operations & storage assurance
+
+The Data workspace `Ingestion operations` (`/data/operations`) and `Storage assurance`
+(`/data/assurance`) routes are now wired to their `IngestionOperationsWorkstream` and
+`StorageAssuranceWorkstream` surfaces and added to the fixture-backed capture catalog. This extends
+the Data family to 12 captures and the catalog total to 77. Both new captures render, end on their
+requested route path, and pass PNG quality and freshness validation locally; the committed
+`docs/screenshots/web/*.png` inventory is materialized to 77 files on the next automated
+`Web Screenshot Capture` refresh.
+
 ## Evidence
 
 - Screenshots: `docs/screenshots/web/*.png`

@@ -25,7 +25,15 @@ export interface DataOperationsRouteFocusCardState {
   action: DataOperationsRouteFocusActionState | null;
 }
 
-export type DataOperationsWorkstream = "overview" | "providers" | "import" | "backfills" | "exports" | "query";
+export type DataOperationsWorkstream =
+  | "overview"
+  | "providers"
+  | "import"
+  | "backfills"
+  | "operations"
+  | "assurance"
+  | "exports"
+  | "query";
 
 export interface DataWorkstationViewState {
   workstream: DataOperationsWorkstream;
@@ -43,6 +51,14 @@ export function resolveDataWorkstream(pathname: string): DataOperationsWorkstrea
 
   if (pathname.includes("/backfills")) {
     return "backfills";
+  }
+
+  if (pathname.includes("/operations")) {
+    return "operations";
+  }
+
+  if (pathname.includes("/assurance")) {
+    return "assurance";
   }
 
   if (pathname.includes("/exports")) {

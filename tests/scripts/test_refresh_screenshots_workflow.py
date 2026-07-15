@@ -310,8 +310,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             for capture in self.web_screenshot_routes.get("captures", [])
         }
 
-        self.assertEqual(75, len(captures))
+        self.assertEqual(77, len(captures))
         self.assertEqual("/data/import", captures["W06I"].get("path"))
+        self.assertEqual("/data/operations", captures["W06J"].get("path"))
+        self.assertEqual("/data/assurance", captures["W06K"].get("path"))
         self.assertIn("Governed file import", captures["W06I"].get("waitForTexts", []))
         self.assertIn("Selected Backfill", captures["W06C"].get("waitForTexts", []))
         self.assertEqual("/settings/accounting-systems", captures["W07B"].get("path"))

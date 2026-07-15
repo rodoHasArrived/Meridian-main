@@ -55,6 +55,7 @@ import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-s
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
 import { resultToneClass } from "@/screens/data-screen.tone-styles";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
   DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataViewModel
@@ -165,6 +166,8 @@ const dataRouteTabs = [
   { id: "providers", label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders, workstream: "providers" },
   { id: "import", label: "Import", route: WORKSTATION_ROUTE_CATALOG.dataImport, workstream: "import" },
   { id: "backfills", label: "Backfills", route: WORKSTATION_ROUTE_CATALOG.dataBackfills, workstream: "backfills" },
+  { id: "operations", label: "Operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations, workstream: "operations" },
+  { id: "assurance", label: "Assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance, workstream: "assurance" },
   { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports, workstream: "exports" },
   { id: "query", label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery, workstream: "query" }
 ] as const;
@@ -185,6 +188,14 @@ const dataRouteViewCopy: Record<string, { title: string; description: string }> 
   backfills: {
     title: "Backfill queue",
     description: "Historical repair jobs with operator-visible status, ranges, and result evidence."
+  },
+  operations: {
+    title: "Ingestion operations",
+    description: "Resumable import and backfill recovery with checkpointed evidence and audited actions."
+  },
+  assurance: {
+    title: "Storage assurance",
+    description: "Unified storage posture with preview-first, confirmation-gated maintenance actions."
   },
   exports: {
     title: "Export packages",
@@ -242,6 +253,8 @@ export function DataScreen({
   const showProviderWorkstream = activeWorkstream === "providers";
   const showImportWorkstream = activeWorkstream === "import";
   const showBackfillWorkstream = activeWorkstream === "backfills";
+  const showOperationsWorkstream = activeWorkstream === "operations";
+  const showAssuranceWorkstream = activeWorkstream === "assurance";
   const showExportWorkstream = activeWorkstream === "exports";
   const showQueryWorkstream = activeWorkstream === "query";
 
@@ -343,7 +356,7 @@ export function DataScreen({
       ) : null}
 
       <section className="data-management-main" aria-label="Data workstreams">
-        {activeWorkstream !== "overview" && !showBackfillWorkstream ? (
+        {activeWorkstream !== "overview" && !showBackfillWorkstream && !showOperationsWorkstream && !showAssuranceWorkstream ? (
           <RouteFocusCard
             state={vm.routeFocusCard}
           />
@@ -481,6 +494,10 @@ export function DataScreen({
         ) : null}
 
         {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
+
+        {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
+
+        {showAssuranceWorkstream ? <StorageAssuranceWorkstream /> : null}
 
         {showExportWorkstream ? <DataExportWorkstream vm={vm} /> : null}
 
