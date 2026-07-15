@@ -48,6 +48,8 @@ export interface DataUploadWorkbookSheetTabState {
 
 export interface DataUploadWorkbookReviewState {
   hasResult: boolean;
+  busy: boolean;
+  errorSummary: string | null;
   statusLabel: string;
   statusTone: DataUploadWorkbookTone;
   summary: string;
@@ -61,8 +63,20 @@ export interface DataUploadWorkbookReviewState {
   commitDisabledReason: string | null;
 }
 
+/**
+ * Transient request status for the workbook upload, surfaced by the panel so a failed or
+ * in-flight preview is not hidden behind the empty "no workbook previewed" copy.
+ */
+export interface DataUploadWorkbookRequestStatus {
+  busy?: boolean;
+  errorSummary?: string | null;
+  fileName?: string | null;
+}
+
 const emptyWorkbookReviewState: DataUploadWorkbookReviewState = {
   hasResult: false,
+  busy: false,
+  errorSummary: null,
   statusLabel: "No workbook previewed",
   statusTone: "paper",
   summary: "Upload the onboarding workbook to review each sheet before committing.",
@@ -183,10 +197,36 @@ function buildSheetTab(
 
 export function buildDataUploadWorkbookReviewState(
   result: DataUploadWorkbookPreviewResult | null | undefined,
+  status: DataUploadWorkbookRequestStatus = {},
   maxPreviewColumns = 6,
   maxPreviewRows = 3
 ): DataUploadWorkbookReviewState {
+  const busy = status.busy === true;
+  const errorSummary = status.errorSummary?.trim() ? status.errorSummary.trim() : null;
+
+  if (busy) {
+    return {
+      ...emptyWorkbookReviewState,
+      busy: true,
+      statusLabel: "Previewing",
+      statusTone: "paper",
+      summary: `Previewing ${status.fileName?.trim() || "workbook"}.`,
+      commitDisabledReason: "Workbook preview is running."
+    };
+  }
+
   if (!result) {
+    if (errorSummary) {
+      return {
+        ...emptyWorkbookReviewState,
+        errorSummary,
+        statusLabel: "Preview failed",
+        statusTone: "danger",
+        summary: errorSummary,
+        commitDisabledReason: "Resolve the workbook preview error before committing."
+      };
+    }
+
     return emptyWorkbookReviewState;
   }
 
@@ -208,6 +248,8 @@ export function buildDataUploadWorkbookReviewState(
 
   return {
     hasResult: true,
+    busy: false,
+    errorSummary: null,
     statusLabel,
     statusTone,
     summary: `${result.sheetCount.toLocaleString()} sheets, ${result.totalParsedRowCount.toLocaleString()} rows parsed from ${result.fileName}.`,

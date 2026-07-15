@@ -821,6 +821,14 @@ function DataUploadIntakePanel({
             />
           </label>
 
+          {workbookReview.errorSummary ? (
+            <StatusBanner
+              tone="danger"
+              title="Workbook preview failed"
+              detail={workbookReview.errorSummary}
+            />
+          ) : null}
+
           {workbookReview.hasResult ? (
             <>
               <p className="text-xs leading-6 text-muted-foreground">{workbookReview.nextAction}</p>

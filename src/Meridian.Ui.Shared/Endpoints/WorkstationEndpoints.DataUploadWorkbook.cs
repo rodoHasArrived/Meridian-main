@@ -19,6 +19,12 @@ namespace Meridian.Ui.Shared.Endpoints;
 public static partial class WorkstationEndpoints
 {
     private const long DataUploadWorkbookMaxFileBytes = 15 * 1024 * 1024;
+
+    // Defenses against decompression bombs: the multipart check only bounds the compressed .xlsx,
+    // so cap the decompressed size of each part and the number of rows materialized per sheet.
+    private const long MaxWorkbookPartUncompressedBytes = 64 * 1024 * 1024;
+    private const int MaxWorkbookRowsPerSheet = 200_000;
+
     private const string OnboardingWorkbookSchemaVersion = "1";
     private const string OnboardingWorkbookFileName = "meridian-onboarding-workbook.xlsx";
     private const string OnboardingWorkbookInstructionsSheet = "Instructions";
@@ -372,6 +378,31 @@ public static partial class WorkstationEndpoints
         var headers = headerRow.Select(header => header.Trim()).ToArray();
         var namedHeaders = headers.Where(header => header.Length > 0).ToArray();
 
+        if (sheet.Truncated)
+        {
+            issues.Add(new DataUploadValidationIssueDto(
+                "Warning",
+                "rows",
+                $"Sheet '{sheet.Name}' exceeds {MaxWorkbookRowsPerSheet} rows; preview and validation cover the first {MaxWorkbookRowsPerSheet} rows only.",
+                RowNumber: null,
+                SheetName: sheet.Name,
+                CellReference: null));
+        }
+
+        if (template is null)
+        {
+            // A non-reserved sheet that resolves to no template must block: without a template the
+            // required-field checks below are skipped, so an arbitrary tab would otherwise be
+            // reported ReadyForReview and treated as committable.
+            issues.Add(new DataUploadValidationIssueDto(
+                "Error",
+                "sheet",
+                $"Sheet '{sheet.Name}' does not map to a supported upload template. Rename it to a workbook data tab or include a _meta mapping before uploading.",
+                RowNumber: headerRowNumber,
+                SheetName: sheet.Name,
+                CellReference: $"{sheet.Name}!{headerRowNumber}"));
+        }
+
         if (template is not null)
         {
             var headerSet = new HashSet<string>(namedHeaders, StringComparer.OrdinalIgnoreCase);
@@ -720,20 +751,60 @@ public static partial class WorkstationEndpoints
                 continue;
             }
 
-            using var sheetStream = entry.Open();
-            var document = XDocument.Load(sheetStream);
+            var document = LoadWorkbookXml(entry);
             var rows = new List<IReadOnlyList<string>>();
+            var truncated = false;
             foreach (var rowElement in document
                 .Descendants(WorkbookSpreadsheetNamespace + "sheetData")
                 .Elements(WorkbookSpreadsheetNamespace + "row"))
             {
+                if (rows.Count >= MaxWorkbookRowsPerSheet)
+                {
+                    truncated = true;
+                    break;
+                }
+
                 rows.Add(ReadWorkbookRowValues(rowElement, sharedStrings).ToArray());
             }
 
-            sheets.Add(new WorkbookSheetContent(name, rows));
+            sheets.Add(new WorkbookSheetContent(name, rows, truncated));
         }
 
         return sheets;
+    }
+
+    /// <summary>
+    /// Loads a workbook part into memory while enforcing a hard decompressed-byte ceiling, so a
+    /// small compressed <c>.xlsx</c> cannot expand a single part into hundreds of megabytes. The
+    /// declared entry length is only a hint; the copy aborts on the actual byte count.
+    /// </summary>
+    private static XDocument LoadWorkbookXml(ZipArchiveEntry entry)
+    {
+        if (entry.Length > MaxWorkbookPartUncompressedBytes)
+        {
+            throw new InvalidDataException(
+                $"Workbook part '{entry.FullName}' declares {entry.Length} decompressed bytes, over the limit.");
+        }
+
+        using var source = entry.Open();
+        using var buffer = new MemoryStream();
+        var chunk = new byte[81920];
+        long total = 0;
+        int read;
+        while ((read = source.Read(chunk, 0, chunk.Length)) > 0)
+        {
+            total += read;
+            if (total > MaxWorkbookPartUncompressedBytes)
+            {
+                throw new InvalidDataException(
+                    $"Workbook part '{entry.FullName}' exceeds the {MaxWorkbookPartUncompressedBytes} byte decompression limit.");
+            }
+
+            buffer.Write(chunk, 0, read);
+        }
+
+        buffer.Position = 0;
+        return XDocument.Load(buffer);
     }
 
     private static IEnumerable<(string Name, string EntryPath)> ResolveWorkbookSheetOrder(ZipArchive archive)
@@ -751,24 +822,16 @@ public static partial class WorkstationEndpoints
             yield break;
         }
 
-        Dictionary<string, string> relationshipTargets;
-        using (var relsStream = relsEntry.Open())
-        {
-            var rels = XDocument.Load(relsStream);
-            relationshipTargets = rels
-                .Descendants(WorkbookPackageRelationshipsNamespace + "Relationship")
-                .Where(relationship => relationship.Attribute("Id")?.Value is { Length: > 0 })
-                .ToDictionary(
-                    relationship => relationship.Attribute("Id")!.Value,
-                    relationship => relationship.Attribute("Target")?.Value ?? string.Empty,
-                    StringComparer.Ordinal);
-        }
+        var rels = LoadWorkbookXml(relsEntry);
+        var relationshipTargets = rels
+            .Descendants(WorkbookPackageRelationshipsNamespace + "Relationship")
+            .Where(relationship => relationship.Attribute("Id")?.Value is { Length: > 0 })
+            .ToDictionary(
+                relationship => relationship.Attribute("Id")!.Value,
+                relationship => relationship.Attribute("Target")?.Value ?? string.Empty,
+                StringComparer.Ordinal);
 
-        XDocument workbook;
-        using (var workbookStream = workbookEntry.Open())
-        {
-            workbook = XDocument.Load(workbookStream);
-        }
+        var workbook = LoadWorkbookXml(workbookEntry);
 
         foreach (var sheetElement in workbook.Descendants(WorkbookSpreadsheetNamespace + "sheet"))
         {
@@ -823,8 +886,7 @@ public static partial class WorkstationEndpoints
             return [];
         }
 
-        using var stream = entry.Open();
-        var document = XDocument.Load(stream);
+        var document = LoadWorkbookXml(entry);
         return document
             .Descendants(WorkbookSpreadsheetNamespace + "si")
             .Select(si => string.Concat(si.Descendants(WorkbookSpreadsheetNamespace + "t").Select(text => text.Value)))
@@ -884,5 +946,5 @@ public static partial class WorkstationEndpoints
         return index == 0 ? null : index;
     }
 
-    private sealed record WorkbookSheetContent(string Name, IReadOnlyList<IReadOnlyList<string>> Rows);
+    private sealed record WorkbookSheetContent(string Name, IReadOnlyList<IReadOnlyList<string>> Rows, bool Truncated = false);
 }

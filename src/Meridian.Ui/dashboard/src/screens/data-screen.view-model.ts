@@ -1325,8 +1325,12 @@ export function useDataViewModel(
     ]
   );
   const workbookReviewState = useMemo(
-    () => buildDataUploadWorkbookReviewState(workbookPreviewResult),
-    [workbookPreviewResult]
+    () => buildDataUploadWorkbookReviewState(workbookPreviewResult, {
+      busy: workbookBusy,
+      errorSummary: workbookError?.summary ?? null,
+      fileName: workbookFileName
+    }),
+    [workbookPreviewResult, workbookBusy, workbookError, workbookFileName]
   );
 
   const openBackfillDialog = useCallback(() => {

@@ -174,6 +174,42 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldRejectUnmappedSheet()
+    {
+        var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workbook-unmapped", Guid.NewGuid().ToString("N"));
+        Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", root);
+
+        try
+        {
+            await using var app = await CreateAppAsync();
+            var client = app.GetTestClient();
+            // No _meta sheet and a name that matches no template -> the tab is unmapped.
+            var workbook = XlsxWorkbookWriter.CreateWorkbook(
+            [
+                new XlsxWorksheet("Mystery Tab", ["foo", "bar"], [["a", "b"]]),
+            ]);
+
+            using var content = BuildWorkbookUploadContent(workbook);
+            var response = await client.PostAsync(UiApiRoutes.WorkstationDataUploadWorkbookPreview, content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<DataUploadWorkbookPreviewResultDto>(ServerJsonOptions);
+            result.Should().NotBeNull();
+            result!.Status.Should().Be("NeedsSchemaRepair");
+
+            var sheet = result.Sheets.Single(candidate => candidate.SheetName == "Mystery Tab");
+            sheet.TemplateId.Should().BeNull();
+            sheet.Status.Should().Be("NeedsRepair");
+            sheet.Issues.Should().Contain(issue => issue.Severity == "Error" && issue.Field == "sheet");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", originalRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldRejectNonWorkbookPayload()
     {
         await using var app = await CreateAppAsync();

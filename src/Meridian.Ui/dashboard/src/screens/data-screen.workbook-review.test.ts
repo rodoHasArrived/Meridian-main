@@ -53,9 +53,32 @@ describe("buildDataUploadWorkbookReviewState", () => {
     const state = buildDataUploadWorkbookReviewState(null);
 
     expect(state.hasResult).toBe(false);
+    expect(state.busy).toBe(false);
+    expect(state.errorSummary).toBeNull();
     expect(state.sheetTabs).toHaveLength(0);
     expect(state.commitDisabled).toBe(true);
     expect(state.commitDisabledReason).toContain("Upload a workbook");
+  });
+
+  it("reflects a busy preview without a result", () => {
+    const state = buildDataUploadWorkbookReviewState(null, { busy: true, fileName: "onboarding.xlsx" });
+
+    expect(state.busy).toBe(true);
+    expect(state.statusLabel).toBe("Previewing");
+    expect(state.summary).toContain("onboarding.xlsx");
+    expect(state.commitDisabled).toBe(true);
+  });
+
+  it("surfaces a preview error when the request failed", () => {
+    const state = buildDataUploadWorkbookReviewState(null, {
+      errorSummary: "Workbook preview accepts .xlsx files."
+    });
+
+    expect(state.hasResult).toBe(false);
+    expect(state.statusTone).toBe("danger");
+    expect(state.statusLabel).toBe("Preview failed");
+    expect(state.errorSummary).toBe("Workbook preview accepts .xlsx files.");
+    expect(state.commitDisabled).toBe(true);
   });
 
   it("enables commit and maps sheet tabs when every sheet is ready", () => {
