@@ -46,6 +46,19 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn("-EnableFullWpfBuild", build_arguments)
         self.assertIn("--no-restore", self.build_function)
 
+    def test_fixture_launch_uses_the_development_environment(self) -> None:
+        fixture_environment = re.search(
+            r'if \(\$FixtureMode\) \{\s*\$startProcessArgs\["Environment"\] = @\{(.*?)\}\s*\}',
+            self.script,
+            flags=re.DOTALL,
+        )
+
+        self.assertIsNotNone(fixture_environment)
+        environment = fixture_environment.group(1)
+        self.assertIn('MDC_FIXTURE_MODE       = "1"', environment)
+        self.assertIn('DOTNET_ENVIRONMENT     = "Development"', environment)
+        self.assertIn('ASPNETCORE_ENVIRONMENT = "Development"', environment)
+
 
 if __name__ == "__main__":
     unittest.main()

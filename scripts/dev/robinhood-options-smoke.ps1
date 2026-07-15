@@ -853,7 +853,11 @@ function Invoke-SmokeCase {
     }
 
     if ($FixtureMode) {
-        $startProcessArgs["Environment"] = @{ MDC_FIXTURE_MODE = "1" }
+        $startProcessArgs["Environment"] = @{
+            MDC_FIXTURE_MODE       = "1"
+            DOTNET_ENVIRONMENT     = "Development"
+            ASPNETCORE_ENVIRONMENT = "Development"
+        }
     }
 
     $process = Start-Process @startProcessArgs
