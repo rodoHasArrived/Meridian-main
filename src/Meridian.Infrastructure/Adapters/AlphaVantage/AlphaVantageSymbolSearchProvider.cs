@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Subscriptions.Models;
@@ -75,15 +76,6 @@ public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
 
     protected override IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query)
     {
-        if (IsRateLimitBody(json))
-        {
-            throw new RateLimitException(
-                $"Alpha Vantage symbol search rate limit exceeded for {query}.",
-                provider: Name,
-                symbol: query,
-                retryAfter: RateLimitWindow);
-        }
-
         if (IsErrorBody(json))
         {
             return Enumerable.Empty<SymbolSearchResult>();
@@ -157,9 +149,25 @@ public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
             retryAfter: retryAfter ?? RateLimitWindow);
     }
 
-    private static bool IsRateLimitBody(string json)
-        => json.Contains("\"Note\"", StringComparison.Ordinal) ||
-            json.Contains("Thank you for using Alpha Vantage", StringComparison.Ordinal);
+    protected override bool IsQuotaExceededResponse(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                (document.RootElement.TryGetProperty("Note", out _) ||
+                 document.RootElement.TryGetProperty("Information", out _)))
+            {
+                return true;
+            }
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+
+        return base.IsQuotaExceededResponse(json);
+    }
 
     private static bool IsErrorBody(string json)
         => json.Contains("\"Error Message\"", StringComparison.Ordinal);
