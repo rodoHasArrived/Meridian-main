@@ -703,7 +703,7 @@ public sealed class ReportingSecureDistributionApplicationService
     private static void ValidatePath(string path, string parameterName)
     {
         var normalized = NormalizeRequired(path, parameterName, 1_024);
-        if (!normalized.StartsWith('/', StringComparison.Ordinal)
+        if (!normalized.StartsWith('/')
             || normalized.Contains('?', StringComparison.Ordinal)
             || normalized.Contains('#', StringComparison.Ordinal)
             || ContainsBearer(normalized))
