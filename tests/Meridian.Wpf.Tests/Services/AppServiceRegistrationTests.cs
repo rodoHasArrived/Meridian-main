@@ -159,6 +159,27 @@ public sealed class AppServiceRegistrationTests
     }
 
     [Fact]
+    public void ConfigureServices_WithoutDurableLedger_ShouldValidateEntireGraph()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var env = new EnvironmentVariableScope()
+                .Set("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", null)
+                .Set("POLYGON_API_KEY", null);
+
+            var exception = Record.Exception(() =>
+                BuildServiceCollection().BuildServiceProvider(new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                }));
+
+            exception.Should().BeNull(
+                "fixture startup must compose when the optional persistence-backed ledger service is absent");
+        });
+    }
+
+    [Fact]
     public void ConfigureServices_ShouldResolveEveryCatalogPageType()
     {
         WpfTestThread.Run(() =>
