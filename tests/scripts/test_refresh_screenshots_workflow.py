@@ -43,6 +43,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--require-fresh", self.web_workflow)
         self.assertIn("pull-requests: write", self.web_workflow)
         self.assertIn("uses: peter-evans/create-pull-request@v8", self.web_workflow)
+        capture_step = self.web_workflow.split("- name: Capture web screenshots", 1)[1].split(
+            "- name: Validate web screenshot captures", 1
+        )[0]
+        self.assertNotIn("continue-on-error: true", capture_step)
         self.assertIn("continue-on-error: true", self.web_workflow)
         self.assertIn("branch: automation/web-screenshot-capture", self.web_workflow)
         self.assertIn("base: ${{ github.event.repository.default_branch }}", self.web_workflow)
@@ -310,8 +314,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             for capture in self.web_screenshot_routes.get("captures", [])
         }
 
-        self.assertEqual(75, len(captures))
+        self.assertEqual(77, len(captures))
         self.assertEqual("/data/import", captures["W06I"].get("path"))
+        self.assertEqual("/data/operations", captures["W06J"].get("path"))
+        self.assertEqual("/data/assurance", captures["W06K"].get("path"))
         self.assertIn("Governed file import", captures["W06I"].get("waitForTexts", []))
         self.assertIn("Selected Backfill", captures["W06C"].get("waitForTexts", []))
         self.assertEqual("/settings/accounting-systems", captures["W07B"].get("path"))

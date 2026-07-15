@@ -1150,6 +1150,7 @@ Meridian-main
 │       │   ├── install-web-workstation.ps1
 │       │   ├── install.ps1
 │       │   ├── install.sh
+│       │   ├── package-desktop-msix.ps1
 │       │   └── smoke-web-workstation-install.ps1
 │       ├── lib
 │       │   ├── ArtifactRetention.psm1
@@ -5692,6 +5693,8 @@ Meridian-main
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
+│   │   │   │   │   │   ├── reporting-runs.api.test.ts
+│   │   │   │   │   │   ├── reporting-runs.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   └── security-master-workbench.api.ts
 │   │   │   │   │   ├── companion-pane
@@ -5975,6 +5978,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.schedule-management.tsx
 │   │   │   │   │   ├── reporting-screen.schedule-view-model.ts
 │   │   │   │   │   ├── reporting-screen.shared-components.tsx
+│   │   │   │   │   ├── reporting-screen.starter-kit.tsx
 │   │   │   │   │   ├── reporting-screen.task-mode-view-model.test.ts
 │   │   │   │   │   ├── reporting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── reporting-screen.template-lifecycle.tsx
@@ -6302,8 +6306,10 @@ Meridian-main
 │   │   │   ├── FundAccountEndpoints.cs
 │   │   │   ├── FundProfileScopeEndpointFilters.cs
 │   │   │   ├── FundStructureEndpoints.cs
+│   │   │   ├── FundStructureEndpoints.DeliveryPortal.cs
 │   │   │   ├── FundStructureEndpoints.ReportingGovernance.cs
 │   │   │   ├── FundStructureEndpoints.ReportingRunStream.cs
+│   │   │   ├── FundStructureEndpoints.StructuredReportingExport.cs
 │   │   │   ├── FutureReferenceEndpoints.cs
 │   │   │   ├── FxSpotReferenceEndpoints.cs
 │   │   │   ├── HealthEndpoints.cs
@@ -6372,6 +6378,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
 │   │   │   ├── WorkstationEndpoints.ReconciliationBreaks.cs
 │   │   │   ├── WorkstationEndpoints.ReconciliationCalibration.cs
+│   │   │   ├── WorkstationEndpoints.Routing.cs
 │   │   │   ├── WorkstationEndpoints.SecurityCoverage.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterMapping.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
@@ -6512,7 +6519,9 @@ Meridian-main
 │   │   │   ├── ReportingStateCorruptionException.cs
 │   │   │   ├── ReportingWorkflowService.cs
 │   │   │   ├── ReportPackDeliveryService.cs
+│   │   │   ├── ReportPackDeliveryService.Guards.cs
 │   │   │   ├── ReportPackRestatementCandidateResolver.cs
+│   │   │   ├── ReportPackRunReadService.Access.cs
 │   │   │   ├── ReportPackRunReadService.cs
 │   │   │   ├── ReportPackSecurityLineIndex.cs
 │   │   │   ├── ReportPackSecurityLineMatcher.cs
@@ -8734,6 +8743,7 @@ Meridian-main
 │   │   ├── test_cleanup_generated_script.py
 │   │   ├── test_compare_run_contract.py
 │   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_render_determinism.py
@@ -8741,6 +8751,7 @@ Meridian-main
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dependency_graph.py
+│   │   ├── test_generate_desktop_user_manual.py
 │   │   ├── test_generate_dk1_pilot_parity_packet.py
 │   │   ├── test_generate_program_state_summary.py
 │   │   ├── test_generate_ui_api_routes_ts.py
@@ -8760,6 +8771,7 @@ Meridian-main
 │   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_render_roadmap_diagrams.py
 │   │   ├── test_roadmap_source_docs.py
+│   │   ├── test_roadmap_validator_compatibility.py
 │   │   ├── test_route_maintenance_classification.py
 │   │   ├── test_run_dotnet_ci_tests.py
 │   │   ├── test_run_provider_validation_evidence_bundle.py
