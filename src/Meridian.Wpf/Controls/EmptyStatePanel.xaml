@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Meridian.Wpf.Controls"
              x:Name="Root"
              mc:Ignorable="d"
              MinHeight="150"
@@ -37,32 +38,71 @@
                    Text="{Binding Title}"
                    Style="{StaticResource EmptyStateTitleStyle}"
                    AutomationProperties.AutomationId="{Binding TitleAutomationId}" />
+        <local:ToneBadge x:Name="SeverityBadge"
+                         Text="{Binding Severity}"
+                         Tone="{Binding SeverityTone}"
+                         Margin="0,8,0,0"
+                         HorizontalAlignment="Center"
+                         BadgeAutomationId="{Binding SeverityAutomationId}">
+            <local:ToneBadge.Style>
+                <Style TargetType="{x:Type local:ToneBadge}">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Severity}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Severity}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </local:ToneBadge.Style>
+        </local:ToneBadge>
         <TextBlock x:Name="DescriptionText"
                    Text="{Binding Description}"
                    Style="{StaticResource EmptyStateDescriptionStyle}"
                    Margin="0,8,0,0"
                    AutomationProperties.AutomationId="{Binding DescriptionAutomationId}" />
 
-        <Button x:Name="ActionButton"
-                Content="{Binding ActionText}"
-                Command="{Binding ActionCommand}"
-                Margin="0,16,0,0"
-                HorizontalAlignment="Center"
-                AutomationProperties.AutomationId="{Binding ActionButtonAutomationId}"
-                AutomationProperties.Name="{Binding ActionText}">
-            <Button.Style>
-                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding ActionCommand}" Value="{x:Null}">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding ActionText}" Value="">
-                            <Setter Property="Visibility" Value="Collapsed" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+            <Button x:Name="ActionButton"
+                    Content="{Binding ActionText}"
+                    Command="{Binding ActionCommand}"
+                    AutomationProperties.AutomationId="{Binding ActionButtonAutomationId}"
+                    AutomationProperties.Name="{Binding ActionText}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ActionCommand}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ActionText}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button x:Name="SecondaryActionButton"
+                    Content="{Binding SecondaryActionText}"
+                    Command="{Binding SecondaryActionCommand}"
+                    Margin="8,0,0,0"
+                    AutomationProperties.AutomationId="{Binding SecondaryActionButtonAutomationId}"
+                    AutomationProperties.Name="{Binding SecondaryActionText}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SecondaryActionCommand}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding SecondaryActionText}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
     </StackPanel>
     </Border>
 </UserControl>
