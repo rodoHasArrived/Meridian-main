@@ -67,15 +67,20 @@ public sealed class GapAnalyzer : IDisposable
     /// Uses per-symbol liquidity thresholds when registered, falling back to global config.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void RecordEvent(string symbol, string eventType, DateTimeOffset timestamp, long? sequenceNumber = null)
+    public void RecordEvent(
+        string symbol,
+        string eventType,
+        DateTimeOffset timestamp,
+        long? sequenceNumber = null,
+        string? provider = null)
     {
         if (_isDisposed)
             return;
 
         Interlocked.Increment(ref _totalEventsProcessed);
 
-        var key = GetKey(symbol, eventType);
-        var state = _symbolStates.GetOrAdd(key, _ => new SymbolGapState(symbol, eventType));
+        var key = GetKey(symbol, eventType, provider);
+        var state = _symbolStates.GetOrAdd(key, _ => new SymbolGapState(symbol, eventType, provider));
 
         var effectiveConfig = GetEffectiveConfig(symbol);
         var liquidityProfile = GetSymbolLiquidity(symbol);
@@ -114,7 +119,6 @@ public sealed class GapAnalyzer : IDisposable
     /// </summary>
     public GapAnalysisResult AnalyzeGaps(string symbol, DateOnly date, string? eventType = null)
     {
-        var key = eventType != null ? GetKey(symbol, eventType) : symbol.ToUpperInvariant();
         var gaps = GetGapsForSymbolDate(symbol, date, eventType);
         var timeline = GenerateTimeline(symbol, date, gaps);
 
@@ -304,9 +308,15 @@ public sealed class GapAnalyzer : IDisposable
     /// </summary>
     public void ResetSymbol(string symbol, string? eventType = null)
     {
-        var keys = eventType != null
-            ? new[] { GetKey(symbol, eventType) }
-            : _symbolStates.Keys.Where(k => k.StartsWith(symbol.ToUpperInvariant() + ":")).ToArray();
+        var symbolPrefix = symbol.Trim().ToUpperInvariant() + ":";
+        var eventPrefix = eventType is null
+            ? symbolPrefix
+            : symbolPrefix + eventType.Trim().ToUpperInvariant() + ":";
+        var keys = _symbolStates.Keys
+            .Concat(_detectedGaps.Keys)
+            .Where(key => key.StartsWith(eventPrefix, StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         foreach (var key in keys)
         {
@@ -329,7 +339,7 @@ public sealed class GapAnalyzer : IDisposable
     {
         Interlocked.Increment(ref _totalGapsDetected);
 
-        var key = GetKey(gap.Symbol, gap.EventType);
+        var key = GetKey(gap.Symbol, gap.EventType, gap.Provider);
         var gapList = _detectedGaps.GetOrAdd(key, _ => new List<DataGap>());
 
         lock (gapList)
@@ -360,7 +370,9 @@ public sealed class GapAnalyzer : IDisposable
         }
     }
 
-    private static string GetKey(string symbol, string eventType) => $"{symbol.ToUpperInvariant()}:{eventType}";
+    private static string GetKey(string symbol, string eventType, string? provider) =>
+        $"{symbol.Trim().ToUpperInvariant()}:{eventType.Trim().ToUpperInvariant()}:" +
+        (string.IsNullOrWhiteSpace(provider) ? "<UNKNOWN>" : provider.Trim().ToUpperInvariant());
 
     private TimeSpan GetTradingDuration(DateOnly date)
     {
@@ -457,12 +469,14 @@ public sealed class GapAnalyzer : IDisposable
 
         public string Symbol { get; }
         public string EventType { get; }
+        public string? Provider { get; }
         public DateTimeOffset LastEventTime => _lastEventTime;
 
-        public SymbolGapState(string symbol, string eventType)
+        public SymbolGapState(string symbol, string eventType, string? provider)
         {
             Symbol = symbol;
             EventType = eventType;
+            Provider = string.IsNullOrWhiteSpace(provider) ? null : provider.Trim();
         }
 
         public DataGap? RecordEvent(DateTimeOffset timestamp, long? sequenceNumber, GapAnalyzerConfig config, LiquidityProfile liquidityProfile = LiquidityProfile.High)
@@ -503,7 +517,8 @@ public sealed class GapAnalyzer : IDisposable
                     MissedSequenceEnd: sequenceNumber ?? previousSeq + estimatedMissed,
                     EstimatedMissedEvents: estimatedMissed,
                     Severity: severity,
-                    PossibleCause: possibleCause
+                    PossibleCause: possibleCause,
+                    Provider: Provider
                 );
             }
 

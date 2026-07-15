@@ -6,10 +6,12 @@ namespace Meridian.FinancialOperations.AccountingClose;
 /// <summary>Ledger/workbench scope for the final period-close posting control.</summary>
 public sealed record AccountingClosePostingContext(
     Guid WorkflowId,
-    string FundProfileId,
+    Guid FundAccountId,
     Guid LedgerBookId,
     string PeriodId,
-    string Currency);
+    string Currency,
+    string? TenantId = null,
+    string? CompanyId = null);
 
 /// <summary>Human-governed command evidence used when the gate mutates workbench or period state.</summary>
 public sealed record AccountingClosePostingCommand(

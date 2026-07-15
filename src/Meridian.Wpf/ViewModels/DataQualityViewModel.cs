@@ -215,13 +215,19 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     public string PageTitle => "Data Quality";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
 
-    public DataQualityViewModel(WpfServices.StatusService statusService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, IRefreshScheduler? refreshScheduler = null)
+    public DataQualityViewModel(
+        WpfServices.StatusService statusService,
+        WpfServices.LoggingService loggingService,
+        WpfServices.NotificationService notificationService,
+        IDataQualityApiClient apiClient,
+        IDataQualityPresentationService presentationService,
+        IRefreshScheduler? refreshScheduler = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         ApiClientService.Instance.Configure(statusService.BaseUrl);
-        _apiClient = new DataQualityApiClient(ApiClientService.Instance);
-        _presentationService = new DataQualityPresentationService(_apiClient);
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _presentationService = presentationService ?? throw new ArgumentNullException(nameof(presentationService));
         _refreshCoordinator = new DataQualityRefreshCoordinator(refreshScheduler ?? new PeriodicRefreshScheduler(), RefreshDataAsync, ex => _loggingService.LogError("Failed to refresh data quality", ex));
         SymbolQualityTable = BuildSymbolQualityTable(FilteredSymbols);
         UpdateTrendState();

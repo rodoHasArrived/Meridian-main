@@ -613,6 +613,45 @@ public sealed partial class ManualJournalEntryWorkbenchService
             {
                 issues.Add(Issue("manual-je.security-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Security Master id '{normalizedLine.SecurityId:D}' was not found.", normalizedLine.LineId, "Choose a resolved Security Master instrument or clear the line security."));
             }
+            else if (normalizedLine.SecurityId.HasValue && IsDailyValuationDraft(draft))
+            {
+                if (_securityMasterQueryService is null)
+                {
+                    issues.Add(Issue(
+                        "manual-je.security-service-missing",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        "Daily valuation drafts require authoritative Security Master validation.",
+                        normalizedLine.LineId,
+                        "Restore the Security Master query service before submitting the valuation draft."));
+                }
+                else
+                {
+                    var security = await _securityMasterQueryService
+                        .GetByIdAsync(normalizedLine.SecurityId.Value, ct)
+                        .ConfigureAwait(false);
+                    if (security is not null && security.Status != SecurityStatusDto.Active)
+                    {
+                        issues.Add(Issue(
+                            "manual-je.security-inactive",
+                            AccountingConfigurationValidationSeverityDto.Critical,
+                            $"Security Master id '{normalizedLine.SecurityId:D}' is {security.Status}.",
+                            normalizedLine.LineId,
+                            "Resolve the Security Master lifecycle state before submitting the valuation draft."));
+                    }
+                    else if (security is not null && !string.Equals(
+                                 security.Currency?.Trim(),
+                                 draft.Currency?.Trim(),
+                                 StringComparison.OrdinalIgnoreCase))
+                    {
+                        issues.Add(Issue(
+                            "manual-je.security-currency-mismatch",
+                            AccountingConfigurationValidationSeverityDto.Critical,
+                            $"Security Master currency '{security.Currency}' does not match journal currency '{draft.Currency}'.",
+                            normalizedLine.LineId,
+                            "Configure governed FX translation before submitting the valuation draft."));
+                    }
+                }
+            }
 
             ValidateRequiredDimensions(lineDimensions, allowIncomplete, normalizedLine.LineId, issues);
 
@@ -684,11 +723,37 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 "Select a period that belongs to the journal entry ledger book."));
         }
 
-        // Closing entries are the governed exception: they must post into the (closed) period
-        // being finalized, so the closed-period bar does not apply to them. The posting guard and
-        // the ClosingEntry posting kind carry the governance for this path.
-        if (draft.EntryType != ManualJournalEntryTypeDto.ClosingEntry &&
-            !string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
+        var isGovernedClosingReversal = false;
+        if (draft.EntryType == ManualJournalEntryTypeDto.Reversal &&
+            draft.ReversalOfJournalEntryId is { } reversalSourceId)
+        {
+            var reversalSource = await _draftStore
+                .GetAsync(
+                    draft.FundProfileId,
+                    reversalSourceId,
+                    ct,
+                    draft.TenantId,
+                    draft.CompanyId)
+                .ConfigureAwait(false);
+            isGovernedClosingReversal = reversalSource?.EntryType == ManualJournalEntryTypeDto.ClosingEntry;
+        }
+
+        // Closing entries and their source-linked governed reversals are the mutations accepted
+        // after soft close. They must not enter approval/posting while the period is still open,
+        // and hard close remains the final mutation boundary.
+        if ((draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry || isGovernedClosingReversal) &&
+            !string.Equals(period.Status, "SoftClosed", StringComparison.OrdinalIgnoreCase))
+        {
+            issues.Add(Issue(
+                "manual-je.closing-period-not-soft-closed",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Ledger period '{periodId:D}' is {period.Status}; closing entries and governed closing-entry reversals require an exactly soft-closed period.",
+                "periodId",
+                "Soft-close the period before approving its closing entry, or use governed reopen before a restatement."));
+        }
+        else if (draft.EntryType != ManualJournalEntryTypeDto.ClosingEntry &&
+                 !isGovernedClosingReversal &&
+                 !string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
         {
             issues.Add(Issue(
                 "manual-je.period-closed",
@@ -709,6 +774,11 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var detail = await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
         return detail is not null;
     }
+
+    private static bool IsDailyValuationDraft(ManualJournalEntryDraftDto draft)
+        => draft.TreasuryContext?.IdempotencyKey?.StartsWith(
+            "fair-value|",
+            StringComparison.OrdinalIgnoreCase) == true;
 
     private async Task AppendAuditAsync(
         ManualJournalEntryDraftDto draft,

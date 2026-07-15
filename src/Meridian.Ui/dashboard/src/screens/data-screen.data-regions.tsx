@@ -9,6 +9,7 @@ import {
   CellActionConfirmDialog,
   CellActionTrigger,
   ContextMenu,
+  type CellActionApi,
   useCellActions
 } from "@/screens/data-screen.cell-actions";
 import type { CoverageGapsViewModel } from "@/screens/data-screen.coverage-gaps.view-model";
@@ -154,12 +155,19 @@ export function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) 
   );
 }
 
-export function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel }) {
+export function DataQualityRegion({
+  panel,
+  actionApi
+}: {
+  panel: DataQualityPanelViewModel;
+  actionApi?: Partial<CellActionApi>;
+}) {
   const toast = useToast();
   const cellActions = useCellActions({
     toast,
     onOpenCapabilityMatrix: (symbol) => revealCapabilityMatrix(toast, symbol),
-    onAfterMutation: () => void panel.refresh()
+    onAfterMutation: () => void panel.refresh(),
+    ...(actionApi ? { api: actionApi } : {})
   });
   return (
     <section aria-labelledby="data-quality-title" className="workspace-region data-quality-region">
@@ -280,6 +288,10 @@ export function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel 
                                 <h4 className="font-semibold">Open gaps</h4>
                                 <ul className="mt-1 grid gap-1.5" aria-label={`${row.symbol} open gaps`}>
                                   {row.openGaps.map((gap) => {
+                                    const disabledReason = !gap.canBackfill
+                                      ? gap.disabledReason ?? "Server policy has disabled remediation for this gap."
+                                      : null;
+                                    const disabledReasonId = `quality-gap-${gap.gapId.replace(/[^a-zA-Z0-9_-]/g, "-")}-disabled-reason`;
                                     const context = {
                                       kind: "quality-gap" as const,
                                       symbol: gap.symbol,
@@ -299,6 +311,10 @@ export function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel 
                                       >
                                         <Badge variant="warning">{gap.severity}</Badge>
                                         <span className="font-mono">{gap.eventType}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                          Gap <span className="font-mono text-foreground">{gap.gapId}</span>
+                                          {" · "}{gap.provider ?? "Default provider"}
+                                        </span>
                                         <span className="min-w-0 flex-1 text-muted-foreground">
                                           {new Date(gap.from).toLocaleString()} – {new Date(gap.to).toLocaleString()} ·{" "}
                                           {gap.estimatedMissingEvents.toLocaleString()} estimated missing
@@ -308,7 +324,11 @@ export function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel 
                                           variant="outline"
                                           size="sm"
                                           disabled={!gap.canBackfill || cellActions.running}
-                                          title={gap.disabledReason ?? "Backfill this exact provider and date range"}
+                                          title={disabledReason ?? "Backfill this exact provider and date range"}
+                                          aria-label={disabledReason
+                                            ? `Backfill gap ${gap.gapId} unavailable: ${disabledReason}`
+                                            : `Backfill gap ${gap.gapId} for ${gap.symbol}`}
+                                          aria-describedby={disabledReason ? disabledReasonId : undefined}
                                           onClick={() => cellActions.run(context, "backfill")}
                                         >
                                           {cellActions.running ? "Working…" : "Backfill gap"}
@@ -317,6 +337,14 @@ export function DataQualityRegion({ panel }: { panel: DataQualityPanelViewModel 
                                           label={`Actions for the ${gap.symbol} quality gap`}
                                           onOpen={(event) => cellActions.openFor(event, context)}
                                         />
+                                        {disabledReason ? (
+                                          <span
+                                            id={disabledReasonId}
+                                            className="basis-full text-xs text-muted-foreground"
+                                          >
+                                            Remediation unavailable: {disabledReason}
+                                          </span>
+                                        ) : null}
                                       </li>
                                     );
                                   })}

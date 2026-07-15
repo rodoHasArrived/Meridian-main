@@ -14,6 +14,7 @@ import {
   DATA_EXPORT_DETAIL_PANEL_ID,
   type DataOperationsBackfillDetailState,
   type DataOperationsBackfillRow,
+  type BackfillRemediationQueueRow,
   type DataOperationsDetailField,
   type DataOperationsEmptyState,
   type DataOperationsExportDetailState,
@@ -66,6 +67,65 @@ const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = 
     id: "updated",
     label: "Updated",
     render: (backfill) => <span className="font-mono text-xs text-muted-foreground">{backfill.updatedAt}</span>
+  }
+];
+
+const remediationQueueColumns: DenseDataTableColumn<BackfillRemediationQueueRow>[] = [
+  {
+    id: "execution",
+    label: "Execution",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-mono font-semibold text-foreground">{row.executionId}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.symbols}</span>
+      </span>
+    )
+  },
+  {
+    id: "provider",
+    label: "Provider",
+    render: (row) => <span className="font-mono text-xs">{row.provider}</span>
+  },
+  {
+    id: "tier",
+    label: "SLA tier",
+    sortable: true,
+    render: (row) => <Badge variant={row.tierSort === 0 ? "warning" : "outline"}>{row.tier}</Badge>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <Badge variant={row.status === "Overdue" || row.status === "Failed" ? "danger" : row.status === "Completed" ? "success" : "warning"}>
+        {row.status}
+      </Badge>
+    )
+  },
+  {
+    id: "deadline",
+    label: "Deadline",
+    sortable: true,
+    render: (row) => <span className="font-mono text-xs">{row.deadline}</span>
+  },
+  {
+    id: "ownership",
+    label: "Workflow / owner",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block text-sm">{row.workflow}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.owner}</span>
+      </span>
+    )
+  },
+  {
+    id: "outcome",
+    label: "Outcome / evidence",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block text-sm">{row.outcome}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.evidence}</span>
+      </span>
+    )
   }
 ];
 
@@ -144,6 +204,45 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
             emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
           />
         </div>
+        <section aria-labelledby="backfill-remediation-sla-title" className="mt-5 space-y-3 border-t border-border/70 pt-4">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h3 id="backfill-remediation-sla-title" className="font-semibold text-foreground">Remediation SLA queue</h3>
+              <p className="text-xs leading-5 text-muted-foreground">
+                Durable auto-remediation evidence, ordered by typed SLA tier or deadline.
+              </p>
+            </div>
+            {vm.remediationQueueState ? (
+              <div className="text-right text-xs text-muted-foreground">
+                <div>Default provider: <span className="font-mono text-foreground">{vm.remediationQueueState.defaultProvider}</span></div>
+                <div>Observed {vm.remediationQueueState.observedAt}</div>
+              </div>
+            ) : null}
+          </div>
+          {vm.remediationHistoryError ? (
+            <StatusBanner tone="danger" title="Remediation history unavailable" detail={vm.remediationHistoryError} />
+          ) : vm.remediationHistoryLoading ? (
+            <p role="status" className="text-sm text-muted-foreground">Loading durable remediation history…</p>
+          ) : vm.remediationQueueState && vm.remediationQueueState.rows.length > 0 ? (
+            <DenseDataTable
+              columns={remediationQueueColumns}
+              rows={vm.remediationQueueState.rows}
+              getRowId={(row) => row.executionId}
+              getRowAriaLabel={(row) => `${row.symbols}; ${row.tier}; ${row.status}; ${row.deadline}`}
+              emptyText="No auto-remediation SLA evidence is retained."
+              ariaLabel="Backfill remediation SLA queue"
+              caption={vm.remediationQueueState.summary}
+              sort={vm.remediationQueueSort}
+              onToggleSort={vm.toggleRemediationQueueSort}
+              maxVisibleRows={100}
+            />
+          ) : (
+            <EmptyState state={{
+              title: "No remediation SLA evidence",
+              description: "Auto-remediation executions with typed SLA evidence will appear here after a gap repair runs."
+            }} />
+          )}
+        </section>
       </CardContent>
     </section>
   );

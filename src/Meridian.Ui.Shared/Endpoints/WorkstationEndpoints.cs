@@ -741,8 +741,17 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Private-capital close cockpit service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var cockpit = await service
-                .GetCockpitAsync(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId, context.RequestAborted)
+                .GetCockpitAsync(
+                    fundProfileId,
+                    ledgerBookId,
+                    fundAccountId,
+                    periodId,
+                    entityId,
+                    context.RequestAborted,
+                    tenantContext.TenantId,
+                    tenantContext.CompanyId)
                 .ConfigureAwait(false);
             return Results.Json(cockpit, jsonOptions);
         })

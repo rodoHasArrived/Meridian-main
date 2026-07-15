@@ -313,16 +313,15 @@ public sealed class BackfillWorkerService : IDisposable
                     // Typed RateLimitException (thrown directly or wrapped in aggregate/inner chains)
                     // is located here, so a dedicated typed catch would duplicate this path.
                     var rateLimit = FindRateLimitException(ex);
-                    var retryAfter = rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex);
-                    var isRateLimited = rateLimit is not null ||
-                                        retryAfter.HasValue ||
-                                        IsHttp429(ex) ||
-                                        ex.Message.Contains("429") ||
-                                        ex.Message.Contains("rate limit", StringComparison.OrdinalIgnoreCase);
+                    var isRateLimited = IsRateLimited(ex);
+                    var retryAfter = isRateLimited
+                        ? rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex)
+                        : null;
+                    var rateLimitedProvider = ResolveRateLimitedProvider(ex, request.AssignedProvider);
 
-                    if (isRateLimited && request.AssignedProvider != null)
+                    if (isRateLimited && rateLimitedProvider is not null)
                     {
-                        _requestQueue.RecordProviderRateLimitHit(request.AssignedProvider);
+                        _requestQueue.RecordProviderRateLimitHit(rateLimitedProvider, retryAfter);
 
                         // Retry with Retry-After or exponential backoff if within retry budget
                         if (retryAttempt < MaxRetryAttemptsPerRequest)
@@ -333,7 +332,7 @@ public sealed class BackfillWorkerService : IDisposable
                             activity?.SetTag("backfill.retry_count", retryAttempt);
                             scopedLog.Information(
                                 "Rate limited for {Symbol} via {Provider}, retrying in {Delay}ms via {DelaySource} (attempt {Attempt}/{Max})",
-                                request.Symbol, request.AssignedProvider, delay.TotalMilliseconds,
+                                request.Symbol, rateLimitedProvider, delay.TotalMilliseconds,
                                 retryAfter.HasValue ? "provider-specified cooldown" : "calculated exponential backoff",
                                 retryAttempt, MaxRetryAttemptsPerRequest);
                             await Task.Delay(delay, ct).ConfigureAwait(false);
@@ -342,7 +341,7 @@ public sealed class BackfillWorkerService : IDisposable
 
                         scopedLog.Warning(
                             "Rate limit retry budget exhausted for {Symbol} via {Provider} after {Attempts} attempts",
-                            request.Symbol, request.AssignedProvider, retryAttempt);
+                            request.Symbol, rateLimitedProvider, retryAttempt);
                     }
 
                     MarketDataTracing.RecordError(activity, ex);
@@ -390,16 +389,46 @@ public sealed class BackfillWorkerService : IDisposable
     }
 
     /// <summary>
+    /// Resolves the provider whose budget should be charged for a throttle response.
+    /// Composite providers can fail over after assignment, so typed provider metadata
+    /// is authoritative when it is present.
+    /// </summary>
+    internal static string? ResolveRateLimitedProvider(Exception ex, string? assignedProvider)
+    {
+        ArgumentNullException.ThrowIfNull(ex);
+        var provider = EnumerateExceptionTree(ex)
+            .OfType<RateLimitException>()
+            .Select(static rateLimit => rateLimit.Provider)
+            .FirstOrDefault(static candidate => !string.IsNullOrWhiteSpace(candidate));
+        return string.IsNullOrWhiteSpace(provider) ? assignedProvider : provider;
+    }
+
+    /// <summary>
+    /// Classifies rate limiting only from typed provider metadata or a preserved HTTP 429 status.
+    /// Exception-message text is deliberately not treated as an accounting-relevant signal.
+    /// </summary>
+    internal static bool IsRateLimited(Exception ex)
+    {
+        ArgumentNullException.ThrowIfNull(ex);
+        return FindRateLimitException(ex) is not null || IsHttp429(ex);
+    }
+
+    /// <summary>
     /// Extracts Retry-After delay from an exception chain.
     /// Supports both delta-seconds ("120") and HTTP-date ("Thu, 01 Dec 2024 16:00:00 GMT") formats
     /// as defined in RFC 7231 Section 7.1.3.
     /// </summary>
     internal static TimeSpan? TryExtractRetryAfter(Exception ex)
     {
-        // Walk the exception chain looking for HttpRequestException with Retry-After info
-        var current = ex;
-        while (current != null)
+        ArgumentNullException.ThrowIfNull(ex);
+
+        // Walk every aggregate branch rather than AggregateException.InnerException,
+        // which exposes only the first child and can hide the actual throttled provider.
+        foreach (var current in EnumerateExceptionTree(ex))
         {
+            if (current is RateLimitException { RetryAfter: { } typedRetryAfter })
+                return CapRetryAfter(typedRetryAfter);
+
             if (TryExtractRetryAfterFromExceptionData(current) is { } retryAfterFromData)
                 return retryAfterFromData;
 
@@ -421,11 +450,31 @@ public sealed class BackfillWorkerService : IDisposable
                 if (retryAfter.HasValue)
                     return retryAfter;
             }
-
-            current = current.InnerException;
         }
 
         return null;
+    }
+
+    private static IEnumerable<Exception> EnumerateExceptionTree(Exception ex)
+    {
+        yield return ex;
+
+        if (ex is AggregateException aggregate)
+        {
+            foreach (var inner in aggregate.InnerExceptions)
+            {
+                foreach (var descendant in EnumerateExceptionTree(inner))
+                    yield return descendant;
+            }
+
+            yield break;
+        }
+
+        if (ex.InnerException is { } innerException)
+        {
+            foreach (var descendant in EnumerateExceptionTree(innerException))
+                yield return descendant;
+        }
     }
 
     private static TimeSpan? TryExtractRetryAfterFromExceptionData(Exception ex)
@@ -504,19 +553,13 @@ public sealed class BackfillWorkerService : IDisposable
 
     private static bool IsHttp429(Exception ex)
     {
-        var current = ex;
-        while (current != null)
-        {
-            if (current is HttpRequestException httpRequestException &&
-                httpRequestException.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            {
-                return true;
-            }
+        if (ex is HttpRequestException { StatusCode: System.Net.HttpStatusCode.TooManyRequests })
+            return true;
 
-            current = current.InnerException;
-        }
+        if (ex is AggregateException aggregate)
+            return aggregate.Flatten().InnerExceptions.Any(IsHttp429);
 
-        return false;
+        return ex.InnerException is not null && IsHttp429(ex.InnerException);
     }
 
     /// <summary>

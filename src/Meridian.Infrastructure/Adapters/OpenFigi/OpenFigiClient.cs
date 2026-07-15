@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -324,7 +325,17 @@ public sealed class OpenFigiClient : IDisposable
 
                 if ((int)response.StatusCode == 429)
                 {
-                    throw new HttpRequestException("OpenFIGI rate limit exceeded (429)");
+                    var retryAfter = response.Headers.RetryAfter?.Delta;
+                    if (!retryAfter.HasValue && response.Headers.RetryAfter?.Date is { } retryAt)
+                    {
+                        var delay = retryAt - DateTimeOffset.UtcNow;
+                        retryAfter = delay > TimeSpan.Zero ? delay : null;
+                    }
+
+                    throw new RateLimitException(
+                        "OpenFIGI rate limit exceeded (429)",
+                        provider: Name,
+                        retryAfter: retryAfter);
                 }
 
                 return Enumerable.Repeat<IReadOnlyList<FigiMapping>>(Array.Empty<FigiMapping>(), requests.Count).ToList();

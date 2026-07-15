@@ -14,6 +14,7 @@ import {
   buildBackfillNarrative,
   buildBackfillRequest,
   buildBackfillLiveProgressState,
+  buildBackfillRemediationQueueState,
   buildBackfillResultCardState,
   buildBackfillTriggerState,
   buildDataUploadPanelState,
@@ -52,6 +53,7 @@ import {
 import type { CorporateActionDescriptor } from "@/types";
 import type {
   BackfillProgressResponse,
+  BackfillExecutionHistoryResponse,
   BackfillPreviewResult,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -1012,6 +1014,90 @@ describe("data-screen view model", () => {
     });
   });
 
+  it("projects durable remediation SLA evidence and sorts by tier or deadline", () => {
+    const history: BackfillExecutionHistoryResponse = {
+      executions: [
+        {
+          executionId: "standard-sooner",
+          scheduleName: "Gap repair",
+          trigger: "AutoRemediation",
+          scheduleId: "",
+          status: "Completed",
+          startedAt: "2026-07-15T09:00:00Z",
+          completedAt: "2026-07-15T09:01:00Z",
+          symbolsProcessed: 1,
+          barsDownloaded: 4,
+          errorMessage: null,
+          fromDate: "2026-07-10",
+          toDate: "2026-07-11",
+          symbols: ["AAPL"],
+          autoRemediationTriggerReason: "StoredGap",
+          autoRemediationAttemptCount: 1,
+          autoRemediationLastOutcome: "Completed",
+          autoRemediationIdempotencyKey: "aapl|polygon",
+          autoRemediationSla: {
+            tier: "Standard",
+            status: "Completed",
+            dueAtUtc: "2026-07-16T12:00:00Z",
+            requiresOwnerAssignment: false,
+            downstreamWorkflow: "research",
+            reasonCode: "StandardGap",
+            provider: "",
+            triggerSource: "GapAnalyzerScan",
+            isCompatibilityDerived: false
+          }
+        },
+        {
+          executionId: "critical-later",
+          scheduleName: "Accounting repair",
+          trigger: "AutoRemediation",
+          scheduleId: "",
+          status: "Failed",
+          startedAt: "2026-07-15T10:00:00Z",
+          completedAt: "2026-07-15T10:01:00Z",
+          symbolsProcessed: 1,
+          barsDownloaded: 0,
+          errorMessage: "provider unavailable",
+          fromDate: "2026-07-12",
+          toDate: "2026-07-13",
+          symbols: ["MSFT"],
+          autoRemediationTriggerReason: "CriticalWorkflow",
+          autoRemediationAttemptCount: 2,
+          autoRemediationLastOutcome: "FailedTransient",
+          autoRemediationIdempotencyKey: "msft|stooq",
+          autoRemediationSla: {
+            tier: "SameBusinessDay",
+            status: "Overdue",
+            dueAtUtc: "2026-07-17T12:00:00Z",
+            requiresOwnerAssignment: true,
+            downstreamWorkflow: "accounting",
+            reasonCode: "CriticalWorkflow",
+            provider: "stooq",
+            triggerSource: "QualityAlert",
+            isCompatibilityDerived: true
+          }
+        }
+      ],
+      total: 2,
+      autoRemediation: { total: 2, withReason: 2, lastOutcome: "FailedTransient", defaultProvider: "polygon" },
+      timestamp: "2026-07-15T12:00:00Z"
+    };
+
+    const byTier = buildBackfillRemediationQueueState(history, { columnId: "tier", direction: "asc" });
+    expect(byTier?.rows.map((row) => row.executionId)).toEqual(["critical-later", "standard-sooner"]);
+    expect(byTier?.rows[0]).toMatchObject({
+      tier: "Same business day",
+      status: "Overdue",
+      owner: "Assignment required",
+      provider: "stooq"
+    });
+    expect(byTier?.rows[0].evidence).toContain("Compatibility-derived legacy evidence");
+    expect(byTier?.rows[1].provider).toBe("polygon");
+
+    const byDeadline = buildBackfillRemediationQueueState(history, { columnId: "deadline", direction: "asc" });
+    expect(byDeadline?.rows.map((row) => row.executionId)).toEqual(["standard-sooner", "critical-later"]);
+  });
+
   it("polls provider progress while a backfill run is in flight and keeps the final snapshot", async () => {
     let resolveRun!: (value: BackfillTriggerResult) => void;
     let runSettled = false;
@@ -1029,17 +1115,69 @@ describe("data-screen view model", () => {
       },
       timestamp: "2026-07-13T17:05:00Z"
     }));
+    const refreshedHistory: BackfillExecutionHistoryResponse = {
+      executions: [{
+        executionId: "manual-run-17",
+        scheduleName: "Manual backfill",
+        trigger: "Manual",
+        scheduleId: "",
+        status: "Completed",
+        startedAt: "2026-07-13T17:04:00Z",
+        completedAt: "2026-07-13T17:05:00Z",
+        symbolsProcessed: 1,
+        barsDownloaded: 100,
+        errorMessage: null,
+        fromDate: "2026-07-01",
+        toDate: "2026-07-12",
+        symbols: ["AAPL"],
+        autoRemediationTriggerReason: "OperatorRequested",
+        autoRemediationAttemptCount: 1,
+        autoRemediationLastOutcome: "Completed",
+        autoRemediationIdempotencyKey: "aapl|polygon|manual-run-17",
+        autoRemediationSla: {
+          tier: "Standard",
+          status: "Completed",
+          dueAtUtc: "2026-07-14T17:05:00Z",
+          requiresOwnerAssignment: false,
+          downstreamWorkflow: "research",
+          reasonCode: "OperatorRequested",
+          provider: "polygon",
+          triggerSource: "DataWorkstation",
+          isCompatibilityDerived: false
+        }
+      }],
+      total: 1,
+      autoRemediation: {
+        total: 1,
+        withReason: 1,
+        lastOutcome: "Completed",
+        defaultProvider: "polygon"
+      },
+      timestamp: "2026-07-13T17:05:01Z"
+    };
+    const initialHistory: BackfillExecutionHistoryResponse = {
+      executions: [],
+      total: 0,
+      autoRemediation: { total: 0, withReason: 0, lastOutcome: null, defaultProvider: "polygon" },
+      timestamp: "2026-07-13T17:03:00Z"
+    };
+    let executionReadCount = 0;
+    const executionReads = vi.fn(async (): Promise<BackfillExecutionHistoryResponse> => (
+      executionReadCount++ === 0 ? initialHistory : refreshedHistory
+    ));
     const services = {
       preview: async () => preview,
       run: () => new Promise<BackfillTriggerResult>((resolve) => {
         resolveRun = resolve;
       }),
-      getProgress: progressReads
+      getProgress: progressReads,
+      getExecutions: executionReads
     };
     const workspace: DataWorkspaceResponse = { metrics: [], providers, backfills: [], exports: [] };
     const { result } = renderHook(() => useDataViewModel(workspace, "/data/backfills", services));
 
     await waitFor(() => expect(result.current.form.provider).toBe("polygon"));
+    await waitFor(() => expect(executionReads).toHaveBeenCalledTimes(1));
     act(() => result.current.updateBackfillForm("symbols", "AAPL"));
     await act(async () => result.current.previewBackfill());
 
@@ -1065,6 +1203,12 @@ describe("data-screen view model", () => {
       title: "Final provider progress"
     });
     expect(progressReads.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(executionReads).toHaveBeenCalledTimes(2);
+    expect(executionReads.mock.invocationCallOrder[1]).toBeGreaterThan(
+      progressReads.mock.invocationCallOrder.at(-1) ?? 0
+    );
+    expect(result.current.remediationQueueState?.rows.map((row) => row.executionId))
+      .toEqual(["manual-run-17"]);
   });
 
   it("derives failed backfill result cards with danger tone and error evidence", () => {

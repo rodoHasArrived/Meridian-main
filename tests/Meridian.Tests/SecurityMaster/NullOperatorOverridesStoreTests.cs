@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -29,7 +30,7 @@ public sealed class NullOperatorOverridesStoreTests
 
         var act = async () => await store.RecordApprovalDecisionAsync(
             Guid.NewGuid(),
-            new OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1"));
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1"));
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }

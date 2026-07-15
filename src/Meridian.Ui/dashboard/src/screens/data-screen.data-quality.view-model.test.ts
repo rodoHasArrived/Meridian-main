@@ -121,6 +121,18 @@ describe("buildDataQualityPanelModel", () => {
     expect(model.scoreCards).toEqual([]);
   });
 
+  it("does not render a synthetic zero when aggregate evidence is unavailable", () => {
+    const model = buildDataQualityPanelModel(response({
+      compositeScore: null,
+      status: "Unavailable",
+      symbols: []
+    }));
+
+    expect(model.overallStatus).toBe("Unavailable");
+    expect(model.overallLabel).toBe("Unavailable");
+    expect(model.scoreCards[0]?.value).toBe("Unavailable");
+  });
+
   it("projects every collected symbol worst-first with source evidence and exact gaps", () => {
     const partial = symbol({
       symbol: "TSLA",

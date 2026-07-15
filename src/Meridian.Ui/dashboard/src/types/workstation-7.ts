@@ -1184,6 +1184,55 @@ export interface BackfillProgressResponse {
   message?: string | null;
 }
 
+export type BackfillRemediationSlaTier = "Standard" | "SameBusinessDay";
+
+export type BackfillRemediationSlaStatus = "Open" | "DueSoon" | "Overdue" | "Failed" | "Completed";
+
+export interface BackfillRemediationSla {
+  tier: BackfillRemediationSlaTier;
+  status: BackfillRemediationSlaStatus;
+  dueAtUtc: string;
+  requiresOwnerAssignment: boolean;
+  downstreamWorkflow: string;
+  reasonCode: string;
+  provider: string;
+  triggerSource: string | null;
+  isCompatibilityDerived: boolean;
+}
+
+export interface BackfillExecutionHistoryRow {
+  executionId: string;
+  scheduleName: string;
+  trigger: string;
+  scheduleId: string;
+  status: string;
+  startedAt: string;
+  completedAt: string | null;
+  symbolsProcessed: number;
+  barsDownloaded: number;
+  errorMessage: string | null;
+  fromDate: string;
+  toDate: string;
+  symbols: string[];
+  autoRemediationTriggerReason: string | null;
+  autoRemediationAttemptCount: number;
+  autoRemediationLastOutcome: string | null;
+  autoRemediationIdempotencyKey: string | null;
+  autoRemediationSla: BackfillRemediationSla | null;
+}
+
+export interface BackfillExecutionHistoryResponse {
+  executions: BackfillExecutionHistoryRow[];
+  total: number;
+  autoRemediation: {
+    total: number;
+    withReason: number;
+    lastOutcome: string | null;
+    defaultProvider: string;
+  };
+  timestamp: string;
+}
+
 // --- System Overview types ---
 
 export interface SystemEventRecord {
@@ -1291,7 +1340,7 @@ export interface QualityCompositeSymbolResponse {
 export interface QualityCompositeDashboardResponse {
   version: string;
   observedAt: string;
-  compositeScore: number;
+  compositeScore: number | null;
   status: "Green" | "Amber" | "Red" | "Unavailable";
   isPartial: boolean;
   coverageWeight: number;

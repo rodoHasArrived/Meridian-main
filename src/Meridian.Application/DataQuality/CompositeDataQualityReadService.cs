@@ -111,7 +111,7 @@ public sealed class CompositeDataQualityReadService : ICompositeDataQualityReadS
 
         var gapTargets = new Dictionary<string, CompositeDataQualityGap>(StringComparer.OrdinalIgnoreCase);
         var gapRows = rawGaps
-            .Select(gap => CreateGap(gap, version, provider: null, gapTargets))
+            .Select(gap => CreateGap(gap, version, gap.Provider, gapTargets))
             .OrderByDescending(static gap => gap.From)
             .ToArray();
 
@@ -134,7 +134,9 @@ public sealed class CompositeDataQualityReadService : ICompositeDataQualityReadS
             .Where(static row => row.CompositeScore.HasValue)
             .Select(static row => row.CompositeScore!.Value)
             .ToArray();
-        var aggregateScore = measuredScores.Length == 0 ? 0 : Math.Round(measuredScores.Average(), 1);
+        var aggregateScore = measuredScores.Length == 0
+            ? (double?)null
+            : Math.Round(measuredScores.Average(), 1);
         var coverageWeight = symbolRows.Count == 0
             ? 0
             : Math.Round(symbolRows.Average(static row => row.CoverageWeight), 2);
@@ -144,7 +146,7 @@ public sealed class CompositeDataQualityReadService : ICompositeDataQualityReadS
             Version: version,
             ObservedAt: observedAt,
             CompositeScore: aggregateScore,
-            Status: GetStatus(measuredScores.Length == 0 ? null : aggregateScore, isPartial),
+            Status: GetStatus(aggregateScore, isPartial),
             IsPartial: isPartial,
             CoverageWeight: coverageWeight,
             Components: aggregateComponents,
@@ -386,7 +388,14 @@ public sealed class CompositeDataQualityReadService : ICompositeDataQualityReadS
             dashboardVersion,
             gap,
             provider);
-        var canBackfill = gap.GapEnd >= gap.GapStart && gap.EstimatedMissedEvents > 0;
+        var hasValidRange = gap.GapEnd >= gap.GapStart && gap.EstimatedMissedEvents > 0;
+        var hasProviderProvenance = !string.IsNullOrWhiteSpace(provider);
+        var canBackfill = hasValidRange && hasProviderProvenance;
+        var disabledReason = !hasValidRange
+            ? "The gap does not contain a valid remediable range."
+            : !hasProviderProvenance
+                ? "The originating provider is unavailable, so Meridian cannot safely target this remediation."
+                : null;
         return new QualityCompositeGapResponse(
             GapId: gapId,
             Symbol: gap.Symbol,
@@ -398,7 +407,7 @@ public sealed class CompositeDataQualityReadService : ICompositeDataQualityReadS
             Severity: gap.Severity.ToString(),
             Status: "Open",
             CanBackfill: canBackfill,
-            DisabledReason: canBackfill ? null : "The gap does not contain a valid remediable range.");
+            DisabledReason: disabledReason);
     }
 
     private static string CreateGapId(StreamingDataGap gap, string? provider)

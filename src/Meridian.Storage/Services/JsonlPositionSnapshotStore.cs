@@ -11,7 +11,10 @@ namespace Meridian.Storage.Services;
 /// <summary>
 /// JSONL-backed implementation of <see cref="IPositionSnapshotStore"/>.
 /// <para>
-/// Path convention: <c>{StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl</c>
+/// Owned path convention:
+/// <c>{StorageRoot}/portfolios/owned/{tenant}/{company}/{fund}/{book}/{entity}/{runId}/{accountId}/snapshots.jsonl</c>.
+/// Legacy unowned snapshots retain <c>{StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl</c>
+/// and are never returned by an owned lookup.
 /// This path falls under <c>StorageOptions.RootPath</c> so the
 /// <see cref="LifecyclePolicyEngine"/> automatically picks it up for tiered-storage
 /// lifecycle enforcement (ADR-002).  Each snapshot is a single JSON line appended
@@ -45,7 +48,10 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
     {
         ArgumentNullException.ThrowIfNull(snapshot);
 
-        var path = GetSnapshotPath(snapshot.RunId, snapshot.AccountId);
+        var ownerScope = GetOwnerScope(snapshot);
+        var path = ownerScope is null
+            ? GetSnapshotPath(snapshot.RunId, snapshot.AccountId)
+            : GetSnapshotPath(snapshot.RunId, snapshot.AccountId, ownerScope);
         EnsureDirectory(path);
 
         var json = JsonSerializer.Serialize(snapshot, SnapshotJsonContext.Default.AccountSnapshotRecord);
@@ -95,6 +101,35 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
     }
 
     /// <inheritdoc />
+    public async Task<AccountSnapshotRecord?> GetLatestSnapshotAsync(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+        ArgumentNullException.ThrowIfNull(ownerScope);
+        ValidateOwnerScope(ownerScope);
+
+        var path = GetSnapshotPath(runId, accountId, ownerScope);
+        if (!File.Exists(path))
+            return null;
+
+        await foreach (var line in ReadLinesReverseAsync(path, ct))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var snapshot = TryDeserialize(line);
+            if (snapshot is not null && IsOwnedBy(snapshot, ownerScope))
+                return snapshot;
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc />
     public async IAsyncEnumerable<AccountSnapshotRecord> GetSnapshotHistoryAsync(
         string runId,
         string accountId,
@@ -125,6 +160,41 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         }
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<AccountSnapshotRecord> GetSnapshotHistoryAsync(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope,
+        DateTimeOffset from,
+        DateTimeOffset to,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
+        ArgumentNullException.ThrowIfNull(ownerScope);
+        ValidateOwnerScope(ownerScope);
+
+        var path = GetSnapshotPath(runId, accountId, ownerScope);
+        if (!File.Exists(path))
+            yield break;
+
+        await foreach (var line in ReadLinesForwardAsync(path, ct))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var snapshot = TryDeserialize(line);
+            if (snapshot is not null &&
+                IsOwnedBy(snapshot, ownerScope) &&
+                snapshot.AsOf >= from &&
+                snapshot.AsOf <= to)
+            {
+                yield return snapshot;
+            }
+        }
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private string GetSnapshotPath(string runId, string accountId)
@@ -133,6 +203,79 @@ public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
         var safeAccountId = SanitisePathSegment(accountId);
         return Path.Combine(_rootPath, "portfolios", safeRunId, safeAccountId, "snapshots.jsonl");
     }
+
+    private string GetSnapshotPath(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope)
+    {
+        var safeTenantId = SanitisePathSegment(ownerScope.TenantId.Trim());
+        var safeCompanyId = SanitisePathSegment(ownerScope.CompanyId.Trim());
+        var safeFundProfileId = SanitisePathSegment(ownerScope.FundProfileId.Trim());
+        var safeLedgerBookId = ownerScope.LedgerBookId.ToString("N");
+        var safeEntityId = SanitisePathSegment(ownerScope.EntityId.Trim());
+        var safeRunId = SanitisePathSegment(runId);
+        var safeAccountId = SanitisePathSegment(accountId);
+        return Path.Combine(
+            _rootPath,
+            "portfolios",
+            "owned",
+            safeTenantId,
+            safeCompanyId,
+            safeFundProfileId,
+            safeLedgerBookId,
+            safeEntityId,
+            safeRunId,
+            safeAccountId,
+            "snapshots.jsonl");
+    }
+
+    private static PositionSnapshotOwnerScope? GetOwnerScope(AccountSnapshotRecord snapshot)
+    {
+        var ownershipFields = new[]
+        {
+            snapshot.TenantId,
+            snapshot.CompanyId,
+            snapshot.FundProfileId,
+            snapshot.EntityId
+        };
+        var populatedCount = ownershipFields.Count(static value => !string.IsNullOrWhiteSpace(value));
+        if (populatedCount == 0 && !snapshot.LedgerBookId.HasValue)
+            return null;
+        if (populatedCount != ownershipFields.Length ||
+            !snapshot.LedgerBookId.HasValue ||
+            snapshot.LedgerBookId.Value == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                "Position snapshot ownership must include tenant, company, fund profile, ledger book, and entity together.");
+        }
+
+        var ownerScope = new PositionSnapshotOwnerScope(
+            snapshot.TenantId!.Trim(),
+            snapshot.CompanyId!.Trim(),
+            snapshot.FundProfileId!.Trim(),
+            snapshot.LedgerBookId.Value,
+            snapshot.EntityId!.Trim());
+        ValidateOwnerScope(ownerScope);
+        return ownerScope;
+    }
+
+    private static void ValidateOwnerScope(PositionSnapshotOwnerScope ownerScope)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerScope.TenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerScope.CompanyId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerScope.FundProfileId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerScope.EntityId);
+        if (ownerScope.LedgerBookId == Guid.Empty)
+            throw new ArgumentException("Position snapshot ledger-book owner is required.", nameof(ownerScope));
+    }
+
+    private static bool IsOwnedBy(AccountSnapshotRecord snapshot, PositionSnapshotOwnerScope ownerScope)
+        => string.Equals(snapshot.TenantId?.Trim(), ownerScope.TenantId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(snapshot.CompanyId?.Trim(), ownerScope.CompanyId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(snapshot.FundProfileId?.Trim(), ownerScope.FundProfileId.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           snapshot.LedgerBookId == ownerScope.LedgerBookId &&
+           string.Equals(snapshot.EntityId?.Trim(), ownerScope.EntityId.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private static void EnsureDirectory(string filePath)
     {

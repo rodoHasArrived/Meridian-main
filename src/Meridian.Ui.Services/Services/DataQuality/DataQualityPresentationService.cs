@@ -132,6 +132,7 @@ public sealed class DataQualityPresentationService : IDataQualityPresentationSer
         }
 
         var composite = dashboard.Composite;
+        var overallScore = composite.CompositeScore;
         var stored = FindComponent(composite.Components, "StoredCompleteness");
         var streaming = FindComponent(composite.Components, "StreamingFreshness");
         var symbols = composite.Symbols.Select(MapSymbol).ToArray();
@@ -143,12 +144,12 @@ public sealed class DataQualityPresentationService : IDataQualityPresentationSer
 
         return new DataQualityPresentationSnapshot
         {
-            IsAvailable = true,
+            IsAvailable = overallScore.HasValue,
             IsPartial = composite.IsPartial,
             DashboardVersion = composite.Version,
-            OverallScore = composite.CompositeScore,
-            OverallScoreText = $"{composite.CompositeScore:F1}",
-            OverallGradeText = GetGrade(composite.CompositeScore),
+            OverallScore = overallScore ?? 0,
+            OverallScoreText = overallScore.HasValue ? $"{overallScore.Value:F1}" : "--",
+            OverallGradeText = overallScore.HasValue ? GetGrade(overallScore.Value) : "--",
             StatusText = composite.Status,
             ScoreTone = StatusToTone(composite.Status),
             LastUpdateText = $"Last updated: {composite.ObservedAt:HH:mm:ss}",

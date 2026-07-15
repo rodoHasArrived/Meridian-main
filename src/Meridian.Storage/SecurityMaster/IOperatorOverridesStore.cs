@@ -25,6 +25,16 @@ public interface IOperatorOverridesStore
     /// </summary>
     Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
         Guid securityId,
-        OperatorOverrideDecisionRequest request,
+        OperatorOverrideDecision decision,
         CancellationToken ct = default);
 }
+
+/// <summary>
+/// Internal store command for an operator-override approval decision. Unlike the public
+/// <see cref="OperatorOverrideDecisionRequest"/>, it carries the <see cref="Reviewer"/> identity that
+/// the API layer derives from the authenticated principal before calling the store.
+/// </summary>
+public sealed record OperatorOverrideDecision(
+    SecurityOverrideApprovalStatusDto Decision,
+    string Reviewer,
+    string? Comment = null);

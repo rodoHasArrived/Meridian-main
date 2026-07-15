@@ -2455,6 +2455,13 @@ export interface CloseCommandCenterActionViewModel {
   href: string;
   ariaLabel: string;
   tone: AccountingToolingTone;
+  command?:
+    | "configure-daily-valuation-schedule"
+    | "run-due-daily-valuation-schedules"
+    | "approve-daily-valuation-batch"
+    | "retry-daily-valuation-batch";
+  busyLabel?: string;
+  disabledReason?: string | null;
 }
 
 export interface CloseCommandCenterViewState {
@@ -2582,6 +2589,32 @@ export interface AccountingCloseOperatingCoverageRowViewModel {
   blockerLabel: string;
   requiredAction: string;
   issueLabels: string[];
+}
+
+export interface AccountingClosePostingBalanceRowViewModel {
+  rowId: string;
+  accountLabel: string;
+  accountTypeLabel: string;
+  balanceLabel: string;
+  scopeLabel: string;
+  financialAccountLabel: string;
+}
+
+export interface AccountingClosePostingGateViewModel {
+  gateId: string;
+  label: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  isReadyForLock: boolean;
+  netIncomeRollLabel: string;
+  temporaryAccountBalanceLabel: string;
+  detail: string;
+  draftLabel: string;
+  idempotencyLabel: string;
+  closingBatchLabel: string;
+  reversalDraftLabel: string;
+  evidenceLabel: string;
+  balances: AccountingClosePostingBalanceRowViewModel[];
 }
 
 export interface AccountingCloseSetupTaskOptionViewModel {
@@ -2740,6 +2773,9 @@ export interface AccountingCloseReportPackageViewModel {
   lockClosePeriodBusy: boolean;
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
+  queueClosingEntriesBusy: boolean;
+  queueClosingEntriesStatusText: string | null;
+  queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
   configureClosePlanBusy: boolean;
   configureClosePlanStatusText: string | null;
   configureClosePlanStatusTone: "neutral" | "success" | "danger";
@@ -2764,6 +2800,8 @@ export interface AccountingCloseReportPackageViewModel {
   signOffDisabledReason: string | null;
   lockClosePeriodButtonLabel: string;
   lockClosePeriodDisabledReason: string | null;
+  queueClosingEntriesButtonLabel: string;
+  queueClosingEntriesDisabledReason: string | null;
   configureClosePlanButtonLabel: string;
   configureClosePlanDisabledReason: string | null;
   createLateAdjustmentDisabledReason: string | null;
@@ -2785,6 +2823,7 @@ export interface AccountingCloseReportPackageViewModel {
   signOffMatrixRows: AccountingCloseSignOffMatrixRowViewModel[];
   evidenceReviewRows: AccountingCloseEvidenceReviewRowViewModel[];
   operatingCoverageRows: AccountingCloseOperatingCoverageRowViewModel[];
+  closingEntriesGate: AccountingClosePostingGateViewModel | null;
   lateAdjustments: AccountingLateAdjustmentRowViewModel[];
   packageRows: AccountingReportPackageRowViewModel[];
   selectedPackage: AccountingReportPackageRowViewModel | null;
@@ -2796,6 +2835,7 @@ export interface AccountingCloseReportPackageViewModel {
   buildReportPackage: () => Promise<void>;
   certifyPackage: () => Promise<void>;
   lockClosePeriod: () => Promise<void>;
+  queueClosingEntries: () => Promise<void>;
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
   updateCloseSetupDraft: (patch: Partial<AccountingCloseSetupDraftViewModel>) => void;

@@ -1,4 +1,6 @@
+using System.Net;
 using System.Text.Json;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain;
@@ -176,6 +178,10 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             var results = await SearchAsync("AAPL", 1, ct).ConfigureAwait(false);
             return results.Count > 0;
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
         catch
         {
             return false;
@@ -223,12 +229,18 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
             if (!response.IsSuccessStatusCode)
             {
+                if (CreateRateLimitException(response, query) is { } rateLimit)
+                    throw rateLimit;
+
                 Log.Warning("{Provider} search returned {Status} for query {Query}",
                     Name, response.StatusCode, query);
                 return Array.Empty<SymbolSearchResult>();
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            if (CreateQuotaLimitException(json, query) is { } quotaLimit)
+                throw quotaLimit;
+
             var results = DeserializeSearchResults(json, query);
 
             // Apply additional filtering if provider doesn't support it natively
@@ -238,6 +250,14 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
                 .OrderByDescending(r => r.MatchScore)
                 .Take(limit)
                 .ToList();
+        }
+        catch (RateLimitException)
+        {
+            throw;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -270,13 +290,27 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
             if (!response.IsSuccessStatusCode)
             {
+                if (CreateRateLimitException(response, symbolValue) is { } rateLimit)
+                    throw rateLimit;
+
                 Log.Debug("{Provider} details returned {Status} for {Symbol}",
                     Name, response.StatusCode, symbol);
                 return null;
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            if (CreateQuotaLimitException(json, symbolValue) is { } quotaLimit)
+                throw quotaLimit;
+
             return await DeserializeDetailsAsync(json, symbolValue, ct).ConfigureAwait(false);
+        }
+        catch (RateLimitException)
+        {
+            throw;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -318,6 +352,113 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Symbol details or null if not found.</returns>
     protected abstract Task<SymbolDetails?> DeserializeDetailsAsync(string json, string symbol, CancellationToken ct);
+
+    /// <summary>
+    /// Allows providers that expose actionable throttle metadata to preserve it
+    /// instead of reducing every non-success response to an empty result.
+    /// </summary>
+    protected virtual RateLimitException? CreateRateLimitException(
+        HttpResponseMessage response,
+        string symbol)
+    {
+        if (response.StatusCode != HttpStatusCode.TooManyRequests)
+            return null;
+
+        var retryAfter = response.Headers.RetryAfter?.Delta;
+        if (retryAfter is null && response.Headers.RetryAfter?.Date is { } retryAt)
+        {
+            var delay = retryAt - DateTimeOffset.UtcNow;
+            if (delay > TimeSpan.Zero)
+                retryAfter = delay;
+        }
+
+        return new RateLimitException(
+            $"{DisplayName} symbol search rate limit exceeded for {symbol}.",
+            provider: Name,
+            symbol: symbol,
+            retryAfter: retryAfter ?? RateLimitWindow,
+            requestLimit: MaxRequestsPerWindow);
+    }
+
+    /// <summary>
+    /// Maps successful HTTP responses that carry a structured quota-exhaustion signal to the
+    /// same typed failure as HTTP 429. Derived providers can extend the structured detector for
+    /// vendor-specific response envelopes without relying on arbitrary message text.
+    /// </summary>
+    protected virtual bool IsQuotaExceededResponse(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            return ContainsStructuredQuotaSignal(document.RootElement);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private RateLimitException? CreateQuotaLimitException(string json, string symbol)
+        => IsQuotaExceededResponse(json)
+            ? new RateLimitException(
+                $"{DisplayName} symbol search quota was exhausted for {symbol}.",
+                provider: Name,
+                symbol: symbol,
+                retryAfter: RateLimitWindow,
+                requestLimit: MaxRequestsPerWindow)
+            : null;
+
+    private static bool ContainsStructuredQuotaSignal(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (IsRateLimitCodeProperty(property) ||
+                    IsTrueQuotaFlag(property) ||
+                    ContainsStructuredQuotaSignal(property.Value))
+                {
+                    return true;
+                }
+            }
+        }
+        else if (element.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in element.EnumerateArray())
+            {
+                if (ContainsStructuredQuotaSignal(item))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsRateLimitCodeProperty(JsonProperty property)
+    {
+        if (!property.Name.Equals("code", StringComparison.OrdinalIgnoreCase) &&
+            !property.Name.Equals("status", StringComparison.OrdinalIgnoreCase) &&
+            !property.Name.Equals("statusCode", StringComparison.OrdinalIgnoreCase) &&
+            !property.Name.Equals("error_code", StringComparison.OrdinalIgnoreCase) &&
+            !property.Name.Equals("errorCode", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return property.Value.ValueKind switch
+        {
+            JsonValueKind.Number => property.Value.TryGetInt32(out var code) && code == 429,
+            JsonValueKind.String => property.Value.GetString() is { } value &&
+                (value.Equals("429", StringComparison.OrdinalIgnoreCase) ||
+                 value.Equals("TooManyRequests", StringComparison.OrdinalIgnoreCase)),
+            _ => false
+        };
+    }
+
+    private static bool IsTrueQuotaFlag(JsonProperty property)
+        => (property.Name.Equals("quotaExceeded", StringComparison.OrdinalIgnoreCase) ||
+            property.Name.Equals("rateLimitExceeded", StringComparison.OrdinalIgnoreCase)) &&
+           property.Value.ValueKind == JsonValueKind.True;
 
 
 
