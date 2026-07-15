@@ -422,7 +422,12 @@ describe("ReportRunParametersScreen", () => {
     await user.click(screen.getByLabelText("Include supporting schedules"));
     await user.click(screen.getByLabelText("Include evidence appendix"));
     await user.clear(screen.getByLabelText("Template parameters (JSON)"));
-    await user.type(screen.getByLabelText("Template parameters (JSON)"), JSON.stringify({ reportingRegion: "EU" }));
+    // userEvent treats "{" and "[" as key-descriptor openers; double them so the
+    // literal JSON braces are typed verbatim into the field.
+    await user.type(
+      screen.getByLabelText("Template parameters (JSON)"),
+      JSON.stringify({ reportingRegion: "EU" }).replace(/[{[]/g, "$&$&")
+    );
     await user.clear(screen.getByLabelText("Report run as-of date"));
     await user.type(screen.getByLabelText("Report run as-of date"), "2026-06-30");
 
@@ -489,7 +494,9 @@ describe("ReportRunParametersScreen", () => {
     await user.selectOptions(screen.getByLabelText("Draft vs final"), "Final");
 
     expect(await screen.findByText("Final blocked")).toBeInTheDocument();
-    expect(screen.getByText("Final reporting output must include the supporting evidence appendix.")).toBeInTheDocument();
+    // The same message backs both the check summary and the blocking-reasons list,
+    // so it renders more than once; assert presence without a uniqueness constraint.
+    expect(screen.getAllByText("Final reporting output must include the supporting evidence appendix.").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Run Trial Balance Pack" })).toBeDisabled();
     expect(api.runReportingNow).not.toHaveBeenCalled();
   });
