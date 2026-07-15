@@ -25,8 +25,8 @@ public sealed record DailyPortfolioPriceMark
         string EvidenceReference,
         string? FinancialAccountId = null,
         string? InstrumentType = null,
-        DateOnly? PriceObservedOn = null,
-        DailyPortfolioPriceConfidence Confidence = DailyPortfolioPriceConfidence.High)
+        FairValueLevel FairValueLevel = FairValueLevel.Unclassified,
+        bool IsStalePriced = false)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol must not be null or whitespace.", nameof(Symbol));
@@ -49,8 +49,8 @@ public sealed record DailyPortfolioPriceMark
         this.EvidenceReference = EvidenceReference.Trim();
         this.FinancialAccountId = string.IsNullOrWhiteSpace(FinancialAccountId) ? null : FinancialAccountId.Trim();
         this.InstrumentType = string.IsNullOrWhiteSpace(InstrumentType) ? null : InstrumentType.Trim();
-        this.PriceObservedOn = PriceObservedOn;
-        this.Confidence = Confidence;
+        this.FairValueLevel = FairValueLevel;
+        this.IsStalePriced = IsStalePriced;
     }
 
     public string Symbol { get; }
@@ -69,7 +69,9 @@ public sealed record DailyPortfolioPriceMark
 
     public string? InstrumentType { get; }
 
-    public DateOnly? PriceObservedOn { get; }
+    /// <summary>ASC 820 fair-value classification of the mark price.</summary>
+    public FairValueLevel FairValueLevel { get; }
 
-    public DailyPortfolioPriceConfidence Confidence { get; }
+    /// <summary>True when the mark price was older than the valuation policy permitted but retained per policy.</summary>
+    public bool IsStalePriced { get; }
 }

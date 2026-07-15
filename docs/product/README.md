@@ -29,6 +29,10 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
   - [Browser Workstation UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md) —
     phased, code-ready implementation plan for the nine brainstorm ideas with per-phase file
     anchors, contracts, test plans, and validation commands
+  - [Excel Onboarding Workbook & Provider Connection UX Brainstorm (2026-07)](excel-onboarding-workbook-brainstorm-2026-07.md) —
+    five grounded ideas for populating security-master, entity, ledger, and account data via a
+    prepared Excel workbook (download → fill → upload → review → governed commit) and tying
+    provider connection setup to the imported instrument universe
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.

@@ -146,6 +146,12 @@ describe("JournalEntryDetailScreen", () => {
 
     expect(await screen.findByText("Summary-only entry")).toBeInTheDocument();
     expect(screen.getByText(/only the run-ledger summary is available/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Posting summary" })).toBeInTheDocument();
+    expect(screen.getAllByText("$500.00").length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: "Open in Ledger Explorer" })).toHaveAttribute(
+      "href",
+      "/accounting/ledger?runId=run-42"
+    );
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 

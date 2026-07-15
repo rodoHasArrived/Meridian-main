@@ -58,6 +58,7 @@ public sealed record OperatorOverridesPatchRequest(
 }
 
 /// <summary>
+<<<<<<< Updated upstream
 /// Records a reviewer's approval decision for a security's pending operator overrides. The
 /// <see cref="Decision"/> must be either <see cref="SecurityOverrideApprovalStatusDto.Approved"/> or
 /// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>; the acting reviewer is server-derived
@@ -66,4 +67,14 @@ public sealed record OperatorOverridesPatchRequest(
 public sealed record OperatorOverrideApprovalDecisionRequest(
     SecurityOverrideApprovalStatusDto Decision,
     string? ReasonCode = null,
+=======
+/// A reviewer's decision on a pending operator-override overlay. <see cref="Decision"/> must be
+/// <see cref="SecurityOverrideApprovalStatusDto.Approved"/> or
+/// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>; the reviewer identity and an optional
+/// comment are stamped onto the durable audit trail.
+/// </summary>
+public sealed record OperatorOverrideDecisionRequest(
+    SecurityOverrideApprovalStatusDto Decision,
+    string Reviewer,
+>>>>>>> Stashed changes
     string? Comment = null);

@@ -74,6 +74,7 @@ import type {
   ProviderSetupWorkflowStepState,
   ProviderSetupNextActionState
 } from "@/screens/data-screen.view-model";
+import type { DataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   ProviderConnectionRow,
   ProviderReadinessSummary,
@@ -351,8 +352,10 @@ export function DataScreen({
         {showImportWorkstream ? (
           <DataUploadIntakePanel
             state={vm.uploadPanelState}
+            workbookReview={vm.workbookReviewState}
             onTemplateSelect={vm.selectUploadTemplate}
             onFileSelect={vm.previewDataUpload}
+            onWorkbookSelect={vm.previewDataUploadWorkbook}
           />
         ) : null}
 
@@ -579,12 +582,16 @@ function DataOperationsLoadingPanel({ state }: { state: DataOperationsLoadingSta
 
 function DataUploadIntakePanel({
   state,
+  workbookReview,
   onTemplateSelect,
-  onFileSelect
+  onFileSelect,
+  onWorkbookSelect
 }: {
   state: DataUploadPanelState;
+  workbookReview: DataUploadWorkbookReviewState;
   onTemplateSelect: (templateId: string) => void;
   onFileSelect: (file: File | null) => void;
+  onWorkbookSelect: (file: File | null) => void;
 }) {
   const statusId = "data-upload-status";
   const disabledReasonId = `${state.fileInput.id}-disabled-reason`;
@@ -632,6 +639,18 @@ function DataUploadIntakePanel({
                 >
                   <Download className="h-4 w-4" aria-hidden="true" />
                   {state.templateDownload.label}
+                </a>
+              </Button>
+            ) : null}
+            {state.workbookDownload ? (
+              <Button asChild variant="default" size="sm">
+                <a
+                  href={state.workbookDownload.href}
+                  download={state.workbookDownload.fileName}
+                  aria-label={state.workbookDownload.ariaLabel}
+                >
+                  <Download className="h-4 w-4" aria-hidden="true" />
+                  {state.workbookDownload.label}
                 </a>
               </Button>
             ) : null}
@@ -767,6 +786,130 @@ function DataUploadIntakePanel({
                 </tbody>
               </table>
             </div>
+          ) : null}
+        </div>
+
+        <div
+          className="grid gap-3 rounded-lg border border-border/70 bg-secondary/10 px-3 py-3 xl:col-span-2"
+          role="region"
+          aria-labelledby="data-upload-workbook-title"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Onboarding workbook</div>
+              <h3 id="data-upload-workbook-title" className="mt-2 text-sm font-semibold text-foreground">
+                Upload the multi-sheet workbook
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{workbookReview.summary}</p>
+            </div>
+            <Badge variant={workbookReview.statusTone}>{workbookReview.statusLabel}</Badge>
+          </div>
+
+          <label htmlFor="data-upload-workbook-file" className="grid gap-1 text-sm">
+            Upload .xlsx workbook
+            <input
+              id="data-upload-workbook-file"
+              type="file"
+              accept=".xlsx"
+              aria-label="Upload the Meridian onboarding workbook for multi-sheet preview"
+              className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0] ?? null;
+                void onWorkbookSelect(file);
+                event.currentTarget.value = "";
+              }}
+            />
+          </label>
+
+          {workbookReview.errorSummary ? (
+            <StatusBanner
+              tone="danger"
+              title="Workbook preview failed"
+              detail={workbookReview.errorSummary}
+            />
+          ) : null}
+
+          {workbookReview.hasResult ? (
+            <>
+              <p className="text-xs leading-6 text-muted-foreground">{workbookReview.nextAction}</p>
+              {workbookReview.commitDisabledReason ? (
+                <StatusBanner
+                  tone={workbookReview.errorCount > 0 ? "danger" : "warning"}
+                  title="Review required before commit"
+                  detail={workbookReview.commitDisabledReason}
+                />
+              ) : null}
+              {workbookReview.crossSheetIssues.length > 0 ? (
+                <div className="grid gap-2" role="alert" aria-label="Cross-sheet validation issues">
+                  {workbookReview.crossSheetIssues.map((issue) => (
+                    <StatusBanner
+                      key={issue.id}
+                      tone={issue.tone === "danger" ? "danger" : "warning"}
+                      title={`${issue.severity} · ${issue.location}`}
+                      detail={issue.message}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              <div className="grid gap-3 md:grid-cols-2">
+                {workbookReview.sheetTabs.map((sheet) => (
+                  <div
+                    key={sheet.id}
+                    className="grid gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-foreground" title={sheet.sheetName}>
+                          {sheet.sheetName}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground" title={sheet.templateLabel}>
+                          {sheet.templateLabel}
+                        </div>
+                      </div>
+                      <Badge variant={sheet.statusTone}>{sheet.statusLabel}</Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{sheet.parsedRowCountLabel}</div>
+                    {sheet.issues.length > 0 ? (
+                      <div className="grid gap-1.5" role="alert" aria-label={`${sheet.sheetName} validation issues`}>
+                        {sheet.issues.map((issue) => (
+                          <StatusBanner
+                            key={issue.id}
+                            tone={issue.tone === "danger" ? "danger" : "warning"}
+                            title={`${issue.severity} · ${issue.location}`}
+                            detail={issue.message}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                    {sheet.previewRows.length > 0 ? (
+                      <div
+                        className="overflow-x-auto rounded-md border border-border/70"
+                        aria-label={`${sheet.sheetName} preview rows`}
+                      >
+                        <table className="dense-data-table min-w-full">
+                          <thead>
+                            <tr>
+                              {sheet.previewHeaders.map((header) => (
+                                <th key={header} scope="col">{header}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sheet.previewRows.map((row) => (
+                              <tr key={row.id}>
+                                {row.values.map((value) => (
+                                  <td key={value.id}>{value.value || "-"}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </>
           ) : null}
         </div>
       </CardContent>

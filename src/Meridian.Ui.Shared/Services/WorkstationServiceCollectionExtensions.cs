@@ -527,7 +527,15 @@ public static class WorkstationServiceCollectionExtensions
                     ? null
                     : new DailyMarkToMarketService(new RegisteredHistoricalCloseMarkPriceSource(providerRegistry)));
         });
-        services.TryAddSingleton<IAccountingClosePostingWorkbench, AccountingClosePostingWorkbenchBridge>();
+        // The durable ledger book service is only registered when a persistence-backed ledger is
+        // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph
+        // still composes without Postgres; the bridge degrades the close-posting gate to Blocked.
+        services.TryAddSingleton<IAccountingClosePostingWorkbench>(sp =>
+            new AccountingClosePostingWorkbenchBridge(
+                sp.GetRequiredService<AutomatedJournalIntakeRunner>(),
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetRequiredService<IManualJournalEntryLifecycleService>(),
+                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());

@@ -1306,7 +1306,10 @@ public sealed class AccountingConfigurationServiceTests
 
         var write = journalStore.Appended.Should().ContainSingle().Subject;
         postingTarget.PostCount.Should().Be(1);
-        postingTarget.LastWrite.Should().BeSameAs(write);
+        // The governed target captures the write as received; the store persists the normalized
+        // clone (normalize-on-append rebuilds the record), so compare by stable journal-entry identity.
+        postingTarget.LastWrite.Should().NotBeNull();
+        postingTarget.LastWrite!.Entry.JournalEntryId.Should().Be(write.Entry.JournalEntryId);
         write.AggregateId.Should().Be(ManualJournalLedgerBookId);
         write.LedgerBookId.Should().Be(ManualJournalLedgerBookId);
         write.PeriodId.Should().Be(ManualJournalPeriodId);
@@ -1401,7 +1404,8 @@ public sealed class AccountingConfigurationServiceTests
             MaximumMarkAgeDays: 3,
             MinimumConfidence: DailyPortfolioPriceConfidence.Medium,
             RequireCompleteCoverage: true,
-            ClosePeriodId: "2026-06"));
+            ClosePeriodId: "2026-06",
+            EntityId: "entity-master"));
         var scheduler = new DailyValuationScheduledWorker(
             scheduleSource,
             runner,

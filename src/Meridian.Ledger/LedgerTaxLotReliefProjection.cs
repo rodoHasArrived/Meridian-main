@@ -25,4 +25,13 @@ public sealed record LedgerTaxLotReliefProjection(
 
     /// <summary>The effective open lots after applying <see cref="AppliedAdjustments"/>.</summary>
     public IReadOnlyList<LedgerTaxLot> EffectiveLots { get; init; } = [];
+
+    /// <summary>
+    /// Wash-sale deferral outcome when a realized loss was disallowed against replacement
+    /// acquisitions. Null when no wash sale applied (a gain, no replacements, or a disabled policy).
+    /// When present, <see cref="RealizedGainOrLoss"/> still reports the full economic loss, while
+    /// <see cref="Lines"/> recognize only <see cref="WashSaleOutcome.AllowedLoss"/> and capitalize
+    /// <see cref="WashSaleOutcome.DisallowedLoss"/> into the replacement lot's basis.
+    /// </summary>
+    public WashSaleOutcome? WashSale { get; init; }
 }
