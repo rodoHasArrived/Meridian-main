@@ -403,10 +403,12 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        // Security control: the SM_OVERRIDE gate must be derived from durable operator-override
-        // state, never trusted from the client. When the caller names override securities and a
-        // durable store is wired, re-derive the override count and approval flag from the recorded
-        // approval status and discard whatever the request claimed.
+        // Security control: when the caller names override securities and a durable store is wired,
+        // re-derive the override count and approval flag from the recorded durable approval status,
+        // discarding the client-supplied values for those securities so a spoofed OverridesApproved
+        // cannot pass the SM_OVERRIDE gate. A request that omits OverrideSecurityIds is currently
+        // passed through unchanged; failing that path closed requires a server-authoritative
+        // override set and is tracked as follow-up hardening.
         request = await DeriveOverrideApprovalFromDurableStateAsync(request, ct).ConfigureAwait(false);
 
         return await ApplyCommandAsync(

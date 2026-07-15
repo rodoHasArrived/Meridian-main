@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:models="clr-namespace:Meridian.Wpf.Models"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       xmlns:services="clr-namespace:Meridian.Wpf.Services"
       xmlns:copy="clr-namespace:Meridian.Wpf.Copy"
       mc:Ignorable="d"
@@ -191,6 +192,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -335,7 +337,11 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="1"
+        <controls:WorkspaceAttentionRibbon Grid.Row="1"
+                                           DataContext="{Binding AttentionRibbon}"
+                                           Margin="16,10,16,0" />
+
+        <Border Grid.Row="2"
                 Style="{StaticResource WorkstationFilterBarStyle}"
                 AutomationProperties.AutomationId="DataWorkspaceFilterBar"
                 AutomationProperties.Name="Data Workspace Filter Bar">
@@ -393,13 +399,13 @@
         </Border>
 
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
-                                          Grid.Row="2"
+                                          Grid.Row="3"
                                           CommandGroup="{Binding CommandGroup}"
                                           CommandInvoked="OnCommandBarCommandInvoked"
                                           Margin="16,10,16,10"
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceData" />
 
-        <Grid Grid.Row="3"
+        <Grid Grid.Row="4"
               Margin="16,0,16,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2.25*" />
@@ -670,7 +676,7 @@
             </Border>
         </Grid>
 
-        <Border Grid.Row="4"
+        <Border Grid.Row="5"
                 Style="{StaticResource WorkstationDockStripStyle}"
                 AutomationProperties.AutomationId="DataWorkspaceDockStrip"
                 AutomationProperties.Name="Data Workspace Dock Strip">

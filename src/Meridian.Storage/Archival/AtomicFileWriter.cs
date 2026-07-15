@@ -16,6 +16,10 @@ public static partial class AtomicFileWriter
 {
     private static readonly ILogger Log = LoggingSetup.ForContext(typeof(AtomicFileWriter));
 
+    // UTF-8 without a byte-order mark. A BOM would prefix text files (e.g. the .sha256 checksum
+    // sidecar) with U+FEFF, which token-splitting readers must not see as part of the content.
+    private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
+
     /// <summary>
     /// Atomically writes content to a file.
     /// Uses a temporary file with rename to ensure atomicity.
@@ -41,7 +45,7 @@ public static partial class AtomicFileWriter
                 FileShare.None,
                 bufferSize: 65536,
                 FileOptions.None))
-            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            using (var writer = new StreamWriter(stream, Utf8NoBom))
             {
                 writer.Write(content);
                 writer.Flush();
@@ -82,8 +86,8 @@ public static partial class AtomicFileWriter
 
         try
         {
-            // Write to temp file
-            await File.WriteAllTextAsync(tempPath, content, Encoding.UTF8, ct);
+            // Write to temp file (no BOM: readers token-split the raw content, e.g. checksum sidecars)
+            await File.WriteAllTextAsync(tempPath, content, Utf8NoBom, ct);
 
             // Sync the temp file to disk while it is still writable, before copying any
             // (possibly read-only) security metadata from the destination onto it.
@@ -397,10 +401,12 @@ public static partial class AtomicFileWriter
             // Atomic rename
             File.Move(tempPath, destinationPath, overwrite: true);
 
-            // Write checksum sidecar file (post-commit: non-cancellable so a cancelled token
-            // cannot report the already-renamed payload as a failed write).
+            // Write the checksum sidecar atomically (temp + fsync + rename). A bare
+            // File.WriteAllTextAsync could leave a torn sidecar on a crash mid-write, which a later
+            // health check would misread as payload corruption. Post-commit: non-cancellable so a
+            // cancelled token cannot report the already-renamed payload as a failed write.
             var checksumPath = destinationPath + ".sha256";
-            await File.WriteAllTextAsync(
+            await WriteAsync(
                 checksumPath, $"{checksum}  {Path.GetFileName(destinationPath)}", CancellationToken.None);
 
             // Sync directory (post-commit: non-cancellable)
