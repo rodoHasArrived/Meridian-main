@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Audit.Compliance;
 
@@ -9,22 +10,25 @@ public interface ICompliancePolicyEngine
 
 public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
 {
-    private static readonly Dictionary<SensitiveAction, string[]> RequiredRoles = new()
+    // Sensitive actions gate on Meridian.Identity permissions so compliance gating stays aligned
+    // with the platform role system (roles arrive as UserRole names from the login session).
+    // The action-to-permission mapping matches Meridian.FSharp.Operations.SensitiveActionPolicy.
+    private static readonly Dictionary<SensitiveAction, UserPermission> RequiredPermissions = new()
     {
-        [SensitiveAction.RuleEdit] = ["RulesAdmin"],
-        [SensitiveAction.BreakClosure] = ["ReconciliationOfficer"],
-        [SensitiveAction.PaymentRelease] = ["TreasuryOperator"],
-        [SensitiveAction.OverrideApproval] = ["OverrideApprover"]
+        [SensitiveAction.RuleEdit] = UserPermission.ModifyConfig,
+        [SensitiveAction.BreakClosure] = UserPermission.ManageDirectLending,
+        [SensitiveAction.PaymentRelease] = UserPermission.ManageDirectLending,
+        [SensitiveAction.OverrideApproval] = UserPermission.AdminMaintenance
     };
 
     public (bool Allowed, string Reason) Evaluate(ActorContext actor, ComplianceActionRequest request)
     {
-        if (!RequiredRoles.TryGetValue(request.Action, out var requiredRoles))
+        if (!RequiredPermissions.TryGetValue(request.Action, out var requiredPermission))
         {
             return (false, "Unknown action.");
         }
 
-        if (!actor.Roles.Intersect(requiredRoles).Any())
+        if (!actor.Roles.Any(role => RoleGrants(role, requiredPermission)))
         {
             return (false, "Missing required privileged role.");
         }
@@ -51,13 +55,32 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
 
         return (true, "Allowed");
     }
+
+    private static bool RoleGrants(string role, UserPermission required)
+        => Enum.TryParse<UserRole>(role, ignoreCase: true, out var parsed)
+            && Enum.IsDefined(parsed)
+            && RolePermissions.HasPermission(parsed, required);
 }
 
 public sealed class ImmutableAuditLogService
 {
     private readonly ConcurrentQueue<AuditEvent> _events = new();
 
+    // The append sequence (read tail hash → compute hash → enqueue) must be atomic.
+    // ConcurrentQueue makes each individual operation thread-safe, but two concurrent
+    // callers would otherwise read the same predecessor hash and chain off it, silently
+    // forking the tamper-evident hash chain and breaking VerifyIntegrity.
+    private readonly Lock _appendLock = new();
+
     public AuditEvent Append(ActorContext actor, ComplianceActionRequest request)
+    {
+        lock (_appendLock)
+        {
+            return AppendCore(actor, request);
+        }
+    }
+
+    private AuditEvent AppendCore(ActorContext actor, ComplianceActionRequest request)
     {
         var previousHash = _events.LastOrDefault()?.Hash;
         var pending = new AuditEvent(

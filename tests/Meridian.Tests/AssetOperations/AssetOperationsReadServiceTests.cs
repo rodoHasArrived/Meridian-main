@@ -6,6 +6,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage.AssetOperations;
 using NSubstitute;
 
 namespace Meridian.Tests.AssetOperations;
@@ -547,6 +548,150 @@ public sealed class AssetOperationsReadServiceTests
             timelineEvent.EventLane == "Handoff" &&
             timelineEvent.NextAction!.Contains("close", StringComparison.OrdinalIgnoreCase));
     }
+
+    [Fact]
+    public async Task GetOperationsAsync_ShouldMergeDurablePositionsWithoutChangingPublishedSecurityProjection()
+    {
+        var publishedProjection = InstrumentPositionProjectionFixture.Create();
+        var published = AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(
+            BuildDetail(publishedProjection));
+        var expectedPublished = published;
+        var durableProjection = InstrumentPositionProjectionFixture.Advance(publishedProjection);
+        var snapshot = new InstrumentPositionProjectionSnapshot(
+            durableProjection.Subject.SecurityId,
+            durableProjection.InstrumentRoles,
+            durableProjection.BookPositions,
+            durableProjection.PositionEconomicStates,
+            durableProjection.ProjectionLineages);
+        var legacyStore = Substitute.For<IAssetOperationsProjectionStore>();
+        legacyStore.GetAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(published);
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetSecurityAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(snapshot);
+        var service = new AssetOperationsReadService(
+            projectionStore: legacyStore,
+            positionProjectionStore: positionStore);
+
+        var detail = await service.GetOperationsAsync(published.Subject.SecurityId);
+
+        detail.Should().NotBeNull();
+        detail!.Subject.Should().BeEquivalentTo(expectedPublished.Subject);
+        detail.TermsHistory.Should().BeEquivalentTo(expectedPublished.TermsHistory);
+        detail.LifecycleEvents.Should().BeEquivalentTo(expectedPublished.LifecycleEvents);
+        detail.CashFlowProjectionRuns.Should().BeEquivalentTo(expectedPublished.CashFlowProjectionRuns);
+        detail.ProjectedCashFlows.Should().BeEquivalentTo(expectedPublished.ProjectedCashFlows);
+        detail.ActualActivity.Should().BeEquivalentTo(expectedPublished.ActualActivity);
+        detail.ReconciliationRuns.Should().BeEquivalentTo(expectedPublished.ReconciliationRuns);
+        detail.ReconciliationResults.Should().BeEquivalentTo(expectedPublished.ReconciliationResults);
+        detail.LedgerProjections.Should().BeEquivalentTo(expectedPublished.LedgerProjections);
+        detail.Readiness.Should().BeEquivalentTo(expectedPublished.Readiness);
+        detail.WorkflowAudit.Should().BeEquivalentTo(expectedPublished.WorkflowAudit);
+        detail.TermsObligationsTimeline.Should().BeEquivalentTo(expectedPublished.TermsObligationsTimeline);
+        detail.InstrumentRoles.Should().BeEquivalentTo(snapshot.InstrumentRoles);
+        detail.BookPositions.Should().BeEquivalentTo(snapshot.BookPositions);
+        detail.PositionEconomicStates.Should().BeEquivalentTo(snapshot.PositionEconomicStates);
+        detail.ProjectionLineages.Should().BeEquivalentTo(snapshot.ProjectionLineages);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ShouldPreservePublishedTypedCollectionsWhenDedicatedStoreIsEmpty()
+    {
+        var published = BuildDetail(InstrumentPositionProjectionFixture.Create());
+        var legacyStore = Substitute.For<IAssetOperationsProjectionStore>();
+        legacyStore.GetAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(published);
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetSecurityAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new InstrumentPositionProjectionSnapshot(published.Subject.SecurityId, [], [], [], []));
+        var service = new AssetOperationsReadService(
+            projectionStore: legacyStore,
+            positionProjectionStore: positionStore);
+
+        var detail = await service.GetOperationsAsync(published.Subject.SecurityId);
+
+        detail.Should().NotBeNull();
+        detail!.InstrumentRoles.Should().BeEquivalentTo(published.InstrumentRoles);
+        detail.BookPositions.Should().BeEquivalentTo(published.BookPositions);
+        detail.PositionEconomicStates.Should().BeEquivalentTo(published.PositionEconomicStates);
+        detail.ProjectionLineages.Should().BeEquivalentTo(published.ProjectionLineages);
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ShouldTreatAnyDurableTypedStateAsAnAtomicProjectionReplacement()
+    {
+        var published = BuildDetail(InstrumentPositionProjectionFixture.Create());
+        var durableRole = published.InstrumentRoles.Single() with { Version = 9 };
+        var legacyStore = Substitute.For<IAssetOperationsProjectionStore>();
+        legacyStore.GetAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(published);
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetSecurityAsync(published.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new InstrumentPositionProjectionSnapshot(
+                published.Subject.SecurityId,
+                [durableRole],
+                [],
+                [],
+                []));
+        var service = new AssetOperationsReadService(
+            projectionStore: legacyStore,
+            positionProjectionStore: positionStore);
+
+        var detail = await service.GetOperationsAsync(published.Subject.SecurityId);
+
+        detail.Should().NotBeNull();
+        detail!.InstrumentRoles.Should().ContainSingle().Which.Should().BeEquivalentTo(durableRole);
+        detail.BookPositions.Should().BeEmpty();
+        detail.PositionEconomicStates.Should().BeEmpty();
+        detail.ProjectionLineages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetOperationsAsync_ShouldNotCreateDetailFromOrphanPositionProjection()
+    {
+        var projection = InstrumentPositionProjectionFixture.Create();
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsync(projection.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns((SecurityDetailDto?)null);
+        var positionStore = Substitute.For<IInstrumentPositionProjectionStore>();
+        positionStore.GetSecurityAsync(projection.Subject.SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new InstrumentPositionProjectionSnapshot(
+                projection.Subject.SecurityId,
+                projection.InstrumentRoles,
+                projection.BookPositions,
+                projection.PositionEconomicStates,
+                projection.ProjectionLineages));
+        var service = new AssetOperationsReadService(
+            securityMasterQueryService: securityMaster,
+            positionProjectionStore: positionStore);
+
+        var detail = await service.GetOperationsAsync(projection.Subject.SecurityId);
+
+        detail.Should().BeNull();
+        await positionStore.DidNotReceive()
+            .GetSecurityAsync(projection.Subject.SecurityId, Arg.Any<CancellationToken>());
+    }
+
+    private static AssetOperationsDetailDto BuildDetail(AssetOperationsProjectionDto projection)
+        => new(
+            projection.Subject,
+            projection.TermsHistory,
+            projection.LifecycleEvents,
+            projection.CashFlowProjectionRuns,
+            projection.ProjectedCashFlows,
+            projection.ActualActivity,
+            projection.ReconciliationRuns,
+            projection.ReconciliationResults,
+            projection.LedgerProjections,
+            projection.Readiness,
+            projection.WorkflowAudit)
+        {
+            TermsObligationsTimeline = projection.TermsObligationsTimeline,
+            InstrumentRoles = projection.InstrumentRoles,
+            BookPositions = projection.BookPositions,
+            PositionEconomicStates = projection.PositionEconomicStates,
+            ProjectionLineages = projection.ProjectionLineages
+        };
 
     private static SecurityDetailDto BuildSecurity(
         Guid securityId,

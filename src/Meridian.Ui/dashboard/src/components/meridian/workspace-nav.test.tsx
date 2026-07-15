@@ -5,6 +5,26 @@ import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { renderWithRouter } from "@/test/render";
 
 describe("WorkspaceNav", () => {
+  it("renders the seven root workspaces through the design-system rail contract", () => {
+    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
+
+    const rail = screen.getByLabelText("Meridian navigation");
+    expect(rail).toHaveAttribute("data-design-system-component", "NavRail");
+    expect(rail).toHaveClass("mds-nav-rail");
+    expect(rail).toHaveClass("op-rail");
+    expect(document.querySelectorAll(".operator-nav-item")).toHaveLength(7);
+    [
+      "Trading",
+      "Portfolio",
+      "Accounting",
+      "Reporting",
+      "Strategy",
+      "Data",
+      "Settings"
+    ].forEach((label) => expect(screen.getByText(label)).toBeInTheDocument());
+    expect(screen.getByText("Review · Current")).toBeInTheDocument();
+  });
+
   it("announces the current workspace route", () => {
     renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/reconciliation"] });
 
@@ -45,7 +65,28 @@ describe("WorkspaceNav", () => {
 
     expect(dataSections).toHaveAttribute("aria-hidden", "false");
     expect(screen.getByLabelText("Providers, current page")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByLabelText("Open Backfill queues")).toHaveAttribute("href", "/data/backfills");
+    expect(screen.getByLabelText("Open Ingestion operations")).toHaveAttribute("href", "/data/operations");
+    expect(screen.getByLabelText("Open Storage assurance")).toHaveAttribute("href", "/data/assurance");
+  });
+
+  it("renders exactly the seven root workspaces and shows status pills only in detailed mode", () => {
+    const detailed = renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
+
+    const detailedItems = detailed.container.querySelectorAll(".operator-nav-item");
+    expect(detailedItems).toHaveLength(7);
+    const labels = Array.from(detailedItems).map((item) => item.querySelector(".font-medium")?.textContent);
+    expect(new Set(labels)).toEqual(
+      new Set(["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"])
+    );
+    // Detailed rail surfaces the per-workspace status pill.
+    expect(detailed.container.querySelectorAll(".operator-nav-status").length).toBeGreaterThan(0);
+
+    detailed.unmount();
+
+    const compact = renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/trading"] });
+    expect(compact.container.querySelectorAll(".operator-nav-item")).toHaveLength(7);
+    // Compact rail keeps the same seven workspaces but drops the status pills.
+    expect(compact.container.querySelectorAll(".operator-nav-status")).toHaveLength(0);
   });
 
   it("expands inactive workspace pages from the rail toggle", async () => {

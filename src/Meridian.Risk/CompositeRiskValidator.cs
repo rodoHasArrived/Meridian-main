@@ -1,13 +1,12 @@
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
-using Interop = Meridian.FSharp.Interop;
 
 namespace Meridian.Risk;
 
 /// <summary>
 /// Composite risk validator that runs multiple risk rules in sequence.
-/// Rejects the order on the first rule failure.
+/// Evaluates rules by priority and rejects the order on the first rule failure.
 /// </summary>
 public sealed class CompositeRiskValidator : IRiskValidator
 {
@@ -16,32 +15,38 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
     public CompositeRiskValidator(IEnumerable<IRiskRule> rules, ILogger<CompositeRiskValidator> logger)
     {
-        _rules = rules?.ToList().AsReadOnly() ?? throw new ArgumentNullException(nameof(rules));
+        _rules = rules?
+            .Select((rule, index) => new { Rule = rule, Index = index })
+            .OrderBy(static entry => entry.Rule.Priority)
+            .ThenBy(static entry => entry.Index)
+            .Select(static entry => entry.Rule)
+            .ToList()
+            .AsReadOnly() ?? throw new ArgumentNullException(nameof(rules));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <inheritdoc />
     public async Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
-        var decisions = new List<Interop.RiskDecisionDto>(_rules.Count);
-
         foreach (var rule in _rules)
         {
-            var result = await rule.EvaluateAsync(request, ct).ConfigureAwait(false);
-            decisions.Add(new Interop.RiskDecisionDto
-            {
-                Approved = result.IsApproved,
-                DecisionKind = result.IsApproved ? "approve" : "reject",
-                Reasons = string.IsNullOrWhiteSpace(result.RejectReason) ? [] : [result.RejectReason],
-            });
-        }
+            ct.ThrowIfCancellationRequested();
+            var result = rule.TryEvaluate(request)
+                ?? await rule.EvaluateAsync(request, ct).ConfigureAwait(false);
 
-        var aggregate = Interop.RiskInterop.Aggregate(decisions);
-        if (!aggregate.Approved)
-        {
-            var reason = aggregate.Reasons.FirstOrDefault() ?? "Rejected by aggregated risk policy.";
-            _logger.LogWarning("Aggregated risk policy rejected order for {Symbol}: {Reason}", request.Symbol, reason);
-            return RiskValidationResult.Rejected(reason);
+            if (!result.IsApproved)
+            {
+                var reason = string.IsNullOrWhiteSpace(result.RejectReason)
+                    ? $"Rejected by risk rule '{rule.RuleName}'."
+                    : result.RejectReason;
+                _logger.LogWarning(
+                    "Risk rule {RuleName} ({Severity}) rejected order for {Symbol}: {Reason}",
+                    rule.RuleName,
+                    rule.Severity,
+                    request.Symbol,
+                    reason);
+                return RiskValidationResult.Rejected(reason);
+            }
         }
 
         return RiskValidationResult.Approved();

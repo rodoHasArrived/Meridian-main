@@ -54,6 +54,7 @@ import type {
   DataQueryResult,
   DataUploadPreviewResult,
   DataUploadTemplateCatalog,
+  DataUploadWorkbookPreviewResult,
   DataWorkspaceResponse,
   EquityCurveSummary,
   EvidenceCompleteness,
@@ -304,6 +305,7 @@ import type {
   ReportingRunResult,
   ReportingScheduleRecord,
   ReportingScheduleRunResult,
+  ReportingStarterKitProvisionResult,
   ReportingScheduleUpsertRequest,
   SaveManualJournalEntryDraftRequest,
   SubmitManualJournalEntryApprovalRequest,
@@ -441,6 +443,7 @@ import {
   reportingSchedulePauseEndpoint,
   reportingScheduleResumeEndpoint,
   reportingScheduleRunNowEndpoint,
+  reportingStarterKitProvisionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
   securityMasterAssetProfileDraftsEndpoint,
   securityMasterAssetProfileLineageEndpoint,
@@ -1890,6 +1893,30 @@ export function previewDataUpload(
   return postFormData<DataUploadPreviewResult>(WORKSTATION_API_ENDPOINTS.dataUploadPreview, formData, options);
 }
 
+export function getOnboardingWorkbookDownloadUrl(templateIds?: string[]): string {
+  const base = WORKSTATION_API_ENDPOINTS.dataUploadWorkbook;
+  const selected = (templateIds ?? []).map((id) => id.trim()).filter(Boolean);
+  if (selected.length === 0) {
+    return base;
+  }
+
+  const query = new URLSearchParams({ templateIds: selected.join(",") });
+  return `${base}?${query.toString()}`;
+}
+
+export function previewDataUploadWorkbook(
+  request: { file: File },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  return postFormData<DataUploadWorkbookPreviewResult>(
+    WORKSTATION_API_ENDPOINTS.dataUploadWorkbookPreview,
+    formData,
+    options
+  );
+}
+
 export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {
   return getDataWorkspace(options);
 }
@@ -2563,6 +2590,14 @@ export function runReportingNow(request: ReportingRunRequest, options: ApiReques
   return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
 }
 
+export function assessReportingRunReadiness(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
+  return postJson<import("@/types").ReportingRunReadiness>(
+    FUND_STRUCTURE_API_ENDPOINTS.reportingRunReadiness,
+    request,
+    options
+  );
+}
+
 export function previewReportPack(request: FundReportPackPreviewRequest, options: ApiRequestOptions = {}) {
   return postJson<FundReportPackPreview>(FUND_STRUCTURE_API_ENDPOINTS.reportPackPreview, request, options);
 }
@@ -2652,6 +2687,10 @@ export function listReportingSchedules(options: ApiRequestOptions = {}) {
 
 export function saveReportingSchedule(request: ReportingScheduleUpsertRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRecord>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, request, options);
+}
+
+export function provisionReportingStarterKit(kitId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingStarterKitProvisionResult>(reportingStarterKitProvisionEndpoint(kitId), undefined, options);
 }
 
 export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
@@ -3230,8 +3269,8 @@ export function getReconciliationCalibrationSummary() {
 
 // --- Backfill mutations ---
 
-export function getBackfillProgress() {
-  return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress);
+export function getBackfillProgress(options: ApiRequestOptions = {}) {
+  return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress, options);
 }
 
 export function triggerBackfill(request: BackfillTriggerRequest) {
@@ -3700,6 +3739,10 @@ export function getSymbols(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").SymbolRecord[]>(SYMBOL_API_ENDPOINTS.symbols, options);
 }
 
+export function getCanonicalSymbolRegistry(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").CanonicalSymbolRegistryResponse>(SYMBOL_API_ENDPOINTS.registry, options);
+}
+
 export function getSymbolsStatistics(options: ApiRequestOptions = {}) {
   return getJson<import("@/types").SymbolStatistics>(SYMBOL_API_ENDPOINTS.statistics, options);
 }
@@ -3734,10 +3777,32 @@ export function getQualityGaps() {
   return getJson<import("@/types").QualityGapEntry[]>(QUALITY_API_ENDPOINTS.gaps);
 }
 
+export function remediateQualityGap(
+  symbol: string,
+  request: import("@/types").QualityGapRemediationRequest
+) {
+  return postJson<import("@/types").QualityGapRemediationResponse>(
+    `${QUALITY_API_ENDPOINTS.gaps}/${encodeURIComponent(symbol)}`,
+    request
+  );
+}
+
 // --- Provider capability matrix and security-master supply surfaces ---
 
 export function getProviderCapabilityMatrix() {
   return getJson<import("@/types").ProviderCapabilityMatrixResponse>(PROVIDER_API_ENDPOINTS.capabilityMatrix);
+}
+
+export function getProviderCatalog(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderCatalogResponse>(PROVIDER_API_ENDPOINTS.catalog, options);
+}
+
+export function getProviderRateLimits(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderRateLimitsResponse>(PROVIDER_API_ENDPOINTS.rateLimits, options);
+}
+
+export function getProviderConnectionHealth(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").ProviderConnectionHealthResponse>(PROVIDER_API_ENDPOINTS.health, options);
 }
 
 export function getCorporateActionInbox() {

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.FinancialOperations
@@ -54,14 +54,17 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
+- `Ledger/AccountingPostingCandidateService.cs` - non-posting Rules Studio candidate construction,
+  authoritative ledger-book and accounting-policy resolution, and fail-closed typed book,
+  economic-event, book-position, projection-lineage, and rule-pack assertion validation.
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that persists canonical imports, linked breaks, and case materialization for shared UI consumers.
-- `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection.
+- `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection. Position rows match through the shared `StatementMatchingEngine` against internal portfolio positions; rows without internal evidence surface as break cases instead of auto-matching.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.
-- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/CanonicalReconciliationEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation.
+- `Reconciliation/StatementMatchingEngine.cs` and `Reconciliation/ReconciliationMatchingEngine.cs` - deterministic match, tolerance, candidate, and true-break evaluation. The canonical daily pipeline is split across `ReconciliationIngestionContracts.cs`, `ReconciliationNormalizationService.cs`, `MatchingTolerances.cs`, `ReconciliationMatchingEngine.cs`, `DefaultReconciliationIngestionScheduler.cs`, and `ReconciliationRunOrchestrator.cs` (one type per file).
 - `Reconciliation/StatementBreakClassifier.cs`, `StatementMappingProfiles.cs`, and `StatementToleranceProfiles.cs` - canonical break taxonomy, broker mapping profiles, and tolerance governance.
 - `Reconciliation/ReconciliationEngineService.cs` - Security Master-enriched portfolio-vs-ledger
   reconciliation engine that joins positions, ledger balances, and the F# ledger reconciliation
@@ -74,7 +77,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   fetch-capable Alpaca activity + portfolio snapshots; `StatementImportService` preview/commit
   orchestration that renders deterministic canonical-CSV artifacts into the existing
   statement-run workflow (positions, transactions, cash balances, fees, and dividends all
-  classify per kind); and persisted fetch schedules with an idempotent schedule runner.
+  classify per kind), returning retained break ids plus structured reconciliation case links for
+  the opened reconciliation work while retaining legacy case id/route arrays for compatibility; and
+  persisted fetch schedules with an idempotent schedule runner.
 - `Banking/` - payment initiation, approval/rejection workflow, bank-side transaction records,
   deterministic transaction seeding, and PostgreSQL-backed banking persistence adapter.
 
@@ -85,6 +90,10 @@ Use this README to understand the module before editing source files. Update the
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
 The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store.
+The commit result also carries the specific break ids and structured reconciliation case links
+created by the Financial Operations workflow, including each case route, status, priority, reason,
+and suggested next action, allowing Evidence Vault and browser clients to point operators directly
+at the retained casework instead of only showing aggregate break/case counts.
 
 Operations Continuity reconciliation runs retain the canonical Financial Operations lane coverage
 for cash, position, trade, income, MBS factor, bank, and GL support. The workflow aggregate derives
@@ -252,6 +261,17 @@ can reach ready-for-review certification; close-backed packages also recheck tha
 the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
+The final close-plan control is the shared `Post closing entries` gate. After the existing task,
+sign-off, evidence, and version checks pass, the management service projects the current scoped
+revenue/expense residual, queues the deterministic closing-entry draft into the governed workbench,
+and waits for independent submit, approval, and posting. It rechecks that gate at the hard-close
+mutation boundary and finalizes the actual ledger period before publishing the workflow close
+package; an unavailable workbench, an unapproved current draft, a pending reversal, or any residual
+temporary-account balance fails closed. The projection fingerprint makes retries reuse the same
+draft while a late approved adjustment queues only its new closing delta. Governed reopen requires
+human Controller authority plus retained restatement approval evidence, creates or reuses every
+source-linked closing-batch reversal draft before moving the ledger period back to soft close, and
+supports deterministic retry if the first reopen attempt stopped after draft creation.
 Close blocker/evidence reviews are retained in the same close-management snapshot as explicit
 operator review records; they require human origin, notes, scoped close-review/blocker evidence
 that identifies the active issue, target, workflow or period, and selected ledger book, and they do
@@ -420,6 +440,26 @@ The generated candidate path also preserves the neutral operational dimensions c
 `LedgerDimensionSetDto` - organization, portfolio, book, account, customer, vendor, and project -
 through generated posting lines, governed draft lines, and approved append writes so reporting and
 external-GL mapping do not lose non-fund dimension scope at the rule-to-ledger boundary.
+Typed instrument-to-journal fields are additive assertions on that same candidate path.
+`AccountingBookContextDto` is re-resolved through `ILedgerBookService`, including book owner,
+period, basis, policy/version, currency, fund, and dimension scope; the client snapshot never grants
+posting authority. Economic-event and projection references must agree with retained source-event
+identity, evidence, effective date, instrument identity, and `BookPositionId`, while candidate and
+generated-line `PositionId` dimensions must match. `AccountingRulePackReferenceDto` is validated
+against the existing accounting policy rule pack and selected Rules Studio rule/version rather than
+creating another rule authority. Any mismatch remains a blocking candidate issue before draft/write
+creation.
+Security Master remains the canonical source of instrument identity, Instruments/Asset Operations
+own economic projections, and this module owns the governed candidate/approval handoff. These
+optional fields add no Financial Operations persistence, direct ledger-entry input, or alternate
+posting route; the approved immutable `JournalEntry` remains the accounting aggregate.
+For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
+position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
+the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
+drift, event/lineage drift, a missing or mismatched authoritative rule-pack reference, or a
+client-supplied amount mismatch blocks the candidate before approval. Factor detection is anchored
+to the canonical event type as well as projection lineage, so omitting or relabeling a client field
+cannot bypass server recalculation.
 `AccountingPostingCandidatePostService` is the separate append gate for approved generated
 candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
 origin, retained source-event identity, approval evidence, an aggregate id equal to the target

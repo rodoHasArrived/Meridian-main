@@ -141,7 +141,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_ShouldExposeBootstrapPayloads()
+    public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_WithoutBackingServices_ShouldReturnServiceUnavailable()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
@@ -153,24 +153,27 @@ public sealed partial class WorkstationEndpointsTests
         UiApiRoutes.WorkstationReportingStructuredExport.Should().Be("/api/workstation/reporting/structured-exports/{exportId}");
         UiApiRoutes.WorkstationTrading.Should().Be("/api/workstation/trading");
 
-        using var strategy = await ReadJsonAsync(client, UiApiRoutes.WorkstationStrategy);
-        using var data = await ReadJsonAsync(client, UiApiRoutes.WorkstationData);
-        using var accounting = await ReadJsonAsync(client, UiApiRoutes.WorkstationAccounting);
-        using var reporting = await ReadJsonAsync(client, UiApiRoutes.WorkstationReporting);
-        using var trading = await ReadJsonAsync(client, UiApiRoutes.WorkstationTrading);
-        using var legacyResearch = await ReadJsonAsync(client, UiApiRoutes.WorkstationResearch);
-        using var legacyDataOperations = await ReadJsonAsync(client, UiApiRoutes.WorkstationDataOperations);
-        using var legacyGovernance = await ReadJsonAsync(client, UiApiRoutes.WorkstationGovernance);
+        // Workspace read surfaces must fail honestly with 503 when their backing services are
+        // not registered instead of serving fabricated fallback payloads as live data.
+        var workspaceRoutes = new[]
+        {
+            UiApiRoutes.WorkstationStrategy,
+            UiApiRoutes.WorkstationData,
+            UiApiRoutes.WorkstationAccounting,
+            UiApiRoutes.WorkstationReporting,
+            UiApiRoutes.WorkstationTrading,
+            UiApiRoutes.WorkstationResearch,
+            UiApiRoutes.WorkstationDataOperations,
+            UiApiRoutes.WorkstationGovernance
+        };
 
-        strategy.RootElement.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(1);
-        data.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
-        accounting.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
-        reporting.RootElement.GetProperty("reporting").GetProperty("profiles").GetArrayLength().Should().BeGreaterThan(0);
-        ContainsStringValue(trading.RootElement, "Kill-switch can be engaged manually from Accounting review.").Should().BeTrue();
-        ContainsStringValue(trading.RootElement, "governance lane").Should().BeFalse();
-        legacyResearch.RootElement.GetProperty("workspace").GetProperty("totalRuns").GetInt32().Should().Be(1);
-        legacyDataOperations.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
-        legacyGovernance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
+        foreach (var route in workspaceRoutes)
+        {
+            var response = await client.GetAsync(route);
+            response.StatusCode.Should().Be(
+                HttpStatusCode.ServiceUnavailable,
+                $"{route} has no backing services registered and must not fabricate data");
+        }
     }
 
     [Fact]
@@ -250,56 +253,40 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackPayloads()
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnServiceUnavailableInsteadOfFabricatedPayloads()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
 
+        // The session bootstrap payload stays available with honest zeroed workspace counters.
         using var session = await ReadJsonAsync(client, "/api/workstation/session");
         session.RootElement.GetProperty("displayName").GetString().Should().Be("Meridian Operator");
         session.RootElement.GetProperty("role").GetString().Should().Be("Strategy Lead");
         session.RootElement.GetProperty("environment").GetString().Should().Be("paper");
         session.RootElement.GetProperty("activeWorkspace").GetString().Should().Be("strategy");
         session.RootElement.GetProperty("commandCount").GetInt32().Should().Be(6);
+        session.RootElement.GetProperty("workspaceSummary").GetProperty("totalRuns").GetInt32().Should().Be(0);
 
-        using var research = await ReadJsonAsync(client, "/api/workstation/research");
-        research.RootElement.GetProperty("metrics").EnumerateArray()
-            .Should()
-            .Contain(metric => metric.GetProperty("id").GetString() == "active-runs" &&
-                               metric.GetProperty("value").GetString() == "24");
-
-        using var governance = await ReadJsonAsync(client, "/api/workstation/governance");
-        governance.RootElement.GetProperty("metrics").EnumerateArray()
-            .Should()
-            .Contain(metric => metric.GetProperty("id").GetString() == "open-breaks" &&
-                               metric.GetProperty("value").GetString() == "4");
-        governance.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
-
-        using var accounting = await ReadJsonAsync(client, "/api/workstation/accounting");
-        accounting.RootElement.GetProperty("reconciliationQueue").GetArrayLength().Should().Be(1);
-
-        using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
-        reporting.RootElement.GetProperty("reporting").GetProperty("profiles").GetArrayLength().Should().BeGreaterThan(0);
-
-        using var data = await ReadJsonAsync(client, "/api/workstation/data");
-        data.RootElement.GetProperty("exports").EnumerateArray()
-            .Should()
-            .Contain(export => export.GetProperty("target").GetString() == "strategy pack");
-        ContainsStringValue(data.RootElement, "research pack").Should().BeFalse();
-
-        var runs = research.RootElement.GetProperty("runs");
-        runs.GetArrayLength().Should().Be(1);
-        runs[0].GetProperty("id").GetString().Should().Be("run-strategy-001");
-        runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
-        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("title").GetString()
-            .Should()
-            .Contain("Mean Reversion FX");
-        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("statusBadgeLabel").GetString()
-            .Should()
-            .Be("PAPER");
-
-        using var strategy = await ReadJsonAsync(client, "/api/workstation/strategy");
-        strategy.RootElement.GetProperty("runs")[0].GetProperty("id").GetString().Should().Be("run-strategy-001");
+        // Workspace payload endpoints must not invent runs, breaks, providers, backfills, or
+        // exports when the backing read services are missing: they respond 503 with a problem
+        // detail naming the missing service.
+        foreach (var route in new[]
+        {
+            "/api/workstation/research",
+            "/api/workstation/strategy",
+            "/api/workstation/governance",
+            "/api/workstation/accounting",
+            "/api/workstation/reporting",
+            "/api/workstation/data"
+        })
+        {
+            var response = await client.GetAsync(route);
+            response.StatusCode.Should().Be(
+                HttpStatusCode.ServiceUnavailable,
+                $"{route} must not serve fabricated fallback data");
+            var body = await response.Content.ReadAsStringAsync();
+            body.Should().Contain("registered", $"{route} problem detail must name the missing service");
+        }
     }
 
     [Fact]
@@ -1123,7 +1110,42 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_DataOperationsPayload_WithoutManageCredentials_ShouldNotExposeConnectionSummary()
     {
-        await using var app = await CreateAppAsync();
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-metrics-no-creds", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "_status"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        await File.WriteAllTextAsync(configPath, """{"DataRoot":"."}""");
+
+        var metrics = new ProviderMetricsStatus(
+            Timestamp: new DateTimeOffset(2026, 4, 24, 17, 0, 0, TimeSpan.Zero),
+            Providers:
+            [
+                new ProviderMetrics(
+                    ProviderId: "yahoo",
+                    ProviderType: "Historical bars",
+                    IsConnected: true,
+                    TradesReceived: 0,
+                    DepthUpdatesReceived: 0,
+                    QuotesReceived: 2400,
+                    ConnectionAttempts: 1,
+                    ConnectionFailures: 0,
+                    MessagesDropped: 0,
+                    ActiveSubscriptions: 4,
+                    AverageLatencyMs: 42,
+                    MinLatencyMs: 25,
+                    MaxLatencyMs: 80,
+                    DataQualityScore: 0.96,
+                    ConnectionSuccessRate: 1,
+                    Timestamp: new DateTimeOffset(2026, 4, 24, 16, 59, 0, TimeSpan.Zero))
+            ],
+            TotalProviders: 1,
+            HealthyProviders: 1);
+        await File.WriteAllTextAsync(
+            Path.Combine(root, "_status", "providers.json"),
+            JsonSerializer.Serialize(metrics, ServerJsonOptions));
+
+        // Default test permissions do not include ManageCredentials, so connection summaries
+        // must stay hidden even though real provider metrics are available.
+        await using var app = await CreateAppAsync(services => RegisterConfigStores(services, configPath));
         using var dataOperations = await ReadJsonAsync(app.GetTestClient(), "/api/workstation/data-operations");
         var providers = dataOperations.RootElement.GetProperty("providers").EnumerateArray().ToArray();
 
@@ -1139,6 +1161,9 @@ public sealed partial class WorkstationEndpointsTests
         var observability = CreateRecoveredKernelObservability();
         await using var app = await CreateAppAsync(services =>
         {
+            // Real read services keep the data/governance surfaces live; without them these
+            // endpoints honestly return 503 instead of fabricated fallback payloads.
+            RegisterRunReadServices(services);
             services.AddSingleton(observability);
         });
 
@@ -1291,33 +1316,20 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackStrategyBriefing()
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnServiceUnavailableStrategyBriefing()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
 
+        // Without a strategy run read service the briefing endpoints must not invent runs,
+        // watchlists, alerts, or insight tiles: they respond 503.
         var response = await client.GetAsync(UiApiRoutes.WorkstationStrategyBriefing);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var briefing = await response.Content.ReadFromJsonAsync<StrategyBriefingDto>(ServerJsonOptions);
-
-        briefing.Should().NotBeNull();
-        briefing!.Workspace.TotalRuns.Should().Be(24);
-        briefing.Workspace.LatestRunId.Should().Be("run-strategy-001");
-        briefing.Workspace.Summary.Should().Be("Strategy is organized around briefing context first, then run studio drill-ins.");
-        briefing.InsightFeed.Summary.Should().Contain("pinned Strategy tiles");
-        briefing.InsightFeed.Summary.Should().NotContain("pinned research tiles");
-        briefing.InsightFeed.Widgets.Should().HaveCount(3);
-        briefing.Watchlists.Should().HaveCount(2);
-        briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-strategy-001");
-        briefing.Alerts.Should().NotBeEmpty();
-        briefing.WhatChanged.Should().NotBeEmpty();
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("not registered");
 
         var legacyResponse = await client.GetAsync(UiApiRoutes.WorkstationResearchBriefing);
-        legacyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var legacyBriefing = await legacyResponse.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
-        legacyBriefing.Should().NotBeNull();
-        legacyBriefing!.Workspace.TotalRuns.Should().Be(briefing.Workspace.TotalRuns);
+        legacyResponse.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
 
     [Fact]
@@ -5952,7 +5964,9 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_ReportingWorkspace_ShouldReturnTypedReportingPayloadWithProfiles()
     {
-        await using var app = await CreateAppAsync();
+        // The reporting workspace rides on the accounting payload, which requires the strategy
+        // run read service; without it the endpoint returns 503 instead of fabricated data.
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
         var client = app.GetTestClient();
 
         using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");

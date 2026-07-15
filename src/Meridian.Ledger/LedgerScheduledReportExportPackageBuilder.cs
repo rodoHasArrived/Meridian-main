@@ -146,54 +146,17 @@ public static class LedgerScheduledReportExportPackageBuilder
                 .Select(static field => $"{field.Name}={field.Value}"));
 
     private static IEnumerable<(string Name, string Value)> BuildDimensionFields(LedgerLineDimensionSet? dimensions)
-    {
-        dimensions = LedgerLineDimensionSetNormalizer.Canonicalize(dimensions);
-        if (dimensions is null)
-            yield break;
+        => LedgerLineDimensionSetFields.Enumerate(dimensions)
+            .Select(static field => field.ExternalGlKey is null
+                ? (ToXmlElementName(field.Name), field.Value)
+                : ($"ExternalGl_{NormalizeXmlName(field.ExternalGlKey)}", field.Value));
 
-        if (HasValue(dimensions.FundId))
-            yield return ("FundId", dimensions.FundId!.Trim());
-        if (HasValue(dimensions.EntityId))
-            yield return ("EntityId", dimensions.EntityId!.Trim());
-        if (HasValue(dimensions.SleeveId))
-            yield return ("SleeveId", dimensions.SleeveId!.Trim());
-        if (HasValue(dimensions.StrategyId))
-            yield return ("StrategyId", dimensions.StrategyId!.Trim());
-        if (HasValue(dimensions.InvestorId))
-            yield return ("InvestorId", dimensions.InvestorId!.Trim());
-        if (HasValue(dimensions.CapitalAccountId))
-            yield return ("CapitalAccountId", dimensions.CapitalAccountId!.Trim());
-        if (dimensions.InstrumentId is not null)
-            yield return ("InstrumentId", dimensions.InstrumentId.Value.ToString("D"));
-        if (HasValue(dimensions.TaxLotId))
-            yield return ("TaxLotId", dimensions.TaxLotId!.Trim());
-        if (HasValue(dimensions.CostCenterId))
-            yield return ("CostCenterId", dimensions.CostCenterId!.Trim());
-        if (HasValue(dimensions.CounterpartyId))
-            yield return ("CounterpartyId", dimensions.CounterpartyId!.Trim());
-        if (HasValue(dimensions.OrganizationId))
-            yield return ("OrganizationId", dimensions.OrganizationId!.Trim());
-        if (HasValue(dimensions.PortfolioId))
-            yield return ("PortfolioId", dimensions.PortfolioId!.Trim());
-        if (HasValue(dimensions.BookId))
-            yield return ("BookId", dimensions.BookId!.Trim());
-        if (HasValue(dimensions.AccountId))
-            yield return ("AccountId", dimensions.AccountId!.Trim());
-        if (HasValue(dimensions.CustomerId))
-            yield return ("CustomerId", dimensions.CustomerId!.Trim());
-        if (HasValue(dimensions.VendorId))
-            yield return ("VendorId", dimensions.VendorId!.Trim());
-        if (HasValue(dimensions.ProjectId))
-            yield return ("ProjectId", dimensions.ProjectId!.Trim());
-
-        foreach (var (key, value) in dimensions.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+    private static string ToXmlElementName(string camelCaseName)
+        => string.Create(camelCaseName.Length, camelCaseName, static (span, name) =>
         {
-            if (!HasValue(key) || !HasValue(value))
-                continue;
-
-            yield return ($"ExternalGl_{NormalizeXmlName(key)}", value.Trim());
-        }
-    }
+            name.CopyTo(span);
+            span[0] = char.ToUpperInvariant(span[0]);
+        });
 
     private static string NormalizeXmlName(string value)
     {
@@ -207,9 +170,6 @@ public static class LedgerScheduledReportExportPackageBuilder
 
         return builder.Length == 0 ? "Dimension" : builder.ToString();
     }
-
-    private static bool HasValue(string? value)
-        => !string.IsNullOrWhiteSpace(value);
 
     private static string EscapeCsv(string value)
     {

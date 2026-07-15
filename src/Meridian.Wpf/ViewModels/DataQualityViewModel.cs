@@ -11,6 +11,7 @@ using Meridian.Ui.Services;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Ui.Services.Services;
+using Meridian.Contracts.Api.Quality;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Workstation.Models;
 using WpfServices = Meridian.Wpf.Services;
@@ -44,7 +45,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     private readonly WpfServices.NotificationService _notificationService;
     private readonly DataQualityRefreshCoordinator _refreshCoordinator;
     private CancellationTokenSource? _refreshCts;
-    private double _lastOverallScore = 98.5;
+    private double _lastOverallScore;
     /// <summary>
     /// Score from the previous snapshot; -1 means no prior reading yet.
     /// Used to detect significant drops that warrant a toast notification.
@@ -290,17 +291,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     public void ShowSymbolDrilldown(SymbolQualityModel model)
     {
-        var presentation = _presentationService.BuildSymbolDrilldown(new DataQualitySymbolPresentation
-        {
-            Symbol = model.Symbol,
-            Score = model.Score,
-            ScoreFormatted = model.ScoreFormatted,
-            Grade = model.Grade,
-            Status = model.Status,
-            Issues = model.Issues,
-            LastUpdate = model.LastUpdate,
-            LastUpdateFormatted = model.LastUpdateFormatted
-        });
+        var presentation = _presentationService.BuildSymbolDrilldown(model.Presentation);
 
         DrilldownSymbolHeader = presentation.HeaderText;
         DrilldownScoreText = presentation.ScoreText;
@@ -337,6 +328,11 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
                 new("Score", nameof(SymbolQualityModel.ScoreFormatted), 80),
                 new("Grade", nameof(SymbolQualityModel.Grade), 60),
                 new("Status", nameof(SymbolQualityModel.Status), 90),
+                new("Stored", nameof(SymbolQualityModel.StoredCompletenessText), 85),
+                new("Streaming", nameof(SymbolQualityModel.StreamingFreshnessText), 85),
+                new("Adapter", nameof(SymbolQualityModel.AdapterIntegrityText), 85),
+                new("Gaps", nameof(SymbolQualityModel.GapCount), 60),
+                new("Anomalies", nameof(SymbolQualityModel.AnomalyCount), 75),
                 new("Issues", nameof(SymbolQualityModel.Issues), 160),
                 new("Last Update", nameof(SymbolQualityModel.LastUpdateFormatted), 120)
             ],
@@ -382,16 +378,26 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     {
         try
         {
-            if (await _apiClient.RepairGapAsync(gapId, ct).ConfigureAwait(false))
+            var gap = Gaps.FirstOrDefault(g => g.GapId == gapId);
+            if (gap is null || !gap.CanRepair)
             {
-                var gap = Gaps.FirstOrDefault(g => g.GapId == gapId);
-                if (gap is not null)
-                {
-                    Gaps.Remove(gap);
-                }
+                _notificationService.ShowNotification(
+                    "Repair Unavailable",
+                    gap?.DisabledReason ?? "The selected gap is no longer available.",
+                    NotificationType.Warning);
+                return false;
+            }
+
+            var response = await _apiClient.RepairGapAsync(
+                gap.Symbol,
+                new QualityGapRemediationRequest(gap.GapId, gap.DashboardVersion),
+                ct).ConfigureAwait(false);
+            if (response?.Status == "Completed")
+            {
+                Gaps.Remove(gap);
 
                 HasNoGaps = Gaps.Count == 0;
-                _notificationService.ShowNotification("Gap Repair Started", "Repair has been initiated.", NotificationType.Success);
+                _notificationService.ShowNotification("Gap Repaired", response.Message, NotificationType.Success);
                 return true;
             }
 
@@ -408,25 +414,21 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     public async Task<bool> RepairAllGapsAsync(CancellationToken ct = default)
     {
-        try
+        var repairable = Gaps.Where(static gap => gap.CanRepair).ToArray();
+        if (repairable.Length == 0)
         {
-            if (await _apiClient.RepairAllGapsAsync(ct).ConfigureAwait(false))
-            {
-                Gaps.Clear();
-                HasNoGaps = true;
-                _notificationService.ShowNotification("Repair Started", "Initiated repair for all gaps.", NotificationType.Success);
-                return true;
-            }
+            _notificationService.ShowNotification("Repair Unavailable", "No remediable gaps are available.", NotificationType.Warning);
+            return false;
+        }
 
-            _notificationService.ShowNotification("Repair Failed", "Failed to initiate gap repairs.", NotificationType.Warning);
-            return false;
-        }
-        catch (Exception ex)
+        var repaired = 0;
+        foreach (var gap in repairable)
         {
-            _loggingService.LogError("Failed to repair all gaps", ex);
-            _notificationService.ShowNotification("Repair Failed", "An error occurred while initiating gap repairs.", NotificationType.Error);
-            return false;
+            if (await RepairGapAsync(gap.GapId, ct).ConfigureAwait(false))
+                repaired++;
         }
+
+        return repaired == repairable.Length;
     }
 
     public async Task RunQualityCheckAsync(string path, CancellationToken ct = default)
@@ -575,7 +577,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         OverallGradeText = snapshot.OverallGradeText;
         StatusText = snapshot.StatusText;
         ScoreBrush = ToneToBrush(snapshot.ScoreTone);
-        ScoreSegments = CreateScoreSegments(snapshot.OverallScore);
+        ScoreSegments = CreateScoreSegments(snapshot.IsAvailable ? snapshot.OverallScore : 0);
         LatencyText = snapshot.LatencyText;
         CompletenessText = snapshot.CompletenessText;
         HealthyFilesText = snapshot.HealthyFilesText;
@@ -612,7 +614,14 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
             Status = symbol.Status,
             Issues = symbol.Issues,
             LastUpdate = symbol.LastUpdate,
-            LastUpdateFormatted = symbol.LastUpdateFormatted
+            LastUpdateFormatted = symbol.LastUpdateFormatted,
+            ExpectedEventsText = symbol.ExpectedEventsText,
+            StoredCompletenessText = FormatComponentScore(symbol, "StoredCompleteness"),
+            StreamingFreshnessText = FormatComponentScore(symbol, "StreamingFreshness"),
+            AdapterIntegrityText = FormatComponentScore(symbol, "AdapterGapIntegrity"),
+            GapCount = symbol.GapCount,
+            AnomalyCount = symbol.AnomalyCount,
+            Presentation = symbol
         }));
 
         ReplaceCollection(Gaps, snapshot.Gaps.Select(gap => new GapModel
@@ -620,7 +629,11 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
             GapId = gap.GapId,
             Symbol = gap.Symbol,
             Description = gap.Description,
-            Duration = gap.Duration
+            Duration = gap.Duration,
+            DashboardVersion = gap.DashboardVersion,
+            Provider = gap.Provider,
+            CanRepair = gap.CanRepair,
+            DisabledReason = gap.DisabledReason
         }));
         HasNoGaps = Gaps.Count == 0;
 
@@ -654,7 +667,8 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         // by 2 or more points relative to the previous reading.
         const double WarningThreshold = 90.0;
         const double MinDropToAlert = 2.0;
-        if (_previousQualityScore >= 0
+        if (snapshot.IsAvailable
+            && _previousQualityScore >= 0
             && snapshot.OverallScore < WarningThreshold
             && (prevScore - snapshot.OverallScore) >= MinDropToAlert)
         {
@@ -666,7 +680,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     private void UpdateTrendState()
     {
-        TrendPoints = BuildTrendPoints(_lastOverallScore, _timeRange);
+        TrendPoints = Array.Empty<TrendPoint>();
         var trend = ComputeTrendStatistics();
         AvgScoreText = trend.AvgText;
         MinScoreText = trend.MinText;
@@ -681,6 +695,12 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
             _ => ToneToBrush(DataQualityVisualTones.Warning)
         };
         TrendChartChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private static string FormatComponentScore(DataQualitySymbolPresentation symbol, string kind)
+    {
+        var component = symbol.Components.FirstOrDefault(component => component.Kind == kind);
+        return component?.Score is double score ? $"{score:F1}" : "--";
     }
 
     private void UpdateSymbolFilterState()

@@ -15,6 +15,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Storage.Export;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -261,6 +262,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly ReportingScheduleService? _reportingScheduleService;
     private readonly ReportPackRunReadService? _reportPackRunReadService;
     private readonly DirectLendingOperationsReadService? _directLendingOperationsReadService;
+    private readonly ILedgerJournalStore? _ledgerJournalStore;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -279,7 +281,8 @@ public sealed class FundOperationsWorkspaceReadService
         ReportPackDeliveryService? reportPackDeliveryService = null,
         ReportingScheduleService? reportingScheduleService = null,
         ReportPackRunReadService? reportPackRunReadService = null,
-        DirectLendingOperationsReadService? directLendingOperationsReadService = null)
+        DirectLendingOperationsReadService? directLendingOperationsReadService = null,
+        ILedgerJournalStore? ledgerJournalStore = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -298,6 +301,7 @@ public sealed class FundOperationsWorkspaceReadService
         _reportingScheduleService = reportingScheduleService;
         _reportPackRunReadService = reportPackRunReadService;
         _directLendingOperationsReadService = directLendingOperationsReadService;
+        _ledgerJournalStore = ledgerJournalStore;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -341,7 +345,7 @@ public sealed class FundOperationsWorkspaceReadService
         var baseCurrency = ResolveCurrency(query.Currency, accountSummaries);
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var displayName = ResolveDisplayName(normalizedFundProfileId, runs);
-        var ledgerBook = BuildLedgerBook(normalizedFundProfileId, runs);
+        var ledgerBook = await BuildLedgerBookAsync(normalizedFundProfileId, runs, asOf, ct).ConfigureAwait(false);
         var ledger = await BuildLedgerSummaryAsync(
             normalizedFundProfileId,
             displayName,
@@ -499,7 +503,7 @@ public sealed class FundOperationsWorkspaceReadService
         var displayName = ResolveDisplayName(normalizedFundProfileId, runs);
         var currency = ResolveCurrency(request.Currency, []);
         var asOf = request.AsOf ?? DateTimeOffset.UtcNow;
-        var ledgerBook = BuildLedgerBook(normalizedFundProfileId, runs);
+        var ledgerBook = await BuildLedgerBookAsync(normalizedFundProfileId, runs, asOf, ct).ConfigureAwait(false);
 
         var report = await _reportGenerationService.GenerateAsync(
             new ReportRequest(
@@ -553,7 +557,7 @@ public sealed class FundOperationsWorkspaceReadService
         var accountProjections = await GetAccountProjectionsAsync(fundId, ct).ConfigureAwait(false);
         var accountSummaries = accountProjections.Select(static projection => projection.Summary).ToArray();
         var currency = ResolveCurrency(request.Currency, accountSummaries);
-        var ledgerBook = BuildLedgerBook(normalizedFundProfileId, runs);
+        var ledgerBook = await BuildLedgerBookAsync(normalizedFundProfileId, runs, asOf, ct).ConfigureAwait(false);
 
         var reportTask = _reportGenerationService.GenerateAsync(
             new ReportRequest(normalizedFundProfileId, asOf, ledgerBook, MapReportKind(request.ReportKind)),
@@ -1385,11 +1389,30 @@ public sealed class FundOperationsWorkspaceReadService
                     Dimensions: BuildFundLedgerDimensions(fundProfileId, scopeKind, scopeId, pair.Key.FinancialAccountId)))
                 .ToArray());
 
-    private static FundLedgerBook BuildLedgerBook(
+    private async Task<FundLedgerBook> BuildLedgerBookAsync(
         string fundProfileId,
-        IReadOnlyList<StrategyRunEntry> runs)
+        IReadOnlyList<StrategyRunEntry> runs,
+        DateTimeOffset asOf,
+        CancellationToken ct)
     {
         var fundLedgerBook = new FundLedgerBook(fundProfileId);
+
+        if (_ledgerJournalStore is not null)
+        {
+            var durableProjection = await _ledgerJournalStore
+                .HydrateFundLedgerAsOfAsync(
+                    fundProfileId,
+                    asOf,
+                    AccountingBasisKindDto.Primary,
+                    ct)
+                .ConfigureAwait(false);
+            foreach (var journalEntry in durableProjection.Journal)
+            {
+                fundLedgerBook.FundLedger.Post(journalEntry);
+            }
+
+            return fundLedgerBook;
+        }
 
         foreach (var run in runs)
         {
@@ -2813,7 +2836,9 @@ public sealed class FundOperationsWorkspaceReadService
             ReportLineProvenanceExplorer: reportLineProvenanceExplorer,
             ReportWriterDatasetSources: reportWriterDatasetSources,
             AccessAudit: scopedReportingPayload?.AccessAudit,
-            DailyWork: dailyWorkPayload?.DailyWork);
+            DailyWork: dailyWorkPayload?.DailyWork,
+            StarterKits: dailyWorkPayload?.StarterKits,
+            StarterKitState: dailyWorkPayload?.StarterKitState);
     }
 
     private static IReadOnlyList<WorkstationReportWriterDatasetSourcePayload> BuildReportWriterDatasetSources(

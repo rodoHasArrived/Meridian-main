@@ -143,11 +143,11 @@ describe("TrialBalanceScreen", () => {
     expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
     expect(screen.getByLabelText("Book")).toHaveValue("Primary GL");
     expect(screen.getByLabelText("Period")).toHaveValue("Current period");
-    expect(screen.getByRole("button", { name: "Compare prior period" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Export" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Compare prior period" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Export" })).toBeDisabled();
     expect(screen.getByRole("link", { name: "Jump to report preview" })).toHaveAttribute("href", "/reporting/preview");
-    expect(await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" })).toBeInTheDocument();
-    expect(screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" })).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Cash Asset\. Primary basis/ })).toBeInTheDocument();
   });
 
   it("switches basis and narrows rows with the account filter", async () => {
@@ -160,7 +160,7 @@ describe("TrialBalanceScreen", () => {
     const filterInput = screen.getByPlaceholderText(/Account name, account id, type, symbol, or security/);
     await user.type(filterInput, "Apple");
 
-    const table = await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" });
+    const table = await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
     expect(table).toHaveTextContent("Apple Inc.");
     expect(table).not.toHaveTextContent("Financing payable");
   });
@@ -171,7 +171,7 @@ describe("TrialBalanceScreen", () => {
     const user = userEvent.setup();
 
     await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
-    await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" });
+    await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
 
     await user.click(screen.getByRole("button", { name: "Hierarchy" }));
 
@@ -195,6 +195,16 @@ describe("TrialBalanceScreen", () => {
     );
   });
 
+  it("distinguishes unavailable journal lineage from an empty journal", async () => {
+    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
+    vi.mocked(api.getRunLedgerJournal).mockRejectedValueOnce(new Error("offline"));
+
+    await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Journal lineage unavailable");
+    expect(screen.getByRole("alert")).toHaveTextContent("posting drill-through is unavailable");
+  });
+
   it("links related securities to the Asset Detail route", async () => {
     vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce(journalLines);
@@ -212,6 +222,6 @@ describe("TrialBalanceScreen", () => {
     await renderTrialBalanceScreen("/accounting/trial-balance?runId=run-42");
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
   });
 });

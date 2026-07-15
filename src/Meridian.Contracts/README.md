@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Contracts
@@ -26,7 +26,10 @@ or provider implementations.
 
 - `Workstation/` - workstation and operator workflow DTOs.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
-  terms/obligations timeline payloads, and query/command service contracts.
+  terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
+  and event references, projection lineage, and query/command service contracts.
+- `Ledger/` - shared accounting configuration, ledger-book, posting-intent, journal query, dimension,
+  authoritative book-context snapshot, and existing rule-pack reference contracts.
 - `SecurityMaster/` - shared Security Master command/read payloads, including corporate-action
   append requests, append results, structured audit metadata, and the injectable command service
   contract used by HTTP endpoints, imports, provider backfills, and workstation commands. The
@@ -496,6 +499,11 @@ retained sources server-side when callers do not embed explicit `datasetRows`. G
 run payloads and manifests retain the resolved report-writer dataset source id, label, and row
 count so audit cards, delivery packages, and downstream evidence consumers can prove which governed
 dataset powered a no-code report-writer output.
+`ReportingStarterKitDto`, `ReportingStarterKitStateDto`, and
+`ReportingStarterKitProvisionResultDto` describe editable Reporting desk presets in the shared
+contract. `WorkstationReportingPayload` and `FundReportingSummaryDto` carry the available kits and
+selected starter state, while `ReportingScheduleStateDto.Draft` represents schedule stubs that were
+seeded for review but should not run until an operator activates them.
 `ReportingScheduleUpsertRequestDto` and `ReportingScheduleRecordDto` can also retain a
 `BrandingThemeId` or `BrandingThemeOverride`, and the generic Reporting manifest carries the
 resolved theme into scheduled generated-run packages so recurring report-writer deliveries preserve
@@ -877,6 +885,13 @@ templates while upload preview results remain retained source
 evidence, validation issues, and bounded sample rows only. Bank-statement import responses identify
 the retained source path, imported batch, target bank account, statement date, and line count after
 the shared endpoint applies evidence through the fund-account service.
+Custodian/broker statement connector commit results live in `Workstation/StatementConnectorDtos.cs`
+and stay additive: successful imports return retained break ids, reconciliation case ids, legacy
+case-route arrays, and `StatementImportReconciliationCaseLinkDto` structured reconciliation case
+links with break id, route, status, priority, reason, and suggested next action alongside Evidence
+Vault identity, Evidence Workbench route, reconciliation route, and operator next actions so browser
+and WPF clients can deep-link into the exact casework opened by the statement run without relying on
+parallel arrays.
 Direct Lending servicer statement intake contracts live under
 `DirectLending/DirectLendingWorkflowDtos.cs`. They publish shared preview/import/apply request and
 result payloads, row-level validation issues, statement kind/status/apply-mode enums, and retained
@@ -1016,6 +1031,26 @@ distributions, subscriptions, redemptions, LP transfers, and management fees. `T
 is the shared audit context for those drafts and carries effective date, idempotency key, fund
 event, capital account, investor, payment intent, and settlement references so browser, WPF,
 Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary. `AccountingPostingCommandDto` is the shared event-accounting posting envelope for source-backed journal impact; it carries command, aggregate, period, ledger-book scope, source/correlation/causation, idempotency, reviewer state, treasury context, correction lineage, action origin, and typed evidence references so posting services and durable storage validate the same intent.
+`AccountingBookContextDto` adds the ledger-book, period, basis, policy, currency, owner-scope, and
+dimension snapshot used to validate that intent. It is an assertion for transport and evidence;
+posting services must resolve server-owned book state and reject mismatches rather than trusting a
+browser- or WPF-supplied snapshot. `AccountingRulePackReferenceDto` points to the existing
+`AccountingPolicyRulePackDto` and selected rule/version, preserving one Rules Studio authority
+instead of defining a second rule-pack model.
+Asset Operations publishes additive `InstrumentRoleDto`, `BookPositionDto`,
+`PositionEconomicStateDto`, `EconomicEventReferenceDto`, and `ProjectionLineageDto` records keyed by
+canonical Security Master identity. Posting-candidate and command contracts may carry these optional
+typed references alongside legacy source-event fields; populated representations must agree. The
+types remain transport-safe and default-empty where they extend existing detail/projection payloads,
+so older JSON and existing browser/WPF constructors remain compatible.
+Security Master reconciliation events can additionally expose their typed
+`EconomicEventReferenceDto`, `ProjectionLineageDto`, and retained evidence links. Older JSON and
+positional callers remain valid; typed factor events use these fields to carry deterministic event
+and projection identity into the existing posting-candidate route without accepting journal rows
+from a client.
+Append-only `PositionEconomicStateDto` rows may retain their typed `ProjectionLineageDto` so an
+older factor event remains reconstructable after a later position update; older payloads default
+that optional property to `null`.
 Manual journal drafts, workbench reads, lifecycle requests, and evidence-attachment requests also
 carry optional tenant/company scope so shared endpoints can stamp the authenticated accounting
 context, resolve the tenant-scoped chart, and retain scoped lifecycle audit rows without trusting
@@ -1141,6 +1176,11 @@ fund/private-capital workflows. Manual journal normalization trims and retains h
 merges deterministic external GL dimension keys, and propagates fund/entity scope to line
 dimensions while allowing line-specific organization, entity, portfolio, account, instrument,
 tax-lot, cost-center, and external GL overrides.
+`PositionId` is an optional dimension beside `InstrumentId`; it scopes lineage to a book position
+without treating the position or a projected balance as an accounting fact. Candidate journals stay
+non-posting review artifacts, and Asset Operations economic-state, projection-event, and balance
+snapshot DTOs stay rebuildable read models. `JournalEntry` with child ledger entries remains the
+authoritative posted accounting aggregate.
 Generated posting candidates also carry those line dimensions into the governed draft request shape,
 where retained ledger entries receive first-class line dimensions while compatibility metadata tags
 remain available for downstream report and external-GL mapping recovery. This keeps dimensional
@@ -1339,6 +1379,13 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:end -->
 
 ## API and contract notes
+
+The instrument-to-journal semantic alignment is additive and requires no initial schema migration.
+It does not replace Security Master identity, create an Instrument Master above Security Master,
+migrate direct-lending/portfolio/fund-account stores, or expose a route that accepts authoritative
+`JournalEntry` or ledger-line rows. The ownership direction remains Reference Data/Security Master
+to Instruments/Asset Operations to Financial Operations to Ledger/Storage, with shared read models
+consumed by the active browser and WPF workstations.
 
 `IPartnerFileParser.ParseAsync` accepts an optional partner schema id so ETL orchestrators can route CSV and Excel workbook rows through the persisted mapping schema while retaining checkpoint-aware streaming envelopes.
 `ExecutionPositionActionRequest` carries an optional `FundAccountId` so browser and WPF close/upsize

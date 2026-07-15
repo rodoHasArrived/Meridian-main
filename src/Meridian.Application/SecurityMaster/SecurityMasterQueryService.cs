@@ -3,7 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+public sealed class SecurityMasterQueryService :
+    ISecurityMasterQueryService,
+    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,
+    ISecurityMasterReportingQueryService
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterStore _store;
@@ -32,7 +35,13 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     public async Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
     {
         var asOf = asOfUtc ?? DateTimeOffset.UtcNow;
-        var projection = await TryGetProjectionByIdentifierAsync(identifierKind, identifierValue, provider, asOf, ct)
+        var projection = await TryGetProjectionByIdentifierAsync(
+                identifierKind,
+                identifierValue,
+                provider,
+                asOf,
+                allowIdentityFallback: asOfUtc is not null,
+                ct)
             .ConfigureAwait(false);
         if (projection is null)
         {
@@ -83,6 +92,62 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     {
         var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
         return await _rebuilder.RebuildEconomicDefinitionAsync(securityId, projection, ct).ConfigureAwait(false);
+    }
+
+    public async Task<SecurityMasterReportingReference?> GetReportingReferenceByIdentifierAsOfAsync(
+        SecurityIdentifierKind identifierKind,
+        string identifierValue,
+        string? provider,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+    {
+        var detail = await GetByIdentifierAsync(
+                identifierKind,
+                identifierValue,
+                provider,
+                ct,
+                asOfUtc)
+            .ConfigureAwait(false);
+        if (detail is null)
+        {
+            return null;
+        }
+
+        var events = await _eventStore.LoadAsync(detail.SecurityId, ct).ConfigureAwait(false);
+        if (events.Count == 0)
+        {
+            var currentEconomicDefinition = await GetEconomicDefinitionByIdAsync(detail.SecurityId, ct)
+                .ConfigureAwait(false);
+            return new SecurityMasterReportingReference(
+                detail,
+                currentEconomicDefinition,
+                asOfUtc,
+                SecurityMasterReportingResolutionMode.CurrentProjectionFallback);
+        }
+
+        var sourceEvent = events.LastOrDefault(@event => @event.EventTimestamp <= asOfUtc);
+        if (sourceEvent is null)
+        {
+            return null;
+        }
+
+        var currentProjection = await _store.GetProjectionAsync(detail.SecurityId, ct).ConfigureAwait(false);
+        var historicalProjection = await _rebuilder
+            .RebuildAsOfAsync(detail.SecurityId, asOfUtc, currentProjection, ct)
+            .ConfigureAwait(false);
+        if (historicalProjection is null)
+        {
+            return null;
+        }
+
+        return new SecurityMasterReportingReference(
+            SecurityMasterMapping.ToDetail(historicalProjection),
+            SecurityEconomicDefinitionAdapter.ToEconomicRecord(historicalProjection),
+            asOfUtc,
+            SecurityMasterReportingResolutionMode.HistoricalEvent,
+            sourceEvent.GlobalSequence,
+            sourceEvent.StreamVersion,
+            sourceEvent.EventTimestamp);
     }
 
     public async Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)
@@ -203,6 +268,7 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         string identifierValue,
         string? provider,
         DateTimeOffset asOf,
+        bool allowIdentityFallback,
         CancellationToken ct)
     {
         var providerCandidates = BuildLookupCandidates(provider, SecurityIdentifierNormalizer.NormalizeProvider);
@@ -234,7 +300,23 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
 
         var normalizedProvider = SecurityIdentifierNormalizer.NormalizeProvider(provider);
         var universe = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        return universe.FirstOrDefault(candidate => MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf));
+        var asOfMatch = universe.FirstOrDefault(candidate =>
+            MatchesIdentifier(candidate, identifierKind, normalizedValue, normalizedProvider, asOf));
+        if (asOfMatch is not null || !allowIdentityFallback)
+        {
+            return asOfMatch;
+        }
+
+        // As-of fallback: an identifier row's recorded validity window is frequently its
+        // data-entry time rather than the real-world assignment time, so a point-in-time lookup
+        // can miss a security whose identity is genuinely stable. When nothing is active at the
+        // requested as-of, resolve by identity while ignoring the temporal window. The caller's
+        // as-of term rebuild still governs which economic terms are returned, so this only
+        // restores identity resolution — it never hands back today's terms under yesterday's
+        // identity.
+        var identifierKindText = identifierKind.ToString();
+        return universe.FirstOrDefault(candidate =>
+            MatchesIdentifierIgnoringWindow(candidate, identifierKind, identifierKindText, normalizedValue, normalizedProvider));
     }
 
     private static IReadOnlyList<string?> BuildLookupCandidates(string? value, Func<string?, string> normalize)
@@ -297,6 +379,34 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
         }
 
         return string.Equals(candidate.PrimaryIdentifierKind, identifierKind.ToString(), StringComparison.OrdinalIgnoreCase)
+               && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
+    }
+
+    private static bool MatchesIdentifierIgnoringWindow(
+        SecurityProjectionRecord candidate,
+        SecurityIdentifierKind identifierKind,
+        string identifierKindText,
+        string normalizedValue,
+        string normalizedProvider)
+    {
+        if (candidate.Identifiers.Any(identifier =>
+                identifier.Kind == identifierKind
+                && SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(identifier.Provider, identifier.NormalizedProvider, normalizedProvider)))
+        {
+            return true;
+        }
+
+        if (candidate.Aliases.Any(alias =>
+                string.Equals(alias.AliasKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
+                && alias.IsEnabled
+                && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, alias.AliasValue).Equals(normalizedValue, StringComparison.Ordinal)
+                && ProviderMatches(alias.Provider, normalizedProvider)))
+        {
+            return true;
+        }
+
+        return string.Equals(candidate.PrimaryIdentifierKind, identifierKindText, StringComparison.OrdinalIgnoreCase)
                && SecurityIdentifierNormalizer.NormalizeValue(identifierKind, candidate.PrimaryIdentifierValue).Equals(normalizedValue, StringComparison.Ordinal);
     }
 

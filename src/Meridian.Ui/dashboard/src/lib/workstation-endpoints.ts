@@ -19,6 +19,14 @@ export const WORKSTATION_API_ENDPOINTS = {
   dataQuery: UI_API_ROUTES.WorkstationDataQuery,
   dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
   dataUploadPreview: UI_API_ROUTES.WorkstationDataUploadPreview,
+  dataUploadWorkbook: UI_API_ROUTES.WorkstationDataUploadWorkbook,
+  dataUploadWorkbookPreview: UI_API_ROUTES.WorkstationDataUploadWorkbookPreview,
+  ingestionOperations: UI_API_ROUTES.WorkstationIngestionOperations,
+  ingestionOperation: UI_API_ROUTES.WorkstationIngestionOperationById,
+  ingestionOperationAction: UI_API_ROUTES.WorkstationIngestionOperationAction,
+  storageAssurance: UI_API_ROUTES.WorkstationStorageAssurance,
+  storageMaintenancePreview: UI_API_ROUTES.WorkstationStorageMaintenancePreview,
+  storageMaintenanceExecute: UI_API_ROUTES.WorkstationStorageMaintenanceExecute,
   accounting: UI_API_ROUTES.WorkstationAccounting,
   ledgerBooks: UI_API_ROUTES.LedgerBooks,
   accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
@@ -87,6 +95,18 @@ export const WORKSTATION_API_ENDPOINTS = {
   evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
 
+export function workstationIngestionOperationEndpoint(jobId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperation, "jobId", jobId);
+}
+
+export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {
+  return routeWithParam(
+    routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperationAction, "jobId", jobId),
+    "action",
+    action
+  );
+}
+
 export const AUTH_API_ENDPOINTS = {
   roles: UI_API_ROUTES.AuthApiRoles,
   roleProfiles: UI_API_ROUTES.AuthApiRoleProfiles,
@@ -117,8 +137,11 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingTemplateDrafts: "/api/fund-structure/reporting/templates/drafts",
   reportingTemplateRender: "/api/fund-structure/reporting/templates/render",
   reportingRuns: UI_API_ROUTES.ReportingRuns,
+  reportingRunReadiness: UI_API_ROUTES.ReportingRunReadiness,
   reportingRunAuditTrail: UI_API_ROUTES.ReportingRunAuditTrail,
   reportingRunReportWriterGrid: UI_API_ROUTES.ReportingRunReportWriterGrid,
+  reportingStarterKits: UI_API_ROUTES.ReportingStarterKits,
+  reportingStarterKitProvision: UI_API_ROUTES.ReportingStarterKitProvision,
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
@@ -169,7 +192,9 @@ export const PROMOTION_API_ENDPOINTS = {
 export const PORTFOLIO_API_ENDPOINTS = {
   aggregate: UI_API_ROUTES.PortfolioAggregate,
   exposure: UI_API_ROUTES.PortfolioExposure,
-  household: "/api/portfolio/household"
+  household: "/api/portfolio/household",
+  cashLadder: UI_API_ROUTES.PortfolioCashLadder,
+  cashLadderScenarios: UI_API_ROUTES.PortfolioCashLadderScenarios
 } as const;
 
 export const EXPORT_API_ENDPOINTS = {
@@ -377,6 +402,9 @@ export const BACKFILL_API_ENDPOINTS = {
 export const PROVIDER_API_ENDPOINTS = {
   configure: UI_API_ROUTES.ProviderConfigure,
   status: UI_API_ROUTES.ProviderStatus,
+  catalog: UI_API_ROUTES.ProviderCatalog,
+  rateLimits: UI_API_ROUTES.ProviderRateLimits,
+  health: UI_API_ROUTES.ProviderHealth,
   connections: UI_API_ROUTES.ProviderConnections,
   readiness: UI_API_ROUTES.ProviderReadiness,
   capabilityMatrix: UI_API_ROUTES.ProviderCapabilityMatrix
@@ -437,6 +465,7 @@ export const PROVIDER_INTEGRATION_API_ENDPOINTS = {
 
 export const SYMBOL_API_ENDPOINTS = {
   symbols: UI_API_ROUTES.Symbols,
+  registry: UI_API_ROUTES.CanonicalSymbolRegistry,
   statistics: UI_API_ROUTES.SymbolsStatistics,
   search: UI_API_ROUTES.SymbolsSearch,
   add: UI_API_ROUTES.SymbolsAdd,
@@ -1154,6 +1183,22 @@ export function portfolioSymbolExposureEndpoint(symbol: string): string {
   return `${PORTFOLIO_API_ENDPOINTS.exposure.replace(/\/exposure$/, "/symbols")}/${pathSegment(symbol, "symbol")}/exposure`;
 }
 
+export function portfolioCashLadderEndpoint(options: {
+  scenario?: string;
+  horizonDays?: number;
+  minimumCash?: number;
+  bucketDays?: number;
+  fundAccountId?: string;
+} = {}): string {
+  return `${PORTFOLIO_API_ENDPOINTS.cashLadder}${queryString({
+    scenario: options.scenario,
+    horizonDays: options.horizonDays,
+    minimumCash: options.minimumCash,
+    bucketDays: options.bucketDays,
+    fundAccountId: options.fundAccountId
+  })}`;
+}
+
 export function exportPreviewEndpoint(profile?: string): string {
   return `${EXPORT_API_ENDPOINTS.preview}${queryString({ profile })}`;
 }
@@ -1199,6 +1244,10 @@ export function reportingScheduleResumeEndpoint(scheduleId: string): string {
 
 export function reportingScheduleRunNowEndpoint(scheduleId: string): string {
   return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunNow, "scheduleId", scheduleId);
+}
+
+export function reportingStarterKitProvisionEndpoint(kitId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingStarterKitProvision, "kitId", kitId);
 }
 
 export function strategyEndpoint(strategyId: string): string {

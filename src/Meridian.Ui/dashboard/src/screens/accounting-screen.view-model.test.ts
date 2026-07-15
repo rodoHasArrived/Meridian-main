@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
+import type { ReferenceDataEndpointProbeResult, ReferenceDataEndpointProbeStatus } from "@/lib/api";
 import {
   buildCalibrationSummaryViewState,
   buildCorporateActionsViewState,
@@ -188,6 +189,30 @@ const referenceDataCoverage = {
   requestedAtUtc: "2026-05-10T12:00:00Z",
   endpoints: []
 };
+
+function createReferenceDataEndpoint(
+  index: number,
+  status: ReferenceDataEndpointProbeStatus
+): ReferenceDataEndpointProbeResult {
+  return {
+    id: `reference-route-${index}`,
+    family: "Equities",
+    label: `Reference route ${index}`,
+    method: status === "Deferred" ? "POST" : "GET",
+    path: `/api/reference-data/routes/${index}`,
+    requestLabel: `Reference route ${index}`,
+    probe: status !== "Deferred",
+    mutation: status === "Deferred",
+    status,
+    statusCode: status === "Ready" ? 200 : null,
+    durationMs: status === "Ready" ? 12 : null,
+    responseCount: status === "Ready" ? 1 : null,
+    responseSummary: `Reference route ${index} returned ${status}.`,
+    responsePreview: null,
+    errorSummary: status === "Missing" ? "Reference data is missing." : null,
+    errorDetails: []
+  };
+}
 const instrumentPassport: InstrumentPassport = {
   securityId: "sec-1",
   identity: securityIdentity,
@@ -821,6 +846,7 @@ describe("accounting-screen view model", () => {
     expect(viewModelSource).not.toContain("function buildAccountingTaskModeViewModel");
     expect(accountingTaskModeLauncherLinks.map((mode) => [mode.id, mode.href])).toEqual([
       ["reconciliation-casework", "/accounting/reconciliation"],
+      ["external-gl-reconciliation", "/accounting/reconciliation/external-gl"],
       ["ledger-explorer", "/accounting/ledger"],
       ["journal-entry", "/accounting/journal-entries"],
       ["capital-accounts", "/accounting/capital-accounts"],
@@ -868,8 +894,8 @@ describe("accounting-screen view model", () => {
       workstream: "journal-entries"
     });
     expect(buildAccountingTaskMode("/accounting/configure")).toMatchObject({
-      id: "governance",
-      label: "Governance",
+      id: "configure",
+      label: "Configure",
       href: "/accounting/configure",
       workstream: "configure"
     });
@@ -1378,15 +1404,15 @@ describe("accounting-screen view model", () => {
 
     expect(state).toMatchObject({
       title: "Primary trial balance",
-      description: "Primary basis ledger balances for run-42 grouped by account type. Values are basis per configured policy until accountant review.",
-      tableLabel: "Primary trial balance lines for run-42",
+      description: "Primary basis ledger balances for the selected ledger run grouped by account type. Values are basis per configured policy until accountant review.",
+      tableLabel: "Primary trial balance lines for the selected ledger run",
       selectedBasis: "Primary",
       accountFilterLabel: "Filter by General Ledger account",
       accountFilterValue: "",
       filteredRowCountLabel: "2 GL account rows",
       state: "ready",
       hasRows: true,
-      statusAnnouncement: "2 trial balance lines loaded for run-42."
+      statusAnnouncement: "2 trial balance lines loaded for the selected ledger run."
     });
     expect(state.basisOptions).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "Primary", rowCount: 2, rowCountLabel: "2 rows", isSelected: true }),
@@ -1412,13 +1438,15 @@ describe("accounting-screen view model", () => {
     expect(state.selectedDetail).toMatchObject({
       eyebrow: "Trial-balance detail",
       title: "Cash",
-      subtitle: "Asset · acct-cash",
+      subtitle: "Asset · Primary basis",
       statusLabel: "Debit / asset",
       statusVariant: "success",
       ariaLabel: "Trial-balance detail for Cash",
       ledgerLinesTitle: "Ledger lines for selected account",
       supportingDocumentsTitle: "Supporting documentation"
     });
+    expect(state.selectedDetail?.description).not.toContain("run-42");
+    expect(state.selectedDetail?.fields).toContainEqual({ label: "Run", value: "the selected ledger run" });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
       { label: "Dimensions", value: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | Cost center: ops-close | External class: private-fund | External department: finance" },
       { label: "Journal entries", value: "je-cash-1" },
@@ -1430,16 +1458,16 @@ describe("accounting-screen view model", () => {
         journalEntryId: "je-cash-1",
         debitLabel: "$120,500",
         creditLabel: "$0",
-        evidenceLabel: "Source evt-cash-1",
+        evidenceLabel: "Source evidence",
         evidenceHref: "/accounting/audit?sourceEventId=evt-cash-1",
         approvalHref: "/accounting/approvals?approvalId=approval-cash-1"
       })
     ]);
     expect(state.selectedDetail?.supportingDocuments).toEqual(expect.arrayContaining([
       expect.objectContaining({ label: "Run review packet", href: "/api/workstation/runs/run-42/review-packet" }),
-      expect.objectContaining({ label: "Source event evt-cash-1", href: "/accounting/audit?sourceEventId=evt-cash-1" }),
-      expect.objectContaining({ label: "Journal entry je-cash-1", href: "/accounting/ledger?journalEntryId=je-cash-1" }),
-      expect.objectContaining({ label: "Approval approval-cash-1", href: "/accounting/approvals?approvalId=approval-cash-1" })
+      expect.objectContaining({ label: "Source event evidence", href: "/accounting/audit?sourceEventId=evt-cash-1" }),
+      expect.objectContaining({ label: "Journal entry evidence", href: "/accounting/ledger?journalEntryId=je-cash-1" }),
+      expect.objectContaining({ label: "Approval evidence", href: "/accounting/approvals?approvalId=approval-cash-1" })
     ]));
     expect(state.rows[1]).toMatchObject({
       balanceLabel: "-$500",
@@ -1529,6 +1557,7 @@ describe("accounting-screen view model", () => {
 
     expect(state).toMatchObject({
       title: "Journal evidence dimensions",
+      description: "Retained journal rows for the selected ledger run with canonical dimensional scope preserved for ledger evidence review.",
       filteredRowCountLabel: "2 GL account rows",
       hasRows: true
     });
@@ -1581,7 +1610,7 @@ describe("accounting-screen view model", () => {
       { label: "Source events", value: "legacy-source-event" },
       { label: "Approvals", value: "No approvals linked" }
     ]));
-    expect(legacyState.selectedDetail?.auditDrillThroughLabel).toBe("Open source event legacy-source-event");
+    expect(legacyState.selectedDetail?.auditDrillThroughLabel).toBe("Open source evidence");
     expect(legacyState.selectedDetail?.auditDrillThroughHref).toBe("/accounting/audit?sourceEventId=legacy-source-event");
 
     const arrayState = buildAccountingTrialBalanceViewState({
@@ -1607,7 +1636,7 @@ describe("accounting-screen view model", () => {
       { label: "Source events", value: "evt-cash-1, evt-cash-2" },
       { label: "Approvals", value: "approval-cash-1" }
     ]));
-    expect(arrayState.selectedDetail?.auditDrillThroughLabel).toBe("Open source event evt-cash-1");
+    expect(arrayState.selectedDetail?.auditDrillThroughLabel).toBe("Open source evidence");
     expect(arrayState.selectedDetail?.auditDrillThroughHref).toBe("/accounting/audit?sourceEventId=evt-cash-1");
     expect(arrayState.selectedDetail?.approvalDrillThroughHref).toBe("/accounting/approvals?approvalId=approval-cash-1");
   });
@@ -1701,8 +1730,8 @@ describe("accounting-screen view model", () => {
       error: null
     })).toMatchObject({
       state: "loading",
-      loadingText: "Loading trial balance for run-42.",
-      statusAnnouncement: "Loading trial balance for run-42."
+      loadingText: "Loading trial balance for the selected ledger run.",
+      statusAnnouncement: "Loading trial balance for the selected ledger run."
     });
 
     expect(buildAccountingTrialBalanceViewState({
@@ -1713,7 +1742,7 @@ describe("accounting-screen view model", () => {
     })).toMatchObject({
       state: "empty",
       emptyTitle: "No trial balance lines",
-      statusAnnouncement: "No trial balance lines returned for run-42."
+      statusAnnouncement: "No trial balance lines returned for the selected ledger run."
     });
 
     expect(buildAccountingTrialBalanceViewState({
@@ -1724,7 +1753,7 @@ describe("accounting-screen view model", () => {
     })).toMatchObject({
       state: "error",
       errorText: "Ledger unavailable.",
-      statusAnnouncement: "Trial balance failed for run-42: Ledger unavailable."
+      statusAnnouncement: "Trial balance failed for the selected ledger run: Ledger unavailable."
     });
   });
 
@@ -1912,14 +1941,14 @@ describe("accounting-screen view model", () => {
     expect(rows[1]).toMatchObject({
       rowId: "sched-1-paydown",
       eventTypeLabel: "Paydown",
-      paymentDateLabel: "2026-11-15",
+      paymentDateLabel: "Nov 15, 2026",
       expectedAmountLabel: "126,250 USD",
       actualAmountLabel: "124,900 USD",
       varianceLabel: "-1,350 USD",
       factorLabel: "1.000000 -> 0.900000",
       postingStatusLabel: "Variance review",
       postingStatusTone: "danger",
-      selectAriaLabel: "Inspect schedule event Paydown for sec-1 on 2026-11-15",
+      selectAriaLabel: "Inspect schedule event Paydown for sec-1 on Nov 15, 2026",
       detailPanelId: "security-schedule-detail-panel",
       isExpanded: true
     });
@@ -2011,8 +2040,8 @@ describe("accounting-screen view model", () => {
 
     expect(rows[0]).toMatchObject({
       rowId: "lot-1",
-      tradeDateLabel: "2026-04-20",
-      settleDateLabel: "2026-04-22",
+      tradeDateLabel: "Apr 20, 2026",
+      settleDateLabel: "Apr 22, 2026",
       quantityLabel: "95,000",
       faceLabel: "95,000",
       factorAdjustedLabel: "85,500",
@@ -2167,6 +2196,31 @@ describe("accounting-screen view model", () => {
         statusLabel: "Inactive",
         statusTone: "warning"
       })
+    ]));
+  });
+
+  it("keeps a partial instrument passport response reviewable instead of crashing", () => {
+    const view = buildInstrumentPassportViewState({
+      securityId: "sec-dev-001",
+      passport: {
+        securityId: "sec-dev-001",
+        identity: {
+          displayName: "Apple Inc.",
+          assetClass: "Equity"
+        }
+      } as InstrumentPassport
+    });
+
+    expect(view).toMatchObject({
+      title: "Instrument passport",
+      statusLabel: "Unknown",
+      statusBadgeVariant: "outline"
+    });
+    expect(view.fields).toEqual(expect.arrayContaining([
+      { label: "Display name", value: "Apple Inc." },
+      { label: "Trust", value: "Trust posture is unavailable.", tone: "default" },
+      { label: "Identifiers", value: "Identifier summary is unavailable." },
+      { label: "Usage", value: "Downstream usage is unavailable." }
     ]));
   });
 
@@ -2477,14 +2531,15 @@ describe("accounting-screen view model", () => {
       ariaLabel: "Security Master command deck",
       title: "Security Master command deck",
       detailTitle: "Security detail page",
-      detailSubtitle: "sec-1 · Equity",
+      detailSubtitle: "Equity · Active",
       detailStatusLabel: "Active",
       detailStatusBadgeVariant: "success"
     });
     expect(state.metrics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "results", value: "1", tone: "success" }),
-      expect.objectContaining({ id: "selected", value: "Apple Inc.", detail: "Security ID sec-1" }),
-      expect.objectContaining({ id: "conflicts", value: "1", tone: "warning" })
+      expect.objectContaining({ id: "selected", value: "Apple Inc.", detail: "Equity · Active.", tone: "success" }),
+      expect.objectContaining({ id: "conflicts", value: "1", tone: "warning" }),
+      expect.objectContaining({ id: "reference", value: "Pending", tone: "default" }),
+      expect.objectContaining({ id: "passport", value: "Controls set", tone: "success" })
     ]));
     expect(state.detailSections).toEqual(expect.arrayContaining([
       { id: "overview", label: "Overview", value: "1 identifier", active: true },
@@ -2493,6 +2548,140 @@ describe("accounting-screen view model", () => {
       { id: "controls", label: "Controls", value: "Trading set" },
       { id: "audit", label: "Audit", value: "1 conflict" }
     ]));
+  });
+
+  it("derives a review posture from a partial passport without dereferencing missing trust evidence", () => {
+    const state = buildSecurityMasterPageViewState({
+      query: "",
+      results: null,
+      selectedSecurityId: "sec-dev-001",
+      selectedDisplayName: "Apple Inc.",
+      selectedAssetClass: "Equity",
+      selectedStatus: "Active",
+      identity: null,
+      identityLoading: false,
+      conflicts: [],
+      conflictsLoading: false,
+      corporateActions: [],
+      instrumentPassport: {
+        securityId: "sec-dev-001",
+        identity: { displayName: "Apple Inc.", assetClass: "Equity" }
+      } as InstrumentPassport,
+      securitySchedules: [],
+      openLotReadModel: null,
+      tradingParameters: null
+    });
+
+    expect(state.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "passport",
+        value: "Passport evidence incomplete",
+        tone: "warning"
+      })
+    ]));
+  });
+
+  it("does not close Security Master coverage when a trusted passport returns no operations checks", () => {
+    const state = buildSecurityMasterPageViewState({
+      query: "AAPL",
+      results: [securityResult],
+      selectedSecurityId: "sec-1",
+      selectedDisplayName: "Apple Inc.",
+      selectedAssetClass: "Equity",
+      selectedStatus: "Active",
+      identity: securityIdentity,
+      identityLoading: false,
+      conflicts: [],
+      conflictsLoading: false,
+      corporateActions: [],
+      instrumentPassport: {
+        ...instrumentPassport,
+        operationsWorkbench: {
+          ...instrumentPassport.operationsWorkbench!,
+          readiness: []
+        }
+      },
+      referenceDataCoverage: {
+        requestedAtUtc: "2026-05-10T12:00:00Z",
+        endpoints: [createReferenceDataEndpoint(0, "Ready")]
+      },
+      securitySchedules: [],
+      openLotReadModel: null,
+      tradingParameters
+    });
+
+    expect(state.coveragePosture).toEqual({
+      label: "Review required",
+      detail: "passport evidence is incomplete.",
+      tone: "warning"
+    });
+  });
+
+  it("fails Security Master coverage closed and reconciles every reference route bucket", () => {
+    const missingRoutes = Array.from({ length: 41 }, (_, index) => createReferenceDataEndpoint(index, "Missing"));
+    const deferredRoutes = Array.from({ length: 2 }, (_, index) => createReferenceDataEndpoint(41 + index, "Deferred"));
+    const coverage = {
+      requestedAtUtc: "2026-05-10T12:00:00Z",
+      endpoints: [...missingRoutes, ...deferredRoutes]
+    };
+    const partialPassport = {
+      securityId: "sec-dev-001",
+      identity: { displayName: "Apple Inc.", assetClass: "Equity" }
+    } as InstrumentPassport;
+
+    const state = buildSecurityMasterPageViewState({
+      query: "AAPL",
+      results: [securityResult],
+      selectedSecurityId: "sec-dev-001",
+      selectedDisplayName: "Apple Inc.",
+      selectedAssetClass: "Equity",
+      selectedStatus: "Active",
+      identity: securityIdentity,
+      identityLoading: false,
+      conflicts,
+      conflictsLoading: false,
+      corporateActions: [],
+      instrumentPassport: partialPassport,
+      referenceDataCoverage: coverage,
+      securitySchedules: [],
+      openLotReadModel: null,
+      tradingParameters
+    });
+
+    expect(state.coveragePosture).toEqual({
+      label: "Review required",
+      detail: "1 open conflict; 41 routes need review; 2 routes are deferred or blocked; passport evidence is incomplete.",
+      tone: "warning"
+    });
+    expect(state.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "reference",
+        value: "43 routes",
+        detail: "0 ready · 41 need review · 2 deferred or blocked · 43 total.",
+        tone: "warning"
+      })
+    ]));
+
+    const workbench = buildReferenceDataWorkbenchViewState({
+      securityId: "sec-dev-001",
+      coverage
+    });
+    const routeValue = Number(workbench.metrics.find((metric) => metric.id === "routes")?.value);
+    const readyValue = Number(workbench.metrics.find((metric) => metric.id === "ready")?.value);
+    const reviewValue = Number(workbench.metrics.find((metric) => metric.id === "review")?.value);
+    const deferredOrBlockedValue = Number(workbench.metrics.find((metric) => metric.id === "deferred")?.value);
+
+    expect({ routeValue, readyValue, reviewValue, deferredOrBlockedValue }).toEqual({
+      routeValue: 43,
+      readyValue: 0,
+      reviewValue: 41,
+      deferredOrBlockedValue: 2
+    });
+    expect(readyValue + reviewValue + deferredOrBlockedValue).toBe(routeValue);
+    expect(workbench.metrics.find((metric) => metric.id === "deferred")).toMatchObject({
+      label: "Deferred / blocked",
+      detail: "2 write-capable sources intentionally deferred."
+    });
   });
 
   it("retries Security Master identifier conflicts through view-model command state", async () => {
@@ -2549,8 +2738,8 @@ describe("accounting-screen view model", () => {
     expect(state).toMatchObject({
       panelId: "security-master-identity-detail",
       title: "Identity drill-in · Apple Inc.",
-      subtitle: "sec-1 · v3 · Equity",
-      description: "1 identifier · 1 alias · effective 2024-01-01 -> active",
+      subtitle: "Equity · Active",
+      description: "1 identifier · 1 alias · effective Jan 1, 2024 – active",
       ariaLabel: "Security identity detail for Apple Inc.",
       statusLabel: "Active",
       statusBadgeVariant: "success",
@@ -2559,25 +2748,25 @@ describe("accounting-screen view model", () => {
     });
     expect(state?.summaryFields).toEqual(expect.arrayContaining([
       { label: "Security ID", value: "sec-1" },
-      { label: "Effective", value: "2024-01-01 -> active" }
+      { label: "Effective", value: "Jan 1, 2024 – active" }
     ]));
     expect(state?.identifiers[0]).toMatchObject({
       rowId: "identifier-ticker-aapl",
       providerLabel: "Bloomberg",
       primaryLabel: "Primary",
       primaryBadgeVariant: "success",
-      validRangeLabel: "2024-01-01 -> active",
-      ariaLabel: "Ticker AAPL, Primary, provider Bloomberg, valid 2024-01-01 -> active"
+      validRangeLabel: "Jan 1, 2024 – active",
+      ariaLabel: "Ticker AAPL, Primary, provider Bloomberg, valid Jan 1, 2024 – active"
     });
     expect(state?.aliases[0]).toMatchObject({
       rowId: "alias-alias-1",
       providerLabel: "—",
       enabledLabel: "Enabled",
       enabledBadgeVariant: "success",
-      validRangeLabel: "2025-01-01 -> active",
-      createdLabel: "2025-01-01",
+      validRangeLabel: "Jan 1, 2025 – active",
+      createdLabel: "Jan 1, 2025",
       reasonText: "Market data source mapping",
-      ariaLabel: "ProviderSymbol AAPL.OQ, Enabled, scope Collector, provider —, valid 2025-01-01 -> active"
+      ariaLabel: "ProviderSymbol AAPL.OQ, Enabled, scope Collector, provider —, valid Jan 1, 2025 – active"
     });
   });
 
@@ -2591,7 +2780,8 @@ describe("accounting-screen view model", () => {
       isResolving: true,
       providerASummary: "Bloomberg -> security sec-1",
       providerBSummary: "Refinitiv -> security sec-2",
-      detectedLabel: "Detected 2026-01-01",
+      detectedLabel: "Detected Jan 1, 2026",
+      fieldLabel: "CUSIP identifier",
       resolutionStatusText: "Resolving identifier conflict conflict-1."
     });
     expect(rows[0].ariaLabel).toContain("Identifier conflict conflict-1 on identifiers.CUSIP: Open.");

@@ -306,16 +306,20 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             var checksumFile = file.FullName + ".sha256";
             if (File.Exists(checksumFile))
             {
-                var expectedChecksum = await File.ReadAllTextAsync(checksumFile, ct);
+                // Sidecars are written by AtomicFileWriter in sha256sum format
+                // ("{checksum}  {filename}"), so only the first token is the hash.
+                var expectedChecksum = (await File.ReadAllTextAsync(checksumFile, ct))
+                    .Split(' ', 2)[0]
+                    .Trim();
                 var actualChecksum = await ComputeChecksumAsync(file.FullName, ct);
 
-                if (!string.Equals(expectedChecksum.Trim(), actualChecksum, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(expectedChecksum, actualChecksum, StringComparison.OrdinalIgnoreCase))
                 {
                     issues.Add(new HealthIssue(
                         Severity: IssueSeverity.Critical,
                         Type: IssueType.ChecksumMismatch,
                         Path: file.FullName,
-                        ExpectedChecksum: expectedChecksum.Trim(),
+                        ExpectedChecksum: expectedChecksum,
                         ActualChecksum: actualChecksum,
                         RecommendedAction: "restore_from_backup",
                         AutoRepairable: true

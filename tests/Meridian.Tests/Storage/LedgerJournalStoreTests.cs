@@ -79,6 +79,7 @@ public sealed class LedgerJournalStoreTests
     public void LineDimensionContainmentJson_UsesSparseCanonicalDimensionPayload()
     {
         var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var positionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70");
         var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(new LedgerLineDimensionSet(
             FundId: " fund-alpha ",
             EntityId: "entity-master",
@@ -90,7 +91,10 @@ public sealed class LedgerJournalStoreTests
                 ["Department"] = "FundAccounting",
                 [" "] = "ignored",
                 ["Region"] = " US "
-            }));
+            })
+        {
+            PositionId = positionId
+        });
 
         json.Should().NotBeNull();
         using var document = JsonDocument.Parse(json!);
@@ -98,6 +102,7 @@ public sealed class LedgerJournalStoreTests
         root.GetProperty("fundId").GetString().Should().Be("fund-alpha");
         root.GetProperty("entityId").GetString().Should().Be("entity-master");
         root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("positionId").GetGuid().Should().Be(positionId);
         root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
         root.GetProperty("counterpartyId").GetString().Should().Be("administrator");
         root.TryGetProperty("investorId", out _).Should().BeFalse();
@@ -110,6 +115,7 @@ public sealed class LedgerJournalStoreTests
     public void LineDimensions_AreCanonicalizedBeforeDurableStorageAndQueryFilters()
     {
         var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var positionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70");
         var dimensions = new LedgerLineDimensionSet(
             FundId: " fund-alpha ",
             EntityId: " entity-master ",
@@ -134,7 +140,10 @@ public sealed class LedgerJournalStoreTests
             AccountId: " account-cash ",
             CustomerId: " customer-investor-services ",
             VendorId: " vendor-administrator ",
-            ProjectId: " project-close ");
+            ProjectId: " project-close ")
+        {
+            PositionId = positionId
+        };
 
         var canonical = PostgresLedgerJournalStore.CanonicalizeLineDimensions(dimensions);
         var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(dimensions);
@@ -147,6 +156,7 @@ public sealed class LedgerJournalStoreTests
         canonical.InvestorId.Should().Be("investor-lp-1");
         canonical.CapitalAccountId.Should().Be("capital-account-lp-1");
         canonical.InstrumentId.Should().Be(instrumentId);
+        canonical.PositionId.Should().Be(positionId);
         canonical.TaxLotId.Should().Be("tax-lot-2026-001");
         canonical.CostCenterId.Should().Be("fund-accounting");
         canonical.CounterpartyId.Should().Be("counterparty-admin");
@@ -172,6 +182,7 @@ public sealed class LedgerJournalStoreTests
         root.GetProperty("investorId").GetString().Should().Be("investor-lp-1");
         root.GetProperty("capitalAccountId").GetString().Should().Be("capital-account-lp-1");
         root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("positionId").GetGuid().Should().Be(positionId);
         root.GetProperty("taxLotId").GetString().Should().Be("tax-lot-2026-001");
         root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
         root.GetProperty("counterpartyId").GetString().Should().Be("counterparty-admin");
@@ -217,6 +228,21 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("join ledger.accounting_periods p_filter on p_filter.period_id = je_filter.period_id");
         sql.Should().NotContain("where jl.");
         sql.Should().NotContain("where p.");
+    }
+
+    [Fact]
+    public void JournalEntryQueryFilterSql_SourceEvent_UsesIndexedJournalEntryColumn()
+    {
+        var sourceEventId = Guid.NewGuid();
+
+        var sql = PostgresLedgerJournalStore.BuildJournalEntryQueryFilterSql(
+            "ledger.journal_entries",
+            "ledger.journal_legs",
+            "ledger.accounting_periods",
+            new LedgerJournalEntryQuery(SourceEventId: sourceEventId));
+
+        sql.Should().Contain("je_filter.source_event_id = @source_event_id");
+        sql.Should().NotContain("jl_filter.source_event_id");
     }
 
     [Fact]
@@ -322,6 +348,35 @@ public sealed class LedgerJournalStoreTests
 
         act.Should().Throw<LedgerValidationException>()
             .WithMessage("*hard-closed*no postings*");
+    }
+
+    [Fact]
+    public void PostingGuard_SoftClosedPeriod_AllowsClosingEntry()
+    {
+        var period = BuildAccountingPeriod("SoftClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow("closing entries finalize the period being closed");
+    }
+
+    [Fact]
+    public void PostingGuard_HardClosedPeriod_AllowsClosingEntry()
+    {
+        var period = BuildAccountingPeriod("HardClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow(
+            "closing entries are the sanctioned exception to the closed-period posting bar");
     }
 
     [Fact]
@@ -838,6 +893,7 @@ public sealed class LedgerJournalStoreTests
         var sourceEventId = Guid.NewGuid();
         var commandId = Guid.NewGuid();
         var instrumentId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
         var write = BuildBalancedJournalWrite(periodId) with
         {
@@ -850,6 +906,7 @@ public sealed class LedgerJournalStoreTests
             [$"lineDimensions.{debitLine.EntryId:N}.fundId"] = " fund-alpha ",
             [$"lineDimensions.{debitLine.EntryId:N}.entityId"] = "entity-master",
             [$"lineDimensions.{debitLine.EntryId:N}.instrumentId"] = instrumentId.ToString("D"),
+            [$"lineDimensions.{debitLine.EntryId:N}.positionId"] = positionId.ToString("D"),
             [$"lineDimensions.{debitLine.EntryId:N}.costCenterId"] = "investment-ops",
             [$"lineDimensions.{debitLine.EntryId:N}.counterpartyId"] = "custodian-bny",
             [$"lineDimensions.{debitLine.EntryId:N}.externalGl.Department"] = " InvestmentOps ",
@@ -899,6 +956,7 @@ public sealed class LedgerJournalStoreTests
         normalizedDebit.Dimensions!.FundId.Should().Be("fund-alpha");
         normalizedDebit.Dimensions.EntityId.Should().Be("entity-master");
         normalizedDebit.Dimensions.InstrumentId.Should().Be(instrumentId);
+        normalizedDebit.Dimensions.PositionId.Should().Be(positionId);
         normalizedDebit.Dimensions.CostCenterId.Should().Be("investment-ops");
         normalizedDebit.Dimensions.CounterpartyId.Should().Be("custodian-bny");
         normalizedDebit.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");

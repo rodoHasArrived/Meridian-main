@@ -16,8 +16,6 @@ namespace Meridian.Execution;
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
 public sealed class OrderManagementSystem : IOrderManager, IDisposable
 {
-    private const int MaxRetainedOrders = 5_000;
-
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
     private readonly IRiskValidator? _riskValidator;
@@ -28,10 +26,21 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
     private readonly PaperSessionPersistenceService? _sessionPersistence;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
+    private readonly OrderManagementSystemOptions _options;
+    private readonly ExecutionMode _gatewayExecutionMode;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly CancellationTokenSource _reportPumpCts = new();
+    private readonly Task _reportPumpTask;
+    private readonly ConcurrentDictionary<ExecutionReport, byte> _processedFillReports = new();
+    private readonly ConcurrentQueue<ExecutionReport> _processedFillReportOrder = new();
     private int _orderSequence;
+    private long _droppedExecutionReports;
+
+    private const int MaxTrackedFillReports = 4096;
+    private static readonly TimeSpan InitialReportStreamRetryDelay = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan MaxReportStreamRetryDelay = TimeSpan.FromSeconds(60);
 
     public OrderManagementSystem(
         IExecutionGateway gateway,
@@ -43,7 +52,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         Meridian.Execution.Models.IPortfolioState? portfolioState = null,
         PaperSessionPersistenceService? sessionPersistence = null,
         BrokerageConfiguration? brokerageConfiguration = null,
-        ILiveOrderReadinessGate? liveOrderReadinessGate = null)
+        ILiveOrderReadinessGate? liveOrderReadinessGate = null,
+        OrderManagementSystemOptions? options = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -55,14 +65,23 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
         _brokerageConfiguration = brokerageConfiguration;
+        _options = options ?? new OrderManagementSystemOptions();
+        _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
+            ? modeProvider.ExecutionMode
+            : BrokerageOrderPlacementGate.ResolveExecutionMode(brokerageConfiguration, gateway.GatewayId);
         // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
         var executionPolicy = new EventPipelinePolicy(
-            Capacity: 1000,
+            Capacity: _options.ValidatedExecutionChannelCapacity,
             FullMode: BoundedChannelFullMode.Wait,
             EnableMetrics: false);
         _executionChannel = executionPolicy.CreateChannel<ExecutionReport>(
             singleReader: true,
             singleWriter: false);
+
+        // Consume the gateway's asynchronous execution report stream so partial fills,
+        // rejects, and cancels that arrive after the synchronous submit ack still reach
+        // order state, session persistence, and downstream fill consumers.
+        _reportPumpTask = Task.Run(() => PumpGatewayExecutionReportsAsync(_reportPumpCts.Token));
     }
 
     /// <inheritdoc />
@@ -92,14 +111,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 request.Symbol);
         }
 
-        var placementGate = BrokerageOrderPlacementGate.Evaluate(_brokerageConfiguration, _gateway.GatewayId);
+        var placementGate = BrokerageOrderPlacementGate.Evaluate(
+            _brokerageConfiguration,
+            _gateway.GatewayId,
+            _gatewayExecutionMode);
         if (!placementGate.IsAllowed)
         {
-            var rejectedState = CreateRejectedState(orderId, safeRequest, placementGate.RejectReason);
-            _orders[orderId] = rejectedState;
-            TrimRetainedOrdersIfNeeded();
-            await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
-            await RecordOrderRejectionAsync(
+            return await RejectOrderAsync(
                 orderId,
                 safeRequest,
                 actor,
@@ -107,18 +125,13 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 runId,
                 correlationId,
                 placementGate.RejectReason,
-                ct).ConfigureAwait(false);
-
-            return new OrderResult
-            {
-                Success = false,
-                OrderId = orderId,
-                ErrorMessage = placementGate.RejectReason,
-                OrderState = rejectedState
-            };
+                sessionId,
+                ct,
+                rejectionSource: "execution placement gate")
+                .ConfigureAwait(false);
         }
 
-        var requiresLiveOrderReadinessGate = RequiresLiveOrderReadinessGate(brokerName);
+        var requiresLiveOrderReadinessGate = RequiresLiveOrderReadinessGate();
         LiveOrderReadinessDecision? liveOrderReadinessDecision = null;
         if (requiresLiveOrderReadinessGate)
         {
@@ -133,11 +146,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             if (!liveOrderReadinessDecision.IsApproved)
             {
                 var rejectReason = liveOrderReadinessDecision.Reason ?? "Live order readiness gate rejected the order.";
-                var rejectedState = CreateRejectedState(orderId, safeRequest, rejectReason);
-                _orders[orderId] = rejectedState;
-                TrimRetainedOrdersIfNeeded();
-                await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
-                await RecordOrderRejectionAsync(
+                return await RejectOrderAsync(
                     orderId,
                     safeRequest,
                     actor,
@@ -145,17 +154,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                     runId,
                     correlationId,
                     rejectReason,
+                    sessionId,
                     ct,
+                    rejectionSource: "live order readiness gate",
                     reasonCode: "LIVE_ORDER_READINESS_REJECTED",
-                    metadata: BuildLiveOrderReadinessRejectedAuditMetadata(liveOrderReadinessDecision)).ConfigureAwait(false);
-
-                return new OrderResult
-                {
-                    Success = false,
-                    OrderId = orderId,
-                    ErrorMessage = rejectReason,
-                    OrderState = rejectedState
-                };
+                    metadata: BuildLiveOrderReadinessRejectedAuditMetadata(liveOrderReadinessDecision))
+                    .ConfigureAwait(false);
             }
         }
 
@@ -169,41 +173,20 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             operatorControlDecision = controlDecision;
             if (!controlDecision.IsApproved)
             {
-                _logger.LogWarning("Order {OrderId} for {Symbol} rejected by operator controls: {Reason}",
-                    orderId, safeRequest.Symbol, controlDecision.RejectReason);
-
-                if (_auditTrail is not null)
-                {
-                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                        AuditId: Guid.NewGuid().ToString("N"),
-                        Category: "Order",
-                        Action: "OrderRejected",
-                        Outcome: "Rejected",
-                        OccurredAt: DateTimeOffset.UtcNow,
-                        Actor: actor,
-                        BrokerName: brokerName,
-                        OrderId: orderId,
-                        RunId: runId,
-                        Symbol: safeRequest.Symbol,
-                        CorrelationId: correlationId,
-                        Message: controlDecision.RejectReason,
-                        Reason: controlDecision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
-                        Scope: BuildOrderAuditScope(safeRequest, runId),
-                        Metadata: BuildOrderRejectedByControlAuditMetadata(controlDecision)), ct).ConfigureAwait(false);
-                }
-
-                var rejectedState = CreateRejectedState(orderId, safeRequest, controlDecision.RejectReason);
-                _orders[orderId] = rejectedState;
-                TrimRetainedOrdersIfNeeded();
-                await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
-
-                return new OrderResult
-                {
-                    Success = false,
-                    OrderId = orderId,
-                    ErrorMessage = controlDecision.RejectReason,
-                    OrderState = rejectedState
-                };
+                return await RejectOrderAsync(
+                    orderId,
+                    safeRequest,
+                    actor,
+                    brokerName,
+                    runId,
+                    correlationId,
+                    controlDecision.RejectReason,
+                    sessionId,
+                    ct,
+                    rejectionSource: "operator controls",
+                    reasonCode: controlDecision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
+                    metadata: BuildOrderRejectedByControlAuditMetadata(controlDecision))
+                    .ConfigureAwait(false);
             }
         }
 
@@ -213,38 +196,18 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             var gateResult = await _securityMasterGate.CheckAsync(safeRequest.Symbol, ct).ConfigureAwait(false);
             if (!gateResult.IsApproved)
             {
-                _logger.LogWarning("Order {OrderId} for {Symbol} rejected by Security Master gate: {Reason}",
-                    orderId, safeRequest.Symbol, gateResult.Reason);
-
-                if (_auditTrail is not null)
-                {
-                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                        AuditId: Guid.NewGuid().ToString("N"),
-                        Category: "Order",
-                        Action: "OrderRejected",
-                        Outcome: "Rejected",
-                        OccurredAt: DateTimeOffset.UtcNow,
-                        Actor: actor,
-                        BrokerName: brokerName,
-                        OrderId: orderId,
-                        RunId: runId,
-                        Symbol: safeRequest.Symbol,
-                        CorrelationId: correlationId,
-                        Message: gateResult.Reason), ct).ConfigureAwait(false);
-                }
-
-                var rejectedState = CreateRejectedState(orderId, safeRequest, gateResult.Reason);
-                _orders[orderId] = rejectedState;
-                TrimRetainedOrdersIfNeeded();
-                await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
-
-                return new OrderResult
-                {
-                    Success = false,
-                    OrderId = orderId,
-                    ErrorMessage = gateResult.Reason,
-                    OrderState = rejectedState
-                };
+                return await RejectOrderAsync(
+                    orderId,
+                    safeRequest,
+                    actor,
+                    brokerName,
+                    runId,
+                    correlationId,
+                    gateResult.Reason,
+                    sessionId,
+                    ct,
+                    rejectionSource: "Security Master gate")
+                    .ConfigureAwait(false);
             }
         }
 
@@ -254,38 +217,18 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             var riskResult = await _riskValidator.ValidateOrderAsync(safeRequest, ct).ConfigureAwait(false);
             if (!riskResult.IsApproved)
             {
-                _logger.LogWarning("Order {OrderId} for {Symbol} rejected by risk: {Reason}",
-                    orderId, safeRequest.Symbol, riskResult.RejectReason);
-
-                if (_auditTrail is not null)
-                {
-                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
-                        AuditId: Guid.NewGuid().ToString("N"),
-                        Category: "Order",
-                        Action: "OrderRejected",
-                        Outcome: "Rejected",
-                        OccurredAt: DateTimeOffset.UtcNow,
-                        Actor: actor,
-                        BrokerName: brokerName,
-                        OrderId: orderId,
-                        RunId: runId,
-                        Symbol: safeRequest.Symbol,
-                        CorrelationId: correlationId,
-                        Message: riskResult.RejectReason), ct).ConfigureAwait(false);
-                }
-
-                var rejectedState = CreateRejectedState(orderId, safeRequest, riskResult.RejectReason);
-                _orders[orderId] = rejectedState;
-                TrimRetainedOrdersIfNeeded();
-                await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
-
-                return new OrderResult
-                {
-                    Success = false,
-                    OrderId = orderId,
-                    ErrorMessage = riskResult.RejectReason,
-                    OrderState = rejectedState
-                };
+                return await RejectOrderAsync(
+                    orderId,
+                    safeRequest,
+                    actor,
+                    brokerName,
+                    runId,
+                    correlationId,
+                    riskResult.RejectReason,
+                    sessionId,
+                    ct,
+                    rejectionSource: "risk validator")
+                    .ConfigureAwait(false);
             }
         }
 
@@ -315,8 +258,21 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
 
-            var updatedState = ApplyReport(orderState, report);
-            _orders[orderId] = updatedState;
+            // Merge against the latest tracked state: the async report pump may already
+            // have applied a fill for this order before the submit ack is processed here.
+            var previousFilledQuantity = 0m;
+            var updatedState = _orders.AddOrUpdate(
+                orderId,
+                _ =>
+                {
+                    previousFilledQuantity = orderState.FilledQuantity;
+                    return ApplyReport(orderState, report);
+                },
+                (_, existing) =>
+                {
+                    previousFilledQuantity = existing.FilledQuantity;
+                    return ApplyReport(existing, report);
+                });
 
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, safeRequest.Symbol, safeRequest.Side, safeRequest.Quantity, updatedState.Status);
@@ -351,13 +307,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             // consumers can subscribe without coupling directly to the gateway.
             if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
             {
-                if (_portfolioState is PaperTradingPortfolio paperPortfolio)
-                {
-                    paperPortfolio.ApplyFill(report);
-                }
-
-                await RecordSessionFillAsync(sessionId, report, ct).ConfigureAwait(false);
-                _executionChannel.Writer.TryWrite(report);
+                await ProcessFillReportAsync(sessionId, report, previousFilledQuantity, ct).ConfigureAwait(false);
             }
 
             return new OrderResult
@@ -446,8 +396,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             };
         }
 
-        var updated = ApplyReport(state, report);
-        _orders[orderId] = updated;
+        var updated = _orders.AddOrUpdate(
+            orderId,
+            _ => ApplyReport(state, report),
+            (_, existing) => ApplyReport(existing, report));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
             action: "OrderCancelled",
@@ -484,8 +436,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
 
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
-        var updated = ApplyReport(state, report);
-        _orders[orderId] = updated;
+        var updated = _orders.AddOrUpdate(
+            orderId,
+            _ => ApplyReport(state, report),
+            (_, existing) => ApplyReport(existing, report));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
             action: report.OrderStatus is OrderStatus.Rejected ? "OrderModifyRejected" : "OrderModified",
@@ -537,22 +491,40 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         var openOrders = GetOpenOrders();
         _logger.LogInformation("Cancelling all {Count} open orders", openOrders.Count);
 
-        await Parallel.ForEachAsync(openOrders, ct, async (order, token) =>
-        {
-            await CancelOrderAsync(order.OrderId, token).ConfigureAwait(false);
-        }).ConfigureAwait(false);
+        await Parallel.ForEachAsync(
+            openOrders,
+            new ParallelOptions
+            {
+                CancellationToken = ct,
+                MaxDegreeOfParallelism = _options.ValidatedCancelAllMaxConcurrency
+            },
+            async (order, token) =>
+            {
+                await CancelOrderAsync(order.OrderId, token).ConfigureAwait(false);
+            }).ConfigureAwait(false);
     }
 
     public void Dispose()
     {
+        _reportPumpCts.Cancel();
         _executionChannel.Writer.TryComplete();
+
+        // Dispose the CTS only after the pump has finished using its token.
+        _reportPumpTask.ContinueWith(
+            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
+            _reportPumpCts,
+            CancellationToken.None,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
     }
 
     /// <summary>
     /// Provides a read-only view of fill and partial-fill execution reports for consumption
     /// by portfolio trackers and audit subscribers.  Reports are published as each order
-    /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>.
-    /// Consumers must drain this reader promptly to avoid backpressure.
+    /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>,
+    /// with <see cref="ExecutionReport.FilledQuantity"/> normalised to the fill increment
+    /// (gateways report cumulative quantities). Consumers must drain this reader promptly
+    /// to avoid backpressure.
     /// </summary>
     public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
 
@@ -564,13 +536,185 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
     private static OrderState ApplyReport(OrderState current, ExecutionReport report)
     {
+        // A replayed or late non-terminal report (e.g. the submit ack racing the async
+        // report stream) must not regress an order that already reached a terminal status.
+        var status = IsTerminal(current.Status) && !IsTerminal(report.OrderStatus)
+            ? current.Status
+            : report.OrderStatus;
+
         return current with
         {
-            Status = report.OrderStatus,
-            FilledQuantity = report.FilledQuantity > 0 ? report.FilledQuantity : current.FilledQuantity,
+            Status = status,
+            FilledQuantity = Math.Max(report.FilledQuantity, current.FilledQuantity),
             AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
             LastUpdatedAt = report.Timestamp
         };
+    }
+
+    private static bool IsTerminal(OrderStatus status) =>
+        status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
+
+    /// <summary>
+    /// Long-running consumer of <see cref="IExecutionGateway.StreamExecutionReportsAsync"/>.
+    /// Applies asynchronous reports (partial fills, rejects, cancels from a live broker) to
+    /// tracked order state and routes fills through the same funnel as the synchronous
+    /// submit path. Retries with capped backoff if the stream faults; stops when the stream
+    /// completes normally or the OMS is disposed.
+    /// </summary>
+    private async Task PumpGatewayExecutionReportsAsync(CancellationToken ct)
+    {
+        var retryDelay = InitialReportStreamRetryDelay;
+
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                await foreach (var report in _gateway.StreamExecutionReportsAsync(ct).ConfigureAwait(false))
+                {
+                    retryDelay = InitialReportStreamRetryDelay;
+                    await ProcessGatewayReportAsync(report, ct).ConfigureAwait(false);
+                }
+
+                // Stream completed normally: the gateway has no more asynchronous reports
+                // (synchronous-only gateways complete immediately; live gateways complete
+                // on their own disposal).
+                return;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Execution report stream from gateway {GatewayId} faulted; retrying in {RetryDelay}",
+                    _gateway.GatewayId, retryDelay);
+
+                try
+                {
+                    await Task.Delay(retryDelay, ct).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                retryDelay = retryDelay >= MaxReportStreamRetryDelay
+                    ? MaxReportStreamRetryDelay
+                    : TimeSpan.FromTicks(Math.Min(retryDelay.Ticks * 2, MaxReportStreamRetryDelay.Ticks));
+            }
+        }
+    }
+
+    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct)
+    {
+        var orderId = report.ClientOrderId ?? report.OrderId;
+
+        OrderState? updatedState = null;
+        var previousFilledQuantity = 0m;
+        while (!string.IsNullOrWhiteSpace(orderId) && _orders.TryGetValue(orderId, out var existing))
+        {
+            var merged = ApplyReport(existing, report);
+            if (_orders.TryUpdate(orderId, merged, existing))
+            {
+                previousFilledQuantity = existing.FilledQuantity;
+                updatedState = merged;
+                break;
+            }
+        }
+
+        if (updatedState is not null)
+        {
+            await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Received execution report for order {OrderId} ({ReportType}, {Status}) not tracked by this OMS",
+                report.OrderId, report.ReportType, report.OrderStatus);
+        }
+
+        if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
+        {
+            var sessionId = string.IsNullOrWhiteSpace(orderId) ? null : ResolveSessionId(orderId);
+            await ProcessFillReportAsync(sessionId, report, previousFilledQuantity, ct).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Single funnel for fill side-effects, shared by the synchronous submit path and the
+    /// asynchronous report pump. Gateways derived from <c>BaseBrokerageGateway</c> publish
+    /// the submit ack on the report stream as well, so fills are deduplicated to avoid
+    /// double-applying them to the portfolio.
+    /// </summary>
+    private async Task ProcessFillReportAsync(
+        string? sessionId,
+        ExecutionReport report,
+        decimal previousFilledQuantity,
+        CancellationToken ct)
+    {
+        if (!TryMarkFillProcessed(report))
+        {
+            return;
+        }
+
+        // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
+        // Alpaca filled_qty) while fill consumers treat each report as a discrete
+        // trade, so only the increment since the last tracked fill may be forwarded —
+        // otherwise partial fills are double-applied (5 then 10 becomes 15, not 10).
+        var incrementQuantity = report.FilledQuantity - previousFilledQuantity;
+        if (incrementQuantity <= 0m)
+        {
+            return;
+        }
+
+        var fillIncrement = incrementQuantity == report.FilledQuantity
+            ? report
+            : report with { FilledQuantity = incrementQuantity };
+
+        // Only fills for orders this OMS placed may mutate the paper portfolio;
+        // stream reports for external/untracked orders are still published below
+        // for observers but must not corrupt tracked positions.
+        var orderId = report.ClientOrderId ?? report.OrderId;
+        if (_portfolioState is PaperTradingPortfolio paperPortfolio
+            && !string.IsNullOrWhiteSpace(orderId)
+            && _orders.ContainsKey(orderId))
+        {
+            paperPortfolio.ApplyFill(fillIncrement);
+        }
+
+        await RecordSessionFillAsync(sessionId, fillIncrement, ct).ConfigureAwait(false);
+
+        if (!_executionChannel.Writer.TryWrite(fillIncrement))
+        {
+            var dropped = Interlocked.Increment(ref _droppedExecutionReports);
+            _logger.LogError(
+                "Execution report channel full; dropped fill report for order {OrderId} ({Symbol} {FilledQuantity} @ {FillPrice}); {DroppedCount} dropped in total — ExecutionReports consumers must drain faster",
+                fillIncrement.OrderId, fillIncrement.Symbol, fillIncrement.FilledQuantity, fillIncrement.FillPrice, dropped);
+        }
+    }
+
+    /// <summary>
+    /// Marks a fill report as processed; returns <see langword="false"/> when the identical
+    /// report was already handled via the other path (sync ack vs. report stream).
+    /// <see cref="ExecutionReport"/> is a record, so value equality identifies the replayed
+    /// ack; distinct fills always differ in timestamp and cumulative filled quantity.
+    /// </summary>
+    private bool TryMarkFillProcessed(ExecutionReport report)
+    {
+        if (!_processedFillReports.TryAdd(report, 0))
+        {
+            return false;
+        }
+
+        _processedFillReportOrder.Enqueue(report);
+        while (_processedFillReportOrder.Count > MaxTrackedFillReports
+            && _processedFillReportOrder.TryDequeue(out var oldest))
+        {
+            _processedFillReports.TryRemove(oldest, out _);
+        }
+
+        return true;
     }
 
     private static OrderState CreateRejectedState(
@@ -625,10 +769,25 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private string? ResolveSessionId(string orderId) =>
         _orderSessionIds.TryGetValue(orderId, out var sessionId) ? sessionId : null;
 
-    private static string BuildOrderAuditScope(OrderRequest request, string? runId)
+    private static string BuildOrderAuditScope(OrderRequest request, string? runId) =>
+        BuildOrderAuditScope(request.Symbol, request.StrategyId, runId, includeRunSegment: true);
+
+    private static string BuildOrderAuditScope(OrderState state) =>
+        BuildOrderAuditScope(state.Symbol, state.StrategyId, runId: null, includeRunSegment: false);
+
+    private static string BuildOrderAuditScope(
+        string? symbolValue,
+        string? strategyId,
+        string? runId,
+        bool includeRunSegment)
     {
-        var symbol = string.IsNullOrWhiteSpace(request.Symbol) ? "symbol:unknown" : $"symbol:{request.Symbol.Trim().ToUpperInvariant()}";
-        var strategy = string.IsNullOrWhiteSpace(request.StrategyId) ? "strategy:unknown" : $"strategy:{request.StrategyId.Trim()}";
+        var symbol = string.IsNullOrWhiteSpace(symbolValue) ? "symbol:unknown" : $"symbol:{symbolValue.Trim().ToUpperInvariant()}";
+        var strategy = string.IsNullOrWhiteSpace(strategyId) ? "strategy:unknown" : $"strategy:{strategyId.Trim()}";
+        if (!includeRunSegment)
+        {
+            return $"{strategy}/{symbol}";
+        }
+
         var run = string.IsNullOrWhiteSpace(runId) ? "run:unknown" : $"run:{runId.Trim()}";
         return $"{run}/{strategy}/{symbol}";
     }
@@ -680,13 +839,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             : decision with { EvidenceReference = decision.EvidenceReference.Trim() };
     }
 
-    private static bool RequiresLiveOrderReadinessGate(string? brokerName) =>
-        !string.Equals(NormalizeGatewayId(brokerName), "paper", StringComparison.Ordinal);
-
-    private static string NormalizeGatewayId(string? gatewayId) =>
-        string.IsNullOrWhiteSpace(gatewayId)
-            ? "paper"
-            : gatewayId.Trim().ToLowerInvariant();
+    private bool RequiresLiveOrderReadinessGate() =>
+        _gatewayExecutionMode is ExecutionMode.Live;
 
     private static IReadOnlyDictionary<string, string>? BuildOrderSubmittedAuditMetadata(
         ExecutionControlDecision? operatorControlDecision,
@@ -772,13 +926,6 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             Metadata: metadata ?? BuildOrderLifecycleAuditMetadata(state, report)), ct).ConfigureAwait(false);
     }
 
-    private static string BuildOrderAuditScope(OrderState state)
-    {
-        var symbol = string.IsNullOrWhiteSpace(state.Symbol) ? "symbol:unknown" : $"symbol:{state.Symbol.Trim().ToUpperInvariant()}";
-        var strategy = string.IsNullOrWhiteSpace(state.StrategyId) ? "strategy:unknown" : $"strategy:{state.StrategyId.Trim()}";
-        return $"{strategy}/{symbol}";
-    }
-
     private static IReadOnlyDictionary<string, string>? BuildOrderLifecycleAuditMetadata(
         OrderState? state,
         ExecutionReport? report)
@@ -824,6 +971,46 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         return metadata;
     }
 
+    private async Task<OrderResult> RejectOrderAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        string? message,
+        string? sessionId,
+        CancellationToken ct,
+        string rejectionSource,
+        string? reasonCode = null,
+        IReadOnlyDictionary<string, string>? metadata = null)
+    {
+        var rejectedState = CreateRejectedState(orderId, request, message);
+        _orders[orderId] = rejectedState;
+        TrimRetainedOrdersIfNeeded();
+        await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            message,
+            ct,
+            rejectionSource,
+            reasonCode,
+            metadata).ConfigureAwait(false);
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = message,
+            OrderState = rejectedState
+        };
+    }
+
     private async Task RecordOrderRejectionAsync(
         string orderId,
         OrderRequest request,
@@ -833,13 +1020,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         string? correlationId,
         string? message,
         CancellationToken ct,
+        string rejectionSource,
         string? reasonCode = null,
         IReadOnlyDictionary<string, string>? metadata = null)
     {
         _logger.LogWarning(
-            "Order {OrderId} for {Symbol} rejected by execution placement gate: {Reason}",
+            "Order {OrderId} for {Symbol} rejected by {RejectionSource}: {Reason}",
             orderId,
             request.Symbol,
+            rejectionSource,
             message);
 
         if (_auditTrail is null)
@@ -867,7 +1056,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
     private void TrimRetainedOrdersIfNeeded()
     {
-        if (_orders.Count <= MaxRetainedOrders)
+        if (_orders.Count <= _options.ValidatedMaxRetainedOrders)
         {
             return;
         }
@@ -879,7 +1068,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 OrderStatus.Rejected or
                 OrderStatus.Expired)
             .OrderBy(static order => order.LastUpdatedAt ?? order.CreatedAt)
-            .Take(_orders.Count - MaxRetainedOrders)
+            .Take(_orders.Count - _options.ValidatedMaxRetainedOrders)
             .Select(static order => order.OrderId)
             .ToArray();
 

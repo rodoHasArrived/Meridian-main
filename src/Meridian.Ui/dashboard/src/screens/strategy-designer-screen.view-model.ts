@@ -1319,10 +1319,10 @@ function validateCellKindParameters(cell: StrategyBuilderCell, cellIds: Readonly
     const parsedMinSize = minSize ? Number(minSize) : null;
     const parsedMaxSize = maxSize ? Number(maxSize) : null;
 
-    if (minSize && (!Number.isFinite(parsedMinSize) || parsedMinSize < 0)) {
+    if (minSize && (!Number.isFinite(parsedMinSize) || (parsedMinSize !== null && parsedMinSize < 0))) {
       messages.push({ code: "UniverseBuilderMinSizeInvalid", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) minSize must be a non-negative number.` });
     }
-    if (maxSize && (!Number.isFinite(parsedMaxSize) || parsedMaxSize < 0)) {
+    if (maxSize && (!Number.isFinite(parsedMaxSize) || (parsedMaxSize !== null && parsedMaxSize < 0))) {
       messages.push({ code: "UniverseBuilderMaxSizeInvalid", severity: "error", targetId: cell.cellId, message: `${label} (universe-builder) maxSize must be a non-negative number.` });
     }
     if (

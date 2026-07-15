@@ -95,6 +95,31 @@ public sealed class DirectLendingServiceTests
     }
 
     [Fact]
+    public async Task PostDailyAccrualAsync_WithActActBasis_ShouldUseActualYearLengthOfAccrualDate()
+    {
+        var service = new InMemoryDirectLendingService();
+        var request = BuildCreateRequest() with
+        {
+            Terms = BuildTerms(dayCountBasis: DayCountBasis.ActualActualISDA)
+        };
+        var detail = await service.CreateLoanAsync(request);
+
+        await service.ActivateLoanAsync(detail.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 22)));
+        await service.BookDrawdownAsync(detail.LoanId, new BookDrawdownRequest(250_000m, new DateOnly(2026, 3, 22), new DateOnly(2026, 3, 22), "wire-leap"));
+
+        var nonLeapAccrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2027, 3, 24)));
+        var leapAccrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2028, 2, 29)));
+
+        // Fixed 8% on 250,000 principal: 2027 divides by 365, leap year 2028 divides by 366.
+        nonLeapAccrual.Should().NotBeNull();
+        nonLeapAccrual!.InterestAmount.Should().BeApproximately(20_000m / 365m, 0.000000001m);
+        nonLeapAccrual.CommitmentFeeAmount.Should().BeApproximately(22_500m / 365m, 0.000000001m);
+        leapAccrual.Should().NotBeNull();
+        leapAccrual!.InterestAmount.Should().BeApproximately(20_000m / 366m, 0.000000001m);
+        leapAccrual.CommitmentFeeAmount.Should().BeApproximately(22_500m / 366m, 0.000000001m);
+    }
+
+    [Fact]
     public async Task AmendTermsAndPrincipalPayment_ShouldPreserveHistoryAndFreeCommitment()
     {
         var service = new InMemoryDirectLendingService();
@@ -164,7 +189,8 @@ public sealed class DirectLendingServiceTests
         decimal commitmentAmount = 1_000_000m,
         RateTypeKind rateTypeKind = RateTypeKind.Fixed,
         decimal? effectiveRateFloor = null,
-        decimal? effectiveRateCap = null) =>
+        decimal? effectiveRateCap = null,
+        DayCountBasis dayCountBasis = DayCountBasis.Act360) =>
         new(
             OriginationDate: new DateOnly(2026, 3, 22),
             MaturityDate: new DateOnly(2029, 3, 22),
@@ -176,7 +202,7 @@ public sealed class DirectLendingServiceTests
             SpreadBps: rateTypeKind == RateTypeKind.Floating ? 150m : null,
             FloorRate: rateTypeKind == RateTypeKind.Floating ? 0.05m : null,
             CapRate: rateTypeKind == RateTypeKind.Floating ? 0.12m : null,
-            DayCountBasis: DayCountBasis.Act360,
+            DayCountBasis: dayCountBasis,
             PaymentFrequency: PaymentFrequency.Quarterly,
             AmortizationType: AmortizationType.InterestOnly,
             CommitmentFeeRate: 0.03m,

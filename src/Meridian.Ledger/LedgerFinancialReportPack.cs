@@ -49,7 +49,7 @@ public sealed record LedgerFinancialReportPack(
             throw new ArgumentException("Restatement approver is required.", nameof(approvedBy));
         if (changedLineKeys.Count == 0)
             throw new ArgumentException("At least one changed report line is required.", nameof(changedLineKeys));
-        var normalizedEvidence = NormalizeEvidence(evidenceLinks);
+        var normalizedEvidence = LedgerEvidenceLinks.Normalize(evidenceLinks);
         if (normalizedEvidence.Count == 0)
             throw new ArgumentException("Restatement evidence is required.", nameof(evidenceLinks));
 
@@ -85,16 +85,16 @@ public sealed record LedgerFinancialReportPack(
         string reason,
         IReadOnlyList<string> evidenceLinks)
     {
-        if (string.IsNullOrWhiteSpace(actor))
-            throw new ArgumentException("Lifecycle actor is required.", nameof(actor));
-        if (string.IsNullOrWhiteSpace(reason))
-            throw new ArgumentException("Lifecycle reason is required.", nameof(reason));
-        var normalizedEvidence = NormalizeEvidence(evidenceLinks);
-        if (toStatus is LedgerReportPackLifecycleStatus.Approved or LedgerReportPackLifecycleStatus.Published
-            && normalizedEvidence.Count == 0)
-            throw new ArgumentException("Approval and publication transitions require retained evidence.", nameof(evidenceLinks));
-        if (!IsAllowedTransition(Status, toStatus))
-            throw new InvalidOperationException($"Cannot transition report pack from {Status} to {toStatus}.");
+        var (normalizedActor, normalizedReason, normalizedEvidence) = LedgerGovernedLifecycle.PrepareTransition(
+            actor,
+            reason,
+            evidenceLinks,
+            requireEvidence: toStatus is LedgerReportPackLifecycleStatus.Approved or LedgerReportPackLifecycleStatus.Published,
+            actorRequiredMessage: "Lifecycle actor is required.",
+            reasonRequiredMessage: "Lifecycle reason is required.",
+            evidenceRequiredMessage: "Approval and publication transitions require retained evidence.",
+            transitionAllowed: IsAllowedTransition(Status, toStatus),
+            transitionNotAllowedMessage: $"Cannot transition report pack from {Status} to {toStatus}.");
 
         return this with
         {
@@ -104,9 +104,9 @@ public sealed record LedgerFinancialReportPack(
                 new LedgerReportPackLifecycleEvent(
                     Status,
                     toStatus,
-                    actor.Trim(),
+                    normalizedActor,
                     occurredAtUtc.ToUniversalTime(),
-                    reason.Trim(),
+                    normalizedReason,
                     normalizedEvidence)
             ]).ToArray()
         };
@@ -122,11 +122,4 @@ public sealed record LedgerFinancialReportPack(
             LedgerReportPackLifecycleStatus.Restated => to is LedgerReportPackLifecycleStatus.Archived,
             _ => false
         };
-
-    private static IReadOnlyList<string> NormalizeEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks
-            .Select(static link => link.Trim())
-            .Where(static link => link.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
 }

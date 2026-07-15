@@ -56,6 +56,13 @@ public sealed class SymbolRegistry
     /// </summary>
     [JsonPropertyName("statistics")]
     public SymbolRegistryStatistics Statistics { get; set; } = new();
+
+    /// <summary>
+    /// Idempotent migration receipts keyed by migration identifier with the source fingerprint.
+    /// Legacy inputs are retained outside the registry for rollback.
+    /// </summary>
+    [JsonPropertyName("migrationMarkers")]
+    public Dictionary<string, string> MigrationMarkers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 /// <summary>
@@ -63,6 +70,12 @@ public sealed class SymbolRegistry
 /// </summary>
 public sealed class SymbolRegistryEntry
 {
+    /// <summary>
+    /// Durable Security Master identity. The canonical ticker is a lookup projection, not identity.
+    /// </summary>
+    [JsonPropertyName("securityId")]
+    public Guid? SecurityId { get; set; }
+
     /// <summary>
     /// Canonical symbol name used internally.
     /// </summary>
@@ -118,6 +131,13 @@ public sealed class SymbolRegistryEntry
     public Dictionary<string, string> ProviderSymbols { get; set; } = new();
 
     /// <summary>
+    /// Additive provenance for <see cref="ProviderSymbols"/>. Kept separate so existing registry
+    /// JSON containing string values remains readable.
+    /// </summary>
+    [JsonPropertyName("providerSymbolMetadata")]
+    public Dictionary<string, ProviderSymbolMetadata> ProviderSymbolMetadata { get; set; } = new();
+
+    /// <summary>
     /// Classification information.
     /// </summary>
     [JsonPropertyName("classification")]
@@ -161,6 +181,21 @@ public sealed class SymbolRegistryEntry
 }
 
 /// <summary>
+/// Provenance and precedence metadata for a provider-specific symbol.
+/// </summary>
+public sealed class ProviderSymbolMetadata
+{
+    [JsonPropertyName("source")]
+    public string Source { get; set; } = SymbolMappingSources.Registry;
+
+    [JsonPropertyName("isOverride")]
+    public bool IsOverride { get; set; }
+
+    [JsonPropertyName("updatedAt")]
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+}
+
+/// <summary>
 /// Symbol alias with source information.
 /// </summary>
 public sealed class SymbolAlias
@@ -176,6 +211,13 @@ public sealed class SymbolAlias
     /// </summary>
     [JsonPropertyName("source")]
     public string? Source { get; set; }
+
+    /// <summary>
+    /// Provider scope for aliases that are meaningful only within one provider namespace.
+    /// Null means the alias is safe for generic resolution.
+    /// </summary>
+    [JsonPropertyName("provider")]
+    public string? Provider { get; set; }
 
     /// <summary>
     /// Type of alias (ticker, ric, bloomberg, etc.).

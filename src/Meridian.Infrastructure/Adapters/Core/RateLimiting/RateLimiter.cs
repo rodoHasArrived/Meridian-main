@@ -16,10 +16,16 @@ public sealed class RateLimiter : IDisposable
     private readonly TimeSpan _window;
     private readonly TimeSpan _minDelay;
     private readonly ILogger _log;
+    private readonly TimeProvider _timeProvider;
     private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
     private bool _disposed;
 
-    public RateLimiter(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null, ILogger? log = null)
+    public RateLimiter(
+        int maxRequestsPerWindow,
+        TimeSpan window,
+        TimeSpan? minDelayBetweenRequests = null,
+        ILogger? log = null,
+        TimeProvider? timeProvider = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxRequestsPerWindow, 0, nameof(maxRequestsPerWindow));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(window, TimeSpan.Zero, nameof(window));
@@ -28,6 +34,7 @@ public sealed class RateLimiter : IDisposable
         _window = window;
         _minDelay = minDelayBetweenRequests ?? TimeSpan.Zero;
         _log = log ?? LoggingSetup.ForContext<RateLimiter>();
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     /// <summary>
@@ -38,7 +45,7 @@ public sealed class RateLimiter : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        var waitStart = DateTimeOffset.UtcNow;
+        var waitStart = _timeProvider.GetUtcNow();
 
         await _semaphore.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -51,27 +58,27 @@ public sealed class RateLimiter : IDisposable
             {
                 if (_requestTimestamps.TryPeek(out var oldest))
                 {
-                    var waitTime = oldest.Add(_window) - DateTimeOffset.UtcNow;
+                    var waitTime = oldest.Add(_window) - _timeProvider.GetUtcNow();
                     if (waitTime > TimeSpan.Zero)
                     {
                         _log.Debug("Rate limit reached, waiting {WaitMs}ms", waitTime.TotalMilliseconds);
-                        await Task.Delay(waitTime, ct).ConfigureAwait(false);
+                        await Task.Delay(waitTime, _timeProvider, ct).ConfigureAwait(false);
                     }
                 }
                 CleanupOldTimestamps();
             }
 
             // Enforce minimum delay between requests
-            var timeSinceLastRequest = DateTimeOffset.UtcNow - _lastRequest;
+            var timeSinceLastRequest = _timeProvider.GetUtcNow() - _lastRequest;
             if (timeSinceLastRequest < _minDelay)
             {
                 var delayNeeded = _minDelay - timeSinceLastRequest;
                 _log.Debug("Enforcing min delay, waiting {WaitMs}ms", delayNeeded.TotalMilliseconds);
-                await Task.Delay(delayNeeded, ct).ConfigureAwait(false);
+                await Task.Delay(delayNeeded, _timeProvider, ct).ConfigureAwait(false);
             }
 
             // Record this request
-            var now = DateTimeOffset.UtcNow;
+            var now = _timeProvider.GetUtcNow();
             _requestTimestamps.Enqueue(now);
             _lastRequest = now;
 
@@ -89,8 +96,9 @@ public sealed class RateLimiter : IDisposable
     public void RecordRequest()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        _requestTimestamps.Enqueue(DateTimeOffset.UtcNow);
-        _lastRequest = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
+        _requestTimestamps.Enqueue(now);
+        _lastRequest = now;
     }
 
     /// <summary>
@@ -103,7 +111,7 @@ public sealed class RateLimiter : IDisposable
 
         if (_requestTimestamps.TryPeek(out var oldest))
         {
-            remaining = oldest.Add(_window) - DateTimeOffset.UtcNow;
+            remaining = oldest.Add(_window) - _timeProvider.GetUtcNow();
             if (remaining < TimeSpan.Zero)
                 remaining = TimeSpan.Zero;
         }
@@ -113,7 +121,7 @@ public sealed class RateLimiter : IDisposable
 
     private void CleanupOldTimestamps()
     {
-        var cutoff = DateTimeOffset.UtcNow - _window;
+        var cutoff = _timeProvider.GetUtcNow() - _window;
         while (_requestTimestamps.TryPeek(out var oldest) && oldest < cutoff)
         {
             _requestTimestamps.TryDequeue(out _);

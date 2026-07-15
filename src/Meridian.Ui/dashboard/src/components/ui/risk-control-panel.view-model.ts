@@ -117,9 +117,13 @@ export function useRiskControlPanelViewModel(
   const mountedRef = useRef(true);
   const requestRevisionRef = useRef(0);
 
-  useEffect(() => () => {
-    mountedRef.current = false;
-    requestRevisionRef.current += 1;
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      requestRevisionRef.current += 1;
+    };
   }, []);
 
   const refresh = async () => {

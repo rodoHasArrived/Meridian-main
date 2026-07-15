@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { createElement, StrictMode, type PropsWithChildren } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError, createApiErrorFromResponseBody } from "@/lib/api-errors";
 import {
@@ -422,6 +423,17 @@ describe("watchlist-screen view model", () => {
     });
 
     expect(result.current.rows.map((row) => row.symbol)).toEqual(["MSFT"]);
+  });
+
+  it("reaches a terminal list state under React StrictMode", async () => {
+    const api = createWatchlistApi();
+    const wrapper = ({ children }: PropsWithChildren) => createElement(StrictMode, null, children);
+
+    const { result } = renderHook(() => useWatchlistScreenViewModel(api), { wrapper });
+
+    await waitFor(() => expect(result.current.listState).toBe("ready"));
+    expect(result.current.refreshing).toBe(false);
+    expect(result.current.rows).toHaveLength(symbols.length);
   });
 
   it("ignores stale quote snapshots after the subscribed symbol set changes", async () => {

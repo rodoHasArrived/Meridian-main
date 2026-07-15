@@ -10,7 +10,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 ## Audience Paths
 
 - **Start first:** [Start](../start/README.md)
-- **Product context:** [Product](../product/README.md), including the [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md)
+- **Product context:** [Product](../product/README.md), including the [Meridian Design Document](../product/meridian-design-document.md)
 - **AI policy:** [AI assistant contract](../ai/assistant-workflow-contract.md)
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
@@ -34,6 +34,11 @@ Canonical ownership rule:
 - Keep UI behavior thin in `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
 - Keep shared UI read-model/service contracts in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`.
 - Never create duplicate business behavior per surface unless a surface-specific constraint exists.
+
+## Blueprints
+
+Code-ready technical designs for prioritized features live under
+[`blueprints/`](blueprints/README.md).
 
 ## Build/Test/Run
 
@@ -83,6 +88,17 @@ gh workflow run targeted-test.yml --ref <branch> `
   -f mode=dotnet-filtered `
   -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj `
   -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+```
+
+Prefer the validated dispatcher when using the CLI from a local branch:
+
+```powershell
+python build/scripts/ci/dispatch-targeted-test.py `
+  --ref <branch> `
+  --mode dotnet-filtered `
+  --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj `
+  --dotnet-filter "FullyQualifiedName~<TestClassOrMethod>" `
+  --wait
 ```
 
 ### Most common default lanes

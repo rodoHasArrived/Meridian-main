@@ -10,30 +10,24 @@ import type { ReportingTaskModeViewModel } from "@/screens/reporting-screen.task
 export interface ReportingWorkbenchContextProps {
   taskMode: ReportingTaskModeViewModel;
   actions: ReportingWorkbenchAction[];
-  chips: ReportingChipViewModel[];
 }
 
-export function ReportingWorkbenchContext({
-  taskMode,
-  actions,
-  chips
-}: ReportingWorkbenchContextProps) {
+export function ReportingWorkbenchContext({ taskMode, actions }: ReportingWorkbenchContextProps) {
   return (
     <section
       role="region"
       aria-label="Reporting workbench context"
-      className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
+      className="flex flex-wrap items-end justify-between gap-3"
     >
       <div className="min-w-0">
-        <div className="eyebrow-label">Reporting lane</div>
-        <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
+        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
           {taskMode.label}
         </h2>
-        <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">{taskMode.description}</p>
+        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          {taskMode.description}
+        </p>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <ReportingChip label="Task mode" value={taskMode.label} />
-        <span className="sr-only">{taskMode.description}</span>
         {actions.map((action) => (
           <Button key={action.id} asChild variant="outline" size="sm">
             <Link to={action.href} aria-label={action.ariaLabel}>
@@ -41,9 +35,6 @@ export function ReportingWorkbenchContext({
               {action.label}
             </Link>
           </Button>
-        ))}
-        {chips.map((chip) => (
-          <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
         ))}
       </div>
     </section>

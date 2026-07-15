@@ -1,3 +1,5 @@
+using Meridian.Contracts.Catalog;
+
 namespace Meridian.Core.Config;
 
 /// <summary>
@@ -35,8 +37,23 @@ public sealed record BackfillConfig(
     bool SkipExistingData = true,
     bool FillGapsOnly = true,
     BackfillJobsConfig? Jobs = null,
-    BackfillProvidersConfig? Providers = null
+    BackfillProvidersConfig? Providers = null,
+    SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare,
+    AutoGapRemediationConfig? AutoRemediation = null
 );
+
+/// <summary>
+/// Host configuration for automatic, quality-triggered backfill remediation. Primitive time
+/// units keep JSON and environment configuration portable; Application composition maps this
+/// value into the typed remediation policy exposed through the Options pattern.
+/// </summary>
+public sealed record AutoGapRemediationConfig(
+    int MinimumGapDurationSeconds = 120,
+    int MinimumGapSize = 1,
+    int SymbolCooldownSeconds = 300,
+    int ProviderCooldownSeconds = 60,
+    int MaxConcurrentRemediations = 2,
+    string DefaultProvider = "stooq");
 
 /// <summary>
 /// Configuration for backfill job management.

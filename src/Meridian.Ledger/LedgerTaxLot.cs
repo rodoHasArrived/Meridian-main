@@ -9,7 +9,8 @@ public sealed record LedgerTaxLot
         string lotId,
         DateOnly acquiredDate,
         decimal quantity,
-        decimal unitCost)
+        decimal unitCost,
+        Guid? securityId = null)
     {
         if (string.IsNullOrWhiteSpace(lotId))
             throw new ArgumentException("Tax lot identifier must not be null or whitespace.", nameof(lotId));
@@ -22,6 +23,7 @@ public sealed record LedgerTaxLot
         AcquiredDate = acquiredDate;
         Quantity = quantity;
         UnitCost = unitCost;
+        SecurityId = securityId;
     }
 
     public string LotId { get; }
@@ -31,4 +33,12 @@ public sealed record LedgerTaxLot
     public decimal Quantity { get; }
 
     public decimal UnitCost { get; }
+
+    /// <summary>
+    /// Optional Security Master identity for this lot. When present, the relief engine can be
+    /// fed day-count, factor, and corporate-action basis adjustments sourced from the master
+    /// (see <see cref="LedgerTaxLotBasisAdjustment"/>), linking cost-basis accounting to
+    /// authoritative reference data instead of relying on quantity/unit-cost alone.
+    /// </summary>
+    public Guid? SecurityId { get; }
 }

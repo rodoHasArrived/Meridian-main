@@ -2331,6 +2331,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {
@@ -2775,6 +2779,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {
@@ -3256,7 +3264,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                     CorporateActions.Add(action);
             });
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load corporate actions", ex);
@@ -3347,7 +3361,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 _notificationService.ShowNotification("Corporate Actions", "Failed to record corporate action.", NotificationType.Error);
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to record corporate action", ex);
@@ -3450,6 +3470,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Cancellation is expected when the view is torn down mid-operation; benign.
+            _loggingService.LogDebug(
+                "Security Master operation cancelled.",
+                ("view", GetType().Name));
         }
         catch (Exception ex)
         {

@@ -42,9 +42,13 @@ public sealed class JumpListService
             JumpList.SetJumpList(System.Windows.Application.Current, jumpList);
 
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Jump list is cosmetic; log and continue rather than crashing startup.
+            LoggingService.Instance.LogDebug(
+                "Jump list configuration failed; continuing without taskbar tasks.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -59,8 +63,13 @@ public sealed class JumpListService
         {
             JumpList.AddToRecentCategory(label);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Jump list is unavailable in some shells/sandboxes; registration is best-effort.
+            LoggingService.Instance.LogDebug(
+                "Failed to add entry to the Windows jump list.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

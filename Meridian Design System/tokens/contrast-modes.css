@@ -1,0 +1,16 @@
+/* Meridian — forced-colors (Windows High Contrast). The UA strips backgrounds and washes;
+   Meridian's border-driven structure mostly survives on its own. These rules make the few
+   wash-only state marks structural, so no state communicates by background alone.
+   (Transparent outlines/borders are repainted in system colors under forced-colors.) */
+@media (forced-colors: active) {
+  /* Selected/hovered table rows lose their wash — give the cells a paintable outline. */
+  .dds tbody tr.dds--on td,
+  .fdt-table tbody tr:hover td { outline: 1px solid transparent; }
+
+  /* Status dots are background-only — outline them so they stay visible. */
+  .mds-sev__dot, .mds-badge__dot, .ws-statusbar__dot, .mds-fresh__dot,
+  .jnl__dot, .mds-ws__fxmark { outline: 1px solid transparent; }
+
+  /* Progress fill must keep its author color to remain readable as a fraction. */
+  .mds-prog__fill { forced-color-adjust: none; }
+}

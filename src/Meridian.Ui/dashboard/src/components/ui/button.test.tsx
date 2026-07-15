@@ -1,8 +1,28 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import { Button } from "@/components/ui/button";
+import { DesignSystemButton } from "@/design-system/primitives";
 
 describe("Button", () => {
+  it("re-exports the design-system button adapter so behavior is not forked", () => {
+    expect(Button).toBe(DesignSystemButton);
+  });
+
+  it("preserves busy and disabled semantics when rendered through the design-system adapter", () => {
+    render(
+      <DesignSystemButton busy busyLabel="Saving..." disabledReason="Save is already running." aria-label="Save mapping">
+        Save
+      </DesignSystemButton>
+    );
+
+    const button = screen.getByRole("button", { name: "Save mapping" });
+
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button).toHaveAttribute("title", "Save is already running.");
+    expect(button).toHaveTextContent("Saving...");
+  });
+
   it("renders busy commands with disabled and busy semantics", () => {
     render(
       <Button busy busyLabel="Previewing..." aria-label="Previewing backfill request">
@@ -14,6 +34,8 @@ describe("Button", () => {
 
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute("aria-busy", "true");
+    expect(button).toHaveAttribute("data-design-system-component", "Button");
+    expect(button).toHaveClass("mds-btn");
     expect(button).toHaveAttribute("title", "Previewing...");
     expect(button).toHaveTextContent("Previewing...");
   });
@@ -56,6 +78,8 @@ describe("Button", () => {
     const link = screen.getByRole("link", { name: "Run export" });
 
     expect(link).toHaveAttribute("aria-disabled", "true");
+    expect(link).toHaveAttribute("data-design-system-component", "Button");
+    expect(link).toHaveClass("mds-btn");
     expect(link).toHaveAttribute("title", "Export is already running.");
     expect(link).toHaveAttribute("tabindex", "-1");
     expect(link).not.toHaveAttribute("disabled");

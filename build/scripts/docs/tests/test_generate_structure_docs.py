@@ -4,10 +4,13 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from pathlib import PurePosixPath
+from unittest.mock import patch
 
 
 DOCS_SCRIPT_DIR = Path(__file__).resolve().parents[1]
@@ -31,6 +34,55 @@ generate_structure_docs = load_module(
 
 
 class GenerateStructureDocsTests(unittest.TestCase):
+    def test_git_visible_files_merge_case_colliding_index_paths_and_filesystem_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".github").mkdir()
+            (root / ".github" / "pull_request_template.md").write_text("template\n", encoding="utf-8")
+            (root / "docs" / "status").mkdir(parents=True)
+            (root / "docs" / "status" / "todo-scan-results.json").write_text("{}\n", encoding="utf-8")
+            git_result = subprocess.CompletedProcess(
+                args=["git", "ls-files"],
+                returncode=0,
+                stdout=(
+                    b".github/PULL_REQUEST_TEMPLATE.md\0"
+                    b".github/pull_request_template.md\0"
+                ),
+                stderr=b"",
+            )
+
+            with patch.object(generate_structure_docs.subprocess, "run", return_value=git_result):
+                visible = generate_structure_docs._git_visible_files(root)
+
+            self.assertIsNotNone(visible)
+            self.assertEqual(
+                {
+                    ".github/PULL_REQUEST_TEMPLATE.md",
+                    ".github/pull_request_template.md",
+                    "docs/status/todo-scan-results.json",
+                },
+                {path.as_posix() for path in visible or []},
+            )
+
+    def test_render_tree_preserves_case_colliding_git_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            visible_files = [
+                PurePosixPath(".github/PULL_REQUEST_TEMPLATE.md"),
+                PurePosixPath(".github/pull_request_template.md"),
+                PurePosixPath(".github/pull_request_template_desktop.md"),
+            ]
+
+            with patch.object(generate_structure_docs, "_git_visible_files", return_value=visible_files):
+                rendered = generate_structure_docs.render_tree(root)
+
+            self.assertIn("PULL_REQUEST_TEMPLATE.md", rendered)
+            self.assertIn("pull_request_template.md", rendered)
+            self.assertLess(
+                rendered.index("PULL_REQUEST_TEMPLATE.md"),
+                rendered.index("pull_request_template.md"),
+            )
+
     def test_render_tree_skips_local_artifacts_and_keeps_canonical_data_docs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -46,7 +98,7 @@ class GenerateStructureDocsTests(unittest.TestCase):
             (root / "build" / "scripts" / "__pycache__").mkdir(parents=True)
             (root / "build" / "scripts" / "__pycache__" / "tool.cpython-312.pyc").write_bytes(b"0")
             (root / "config").mkdir()
-            (root / "config" / "appsettings.json.backup-20260529-235335").write_text(
+            (root / "config" / "appsettings.json.backup-20260101-000000").write_text(
                 "{}\n",
                 encoding="utf-8",
             )

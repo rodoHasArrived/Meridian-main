@@ -6,10 +6,16 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-08
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Ui.Shared
+
+The shared workstation graph owns first-run state, the curated starter catalog,
+versioned sample provisioning, and outcome-based activation evidence. Browser and WPF
+clients consume these endpoints instead of defining client-only setup policy. Initial
+local-account creation reuses the governed identity store through a loopback-only,
+one-use bootstrap token.
 
 ## Purpose
 
@@ -91,12 +97,15 @@ The Security & Instrument Explorer remains productized as a thin shared-read-mod
 `SecurityMasterWorkbenchQueryService`, `IAssetOperationsQueryService`, and report-line provenance
 from `FinancialRecordExplorerReadService` for instrument identity, provider evidence,
 AssetOperations readiness, ledger impact, and report usage instead of asking browser or WPF clients
-to rebuild those relationships locally. Corporate-action mutations posted through shared Security
-Master endpoints delegate validation and append auditing to the application-owned
+to rebuild those relationships locally. Security Master remains the canonical identity owner while
+the Asset Operations seam contributes downstream roles, positions, economic state, and projection
+lineage; the explorer composes those owners without creating a parent Instrument Master.
+Corporate-action mutations posted through shared Security Master endpoints delegate validation and
+append auditing to the application-owned
 `ISecurityMasterCorporateActionCommandService`.
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
-portfolio, book, account, investor, capital-account, instrument, tax-lot, cost-center,
+portfolio, book, account, investor, capital-account, instrument, position, tax-lot, cost-center,
 counterparty, and external-GL context without re-inferring accounting scope from display text. The
 shared ledger report endpoints also canonicalize dimension query filters, returned row dimensions,
 matching, and report signatures before browser or WPF clients render or certify scoped reports. The
@@ -104,6 +113,15 @@ shared Financial Record Explorer route also accepts server-applied `viewId`, `se
 `filter=<filterId>:<value>` query scope, so saved views and dimension chips can return a scoped
 payload with matching rows, selected record, summary counts, and proof graph before browser or WPF
 presentation code renders it.
+The existing explorer route now renders the retained `PositionId` dimension as a shared Position
+field when present. Browser and WPF clients consume the same server-built field and proof graph; no
+instrument-accounting-specific explorer route or client-side ledger query is added.
+For typed factor events the shared explorer queries `ILedgerJournalStore` with the exact ledger book,
+book aggregate, and indexed source event, then renders factor evidence -> holder role/book position
+-> economic projection -> posting candidate -> independent approval -> immutable `JournalEntry` ->
+ledger/report evidence. The identities are present in shared selected-record fields and
+relationships as well as the proof graph, so the browser and WPF generic explorers remain thin and
+show the same durable chain after restart.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
 reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
@@ -181,6 +199,13 @@ initial browser payloads and refresh-only calls evaluate the same W7 live-readin
 `Meridian.Execution.Services.ILiveOrderReadinessGate`, so live broker order submission requires the
 approved live promotion target, retained audit reference, ready live-operation requirements, and a
 retained snapshot version before the execution layer can attach live-readiness evidence to an order.
+The gate also verifies that the readiness matrix covers every canonical Live checklist token and
+rejects partial or malformed W7 payloads with the missing checklist item names. Each canonical Live
+requirement must also be checklist-satisfied, evidence-satisfied, and backed by a nonblank retained
+evidence reference before live broker order evidence can be attached.
+Accounting-record and governed-reporting requirements must retain evidence references that identify
+the linked ledger journal/run and report output, so live-order approval cannot rely on readiness
+flags without an accounting/reporting evidence chain.
 Execution position close/upsize endpoints also carry the optional `fundAccountId` action scope into
 their generated `OrderRequest`, keeping broker-order readiness checks on the same account-scoped
 readiness projection as the workstation payload.
@@ -722,6 +747,12 @@ non-posting governed journal draft candidate by delegating to Financial Operatio
 returns selected rule/version metadata, generated posting lines with dimensions, retained evidence
 links, blocking/non-blocking issues, and an approval-gated posting command when validation passes;
 browser and WPF clients must still route posting through the JE lifecycle.
+Candidate requests and results may carry additive book-context, economic-event, book-position,
+projection-lineage, and existing rule-pack references. UI Shared transports those assertions through
+the existing candidates route; Financial Operations re-resolves authoritative book/policy state and
+rejects typed/legacy mismatches before returning a candidate. Ledger report filters and mapped line
+dimensions also preserve optional `PositionId`. UI Shared does not trust the client snapshot, create
+a new route or lineage table, or accept `JournalEntry`/`LedgerEntry` rows as posting input.
 `/api/ledger/accounting-configuration/posting-rules/tests`
 executes ad-hoc or saved non-posting regression test cases through the same dry-run engine and returns
 per-case pass/fail assertion evidence for selected rule, selected rule version, balanced posting, expected generated posting lines,
@@ -1027,6 +1058,13 @@ fund workspace view, also filter schedule rows, `scheduleDeliveryPlans`, and `De
 through the visible template/workflow set for the current `ReportAccessQueryContext`, so
 unauthorized users cannot infer locked schedule recipients, delivery modes, due dates, package
 links, or delivery status from the read model.
+`ReportingStarterKitService` resolves the Reporting module starter-kit catalog, persists the
+selected editable starter state, and provisions seed schedules through `ReportingScheduleService`
+with `Draft` state instead of bypassing schedule governance. The
+`/api/fund-structure/reporting/starter-kits` and
+`/api/fund-structure/reporting/starter-kits/{kitId}/provision` endpoints require the same reporting
+read/workflow permissions as the surrounding Reporting API, and `ReportPackRunReadService` carries
+both the starter kit catalog and selected kit state in `WorkstationReportingPayload`.
 Approved custom report-writer templates carry their saved grid definitions into the reporting
 catalog as well. Generic ad-hoc and scheduled runs now retain `report-writer://.../grids/{gridId}`
 artifacts and audit the grid count, so pivot, Top-N, contribution, and custom-formula grids remain
@@ -1415,6 +1453,16 @@ Retained vault bundles are also first-class Evidence Workbench subjects through 
 `evidence-vault` subject kind: the shared contributor projects the retained manifest and each
 copied artifact into the same packet graph, preserving hashes, source routes, and canonical subject
 linkage for browser/WPF parity.
+
+The Data workstation exposes shared operational surfaces at
+`/api/workstation/data/ingestion-operations` and
+`/api/workstation/data/storage-assurance`. `IngestionOperationsService` projects the durable
+`IngestionJobService` state/checkpoint/retry model and retains every operator transition as a
+canonical Evidence Vault `run`. `StorageAssuranceService` aggregates storage health, quality,
+canonicalization, capacity, tiers, and alerts. Its mutation boundary is preview-first: cleanup is
+limited to temporary/partial files, every candidate is root-confined and fingerprinted, execute
+revalidates the preview and typed confirmation, and tier migration is copy-only with checksum
+verification. Endpoint permission checks happen before service execution.
 The shared Audit Trail Explorer service projects retained execution, promotion, order, control, and
 Operations Continuity close/reconciliation/approval timeline records into contract-owned timeline rows and exposes `/api/execution/audit/search` with
 server-side text, run, actor, symbol, action, outcome, correlation, normalized object, related
@@ -1618,6 +1666,11 @@ statement-run intake and reconcile commands. Client-supplied `ImportedBy` or rec
 are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the
 reconciliation API service persists durable cases, comments, attachments, SLA metadata, and audit
 events.
+Statement connector commit endpoints pass the Financial Operations commit result through
+`StatementImportEvidenceBridge`, which retains the raw imported-file reference in Evidence Vault,
+links the vault document to the statement run and returned reconciliation cases, and preserves the
+structured case links in the response so workstation clients can open proof and casework from the
+same operator handoff without depending on legacy parallel case-route arrays.
 The shared workstation service graph registers that reconciliation API adapter over the Financial
 Operations statement-run workflow, so browser, host-served workstation, and desktop composition can
 resolve the same source-backed statement-run list, detail, break, case, and queue-status

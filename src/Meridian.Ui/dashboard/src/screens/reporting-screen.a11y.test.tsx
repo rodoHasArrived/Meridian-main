@@ -61,4 +61,23 @@ describe("ReportingScreen accessibility", () => {
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
   });
+
+  it.each([
+    ["report-builder", "/reporting/report-builder"],
+    ["scheduled", "/reporting/scheduled"],
+    ["run-status", "/reporting/run-status"],
+    ["report-packs", "/reporting/report-packs"],
+    ["exports", "/reporting/exports"],
+    ["governance", "/reporting/governance"]
+  ])("has no basic accessibility violations on the %s route", async (_view, pathname) => {
+    const { container } = renderWithRouter(<ReportingScreen data={accounting} />, {
+      initialEntries: [pathname]
+    });
+
+    const results = await axe(container);
+    expect(results.violations.map((violation) => ({
+      id: violation.id,
+      targets: violation.nodes.map((node) => node.target)
+    }))).toEqual([]);
+  });
 });

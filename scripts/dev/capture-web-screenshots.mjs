@@ -351,7 +351,12 @@ function extractExplicitAppRoutes(source) {
 
 function collectExpectedCapturePaths(routeCatalog, appRoutes) {
   const compatibilityRouteKeys = new Set([
-    "dataSecurityMasterLegacy"
+    "dataSecurityMasterLegacy",
+    "settingsIntegrations",
+    "settingsFeatureCoverage",
+    "settingsAlpacaProviderSetup",
+    "settingsBackendCapabilityCoverage",
+    "settingsDiagnosticEndpoints"
   ]);
   const compatibilityAppRoutes = new Set([
     "/data/security-master",
@@ -388,6 +393,44 @@ function screenshotCoveragePath(routePath) {
     return `${routeUrl.pathname || "/"}${routeUrl.hash}`;
   } catch {
     return "";
+  }
+}
+
+function assertCaptureRouteStateIdentity(captures) {
+  const capturesByPath = new Map();
+
+  for (const capture of captures) {
+    const routePath = typeof capture.path === "string" ? capture.path.trim() : "";
+    if (routePath.length === 0) {
+      continue;
+    }
+
+    const matches = capturesByPath.get(routePath) ?? [];
+    matches.push(capture);
+    capturesByPath.set(routePath, matches);
+  }
+
+  const ambiguousPaths = [];
+  for (const [routePath, matches] of capturesByPath.entries()) {
+    if (matches.length < 2) {
+      continue;
+    }
+
+    const variants = matches.map((capture) =>
+      typeof capture.variant === "string" ? capture.variant.trim() : ""
+    );
+    const hasExplicitUniqueVariants = variants.every((variant) => variant.length > 0)
+      && new Set(variants).size === variants.length;
+    if (!hasExplicitUniqueVariants) {
+      ambiguousPaths.push(routePath);
+    }
+  }
+
+  if (ambiguousPaths.length > 0) {
+    throw new Error(
+      "Web screenshot captures must use a unique route state or declare distinct non-empty "
+      + `variant values. Ambiguous path(s): ${ambiguousPaths.sort().join(", ")}`
+    );
   }
 }
 
@@ -435,6 +478,18 @@ function collectCaptureWaitForTexts(capture) {
   return [...new Set(waitForTexts)];
 }
 
+function collectCaptureWaitForAbsentTexts(capture) {
+  if (!Array.isArray(capture.waitForAbsentTexts)) {
+    return [];
+  }
+
+  return [...new Set(
+    capture.waitForAbsentTexts
+      .filter((value) => typeof value === "string" && value.trim().length > 0)
+      .map((value) => value.trim())
+  )];
+}
+
 function isActionableBrowserError(text) {
   return /Maximum update depth exceeded|Meridian workstation route failed to render|Unhandled error/i.test(text);
 }
@@ -452,7 +507,7 @@ function createPageErrorTracker(page) {
   };
 
   const onPageError = (error) => {
-    record(`pageerror: ${error.message}`);
+    record(`pageerror: ${error.stack ?? error.message}`);
   };
   const onConsole = (message) => {
     if (message.type() !== "error") {
@@ -568,6 +623,17 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     }
   }
   await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
+  for (const waitForAbsentText of collectCaptureWaitForAbsentTexts(capture)) {
+    await waitForCaptureStep(
+      page.getByText(waitForAbsentText, { exact: false })
+        .filter({ visible: true })
+        .first()
+        .waitFor({ state: "hidden", timeout: timeoutMs }),
+      pageErrors,
+      capture.name,
+      `waiting for transitional text '${waitForAbsentText}' to clear`
+    );
+  }
   assertNoCaptureBrowserError(pageErrors, capture.name);
 
   const textLength = await page.evaluate(() => document.body.innerText.trim().length);
@@ -624,6 +690,7 @@ async function main() {
   if (allCaptures.length === 0) {
     throw new Error(`No web screenshot captures found in ${configPath}`);
   }
+  assertCaptureRouteStateIdentity(allCaptures);
   const captureSelectors = collectCaptureSelectors(valueLists);
   const captures = selectCaptures(allCaptures, captureSelectors);
 
@@ -700,11 +767,16 @@ async function main() {
     // browser build the pinned Playwright version would download.
     const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
     browser = await chromium.launch(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {});
-    const page = await browser.newPage();
-    await setupApiMocking(page, fixtureRoutes);
-    pageErrors = createPageErrorTracker(page);
 
     for (const capture of captures) {
+      // Each capture renders in a fresh browser context so it shows the
+      // route's default first-load state. The app shell persists
+      // workflow-continuity, activity, and focus state across navigations,
+      // so a shared context makes capture results depend on visit order.
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await setupApiMocking(page, fixtureRoutes);
+      pageErrors = createPageErrorTracker(page);
       try {
         const result = await captureRoute(
           page,
@@ -731,6 +803,10 @@ async function main() {
         };
         results.push(failed);
         throw error;
+      } finally {
+        pageErrors.dispose();
+        pageErrors = null;
+        await context.close();
       }
     }
 

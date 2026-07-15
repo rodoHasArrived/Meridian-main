@@ -1,11 +1,13 @@
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AsyncRegion } from "@/components/ui/async-region";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Input } from "@/components/ui/input";
+import { SkeletonCardRow, SkeletonGrid, SkeletonTimeline } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass } from "@/screens/accounting-screen.styles";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
@@ -24,6 +26,7 @@ const accountingWorkflowStepIcons: Record<AccountingWorkflowLaunchViewState["ste
   "journal-entries": BookCheck,
   "capital-accounts": WalletCards,
   reconciliation: Network,
+  "external-gl": Network,
   exceptions: AlertCircle,
   "security-master": ShieldCheck,
   approvals: UserCheck,
@@ -241,6 +244,35 @@ export function CloseCommandCenterPanel({
   );
 }
 
+/**
+ * First-load placeholder for the close cockpit body. The grey shape matches the
+ * real layout — metric row, journal/package grid, then the evidence timeline —
+ * so the pane keeps its spatial hierarchy while each region's view-model settles
+ * instead of erasing it behind a spinner.
+ */
+function CloseCockpitSkeleton() {
+  return (
+    <div className="space-y-4">
+      <SkeletonCardRow cards={4} />
+      <SkeletonGrid rows={6} columns={4} />
+      <SkeletonTimeline items={4} />
+    </div>
+  );
+}
+
+/**
+ * True once any part of the close plan has resolved. Keeps a background refresh
+ * from blanking a pane that already has data to show.
+ */
+function closeCockpitHasData(view: AccountingCloseReportPackageViewModel): boolean {
+  return (
+    view.tasks.length > 0 ||
+    view.closeCalendar.length > 0 ||
+    view.packageRows.length > 0 ||
+    view.selectedPackage !== null
+  );
+}
+
 export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCloseReportPackageViewModel }) {
   const runCloseWorkflowAction = (actionId: AccountingCloseWorkflowActionId | null) => {
     if (!actionId) {
@@ -391,6 +423,14 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <AsyncRegion
+            loading={view.loading}
+            hasData={closeCockpitHasData(view)}
+            label="close package detail"
+            className="space-y-4"
+            onRetry={() => void view.refresh()}
+            skeleton={<CloseCockpitSkeleton />}
+          >
           {view.loadingText ? <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p> : null}
           {view.errorText ? (
             <div role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
@@ -1295,6 +1335,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               )}
             </div>
           </div>
+          </AsyncRegion>
         </CardContent>
       </Card>
     </section>

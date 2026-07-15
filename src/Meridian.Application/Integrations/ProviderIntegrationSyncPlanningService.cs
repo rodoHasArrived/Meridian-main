@@ -1,4 +1,6 @@
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -11,11 +13,15 @@ public sealed class ProviderIntegrationSyncPlanningService
         ProviderIntegrationProcessingStatusDto.Published
     ];
 
+    private readonly ILogger<ProviderIntegrationSyncPlanningService> logger;
     private readonly IProviderIntegrationManifestStore store;
 
-    public ProviderIntegrationSyncPlanningService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationSyncPlanningService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationSyncPlanningService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationSyncPlanningService>.Instance;
     }
 
     public async Task<ProviderIntegrationSyncPlanDto> PlanAsync(
@@ -24,6 +30,18 @@ public sealed class ProviderIntegrationSyncPlanningService
         => await PlanAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationSyncPlanDto> PlanAsync(
+        string? tenantId,
+        ProviderIntegrationSyncPlanRequestDto request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "sync-plan",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ConnectionId: request?.ConnectionId),
+            () => PlanCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationSyncPlanDto> PlanCoreAsync(
         string? tenantId,
         ProviderIntegrationSyncPlanRequestDto request,
         CancellationToken ct = default)

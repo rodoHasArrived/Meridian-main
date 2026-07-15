@@ -1,3 +1,4 @@
+using System.Net;
 using FluentAssertions;
 using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
@@ -286,6 +287,49 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
     }
 
     [Fact]
+    public async Task GetDailyBarsAsync_DoesNotTreatPlain429MessageAsRateLimit()
+    {
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("HTTP 429 Too Many Requests"));
+
+        using var composite = CreateComposite(p1);
+
+        var act = () => composite.GetDailyBarsAsync("SPY", null, null);
+
+        await act.Should().ThrowAsync<AggregateException>()
+            .WithMessage("*All providers failed*");
+
+        composite.RateLimitStatus["p1"].IsRateLimited.Should().BeFalse(
+            "the composite should only classify structured provider rate-limit failures");
+        var events = composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!;
+        events.Should().Contain(e => e.Provider == "p1" && e.CurrentStatus == "failed");
+        events.Should().NotContain(e => e.Provider == "p1" && e.CurrentStatus == "rate-limited");
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_RecordsRateLimitHit_OnHttpRequestException429()
+    {
+        var p1 = CreateMockProvider("p1", priority: 1);
+        p1.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("Too many requests", inner: null, HttpStatusCode.TooManyRequests));
+
+        var bars = CreateBars("SPY", 2);
+        var p2 = CreateMockProvider("p2", priority: 2);
+        p2.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        using var composite = CreateComposite(p1, p2);
+
+        var result = await composite.GetDailyBarsAsync("SPY", null, null);
+
+        result.Should().HaveCount(2, "should fail over after a structured HTTP 429 rate-limit signal");
+        composite.RateLimitStatus["p1"].IsRateLimited.Should().BeTrue();
+        var events = composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!;
+        events.Should().Contain(e => e.Provider == "p1" && e.CurrentStatus == "rate-limited");
+    }
+
+    [Fact]
     public async Task GetDailyBarsAsync_ThreeProviderCascade_P1DataException_P2RateLimit_P3Succeeds()
     {
         // Arrange – three providers with distinct failure modes, only the third returns data
@@ -420,15 +464,18 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
             .ReturnsAsync(bars);
 
         using var composite = CreateComposite(p1, p2);
-        var events = new List<ProviderBackfillProgress>();
-        composite.OnProgressUpdate += events.Add;
+        var from = new DateOnly(2026, 7, 1);
+        var to = new DateOnly(2026, 7, 2);
 
-        await composite.GetDailyBarsAsync("SPY", null, null);
+        await composite.GetDailyBarsAsync("SPY", from, to);
 
+        var events = composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!;
         events.Should().Contain(e => e.Provider == "p1" && e.CurrentStatus == "trying");
         events.Should().Contain(e => e.Provider == "p1" && e.CurrentStatus == "failed" && e.Error == "p1 failed");
         events.Should().Contain(e => e.Provider == "p2" && e.CurrentStatus == "trying");
         events.Should().Contain(e => e.Provider == "p2" && e.CurrentStatus == "completed" && e.BarsDownloaded == 3);
+        events.Where(e => e.CurrentStatus == "trying").Select(e => e.ProviderAttempt).Should().Equal(1, 2);
+        events.Should().OnlyContain(e => e.RangeStart == from && e.RangeEnd == to && e.Operation == "bars");
     }
 
     [Fact]
@@ -439,12 +486,11 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
             .ThrowsAsync(new Exception("p1 failed"));
 
         using var composite = CreateComposite(p1);
-        var events = new List<ProviderBackfillProgress>();
-        composite.OnProgressUpdate += events.Add;
 
         var act = () => composite.GetDailyBarsAsync("SPY", null, null);
         await act.Should().ThrowAsync<AggregateException>();
 
+        var events = composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!;
         events.Should().Contain(e =>
             e.Provider == "composite" &&
             e.CurrentStatus == "all-providers-failed" &&
@@ -461,9 +507,12 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
             .ReturnsAsync(bars);
 
         using var composite = CreateComposite(p1);
+        var laterSubscriberRan = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         composite.OnProgressUpdate += _ => throw new InvalidOperationException("subscriber bug");
+        composite.OnProgressUpdate += _ => laterSubscriberRan.TrySetResult();
 
         var result = await composite.GetDailyBarsAsync("SPY", null, null);
+        await laterSubscriberRan.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         result.Should().HaveCount(4, "a faulty progress subscriber must never interrupt the data path");
     }

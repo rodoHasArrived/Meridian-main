@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-09
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Reporting
@@ -28,6 +28,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `DefaultReportingTemplateCatalog.cs` - canonical investor statement, SEC filing, shadow NAV,
   performance, holdings, capital account, board packet, audit package, and certified-dataset
   template metadata.
+- `ReportingStarterKitCatalog.cs` - starter reporting-desk kit records that map operator
+  archetypes to enabled template ids, hub layout ids, default periods, and draft schedule seeds.
 - `ReportingContracts.cs` - reporting run, schedule, lineage, template, approval, manifest, and
   audit contracts.
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
@@ -81,6 +83,9 @@ context. `ReportWriterGridEngine` renders governed template grid definitions wit
 execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
 metrics, Top-N limits, contribution percentages, and bounded arithmetic formulas are evaluated
 against caller-supplied dataset rows with structured warnings for missing or non-numeric inputs.
+The canonical envelope now preserves optional `PositionId` alongside `InstrumentId`, keeping
+same-security book positions distinct in generated reporting evidence without treating a projected
+position or balance as an accounting fact. The immutable journal remains authoritative.
 Contribution grids generate `contributionPercent` and `contributionAbsPercent` after aggregation,
 using absolute metric exposure as the denominator so offsetting winners and laggards still produce a
 signed and absolute percentage-of-P&L breakdown. Report-writer formulas can reference those generated
@@ -118,7 +123,10 @@ instead of widening generated-run packages to a default audience. Reporting temp
 investor, SEC, shadow NAV, performance, holdings, capital-account, board, audit, certified-dataset,
 and custom report packs; shared UI services layer schedule persistence, delivery history, template
 grid render calls, and rendered HTML/PDF artifacts on top of those module contracts without moving
-orchestration ownership out of Reporting.
+orchestration ownership out of Reporting. Starter reporting-desk kits remain catalog data in this
+module: each kit references existing template ids, a default Reporting hub layout id, a default
+period, and schedule seeds that UI Shared provisions through the normal schedule service as editable
+drafts.
 
 ### Migration and archive notes
 

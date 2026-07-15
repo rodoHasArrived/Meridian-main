@@ -136,6 +136,8 @@ public sealed class EtlJobOrchestrator
         var filesProcessed = 0;
         long processed = 0, accepted = 0, rejected = 0;
         var errors = new List<string>();
+        var filesReadyForPostProcessing = new List<EtlRemoteFile>();
+        EtlRemoteFile? currentFile = null;
         var dedupBefore = _pipeline.DeduplicatedCount;
 
         try
@@ -143,6 +145,7 @@ public sealed class EtlJobOrchestrator
             foreach (var file in files)
             {
                 ct.ThrowIfCancellationRequested();
+                currentFile = file;
                 var staged = await reader.StageFileAsync(jobId, definition.Source, file, ct).ConfigureAwait(false);
                 await _auditStore.WriteEventAsync(jobId, new EtlAuditEvent { Stage = "staged", Message = $"Staged {file.Name}." }, ct).ConfigureAwait(false);
 
@@ -200,7 +203,8 @@ public sealed class EtlJobOrchestrator
                         CapturedAtUtc = DateTime.UtcNow
                     };
                 }
-                await reader.PostProcessFileAsync(definition.Source, file, succeeded: true, ct).ConfigureAwait(false);
+                filesReadyForPostProcessing.Add(file);
+                currentFile = null;
             }
 
             await _pipeline.FlushAsync(ct).ConfigureAwait(false);
@@ -209,11 +213,21 @@ public sealed class EtlJobOrchestrator
             await _catalog.RebuildCatalogAsync(new CatalogRebuildOptions { Recursive = true }, ct: ct).ConfigureAwait(false);
 
             EtlExportResult? exportResult = null;
+            var exportSucceeded = true;
             if (definition.PublishPortablePackage || definition.PublishNormalizedExtract || definition.Destination.Kind != EtlDestinationKind.StorageCatalog)
             {
                 exportResult = await _exportService.ExportAsync(job, definition, ct).ConfigureAwait(false);
+                exportSucceeded = exportResult.Success;
                 if (!exportResult.Success && definition.FlowDirection == EtlFlowDirection.RoundTrip && definition.FailRoundTripOnExportError)
                     throw new InvalidOperationException(exportResult.Error ?? "ETL export failed.");
+            }
+
+            if (exportSucceeded)
+            {
+                foreach (var file in filesReadyForPostProcessing)
+                {
+                    await reader.PostProcessFileAsync(definition.Source, file, succeeded: true, ct).ConfigureAwait(false);
+                }
             }
 
             await _ingestionJobService.TransitionAsync(jobId, IngestionJobState.Completed, ct: ct).ConfigureAwait(false);
@@ -233,6 +247,22 @@ public sealed class EtlJobOrchestrator
         {
             errors.Add(ex.Message);
             _logger.LogError(ex, "ETL job {JobId} failed", jobId);
+            if (currentFile is not null && ex is not OperationCanceledException)
+            {
+                try
+                {
+                    await reader.PostProcessFileAsync(definition.Source, currentFile, succeeded: false, ct).ConfigureAwait(false);
+                }
+                catch (Exception postProcessException) when (postProcessException is not OperationCanceledException)
+                {
+                    errors.Add(postProcessException.Message);
+                    _logger.LogError(
+                        postProcessException,
+                        "ETL job {JobId} failed to post-process failed source file {FileName}",
+                        jobId,
+                        currentFile.Name);
+                }
+            }
             await _ingestionJobService.TransitionAsync(jobId, IngestionJobState.Failed, ex.Message, ct).ConfigureAwait(false);
             await _auditStore.WriteEventAsync(jobId, new EtlAuditEvent { Stage = "failed", Message = ex.Message }, ct).ConfigureAwait(false);
             return new EtlRunResult

@@ -45,12 +45,14 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
 
     public Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
     {
-        if (!succeeded)
+        var action = source.DeleteAfterSuccess ? EtlSourcePostProcessingAction.Delete : source.PostProcessingAction;
+        if (action == EtlSourcePostProcessingAction.LeaveInPlace ||
+            (succeeded && action == EtlSourcePostProcessingAction.MoveToError) ||
+            (!succeeded && action != EtlSourcePostProcessingAction.MoveToError))
         {
             return Task.CompletedTask;
         }
 
-        var action = source.DeleteAfterSuccess ? EtlSourcePostProcessingAction.Delete : source.PostProcessingAction;
         switch (action)
         {
             case EtlSourcePostProcessingAction.Delete when File.Exists(file.Path):
@@ -58,6 +60,9 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
                 break;
             case EtlSourcePostProcessingAction.MoveToArchive when !string.IsNullOrWhiteSpace(source.ArchiveLocation):
                 MoveLocalFile(file.Path, source.ArchiveLocation);
+                break;
+            case EtlSourcePostProcessingAction.MoveToError when !string.IsNullOrWhiteSpace(source.ErrorLocation):
+                MoveLocalFile(file.Path, source.ErrorLocation);
                 break;
             case EtlSourcePostProcessingAction.WriteDoneMarker:
                 File.WriteAllText(file.Path + ".done", DateTimeOffset.UtcNow.ToString("O"));

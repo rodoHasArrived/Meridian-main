@@ -63,7 +63,7 @@ function buildOperatorFocusCandidateFromBackfill(
     id: `backfill:${backfill.jobId}`,
     label: `${backfill.scope} backfill needs review`,
     detail: `${backfill.provider} backfill is ${backfill.progress}; updated ${backfill.updatedAt}.`,
-    route: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+    route: WORKSTATION_ROUTE_CATALOG.dataOperations,
     workspaceLabel: "Data",
     actionLabel: "Open backfills",
     tone: "review",

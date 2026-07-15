@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildReportRunReadinessGateViewState } from "@/screens/report-run-parameters-screen.view-model";
+import {
+  buildAuthoritativeReadinessGateViewState,
+  buildDefaultReportRunParameterDraft,
+  buildReportRunReadinessGateViewState,
+  validateAndBuildReportingRunParameters
+} from "@/screens/report-run-parameters-screen.view-model";
 import type { AccountingWorkspaceResponse, ManualJournalEntryDraft } from "@/types";
 
 function buildDraft(overrides: Partial<ManualJournalEntryDraft>): ManualJournalEntryDraft {
@@ -93,5 +98,108 @@ describe("buildReportRunReadinessGateViewState", () => {
     const view = buildReportRunReadinessGateViewState({ reconciliationQueue: [], manualDrafts: [] });
 
     expect(view.disclaimer).toMatch(/Advisory only/);
+  });
+});
+
+describe("reporting P0 parameter and readiness view models", () => {
+  it("builds every typed run parameter from an operator-authored portfolio scope", () => {
+    const draft = {
+      ...buildDefaultReportRunParameterDraft({ fundProfileId: "fund-alpha", asOfDate: "2026-06-30" }),
+      entityScopeKind: "Portfolio" as const,
+      portfolioId: "portfolio-credit",
+      periodId: "2026-Q2",
+      ledgerBookId: "11111111-1111-1111-1111-111111111111",
+      ledgerBookCode: "STAT-GL",
+      accountingBasis: "Statutory" as const,
+      presentationCurrency: "eur",
+      consolidationLevel: "Portfolio" as const,
+      outputFormat: "Xlsx" as const,
+      finality: "Final" as const,
+      includeSupportingSchedules: false,
+      includeEvidenceAppendix: true,
+      templateParametersJson: JSON.stringify({ reportingRegion: "EU" })
+    };
+
+    const result = validateAndBuildReportingRunParameters(draft, "2026-06-30");
+
+    expect(result.issues).toEqual([]);
+    expect(result.parameters).toEqual({
+      scope: {
+        fundProfileId: "fund-alpha",
+        entityScopeKind: "Portfolio",
+        entityId: null,
+        portfolioId: "portfolio-credit",
+        investorId: null,
+        dimensions: null
+      },
+      periodId: "2026-Q2",
+      asOfDate: "2026-06-30",
+      ledgerBook: {
+        ledgerBookId: "11111111-1111-1111-1111-111111111111",
+        ledgerBookCode: "STAT-GL"
+      },
+      accountingBasis: "Statutory",
+      presentationCurrency: "EUR",
+      consolidationLevel: "Portfolio",
+      outputFormat: "Xlsx",
+      finality: "Final",
+      includeSupportingSchedules: false,
+      includeEvidenceAppendix: true,
+      templateParameters: { reportingRegion: "EU" }
+    });
+  });
+
+  it("fails closed when required scope or template-parameter JSON is incomplete", () => {
+    const draft = {
+      ...buildDefaultReportRunParameterDraft({ fundProfileId: null, asOfDate: "2026-06-30" }),
+      entityScopeKind: "Investor" as const,
+      ledgerBookCode: "",
+      templateParametersJson: "[not-an-object]"
+    };
+
+    const result = validateAndBuildReportingRunParameters(draft, "2026-06-30");
+
+    expect(result.parameters).toBeNull();
+    expect(result.issues).toEqual(expect.arrayContaining([
+      "Select or enter a fund profile.",
+      "Enter a ledger book ID or code.",
+      "Enter the scoped investor ID.",
+      "Template parameters must contain valid JSON."
+    ]));
+  });
+
+  it("uses the requested finality when a readiness result permits drafts but blocks final output", () => {
+    const readiness = {
+      evaluationId: "evaluation-1",
+      evaluatedAtUtc: "2026-06-30T20:00:00Z",
+      resolvedTemplate: { name: "trial-balance-pack", version: 1 },
+      resolvedParameters: validateAndBuildReportingRunParameters(
+        buildDefaultReportRunParameterDraft({ fundProfileId: "fund-alpha", asOfDate: "2026-06-30" }),
+        "2026-06-30"
+      ).parameters!,
+      status: "Blocked" as const,
+      canGenerateDraft: true,
+      canGenerateFinal: false,
+      checks: [{
+        checkId: "evidence",
+        label: "Release evidence",
+        status: "Blocked" as const,
+        summary: "Evidence is required for final output.",
+        issueCount: 1,
+        blocksDraft: false,
+        blocksFinal: true,
+        route: null,
+        evidenceReferences: []
+      }],
+      blockingReasons: ["Evidence is required for final output."],
+      evidenceHash: "a".repeat(64)
+    };
+
+    expect(buildAuthoritativeReadinessGateViewState(readiness, "Draft").canRun).toBe(true);
+    expect(buildAuthoritativeReadinessGateViewState(readiness, "Final")).toEqual(expect.objectContaining({
+      canRun: false,
+      statusLabel: "Final blocked",
+      blockingReasons: ["Evidence is required for final output."]
+    }));
   });
 });

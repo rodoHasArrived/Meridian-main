@@ -7,10 +7,10 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-07-05
+  snapshot_date: 2026-07-11
   status: active
-  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, Financial Operations control-center, and bounded W7 live-readiness governance milestones
-  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, WPF product/UI work, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes.
+  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, and bounded W7 live-readiness governance milestones; active Evidence Vault productization, statement reconciliation onboarding, and WPF parity remain in progress
+  scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes. WPF desktop product/UI work is reactivated as an active co-equal lane whose immediate focus is web-UI parity over shared contracts.
   near_term_release_baseline:
     - W1-DATA-001
     - W2-TRD-001
@@ -22,22 +22,36 @@ program:
     - W5-MASSET-001
     - W5X-FREX-001
     - W5X-FINOPS-001
+    - W5X-CONNECT-001
+    - W5X-EVIDENCE-001
+    - W5X-STMT-ONBOARD-001
     - W7-LIVE-001
-  active_productization_targets: []
+    - W8-WPF-PARITY-001
+  active_productization_targets:
+    - W5X-EVIDENCE-001
+    - W5X-STMT-ONBOARD-001
+    - W8-WPF-PARITY-001
   current_focus:
     - Data confidence and retained source evidence
     - Portfolio and accounting reconciliation
     - Accounting records
     - Approvals
     - Governed report packs
-    - Browser-first operational record workflow backed by shared services, contracts, and retained WPF compatibility
+    - Operational record workflow backed by shared services and contracts, delivered across both the browser workstation and the reactivated WPF desktop workstation
+    - WPF desktop workstation reactivation and web-UI parity over shared contracts and read models
     - Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence
     - Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records
+    - Evidence Vault productization and statement reconciliation onboarding over governed connector evidence
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
+  production_readiness:
+    status: blocked
+    reviewed: 2026-07-11
+    baseline_commit: f0ac384a2
+    canonical_tracker: docs/product/implementation-todo-list.md
+    release_gate: Every P0 row in the canonical production-readiness tracker must be complete on the same release commit; unsupported paths must be explicitly scoped out and fail closed.
   deferred_lanes:
     - Backtesting Studio
     - Live execution productization and live portfolio operations beyond bounded W7 governance
-    - WPF product/UI work beyond existing support, compatibility, and validation
     - Full treasury payment execution
     - Full alternative asset operations
     - Forecasting and scenario engines
@@ -45,6 +59,6 @@ program:
     - Client portal
     - No-code workflow designer
     - Mobile applications
-  active_ui_lane: browser_workstation
-  retained_support_lane: wpf_existing_shell_compatibility
+  active_ui_lane: browser_workstation_and_wpf_desktop
+  shared_ui_seam: meridian_ui_services_shared_and_contracts
   mobile_lane: closed

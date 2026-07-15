@@ -49,7 +49,15 @@
       "Bash(git -C /d/Meridian-main status --short)",
       "Bash(git -C /d/Meridian-main log -1 --format='%h %ci %s')",
       "Bash(git -C /d/Meridian-main fetch origin --prune)",
-      "Bash(git -C /d/Meridian-main rev-list --left-right --count main...origin/main)"
+      "Bash(git -C /d/Meridian-main rev-list --left-right --count main...origin/main)",
+      "Bash(git -C \"D:/Meridian-pr2112-connectivity-docs\" diff origin/main --stat -- src/Meridian.Application/Composition/Startup src/Meridian.Application/Services/ConfigurationService.cs)",
+      "Bash(git -C \"D:/Meridian-pr2112-connectivity-docs\" diff --stat -- '*ConfigurationService.cs')",
+      "Bash(git -C \"D:/Meridian-cashladder-datajoin\" remote -v)",
+      "Bash(git -C \"D:/Meridian-cashladder-datajoin\" status --short)",
+      "Bash(gh auth *)",
+      "Bash(git log *)",
+      "Bash(git status *)",
+      "Bash(git rev-list *)"
     ]
   }
 }

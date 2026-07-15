@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Storage.Ledger;
@@ -19,6 +20,11 @@ public static class LedgerStoreExtensions
         services.AddSingleton<PostgresLedgerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+        services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
+        services.AddSingleton(sp => new DurableAutomatedJournalPoster(
+            sp.GetRequiredService<IGovernedLedgerPostingTarget>()));
+        services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
+            sp.GetRequiredService<DurableAutomatedJournalPoster>());
         services.AddSingleton<PostgresAccountingConfigurationStore>();
         services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
         services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());

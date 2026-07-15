@@ -32,6 +32,8 @@ public sealed class DurableAutomatedJournalPosterTests
     public async Task PostAsync_AppendsDurablyThenPostsProjectionAndTransitions()
     {
         var store = new Mock<ILedgerJournalStore>();
+        store.Setup(s => s.GetByAggregateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
         LedgerJournalEntryWrite? captured = null;
         store.Setup(s => s.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()))
             .Callback<LedgerJournalEntryWrite, CancellationToken>((write, _) => captured = write)
@@ -56,9 +58,44 @@ public sealed class DurableAutomatedJournalPosterTests
     }
 
     [Fact]
+    public async Task PostAsync_AsPostingTarget_AppendsGovernedWriteFromSharedContext()
+    {
+        var aggregateId = Guid.Parse("af8bd6c2-b624-4ec4-b5be-577d09eeebf9");
+        var store = new Mock<ILedgerJournalStore>();
+        store.Setup(s => s.GetByAggregateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+        LedgerJournalEntryWrite? captured = null;
+        store.Setup(s => s.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()))
+            .Callback<LedgerJournalEntryWrite, CancellationToken>((write, _) => captured = write)
+            .Returns(Task.CompletedTask);
+        var projection = new Meridian.Ledger.Ledger();
+        IAutomatedJournalPostingTarget target = new DurableAutomatedJournalPoster(store.Object, projection);
+        var approval = ApprovedFeeDraft();
+
+        var posted = await target.PostAsync(
+            approval,
+            new AutomatedJournalPostingContext(
+                PeriodId,
+                "controller",
+                AsOf,
+                "posted",
+                ["/evidence/fees/2026-Q2"],
+                aggregateId));
+
+        posted.Status.Should().Be(AutomatedJournalApprovalStatus.Posted);
+        captured.Should().NotBeNull();
+        captured!.AggregateId.Should().Be(aggregateId);
+        captured.PeriodId.Should().Be(PeriodId);
+        projection.Journal.Should().ContainSingle()
+            .Which.JournalEntryId.Should().Be(approval.JournalEntryId);
+    }
+
+    [Fact]
     public async Task PostAsync_DurableFailure_LeavesApprovalUnposted()
     {
         var store = new Mock<ILedgerJournalStore>();
+        store.Setup(s => s.GetByAggregateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
         store.Setup(s => s.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new IOException("wal full"));
         var poster = new DurableAutomatedJournalPoster(store.Object);
@@ -88,5 +125,57 @@ public sealed class DurableAutomatedJournalPosterTests
 
         await act.Should().ThrowAsync<InvalidOperationException>();
         store.Verify(s => s.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task PostAsync_AlreadyPostedApproval_IsIdempotentWithoutStoreAccess()
+    {
+        var store = new Mock<ILedgerJournalStore>();
+        var approval = ApprovedFeeDraft();
+        var posted = approval.PostTo(
+            new Meridian.Ledger.Ledger(),
+            "controller",
+            AsOf,
+            "posted",
+            ["/evidence/fees/2026-Q2"]);
+        var poster = new DurableAutomatedJournalPoster(store.Object);
+
+        var replayed = await poster.PostAsync(
+            posted, PeriodId, "controller", AsOf, "retry", ["/evidence/fees/2026-Q2"]);
+
+        replayed.Should().BeSameAs(posted);
+        store.Verify(
+            s => s.GetByAggregateAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        store.Verify(
+            s => s.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task PostAsync_ApprovedApprovalAlreadyRetained_TransitionsWithoutSecondAppend()
+    {
+        var approval = ApprovedFeeDraft();
+        var retainedEntry = approval.ToJournalEntry();
+        var retained = new LedgerJournalEntryRecord(
+            retainedEntry,
+            approval.ApprovalId,
+            PeriodId,
+            CommandId: null,
+            CorrelationId: null,
+            GlobalSequence: 41,
+            CreatedAt: AsOf);
+        var store = new Mock<ILedgerJournalStore>();
+        store.Setup(s => s.GetByAggregateAsync(approval.ApprovalId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([retained]);
+        var poster = new DurableAutomatedJournalPoster(store.Object);
+
+        var posted = await poster.PostAsync(
+            approval, PeriodId, "controller", AsOf, "retry after response loss", ["/evidence/fees/2026-Q2"]);
+
+        posted.Status.Should().Be(AutomatedJournalApprovalStatus.Posted);
+        store.Verify(
+            s => s.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 }

@@ -2,6 +2,10 @@
  * Dense mono data grid — mirrors `.dense-data-table`. Zebra striping, sticky mono headers,
  * 3px cyan inset rail on the hovered/selected row, optional sort affordance, and optional
  * checkbox column for multi-select workflows. The workhorse of every Meridian screen.
+ *
+ * Rows past `virtualizeThreshold` (default 500) render as a scrolling window — only the
+ * visible slice mounts as real `<tr>`s — instead of every row hitting the DOM at once. This
+ * is automatic; you only need `virtualize`/`rowHeight`/`maxHeight` to override the default.
  */
 export interface DenseDataTableColumn {
   key: string;
@@ -31,5 +35,13 @@ export interface DenseDataTableProps {
   onSelectRow?: (row: Record<string, any>, index: number, isSelected: boolean) => void;
   /** Fired when the "select all" checkbox is toggled. Receives isSelected. */
   onSelectAll?: (isSelected: boolean) => void;
+  /** Force windowed rendering on/off. Omit to auto-decide from `rows.length` vs `virtualizeThreshold`. */
+  virtualize?: boolean;
+  /** Row count above which rendering auto-windows. @default 500 */
+  virtualizeThreshold?: number;
+  /** Must match the table's actual row height for correct scroll math when virtualized. @default 40 */
+  rowHeight?: number;
+  /** Scrolling viewport height once virtualized. @default 560 */
+  maxHeight?: number;
 }
 export declare function DenseDataTable(props: DenseDataTableProps): JSX.Element;

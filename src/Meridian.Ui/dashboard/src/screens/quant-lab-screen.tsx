@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { SeverityBadge } from "@/components/operations";
 import { QuantPlotChart } from "@/components/meridian/quant-plot";
 import {
@@ -58,19 +59,18 @@ export function QuantLabScreen() {
   const vm = useQuantLabScreenViewModel();
 
   return (
-    <div className="space-y-6">
+    <ScreenLayout
+      title={
+        <span className="flex items-center gap-2">
+          <FlaskConical className="h-5 w-5 text-primary" />
+          Quant Lab
+        </span>
+      }
+      scope="Strategy Lane"
+      description="Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline."
+    >
       <span className="sr-only" aria-live="polite">{vm.runStatusAnnouncement}</span>
       <Card>
-        <CardHeader>
-          <div className="eyebrow-label">Strategy Lane</div>
-          <CardTitle className="flex items-center gap-2">
-            <FlaskConical className="h-5 w-5 text-primary" />
-            Quant Lab
-          </CardTitle>
-          <CardDescription>
-            Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline.
-          </CardDescription>
-        </CardHeader>
         <CardContent className="space-y-3">
           <ToolbarStrip
             ariaLabel="Quant Lab status"
@@ -128,7 +128,7 @@ export function QuantLabScreen() {
           <TemplatesPanel templates={vm.templateRows} state={vm.templatesPanel} onSelect={vm.loadTemplate} />
         </div>
       </div>
-    </div>
+    </ScreenLayout>
   );
 }
 

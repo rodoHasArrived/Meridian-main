@@ -415,9 +415,13 @@ public sealed class WatchlistService : IWatchlistReader, IWatchlistService
         {
             throw;
         }
-        catch
+        catch (Exception ex)
         {
             // Sync failed - continue with local data
+            LoggingService.Instance.LogDebug(
+                "Watchlist remote sync failed; continuing with local data.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         return false;

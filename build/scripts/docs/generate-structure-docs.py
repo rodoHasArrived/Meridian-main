@@ -9,7 +9,9 @@ from __future__ import annotations
 import argparse
 import fnmatch
 import os
+import subprocess
 from pathlib import Path
+from pathlib import PurePosixPath
 
 
 EXCLUDED_DIR_NAMES = {
@@ -104,14 +106,113 @@ def is_excluded(path: Path, root: Path | None = None) -> bool:
     return False
 
 
+def _is_excluded_relative_file(path: PurePosixPath) -> bool:
+    parts = path.parts
+    if not parts or any(part in EXCLUDED_DIR_NAMES for part in parts):
+        return True
+    if parts[0] in EXCLUDED_ROOT_DIR_NAMES:
+        return True
+    if len(parts) == 1 and parts[0] in EXCLUDED_ROOT_FILE_NAMES:
+        return True
+
+    name = parts[-1]
+    return (
+        name in EXCLUDED_FILE_NAMES
+        or path.suffix.lower() in EXCLUDED_FILE_SUFFIXES
+        or any(fnmatch.fnmatch(name, pattern) for pattern in EXCLUDED_FILE_PATTERNS)
+    )
+
+
+def _git_visible_files(root: Path) -> list[PurePosixPath] | None:
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(root),
+                "ls-files",
+                "--cached",
+                "-z",
+            ],
+            check=False,
+            capture_output=True,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+
+    files: dict[str, PurePosixPath] = {}
+    for raw_path in result.stdout.split(b"\0"):
+        if not raw_path:
+            continue
+        relative = PurePosixPath(raw_path.decode("utf-8", errors="surrogateescape"))
+        if _is_excluded_relative_file(relative):
+            continue
+        materialized = root.joinpath(*relative.parts)
+        if materialized.is_symlink():
+            continue
+        files[relative.as_posix()] = relative
+
+    for dirpath, dirnames, filenames in os.walk(root):
+        current = Path(dirpath)
+        dirnames[:] = [
+            dirname
+            for dirname in dirnames
+            if not is_excluded(current / dirname, root)
+        ]
+        for filename in filenames:
+            materialized = current / filename
+            if is_excluded(materialized, root):
+                continue
+            relative = PurePosixPath(materialized.relative_to(root).as_posix())
+            files.setdefault(relative.as_posix(), relative)
+
+    return list(files.values())
+
+
+def _render_visible_files(files: list[PurePosixPath]) -> str:
+    tree: dict[str, object] = {}
+    for path in files:
+        current = tree
+        for part in path.parts[:-1]:
+            child = current.setdefault(part, {})
+            if not isinstance(child, dict):
+                break
+            current = child
+        else:
+            current.setdefault(path.parts[-1], None)
+
+    lines = [REPOSITORY_DISPLAY_NAME]
+
+    def walk(entries: dict[str, object], prefix: str = "") -> None:
+        ordered = sorted(
+            entries.items(),
+            key=lambda item: (item[1] is None, item[0].casefold(), item[0]),
+        )
+        for index, (name, child) in enumerate(ordered):
+            connector = "└── " if index == len(ordered) - 1 else "├── "
+            lines.append(f"{prefix}{connector}{name}")
+            if isinstance(child, dict):
+                extension = "    " if index == len(ordered) - 1 else "│   "
+                walk(child, prefix + extension)
+
+    walk(tree)
+    return "\n".join(lines)
+
+
 def render_tree(root: Path) -> str:
+    visible_files = _git_visible_files(root)
+    if visible_files is not None:
+        return _render_visible_files(visible_files)
+
     lines: list[str] = []
 
     def walk(current: Path, prefix: str = "") -> None:
         try:
             entries = sorted(
                 [p for p in current.iterdir() if not is_excluded(p, root)],
-                key=lambda p: (p.is_file(), p.name.lower()),
+                key=lambda p: (p.is_file(), p.name.casefold(), p.name),
             )
         except PermissionError:
             return

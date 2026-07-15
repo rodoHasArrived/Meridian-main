@@ -1,0 +1,404 @@
+using System.Text.Json;
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Meridian.Ui.Shared.Endpoints;
+
+public static partial class LedgerEndpoints
+{
+    /// <summary>
+    /// Maps the automated journal-intake routes (daily valuation, corporate-action dividends,
+    /// fee-schedule accruals, and period-close closing entries) that project source evidence or
+    /// closed-period trial balances into governed manual journal workbench drafts.
+    /// </summary>
+    private static void MapJournalAutomationEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
+    {
+        app.MapGet(UiApiRoutes.LedgerJournalAutomationMonthlySchedules, async (HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var store = context.RequestServices.GetService<IAutomatedJournalScheduleStore>();
+            if (store is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var scheduleId = context.Request.Query["scheduleId"].ToString();
+            var schedules = (await store.ListAsync(context.RequestAborted).ConfigureAwait(false))
+                .Where(item => string.IsNullOrWhiteSpace(scheduleId) || string.Equals(
+                    item.ScheduleId,
+                    scheduleId.Trim(),
+                    StringComparison.OrdinalIgnoreCase))
+                .Where(item => tenantContext.TenantId is null || string.Equals(
+                    item.TenantId,
+                    tenantContext.TenantId,
+                    StringComparison.OrdinalIgnoreCase))
+                .Where(item => tenantContext.CompanyId is null || string.Equals(
+                    item.CompanyId,
+                    tenantContext.CompanyId,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            return Results.Json(schedules, jsonOptions);
+        })
+        .WithName("ListLedgerJournalAutomationMonthlySchedules")
+        .Produces<IReadOnlyList<AutomatedJournalScheduleWorkItem>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationMonthlySchedules, async (AutomatedJournalScheduleWorkItem request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var store = context.RequestServices.GetService<IAutomatedJournalScheduleStore>();
+            if (store is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var existing = await store.GetAsync(request.ScheduleId, context.RequestAborted).ConfigureAwait(false);
+                if (existing is not null &&
+                    (!string.Equals(existing.TenantId, tenantContext.TenantId, StringComparison.OrdinalIgnoreCase) ||
+                     !string.Equals(existing.CompanyId, tenantContext.CompanyId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
+                var saved = await store.SaveAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId,
+                    State = existing?.State ?? AutomatedJournalScheduleStateDto.Scheduled,
+                    LastRunAtUtc = existing?.LastRunAtUtc,
+                    LastScheduledForUtc = existing?.LastScheduledForUtc,
+                    JournalEntryIds = existing?.JournalEntryIds ?? [],
+                    LastSummary = existing?.LastSummary,
+                    EvidenceLinks = existing?.EvidenceLinks ?? [],
+                    Blockers = existing?.Blockers ?? [],
+                    RunHistory = existing?.RunHistory ?? []
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(saved, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+        })
+        .WithName("ConfigureLedgerJournalAutomationMonthlySchedule")
+        .Produces<AutomatedJournalScheduleWorkItem>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationMonthlyRunDue, async (HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var worker = context.RequestServices.GetService<AutomatedJournalScheduledWorker>();
+            if (worker is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var timeProvider = context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System;
+            var result = await worker.RunDueAsync(timeProvider.GetUtcNow(), context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("RunDueLedgerJournalAutomationMonthlySchedules")
+        .Produces<AutomatedJournalScheduledBatchResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapGet(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketSchedules, async (HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var source = context.RequestServices.GetService<IDailyValuationPortfolioSource>();
+            if (source is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var schedules = (await source.ListAsync(context.RequestAborted).ConfigureAwait(false))
+                .Where(item => tenantContext.TenantId is null || string.Equals(
+                    item.TenantId,
+                    tenantContext.TenantId,
+                    StringComparison.OrdinalIgnoreCase))
+                .Where(item => tenantContext.CompanyId is null || string.Equals(
+                    item.CompanyId,
+                    tenantContext.CompanyId,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            return Results.Json(schedules, jsonOptions);
+        })
+        .WithName("ListLedgerJournalAutomationDailyMarkToMarketSchedules")
+        .Produces<IReadOnlyList<DailyValuationScheduleWorkItem>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketSchedules, async (DailyValuationScheduleWorkItem request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var source = context.RequestServices.GetService<IDailyValuationPortfolioSource>();
+            if (source is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var existing = await source.GetAsync(request.ScheduleId, context.RequestAborted).ConfigureAwait(false);
+                var saved = await source.SaveAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId,
+                    State = DailyValuationScheduleStateDto.Scheduled,
+                    LastRunAtUtc = existing?.LastRunAtUtc,
+                    LastScheduledForUtc = null,
+                    JournalEntryId = existing?.JournalEntryId,
+                    LastSummary = $"Daily valuation is scheduled for {request.NextRunAtUtc:O}.",
+                    EvidenceLinks = existing?.EvidenceLinks ?? [],
+                    Blockers = []
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(saved, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("ConfigureLedgerJournalAutomationDailyMarkToMarketSchedule")
+        .Produces<DailyValuationScheduleWorkItem>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketRunDue, async (HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var worker = context.RequestServices.GetService<DailyValuationScheduledWorker>();
+            if (worker is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var result = await worker.RunDueAsync(DateTimeOffset.UtcNow, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("RunDueLedgerJournalAutomationDailyMarkToMarketSchedules")
+        .Produces<DailyValuationScheduledBatchResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketIntake, async (RunDailyMarkToMarketDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunDailyMarkToMarketIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("RunLedgerJournalAutomationDailyMarkToMarketIntake")
+        .Produces<DailyMarkToMarketIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationDividendIntake, async (RunDividendDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunDividendIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("RunLedgerJournalAutomationDividendIntake")
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationFeeAccrualIntake, async (RunFeeAccrualDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunFeeAccrualIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("RunLedgerJournalAutomationFeeAccrualIntake")
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationPeriodCloseIntake, async (RunPeriodCloseDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunPeriodCloseIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("RunLedgerJournalAutomationPeriodCloseIntake")
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+    }
+}

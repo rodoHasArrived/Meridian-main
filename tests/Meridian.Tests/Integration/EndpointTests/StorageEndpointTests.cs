@@ -96,6 +96,20 @@ public sealed class StorageEndpointTests
     }
 
     [Fact]
+    public async Task CanonicalSymbolRegistry_ReturnsAdditiveIdentityAndMigrationContract()
+    {
+        var response = await _client.GetAsync("/api/symbols/registry");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        document.RootElement.TryGetProperty("registryVersion", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("resolutionMode", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("recentMismatches", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("migrations", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("symbols", out _).Should().BeTrue();
+    }
+
+    [Fact]
     public async Task AddSymbolMapping_ReturnsOk()
     {
         var payload = new

@@ -20,6 +20,9 @@ namespace Meridian.Execution.Events;
 /// </remarks>
 public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposable
 {
+    private static readonly TimeSpan DefaultDrainTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan DefaultCancellationTimeout = TimeSpan.FromSeconds(1);
+
     private readonly Ledger.Ledger _ledger;
     private readonly Channel<TradeExecutedEvent> _channel;
     private readonly Task _processingTask;
@@ -27,6 +30,15 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     private readonly ILogger<LedgerPostingConsumer> _logger;
     private readonly ISecurityValidationGateService? _securityValidationGate;
     private readonly bool _requireSecurityMasterPostingGate;
+    private readonly TimeSpan _drainTimeout;
+    private readonly TimeSpan _cancellationTimeout;
+    private readonly object _disposeSync = new();
+    private readonly object _postingBoundarySync = new();
+    private Task? _disposeTask;
+    private bool _postingDisabled;
+    private int _cancellationSourceDisposed;
+
+    internal Task ProcessingCompletion => _processingTask;
 
     /// <summary>
     /// Initialises a new <see cref="LedgerPostingConsumer"/> bound to <paramref name="ledger"/>.
@@ -38,12 +50,22 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     ///     until the consumer drains capacity (backpressure).
     ///     Defaults to 10 000.
     /// </param>
+    /// <param name="drainTimeout">
+    ///     Maximum time to drain queued fills during disposal before cancellation begins.
+    ///     Defaults to five seconds.
+    /// </param>
+    /// <param name="cancellationTimeout">
+    ///     Maximum time allowed for each cancellation shutdown phase before disposal returns and
+    ///     observes the non-cooperative worker through deferred cleanup. Defaults to one second.
+    /// </param>
     public LedgerPostingConsumer(
         Ledger.Ledger ledger,
         ILogger<LedgerPostingConsumer> logger,
         int channelCapacity = 10_000,
         ISecurityValidationGateService? securityValidationGate = null,
-        bool requireSecurityMasterPostingGate = true)
+        bool requireSecurityMasterPostingGate = true,
+        TimeSpan? drainTimeout = null,
+        TimeSpan? cancellationTimeout = null)
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(logger);
@@ -54,6 +76,11 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         _logger = logger;
         _securityValidationGate = securityValidationGate;
         _requireSecurityMasterPostingGate = requireSecurityMasterPostingGate;
+        _drainTimeout = RequirePositiveTimeout(drainTimeout, DefaultDrainTimeout, nameof(drainTimeout));
+        _cancellationTimeout = RequirePositiveTimeout(
+            cancellationTimeout,
+            DefaultCancellationTimeout,
+            nameof(cancellationTimeout));
 
         var options = new BoundedChannelOptions(channelCapacity)
         {
@@ -71,7 +98,7 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     /// blocks until the background consumer frees space, so fills are never dropped.
     /// </summary>
     /// <exception cref="ChannelClosedException">
-    ///     The consumer has been disposed and the event could not be enqueued.
+    ///     Disposal has begun and the event could not be enqueued.
     /// </exception>
     public void Publish(TradeExecutedEvent tradeEvent)
     {
@@ -98,28 +125,145 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
         }
     }
 
-    /// <inheritdoc/>
-    public async ValueTask DisposeAsync()
+    /// <summary>
+    /// Stops accepting fills, gives accepted fills one bounded drain window, and then applies a
+    /// bounded cancellation fallback. Repeated calls await the same shutdown operation. Once the
+    /// method returns, no in-flight validation can cross the posting boundary into the ledger.
+    /// </summary>
+    public ValueTask DisposeAsync()
     {
-        // Complete the channel writer so the background loop exits naturally after
-        // processing all queued events.  Cancel only as a hard fallback (5 s timeout).
+        lock (_disposeSync)
+        {
+            return new ValueTask(_disposeTask ??= DisposeCoreAsync());
+        }
+    }
+
+    private async Task DisposeCoreAsync()
+    {
+        // Complete the writer first: blocked and future publishers now fail deterministically,
+        // while the reader gets one bounded opportunity to drain fills already accepted.
         _channel.Writer.TryComplete();
 
-        using var drainTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        try
+        if (await WaitForProcessingAsync(_drainTimeout).ConfigureAwait(false))
         {
-            await _processingTask.WaitAsync(drainTimeout.Token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            // Drain timed out — force-cancel the background task.
-            await _cts.CancelAsync().ConfigureAwait(false);
-            try
-            { await _processingTask.ConfigureAwait(false); }
-            catch (OperationCanceledException) { }
+            ClosePostingBoundary();
+            DisposeCancellationSource();
+            return;
         }
 
-        _cts.Dispose();
+        // Prevent a non-cooperative in-flight dependency from returning after disposal and
+        // mutating the ledger. The guarded posting section is synchronous and contains no I/O.
+        ClosePostingBoundary();
+        var pendingEventCount = _channel.Reader.CanCount ? _channel.Reader.Count : -1;
+        _logger.LogWarning(
+            "LedgerPostingConsumer did not drain within {DrainTimeout}; cancelling the worker with {PendingEventCount} accepted fills still queued",
+            _drainTimeout,
+            pendingEventCount);
+
+        var cancellationTask = _cts.CancelAsync();
+        if (!await WaitForTaskAsync(cancellationTask, _cancellationTimeout).ConfigureAwait(false))
+        {
+            _logger.LogError(
+                "LedgerPostingConsumer cancellation callbacks did not finish within {CancellationTimeout}; deferred cleanup will observe completion",
+                _cancellationTimeout);
+            ObserveDeferredShutdown(cancellationTask);
+            return;
+        }
+
+        if (!await WaitForProcessingAsync(_cancellationTimeout).ConfigureAwait(false))
+        {
+            _logger.LogError(
+                "LedgerPostingConsumer worker did not stop within {CancellationTimeout} after cancellation; deferred cleanup will observe completion",
+                _cancellationTimeout);
+            ObserveDeferredShutdown(Task.CompletedTask);
+            return;
+        }
+
+        DisposeCancellationSource();
+    }
+
+    private async Task<bool> WaitForProcessingAsync(TimeSpan timeout)
+    {
+        try
+        {
+            await _processingTask.WaitAsync(timeout).ConfigureAwait(false);
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
+        catch (OperationCanceledException) when (_cts.IsCancellationRequested)
+        {
+            return true;
+        }
+    }
+
+    private static async Task<bool> WaitForTaskAsync(Task task, TimeSpan timeout)
+    {
+        try
+        {
+            await task.WaitAsync(timeout).ConfigureAwait(false);
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
+    }
+
+    private void ClosePostingBoundary()
+    {
+        lock (_postingBoundarySync)
+        {
+            _postingDisabled = true;
+        }
+    }
+
+    private void ObserveDeferredShutdown(Task cancellationTask)
+        => _ = ObserveDeferredShutdownAsync(cancellationTask);
+
+    private async Task ObserveDeferredShutdownAsync(Task cancellationTask)
+    {
+        try
+        {
+            await cancellationTask.ConfigureAwait(false);
+            await _processingTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_cts.IsCancellationRequested)
+        {
+            // Expected after the bounded drain window expires.
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "LedgerPostingConsumer deferred shutdown failed");
+        }
+        finally
+        {
+            DisposeCancellationSource();
+        }
+    }
+
+    private void DisposeCancellationSource()
+    {
+        if (Interlocked.Exchange(ref _cancellationSourceDisposed, 1) == 0)
+        {
+            _cts.Dispose();
+        }
+    }
+
+    private static TimeSpan RequirePositiveTimeout(
+        TimeSpan? configured,
+        TimeSpan fallback,
+        string parameterName)
+    {
+        var timeout = configured ?? fallback;
+        if (timeout <= TimeSpan.Zero || timeout == Timeout.InfiniteTimeSpan)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, "Shutdown timeout must be positive and finite.");
+        }
+
+        return timeout;
     }
 
     // -------------------------------------------------------------------------
@@ -133,6 +277,10 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             try
             {
                 await PostEventAsync(evt, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -157,30 +305,39 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
             return;
         }
 
-        var accountId = evt.FinancialAccountId;
-        var cashAccount = accountId is null
-            ? LedgerAccounts.Cash
-            : LedgerAccounts.CashAccount(accountId);
-        var metadata = BuildPostingMetadata(evt, securityGate);
-
-        switch (evt.Side)
+        ct.ThrowIfCancellationRequested();
+        lock (_postingBoundarySync)
         {
-            case Sdk.OrderSide.Buy:
-                PostBuy(evt, cashAccount, accountId, metadata);
-                break;
+            if (_postingDisabled || ct.IsCancellationRequested)
+            {
+                throw new OperationCanceledException("Ledger posting consumer is shutting down.", ct);
+            }
 
-            case Sdk.OrderSide.Sell:
-                PostSell(evt, cashAccount, accountId, metadata);
-                break;
+            var accountId = evt.FinancialAccountId;
+            var cashAccount = accountId is null
+                ? LedgerAccounts.Cash
+                : LedgerAccounts.CashAccount(accountId);
+            var metadata = BuildPostingMetadata(evt, securityGate);
 
-            default:
-                _logger.LogWarning("Unhandled order side {Side} for fill {FillId}", evt.Side, evt.FillId);
-                break;
-        }
+            switch (evt.Side)
+            {
+                case Sdk.OrderSide.Buy:
+                    PostBuy(evt, cashAccount, accountId, metadata);
+                    break;
 
-        if (evt.Commission > 0m)
-        {
-            PostCommission(evt, cashAccount, accountId, metadata);
+                case Sdk.OrderSide.Sell:
+                    PostSell(evt, cashAccount, accountId, metadata);
+                    break;
+
+                default:
+                    _logger.LogWarning("Unhandled order side {Side} for fill {FillId}", evt.Side, evt.FillId);
+                    break;
+            }
+
+            if (evt.Commission > 0m)
+            {
+                PostCommission(evt, cashAccount, accountId, metadata);
+            }
         }
 
         _logger.LogDebug(

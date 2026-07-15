@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { getQualityDashboard } from "@/lib/api";
-import { describeApiError } from "@/lib/api-errors";
+import { useRequestLifecycle } from "@/hooks/use-request-lifecycle";
 import type {
   QualityAnomalyEntry,
+  QualityComponentResponse,
+  QualityCompositeGapResponse,
+  QualityCompositeSymbolResponse,
   QualityDashboardResponse,
-  QualityGapEntry,
-  QualitySymbolScore
+  QualityProviderFreshnessResponse
 } from "@/types";
 
 export type QualityDashboardFetcher = typeof getQualityDashboard;
@@ -17,32 +19,44 @@ export interface DataQualityScoreCard {
   label: string;
   value: string;
   tone: QualityTone;
+  detail: string;
 }
 
 export interface DataQualitySymbolRow {
   symbol: string;
+  scoreLabel: string;
+  status: QualityCompositeSymbolResponse["status"];
+  tone: QualityTone;
+  isPartial: boolean;
+  coverageLabel: string;
   completenessLabel: string;
   freshnessLabel: string;
+  adapterLabel: string;
+  expectedEventsLabel: string;
   gapCount: number;
   anomalyCount: number;
-  health: QualitySymbolScore["health"];
-  tone: QualityTone;
+  components: QualityComponentResponse[];
+  openGaps: QualityCompositeGapResponse[];
+  providerFreshness: QualityProviderFreshnessResponse[];
+  issues: string[];
 }
 
 export interface DataQualityPanelModel {
+  dashboardVersion: string | null;
   overallTone: QualityTone;
   overallLabel: string;
+  overallStatus: "Green" | "Amber" | "Red" | "Unavailable";
+  isPartial: boolean;
   scoreCards: DataQualityScoreCard[];
-  attentionSymbols: DataQualitySymbolRow[];
+  symbols: DataQualitySymbolRow[];
   healthySymbolCount: number;
-  openGaps: QualityGapEntry[];
+  openGaps: QualityCompositeGapResponse[];
   unacknowledgedAnomalies: QualityAnomalyEntry[];
   summary: string;
 }
 
-/** Score thresholds shared with the quality monitoring service conventions. */
-const WARNING_SCORE = 95;
-const CRITICAL_SCORE = 85;
+const WARNING_SCORE = 80;
+const CRITICAL_SCORE = 60;
 
 export function scoreTone(score: number): QualityTone {
   if (score < CRITICAL_SCORE) return "danger";
@@ -50,87 +64,133 @@ export function scoreTone(score: number): QualityTone {
   return "success";
 }
 
-function formatScore(score: number): string {
-  return `${score.toFixed(1)}%`;
+function formatScore(score: number | null): string {
+  return score === null ? "Unavailable" : `${score.toFixed(1)}`;
 }
 
-function healthTone(health: QualitySymbolScore["health"]): QualityTone {
-  switch (health) {
-    case "Critical":
+function statusTone(status: QualityCompositeSymbolResponse["status"]): QualityTone {
+  switch (status) {
+    case "Red":
       return "danger";
-    case "Warning":
-      return "warning";
-    default:
+    case "Green":
       return "success";
+    default:
+      return "warning";
   }
 }
 
-/**
- * Pure projection of the unified quality dashboard response into presentation state:
- * tones for the score strip, the symbols that need operator attention (worst first),
- * and the open-gap / unacknowledged-anomaly queues.
- */
-export function buildDataQualityPanelModel(response: QualityDashboardResponse): DataQualityPanelModel {
-  const attentionSymbols = response.symbols
-    .filter((symbol) => symbol.health !== "Healthy")
-    .sort(
-      (a, b) =>
-        Math.min(a.completenessScore, a.freshnessScore) -
-        Math.min(b.completenessScore, b.freshnessScore)
-    )
-    .map((symbol) => ({
-      symbol: symbol.symbol,
-      completenessLabel: formatScore(symbol.completenessScore),
-      freshnessLabel: formatScore(symbol.freshnessScore),
-      gapCount: symbol.gapCount,
-      anomalyCount: symbol.anomalyCount,
-      health: symbol.health,
-      tone: healthTone(symbol.health)
-    }));
+function componentFor(
+  components: QualityComponentResponse[],
+  kind: QualityComponentResponse["kind"]
+): QualityComponentResponse | undefined {
+  return components.find((component) => component.kind === kind);
+}
 
-  const openGaps = response.recentGaps.filter((gap) => gap.status === "Open");
-  const unacknowledgedAnomalies = response.recentAnomalies.filter((anomaly) => !anomaly.acknowledged);
-  const healthySymbolCount = response.symbols.length - attentionSymbols.length;
+function componentCard(
+  components: QualityComponentResponse[],
+  kind: QualityComponentResponse["kind"],
+  label: string
+): DataQualityScoreCard {
+  const component = componentFor(components, kind);
+  return {
+    id: kind,
+    label,
+    value: formatScore(component?.score ?? null),
+    tone: component?.score === null || component?.score === undefined
+      ? "warning"
+      : scoreTone(component.score),
+    detail: component?.detail ?? "This source has not produced a measured score."
+  };
+}
+
+function buildSymbolRow(symbol: QualityCompositeSymbolResponse): DataQualitySymbolRow {
+  const stored = componentFor(symbol.components, "StoredCompleteness");
+  const streaming = componentFor(symbol.components, "StreamingFreshness");
+  const adapter = componentFor(symbol.components, "AdapterGapIntegrity");
+  const expectedEventsLabel = symbol.expectedEvents === null || symbol.observedEvents === null
+    ? "Expected-session counts unavailable"
+    : `${symbol.observedEvents.toLocaleString()} / ${symbol.expectedEvents.toLocaleString()} expected events`;
 
   return {
-    overallTone: scoreTone(response.overallScore),
-    overallLabel: formatScore(response.overallScore),
+    symbol: symbol.symbol,
+    scoreLabel: formatScore(symbol.compositeScore),
+    status: symbol.status,
+    tone: statusTone(symbol.status),
+    isPartial: symbol.isPartial,
+    coverageLabel: `${Math.round(symbol.coverageWeight * 100)}% evidence coverage`,
+    completenessLabel: formatScore(stored?.score ?? null),
+    freshnessLabel: formatScore(streaming?.score ?? null),
+    adapterLabel: formatScore(adapter?.score ?? null),
+    expectedEventsLabel,
+    gapCount: symbol.openGaps.length,
+    anomalyCount: symbol.anomalyCount,
+    components: symbol.components,
+    openGaps: symbol.openGaps,
+    providerFreshness: symbol.providerFreshness,
+    issues: symbol.issues
+  };
+}
+
+/** Project the canonical server-owned composite model into browser presentation state. */
+export function buildDataQualityPanelModel(response: QualityDashboardResponse): DataQualityPanelModel {
+  const unacknowledgedAnomalies = response.recentAnomalies.filter((anomaly) => !anomaly.isAcknowledged);
+  if (!response.composite) {
+    return {
+      dashboardVersion: null,
+      overallTone: "warning",
+      overallLabel: "Unavailable",
+      overallStatus: "Unavailable",
+      isPartial: true,
+      scoreCards: [],
+      symbols: [],
+      healthySymbolCount: 0,
+      openGaps: [],
+      unacknowledgedAnomalies,
+      summary: "Composite quality evidence is unavailable. Legacy streaming telemetry remains available."
+    };
+  }
+
+  const composite = response.composite;
+  const symbols = composite.symbols
+    .map(buildSymbolRow)
+    .sort((left, right) => {
+      const leftScore = Number(left.scoreLabel);
+      const rightScore = Number(right.scoreLabel);
+      return (Number.isFinite(leftScore) ? leftScore : -1) -
+        (Number.isFinite(rightScore) ? rightScore : -1) || left.symbol.localeCompare(right.symbol);
+    });
+  const healthySymbolCount = symbols.filter((symbol) => symbol.status === "Green").length;
+
+  return {
+    dashboardVersion: composite.version,
+    overallTone: statusTone(composite.status),
+    overallLabel: composite.status === "Unavailable" ? "Unavailable" : formatScore(composite.compositeScore),
+    overallStatus: composite.status,
+    isPartial: composite.isPartial,
     scoreCards: [
       {
-        id: "overall",
-        label: "Overall quality",
-        value: formatScore(response.overallScore),
-        tone: scoreTone(response.overallScore)
+        id: "Composite",
+        label: "Composite quality",
+        value: composite.status === "Unavailable" ? "Unavailable" : formatScore(composite.compositeScore),
+        tone: statusTone(composite.status),
+        detail: composite.isPartial
+          ? `${Math.round(composite.coverageWeight * 100)}% of required evidence is measured.`
+          : "All required quality sources are measured."
       },
-      {
-        id: "completeness",
-        label: "Completeness",
-        value: formatScore(response.completenessScore),
-        tone: scoreTone(response.completenessScore)
-      },
-      {
-        id: "freshness",
-        label: "Freshness",
-        value: formatScore(response.freshnessScore),
-        tone: scoreTone(response.freshnessScore)
-      },
-      {
-        id: "anomaly-rate",
-        label: "Anomaly rate",
-        value: `${response.anomalyRate.toFixed(2)}/min`,
-        tone: response.anomalyRate > 1 ? "danger" : response.anomalyRate > 0.25 ? "warning" : "success"
-      }
+      componentCard(composite.components, "StoredCompleteness", "Stored completeness"),
+      componentCard(composite.components, "StreamingFreshness", "Streaming freshness"),
+      componentCard(composite.components, "AdapterGapIntegrity", "Adapter gap integrity")
     ],
-    attentionSymbols,
+    symbols,
     healthySymbolCount,
-    openGaps,
+    openGaps: composite.openGaps.filter((gap) => gap.status === "Open"),
     unacknowledgedAnomalies,
-    summary:
-      attentionSymbols.length === 0 && openGaps.length === 0 && unacknowledgedAnomalies.length === 0
-        ? `All ${response.symbols.length} tracked symbols healthy.`
-        : `${attentionSymbols.length} symbol${attentionSymbols.length === 1 ? "" : "s"} need attention, ` +
-          `${openGaps.length} open gap${openGaps.length === 1 ? "" : "s"}, ` +
-          `${unacknowledgedAnomalies.length} unacknowledged anomal${unacknowledgedAnomalies.length === 1 ? "y" : "ies"}.`
+    summary: symbols.length === 0
+      ? "No collected symbols have produced quality evidence."
+      : `${symbols.length} collected symbol${symbols.length === 1 ? "" : "s"}; ` +
+        `${symbols.length - healthySymbolCount} require review, ${composite.openGaps.length} open gap` +
+        `${composite.openGaps.length === 1 ? "" : "s"}, ${composite.anomalyCount} anomal` +
+        `${composite.anomalyCount === 1 ? "y" : "ies"}.`
   };
 }
 
@@ -141,34 +201,41 @@ export interface DataQualityPanelViewModel {
   refresh: () => Promise<void>;
 }
 
-/**
- * View-model for the Data workspace quality panel, backed by the unified
- * `/api/quality/dashboard` read. Fetches on mount; consumers refresh on demand.
- */
+/** Fetches the canonical `/api/quality/dashboard` projection and rejects stale refresh results. */
 export function useDataQualityPanel(
   fetchDashboard: QualityDashboardFetcher = getQualityDashboard
 ): DataQualityPanelViewModel {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { status, start, succeed, fail, finish } = useRequestLifecycle({
+    operation: "data-quality-dashboard",
+    failureMessage: "Data quality dashboard is unavailable."
+  });
   const [model, setModel] = useState<DataQualityPanelModel | null>(null);
 
   const refresh = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    const request = start({ busyMode: "supersede" });
+    if (!request) return;
     try {
       const response = await fetchDashboard();
-      setModel(buildDataQualityPanelModel(response));
+      if (!request.isCurrent()) return;
+      request.safeSetState(setModel, buildDataQualityPanelModel(response));
+      succeed(request);
     } catch (fetchError) {
-      setError(describeApiError(fetchError, "Data quality dashboard is unavailable.").summary);
-      setModel(null);
+      if (!request.isCurrent()) return;
+      request.safeSetState(setModel, null);
+      fail(request, fetchError);
     } finally {
-      setLoading(false);
+      finish(request);
     }
-  }, [fetchDashboard]);
+  }, [fail, fetchDashboard, finish, start, succeed]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  return { loading, error, model, refresh };
+  return {
+    loading: status.phase === "idle" || status.inFlight,
+    error: status.error,
+    model,
+    refresh
+  };
 }

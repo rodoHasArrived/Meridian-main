@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Storage\Meridian.Storage.csproj" />
+    <ProjectReference Include="..\Meridian.TestSupport\Meridian.TestSupport.csproj" />
   </ItemGroup>
 
 </Project>

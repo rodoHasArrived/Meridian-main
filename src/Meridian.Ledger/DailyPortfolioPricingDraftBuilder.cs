@@ -52,6 +52,15 @@ public static class DailyPortfolioPricingDraftBuilder
             IdempotencyKey: idempotencyKey,
             EvidenceReferences: evidence);
 
+        var fairValueLevels = string.Join(
+            ",",
+            projection.Lines
+                .Select(static line => line.FairValueLevel)
+                .Distinct()
+                .OrderBy(static level => level)
+                .Select(static level => level.ToString()));
+        var stalePricedCount = projection.Lines.Count(static line => line.IsStalePriced);
+
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["valuation.policyId"] = input.Policy.PolicyId,
@@ -59,7 +68,9 @@ public static class DailyPortfolioPricingDraftBuilder
             ["valuation.periodId"] = input.PeriodId,
             ["valuation.baseCurrency"] = input.BaseCurrency,
             ["valuation.totalMarketValue"] = projection.TotalMarketValue.ToString(CultureInfo.InvariantCulture),
-            ["valuation.netUnrealizedGainOrLoss"] = projection.NetUnrealizedGainOrLoss.ToString(CultureInfo.InvariantCulture)
+            ["valuation.netUnrealizedGainOrLoss"] = projection.NetUnrealizedGainOrLoss.ToString(CultureInfo.InvariantCulture),
+            ["valuation.fairValueLevels"] = fairValueLevels,
+            ["valuation.stalePricedCount"] = stalePricedCount.ToString(CultureInfo.InvariantCulture)
         };
 
         var metadata = new JournalEntryMetadata(
@@ -69,6 +80,9 @@ public static class DailyPortfolioPricingDraftBuilder
             Tags: tags,
             EvidenceReferences: evidence);
 
-        return new AutomatedJournalDraft(journalEvent, description, projection.JournalLines, metadata);
+        var lines = projection.JournalLines
+            .Select(static line => (line.account, line.debit, line.credit, (LedgerLineDimensionSet?)null))
+            .ToArray();
+        return new AutomatedJournalDraft(journalEvent, description, lines, metadata);
     }
 }

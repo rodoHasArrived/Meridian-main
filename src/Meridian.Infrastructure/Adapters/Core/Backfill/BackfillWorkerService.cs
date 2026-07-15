@@ -5,12 +5,13 @@ using System.Threading;
 using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
+using Meridian.Core.Resilience;
 using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
-using Meridian.Infrastructure.Adapters.OpenFigi;
+using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Policies;
@@ -35,7 +36,7 @@ public sealed class BackfillWorkerService : IDisposable
     private readonly IConnectivityProbeService? _connectivityProbe;
     private readonly CancellationTokenSource _cts = new();
     private readonly SemaphoreSlim _concurrencySemaphore;
-    private readonly BackfillProgressTracker _progressTracker = new();
+    private readonly BackfillProgressTracker _progressTracker;
     private Task? _workerTask;
     private Task? _completionTask;
     private bool _disposed;
@@ -105,6 +106,7 @@ public sealed class BackfillWorkerService : IDisposable
         _jobManager = jobManager;
         _requestQueue = requestQueue;
         _provider = provider;
+        _progressTracker = provider.ProgressTracker;
         _rateLimitTracker = rateLimitTracker;
         _config = config;
         _appConfig = appConfig;
@@ -306,40 +308,10 @@ public sealed class BackfillWorkerService : IDisposable
                     activity?.SetTag("backfill.outcome", "cancelled");
                     throw;
                 }
-                catch (RateLimitException rle) when (request.AssignedProvider != null)
-                {
-                    // Typed rate limit exception with RetryAfter from HTTP headers
-                    _requestQueue.RecordProviderRateLimitHit(request.AssignedProvider);
-
-                    if (retryAttempt < MaxRetryAttemptsPerRequest)
-                    {
-                        retryAttempt++;
-                        var providerDelay = rle.RetryAfter;
-                        var delay = providerDelay ?? CalculateBackoff(retryAttempt, RateLimitBaseDelay, RateLimitMaxDelay);
-
-                        activity?.SetTag("backfill.retry_count", retryAttempt);
-                        scopedLog.Information(
-                            "Rate limited for {Symbol} via {Provider}, retrying in {Delay}ms via {DelaySource} (attempt {Attempt}/{Max})",
-                            request.Symbol, request.AssignedProvider, delay.TotalMilliseconds,
-                            providerDelay.HasValue ? "provider-specified cooldown" : "calculated exponential backoff",
-                            retryAttempt, MaxRetryAttemptsPerRequest);
-                        await Task.Delay(delay, ct).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    scopedLog.Warning(
-                        "Rate limit retry budget exhausted for {Symbol} via {Provider} after {Attempts} attempts",
-                        request.Symbol, request.AssignedProvider, retryAttempt);
-
-                    MarketDataTracing.RecordError(activity, rle);
-                    activity?.SetTag("backfill.outcome", "rate_limit_exhausted");
-                    await _requestQueue.CompleteRequestAsync(request, false, rle.Message, ct).ConfigureAwait(false);
-                    await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
-                    _progressTracker.MarkFailed(request.Symbol, rle.Message);
-                    return;
-                }
                 catch (Exception ex)
                 {
+                    // Typed RateLimitException (thrown directly or wrapped in aggregate/inner chains)
+                    // is located here, so a dedicated typed catch would duplicate this path.
                     var rateLimit = FindRateLimitException(ex);
                     var retryAfter = rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex);
                     var isRateLimited = rateLimit is not null ||
@@ -392,20 +364,8 @@ public sealed class BackfillWorkerService : IDisposable
     /// Calculates exponential backoff delay with jitter.
     /// </summary>
     private static TimeSpan CalculateBackoff(int attempt, TimeSpan baseDelay, TimeSpan maxDelay)
-    {
-        var baseMs = baseDelay.TotalMilliseconds;
-        var maxMs = maxDelay.TotalMilliseconds;
-        var delay = Math.Min(baseMs * Math.Pow(2, attempt - 1), maxMs);
-        // Add jitter (±25%) to prevent thundering herd
-        var jitter = delay * 0.25 * (Random.Shared.NextDouble() * 2 - 1);
-        return TimeSpan.FromMilliseconds(delay + jitter);
-    }
+        => Backoff.ExponentialDelay(attempt, baseDelay, maxDelay, jitterFraction: 0.25);
 
-    /// <summary>
-    /// Extracts Retry-After delay from an exception chain.
-    /// Supports both delta-seconds ("120") and HTTP-date ("Thu, 01 Dec 2024 16:00:00 GMT") formats
-    /// as defined in RFC 7231 Section 7.1.3.
-    /// </summary>
     /// <summary>
     /// Find a typed <see cref="RateLimitException"/> anywhere in the exception chain,
     /// including inside <see cref="AggregateException"/> trees thrown by the composite provider.
@@ -429,6 +389,11 @@ public sealed class BackfillWorkerService : IDisposable
         return ex.InnerException is { } innerException ? FindRateLimitException(innerException) : null;
     }
 
+    /// <summary>
+    /// Extracts Retry-After delay from an exception chain.
+    /// Supports both delta-seconds ("120") and HTTP-date ("Thu, 01 Dec 2024 16:00:00 GMT") formats
+    /// as defined in RFC 7231 Section 7.1.3.
+    /// </summary>
     internal static TimeSpan? TryExtractRetryAfter(Exception ex)
     {
         // Walk the exception chain looking for HttpRequestException with Retry-After info
@@ -779,10 +744,12 @@ public sealed class BackfillWorkerService : IDisposable
 public sealed class BackfillServiceFactory
 {
     private readonly ILogger _log;
+    private readonly ISymbolResolver? _symbolResolver;
 
-    public BackfillServiceFactory(ILogger? log = null)
+    public BackfillServiceFactory(ILogger? log = null, ISymbolResolver? symbolResolver = null)
     {
         _log = log ?? LoggingSetup.ForContext<BackfillServiceFactory>();
+        _symbolResolver = symbolResolver;
     }
 
     /// <summary>
@@ -807,17 +774,9 @@ public sealed class BackfillServiceFactory
             rateLimitTracker.RegisterProvider(provider);
         }
 
-        // Create composite provider with symbol resolution wired the same way as the
-        // coordinator and provider-factory paths (BackfillConfig.EnableSymbolResolution).
-        OpenFigiSymbolResolver? symbolResolver = null;
-        if (config.EnableSymbolResolution)
-        {
-            symbolResolver = new OpenFigiSymbolResolver(config.Providers?.OpenFigi?.ApiKey, log: _log);
-        }
-
         var composite = new CompositeHistoricalDataProvider(
             providers,
-            symbolResolver,
+            config.EnableSymbolResolution ? _symbolResolver : null,
             enableRateLimitRotation: config.EnableRateLimitRotation,
             rateLimitRotationThreshold: config.RateLimitRotationThreshold,
             log: _log);
@@ -854,7 +813,7 @@ public sealed class BackfillServiceFactory
             rateLimitTracker,
             composite,
             worker,
-            symbolResolver);
+            ownedSymbolResolver: null);
     }
 }
 

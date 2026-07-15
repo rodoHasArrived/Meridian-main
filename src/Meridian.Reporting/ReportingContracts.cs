@@ -47,7 +47,8 @@ public sealed record ReportingTemplateMetadata(
     ImmutableArray<string> Sections,
     ImmutableDictionary<string, string> Tags,
     IReadOnlyList<ReportWriterGridDefinitionDto>? ReportWriterGrids = null,
-    ReportAccessPolicyDto? AccessPolicy = null);
+    ReportAccessPolicyDto? AccessPolicy = null,
+    IReadOnlyList<ReportTemplateParameterDefinitionDto>? Parameters = null);
 
 public sealed record ReportingLineageReference(
     string SectionId,
@@ -79,7 +80,13 @@ public sealed record ReportingOutputManifest(
     int? RunAttemptOrdinal = null,
     string? PriorRunId = null,
     string? RetryReason = null,
-    ImmutableArray<ReportWriterGridDiffDto> ReportWriterGridDiffs = default);
+    ImmutableArray<ReportWriterGridDiffDto> ReportWriterGridDiffs = default,
+    VersionedReportTemplateIdDto? ResolvedTemplate = null,
+    ReportingRunParametersDto? ResolvedParameters = null,
+    ReportingRunReadinessDto? Readiness = null,
+    ReportingOperationalScope? OperationalScope = null,
+    ReportingAccessScope? ImmutableAccessScope = null,
+    ReportingCertifiedSnapshotScope? CertifiedSnapshot = null);
 
 public sealed record ReportingRunReportWriterGridArtifact(
     string GridId,
@@ -113,7 +120,14 @@ public sealed record ReportingJobContract(
     string? BrandingThemeId = null,
     ReportBrandingThemeDto? BrandingTheme = null,
     ReportAccessPolicyDto? AccessPolicy = null,
-    string? RetryReason = null);
+    string? RetryReason = null,
+    bool AllowRestatement = false,
+    VersionedReportTemplateIdDto? ResolvedTemplate = null,
+    ReportingRunParametersDto? ResolvedParameters = null,
+    ReportingRunReadinessDto? Readiness = null,
+    ReportingOperationalScope? OperationalScope = null,
+    ReportingAccessScope? ImmutableAccessScope = null,
+    ReportingCertifiedSnapshotScope? CertifiedSnapshot = null);
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,

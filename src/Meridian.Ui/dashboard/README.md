@@ -6,10 +6,15 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-19
+last_reviewed: 2026-07-10
 ---
 
 # src/Meridian.Ui/dashboard
+
+First launch is browser-primary. `/setup` renders the first-run concierge while the
+shared first-run API remains the source of truth for starter kits, sample safety labels,
+recommendations, and completed activation outcomes. Sample mode stays offline-capable
+and visibly labelled `SAMPLE · PAPER` throughout the shell.
 
 ## Purpose
 
@@ -37,6 +42,8 @@ instead of introducing one-off screen styling.
 - `src/app-shell.trust-strip.ts` - app-shell build, mode, source, and provider posture view models.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
+- `src/design-system/assets.ts` - dashboard bridge for the checked-in `Meridian Design System/` package, centralizing brand and workspace icon imports before app-shell or navigation components consume them.
+- `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.
 - `src/types.ts` - compatibility barrel for browser DTO mirrors. Add new domain-specific DTO mirrors under `src/types/` and re-export them from this file instead of growing the barrel directly.
 - `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
 - `package.json` - dashboard build, test, and tooling commands.
@@ -98,6 +105,11 @@ browser renders retained documents with classification, source hash, typed chann
 tenant/scope, extraction status, reviewer state, linked operational objects, open support-request
 count, support-only authority posture, and manifest links, while keeping intake and readiness policy
 in shared contracts/endpoints.
+Statement import commit results render the shared Evidence Vault identity, Evidence Workbench route,
+reconciliation route, and structured reconciliation case links directly from the commit response,
+including status, priority, reason, and suggested next action. The browser blocks commit while
+preview errors remain, so operators can move from imported custodian/broker source to retained
+proof and exact casework without browser-local routing rules or avoidable server rejections.
 The request-list queue renders typed close, audit, tax, report-package, and operational-event family
 badges beside each frozen support list so operators can distinguish close binder blockers from audit
 or report-support package gaps without parsing manifest JSON.
@@ -649,6 +661,11 @@ The Reporting workspace also renders the shared `AccessAudit` summary from `Work
 showing matched user/group/company scopes plus aggregate visible/hidden counts for templates, report
 packs, schedules, deliveries, and structured exports. React displays the service-owned denial
 reasons without probing or naming hidden report objects.
+On the daily Reporting landing, React renders `starterKits` and `starterKitState` from the shared
+Reporting payload as the "Set up your reporting desk" chooser. Selecting a kit posts to the shared
+starter-kit provisioning endpoint, then shows the server-returned enabled template ids, layout id,
+default period, and draft schedule ids; the browser does not locally decide which templates or
+schedules belong to an archetype.
 Report-pack delivery history rows link delivered packages to the shared `report-pack-delivery`
 Evidence Workbench subject using the backend `reportId:attemptId` identity, so React does not build
 delivery evidence packets or audit graph state locally. Publication review and delivery package
@@ -917,7 +934,12 @@ inputs.
 The browser `DataScreen` owns the canonical Data workspace module under `src/screens/data-screen*`.
 Retained `DataOperations*` DTO, endpoint, and fixture names are compatibility seams only. Data
 workspace navigation and command-palette discovery surface `/data/providers` as the canonical
-provider catalog and onboarding lane, alongside watchlist, quotes, alerts, and backfill queues.
+provider catalog and onboarding lane. `/data/operations` is the Ingestion Operations Center for
+durable job state, checkpoints, retries, failures, transitions, and Evidence Vault receipts;
+`/data/backfills` is a compatibility redirect. `/data/assurance` combines storage health, quality,
+canonicalization parity, capacity, and guarded maintenance. Maintenance stays shared-service owned:
+React can request a short-lived preview and submit rationale plus exact typed confirmation, but it
+cannot choose arbitrary paths or bypass candidate fingerprint revalidation.
 The same screen renders the shared data-upload intake panel from the `WorkstationDataPayload`
 template catalog. React builds CSV downloads and submits selected files to the shared preview
 endpoint only; validation, retained source evidence, and any downstream reconciliation or approval
@@ -1125,6 +1147,15 @@ The final light-first workspace surface cascade now lives in `src/styles/workspa
 imported immediately after `src/styles/index.css` in `main.tsx`, so `index.css` stays focused on
 global tokens, Tailwind layers, and legacy shared rules while the workspace surface overrides remain
 order-pinned and reviewable.
+The root `Meridian Design System/` package is vendored as the visual source bundle for tokens,
+component references, patterns, templates, and governance scripts. The browser workstation consumes
+the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
+`src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
+and runtime CSS alignment under test.
+Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
+`WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
+adapt the manifest-backed design-system references without importing root JSX or runtime-injected
+package CSS into the dashboard build.
 Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
 Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
 Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is
@@ -1174,6 +1205,13 @@ review URLs portable without duplicating saved-view storage in React.
 FREX route-query parsing, filter restoration, share-link serialization, and accessible share-state
 summaries live in `financial-record-explorer.view-state.ts` so the React shell stays focused on DTO
 rendering and Number Passport proof presentation.
+
+The browser type mirrors include additive instrument-role, book-position, economic-state,
+economic-event, projection-lineage, authoritative book-context assertion, and existing rule-pack
+reference shapes. Candidate, posting-command, and Asset Operations payload fields remain optional
+for older JSON. The browser submits posting intent and assertions only; server services resolve
+authority, and the same shared contracts remain available to WPF without browser-owned accounting
+logic or a new route.
 
 ## Diagrams
 

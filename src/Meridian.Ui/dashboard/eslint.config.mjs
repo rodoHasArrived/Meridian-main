@@ -39,7 +39,7 @@ export default tseslint.config(
       "no-useless-assignment": "error",
       "no-useless-escape": "error",
       "preserve-caught-error": "error",
-      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {

@@ -1,0 +1,83 @@
+<!-- @dsCard group="Data" viewport="1100x620" name="FilterBuilder" subtitle="Structured field / operator / value query rows — compiles a predicate for registry surfaces" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Filter builder</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { FilterBuilder } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+const FIELDS = [
+  { key: "symbol", label: "Symbol", type: "text" },
+  { key: "adv",    label: "ADV ($)", type: "number" },
+  { key: "listed", label: "Listed", type: "date" },
+  { key: "class",  label: "Asset class", type: "enum", options: ["Equity", "ETF", "ADR"] },
+];
+
+const UNIVERSE = [
+  { symbol: "AAPL", adv: 11200000000, listed: "1980-12-12", class: "Equity" },
+  { symbol: "MSFT", adv: 9800000000,  listed: "1986-03-13", class: "Equity" },
+  { symbol: "NVDA", adv: 24500000000, listed: "1999-01-22", class: "Equity" },
+  { symbol: "SPY",  adv: 31000000000, listed: "1993-01-29", class: "ETF" },
+  { symbol: "QQQ",  adv: 18400000000, listed: "1999-03-10", class: "ETF" },
+  { symbol: "IWM",  adv: 4600000000,  listed: "2000-05-26", class: "ETF" },
+  { symbol: "TSM",  adv: 2100000000,  listed: "1997-10-08", class: "ADR" },
+  { symbol: "BABA", adv: 1900000000,  listed: "2014-09-19", class: "ADR" },
+  { symbol: "SONY", adv: 310000000,   listed: "1970-09-17", class: "ADR" },
+  { symbol: "PLTR", adv: 3800000000,  listed: "2020-09-30", class: "Equity" },
+];
+
+const fmtAdv = (n) => n >= 1e9 ? `$${(n / 1e9).toFixed(1)}B` : `$${(n / 1e6).toFixed(0)}M`;
+
+function Demo() {
+  const [visible, setVisible] = useState(UNIVERSE);
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2,
+      padding:16, maxWidth:1040 }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>FilterBuilder · security-master query</div>
+
+      <FilterBuilder
+        fields={FIELDS}
+        defaultValue={[{ field: "adv", op: "gte", value: "1000000000" }]}
+        summary={`${visible.length} of ${UNIVERSE.length} rows`}
+        onApply={(rows, pred) => setVisible(UNIVERSE.filter(pred))}
+      />
+
+      <div style={{ marginTop:14, fontFamily:"var(--font-data)", fontSize:12 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"90px 110px 110px 1fr", gap:0,
+          padding:"5px 8px", borderBottom:"1px solid var(--border)",
+          fontFamily:"var(--font-body)", fontSize:10, fontWeight:600,
+          fontVariant:"all-small-caps", letterSpacing:".04em", color:"var(--text-muted)" }}>
+          <span>Symbol</span><span style={{ textAlign:"right" }}>ADV</span><span style={{ textAlign:"right" }}>Listed</span><span style={{ textAlign:"right" }}>Class</span>
+        </div>
+        {visible.map((r) => (
+          <div key={r.symbol} style={{ display:"grid", gridTemplateColumns:"90px 110px 110px 1fr",
+            padding:"5px 8px", borderBottom:"1px solid var(--bg-hover)" }}>
+            <span style={{ fontWeight:600, color:"var(--text-primary)" }}>{r.symbol}</span>
+            <span style={{ textAlign:"right", color:"var(--text-secondary)" }}>{fmtAdv(r.adv)}</span>
+            <span style={{ textAlign:"right", color:"var(--text-secondary)" }}>{r.listed}</span>
+            <span style={{ textAlign:"right", color:"var(--text-secondary)" }}>{r.class}</span>
+          </div>
+        ))}
+        {visible.length === 0 && (
+          <div style={{ padding:"14px 8px", color:"var(--text-muted)" }}>No rows match — incomplete rows are ignored, never match-nothing.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

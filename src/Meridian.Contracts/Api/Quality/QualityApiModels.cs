@@ -28,7 +28,101 @@ public sealed record QualityDashboardResponse(
     IReadOnlyList<QualityGapResponse> RecentGaps,
     IReadOnlyList<QualitySequenceErrorResponse> RecentErrors,
     IReadOnlyList<QualityAnomalyResponse> RecentAnomalies,
-    IReadOnlyList<string> StaleSymbols);
+    IReadOnlyList<string> StaleSymbols,
+    QualityCompositeDashboardResponse? Composite = null);
+
+/// <summary>
+/// Canonical cross-source quality projection shared by browser and desktop clients.
+/// </summary>
+public sealed record QualityCompositeDashboardResponse(
+    string Version,
+    DateTimeOffset ObservedAt,
+    double CompositeScore,
+    string Status,
+    bool IsPartial,
+    double CoverageWeight,
+    IReadOnlyList<QualityComponentResponse> Components,
+    IReadOnlyList<QualityCompositeSymbolResponse> Symbols,
+    IReadOnlyList<QualityCompositeGapResponse> OpenGaps,
+    int AnomalyCount);
+
+/// <summary>
+/// Per-symbol composite quality row and its drill-down evidence.
+/// </summary>
+public sealed record QualityCompositeSymbolResponse(
+    string Symbol,
+    double? CompositeScore,
+    string Status,
+    bool IsPartial,
+    double CoverageWeight,
+    long? ExpectedEvents,
+    long? ObservedEvents,
+    int AnomalyCount,
+    IReadOnlyList<QualityComponentResponse> Components,
+    IReadOnlyList<QualityCompositeGapResponse> OpenGaps,
+    IReadOnlyList<QualityProviderFreshnessResponse> ProviderFreshness,
+    IReadOnlyList<string> Issues);
+
+/// <summary>
+/// Normalized evidence emitted by one quality subsystem.
+/// </summary>
+public sealed record QualityComponentResponse(
+    string Kind,
+    string Label,
+    double Weight,
+    double? Score,
+    string Availability,
+    DateTimeOffset? ObservedAt,
+    int IssueCount,
+    string Detail);
+
+/// <summary>
+/// Stable, server-resolvable gap entry used by contextual remediation actions.
+/// </summary>
+public sealed record QualityCompositeGapResponse(
+    string GapId,
+    string Symbol,
+    string? Provider,
+    string EventType,
+    DateTimeOffset From,
+    DateTimeOffset To,
+    long EstimatedMissingEvents,
+    string Severity,
+    string Status,
+    bool CanBackfill,
+    string? DisabledReason);
+
+/// <summary>
+/// Provider-specific freshness evidence for one symbol.
+/// </summary>
+public sealed record QualityProviderFreshnessResponse(
+    string Provider,
+    DateTimeOffset? LastEventAt,
+    double? AgeMilliseconds,
+    string Status,
+    double? CompletenessScore,
+    int GapCount);
+
+/// <summary>
+/// Requests remediation of a gap from a specific composite dashboard version.
+/// The server resolves provider and range from the retained gap identifier.
+/// </summary>
+public sealed record QualityGapRemediationRequest(
+    string GapId,
+    string DashboardVersion);
+
+/// <summary>
+/// Truthful outcome returned by a contextual data-quality remediation request.
+/// </summary>
+public sealed record QualityGapRemediationResponse(
+    string GapId,
+    string Symbol,
+    string Status,
+    string Provider,
+    DateOnly From,
+    DateOnly To,
+    string IdempotencyKey,
+    string Message);
 
 /// <summary>
 /// Real-time quality metrics payload.

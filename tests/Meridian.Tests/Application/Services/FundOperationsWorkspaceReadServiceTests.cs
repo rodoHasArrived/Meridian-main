@@ -10,9 +10,11 @@ using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
@@ -452,7 +454,9 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         portfolioExport.Rows.Should().Contain(row =>
             row["cutId"] == "fund:consolidated" &&
             row["totalPnl"] == "50" &&
-            row["shadowNav"] == "2000");
+            // Shadow NAV is the consolidated NAV (assets - liabilities) from the NAV
+            // attribution service, not the sum of every account's normal balance.
+            row["shadowNav"] == "1000");
         portfolioExport.RowLineage.Should().NotBeNull();
         portfolioExport.Export.RowLineageCount.Should().Be(portfolioExport.RowLineage!.Count);
         var warehouseExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
@@ -905,6 +909,74 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.RelatedRunIds.Should().BeEmpty();
         workspace.Ledger.JournalEntryCount.Should().Be(0);
         workspace.Ledger.TrialBalance.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DurableLedgerStore_DrivesWorkspaceTrialBalanceNavAndReportPreview()
+    {
+        var fundProfileId = $"fund-durable-{Guid.NewGuid():N}";
+        var ledgerBookId = Guid.Parse("f32a721f-cbcf-40b3-b84b-7db23ab2c57b");
+        var periodId = Guid.Parse("749dbb05-f290-4f4f-b384-b6471a346b66");
+        var asOf = new DateTimeOffset(2026, 6, 30, 16, 0, 0, TimeSpan.Zero);
+        var book = new LedgerBookRecord(
+            ledgerBookId,
+            fundProfileId,
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Primary operations ledger",
+            "USD",
+            asOf.AddDays(-30),
+            asOf,
+            AccountingBasis: AccountingBasisKindDto.Primary);
+        var records = new[]
+        {
+            BuildDurableRecord(
+                ledgerBookId,
+                periodId,
+                asOf.AddHours(-2),
+                globalSequence: 1,
+                "capital contribution",
+                (new LedgerAccount("Assets:Cash", LedgerAccountType.Asset), 1_000m, 0m),
+                (new LedgerAccount("Equity:Capital", LedgerAccountType.Equity), 0m, 1_000m)),
+            BuildDurableRecord(
+                ledgerBookId,
+                periodId,
+                asOf.AddHours(-1),
+                globalSequence: 2,
+                "administration accrual",
+                (new LedgerAccount("Expenses:Administration", LedgerAccountType.Expense), 100m, 0m),
+                (new LedgerAccount("Liabilities:Payable", LedgerAccountType.Liability), 0m, 100m))
+        };
+        var journalStore = new ReadOnlyFundLedgerJournalStore(book, records);
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            ledgerJournalStore: journalStore);
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            fundProfileId,
+            AsOf: asOf,
+            Currency: "USD"));
+        var preview = await service.PreviewReportPackAsync(new FundReportPackPreviewRequestDto(
+            fundProfileId,
+            AsOf: asOf,
+            Currency: "USD"));
+
+        workspace.RecordedRunCount.Should().Be(0);
+        workspace.Ledger.Journal.Select(static row => row.Description)
+            .Should()
+            .Equal("administration accrual", "capital contribution");
+        workspace.Ledger.TrialBalance.Should().ContainSingle(row =>
+            row.AccountName == "Assets:Cash" && row.Balance == 1_000m);
+        workspace.Ledger.TrialBalance.Should().ContainSingle(row =>
+            row.AccountName == "Liabilities:Payable" && row.Balance == 100m);
+        workspace.Nav.TotalNav.Should().Be(900m);
+        preview.TrialBalanceLineCount.Should().Be(4);
+        journalStore.QueryCount.Should().Be(2);
     }
 
     [Fact]
@@ -1590,6 +1662,116 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             new NavAttributionService(securityMaster),
             new ReportGenerationService(securityMaster),
             reportPackRepository: reportPackRepository);
+    }
+
+    private static LedgerJournalEntryRecord BuildDurableRecord(
+        Guid ledgerBookId,
+        Guid periodId,
+        DateTimeOffset timestamp,
+        long globalSequence,
+        string description,
+        params (LedgerAccount Account, decimal Debit, decimal Credit)[] lines)
+    {
+        var journalEntryId = Guid.NewGuid();
+        var entry = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            description,
+            lines.Select(line => new LedgerEntry(
+                Guid.NewGuid(),
+                journalEntryId,
+                timestamp,
+                line.Account,
+                line.Debit,
+                line.Credit,
+                description,
+                new LedgerLineDimensionSet(FundId: "durable-fund"))).ToArray());
+
+        return new LedgerJournalEntryRecord(
+            entry,
+            ledgerBookId,
+            periodId,
+            CommandId: null,
+            CorrelationId: null,
+            GlobalSequence: globalSequence,
+            CreatedAt: timestamp,
+            AccountingBasis: AccountingBasisKindDto.Primary);
+    }
+
+    private sealed class ReadOnlyFundLedgerJournalStore(
+        LedgerBookRecord book,
+        IReadOnlyList<LedgerJournalEntryRecord> records) : ILedgerJournalStore
+    {
+        public int QueryCount { get; private set; }
+
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
+            LedgerJournalEntryQuery query,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            QueryCount++;
+            var filtered = records
+                .Where(record => !query.LedgerBookId.HasValue || record.AggregateId == query.LedgerBookId.Value)
+                .Where(record => !query.OccurredTo.HasValue || record.Entry.Timestamp <= query.OccurredTo.Value)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(filtered);
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(
+            Guid periodId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                records.Where(record => record.PeriodId == periodId).ToArray());
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(
+            Guid aggregateId,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                records.Where(record => record.AggregateId == aggregateId).ToArray());
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
+            Task.FromResult<LedgerAccountingPeriod?>(null);
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) =>
+            Task.FromResult<LedgerBookRecord?>(book.LedgerBookId == ledgerBookId ? book : null);
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (string.IsNullOrWhiteSpace(fundProfileId) ||
+                 string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || book.FundStructureNodeId == fundStructureNodeId.Value) &&
+                (!fundStructureNodeKind.HasValue || book.FundStructureNodeKind == fundStructureNodeKind.Value);
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>(matches ? [book] : []);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(
+            LedgerBookRecord book,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
     }
 
     private static FileGovernanceReportPackRepository CreateReportPackRepository(string tempRoot) =>

@@ -25,6 +25,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolioAttribution: "/portfolio/attribution",
   portfolioAssetDetail: "/portfolio/asset-detail",
   portfolioBrokerageSync: "/portfolio/brokerage-sync",
+  portfolioCashLadder: "/portfolio/cash-ladder",
   portfolioFamilyOffice: "/portfolio/family-office",
   accounting: "/accounting",
   accountingConfigure: "/accounting/configure",
@@ -37,6 +38,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingJournalEntryDetail: "/accounting/journal-entries/detail",
   accountingCapitalAccounts: "/accounting/capital-accounts",
   accountingReconciliation: "/accounting/reconciliation",
+  accountingExternalGlReconciliation: "/accounting/reconciliation/external-gl",
   accountingReconciliationMatch: "/accounting/reconciliation/match",
   accountingStatementImport: "/accounting/statement-import",
   accountingCloseCalendar: "/accounting/close-calendar",
@@ -68,16 +70,29 @@ export const WORKSTATION_ROUTE_CATALOG = {
   strategyLab: "/strategy/lab",
   strategyQuantLab: "/strategy/quant-lab",
   data: "/data",
+  dataImport: "/data/import",
   dataProviders: "/data/providers",
   dataWatchlist: "/data/watchlist",
   dataQuotes: "/data/quotes",
   dataAlerts: "/data/alerts",
   dataEvidence: "/data/evidence",
   dataBackfills: "/data/backfills",
+  dataOperations: "/data/operations",
+  dataAssurance: "/data/assurance",
+  dataExports: "/data/exports",
+  dataQuery: "/data/query",
   dataSecurityMasterLegacy: "/data/security-master",
   settings: "/settings",
   settingsPreferences: "/settings/preferences",
+  settingsAccountingSystems: "/settings/accounting-systems",
   settingsIntegrations: "/settings/integrations",
+  settingsAccess: "/settings/access",
+  settingsProviders: "/settings/providers",
+  settingsDiagnostics: "/settings/diagnostics",
+  settingsDiagnosticsAdvanced: "/settings/diagnostics/advanced",
+  settingsFeatureCoverage: "/settings/feature-coverage",
+  settingsAlpacaProviderGuidedSetup: "/settings/providers/alpaca/setup",
+  settingsAlpacaProviderAdvanced: "/settings/providers/alpaca/advanced",
   settingsAlpacaProviderSetup: "/settings#alpaca-provider-setup",
   settingsBackendCapabilityCoverage: "/settings#backend-capability-coverage",
   settingsDiagnosticEndpoints: "/settings#diagnostic-endpoints"
@@ -95,10 +110,7 @@ export type WorkstationRouteQueryValue = string | number | boolean | null | unde
  * primary navigation and the command palette so operators are not steered into
  * dead ends. Remove a route from this set when its read model lands.
  */
-export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set([
-  WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice,
-  WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench
-]);
+export const UNWIRED_WORKSTATION_ROUTES: ReadonlySet<string> = new Set<string>();
 
 const WORKSPACE_ROOT_ROUTES: Record<WorkspaceKey, WorkstationRoutePath> = {
   trading: WORKSTATION_ROUTE_CATALOG.trading,
@@ -118,7 +130,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   FundStructureSetup: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup,
   OperationsClose: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
   Backtest: WORKSTATION_ROUTE_CATALOG.strategy,
-  Backfill: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+  Backfill: WORKSTATION_ROUTE_CATALOG.dataOperations,
   BrokerageSync: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   DataShell: WORKSTATION_ROUTE_CATALOG.data,
   DataOperationsShell: WORKSTATION_ROUTE_CATALOG.data,
@@ -194,6 +206,14 @@ export function workstationRouteWithHash(key: WorkstationRouteKey, hashTarget: s
 
 export function settingsProviderConnectionRoute(providerId: string): string {
   return workstationRouteWithHash("settings", `provider-${providerId}-connection`);
+}
+
+export function settingsProviderSetupRoute(providerId: string): string {
+  return `/settings/providers/${encodeURIComponent(providerId.trim().toLowerCase())}/setup`;
+}
+
+export function settingsProviderAdvancedRoute(providerId: string): string {
+  return `/settings/providers/${encodeURIComponent(providerId.trim().toLowerCase())}/advanced`;
 }
 
 export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
@@ -309,6 +329,57 @@ export function workspaceForPath(pathname: string): WorkspaceSummary {
   return workspaceForKey(normalizeWorkspacePath(pathname));
 }
 
+export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> = {
+  alerts: "Alerts",
+  approvals: "Approvals",
+  "asset-detail": "Asset Detail",
+  "accounting-systems": "Accounting Systems",
+  "capital-accounts": "Capital Accounts",
+  configure: "Configure",
+  "covered-call": "Covered Call",
+  designer: "Designer",
+  diagnostics: "Diagnostics",
+  "entity-setup": "Entity Setup",
+  evidence: "Evidence",
+  exceptions: "Exceptions",
+  "family-office": "Family Office",
+  "formula-workbench": "Formula Workbench",
+  "journal-entries": "Journal Entries",
+  ledger: "Ledger Explorer",
+  "operations-continuity": "Operations Continuity",
+  "operations-record": "Operations Record",
+  exports: "Exports",
+  providers: "Providers",
+  preferences: "Preferences",
+  "quant-lab": "Quant Lab",
+  quotes: "Quotes",
+  readiness: "Readiness",
+  reconciliation: "Reconciliation",
+  "report-packs": "Report Packs",
+  run: "Run Report",
+  "run-status": "Run Status",
+  scheduled: "Scheduled Reports",
+  "security-master": "Security Master",
+  "statement-import": "Import Statement",
+  watchlist: "Watchlist"
+};
+
+export function resolveWorkstationRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
+  const segments = pathname.split("/").filter(Boolean);
+  const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
+  if (routeSegments.length === 0) {
+    return workspace.label;
+  }
+
+  return routeSegments.map(formatWorkstationRouteSegmentLabel).join(" / ");
+}
+
+export function formatWorkstationRouteSegmentLabel(segment: string): string {
+  return WORKSTATION_ROUTE_SEGMENT_LABELS[segment] ?? segment.split("-").map((part) => (
+    part.length > 0 ? `${part[0].toUpperCase()}${part.slice(1)}` : part
+  )).join(" ");
+}
+
 export function normalizeWorkspacePath(pathname: string): WorkspaceKey {
   const segments = pathSegments(pathname);
   const firstSegment = segments[0] ?? null;
@@ -344,6 +415,16 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
   if (firstSegment === "data" && pathSegments(pathname)[1] === "security-master") {
     const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataSecurityMasterLegacy.length);
     return `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "backfills") {
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataBackfills.length);
+    return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data-operations" && pathSegments(pathname)[1] === "backfills") {
+    const suffix = pathname.slice("/data-operations/backfills".length);
+    return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
   }
 
   if (firstSegment === "overview") {

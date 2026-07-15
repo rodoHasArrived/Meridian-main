@@ -63,6 +63,14 @@ public static class UiApiRoutes
     public const string IngestionJobById = "/api/ingestion/jobs/{jobId}";
     public const string IngestionJobTransition = "/api/ingestion/jobs/{jobId}/transition";
 
+    // Governed Data workspace operations and assurance endpoints
+    public const string WorkstationIngestionOperations = "/api/workstation/data/ingestion-operations";
+    public const string WorkstationIngestionOperationById = "/api/workstation/data/ingestion-operations/{jobId}";
+    public const string WorkstationIngestionOperationAction = "/api/workstation/data/ingestion-operations/{jobId}/actions/{action}";
+    public const string WorkstationStorageAssurance = "/api/workstation/data/storage-assurance";
+    public const string WorkstationStorageMaintenancePreview = "/api/workstation/data/storage-assurance/actions/preview";
+    public const string WorkstationStorageMaintenanceExecute = "/api/workstation/data/storage-assurance/actions/execute";
+
     // Backfill provider metadata and status endpoints
     public const string BackfillProviderMetadata = "/api/backfill/providers/metadata";
     public const string BackfillProviderStatuses = "/api/backfill/providers/statuses";
@@ -160,6 +168,7 @@ public static class UiApiRoutes
     public const string SymbolsSearch = "/api/symbols/search";
     public const string SymbolsBatch = "/api/symbols/batch";
     public const string SymbolMappings = "/api/symbols/mappings";
+    public const string CanonicalSymbolRegistry = "/api/symbols/registry";
 
     // Catalog search and discovery endpoints
     public const string CatalogSearch = "/api/catalog/search";
@@ -354,6 +363,7 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
+    public const string SecurityMasterOperatorOverrideDecision = "/api/security-master/{securityId:guid}/operator-overrides/decision";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
 
@@ -616,6 +626,8 @@ public static class UiApiRoutes
     public const string WorkstationDataReplacementCost = "/api/workstation/data/replacement-cost";
     public const string WorkstationDataUploadTemplates = "/api/workstation/data/uploads/templates";
     public const string WorkstationDataUploadPreview = "/api/workstation/data/uploads/preview";
+    public const string WorkstationDataUploadWorkbook = "/api/workstation/data/uploads/templates/workbook";
+    public const string WorkstationDataUploadWorkbookPreview = "/api/workstation/data/uploads/workbook/preview";
     public const string WorkstationBankStatementImport = "/api/workstation/data/uploads/bank-statements/import";
     public const string WorkstationProviderIntegrationTemplates = "/api/workstation/provider-integrations/templates";
     public const string WorkstationProviderIntegrationTemplateById = "/api/workstation/provider-integrations/templates/{manifestId}";
@@ -799,6 +811,12 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
+    public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
+    public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
+    public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
+    public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";
@@ -870,8 +888,12 @@ public static class UiApiRoutes
     public const string ReportingPackDeliveryPortalPackage = "/portal/reporting/packages/{packageId}";
     public const string ReportingStructuredExport = "/api/fund-structure/reporting/structured-exports/{exportId}";
     public const string ReportingRuns = "/api/fund-structure/reporting/runs";
+    public const string ReportingRunReadiness = "/api/fund-structure/reporting/runs/readiness";
     public const string ReportingRunAuditTrail = "/api/fund-structure/reporting/runs/{runId}/audit";
+    public const string ReportingRunStream = "/api/fund-structure/reporting/runs/{runId}/stream";
     public const string ReportingRunReportWriterGrid = "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}";
+    public const string ReportingStarterKits = "/api/fund-structure/reporting/starter-kits";
+    public const string ReportingStarterKitProvision = "/api/fund-structure/reporting/starter-kits/{kitId}/provision";
     public const string ReportingSchedules = "/api/fund-structure/reporting/schedules";
     public const string ReportingScheduleRunDue = "/api/fund-structure/reporting/schedules/run-due";
     public const string ReportingSchedulePause = "/api/fund-structure/reporting/schedules/{scheduleId}/pause";
@@ -894,6 +916,10 @@ public static class UiApiRoutes
 
     // Portfolio cash-flow projection endpoints
     public const string PortfolioCashFlows = "/api/portfolio/{runId}/cash-flows";
+
+    // Portfolio-wide cash ladder and liquidity scenarios
+    public const string PortfolioCashLadder = "/api/portfolio/cash-ladder";
+    public const string PortfolioCashLadderScenarios = "/api/portfolio/cash-ladder/scenarios";
 
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";

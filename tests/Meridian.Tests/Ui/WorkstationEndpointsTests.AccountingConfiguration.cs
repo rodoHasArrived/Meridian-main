@@ -415,7 +415,13 @@ public sealed partial class WorkstationEndpointsTests
     public async Task ManualJournalEntryWorkbenchEndpoints_SaveValidateAndSubmitDraft()
     {
         await using var app = await CreateAppAsync(
-            RegisterAccountingConfigurationServices,
+            services =>
+            {
+                // The accounting/reporting workspace endpoints require the strategy run read
+                // service; without it they return 503 instead of fabricated fallback data.
+                RegisterRunReadServices(services);
+                RegisterAccountingConfigurationServices(services);
+            },
             currentUserPermissions: UserPermission.AdminMaintenance,
             currentUserCompanyId: "company-alpha");
         var client = app.GetTestClient();
@@ -909,6 +915,37 @@ public sealed partial class WorkstationEndpointsTests
         missingPrivateCapitalActivity.ReportOutputs.Should().BeEmpty();
         missingPrivateCapitalActivity.FundEventRecords.Should().BeEmpty();
         missingPrivateCapitalActivity.CapitalAccountSubledgers.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ManualJournalEntrySaveEndpoint_RejectsClientSubmittedClosingEntry()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+
+        // A closing entry may only be produced by the in-process period-close automation. A client
+        // stamping EntryType=ClosingEntry would otherwise bypass the closed-period posting bar.
+        var closingDraft = ManualJournalEntryDraft() with
+        {
+            EntryType = ManualJournalEntryTypeDto.ClosingEntry
+        };
+
+        using var saveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(closingDraft, "browser-user"),
+            ServerJsonOptions);
+        using var validateResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryValidate,
+            new ValidateManualJournalEntryDraftRequest(closingDraft, "browser-user"),
+            ServerJsonOptions);
+
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        validateResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var saveBody = await saveResponse.Content.ReadAsStringAsync();
+        saveBody.Should().Contain("period-close workflow");
     }
 
     [Fact]

@@ -19,6 +19,26 @@ public interface IReportingOrchestrationService
 public interface IReportingTemplateCatalog
 {
     ReportingTemplateMetadata Get(string templateId);
+
+    ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId)
+    {
+        ArgumentNullException.ThrowIfNull(templateId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId.Name);
+        if (templateId.Version <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(templateId), "Template version must be greater than zero.");
+        }
+
+        var template = Get(templateId.Name);
+        var versionToken = template.Version.Split('.', 2, StringSplitOptions.TrimEntries)[0];
+        if (!int.TryParse(versionToken, out var resolvedVersion) || resolvedVersion != templateId.Version)
+        {
+            throw new KeyNotFoundException($"Approved reporting template '{templateId.Name}' version {templateId.Version} was not found.");
+        }
+
+        return template;
+    }
+
     IReadOnlyList<ReportingTemplateMetadata> ListTemplates();
 }
 
@@ -40,6 +60,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private readonly IReportingSectionRenderer renderer;
     private readonly Func<DateTimeOffset> utcNow;
     private readonly IReportingRunStore? runStore;
+    private readonly IReportingRunNotifier runNotifier;
     private readonly ConcurrentDictionary<string, ReportingOutputManifest> manifests = new();
     private readonly ConcurrentDictionary<string, object> auditLocks = new();
     private readonly ConcurrentDictionary<string, List<ReportingRunAuditEntry>> audits = new();
@@ -50,16 +71,30 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     {
     }
 
+    // Existing 4-parameter ctor retained for binary compatibility — now delegates to the 5-parameter
+    // overload. Adding an optional parameter to this signature instead would be source- but not
+    // binary-compatible (already-compiled callers would hit MissingMethodException at runtime).
     public ReportingOrchestrationService(
         IReportingTemplateCatalog catalog,
         IReportingSectionRenderer renderer,
         Func<DateTimeOffset> utcNow,
         IReportingRunStore? runStore = null)
+        : this(catalog, renderer, utcNow, runStore, runNotifier: null)
+    {
+    }
+
+    public ReportingOrchestrationService(
+        IReportingTemplateCatalog catalog,
+        IReportingSectionRenderer renderer,
+        Func<DateTimeOffset> utcNow,
+        IReportingRunStore? runStore,
+        IReportingRunNotifier? runNotifier)
     {
         this.catalog = catalog;
         this.renderer = renderer;
         this.utcNow = utcNow;
         this.runStore = runStore;
+        this.runNotifier = runNotifier ?? NullReportingRunNotifier.Instance;
     }
 
     public async Task<ReportingOutputManifest> ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken)
@@ -76,12 +111,16 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
         try
         {
+            await GuardReleasedRestatementAsync(contract, version, cancellationToken).ConfigureAwait(false);
+
             for (var attempt = 1; attempt <= contract.MaxRetries + 1; attempt++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
-                    var template = catalog.Get(contract.TemplateId);
+                    var template = contract.ResolvedTemplate is null
+                        ? catalog.Get(contract.TemplateId)
+                        : catalog.Get(contract.ResolvedTemplate);
                     var sections = template.Sections
                         .Select(section => renderer.RenderSection(runId, contract, template, section, attempt))
                         .ToImmutableArray();
@@ -122,14 +161,20 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         RunAttemptOrdinal: version.RunAttemptOrdinal,
                         PriorRunId: version.PriorManifest?.RunId,
                         RetryReason: NormalizeOptional(contract.RetryReason),
-                        ReportWriterGridDiffs: reportWriterGridDiffs);
+                        ReportWriterGridDiffs: reportWriterGridDiffs,
+                        ResolvedTemplate: contract.ResolvedTemplate,
+                        ResolvedParameters: contract.ResolvedParameters,
+                        Readiness: contract.Readiness,
+                        OperationalScope: contract.OperationalScope,
+                        ImmutableAccessScope: contract.ImmutableAccessScope,
+                        CertifiedSnapshot: contract.CertifiedSnapshot);
 
                     manifests[runId] = manifest;
                     AppendAudit(
                         runId,
                         "RunGenerated",
                         contract.RequestedBy,
-                        $"trigger={contract.Trigger}; attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; priorRun={version.PriorManifest?.RunId ?? "none"}; retryReason={manifest.RetryReason ?? "none"}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; reportWriterDatasetSource={manifest.ReportWriterDatasetSourceId ?? "none"}; reportWriterDatasetRows={manifest.ReportWriterDatasetRowCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "n/a"}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}; changedLines={reportWriterGridDiffs.Sum(static diff => diff.ChangedRowCount)}; addedLines={reportWriterGridDiffs.Sum(static diff => diff.AddedRowCount)}; removedLines={reportWriterGridDiffs.Sum(static diff => diff.RemovedRowCount)}");
+                        $"trigger={contract.Trigger}; attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; priorRun={version.PriorManifest?.RunId ?? "none"}; retryReason={manifest.RetryReason ?? "none"}; templateVersion={manifest.ResolvedTemplate?.Version.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "legacy-latest"}; readiness={manifest.Readiness?.Status.ToString() ?? "legacy"}; readinessEvidence={manifest.Readiness?.EvidenceHash ?? "none"}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; reportWriterDatasetSource={manifest.ReportWriterDatasetSourceId ?? "none"}; reportWriterDatasetRows={manifest.ReportWriterDatasetRowCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "n/a"}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}; changedLines={reportWriterGridDiffs.Sum(static diff => diff.ChangedRowCount)}; addedLines={reportWriterGridDiffs.Sum(static diff => diff.AddedRowCount)}; removedLines={reportWriterGridDiffs.Sum(static diff => diff.RemovedRowCount)}");
                     await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
                     return manifest;
                 }
@@ -161,7 +206,13 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                         RunSeriesId: version.RunSeriesId,
                         RunAttemptOrdinal: version.RunAttemptOrdinal,
                         PriorRunId: version.PriorManifest?.RunId,
-                        RetryReason: NormalizeOptional(contract.RetryReason));
+                        RetryReason: NormalizeOptional(contract.RetryReason),
+                        ResolvedTemplate: contract.ResolvedTemplate,
+                        ResolvedParameters: contract.ResolvedParameters,
+                        Readiness: contract.Readiness,
+                        OperationalScope: contract.OperationalScope,
+                        ImmutableAccessScope: contract.ImmutableAccessScope,
+                        CertifiedSnapshot: contract.CertifiedSnapshot);
                     manifests[runId] = failed;
                     AppendAudit(runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={failed.RetryReason ?? "none"}; error={ex.Message}");
                     await PersistAsync(failed, cancellationToken).ConfigureAwait(false);
@@ -253,6 +304,56 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         return true;
     }
 
+    /// <summary>
+    /// Prevents a Released manifest at the head of a run series from being silently superseded by a
+    /// freshly generated run. Regenerating a released report is a governed restatement: the caller
+    /// must opt in via <see cref="ReportingJobContract.AllowRestatement"/> and supply a
+    /// <see cref="ReportingJobContract.RetryReason"/>. Both the blocked and the authorized paths are
+    /// written to the released run's audit trail so the action is never silent.
+    /// </summary>
+    private async Task GuardReleasedRestatementAsync(
+        ReportingJobContract contract,
+        ReportingRunVersionPlan version,
+        CancellationToken cancellationToken)
+    {
+        if (version.ReleasedHead is not { } released)
+        {
+            return;
+        }
+
+        if (!contract.AllowRestatement)
+        {
+            AppendAudit(
+                released.RunId,
+                "RestatementBlocked",
+                contract.RequestedBy,
+                $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=released manifest requires an explicit restatement action");
+            await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+            throw new InvalidOperationException(
+                $"Run series '{version.RunSeriesId}' has a Released manifest '{released.RunId}'. Regenerating it requires an explicit restatement (set AllowRestatement and supply a RetryReason).");
+        }
+
+        var retryReason = NormalizeOptional(contract.RetryReason);
+        if (retryReason is null)
+        {
+            AppendAudit(
+                released.RunId,
+                "RestatementBlocked",
+                contract.RequestedBy,
+                $"blockedRun={version.RunId}; runSeries={version.RunSeriesId}; reason=restatement requires a RetryReason");
+            await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+            throw new InvalidOperationException(
+                $"Restating Released manifest '{released.RunId}' requires a RetryReason describing the restatement.");
+        }
+
+        AppendAudit(
+            released.RunId,
+            "RestatementAuthorized",
+            contract.RequestedBy,
+            $"restatementRun={version.RunId}; runSeries={version.RunSeriesId}; retryReason={retryReason}");
+        await PersistAsync(released, cancellationToken).ConfigureAwait(false);
+    }
+
     private static bool IsTransitionAllowed(ReportingRunStatus from, ReportingRunStatus to)
         => (from, to) switch
         {
@@ -272,10 +373,25 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         }
     }
 
-    private Task PersistAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken)
-        => runStore is null
-            ? Task.CompletedTask
-            : runStore.SaveAsync(manifest, GetAudit(manifest.RunId), cancellationToken);
+    private async Task PersistAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken)
+    {
+        if (runStore is not null)
+        {
+            await runStore.SaveAsync(manifest, GetAudit(manifest.RunId), cancellationToken).ConfigureAwait(false);
+        }
+
+        // Best-effort wake AFTER the durable write, so a UI stream sees the change without a poll.
+        // A buggy/throwing notifier must never surface on the run-execution path (belt-and-suspenders
+        // with the null-object default).
+        try
+        {
+            runNotifier.NotifyRunChanged(manifest.RunId);
+        }
+        catch
+        {
+            // Swallow — run execution must never fail on a UI-streaming concern.
+        }
+    }
 
     private static string[] BuildReportWriterGridArtifacts(string runId, ReportingTemplateMetadata template) =>
         (template.ReportWriterGrids ?? [])
@@ -310,8 +426,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private ReportingRunVersionPlan AllocateRunVersion(ReportingJobContract contract)
     {
         var runSeriesId = BuildRunSeriesId(contract);
-        var priorRuns = ListKnownManifests()
-            .Where(manifest => string.Equals(ResolveRunSeriesId(manifest), runSeriesId, StringComparison.OrdinalIgnoreCase))
+        var priorRuns = ResolveSeriesManifests(runSeriesId)
             .OrderByDescending(ResolveRunAttemptOrdinal)
             .ThenByDescending(static manifest => manifest.RunId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -319,28 +434,66 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         var nextOrdinal = priorRuns.Length == 0
             ? 1
             : priorRuns.Max(ResolveRunAttemptOrdinal) + 1;
+
+        // The "effective head" is the highest-ordinal run that is not Failed. It is both the lineage
+        // and diff basis (a Failed attempt has no content to compare against) and the guard subject,
+        // so a still-released report stays protected — and its grid diff intact — even after a failed
+        // restatement attempt whose Failed manifest would otherwise sit at the absolute head.
+        var effectiveHead = priorRuns.FirstOrDefault(manifest => manifest.Status != ReportingRunStatus.Failed);
+        var releasedHead = effectiveHead is { Status: ReportingRunStatus.Released } ? effectiveHead : null;
+
         while (true)
         {
             var runId = BuildRunId(runSeriesId, nextOrdinal);
             if (reservedRunIds.TryAdd(runId, 0))
             {
-                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, priorRuns.FirstOrDefault());
+                return new ReportingRunVersionPlan(runSeriesId, nextOrdinal, runId, effectiveHead, releasedHead);
             }
 
             nextOrdinal++;
         }
     }
 
-    private IReadOnlyList<ReportingOutputManifest> ListKnownManifests()
+    /// <summary>
+    /// Resolves every run in a series exhaustively. The durable store is probed by the series'
+    /// deterministic run ids (<c>runSeriesId</c>, <c>runSeriesId-v2</c>, …) via <c>GetManifest</c>
+    /// rather than the globally capped <c>ListRuns</c>, so an older released head is never missed
+    /// when the store holds many newer runs in other series — which would otherwise let a
+    /// regeneration silently overwrite a released manifest instead of tripping the restatement guard.
+    /// </summary>
+    private IReadOnlyList<ReportingOutputManifest> ResolveSeriesManifests(string runSeriesId)
     {
-        IEnumerable<ReportingOutputManifest> stored = runStore is null
-            ? []
-            : runStore.ListRuns(200).Select(static snapshot => snapshot.Manifest);
-        return manifests.Values
-            .Concat(stored)
-            .GroupBy(static manifest => manifest.RunId, StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
-            .ToArray();
+        var found = new Dictionary<string, ReportingOutputManifest>(StringComparer.OrdinalIgnoreCase);
+
+        // In-process manifests for this series (may not be persisted yet).
+        foreach (var manifest in manifests.Values.Where(
+            manifest => string.Equals(ResolveRunSeriesId(manifest), runSeriesId, StringComparison.OrdinalIgnoreCase)))
+        {
+            found[manifest.RunId] = manifest;
+        }
+
+        if (runStore is not null)
+        {
+            // Run ids in a series are contiguous by ordinal, so probe until an ordinal exists in
+            // neither the store nor memory. Bounded by the number of versions, not the store size.
+            for (var ordinal = 1; ; ordinal++)
+            {
+                var runId = BuildRunId(runSeriesId, ordinal);
+                var stored = runStore.GetManifest(runId);
+                if (stored is not null)
+                {
+                    found.TryAdd(runId, stored);
+                    continue;
+                }
+
+                if (!found.ContainsKey(runId))
+                {
+                    break;
+                }
+            }
+        }
+
+        return found.Values.ToArray();
     }
 
     private static ImmutableArray<ReportWriterGridDiffDto> BuildReportWriterGridDiffs(
@@ -392,17 +545,22 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         string RunSeriesId,
         int RunAttemptOrdinal,
         string RunId,
-        ReportingOutputManifest? PriorManifest);
+        ReportingOutputManifest? PriorManifest,
+        ReportingOutputManifest? ReleasedHead);
 }
 
 public sealed class DeterministicReportingSectionRenderer : IReportingSectionRenderer
 {
     public ReportingSectionManifest RenderSection(string runId, ReportingJobContract contract, ReportingTemplateMetadata template, string sectionId, int attempt)
     {
-        var snapshot = $"snap-{template.TemplateId}-{sectionId}-{contract.AsOfDate:yyyyMMdd}";
-        var snapshotHash = ComputeHash(template.TemplateId, template.Version, sectionId, snapshot);
-        var checkpoint = $"recon-{sectionId}-{contract.AsOfDate:yyyyMMdd}";
-        var lineage = new ReportingLineageReference(sectionId, snapshot, snapshotHash, checkpoint, contract.RequestedAtUtc);
+        var snapshot = contract.CertifiedSnapshot?.SnapshotId
+            ?? $"legacy-snap-{template.TemplateId}-{sectionId}-{contract.AsOfDate:yyyyMMdd}";
+        var snapshotHash = contract.CertifiedSnapshot?.SnapshotHash
+            ?? ComputeHash("legacy-non-certified", template.TemplateId, template.Version, sectionId, snapshot);
+        var checkpoint = contract.CertifiedSnapshot?.ReconciliationCheckpointId
+            ?? $"legacy-recon-{sectionId}-{contract.AsOfDate:yyyyMMdd}";
+        var capturedAt = contract.CertifiedSnapshot?.CapturedAtUtc ?? contract.RequestedAtUtc;
+        var lineage = new ReportingLineageReference(sectionId, snapshot, snapshotHash, checkpoint, capturedAt);
         return new ReportingSectionManifest(sectionId, snapshot, checkpoint, ComputeHash(runId, sectionId, snapshot, checkpoint, snapshotHash), lineage);
     }
 

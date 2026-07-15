@@ -7,6 +7,7 @@ using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.OpenFigi;
@@ -108,7 +109,7 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
                 ProviderSymbols =
                 {
                     ["yahoo"] = mapping.Ticker ?? symbol,
-                    ["stooq"] = $"{(mapping.Ticker ?? symbol).ToLowerInvariant()}.us",
+                    ["stooq"] = SymbolNormalization.NormalizeForProvider(mapping.Ticker ?? symbol, "stooq"),
                     ["alpaca"] = mapping.Ticker ?? symbol,
                     ["polygon"] = mapping.Ticker ?? symbol,
                     ["quandl"] = $"WIKI/{mapping.Ticker ?? symbol}"
@@ -138,16 +139,7 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
             return mapped;
         }
 
-        // Default mapping strategies
-        return toProvider.ToLowerInvariant() switch
-        {
-            "stooq" => $"{symbol.ToLowerInvariant()}.us",
-            "yahoo" => symbol.ToUpperInvariant(),
-            "polygon" => symbol.ToUpperInvariant(),
-            "alpaca" => symbol.ToUpperInvariant(),
-            "quandl" => $"WIKI/{symbol.ToUpperInvariant()}",
-            _ => symbol
-        };
+        return SymbolNormalization.NormalizeForProvider(resolution.Ticker, toProvider);
     }
 
     public async Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(string query, int maxResults = 10, CancellationToken ct = default)

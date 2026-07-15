@@ -18,8 +18,8 @@ This folder remains a migration source for status snapshots and generated report
 
 | Source item | Migration target |
 | --- | --- |
-| `ROADMAP.md`, `ROADMAP_COMBINED.md`, `FEATURE_INVENTORY.md`, `TARGET_END_PRODUCT.md`, `IMPROVEMENTS.md`, `FULL_IMPLEMENTATION_TODO.md`, `OPPORTUNITY_SCAN.md`, `PROGRAM_STATE.md`, `production-status.md`, `BROKER_PHASE_*`, `provider-*`, `workstation-*` status snapshots | All migrated to `archive/docs/status/*` with archive-stub replacements in `docs/status/*` |
-| Additional status source files with historical copies (e.g., `contract-compatibility-matrix`, `provider-capability-matrix`, etc.) | Same-named files under `archive/docs/status` |
+| `ROADMAP_COMBINED.md`, `TARGET_END_PRODUCT.md`, `IMPROVEMENTS.md`, `FULL_IMPLEMENTATION_TODO.md`, `OPPORTUNITY_SCAN.md`, `PROGRAM_STATE.md`, `production-status.md`, `BROKER_PHASE_*`, most `provider-*` and `workstation-*` status snapshots | Migrated to `archive/docs/status/*`; the archive-stub replacements formerly kept in `docs/status/*` have been removed |
+| `ROADMAP.md`, `FEATURE_INVENTORY.md`, `provider-validation-matrix.md`, `contract-compatibility-matrix.md`, `kernel-readiness-dashboard.md` | Migrated to `archive/docs/status/*`; stubs retained at these paths because dashboard generators, checklist tooling, skill manifests, or installer validation still consume them |
 | `evidence/` | Current evidence packets continue in `status/evidence/` until replaced by canonical workflows |
 
 ## Generated Outputs

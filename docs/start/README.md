@@ -19,7 +19,7 @@ The active user-facing surfaces are:
 - Built browser assets served by the host: `src/Meridian.Ui/wwwroot/workstation/`
 - Shared workstation API/read-model support: `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`
 
-For the current product framing and capability thesis, use the [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md) before planning changes.
+For the current product framing and capability thesis, use the [Meridian Design Document](../product/meridian-design-document.md) before planning changes.
 
 ## Prerequisites
 
@@ -126,6 +126,12 @@ filter:
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+```
+
+The validated dispatcher wrapper builds the same hosted command and can wait for the run:
+
+```powershell
+python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter "FullyQualifiedName~<TestClassOrMethod>" --wait
 ```
 
 ```powershell

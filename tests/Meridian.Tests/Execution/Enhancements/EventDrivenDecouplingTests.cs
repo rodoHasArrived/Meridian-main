@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
@@ -254,6 +255,48 @@ public sealed class EventDrivenDecouplingTests
             "a disposed consumer must reject fills loudly, never drop them");
     }
 
+    [Fact]
+    public async Task LedgerPostingConsumer_DisposeDuringSaturation_IsBoundedAndPreventsLatePosting()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var gate = new NonCooperativeSecurityValidationGate();
+        var consumer = new LedgerPostingConsumer(
+            ledger,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            channelCapacity: 1,
+            securityValidationGate: gate,
+            drainTimeout: TimeSpan.FromMilliseconds(25),
+            cancellationTimeout: TimeSpan.FromMilliseconds(25));
+
+        consumer.Publish(MakeBuyEvent("AAPL"));
+        await gate.ValidationStarted.WaitAsync(TimeSpan.FromSeconds(1));
+        consumer.Publish(MakeBuyEvent("MSFT"));
+        var blockedPublish = Task.Run(() => consumer.Publish(MakeBuyEvent("GOOG")));
+        await Task.Delay(25);
+        blockedPublish.IsCompleted.Should().BeFalse("the channel is saturated before disposal begins");
+
+        var elapsed = Stopwatch.StartNew();
+        await consumer.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(1));
+        elapsed.Stop();
+
+        elapsed.Elapsed.Should().BeLessThan(
+            TimeSpan.FromMilliseconds(750),
+            "shutdown has finite drain and cancellation phases even when a dependency ignores cancellation");
+        Func<Task> blockedPublishAction = async () => await blockedPublish;
+        await blockedPublishAction.Should().ThrowAsync<ChannelClosedException>(
+            "a publisher waiting for capacity must fail deterministically when disposal closes the channel");
+
+        await consumer.DisposeAsync();
+        gate.Release();
+        Func<Task> processingAction = async () => await consumer.ProcessingCompletion;
+        await processingAction.Should().ThrowAsync<OperationCanceledException>();
+
+        ledger.Journal.Should().BeEmpty(
+            "an in-flight validation that returns after the disposal boundary cannot mutate the ledger");
+        var publishAfterDispose = () => consumer.Publish(MakeBuyEvent("NVDA"));
+        publishAfterDispose.Should().Throw<ChannelClosedException>();
+    }
+
     private static TradeExecutedEvent MakeBuyEvent(string symbol) => new(
         Guid.NewGuid(), "ord-bp", symbol, OrderSide.Buy,
         FilledQuantity: 10, FillPrice: 100m, Commission: 0m,
@@ -295,6 +338,57 @@ public sealed class EventDrivenDecouplingTests
             string? symbol = null,
             CancellationToken ct = default)
             => _inner.ValidateSecurityAsync(securityId, workflow, workflowReference, actor, persistSnapshot, symbol, ct);
+    }
+
+    /// <summary>
+    /// Deliberately ignores the supplied cancellation token while validation is blocked. This
+    /// models a provider or remote dependency that does not cooperate with shutdown promptly.
+    /// </summary>
+    private sealed class NonCooperativeSecurityValidationGate : ISecurityValidationGateService
+    {
+        private readonly PassingSecurityValidationGate _inner = new();
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _validationStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task ValidationStarted => _validationStarted.Task;
+
+        public void Release() => _release.TrySetResult();
+
+        public async Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+        {
+            _validationStarted.TrySetResult();
+            await _release.Task;
+            return await _inner.ValidateSymbolAsync(
+                symbol,
+                workflow,
+                workflowReference,
+                actor,
+                persistSnapshot,
+                CancellationToken.None);
+        }
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid securityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => _inner.ValidateSecurityAsync(
+                securityId,
+                workflow,
+                workflowReference,
+                actor,
+                persistSnapshot,
+                symbol,
+                CancellationToken.None);
     }
 
     private sealed class PassingSecurityValidationGate : ISecurityValidationGateService

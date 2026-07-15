@@ -18,8 +18,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
-public static class LedgerEndpoints
+public static partial class LedgerEndpoints
 {
+    private const string ClosingEntryClientRejectionMessage =
+        "Closing entries are produced by the governed period-close workflow and cannot be submitted as manual journal drafts.";
+
     public static void MapLedgerEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         app.MapGet(UiApiRoutes.LedgerBooks, async (
@@ -1893,6 +1896,14 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            // Closing entries are the sanctioned exception to the closed-period posting bar; only the
+            // in-process period-close automation may produce them. Reject client-submitted ClosingEntry
+            // drafts so this HTTP boundary cannot be used to post to a closed period.
+            if (request.Draft?.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
+            {
+                return Results.BadRequest(new { error = ClosingEntryClientRejectionMessage });
+            }
+
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -1942,6 +1953,11 @@ public static class LedgerEndpoints
             if (service is null)
             {
                 return ServiceUnavailable();
+            }
+
+            if (request.Draft?.EntryType == ManualJournalEntryTypeDto.ClosingEntry)
+            {
+                return Results.BadRequest(new { error = ClosingEntryClientRejectionMessage });
             }
 
             try
@@ -2015,89 +2031,7 @@ public static class LedgerEndpoints
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        app.MapPost(UiApiRoutes.LedgerJournalAutomationDividendIntake, async (RunDividendDraftIntakeRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
-            if (runner is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                var result = await runner.RunDividendIntakeAsync(request with
-                {
-                    Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
-                }, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
-        })
-        .WithName("RunLedgerJournalAutomationDividendIntake")
-        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapPost(UiApiRoutes.LedgerJournalAutomationFeeAccrualIntake, async (RunFeeAccrualDraftIntakeRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
-            if (runner is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                var result = await runner.RunFeeAccrualIntakeAsync(request with
-                {
-                    Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
-                }, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
-        })
-        .WithName("RunLedgerJournalAutomationFeeAccrualIntake")
-        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+        MapJournalAutomationEndpoints(app, jsonOptions);
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryEvidence, async (AttachManualJournalEntryEvidenceRequest request, HttpContext context) =>
         {
@@ -2241,9 +2175,10 @@ public static class LedgerEndpoints
                 draftStore,
                 configurationService,
                 auditStore,
-                context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
-                context.RequestServices.GetService<ILedgerJournalStore>(),
-                context.RequestServices.GetService<ReportPackWorkflowService>());
+                 context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                 context.RequestServices.GetService<ILedgerJournalStore>(),
+                 context.RequestServices.GetService<ReportPackWorkflowService>(),
+                 postingTarget: context.RequestServices.GetService<IGovernedLedgerPostingTarget>());
     }
 
     private static IManualJournalEntryLifecycleService? ResolveManualJournalEntryLifecycleService(HttpContext context)
@@ -2613,7 +2548,7 @@ public static class LedgerEndpoints
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
 
-        return string.Join(
+        var signature = string.Join(
             "|",
             filter.FundId ?? string.Empty,
             filter.EntityId ?? string.Empty,
@@ -2633,6 +2568,10 @@ public static class LedgerEndpoints
             filter.VendorId ?? string.Empty,
             filter.ProjectId ?? string.Empty,
             string.Join(";", externalGl));
+
+        return filter.PositionId is not null
+            ? $"{signature}|positionId={filter.PositionId}"
+            : signature;
     }
 
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
@@ -2646,7 +2585,7 @@ public static class LedgerEndpoints
         var externalGl = dimensions.ExternalGlDimensions
             .OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(static pair => $"{pair.Key.Trim()}={pair.Value.Trim()}");
-        return string.Join(
+        var signature = string.Join(
             "|",
             dimensions.FundId ?? string.Empty,
             dimensions.EntityId ?? string.Empty,
@@ -2666,6 +2605,10 @@ public static class LedgerEndpoints
             dimensions.VendorId ?? string.Empty,
             dimensions.ProjectId ?? string.Empty,
             string.Join(";", externalGl));
+
+        return dimensions.PositionId.HasValue
+            ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
+            : signature;
     }
 
     private static LedgerDimensionReportFilter BuildDimensionReportFilter(IQueryCollection query)
@@ -2702,6 +2645,7 @@ public static class LedgerEndpoints
             InvestorId: NormalizeOptional(GetFirstQueryValue(query, "dimensionInvestorId", "investorId")),
             CapitalAccountId: NormalizeOptional(GetFirstQueryValue(query, "dimensionCapitalAccountId", "capitalAccountId")),
             InstrumentId: NormalizeOptional(GetFirstQueryValue(query, "dimensionInstrumentId", "instrumentId")),
+            PositionId: NormalizeOptional(GetFirstQueryValue(query, "dimensionPositionId", "positionId")),
             TaxLotId: NormalizeOptional(GetFirstQueryValue(query, "dimensionTaxLotId", "taxLotId")),
             CostCenterId: NormalizeOptional(GetFirstQueryValue(query, "dimensionCostCenterId", "costCenterId")),
             CounterpartyId: NormalizeOptional(GetFirstQueryValue(query, "dimensionCounterpartyId", "counterpartyId")),
@@ -2726,6 +2670,9 @@ public static class LedgerEndpoints
         var instrumentId = Guid.TryParse(filter.InstrumentId, out var parsedInstrumentId)
             ? parsedInstrumentId
             : (Guid?)null;
+        var positionId = Guid.TryParse(filter.PositionId, out var parsedPositionId)
+            ? parsedPositionId
+            : (Guid?)null;
         return new LedgerLineDimensionSet(
             FundId: filter.FundId,
             EntityId: filter.EntityId,
@@ -2744,7 +2691,10 @@ public static class LedgerEndpoints
             AccountId: filter.AccountId,
             CustomerId: filter.CustomerId,
             VendorId: filter.VendorId,
-            ProjectId: filter.ProjectId);
+            ProjectId: filter.ProjectId)
+        {
+            PositionId = positionId
+        };
     }
 
     private static LedgerDimensionSetDto? ToLedgerDimensionSetDto(LedgerDimensionReportFilter filter)
@@ -2757,6 +2707,9 @@ public static class LedgerEndpoints
 
         var instrumentId = Guid.TryParse(filter.InstrumentId, out var parsedInstrumentId)
             ? parsedInstrumentId
+            : (Guid?)null;
+        var positionId = Guid.TryParse(filter.PositionId, out var parsedPositionId)
+            ? parsedPositionId
             : (Guid?)null;
         return new LedgerDimensionSetDto(
             FundId: filter.FundId,
@@ -2776,7 +2729,10 @@ public static class LedgerEndpoints
             AccountId: filter.AccountId,
             CustomerId: filter.CustomerId,
             VendorId: filter.VendorId,
-            ProjectId: filter.ProjectId);
+            ProjectId: filter.ProjectId)
+        {
+            PositionId = positionId
+        };
     }
 
     private static string? GetQueryValue(IQueryCollection query, string key)
@@ -2865,7 +2821,7 @@ public static class LedgerEndpoints
             record.Entry.Description,
             lines.Sum(static line => line.Debit),
             lines.Sum(static line => line.Credit),
-            Math.Abs(lines.Sum(static line => line.Debit) - lines.Sum(static line => line.Credit)) <= 0.000001m,
+            Math.Abs(lines.Sum(static line => line.Debit) - lines.Sum(static line => line.Credit)) <= LedgerToleranceConstants.Balance,
             lines,
             record.AccountingBasis,
             record.AccountingPolicyId,
@@ -2897,6 +2853,9 @@ public static class LedgerEndpoints
     private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata)
     {
         var tags = metadata.Tags;
+        var positionId = Guid.TryParse(FirstTag(tags, "positionId"), out var parsedPositionId)
+            ? parsedPositionId
+            : (Guid?)null;
         var dimensions = new LedgerDimensionSetDto(
             FundId: FirstTag(tags, "fundId", "fundProfileId"),
             EntityId: FirstTag(tags, "entityId", "legalEntityId"),
@@ -2915,7 +2874,10 @@ public static class LedgerEndpoints
             AccountId: metadata.FinancialAccountId ?? FirstTag(tags, "accountId"),
             CustomerId: FirstTag(tags, "customerId"),
             VendorId: FirstTag(tags, "vendorId"),
-            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"));
+            ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"))
+        {
+            PositionId = positionId
+        };
 
         return CanonicalizeDimensions(dimensions);
     }
@@ -2945,7 +2907,10 @@ public static class LedgerEndpoints
             AccountId: dimensions.AccountId,
             CustomerId: dimensions.CustomerId,
             VendorId: dimensions.VendorId,
-            ProjectId: dimensions.ProjectId);
+            ProjectId: dimensions.ProjectId)
+        {
+            PositionId = dimensions.PositionId
+        };
 
         return CanonicalizeDimensions(result);
     }
@@ -2959,6 +2924,9 @@ public static class LedgerEndpoints
             return null;
         }
 
+        var positionId = Guid.TryParse(FirstTag(tags, prefix + "positionId"), out var parsedPositionId)
+            ? parsedPositionId
+            : (Guid?)null;
         var dimensions = new LedgerDimensionSetDto(
             FundId: FirstTag(tags, prefix + "fundId"),
             EntityId: FirstTag(tags, prefix + "entityId"),
@@ -2977,7 +2945,10 @@ public static class LedgerEndpoints
             AccountId: FirstTag(tags, prefix + "accountId"),
             CustomerId: FirstTag(tags, prefix + "customerId"),
             VendorId: FirstTag(tags, prefix + "vendorId"),
-            ProjectId: FirstTag(tags, prefix + "projectId"));
+            ProjectId: FirstTag(tags, prefix + "projectId"))
+        {
+            PositionId = positionId
+        };
 
         return CanonicalizeDimensions(dimensions);
     }
@@ -3014,6 +2985,7 @@ public static class LedgerEndpoints
                && Matches(filter.InvestorId, dimensions.InvestorId)
                && Matches(filter.CapitalAccountId, dimensions.CapitalAccountId)
                && Matches(filter.InstrumentId, dimensions.InstrumentId?.ToString("D"))
+               && Matches(filter.PositionId, dimensions.PositionId?.ToString("D"))
                && Matches(filter.TaxLotId, dimensions.TaxLotId)
                && Matches(filter.CostCenterId, dimensions.CostCenterId)
                && Matches(filter.CounterpartyId, dimensions.CounterpartyId)
@@ -3069,6 +3041,7 @@ public static class LedgerEndpoints
             InvestorId: NormalizeOptional(filter.InvestorId),
             CapitalAccountId: NormalizeOptional(filter.CapitalAccountId),
             InstrumentId: NormalizeOptional(filter.InstrumentId),
+            PositionId: NormalizeOptional(filter.PositionId),
             TaxLotId: NormalizeOptional(filter.TaxLotId),
             CostCenterId: NormalizeOptional(filter.CostCenterId),
             CounterpartyId: NormalizeOptional(filter.CounterpartyId),
@@ -3106,7 +3079,10 @@ public static class LedgerEndpoints
             AccountId: NormalizeOptional(dimensions.AccountId),
             CustomerId: NormalizeOptional(dimensions.CustomerId),
             VendorId: NormalizeOptional(dimensions.VendorId),
-            ProjectId: NormalizeOptional(dimensions.ProjectId));
+            ProjectId: NormalizeOptional(dimensions.ProjectId))
+        {
+            PositionId = dimensions.PositionId
+        };
 
         return HasAnyCanonicalDimension(canonical) ? canonical : null;
     }
@@ -3141,6 +3117,7 @@ public static class LedgerEndpoints
            || dimensions.InvestorId is not null
            || dimensions.CapitalAccountId is not null
            || dimensions.InstrumentId.HasValue
+           || dimensions.PositionId.HasValue
            || dimensions.TaxLotId is not null
            || dimensions.CostCenterId is not null
            || dimensions.CounterpartyId is not null
@@ -3650,6 +3627,7 @@ public static class LedgerEndpoints
         string? InvestorId,
         string? CapitalAccountId,
         string? InstrumentId,
+        string? PositionId,
         string? TaxLotId,
         string? CostCenterId,
         string? CounterpartyId,
@@ -3670,6 +3648,7 @@ public static class LedgerEndpoints
                || InvestorId is not null
                || CapitalAccountId is not null
                || InstrumentId is not null
+               || PositionId is not null
                || TaxLotId is not null
                || CostCenterId is not null
                || CounterpartyId is not null

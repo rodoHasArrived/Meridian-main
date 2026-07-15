@@ -12,6 +12,7 @@ using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.Instruments.AssetOperations;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Services.Services.Accounting;
@@ -83,16 +84,35 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json")));
+        services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
+            new FileDailyValuationPortfolioSource(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "daily-valuation-schedules.json")));
+        services.TryAddSingleton<IDailyValuationPortfolioSource>(sp =>
+            sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton<IDailyValuationScheduleStatusSource>(sp =>
+            sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton<FileAutomatedJournalScheduleStore>(sp =>
+            new FileAutomatedJournalScheduleStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "monthly-automated-journal-schedules.json")));
+        services.TryAddSingleton<IAutomatedJournalScheduleStore>(sp =>
+            sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<IAutomatedJournalScheduleStatusSource>(sp =>
+            sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
-            new ManualJournalEntryWorkbenchService(
-                sp.GetRequiredService<IManualJournalEntryDraftStore>(),
-                sp.GetRequiredService<IAccountingConfigurationService>(),
-                sp.GetRequiredService<IAccountingActionAuditStore>(),
-                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
-                sp.GetService<ILedgerJournalStore>(),
-                sp.GetService<ReportPackWorkflowService>()));
+            ActivatorUtilities.CreateInstance<ManualJournalEntryWorkbenchService>(sp));
         services.TryAddSingleton<Meridian.Contracts.Ledger.IManualJournalEntryLifecycleService>(sp =>
             (Meridian.Contracts.Ledger.IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton(sp =>
+            new AutomatedJournalDraftIntakeService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                sp.GetRequiredService<IAccountingConfigurationService>()));
+        services.TryAddSingleton(sp =>
+            new AutomatedJournalIntakeRunner(
+                sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
+                new FeeScheduleAccrualEventProducer(),
+                ledgerBookService: sp.GetService<ILedgerBookService>()));
+        services.TryAddSingleton<IAccountingClosePostingWorkbench, AccountingClosePostingWorkbenchBridge>();
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -120,7 +140,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
             new PrivateCapitalCloseCockpitService(
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
-                sp.GetService<IOperationsContinuityWorkflowService>()));
+                sp.GetService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IDailyValuationScheduleStatusSource>(),
+                sp.GetService<IAutomatedJournalScheduleStatusSource>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
@@ -129,6 +151,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
@@ -186,9 +209,13 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
                 return Path.Combine(configService.ResolveDataRoot(config), "workstation", "accounting");
             }
-            catch
+            catch (Exception ex)
             {
                 // Fall through to the user-local path so accounting drafts remain durable even before config initialization.
+                global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                    "Accounting data directory resolution from config failed; using user-local path.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
 

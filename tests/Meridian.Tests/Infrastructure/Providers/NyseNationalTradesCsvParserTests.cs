@@ -348,6 +348,72 @@ public sealed class NyseNationalTradesCsvParserTests
     }
 
     [Fact]
+    public void TryParseNanosecondTime_SummerSessionDate_CarriesEdtOffsetAndCorrectUtcInstant()
+    {
+        // 2023-10-02 is during Eastern Daylight Time (UTC-4).
+        var ok = NyseNationalTradesCsvParser.TryParseNanosecondTime(
+            "09:31:56.104292761", SessionDate, out var result);
+
+        ok.Should().BeTrue();
+        result.Offset.Should().Be(TimeSpan.FromHours(-4),
+            because: "TAQ times are Eastern Time and October 2023 is in daylight saving time");
+        result.UtcDateTime.Hour.Should().Be(13,
+            because: "09:31 EDT is 13:31 UTC — the timestamp must not be mislabeled as UTC");
+        result.UtcDateTime.Minute.Should().Be(31);
+    }
+
+    [Fact]
+    public void TryParseNanosecondTime_WinterSessionDate_CarriesEstOffset()
+    {
+        // 2024-01-15 is during Eastern Standard Time (UTC-5).
+        var ok = NyseNationalTradesCsvParser.TryParseNanosecondTime(
+            "09:31:56.104292761", new DateOnly(2024, 1, 15), out var result);
+
+        ok.Should().BeTrue();
+        result.Offset.Should().Be(TimeSpan.FromHours(-5),
+            because: "January is Eastern Standard Time");
+        result.UtcDateTime.Hour.Should().Be(14, because: "09:31 EST is 14:31 UTC");
+    }
+
+    [Fact]
+    public void ParseTradeLine_RegularHoursClassification_UsesEasternWallClock()
+    {
+        // The wall-clock time (and therefore IsRegularHours) must be unaffected by the
+        // offset correction: 09:31 ET stays 09:31 in the record's local representation.
+        var record = NyseNationalTradesCsvParser.ParseTradeLine(AaplRegularMarket, SessionDate)!;
+
+        record.Timestamp.TimeOfDay.Should().BeGreaterThan(new TimeSpan(9, 30, 0));
+        record.IsRegularHours.Should().BeTrue();
+        record.Timestamp.ToUniversalTime().Hour.Should().Be(13,
+            because: "the underlying instant is 4 hours after the Eastern wall clock during EDT");
+    }
+
+    [Fact]
+    public void CreateEasternFallbackZone_AppliesDaylightSavingRules()
+    {
+        // The tzdata-less fallback zone must still distinguish EDT from EST, otherwise
+        // summer sessions on minimal hosts would be stamped one hour late in UTC.
+        var zone = NyseNationalTradesCsvParser.CreateEasternFallbackZone();
+
+        zone.GetUtcOffset(new DateTime(2023, 10, 2, 9, 31, 0)).Should().Be(TimeSpan.FromHours(-4),
+            because: "October 2 is inside US daylight saving time");
+        zone.GetUtcOffset(new DateTime(2024, 1, 15, 9, 31, 0)).Should().Be(TimeSpan.FromHours(-5),
+            because: "mid-January is standard time");
+        zone.GetUtcOffset(new DateTime(2024, 3, 10, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-4),
+            because: "DST starts the second Sunday of March at 02:00");
+        zone.GetUtcOffset(new DateTime(2024, 11, 3, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-5),
+            because: "DST ends the first Sunday of November at 02:00");
+
+        // Pre-2007 era used the April-October window: the post-2007 rules must not leak backward.
+        zone.GetUtcOffset(new DateTime(2006, 3, 20, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-5),
+            because: "March 2006 was standard time; DST did not start until the first Sunday of April");
+        zone.GetUtcOffset(new DateTime(2006, 7, 3, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-4),
+            because: "July 2006 was daylight time");
+        zone.GetUtcOffset(new DateTime(2006, 10, 30, 12, 0, 0)).Should().Be(TimeSpan.FromHours(-5),
+            because: "DST ended the last Sunday of October (2006-10-29) under pre-2007 rules");
+    }
+
+    [Fact]
     public void TryParseNanosecondTime_InvalidFormat_ReturnsFalse()
     {
         NyseNationalTradesCsvParser.TryParseNanosecondTime("not-a-time", SessionDate, out _)

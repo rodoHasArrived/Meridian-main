@@ -1,12 +1,27 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Execution;
 using Meridian.Execution.Models;
+using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
+
+/// <summary>
+/// Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling).
+/// </summary>
+public sealed record RiskRuleRuntimeOptions(string SnapshotPath)
+{
+    public static RiskRuleRuntimeOptions Default { get; } = new(
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Meridian",
+            "workstation",
+            "risk-rules.json"));
+}
 
 public sealed record RiskRuleStatusDto(
     string RuleName,
@@ -32,7 +47,16 @@ public sealed record RiskRuleConfigUpdateRequest(
     int? MaxOrdersPerMinute = null,
     string? Reason = null);
 
-public sealed class RiskRuleRuntimeService
+/// <summary>
+/// Single source of truth for operator-managed risk guardrails: it powers the read-only risk
+/// dashboard (<see cref="GetAllStatusesAsync"/>, config get/update) <em>and</em> is the
+/// <see cref="IRiskValidator"/> the OMS invokes before routing an order. Position limits are
+/// enforced by the operator-controls gate (<see cref="ExecutionOperatorControlService"/>) that the
+/// OMS runs earlier in the pipeline — with its manual-override/bypass semantics — so this validator
+/// enforces the two guardrails that otherwise never gated an order: the drawdown circuit breaker and
+/// the order-rate throttle.
+/// </summary>
+public sealed class RiskRuleRuntimeService : IRiskValidator
 {
     private const decimal DefaultDrawdownPercent = 5m;
     private const int DefaultMaxOrdersPerMinute = 60;
@@ -41,6 +65,11 @@ public sealed class RiskRuleRuntimeService
     private readonly ILogger<RiskRuleRuntimeService> _logger;
     private readonly RiskRuleRuntimeOptions _options;
     private readonly Lock _gate = new();
+
+    // Serializes the purge -> count -> enqueue sequence for the pre-trade order-rate throttle so a
+    // burst of concurrent orders cannot all observe a below-limit count and slip past the cap.
+    private readonly Lock _orderRateGate = new();
+    private readonly Queue<DateTimeOffset> _recentOrderTimestamps = new();
 
     private decimal _maxDrawdownPercent = DefaultDrawdownPercent;
     private int _maxOrdersPerMinute = DefaultMaxOrdersPerMinute;
@@ -54,6 +83,88 @@ public sealed class RiskRuleRuntimeService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _options = options ?? RiskRuleRuntimeOptions.Default;
         LoadSnapshot();
+    }
+
+    /// <summary>
+    /// Pre-trade risk gate invoked by the OMS. Enforces the drawdown circuit breaker and the
+    /// order-rate throttle against the same live state and thresholds this service reports on the
+    /// dashboard, so a guardrail can never show "Healthy" while it silently fails to gate an order.
+    /// Position limits are enforced upstream by the operator-controls gate.
+    /// </summary>
+    public Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        var drawdownDecision = EvaluateDrawdownGuardrail();
+        if (!drawdownDecision.IsApproved)
+        {
+            return Task.FromResult(drawdownDecision);
+        }
+
+        var orderRateDecision = EvaluateOrderRateGuardrail(DateTimeOffset.UtcNow);
+        return Task.FromResult(orderRateDecision);
+    }
+
+    private RiskValidationResult EvaluateDrawdownGuardrail()
+    {
+        var portfolio = Resolve<IPortfolioState>();
+        if (portfolio is null)
+        {
+            // Execution state not yet wired — the drawdown circuit breaker cannot trip.
+            return RiskValidationResult.Approved();
+        }
+
+        var portfolioValue = portfolio.PortfolioValue;
+        if (portfolioValue <= 0m)
+        {
+            // No portfolio value to measure against, matching BuildDrawdownStatus's 0% baseline.
+            return RiskValidationResult.Approved();
+        }
+
+        var totalPnl = portfolio.RealisedPnl + portfolio.UnrealisedPnl;
+        var drawdownPercent = (totalPnl / portfolioValue) * 100m;
+        var maxDrawdownPercent = GetMaxDrawdownPercent();
+
+        if (drawdownPercent <= -maxDrawdownPercent)
+        {
+            var reason =
+                $"Drawdown circuit breaker: {drawdownPercent.ToString("F2", CultureInfo.InvariantCulture)}% breached max {maxDrawdownPercent.ToString("F2", CultureInfo.InvariantCulture)}%.";
+            _logger.LogWarning("Pre-trade risk rejection (drawdown): {Reason}", reason);
+            return RiskValidationResult.Rejected(reason);
+        }
+
+        return RiskValidationResult.Approved();
+    }
+
+    private RiskValidationResult EvaluateOrderRateGuardrail(DateTimeOffset now)
+    {
+        var maxOrdersPerMinute = GetMaxOrdersPerMinute();
+
+        lock (_orderRateGate)
+        {
+            PurgeExpiredOrderRateSamplesLocked(now);
+
+            if (_recentOrderTimestamps.Count >= maxOrdersPerMinute)
+            {
+                var reason =
+                    $"Order rate limit: {_recentOrderTimestamps.Count.ToString(CultureInfo.InvariantCulture)} orders/min exceeds {maxOrdersPerMinute.ToString(CultureInfo.InvariantCulture)} limit.";
+                _logger.LogWarning("Pre-trade risk rejection (order rate): {Reason}", reason);
+                return RiskValidationResult.Rejected(reason);
+            }
+
+            _recentOrderTimestamps.Enqueue(now);
+            return RiskValidationResult.Approved();
+        }
+    }
+
+    private void PurgeExpiredOrderRateSamplesLocked(DateTimeOffset now)
+    {
+        var cutoff = now.AddMinutes(-1);
+        while (_recentOrderTimestamps.Count > 0 && _recentOrderTimestamps.Peek() < cutoff)
+        {
+            _recentOrderTimestamps.Dequeue();
+        }
     }
 
     public async Task<IReadOnlyList<RiskRuleStatusDto>> GetAllStatusesAsync(CancellationToken ct = default)

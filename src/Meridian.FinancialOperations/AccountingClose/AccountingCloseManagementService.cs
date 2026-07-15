@@ -6,6 +6,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.AccountingClose;
 
@@ -42,6 +43,13 @@ public interface IAccountingCloseManagementService
         LockClosePeriodRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        CancellationToken ct = default)
+        => Task.FromException<ClosePeriodReopenResultDto?>(
+            new NotSupportedException("This accounting close service does not support governed period reopen."));
 }
 
 public sealed class AccountingCloseManagementService : IAccountingCloseManagementService
@@ -61,6 +69,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         RequiresLateAdjustmentApproval: true);
 
     private readonly IOperationsContinuityWorkflowService _workflowService;
+    private readonly IAccountingClosePostingWorkbench? _postingWorkbench;
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string? _persistencePath;
@@ -76,11 +85,28 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
     public AccountingCloseManagementService(
         IOperationsContinuityWorkflowService workflowService,
+        IAccountingClosePostingWorkbench postingWorkbench)
+        : this(workflowService)
+    {
+        _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
+    }
+
+    public AccountingCloseManagementService(
+        IOperationsContinuityWorkflowService workflowService,
         StorageOptions storageOptions)
         : this(workflowService)
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _persistencePath = Path.Combine(storageOptions.RootPath, "accounting", "close-management-late-adjustments.json");
+    }
+
+    public AccountingCloseManagementService(
+        IOperationsContinuityWorkflowService workflowService,
+        StorageOptions storageOptions,
+        IAccountingClosePostingWorkbench postingWorkbench)
+        : this(workflowService, storageOptions)
+    {
+        _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
     }
 
     public async Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default)
@@ -91,7 +117,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         var workflow = await _workflowService.GetAsync(workflowId, ct).ConfigureAwait(false);
-        return workflow is null ? null : BuildPeriodPlan(workflow);
+        return workflow is null ? null : await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
     }
 
     public async Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
@@ -182,7 +208,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
     }
 
     public async Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
@@ -274,7 +300,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
     }
 
     public async Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
@@ -417,7 +443,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
     }
 
     public async Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
@@ -510,7 +536,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
     }
 
     public async Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
@@ -592,7 +618,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return BuildPeriodPlan(workflow);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
     }
 
     public async Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
@@ -617,6 +643,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         var plan = BuildPeriodPlan(workflow);
         if (plan.IsPeriodLocked)
         {
+            plan = await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false);
             return new ClosePeriodLockResultDto(
                 true,
                 plan,
@@ -634,7 +661,82 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         var issues = BuildClosePeriodLockIssues(request, workflow, plan);
         if (issues.Count > 0)
         {
+            plan = await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false);
             return new ClosePeriodLockResultDto(false, plan, null, issues);
+        }
+
+        if (_postingWorkbench is null)
+        {
+            plan = AttachClosingEntriesGate(plan, UnavailableClosingEntriesGate(plan));
+            return new ClosePeriodLockResultDto(
+                false,
+                plan,
+                null,
+                [ClosingEntriesIssue(plan.ClosingEntriesGate!)]);
+        }
+
+        ClosePostingGateDto closingGate;
+        try
+        {
+            closingGate = await _postingWorkbench.EnsureClosingDraftQueuedAsync(
+                    RequirePostingContext(workflow, plan),
+                    new AccountingClosePostingCommand(
+                        resolvedActor,
+                        RequireText(request.Rationale, "Rationale"),
+                        NormalizeEvidenceLinks(request.EvidenceLinks),
+                        request.ActionOrigin,
+                        CorrelationId: request.CorrelationId),
+                    ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            closingGate = new ClosePostingGateDto(
+                $"period-close-posting:{plan.ClosePlanId}",
+                "Post closing entries",
+                ClosePostingGateStateDto.Blocked,
+                false,
+                0m,
+                0,
+                ex.Message);
+        }
+
+        plan = AttachClosingEntriesGate(plan, closingGate);
+        if (!closingGate.IsReadyForLock)
+        {
+            return new ClosePeriodLockResultDto(
+                false,
+                plan,
+                null,
+                [ClosingEntriesIssue(closingGate)]);
+        }
+
+        try
+        {
+            await _postingWorkbench.FinalizeHardCloseAsync(
+                    RequirePostingContext(workflow, plan),
+                    new AccountingClosePostingCommand(
+                        resolvedActor,
+                        RequireText(request.Rationale, "Rationale"),
+                        NormalizeEvidenceLinks(request.EvidenceLinks),
+                        request.ActionOrigin,
+                        Role: "Fund Controller",
+                        CorrelationId: request.CorrelationId),
+                    ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or LedgerBookServiceException)
+        {
+            return new ClosePeriodLockResultDto(
+                false,
+                plan,
+                null,
+                [new AccountingConfigurationValidationIssueDto(
+                    "LedgerPeriodHardCloseFailed",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    ex.Message,
+                    closingGate.GateId,
+                    "Resolve the ledger-period hard-close failure and retry with the same retained closing-entry evidence.")]);
         }
 
         var transition = await _workflowService.CloseWorkflowAsync(
@@ -656,7 +758,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
         var updatedPlan = transition.Workflow is null
             ? plan
-            : BuildPeriodPlan(transition.Workflow);
+            : await BuildPeriodPlanWithGateAsync(transition.Workflow, ct).ConfigureAwait(false);
         var transitionIssues = transition.Success
             ? Array.Empty<AccountingConfigurationValidationIssueDto>()
             : transition.Blockers
@@ -667,6 +769,125 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             updatedPlan,
             transition,
             transitionIssues);
+    }
+
+    public async Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "reopen close periods");
+        if (request.WorkflowId == Guid.Empty)
+        {
+            throw new ArgumentException("WorkflowId is required.", nameof(request));
+        }
+
+        var role = RequireText(request.Role, "Role");
+        if (!string.Equals(role, "Controller", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(role, "Fund Controller", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Governed close-period reopen requires Controller or Fund Controller authority.");
+        }
+
+        var evidence = NormalizeEvidenceLinks(request.EvidenceLinks);
+        if (evidence.Count == 0)
+        {
+            throw new InvalidOperationException("Governed close-period reopen requires retained reversal/restatement evidence.");
+        }
+
+        var resolvedActor = string.IsNullOrWhiteSpace(actor) ? RequireText(request.Actor, "Actor") : actor.Trim();
+        var workflow = await _workflowService.GetAsync(request.WorkflowId, ct).ConfigureAwait(false);
+        if (workflow is null)
+        {
+            return null;
+        }
+
+        var plan = BuildPeriodPlan(workflow);
+        if (!plan.IsPeriodLocked)
+        {
+            return new ClosePeriodReopenResultDto(
+                false,
+                await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false),
+                null,
+                null,
+                [new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodNotLocked",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Close period '{plan.PeriodId}' is not locked and cannot enter governed reopen.",
+                    plan.ClosePlanId,
+                    "Use the normal late-adjustment workflow for a soft-closed period.")]);
+        }
+
+        if (workflow.Version != request.ExpectedWorkflowVersion)
+        {
+            return new ClosePeriodReopenResultDto(
+                false,
+                await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false),
+                null,
+                null,
+                [new AccountingConfigurationValidationIssueDto(
+                    "ClosePeriodReopenVersionMismatch",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Workflow version {workflow.Version} does not match expected version {request.ExpectedWorkflowVersion}.",
+                    plan.ClosePlanId,
+                    "Refresh the close plan before reopening the period.")]);
+        }
+
+        if (_postingWorkbench is null)
+        {
+            var unavailable = UnavailableClosingEntriesGate(plan);
+            return new ClosePeriodReopenResultDto(
+                false,
+                AttachClosingEntriesGate(plan, unavailable),
+                null,
+                unavailable,
+                [ClosingEntriesIssue(unavailable)]);
+        }
+
+        var reversalGate = await _postingWorkbench.ReopenAndQueueClosingReversalsAsync(
+                RequirePostingContext(workflow, plan),
+                new AccountingClosePostingCommand(
+                    resolvedActor,
+                    RequireText(request.Rationale, "Rationale"),
+                    evidence,
+                    request.ActionOrigin,
+                    role,
+                    RequireText(request.ApprovalReference, "ApprovalReference"),
+                    request.CorrelationId),
+                ct)
+            .ConfigureAwait(false);
+
+        var transition = await _workflowService.ReopenWorkflowAsync(
+                request.WorkflowId,
+                new OperationsReopenWorkflowRequestDto(
+                    request.ExpectedWorkflowVersion,
+                    resolvedActor,
+                    RequireText(request.Rationale, "Rationale"),
+                    RequireText(request.IncidentId, "IncidentId"),
+                    IsGovernedAdmin: true,
+                    RequireText(request.Justification, "Justification"),
+                    RequireText(request.ApprovalReference, "ApprovalReference"),
+                    RequireText(request.ImpactSummary, "ImpactSummary"),
+                    request.CorrelationId,
+                    ToOperationsEvidenceLinks(evidence),
+                    request.ActionOrigin),
+                ct)
+            .ConfigureAwait(false);
+
+        var updatedPlan = transition.Workflow is null
+            ? AttachClosingEntriesGate(plan, reversalGate)
+            : AttachClosingEntriesGate(BuildPeriodPlan(transition.Workflow), reversalGate);
+        var reopenIssues = transition.Success
+            ? Array.Empty<AccountingConfigurationValidationIssueDto>()
+            : transition.Blockers.Select(static blocker => ToValidationIssue(blocker)).ToArray();
+        return new ClosePeriodReopenResultDto(
+            transition.Success,
+            updatedPlan,
+            transition,
+            reversalGate,
+            reopenIssues);
     }
 
     private ClosePeriodPlanDto BuildPeriodPlan(OperationsContinuityWorkflowDto workflow)
@@ -723,6 +944,112 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             evidenceReviews,
             operatingCoverage);
     }
+
+    private async Task<ClosePeriodPlanDto> BuildPeriodPlanWithGateAsync(
+        OperationsContinuityWorkflowDto workflow,
+        CancellationToken ct)
+        => await AttachClosingEntriesGateAsync(BuildPeriodPlan(workflow), workflow, ct).ConfigureAwait(false);
+
+    private async Task<ClosePeriodPlanDto> AttachClosingEntriesGateAsync(
+        ClosePeriodPlanDto plan,
+        OperationsContinuityWorkflowDto workflow,
+        CancellationToken ct)
+    {
+        if (_postingWorkbench is null)
+        {
+            return AttachClosingEntriesGate(plan, UnavailableClosingEntriesGate(plan));
+        }
+
+        ClosePostingGateDto gate;
+        try
+        {
+            gate = await _postingWorkbench
+                .EvaluateAsync(RequirePostingContext(workflow, plan), ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            gate = new ClosePostingGateDto(
+                $"period-close-posting:{plan.ClosePlanId}",
+                "Post closing entries",
+                ClosePostingGateStateDto.Blocked,
+                false,
+                0m,
+                0,
+                ex.Message);
+        }
+
+        return AttachClosingEntriesGate(plan, gate);
+    }
+
+    private static ClosePeriodPlanDto AttachClosingEntriesGate(
+        ClosePeriodPlanDto plan,
+        ClosePostingGateDto gate)
+    {
+        var gateIssues = gate.IsReadyForLock
+            ? Array.Empty<AccountingConfigurationValidationIssueDto>()
+            : new[] { ClosingEntriesIssue(gate) };
+        var coverageState = gate.IsReadyForLock
+            ? AccountingReadinessStateDto.ReadyForReview
+            : gate.State == ClosePostingGateStateDto.Unavailable
+                ? AccountingReadinessStateDto.NeedsAttention
+                : AccountingReadinessStateDto.Blocked;
+        var coverage = new CloseOperatingCoverageItemDto(
+            "post-closing-entries",
+            "Post closing entries",
+            coverageState,
+            gate.EvidenceLinks.Count,
+            gate.IsReadyForLock ? 0 : 1,
+            gate.Detail,
+            gate.EvidenceLinks,
+            gateIssues);
+        return plan with
+        {
+            ClosingEntriesGate = gate,
+            OperatingCoverage = plan.OperatingCoverage
+                .Where(static item => !string.Equals(item.ControlId, "post-closing-entries", StringComparison.OrdinalIgnoreCase))
+                .Append(coverage)
+                .ToArray()
+        };
+    }
+
+    private static ClosePostingGateDto UnavailableClosingEntriesGate(ClosePeriodPlanDto plan)
+        => new(
+            $"period-close-posting:{plan.ClosePlanId}",
+            "Post closing entries",
+            ClosePostingGateStateDto.Unavailable,
+            false,
+            0m,
+            0,
+            "The governed closing-entry workbench is unavailable; period lock fails closed.");
+
+    private static AccountingClosePostingContext RequirePostingContext(
+        OperationsContinuityWorkflowDto workflow,
+        ClosePeriodPlanDto plan)
+    {
+        if (workflow.LedgerBookId is not { } ledgerBookId || ledgerBookId == Guid.Empty)
+        {
+            throw new InvalidOperationException(
+                $"Close workflow '{workflow.WorkflowId:D}' has no selected ledger book for closing entries.");
+        }
+
+        return new AccountingClosePostingContext(
+            workflow.WorkflowId,
+            plan.FundProfileId,
+            ledgerBookId,
+            workflow.PeriodId,
+            plan.MaterialityPolicy.Currency);
+    }
+
+    private static AccountingConfigurationValidationIssueDto ClosingEntriesIssue(ClosePostingGateDto gate)
+        => new(
+            gate.State == ClosePostingGateStateDto.Unavailable
+                ? "PeriodClosePostingGateUnavailable"
+                : "PeriodCloseClosingEntriesPending",
+            AccountingConfigurationValidationSeverityDto.Critical,
+            gate.Detail,
+            gate.GateId,
+            "Open the Post closing entries gate, review the net-income roll, and independently approve/post the governed draft before period lock.");
 
     private static IReadOnlyList<CloseOperatingCoverageItemDto> BuildOperatingCoverage(
         OperationsContinuityWorkflowDto workflow,
@@ -1695,121 +2022,122 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
     }
 
+    // Shared evidence-classification pattern: a link classifies as a given evidence kind when it
+    // carries one of the kind's keywords. Provenance additionally requires the same link to
+    // reference the review subject (or fall back to the workflow/period scope) and the workflow's
+    // ledger book.
+    private static readonly string[] CloseTaskSignOffEvidenceKeywords =
+        ["signoff", "sign-off", "approval", "control", "review"];
+
+    private static readonly string[] LateAdjustmentRequestEvidenceKeywords =
+        ["late-adjustment", "late adjustment"];
+
+    private static readonly string[] LateAdjustmentReviewEvidenceKeywords =
+        ["approval", "rejection", "decision", "review"];
+
+    private static readonly string[] CloseEvidenceReviewEvidenceKeywords =
+        ["close-review", "blocker", "evidence", "audit", "remediation", "review"];
+
+    private static readonly string[] ClosePlanConfigurationEvidenceKeywords =
+        ["close-plan", "close plan", "close-setup", "configuration", "materiality", "approval"];
+
+    private static readonly string[] ClosePeriodLockEvidenceKeywords =
+        ["period-lock", "close-package", "close package", "report-pack", "report package", "manifest", "certification"];
+
+    private static bool EvidenceLinkContainsAnyKeyword(string link, string[] keywords)
+        => keywords.Any(keyword => link.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasEvidenceOfKind(IReadOnlyList<string> evidenceLinks, string[] keywords)
+        => evidenceLinks.Any(link => EvidenceLinkContainsAnyKeyword(link, keywords));
+
+    private static bool HasEvidenceOfKindWithProvenance(
+        IReadOnlyList<string> evidenceLinks,
+        string[] keywords,
+        OperationsContinuityWorkflowDto workflow,
+        Func<string, bool>? subjectMatches = null)
+        => evidenceLinks.Any(link =>
+            EvidenceLinkContainsAnyKeyword(link, keywords) &&
+            (subjectMatches?.Invoke(link) ?? EvidenceLinkContainsWorkflowScope(link, workflow)) &&
+            EvidenceLinkContainsLedgerBook(link, workflow));
+
+    private static bool EvidenceLinkContainsWorkflowScope(string link, OperationsContinuityWorkflowDto workflow)
+        => EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
+           EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId);
+
     private static bool HasCloseTaskSignOffEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("signoff", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("sign-off", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("control", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, CloseTaskSignOffEvidenceKeywords);
 
     private static bool HasCloseTaskSignOffEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         string taskId,
         string role,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasCloseTaskSignOffEvidence([link]) &&
-            EvidenceLinkContainsIdentifierToken(link, taskId) &&
-            EvidenceLinkContainsRoleToken(link, role) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(
+            evidenceLinks,
+            CloseTaskSignOffEvidenceKeywords,
+            workflow,
+            link => EvidenceLinkContainsIdentifierToken(link, taskId) &&
+                EvidenceLinkContainsRoleToken(link, role) &&
+                EvidenceLinkContainsWorkflowScope(link, workflow));
 
     private static bool HasLateAdjustmentRequestEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("late-adjustment", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("late adjustment", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, LateAdjustmentRequestEvidenceKeywords);
 
     private static bool HasLateAdjustmentRequestEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         Guid journalEntryId,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasLateAdjustmentRequestEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, journalEntryId) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(
+            evidenceLinks,
+            LateAdjustmentRequestEvidenceKeywords,
+            workflow,
+            link => EvidenceLinkContainsGuidToken(link, journalEntryId) ||
+                EvidenceLinkContainsWorkflowScope(link, workflow));
 
     private static bool HasLateAdjustmentReviewEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("rejection", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("decision", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, LateAdjustmentReviewEvidenceKeywords);
 
     private static bool HasLateAdjustmentReviewEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         string requestId,
         LateAdjustmentRequestDto adjustment,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasLateAdjustmentReviewEvidence([link]) &&
-            (EvidenceLinkContainsIdentifierToken(link, requestId) ||
-             EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(
+            evidenceLinks,
+            LateAdjustmentReviewEvidenceKeywords,
+            workflow,
+            link => EvidenceLinkContainsIdentifierToken(link, requestId) ||
+                EvidenceLinkContainsGuidToken(link, adjustment.JournalEntryId) ||
+                EvidenceLinkContainsWorkflowScope(link, workflow));
 
     private static bool HasCloseEvidenceReviewEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("close-review", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("blocker", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("evidence", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("audit", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("remediation", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("review", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, CloseEvidenceReviewEvidenceKeywords);
 
     private static bool HasCloseEvidenceReviewEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         string issueCode,
         string? targetId,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasCloseEvidenceReviewEvidence([link]) &&
-            (EvidenceLinkContainsIdentifierToken(link, issueCode) ||
-             (!string.IsNullOrWhiteSpace(targetId) && EvidenceLinkContainsIdentifierToken(link, targetId)) ||
-             EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(
+            evidenceLinks,
+            CloseEvidenceReviewEvidenceKeywords,
+            workflow,
+            link => EvidenceLinkContainsIdentifierToken(link, issueCode) ||
+                (!string.IsNullOrWhiteSpace(targetId) && EvidenceLinkContainsIdentifierToken(link, targetId)) ||
+                EvidenceLinkContainsWorkflowScope(link, workflow));
 
     private static bool HasClosePlanConfigurationEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("close-plan", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close plan", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close-setup", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("configuration", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("materiality", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("approval", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKind(evidenceLinks, ClosePlanConfigurationEvidenceKeywords);
 
     private static bool HasClosePlanConfigurationEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasClosePlanConfigurationEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
-
-    private static bool HasClosePeriodLockEvidence(IReadOnlyList<string> evidenceLinks)
-        => evidenceLinks.Any(static link =>
-            link.Contains("period-lock", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close-package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("close package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("report-pack", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("report package", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("manifest", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("certification", StringComparison.OrdinalIgnoreCase));
+        => HasEvidenceOfKindWithProvenance(evidenceLinks, ClosePlanConfigurationEvidenceKeywords, workflow);
 
     private static bool HasClosePeriodLockEvidenceWithProvenance(
         IReadOnlyList<string> evidenceLinks,
         OperationsContinuityWorkflowDto workflow)
-        => evidenceLinks.Any(link =>
-            HasClosePeriodLockEvidence([link]) &&
-            (EvidenceLinkContainsGuidToken(link, workflow.WorkflowId) ||
-             EvidenceLinkContainsIdentifierToken(link, workflow.PeriodId)) &&
-            EvidenceLinkContainsLedgerBook(link, workflow));
+        => HasEvidenceOfKindWithProvenance(evidenceLinks, ClosePeriodLockEvidenceKeywords, workflow);
 
     private static bool EvidenceLinkContainsGuidToken(string link, Guid value)
         => EvidenceLinkContainsIdentifierToken(link, value.ToString("D")) ||

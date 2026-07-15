@@ -47,9 +47,10 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
     protected readonly SubscriptionManager Subscriptions;
 
     /// <summary>
-    /// Whether the connection is currently established.
+    /// Whether the WebSocket transport is open for protocol hooks. Operator-facing
+    /// diagnostics remain non-connected until authentication and replay complete.
     /// </summary>
-    protected bool Connected => _connectionManager.IsConnected;
+    protected bool Connected => _connectionManager.IsTransportConnected;
 
     /// <inheritdoc/>
     public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged
@@ -112,13 +113,14 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
         await _connectionManager.ConnectAsync(
             _wsUri,
             configureSocket: ConfigureWebSocket,
+            initializeConnection: async token =>
+            {
+                await AuthenticateAsync(token).ConfigureAwait(false);
+                _connectionManager.StartReceiveLoop(HandleMessageAsync);
+            },
             ct: ct).ConfigureAwait(false);
 
         MigrationDiagnostics.IncStreamingFactoryHit(ProviderId);
-
-        await AuthenticateAsync(ct).ConfigureAwait(false);
-
-        _connectionManager.StartReceiveLoop(HandleMessageAsync, ct);
 
         Log.Information("{Provider} connected and receive loop started", ProviderId);
     }
@@ -219,10 +221,7 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
 
 
 
-    private Task OnConnectionLostAsync()
-        => OnConnectionLostAsync(CancellationToken.None);
-
-    private async Task OnConnectionLostAsync(CancellationToken ct)
+    private async Task OnConnectionLostAsync()
     {
         if (_wsUri == null)
             return;
@@ -232,16 +231,16 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
         var success = await _connectionManager.TryReconnectAsync(
             _wsUri,
             configureSocket: ConfigureWebSocket,
-            onReconnected: async () =>
+            initializeConnection: async token =>
             {
-                await AuthenticateAsync(ct).ConfigureAwait(false);
-                _connectionManager.StartReceiveLoop(HandleMessageAsync, ct);
-                await ResubscribeAsync(ct).ConfigureAwait(false);
+                await AuthenticateAsync(token).ConfigureAwait(false);
+                _connectionManager.StartReceiveLoop(HandleMessageAsync);
+                await ResubscribeAsync(token).ConfigureAwait(false);
 
                 MigrationDiagnostics.IncResubscribeAttempt();
                 MigrationDiagnostics.IncResubscribeSuccess();
             },
-            ct: ct).ConfigureAwait(false);
+            ct: CancellationToken.None).ConfigureAwait(false);
 
         if (success)
             MigrationDiagnostics.IncReconnectSuccess(ProviderId);

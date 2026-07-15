@@ -83,6 +83,14 @@ For a broader docs map, return to the main [docs index](../README.md).
 | [Shared Workstation Components](shared-workstation-components.md) | inventory and extract reusable desktop workstation controls and view-model patterns |
 | [Process Lifecycle Diagnostics](process-lifecycle-diagnostics.md) | check startup/shutdown ownership and safely report leftover Meridian/dotnet processes |
 | [Desktop Support Policy](policies/desktop-support-policy.md) | confirm expected validation and support obligations for desktop-facing changes |
+| [WPF ↔ Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | close desktop parity gaps against the browser workstation over shared contracts |
+
+### Browser Workstation UI
+
+| Document | Use it when you need to... |
+| --- | --- |
+| [Web UI Structural Improvement Proposal](web-ui-structural-improvement-proposal.md) | review the browser workstation's screenshot-evidenced UX findings and the proposed structural changes (route-scoped views, master–detail cockpit, shell de-noising) |
+| [Web UI Structural Mockups](mockups/web-ui/README.md) | view static HTML mockups of the proposed workspace layouts before implementation |
 
 ### CI, Build, And Observability
 

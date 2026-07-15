@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { StrictMode } from "react";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import * as api from "@/lib/api";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
@@ -76,6 +77,19 @@ describe("RiskControlPanel", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("Drawdown threshold saved.");
     expect(input).toHaveValue("6");
     expect(document.getElementById("risk-control-status")).toHaveTextContent("Drawdown threshold saved.");
+  });
+
+  it("settles on loaded risk controls under React StrictMode", async () => {
+    render(
+      <StrictMode>
+        <RiskControlPanel />
+      </StrictMode>
+    );
+
+    expect(await screen.findByText("PositionLimit")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Trading risk controls" })).toHaveAttribute("aria-busy", "false");
+    expect(screen.queryByText("Loading risk rules...")).not.toBeInTheDocument();
+    expect(screen.queryByText("Loading rule violations...")).not.toBeInTheDocument();
   });
 
   it("renders structured API error details when a risk update fails", async () => {

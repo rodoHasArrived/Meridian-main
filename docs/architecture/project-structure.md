@@ -70,7 +70,8 @@ tests, automation, docs, design-system assets, and generated artifacts.
 
 - Safe to delete: ignored `bin/`, `obj/`, `node_modules/`, `TestResults/`,
   `coverage/`, local logs, local publish output, dashboard automation artifacts,
-  `.artifacts/`, `.tools/` tool caches, and local smoke artifacts.
+  `.artifacts/`, `.tools/` tool caches, local smoke artifacts, and backup/process
+  sidecars such as `*.bak`, `*.backup-*`, `*.pid`, and `*.exitcode`.
 - Safe to consolidate: duplicate generated indexes, stale one-off reports, and
   documentation that repeats command lists already covered by `docs/HELP.md`.
 - Needs review: tracked generated API metadata, tracked workstation bundles,

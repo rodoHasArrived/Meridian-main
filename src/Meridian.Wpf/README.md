@@ -4,18 +4,23 @@ doc_schema: meridian.source-readme
 doc_schema_version: "1.0.0"
 module_id: SRC-WPF
 path: src/Meridian.Wpf
-status: deferred
+status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-16
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Wpf
 
+The desktop workstation is installed as part of the single Meridian product and opened
+on demand from the browser workstation. It is not a separate end-user package or Start
+Menu product.
+
 ## Purpose
 
-WPF workstation is a deferred Windows desktop operator workstation retained for existing shell
-compatibility, validation, and maintenance. New product/UI work should target the browser
-workstation and shared services unless WPF is explicitly reactivated.
+WPF workstation is an active Windows desktop operator workstation and a co-equal UI lane alongside
+the browser workstation. It projects the seven canonical workspaces over shared contracts and read
+models; its current lane focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see
+`docs/development/wpf-web-ui-alignment-plan.md`) without forking product state.
 
 ## Layer responsibility
 
@@ -185,6 +190,11 @@ report-line drill-throughs stay route-compatible with the browser workstation. R
 provenance rows also carry shared instrument, position or transaction, reconciliation, journal,
 report-line, evidence, and audit-link actions that WPF maps through the same view-model route
 resolver instead of desktop-local lineage rules.
+The generic selected-record field and relationship surfaces also carry factor evidence, holder
+role/book position, economic projection, posting command, approval, immutable journal, and
+ledger/report evidence identities resolved by UI Shared. WPF registers the shared factor projector
+for independent desktop composition but does not calculate factor economics or query the journal in
+the view model.
 
 The desktop shell includes a first-launch and Settings entry point for a sample-data Demo / Sample Tour. Starting the tour enables `FixtureModeDetector` demo mode, selects the connected sample scenario, and walks operators through Data/provider status, Portfolio records, Accounting reconciliation, retained evidence/audit context, Reporting readiness, and Settings. The global demo banner and the tour banner label the workflow as demo/sample data only so sample records remain visually distinct from provider-backed operational data.
 
@@ -638,6 +648,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `W8-WPF-PARITY-001` | WPF desktop workstation reactivation and web-UI parity |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

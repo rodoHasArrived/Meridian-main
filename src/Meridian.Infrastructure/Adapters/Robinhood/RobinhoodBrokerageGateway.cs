@@ -14,6 +14,7 @@ using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Utilities;
 using Microsoft.Extensions.Logging;
 using OrderSide = Meridian.Execution.Sdk.OrderSide;
 using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
@@ -853,9 +854,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway
     };
 
     private static DateOnly? TryParseDateOnly(string? value)
-        => DateOnly.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
-            ? parsed
-            : null;
+        => ProviderDateParsing.ParseProviderDateOrNull(value);
 
     private static decimal? TryParseDecimal(string? value)
         => decimal.TryParse(value, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,

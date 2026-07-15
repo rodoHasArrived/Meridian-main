@@ -90,6 +90,24 @@ export function buildJournalEntryDetailViewState({
   journalLine: LedgerJournalLine | null;
 }): JournalEntryDetailViewState {
   if (draft) {
+    const attachedEvidence = (draft.evidenceAttachments ?? []).map((attachment) => ({
+      attachmentId: attachment.attachmentId,
+      displayName: attachment.displayName,
+      uri: attachment.uri,
+      addedBy: attachment.addedBy,
+      addedAtUtc: attachment.addedAtUtc
+    }));
+    const attachedUris = new Set(attachedEvidence.map((attachment) => attachment.uri));
+    const linkedEvidence = (draft.evidenceLinks ?? [])
+      .filter((uri) => !attachedUris.has(uri))
+      .map((uri, index) => ({
+        attachmentId: `retained-evidence-${index + 1}`,
+        displayName: `Retained posting evidence ${index + 1}`,
+        uri,
+        addedBy: draft.preparedBy,
+        addedAtUtc: draft.updatedAtUtc
+      }));
+
     return {
       dataCompleteness: "full",
       journalEntryId,
@@ -117,13 +135,7 @@ export function buildJournalEntryDetailViewState({
       totalDebits: draft.totalDebits,
       totalCredits: draft.totalCredits,
       lifecycle: (draft.lifecycleTransitions ?? []).map(buildLifecycleRow),
-      evidence: (draft.evidenceAttachments ?? []).map((attachment) => ({
-        attachmentId: attachment.attachmentId,
-        displayName: attachment.displayName,
-        uri: attachment.uri,
-        addedBy: attachment.addedBy,
-        addedAtUtc: attachment.addedAtUtc
-      })),
+      evidence: [...attachedEvidence, ...linkedEvidence],
       summaryOnlyNotice: null,
       notFoundText: null
     };
@@ -155,7 +167,7 @@ export function buildJournalEntryDetailViewState({
   return {
     dataCompleteness: "not-found",
     journalEntryId,
-    title: journalEntryId,
+    title: "Journal entry not found",
     statusLabel: "Not found",
     statusTone: "warning",
     summaryFields: [],
@@ -166,6 +178,6 @@ export function buildJournalEntryDetailViewState({
     lifecycle: [],
     evidence: [],
     summaryOnlyNotice: null,
-    notFoundText: `No journal entry matching "${journalEntryId}" was found in the manual workbench or the selected run's ledger.`
+    notFoundText: "No matching journal entry was found in the manual workbench or the selected run's ledger."
   };
 }

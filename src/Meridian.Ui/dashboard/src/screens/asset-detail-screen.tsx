@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { SecurityPassportEditorLauncher } from "@/components/meridian/security-passport-editor-launcher";
@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ScreenLayout } from "@/components/ui/screen-layout";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getCorporateActions, getSecurityDetail, getSecurityIdentity, getTradingParameters, searchSecurities } from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
-import { buildAssetDetailOverviewViewState } from "@/screens/asset-detail-screen.view-model";
+import { buildAssetDetailOverviewViewState, selectExactSecuritySearchResult } from "@/screens/asset-detail-screen.view-model";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
 
 const assetSearchSuggestions = ["AAPL", "MSFT", "US91282CHT18"];
@@ -36,7 +38,16 @@ export function AssetDetailScreen() {
   const initialQuery = searchParams.get("symbol") ?? searchParams.get("query") ?? "";
 
   if (!securityId) {
-    return <AssetSearchPanel initialQuery={initialQuery} onSelect={(id) => setSearchParams({ securityId: id })} />;
+    return (
+      <AssetSearchPanel
+        initialQuery={initialQuery}
+        onSelect={(id) => setSearchParams((current) => {
+          const next = new URLSearchParams(current);
+          next.set("securityId", id);
+          return next;
+        }, { replace: true })}
+      />
+    );
   }
 
   return <AssetDetailPanel securityId={securityId} />;
@@ -46,9 +57,13 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SecurityMasterEntry[]>([]);
   const [searching, setSearching] = useState(false);
+  const initialRouteQueryRef = useRef(initialQuery.trim());
+  const autoOpenedRef = useRef(false);
 
   useEffect(() => {
     setQuery(initialQuery);
+    initialRouteQueryRef.current = initialQuery.trim();
+    autoOpenedRef.current = false;
   }, [initialQuery]);
 
   useEffect(() => {
@@ -64,6 +79,14 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
       .then((entries) => {
         if (!cancelled) {
           setResults(entries);
+          const routeQuery = initialRouteQueryRef.current;
+          if (!autoOpenedRef.current && routeQuery && query.trim().toLowerCase() === routeQuery.toLowerCase()) {
+            const exactSecurityId = selectExactSecuritySearchResult(routeQuery, entries);
+            if (exactSecurityId) {
+              autoOpenedRef.current = true;
+              onSelect(exactSecurityId);
+            }
+          }
         }
       })
       .catch(() => {
@@ -80,7 +103,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
     return () => {
       cancelled = true;
     };
-  }, [query]);
+  }, [onSelect, query]);
 
   return (
     <Card className="panel-surface">
@@ -281,25 +304,21 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
   const overview = buildAssetDetailOverviewViewState({ entry, identity, corporateActions });
 
   return (
-    <div className="space-y-4">
-      <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>{overview.displayName}</CardTitle>
-            <CardDescription>{overview.symbol}</CardDescription>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={overview.statusTone} dot>{overview.statusLabel}</Badge>
-            <Button asChild size="sm" variant="outline">
-              <Link to={workstationRouteWithQuery("dataQuotes", { symbol: overview.symbol })}>Live quotes</Link>
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to={WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}>Open Security Master</Link>
-            </Button>
-          </div>
-        </CardHeader>
-      </Card>
-
+    <ScreenLayout
+      title={overview.displayName}
+      scope={overview.symbol}
+      actions={
+        <>
+          <Badge variant={overview.statusTone} dot>{overview.statusLabel}</Badge>
+          <Button asChild size="sm" variant="outline">
+            <Link to={workstationRouteWithQuery("dataQuotes", { symbol: overview.symbol })}>Live quotes</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link to={WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}>Open Security Master</Link>
+          </Button>
+        </>
+      }
+    >
       <Tabs
         tabs={[
           { id: "overview", label: "Overview" },
@@ -319,6 +338,16 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
                   </div>
                 ))}
               </dl>
+              <TechnicalDetails label="Technical identity">
+                <dl className="grid gap-3 sm:grid-cols-2">
+                  {overview.technicalFields.map((field) => (
+                    <div key={field.label}>
+                      <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                      <dd className="mt-1 break-words font-mono text-sm text-foreground">{field.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </TechnicalDetails>
               <div>
                 <h3 className="text-sm font-semibold text-foreground">Corporate actions</h3>
                 {overview.hasCorporateActions ? (
@@ -391,6 +420,6 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
           </Card>
         </TabPanel>
       </Tabs>
-    </div>
+    </ScreenLayout>
   );
 }

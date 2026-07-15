@@ -17,14 +17,23 @@ public sealed class StatementReconciliationServiceTests
     public void MatchRows_ProducesMatchAndCaseBranches()
     {
         var svc = new StatementReconciliationService();
+        var asOf = DateTimeOffset.UtcNow;
         var rows = new[]
         {
-            new NormalizedStatementRow("1", StatementRowKind.Position, "AAPL", 10, 0, DateTimeOffset.UtcNow, "USD", "f1", new Dictionary<string,string>()),
-            new NormalizedStatementRow("2", StatementRowKind.CashBalance, string.Empty, 0, 100, DateTimeOffset.UtcNow, "USD", "f2", new Dictionary<string,string>())
+            new NormalizedStatementRow("1", StatementRowKind.Position, "AAPL", 10, 0, asOf, "USD", "f1", new Dictionary<string,string>()),
+            new NormalizedStatementRow("2", StatementRowKind.CashBalance, string.Empty, 0, 100, asOf, "USD", "f2", new Dictionary<string,string>())
+        };
+        var internalPositions = new[]
+        {
+            new InternalPortfolioPosition("pos-1", "unknown-account", "AAPL", DateOnly.FromDateTime(asOf.UtcDateTime), 10, null, "internal:pos-1")
         };
 
-        var result = svc.MatchRows(rows);
-        Assert.Single(result.Matches);
+        var result = svc.MatchRows(rows, internalPositions);
+        var match = Assert.Single(result.Matches);
+        Assert.Equal("1", match.RowId);
+        Assert.Equal("internal:pos-1", match.PositionId);
+        Assert.Equal("high", match.Confidence);
+        Assert.Equal("statement-position-exact-v1", match.ToleranceRuleId);
         Assert.Single(result.Cases);
         var reconciliationCase = result.Cases[0];
         Assert.Equal("case:2", reconciliationCase.CaseId);
@@ -40,6 +49,26 @@ public sealed class StatementReconciliationServiceTests
         Assert.Contains("Meridian ledger", reconciliationCase.BreakExplanation.SourceSystems);
         Assert.Contains("cash ledger", reconciliationCase.BreakExplanation.LedgerImpact, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Compare the statement cash balance", reconciliationCase.BreakExplanation.SuggestedNextAction);
+    }
+
+    [Fact]
+    public void MatchRows_PositionWithoutInternalPosition_CreatesCaseInsteadOfMatch()
+    {
+        // Position rows go through the shared StatementMatchingEngine; without a matching internal
+        // portfolio position they must surface as break cases, never as auto high-confidence matches.
+        var svc = new StatementReconciliationService();
+        var rows = new[]
+        {
+            new NormalizedStatementRow("1", StatementRowKind.Position, "AAPL", 10, 0, DateTimeOffset.UtcNow, "USD", "f1", new Dictionary<string,string>())
+        };
+
+        var result = svc.MatchRows(rows);
+
+        Assert.Empty(result.Matches);
+        var reconciliationCase = Assert.Single(result.Cases);
+        Assert.Equal("case:1", reconciliationCase.CaseId);
+        Assert.NotNull(reconciliationCase.BreakExplanation);
+        Assert.Contains("position", reconciliationCase.BreakExplanation.ProbableCause, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -209,10 +238,11 @@ public sealed class StatementReconciliationServiceTests
             var intake = await svc.CreateExternalStatementCasesAsync("broker", filePath, StatementMappingProfileRegistry.SampleBrokerCsvV1ProfileId, CancellationToken.None);
 
             Assert.Contains(StatementMappingProfileRegistry.SampleBrokerCsvV1ProfileId, validation);
-            Assert.Equal(1, result.MatchCount);
-            Assert.Equal(1, result.UnresolvedCount);
+            // Without internal position evidence the POS row is an unresolved break, not a match.
+            Assert.Equal(0, result.MatchCount);
+            Assert.Equal(2, result.UnresolvedCount);
             Assert.Equal(2, intake.RowCount);
-            Assert.Single(intake.Cases);
+            Assert.Equal(2, intake.Cases.Count);
         }
         finally
         {
@@ -261,10 +291,10 @@ public sealed class StatementReconciliationServiceTests
             var result = await svc.ReconcileAsync(
                 "local", filePath, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, CancellationToken.None);
 
-            // Previously a 'local' source returned zero matches and zero cases; with a mapping
-            // profile selected it is now parsed canonically and reconciled.
-            Assert.Equal(1, result.MatchCount);
-            Assert.Equal(1, result.UnresolvedCount);
+            // With a mapping profile selected the 'local' source is parsed canonically and
+            // reconciled; without internal position evidence both rows surface as cases.
+            Assert.Equal(0, result.MatchCount);
+            Assert.Equal(2, result.UnresolvedCount);
         }
         finally
         {
@@ -352,8 +382,8 @@ public sealed class StatementReconciliationServiceTests
 
             var result = await svc.ReconcileAsync("local", filePath, "custom-local-v1", CancellationToken.None);
 
-            Assert.Equal(1, result.MatchCount);
-            Assert.Equal(1, result.UnresolvedCount);
+            Assert.Equal(0, result.MatchCount);
+            Assert.Equal(2, result.UnresolvedCount);
         }
         finally
         {

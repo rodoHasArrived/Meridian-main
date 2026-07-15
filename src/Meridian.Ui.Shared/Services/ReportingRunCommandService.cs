@@ -10,17 +10,25 @@ public sealed class ReportingRunCommandService
     private readonly IReportingTemplateCatalog _templateCatalog;
     private readonly GovernedReportingTemplateCatalog? _governedTemplateCatalog;
     private readonly ReportWriterDatasetSourceService? _datasetSourceService;
+    private readonly ReportingRunReadinessService _readinessService;
+    private readonly ReportingRunCertificationService _certificationService;
 
     public ReportingRunCommandService(
         IReportingOrchestrationService orchestrationService,
         IReportingTemplateCatalog templateCatalog,
         GovernedReportingTemplateCatalog? governedTemplateCatalog = null,
-        ReportWriterDatasetSourceService? datasetSourceService = null)
+        ReportWriterDatasetSourceService? datasetSourceService = null,
+        ReportingRunReadinessService? readinessService = null,
+        ReportingRunCertificationService? certificationService = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
         _governedTemplateCatalog = governedTemplateCatalog;
         _datasetSourceService = datasetSourceService;
+        _readinessService = readinessService ?? new ReportingRunReadinessService(
+            templateCatalog,
+            governedTemplateCatalog);
+        _certificationService = certificationService ?? new ReportingRunCertificationService();
     }
 
     public async Task<ReportingRunResultDto> RunAsync(
@@ -43,23 +51,49 @@ public sealed class ReportingRunCommandService
             throw new ArgumentOutOfRangeException(nameof(request), "maxRetries must be zero or greater.");
         }
 
-        var requestedAtUtc = DateTimeOffset.UtcNow;
-        var templateId = request.TemplateId.Trim();
-        var accessEvaluation = _governedTemplateCatalog?.EvaluateAccess(templateId, accessContext)
-            ?? ReportAccessPolicyEvaluator.Evaluate(null, accessContext);
-        if (!accessEvaluation.IsAccessible)
+        if (request.AllowRestatement)
         {
-            throw new UnauthorizedAccessException(accessEvaluation.Reason);
+            throw new InvalidOperationException(
+                "Ordinary report generation cannot authorize a restatement. Use the governed restatement-request workflow.");
         }
 
-        var template = _templateCatalog.Get(templateId);
-        var asOfDate = request.AsOfDate ?? DateOnly.FromDateTime(requestedAtUtc.UtcDateTime);
-        var actor = string.IsNullOrWhiteSpace(request.RequestedBy) ? fallbackActor.Trim() : request.RequestedBy.Trim();
-        var jobId = string.IsNullOrWhiteSpace(request.JobId)
+        var requestedAtUtc = DateTimeOffset.UtcNow;
+        var templateId = request.TemplateId.Trim();
+        if (accessContext?.RequireBoundScope == true && request.DatasetRows is { Count: > 0 })
+        {
+            throw new InvalidOperationException(
+                "Caller-supplied report rows are not accepted by the governed run endpoint. Select a server-owned dataset source.");
+        }
+
+        var readiness = await _readinessService
+            .AssessAsync(request, accessContext, cancellationToken)
+            .ConfigureAwait(false);
+        var isFinal = readiness.ResolvedParameters.Finality == ReportingFinalityDto.Final;
+        if (!readiness.CanGenerateDraft || isFinal && !readiness.CanGenerateFinal)
+        {
+            throw new ReportingRunReadinessBlockedException(readiness);
+        }
+
+        var template = request.Template is null
+            ? _templateCatalog.Get(templateId)
+            : _templateCatalog.Get(request.Template);
+        var asOfDate = readiness.ResolvedParameters.AsOfDate;
+        var actor = fallbackActor.Trim();
+        var jobId = accessContext?.RequireBoundScope == true
+            ? BuildDefaultJobId($"{accessContext.TenantId}-{templateId}", requestedAtUtc)
+            : string.IsNullOrWhiteSpace(request.JobId)
             ? BuildDefaultJobId(templateId, requestedAtUtc)
             : request.JobId.Trim();
         var datasetRows = ResolveDatasetRows(request, template, accessContext);
         var datasetSourceEvidence = ResolveDatasetSourceEvidence(request, template);
+        var certified = accessContext is null
+            ? null
+            : _certificationService.Certify(
+                template,
+                readiness,
+                datasetRows,
+                datasetSourceEvidence.SourceId,
+                accessContext);
 
         var manifest = await _orchestrationService.ExecuteAsync(
             new ReportingJobContract(
@@ -74,7 +108,14 @@ public sealed class ReportingRunCommandService
                 ReportWriterDatasetSourceId: datasetSourceEvidence.SourceId,
                 ReportWriterDatasetSourceLabel: datasetSourceEvidence.Label,
                 AccessPolicy: template.AccessPolicy,
-                RetryReason: request.RetryReason),
+                RetryReason: request.RetryReason,
+                AllowRestatement: false,
+                ResolvedTemplate: readiness.ResolvedTemplate,
+                ResolvedParameters: readiness.ResolvedParameters,
+                Readiness: readiness,
+                OperationalScope: certified?.OperationalScope,
+                ImmutableAccessScope: certified?.AccessScope,
+                CertifiedSnapshot: certified?.Snapshot),
             cancellationToken).ConfigureAwait(false);
 
         return new ReportingRunResultDto(ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId), template));
@@ -151,7 +192,10 @@ public sealed class ReportingRunCommandService
             ComparisonSummary: BuildRunComparisonSummary(manifest),
             ChangedLineCount: CountChangedLines(manifest),
             AddedLineCount: CountAddedLines(manifest),
-            RemovedLineCount: CountRemovedLines(manifest));
+            RemovedLineCount: CountRemovedLines(manifest),
+            ResolvedTemplate: manifest.ResolvedTemplate,
+            ResolvedParameters: manifest.ResolvedParameters,
+            Readiness: manifest.Readiness);
 
     private static IEnumerable<WorkstationGeneratedReportWriterGridPayload> BuildGeneratedReportWriterGrids(
         ReportingOutputManifest manifest,
@@ -398,4 +442,15 @@ public sealed class ReportingRunCommandService
         var normalized = new string(chars).Trim('-');
         return string.IsNullOrWhiteSpace(normalized) ? "report" : normalized;
     }
+}
+
+public sealed class ReportingRunReadinessBlockedException : InvalidOperationException
+{
+    public ReportingRunReadinessBlockedException(ReportingRunReadinessDto readiness)
+        : base($"Reporting run readiness is {readiness?.Status}; the requested run cannot be generated.")
+    {
+        Readiness = readiness ?? throw new ArgumentNullException(nameof(readiness));
+    }
+
+    public ReportingRunReadinessDto Readiness { get; }
 }

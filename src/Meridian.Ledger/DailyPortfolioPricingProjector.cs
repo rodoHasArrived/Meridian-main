@@ -1,3 +1,5 @@
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -36,7 +38,9 @@ public static class DailyPortfolioPricingProjector
             input.Policy.PolicyId,
             input.Policy.ValuationMethod,
             mark.FinancialAccountId,
-            mark.InstrumentType);
+            mark.InstrumentType,
+            mark.FairValueLevel == FairValueLevel.Unclassified ? input.Policy.DefaultFairValueLevel : mark.FairValueLevel,
+            mark.IsStalePriced);
     }
 
     private static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> BuildJournalLines(
@@ -67,7 +71,4 @@ public static class DailyPortfolioPricingProjector
 
         return journalLines;
     }
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 }

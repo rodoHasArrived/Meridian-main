@@ -1,0 +1,322 @@
+<!-- @dsCard group="Documentation" viewport="900x640" name="Unit Tests" subtitle="Behavioral checks — overlay focus trap, table state, primitives" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>Meridian — component unit tests</title>
+<link rel="stylesheet" href="../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 20px; background: var(--bg); font-family: var(--font-body); color: var(--text-primary); }
+  #results { display: flex; flex-direction: column; gap: 2px; max-width: 720px; }
+  .t { display: flex; gap: 8px; align-items: baseline; padding: 5px 10px; background: var(--bg-light); border: 1px solid var(--border); font-size: 12px; }
+  .t b { font-family: var(--font-data); font-size: 10px; padding: 1px 6px; }
+  .t--pass b { color: var(--green-dim); }
+  .t--fail b { color: var(--red-dim); }
+  .t--fail { border-color: var(--red); }
+  #summary { font: 600 13px var(--font-data); margin-bottom: 10px; }
+  #sandbox { position: absolute; left: -9999px; top: 0; }
+</style>
+</head>
+<body>
+<div id="summary">Running…</div>
+<div id="results"></div>
+<div id="sandbox"></div>
+<script type="text/babel">
+const DS = window.MeridianDesignSystem_4f61be;
+const { Dialog, Timestamp, Delta, Modal } = DS;
+const { useTableState, useTableColumns, useRowSelection } = DS.TableHooks;
+const { useDirtyState, useWizard, useAsyncValidation } = DS.FormHooks;
+const results = [];
+const resEl = document.getElementById("results");
+
+function report(name, pass, detail) {
+  results.push(pass);
+  const div = document.createElement("div");
+  div.className = "t t--" + (pass ? "pass" : "fail");
+  div.innerHTML = `<b>${pass ? "PASS" : "FAIL"}</b><span>${name}${pass || !detail ? "" : " — " + detail}</span>`;
+  resEl.appendChild(div);
+}
+function expect(name, actual, expected) {
+  report(name, Object.is(actual, expected), `expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+}
+
+const sandbox = document.getElementById("sandbox");
+function mount(el) {
+  const host = document.createElement("div");
+  sandbox.appendChild(host);
+  const root = ReactDOM.createRoot(host);
+  ReactDOM.flushSync(() => root.render(el));
+  return { host, root };
+}
+const tab = (shift) => new KeyboardEvent("keydown", { key: "Tab", shiftKey: !!shift, bubbles: true, cancelable: true });
+
+// ── Timestamp: UTC formatting ──
+{
+  const { host, root } = mount(<Timestamp value={Date.UTC(2026, 5, 9, 20, 0, 0)} />);
+  expect("Timestamp renders full UTC form", host.textContent, "2026-06-09 20:00:00Z");
+  root.unmount(); host.remove();
+}
+{
+  const { host, root } = mount(<Timestamp value="not a date" />);
+  expect("Timestamp renders em dash for invalid input", host.textContent, "—");
+  root.unmount(); host.remove();
+}
+
+// ── Delta: explicit sign rule ──
+{
+  const cases = [
+    [<Delta value={1.84} suffix="%" />, "+1.84%", "positive gets explicit +"],
+    [<Delta value={-4118.2} decimals={2} />, "-4118.20", "negative keeps -"],
+    [<Delta value={0} suffix="%" />, "±0.00%", "zero renders ±"],
+  ];
+  for (const [el, want, name] of cases) {
+    const { host, root } = mount(el);
+    expect("Delta: " + name, host.textContent, want);
+    root.unmount(); host.remove();
+  }
+}
+
+// ── SeverityBadge: normalization contract ──
+{
+  const { SeverityBadge } = DS;
+  const cases = [["ReviewRequired", "Review"], ["Healthy", "Ready"], ["Degraded", "Action"], ["Failed", "Blocked"]];
+  for (const [input, want] of cases) {
+    const { host, root } = mount(<SeverityBadge status={input} />);
+    report(`SeverityBadge normalizes "${input}" → "${want}"`, host.textContent.includes(want), `got "${host.textContent}"`);
+    root.unmount(); host.remove();
+  }
+}
+
+// ── Dialog: overlay focus contract (useOverlayFocus) ──
+{
+  const outside = document.createElement("button");
+  outside.textContent = "outside";
+  sandbox.appendChild(outside);
+  outside.focus();
+  const { host, root } = mount(
+    <Dialog open={true} onClose={() => {}} title="Trap test">
+      <button id="d-a">A</button>
+      <button id="d-b">B</button>
+    </Dialog>
+  );
+  const first = document.querySelector(".mds-dialog-wrap button, .mds-dialog-wrap [href], .mds-dialog-wrap input");
+  report("Dialog moves focus into the panel on open", document.activeElement !== outside && document.querySelector(".mds-dialog-wrap").contains(document.activeElement), `active: ${document.activeElement.id || document.activeElement.textContent}`);
+
+  // Walk focus to the last focusable, then Tab must wrap to the first.
+  const items = [...document.querySelectorAll(".mds-dialog-wrap button, .mds-dialog-wrap [href], .mds-dialog-wrap input, .mds-dialog-wrap select, .mds-dialog-wrap textarea, .mds-dialog-wrap [tabindex]:not([tabindex='-1'])")].filter((el) => el.offsetParent !== null);
+  items[items.length - 1].focus();
+  document.activeElement.dispatchEvent(tab(false));
+  report("Tab on last element wraps to first (trap forward)", document.activeElement === items[0], `active: ${document.activeElement.id || document.activeElement.textContent}`);
+
+  items[0].focus();
+  document.activeElement.dispatchEvent(tab(true));
+  report("Shift+Tab on first element wraps to last (trap backward)", document.activeElement === items[items.length - 1], `active: ${document.activeElement.id || document.activeElement.textContent}`);
+
+  ReactDOM.flushSync(() => root.render(<Dialog open={false} onClose={() => {}} title="Trap test"><button>A</button></Dialog>));
+  report("Focus restores to trigger on close", document.activeElement === outside, `active: ${document.activeElement.tagName}`);
+  root.unmount(); host.remove(); outside.remove();
+}
+
+// ── Modal: now participates in the same focus contract ──
+{
+  const { host, root } = mount(
+    <Modal open={true} onClose={() => {}}>
+      <div className="mdl-wrap"><button id="m-a">OK</button></div>
+    </Modal>
+  );
+  report("Modal moves focus into the panel on open", document.activeElement && document.activeElement.id === "m-a", `active: ${document.activeElement.id || document.activeElement.tagName}`);
+  root.unmount(); host.remove();
+}
+
+// ── FilteredDataTable: search + sort behavior (exercises useTableState) ──
+{
+  const { FilteredDataTable } = DS;
+  const data = [
+    { sym: "AAPL", px: 201 }, { sym: "MSFT", px: 404 }, { sym: "NVDA", px: 131 },
+  ];
+  const cols = [{ key: "sym", label: "Symbol" }, { key: "px", label: "Px", align: "right" }];
+  const { host, root } = mount(<FilteredDataTable data={data} columns={cols} />);
+  const bodyRows = () => [...host.querySelectorAll("tbody tr:not(.fdt--spacer)")];
+  expect("FilteredDataTable renders all rows", bodyRows().length, 3);
+
+  const input = host.querySelector("input");
+  const setNative = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+  ReactDOM.flushSync(() => {
+    setNative.call(input, "nv");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  expect("search query filters rows (case-insensitive)", bodyRows().length, 1);
+  report("filtered row is the match", bodyRows()[0].textContent.includes("NVDA"), bodyRows()[0].textContent);
+
+  ReactDOM.flushSync(() => {
+    setNative.call(input, "");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  const pxTh = [...host.querySelectorAll("th")].find((th) => th.textContent.includes("Px"));
+  ReactDOM.flushSync(() => pxTh.click());
+  report("first header click sorts ascending", bodyRows()[0].textContent.includes("NVDA"), bodyRows()[0].textContent);
+  ReactDOM.flushSync(() => pxTh.click());
+  report("second header click flips descending", bodyRows()[0].textContent.includes("MSFT"), bodyRows()[0].textContent);
+  root.unmount(); host.remove();
+}
+
+// ── SplitPane: clamp + keyboard resize ──
+{
+  const { SplitPane } = DS;
+  const { host, root } = mount(
+    <div style={{ width: 600, height: 200 }}>
+      <SplitPane direction="horizontal" initial={900} min={150} max={400}>
+        <div>left</div><div>right</div>
+      </SplitPane>
+    </div>
+  );
+  const firstPane = host.querySelector(".mds-split__pane");
+  report("SplitPane clamps initial to max", firstPane.style.width === "400px", `width: ${firstPane.style.width}`);
+  const div = host.querySelector(".mds-split__div");
+  div.focus();
+  ReactDOM.flushSync(() => div.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true })));
+  report("ArrowLeft shrinks the primary pane by 8px", firstPane.style.width === "392px", `width: ${firstPane.style.width}`);
+  ReactDOM.flushSync(() => div.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true })));
+  report("Home snaps to min", firstPane.style.width === "150px", `width: ${firstPane.style.width}`);
+  root.unmount(); host.remove();
+}
+
+// ── TagInput: commit, dedupe, validate ──
+{
+  const { TagInput } = DS;
+  function Harness() {
+    const [tags, setTags] = React.useState(["AAPL"]);
+    return <TagInput value={tags} onChange={setTags} uppercase validate={(t) => /^[A-Z.]{1,8}$/.test(t)} />;
+  }
+  const { host, root } = mount(<Harness />);
+  const input = host.querySelector("input");
+  const setNative = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+  const type = (text) => ReactDOM.flushSync(() => {
+    setNative.call(input, text);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  const enter = () => ReactDOM.flushSync(() => input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })));
+  const chips = () => [...host.querySelectorAll(".mds-tags__chip")].map((c) => c.textContent.replace("×", ""));
+
+  type("nvda"); enter();
+  report("Enter commits + uppercases draft", chips().join(",") === "AAPL,NVDA", chips().join(","));
+  type("aapl"); enter();
+  report("duplicates are dropped", chips().join(",") === "AAPL,NVDA", chips().join(","));
+  type("not a symbol!"); enter();
+  report("validate() rejects bad drafts", chips().join(",") === "AAPL,NVDA", chips().join(","));
+  root.unmount(); host.remove();
+}
+
+// ── OrderTicket: live confirm gate ──
+{
+  const { OrderTicket } = DS;
+  const { host, root } = mount(<OrderTicket symbol="AAPL" lastPrice={200} environment="live" />);
+  const setNative = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+  const qty = [...host.querySelectorAll("input")].find((i) => i.getAttribute("inputmode") === "decimal");
+  ReactDOM.flushSync(() => {
+    setNative.call(qty, "100");
+    qty.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  const submit = [...host.querySelectorAll("button")].find((b) => b.textContent.toLowerCase().includes("submit"));
+  report("live ticket: submit disabled before gate", submit.disabled === true, `disabled: ${submit.disabled}`);
+  const gate = host.querySelector(".mds-ticket__gate input[type=checkbox]");
+  report("live ticket renders the confirm gate", !!gate, "gate checkbox missing");
+  if (gate) {
+    ReactDOM.flushSync(() => gate.click());
+    report("checking the gate enables submit", submit.disabled === false, `disabled: ${submit.disabled}`);
+  }
+  root.unmount(); host.remove();
+}
+
+// ── Hooks: run inside a tiny harness component so React hook rules hold ──
+function runHook(useHookFn) {
+  let api;
+  function H() { api = useHookFn(); return null; }
+  const { host, root } = mount(<H />);
+  return { get: () => api, act: (fn) => ReactDOM.flushSync(fn), cleanup: () => { root.unmount(); host.remove(); } };
+}
+
+// useTableState — multi-sort stack (shift-append), search
+{
+  const h = runHook(() => useTableState([
+    { sym: "AAPL", sec: "Tech", px: 3 }, { sym: "MSFT", sec: "Tech", px: 1 }, { sym: "TLT", sec: "Bond", px: 2 },
+  ]));
+  h.act(() => h.get().toggleSort("sec"));            // primary asc
+  h.act(() => h.get().toggleSort("px", true));       // shift-append secondary asc
+  const d = h.get().data;
+  report("useTableState: multi-sort — Bond first, then Tech by px asc",
+    d.map((r) => r.sym).join(",") === "TLT,MSFT,AAPL", d.map((r) => r.sym).join(","));
+  report("useTableState: sortInfo reports rank", h.get().sortInfo("px")?.rank === 2, JSON.stringify(h.get().sortInfo("px")));
+  h.act(() => h.get().setQuery("aap"));
+  report("useTableState: query filters", h.get().data.length === 1, `${h.get().data.length}`);
+  h.cleanup();
+}
+
+// useTableColumns — move, pin ordering, hide
+{
+  const BASE = [{ key: "a", label: "A" }, { key: "b", label: "B" }, { key: "c", label: "C" }];
+  const h = runHook(() => useTableColumns(BASE));
+  h.act(() => h.get().move("a", 1));
+  report("useTableColumns: move shifts order", h.get().order.join("") === "bac", h.get().order.join(""));
+  h.act(() => h.get().togglePin("c"));
+  report("useTableColumns: pinned column sorts to front", h.get().visibleColumns[0].key === "c", h.get().visibleColumns.map((c) => c.key).join(""));
+  report("useTableColumns: pinned column carries offset 0", h.get().visibleColumns[0].pinnedOffset === 0, `${h.get().visibleColumns[0].pinnedOffset}`);
+  h.act(() => h.get().toggleVisible("b"));
+  report("useTableColumns: hidden column drops from visible", !h.get().visibleColumns.some((c) => c.key === "b"), h.get().visibleColumns.map((c) => c.key).join(""));
+  h.cleanup();
+}
+
+// useRowSelection — shift-range, ctrl-toggle, identity by key
+{
+  const rows = [{ id: "r1" }, { id: "r2" }, { id: "r3" }, { id: "r4" }];
+  const h = runHook(() => useRowSelection(rows, (r) => r.id));
+  h.act(() => h.get().onRowClick(rows[0], 0, {}));
+  h.act(() => h.get().onRowClick(rows[2], 2, { shiftKey: true }));
+  report("useRowSelection: shift-click selects the range", [0, 1, 2].every((i) => h.get().isSelected(rows[i])) && !h.get().isSelected(rows[3]), `count ${h.get().count}`);
+  h.act(() => h.get().onRowClick(rows[3], 3, { metaKey: true }));
+  report("useRowSelection: ctrl-click adds without clearing", h.get().count === 4, `count ${h.get().count}`);
+  h.act(() => h.get().clear());
+  report("useRowSelection: clear empties selection", h.get().count === 0, `count ${h.get().count}`);
+  h.cleanup();
+}
+
+// useDirtyState — field-level dirty tracking, reset, commit
+{
+  const h = runHook(() => useDirtyState({ name: "x", cap: 10 }));
+  report("useDirtyState: clean at baseline", h.get().dirty === false, `${h.get().dirty}`);
+  h.act(() => h.get().set("name", "y"));
+  report("useDirtyState: tracks the changed field", h.get().dirty && h.get().isDirty("name") && !h.get().isDirty("cap"), [...h.get().dirtyFields].join(","));
+  h.act(() => h.get().reset());
+  report("useDirtyState: reset returns to baseline", h.get().dirty === false, `${h.get().dirty}`);
+  h.act(() => h.get().set("cap", 20));
+  h.act(() => h.get().commit());
+  report("useDirtyState: commit rebaselines", h.get().dirty === false && h.get().values.cap === 20, `${h.get().dirty}/${h.get().values.cap}`);
+  h.cleanup();
+}
+
+// useWizard — gated advance, furthest tracking
+{
+  let allow = false;
+  const h = runHook(() => useWizard(["one", "two", "three"], { validate: (i) => (i === 0 ? allow : true) }));
+  h.act(() => h.get().next());
+  report("useWizard: gate blocks advance when invalid", h.get().step === 0, `step ${h.get().step}`);
+  allow = true;
+  h.act(() => h.get().next());
+  h.act(() => h.get().next());
+  report("useWizard: advances through steps", h.get().step === 2 && h.get().isLast, `step ${h.get().step}`);
+  report("useWizard: furthest reached tracked", h.get().furthest === 2 && h.get().isReachable(2), `${h.get().furthest}`);
+  h.cleanup();
+}
+
+const passed = results.filter(Boolean).length;
+const summary = document.getElementById("summary");
+summary.textContent = `${passed}/${results.length} passed`;
+summary.style.color = passed === results.length ? "var(--green-dim)" : "var(--red-dim)";
+if (passed !== results.length) console.error(`UNIT TESTS FAILED: ${results.length - passed} failing`);
+</script>
+</body>
+</html>

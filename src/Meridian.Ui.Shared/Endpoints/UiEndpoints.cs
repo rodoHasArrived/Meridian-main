@@ -185,8 +185,12 @@ public static class UiEndpoints
         app.MapFundAccountEndpoints(jsonOptions);
         app.MapLedgerEndpoints(jsonOptions);
 
+        // Portfolio-wide cash ladder and liquidity scenarios
+        app.MapPortfolioCashLadderEndpoints(jsonOptions);
+
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapReportingRunStreamEndpoints(jsonOptions);
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
@@ -233,9 +237,11 @@ public static class UiEndpoints
 
         // Authentication endpoints (login page, login API, logout API)
         app.MapAuthEndpoints();
+        app.MapInitialAccountBootstrapEndpoints();
 
         // React workstation shell and bootstrap data
         app.MapWorkstationEndpoints(jsonOptions);
+        app.MapFirstRunEndpoints();
         app.MapEvidenceEndpoints(jsonOptions);
 
         // Paper trading cockpit endpoints

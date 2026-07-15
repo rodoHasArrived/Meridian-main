@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 0.24
+# Meridian Design Document — Version 0.25
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-07-05
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI. Version 0.22 reconciles the design document with current roadmap and implementation-tracker evidence: W1-W5, `W5X-FREX-001`, and `W5X-FINOPS-001` are completed evidence-backed baselines, while `W6-BTSTUDIO-001` and `W7-LIVE-001` remain planned or gated productization work. Version 0.23 promotes the bounded `W7-LIVE-001` governance gate to complete while keeping broader live execution productization and live portfolio operations outside the completed baseline. Version 0.24 marks WPF product/UI work deferred while retaining existing WPF compatibility, validation, and maintenance support.
+**Reviewed:** 2026-07-13
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`. Version 0.20 clarifies the customer-neutral operational-finance architecture: fund operations remain first-class, but the core model starts from organization, entity, portfolio, account, book, period, operational event, evidence, approval, journal, report, and audit trail. Version 0.21 incorporates the LedgerGraph OS / Close, Data and Evidence Control Tower product-positioning concept supplied on 2026-06-22, emphasizing evidence-native operating-system positioning for private funds and family wealth, whole-balance-sheet contract modeling, Number Passports, shadow-mode adoption, and deterministic controls around AI. Version 0.22 reconciles the design document with current roadmap and implementation-tracker evidence: W1-W5, `W5X-FREX-001`, and `W5X-FINOPS-001` are completed evidence-backed baselines, while `W6-BTSTUDIO-001` and `W7-LIVE-001` remain planned or gated productization work. Version 0.23 promotes the bounded `W7-LIVE-001` governance gate to complete while keeping broader live execution productization and live portfolio operations outside the completed baseline. Version 0.24 marked WPF product/UI work deferred while retaining existing WPF compatibility, validation, and maintenance support. Version 0.25 reactivates the WPF desktop workstation as an active, co-equal product/UI lane alongside the browser workstation, with an immediate focus on web-UI parity over shared contracts and read models, tracked as `W8-WPF-PARITY-001` and detailed in `docs/development/wpf-web-ui-alignment-plan.md`. Version 0.25 supersedes every earlier "WPF product/UI work is deferred" or "WPF parity is deferred" statement in this document: those areas are now active parity work, not deferred lanes, while the shared-first rule (browser and WPF both consume `Meridian.Ui.Services`, `Meridian.Ui.Shared`, and `Meridian.Contracts` rather than forking product state) is retained unchanged.
 
 ## 1. Product Vision
 
@@ -18,11 +18,13 @@ the workflow is explicitly fund/private-capital specific.
 Meridian should not initially try to replace every external system. Instead, it should become the operational system of record for validated workflows, evidence, reconciliations, decisions, and certified reporting outputs. For ledger records specifically, Meridian is the source of all ledger truth; external accounting systems contribute read-only evidence and reconciliation signals unless an approved publishing workflow explicitly exports Meridian-owned entries.
 
 The current product scope is deliberately narrower than the full long-term domain catalog. Completed
-W1-W5, shared Financial Record Explorer, W5X Financial Operations control-center, and bounded W7
-live-readiness governance work establish the current evidence-backed baseline. Active product work
-should extend that proof layer deliberately through the browser workstation and shared services
-before expanding Backtesting Studio, live trading, WPF product/UI work, full payments, forecasting,
-enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
+W1-W5, shared Financial Record Explorer, Financial Operations control-center, statement connector,
+and bounded W7 live-readiness governance work establish the current evidence-backed baseline.
+Evidence Vault productization, statement reconciliation onboarding, and WPF workstation parity are
+active work. Other capabilities can proceed when current source, roadmap, or user direction supports
+them; the prior baselines remain evidence and sequencing anchors rather than development ceilings.
+The WPF desktop workstation is an active co-equal UI lane whose immediate focus is web-UI parity
+over shared contracts (`W8-WPF-PARITY-001`).
 
 ### Core Vision Statement
 
@@ -338,6 +340,10 @@ Current implementation claims in this section are grounded in:
 * `docs/source/data/source-modules.yml` and registered `src/**/README.md` files for active module responsibilities
 * `docs/architecture/module-map.md` and `docs/architecture/project-structure.md` for layer boundaries and supported UI surfaces
 
+Roadmap acceptance is bounded to the named capability. It does not by itself certify every
+deployment profile or production release; current readiness claims still require the implementation
+tracker, operator preflight, packaging/deployment evidence, and required GitHub Actions checks.
+
 ### Closed Baselines
 
 The roadmap registry marks W1-W5 as done, with green health and complete evidence posture:
@@ -354,23 +360,27 @@ The roadmap registry marks W1-W5 as done, with green health and complete evidenc
 | W5 | Multi-asset operational coverage proof lane | Security Master posture, provider evidence, ledger classification, reconciliation signals, and close-readiness blockers are exposed through shared browser and WPF read models. |
 | W5X | Shared financial record explorers | Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers are complete over shared contracts and read models, with endpoint, browser, and WPF proof for saved views, dense-table parity, inspector routing, and cross-explorer proof trails. |
 | W5X | Financial operations control center | Operations Continuity, close readiness, approval policy, close calendar, reconciliation break, checklist, audit-evidence, governed reopen, browser Operations Continuity, WPF Fund Ledger, and direct-lending evidence form the accepted Financial Operations control-center boundary. |
+| W5X | Statement connector library | Declarative CSV/OFX mapping profiles, IB Flex XML, OFX bank/investment, and Alpaca statement connectors normalize through one reconciliation seam with preview, confidence, drift detection, idempotency, and retained source evidence. |
 | W7 | Live-readiness governance | Paper-to-live promotion requires trusted-data review, paper-validation evidence, reconciliation evidence, approvals, accounting-record evidence, governed-reporting evidence, governance sign-off, exception-handling evidence, rollback or kill-switch evidence, audit-retention evidence, a live-promotion manual override, brokerage live-enablement checks, and clear execution controls before a live run can be created. |
 
-### Planned and Gated Baselines
+### Active and Planned Baselines
 
-The next roadmap baseline remains planned or gated, not complete:
+The registry distinguishes active productization from work that remains planned:
 
-| Wave | Planned Capability | Gate |
+| Wave | Capability | Current Status and Gate |
 | --- | --- | --- |
+| W5X | Evidence Vault productization | In progress. Productizes retained-document identity, intake, request/document lists, extracted-field review, object links, immutable manifests, and audit state as a reusable shared evidence layer. |
+| W5X | Statement reconciliation onboarding | In progress. Uses the completed connector library for browser-first import, preview, commit, retained Evidence Vault proof, reconciliation routing, and next actions. |
 | W6 | Backtesting studio evidence loop | Backtesting Studio remains planned; backtest results should link to strategy lineage and operator-facing acceptance criteria before paper promotion expansion. |
+| W8 | WPF desktop workstation parity | In progress. Closes browser-first screen gaps over shared contracts and read models while preserving desktop MVVM, validation, and release workflows. |
 
 ### Active Product Surfaces
 
-Meridian has one active operator UI lane and one retained deferred shell:
+Meridian has two active operator UI lanes over one shared seam:
 
 * `src/Meridian.Ui/dashboard/` is the browser workstation source, with built host-served assets under `src/Meridian.Ui/wwwroot/workstation/`.
-* `src/Meridian.Wpf/` product/UI work is deferred until explicitly reactivated; existing shell compatibility, tests, validation, and release workflows remain retained support surfaces.
-* `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Contracts/` provide shared endpoint, read-model, and DTO support so browser work and retained WPF compatibility do not invent separate product state.
+* `src/Meridian.Wpf/` is the active WPF desktop workstation. It projects the seven canonical workspaces over shared contracts and read models; its current lane focus is closing web-UI parity gaps (`W8-WPF-PARITY-001`, see `docs/development/wpf-web-ui-alignment-plan.md`). Existing shell compatibility, tests, validation, and release workflows continue.
+* `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Contracts/` provide shared endpoint, read-model, and DTO support so both the browser and WPF workstations consume the same product state instead of forking it.
 * `src/Meridian.Ledger/` and `src/Meridian.Reporting/` provide the current accounting and reporting implementation backbone: posted private-capital fund-event reconstruction, capital-account subledger impact, governed report-pack generation/delivery, report-writer grids, saved filters, formulas, and lineage.
 * Direct private-capital review routes under `/api/ledger/private-capital/...` are current operational-review surfaces for fund-event, capital-account, ledger-impact, approval, and report-output evidence. They are not a broad LP portal, payment execution, or mobile product lane.
 
@@ -409,7 +419,7 @@ Settings
 | Administration & Governance | Implemented evidence | Settings, policy, provider setup, audit trail, approval controls, and governed stage gates exist; Carta/FundStudio-style fund, book, period, report, and delivery admin scopes remain productization targets. |
 | Audit, Compliance & Regulatory | Implemented evidence | Audit events, evidence manifests, report provenance, approval history, and controlled close/report workflows exist. |
 | Workflow & Process Automation | Supported foundation | Shared workflow DTOs, route targets, operator queues, lifecycle transitions, and acceptance gates exist; no-code workflow design remains future work. |
-| Document & Knowledge Management | Design-led foundation | Evidence links and report artifacts exist; full document vault and knowledge-management features remain future work. |
+| Document & Knowledge Management | Active productization | Evidence Vault identity, intake, request/document lists, extracted-field review, object links, immutable manifests, audit state, and the statement-import evidence bridge exist; `W5X-EVIDENCE-001` and `W5X-STMT-ONBOARD-001` remain in progress. |
 | Reporting & Analytics Platform | Implemented evidence | Report-pack workflow, line provenance, trial-balance reporting, report freshness, and export evidence exist. |
 
 ### Current, Supported, and Planned Productization Matrix
@@ -423,8 +433,10 @@ not be presented as shipped.
 | Capability area | Implemented evidence | Supported foundation | Planned productization |
 | --- | --- | --- | --- |
 | Treasury and payments | Treasury-ledger principles, cash-oriented records, approval evidence, payment-intent language, and ledger linkage expectations. | Payment request, approval, expected cash movement, bank evidence, reconciliation, return/reversal evidence, and audit linkage can be modeled as operating records. | Native live payment execution, bank release automation, full bill pay, and payment processor orchestration. |
-| Private-capital close cockpit | W5 accounting records, close-lane blockers, fund-event reconstruction, capital-account subledger impact, ledger evidence, report-pack lineage, browser read models, and retained WPF compatibility. | NAV readiness, period lock/reopen posture, administrator tie-out, journal/reversal boundaries, reviewer ownership, and report readiness are defined as product objects. | Complete browser-first close cockpit with fund/book/period dashboards, close-state ladder, SLA ownership, statement release, amendment, restatement, and tax/K-1 support workflows; WPF product/UI parity is deferred. |
-| Financial Record Explorers | Shared accounting/reporting/portfolio evidence routes, ledger and report pack foundations, private-capital review endpoints, multi-asset operational coverage, and report-line provenance. | Explorer shell concepts, proof drawers, saved views, right-side record inspection, proof ribbons, audit timelines, and record graphs are productized design patterns. | Ledger Explorer, Portfolio Explorer, Security & Instrument Explorer, and Report-Line Provenance Explorer as complete browser-first product surfaces; WPF product/UI parity is deferred. |
+| Private-capital close cockpit | W5 accounting records, close-lane blockers, fund-event reconstruction, capital-account subledger impact, ledger evidence, report-pack lineage, and shared browser/WPF read models. | NAV readiness, period lock/reopen posture, administrator tie-out, journal/reversal boundaries, reviewer ownership, and report readiness are defined as product objects. | Complete the broader fund/book/period cockpit, close-state ladder, SLA ownership, statement release, amendment, restatement, and tax/K-1 support workflows; remaining WPF parity is tracked as `W8-WPF-PARITY-001`. |
+| Financial Record Explorers | Completed Ledger, Portfolio, Security & Instrument, and Report-Line Provenance explorers over shared contracts/read models, saved views, proof state, evidence links, and audit routing. | Explorer shells, proof drawers, saved views, right-side inspection, proof ribbons, audit timelines, and record graphs remain reusable product patterns. | Close only the workstation parity gaps outside the accepted W5X explorer boundary, tracked through `W8-WPF-PARITY-001`. |
+| Statement connectors | Completed profile-driven CSV/OFX, IB Flex XML, OFX bank/investment, and Alpaca connectors with shared preview, confidence, drift, idempotency, and reconciliation handoff. | The shared connector contract supports additional institution-specific profiles without duplicating reconciliation policy. | Add provider and format depth only with retained-source, drift, golden-file, and operator-acceptance evidence. |
+| Evidence Vault and statement onboarding | Retained-document identity, manifests, reviewer state, object links, audit primitives, and a statement-import evidence bridge exist. | Browser-first statement onboarding already returns evidence and reconciliation routes over shared DTO/API seams. | Complete `W5X-EVIDENCE-001` and `W5X-STMT-ONBOARD-001`; broader portal, collaboration, extraction, and WPF presentation remain separately gated. |
 | Stakeholder delivery | Governed report-pack readiness, provenance, export evidence, publication/restatement lifecycle, and report-pack delivery service foundations. | Recipient lists, entitlement scope, delivery evidence, package versioning, amendment reasons, and restatement lineage are defined evidence requirements. | Broad LP/client portal, self-service stakeholder workspace, and external collaboration workflows beyond governed package delivery. |
 | Risk | Pre-trade rules, live-readiness controls, exposure/portfolio evidence, breach-style signals, and operational blockers. | Daily PM review, breach acknowledgement, liquidity watchlist, stale marks, benchmark underperformance, valuation exceptions, and blocked report commentary. | Full enterprise risk engine, stress/scenario suite, independent risk cockpit, and cross-portfolio risk governance program. |
 | Forecasting | Strategy analytics, run comparison, reporting evidence, cash-plan snapshots, and design-level forecasting requirements. | Forecast inputs can be retained as evidence and linked to cash, budget, close, and report objects. | Full forecasting engine, scenario engine, autonomous planning workflows, and broad decision-support modeling. |
@@ -466,14 +478,14 @@ Connect Source
 * Deduplication and replay-safe import job handling
 * Lineage tracking from source payload to normalized record, reconciliation case, ledger evidence, report line, and export
 * Import replay, backfill, and historical reprocessing with prior-version preservation
-* Shared publication into storage, accounting, reporting, strategy, audit, browser workstation, and retained WPF compatibility surfaces
+* Shared publication into storage, accounting, reporting, strategy, audit, browser workstation, and active WPF workstation surfaces
 
 ### Operating Requirements
 
 * UI surfaces must consume shared contracts and read models for provider posture, validation state, and publication status instead of owning provider-trust logic.
 * Missing, stale, or unsupported source evidence must create review-required or blocked states rather than plausible-looking operational data.
-* New provider work should start from ProviderSdk contracts and Infrastructure adapters, then publish through shared services before adding browser presentation; WPF presentation work is deferred unless explicitly reactivated.
-* Channel expansion is active-scope work only when it strengthens the W1-W5 operational record baseline: data confidence, retained evidence, reconciliation, approvals, accounting records, multi-asset coverage, or governed reports.
+* New provider work should start from ProviderSdk contracts and Infrastructure adapters, then publish through shared services before adding browser presentation; WPF presentation then consumes those same shared services (parity tracked as `W8-WPF-PARITY-001`).
+* Channel expansion can proceed when current source, roadmap status, or user direction supports it; new channels must preserve retained evidence, validation, reconciliation, approval, and shared-contract controls appropriate to their scope.
 
 ---
 
@@ -519,9 +531,9 @@ Receive Activity
 `W5X-FINOPS-001` is the completed Financial Operations control-center milestone that turns
 reconciliation, exception management, accounting operations, close support, workflow control, and
 audit evidence into a shared Accounting/Reporting operator surface. The accepted boundary is the
-shared Operations Continuity and Fund Ledger read-model surface consumed by browser workstations;
-prior WPF proof remains historical support, and new WPF product/UI work is deferred. Later
-proof-layer expansions remain separate roadmap decisions.
+shared Operations Continuity and Fund Ledger read-model surface consumed by both workstations;
+WPF surfaces this through Fund Ledger today, with remaining Operations Continuity parity tracked as
+`W8-WPF-PARITY-001`. Later proof-layer expansions remain separate roadmap decisions.
 
 #### W5X-FINOPS Cockpit Design
 
@@ -564,13 +576,13 @@ account/book/period/fund/report context preserved:
 * **Report-Line Provenance Explorer** for report-line inputs, source records, reconciliations,
   journals, approvals, template version, delivery package, and restatement lineage.
 
-Browser experiences should own the active cockpit product lane while retained WPF compatibility
-continues to share the same read-model state where existing screens depend on it. The browser
-workstation should emphasize role-based triage, lightweight queue review, cross-workspace
+Both workstations deliver the cockpit product lane over the same read-model state. The browser
+workstation emphasizes role-based triage, lightweight queue review, cross-workspace
 drill-through, comments, assignments, and governed release decisions from
-`src/Meridian.Ui/dashboard/`. New WPF dense-workpaper product/UI work is deferred until explicitly
-reactivated. No client should own a divergent close state; browser work and retained WPF
-compatibility should consume shared Accounting/Reporting read models from
+`src/Meridian.Ui/dashboard/`, while the WPF desktop workstation delivers the dense-workpaper
+presentation of the same shared state (parity gaps tracked as `W8-WPF-PARITY-001`). No client should
+own a divergent close state; both the browser and WPF workstations consume shared
+Accounting/Reporting read models from
 `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` so operator actions, approval blockers,
 and release readiness remain consistent.
 
@@ -2549,11 +2561,11 @@ Configurability creates power, but also risk. Meridian should include guardrails
 
 ### 25.0 Marketplace Positioning and 2026 Competitor Lens
 
-Meridian is a W1-W5 proof-control platform for private-capital operations. It is not a close-only toolkit, not a generalized fund administrator, and not a replacement for every external operating domain.
+Meridian is an evidence-backed operational-finance and trading platform whose accepted baseline now extends through W1-W5, completed W5X explorer, Financial Operations, and statement-connector milestones, plus bounded W7 governance. It is not a close-only toolkit, not a generalized fund administrator, and not a replacement for every external operating domain.
 
 ### 25.0.1 Implemented vs TODO Register (Design-Document-Sourced)
 
-The canonical planning-tooling tracker is [Meridian Implementation TODO List](implementation-todo-list.md). Keep detailed implemented/TODO status changes in that file so the design document remains the product rationale rather than a duplicate execution tracker.
+The canonical execution and readiness tracker is [Implementation and Readiness Tracker](implementation-todo-list.md). Keep detailed implementation, evidence, and readiness status changes in that file so the design document remains the product rationale rather than a duplicate execution tracker.
 
 ## Executive Marketecture Deck (Fixed 6-Page Format)
 
@@ -2573,7 +2585,7 @@ Meridian positioning:
 * Proof-first over feature-first.
 * Evidence-first over dashboard-first.
 * Explainability over abstraction.
-* W1-W5 continuity over broad platform breadth.
+* Evidence continuity over unsupported breadth.
 
 Meridian must be the only operator environment where close readiness, exception state, and report impact are always traceable from source to output in one governed workflow.
 
@@ -2608,37 +2620,39 @@ Every operator action must be answerable by one of three questions:
 2. Who approved it?
 3. Why did it remain blocked?
 
-### Page 4 — W5X-FREX-001: Shared Financial Record Explorers
+### Page 4 — Accepted W5X-FREX-001 Baseline: Shared Financial Record Explorers
 
-| Feature to ship | Competitor evidence | Meridian proof requirement | W5X-FREX gate |
+| Accepted capability | Competitor evidence | Meridian proof requirement | W5X-FREX gate |
 | --- | --- | --- | --- |
-| Shared explorer contract | BlackLine/Cadency show standardized close-reconciliation modules that scale operator workflows. | Shared read models and state contracts for scope, filters, saved views, summary strip, proof ribbon, and evidence links. | No FREX UI can launch without the browser consuming the shared DTO model and contract schema; WPF parity is deferred. |
+| Shared explorer contract | BlackLine/Cadency show standardized close-reconciliation modules that scale operator workflows. | Shared read models and state contracts for scope, filters, saved views, summary strip, proof ribbon, and evidence links. | No FREX UI can launch without the browser consuming the shared DTO model and contract schema; WPF parity is active and tracked as `W8-WPF-PARITY-001`. |
 | Explorer-to-proof graph | BlackLine links modules with reporting/drill-down semantics. | `UsedIn`, `Impacts`, report-line lineage, reconciliation lineage, journal lineage per row. | A seeded close case must traverse Fund Event → Reconciliation → Journal → Report Line in one trace path. |
-| Multi-asset operator continuity | SS&C advertises broad instrument and valuation coverage across structures. | Multi-asset explorer behavior must preserve source conflict states, classification, and proof markers consistently. | The same user action produces identical proof behavior across at least 6 asset classes through the browser surface and retained compatibility clients. |
+| Multi-asset operator continuity | SS&C advertises broad instrument and valuation coverage across structures. | Multi-asset explorer behavior must preserve source conflict states, classification, and proof markers consistently. | The same user action produces identical proof behavior across at least 6 asset classes through the accepted browser and WPF scope. |
 | Deterministic exception context | Competitor close stacks emphasize task visibility and review load balancing. | Exception state must remain visible and auditable from explorer context without local overrides. | Any unresolved blocker linked to close state blocks completion state transition. |
 | Report impact safety | Vendor literature stresses reporting/compliance workflows and auditability. | Report usage links must require evidence packet IDs, versioned output linkage, and approval lineage. | Report impact tags cannot appear without complete report-line provenance. |
 
-### Page 5 — W5X-FINOPS-001: Financial Operations Control Center
+### Page 5 — Accepted W5X-FINOPS-001 Baseline: Financial Operations Control Center
 
-| Feature to ship | Competitor evidence | Meridian proof requirement | W5X-FINOPS gate |
+| Accepted capability | Competitor evidence | Meridian proof requirement | W5X-FINOPS gate |
 | --- | --- | --- | --- |
 | Unified operations queue | BlackLine and Cadency prioritize centralized close-task and exception orchestration. | FINOPS queue must show blocker type, owner, aging, severity, escalation state, and close impact. | Queue “done” is blocked if any exception remains unresolved for a period-bound close dependency. |
-| Close and reopen posture | Close-focused vendors highlight workflow and role-signoff discipline. | Period-lock and reopen evidence lifecycle must be shared by browser surfaces and retained WPF compatibility. | Close cannot move to “ready” until lock posture, evidence packet completeness, and approver chain are present. |
+| Close and reopen posture | Close-focused vendors highlight workflow and role-signoff discipline. | Period-lock and reopen evidence lifecycle must be shared by browser and active WPF workstation surfaces. | Close cannot move to “ready” until lock posture, evidence packet completeness, and approver chain are present. |
 | High-risk action governance | Competitors combine approvals with compliance controls in close and journal modules. | Policy service required for posting, reopening, override, reassignment, and exception dismissal. | Any high-risk action without approval evidence reverts with immutable denial record. |
 | Capital-event to reporting coupling | eFront and SS&C emphasize event and investor-cycle workflows. | FINOPS must surface capital-event impact on close and reporting dependencies in one operator lane. | One capital event, one valuation shock, and one report package must complete dependency validation. |
 ### Page 6 — Go/No-Go Checklist (Attached)
 
-Decision gate for W5X public-readiness:
+This checklist records the accepted W5X capability boundary. The roadmap registry now records
+`W5X-FREX-001` and `W5X-FINOPS-001` as done with complete evidence posture; it does not turn this
+bounded acceptance into blanket production certification.
 
 | Gate | Requirement | Evidence owner | Status |
 | --- | --- | --- | --- |
-| Go-01 Source-chain | Record lineage exists from source input to proof packet for close-critical entities | Shared contracts + record lineage tests | [ ] |
-| Go-02 Reconciliation rigor | Open breaks carry owner, blocker cause, and policy threshold visibility | Explorer + FINOPS | [ ] |
-| Go-03 Closure integrity | No synthetic completion; close-ready logic enforces lock/posting/reopen constraints | FINOPS state machine | [ ] |
-| Go-04 Approval safety | No high-risk action without approval chain and approver traceability | Policy + services | [ ] |
-| Go-05 Evidence retention | Every report-impact item retains package ID, source hash, and version lineage | Reporting + audit | [ ] |
-| Go-06 Cross-surface contract parity | Browser proof state uses shared contracts under the same filter/time window; WPF UI parity is deferred | Shared UI contracts | [ ] |
-| Go-07 Roadmap quality | W5X-FREX and W5X-FINOPS exit with complete evidence gates | PM + QA | [ ] |
+| Go-01 Source-chain | Record lineage exists from source input to proof packet for close-critical entities | Shared contracts + record lineage tests | [x] |
+| Go-02 Reconciliation rigor | Open breaks carry owner, blocker cause, and policy threshold visibility | Explorer + FINOPS | [x] |
+| Go-03 Closure integrity | No synthetic completion; close-ready logic enforces lock/posting/reopen constraints | FINOPS state machine | [x] |
+| Go-04 Approval safety | No high-risk action without approval chain and approver traceability | Policy + services | [x] |
+| Go-05 Evidence retention | Every report-impact item retains package ID, source hash, and version lineage | Reporting + audit | [x] |
+| Go-06 Cross-surface contract parity | Accepted browser and WPF proof state uses shared contracts under the same filter/time window; remaining screen parity is tracked as `W8-WPF-PARITY-001` | Shared UI contracts | [x] |
+| Go-07 Roadmap quality | W5X-FREX and W5X-FINOPS exit with complete evidence gates | PM + QA | [x] |
 
 Go decision is valid only when all seven checks are fully green and evidence artifacts are retained.
 
@@ -2684,8 +2698,9 @@ Example:
 
 ### 3. MVP Screen Inventory
 
-Defines the product screen inventory for the active browser workstation lane. WPF desktop product/UI
-work is deferred and retained only for existing compatibility, validation, and maintenance.
+Defines the shared product screen inventory delivered across both active operator UI lanes — the
+browser workstation and the reactivated WPF desktop workstation — over shared contracts. WPF web-UI
+parity for screens that shipped browser-first is tracked as `W8-WPF-PARITY-001`.
 
 Initial and active operator screens include:
 
@@ -2743,7 +2758,9 @@ v0.15 deepens the `Accounting`, `Reporting`, `Portfolio`, and `Data` workspaces 
 * document and evidence attachments
 * report-pack publication, export, and restatement provenance
 
-The package should preserve the shared-first UI direction: browser surfaces and retained WPF compatibility consume shared contracts, endpoint read models, and services rather than inventing separate accounting state.
+The package should preserve the shared-first UI direction: browser and active WPF workstation
+surfaces consume shared contracts, endpoint read models, and services rather than inventing
+separate accounting state.
 
 Backtesting Studio remains valuable, but it stays behind this accounting records package so that strategy, paper, and later live-readiness work can rely on stronger books, audit, and reporting evidence.
 
@@ -2806,8 +2823,8 @@ financial record types without relearning scope, proof, status, or action semant
   should not rename them or create explorer-specific substitutes.
 * **Shared states:** evidence missing, unreconciled, approved, blocked, stale, restated, report-used,
   and close-impacting. These states must use the same definitions, icons, tooltips, filtering
-  semantics, proof-ribbon summaries, and audit vocabulary across browser surfaces and retained WPF
-  compatibility.
+  semantics, proof-ribbon summaries, and audit vocabulary across browser and active WPF workstation
+  surfaces.
 * **Standard actions:** inspect proof, open full record, compare versions, export allowed view,
   attach evidence, assign exception, and request approval. Explorer-specific actions can extend this
   set, provided that the common actions remain visible and permission-aware.
@@ -2828,8 +2845,8 @@ when it clearly shows how a fund event, journal, position, instrument, cash flow
 evidence document, approval, and audit event are connected.
 
 The browser workstation should emphasize review, navigation, saved views, drill-through, and
-manager/controller flows. WPF dense-workpaper product/UI parity is deferred until explicitly
-reactivated. Browser surfaces and retained WPF compatibility must share filters, saved views,
+manager/controller flows. WPF delivers the dense-workpaper presentation of the same shared state,
+with parity tracked as `W8-WPF-PARITY-001`. Both workstations must share filters, saved views,
 status definitions, proof-ribbon states, record identifiers, audit events, evidence links, approval
 states, and read models. Presentation can differ; business state cannot.
 
@@ -2909,7 +2926,9 @@ The central v0.20 product object is the Operational Evidence Graph:
 | Delivery | recipient list, package version, timestamp, channel, delivery evidence |
 | Audit | immutable event trail, retained support package, request list, evidence manifest |
 
-The highest-value feature gaps should be prioritized in this order:
+The design targets below must be read with the live roadmap. In particular, Report-Line Provenance
+Explorer is complete under `W5X-FREX-001`, while Evidence Vault and statement onboarding are active
+under `W5X-EVIDENCE-001` and `W5X-STMT-ONBOARD-001`.
 
 | Tier | Product target | Product intent |
 | --- | --- | --- |
@@ -2917,14 +2936,14 @@ The highest-value feature gaps should be prioritized in this order:
 | 1 | Operational Event Command Spine | Make trades, cash movements, invoices, fees, subscriptions, redemptions, transfers, corporate actions, capital events, valuations, reconciliations, adjustments, approvals, close tasks, and fund-event specializations the universal operating spine. |
 | 1 | Capital Account Workbench | Treat capital accounts as governed ledger projections with investor-level evidence, allocation rules, statements, restatements, and audit support. |
 | 1 | Private-Capital Close Cockpit | Connect data receipt, reconciliation, journals, capital accounts, NAV support, valuation evidence, reporting, delivery, and period locks. |
-| 1 | Evidence Vault with Request Lists | Turn document intake and extraction into close, tax, audit, and reporting support packages with frozen manifests. |
+| 1 | Evidence Vault with Request Lists | Active productization: complete the governed evidence layer and statement-onboarding acceptance path before broader portal or collaboration expansion. |
 | 2 | Shadow NAV and Admin Tie-Out Workbench | Explain administrator-versus-Meridian differences through source records, evidence, reviewer state, ledger impact, close effect, and report effect. |
 | 2 | Certified Operational Data Marts | Publish certified cash, positions, transactions, journal entries, capital accounts, operational events, fund events, valuations, trial balance, report lines, and evidence indexes with row-level lineage. |
 | 2 | SLA-Driven Exception Operations | Make each break operational by showing owner, SLA, materiality, root cause, supporting evidence, approval state, and blocked outputs. |
 | 2 | Payment Intent and Cash Evidence Layer | Capture payment requests, approval chains, expected cash movement, bank confirmations, return/reversal evidence, ledger intent, reconciliation, and report linkage before live payment execution. |
 | 2 | Scoped Access Assignment Console | Govern authority by role, permission, scope kind, scope ID, approval limit, segregation-of-duties rule, effective date, version, revocation evidence, and audit event. |
 | 3 | Management Company Administration Lite | Support expense allocation, intercompany balances, management fees, bank/card evidence, budget snapshots, cash-plan snapshots, and reimbursements without becoming full ERP. |
-| 3 | Report-Line Provenance Explorer | Let operators drill from a report number to source records, reconciliations, journals, approvals, delivery history, and restatements. |
+| 3 | Report-Line Provenance Explorer | Completed W5X baseline: preserve and deepen drill-through from a report number to source records, reconciliations, journals, approvals, delivery history, and restatements. |
 | 3 | Reviewed Automation Assistant | Use AI only for extraction, suggested matches, variance explanations, duplicate detection, journal-template drafts, evidence summaries, missing-support flags, report commentary drafts, and audit request lists. |
 | 3 | Hybrid Tenant Profiles | Serve fund administrators, private fund CFOs, RIAs, family offices, asset owners, corporate treasury teams, wealth platforms, administrators, auditors, and insurance investment accounting teams through one core model with profile-specific emphasis. |
 
@@ -3113,7 +3132,8 @@ Current repository evidence already covers:
 * Accounting record summaries linking source data, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage
 * Multi-asset operational coverage with provider evidence, ledger classification, reconciliation signals, and close blockers
 * Shared financial record explorers for ledger records, portfolio holdings and transactions, Security Master instruments, and report-line provenance over common contracts, saved views, proof ribbons, proof panels, record graphs, evidence links, approval state, reconciliation state, report usage, and audit timelines
-* Browser workstation read models for operator workflows plus retained WPF compatibility where existing screens depend on them
+* Browser and active WPF workstation read models over shared contracts, with remaining desktop screen parity tracked as `W8-WPF-PARITY-001`
+* Completed statement connectors plus active Evidence Vault and browser-first statement-onboarding evidence routes
 * Shared manual journal entry workbench projection of retained private-capital fund events and capital-account activity from treasury-ledger context, plus a first-class private-capital activity review endpoint for reporting and audit consumers
 
 ### Remaining Expansion Work
@@ -3125,7 +3145,6 @@ The baseline does not yet imply completion of:
 * Full forecasting engine
 * Full enterprise risk engine
 * Follow-on proof-layer expansion beyond the completed W5X Financial Operations control-center boundary
-* Follow-on multi-asset reference-data workbench completion inside the existing Security Master detail/passport flow
 * Complex capital structure modeling
 * Full client portal
 * Full no-code workflow designer

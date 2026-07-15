@@ -82,6 +82,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Attribution", route: WORKSTATION_ROUTE_CATALOG.portfolioAttribution },
     { label: "Asset detail", route: WORKSTATION_ROUTE_CATALOG.portfolioAssetDetail },
     { label: "Brokerage sync", route: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync },
+    { label: "Cash ladder", route: WORKSTATION_ROUTE_CATALOG.portfolioCashLadder },
     { label: "Family office", route: WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice }
   ],
   accounting: [
@@ -91,13 +92,14 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
     { label: "Trial Balance", route: WORKSTATION_ROUTE_CATALOG.accountingTrialBalance },
     { label: "Adjustments", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries },
-    { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation },
+    { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, match: "exact" },
+    { label: "External GL", route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation },
     { label: "Import statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport },
     { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
-    { label: "Data Health", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
+    { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
     { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.accountingEvidence },
-    { label: "Reports", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
+    { label: "Configure", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
   ],
   reporting: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.reporting, match: "exact" },
@@ -120,19 +122,24 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
   ],
   data: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, match: "exact" },
+    { label: "Import data", route: WORKSTATION_ROUTE_CATALOG.dataImport },
     { label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders },
     { label: "Watchlist", route: WORKSTATION_ROUTE_CATALOG.dataWatchlist },
     { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
     { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts },
     { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.dataEvidence },
-    { label: "Backfill queues", route: WORKSTATION_ROUTE_CATALOG.dataBackfills }
+    { label: "Ingestion operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations },
+    { label: "Storage assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance },
+    { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports },
+    { label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery }
   ],
   settings: [
-    { label: "Profile", route: WORKSTATION_ROUTE_CATALOG.settings, match: "exact" },
-    { label: "Provider Connections", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
-    { label: "Accounting Systems", route: WORKSTATION_ROUTE_CATALOG.settingsIntegrations },
-    { label: "Data Providers", route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup },
-    { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnosticEndpoints }
+    { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.settings, match: "exact" },
+    { label: "Preferences", route: WORKSTATION_ROUTE_CATALOG.settingsPreferences },
+    { label: "Access", route: WORKSTATION_ROUTE_CATALOG.settingsAccess },
+    { label: "Provider Connections", route: WORKSTATION_ROUTE_CATALOG.settingsProviders },
+    { label: "Accounting Systems", route: WORKSTATION_ROUTE_CATALOG.settingsAccountingSystems },
+    { label: "Diagnostics", route: WORKSTATION_ROUTE_CATALOG.settingsDiagnostics }
   ]
 };
 
@@ -275,7 +282,7 @@ function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
     case "reporting":
       return "Report pack, evidence, and export canvases.";
     case "data":
-      return "Provider, watchlist, quote, alert, and backfill folders.";
+      return "Provider, ingestion, storage assurance, quote, and evidence folders.";
     case "strategy":
       return "Designer, lab, promotion, and projection contexts.";
     case "accounting":
@@ -283,7 +290,7 @@ function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
     case "trading":
       return "Orders, positions, risk, and readiness controls.";
     case "settings":
-      return "Profile, provider connections, accounting systems, data providers, diagnostics, and feature coverage.";
+      return "Preferences, access, provider connections, accounting systems, and diagnostics.";
     default:
       return "Workspace routes.";
   }

@@ -18,7 +18,25 @@ public sealed record AutomatedJournalDraftIntakeRequest(
     string? PeriodId = null,
     string? EntityId = null,
     string? TenantId = null,
-    string? CompanyId = null);
+    string? CompanyId = null,
+    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null);
+
+/// <summary>
+/// Batch of prebuilt automated journal drafts (for example period-close closing entries,
+/// whose lines come from a projection rather than a single economic event) to admit into
+/// the manual journal workbench queue for the named fund profile.
+/// </summary>
+public sealed record AutomatedJournalPreparedDraftIntakeRequest(
+    string FundProfileId,
+    string Currency,
+    IReadOnlyList<AutomatedJournalDraft> Drafts,
+    string Actor,
+    Guid? LedgerBookId = null,
+    string? PeriodId = null,
+    string? EntityId = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null);
 
 /// <summary>
 /// One event the intake did not turn into a new draft, with the reason it was skipped.
@@ -70,28 +88,17 @@ public sealed class AutomatedJournalDraftIntakeService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.FundProfileId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Currency);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Actor);
         if (request.Events.Count == 0)
             throw new ArgumentException("At least one automated journal event is required.", nameof(request));
 
-        var workspace = await _configurationService
-            .GetWorkspaceAsync(request.FundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId)
-            .ConfigureAwait(false);
-        var chartLookup = ChartAccountLookup.Build(workspace.ChartOfAccounts);
-
-        var created = new List<ManualJournalEntryDraftDto>();
+        var drafts = new List<AutomatedJournalDraft>(request.Events.Count);
         var skipped = new List<AutomatedJournalDraftIntakeSkip>();
 
         foreach (var journalEvent in request.Events)
         {
-            ct.ThrowIfCancellationRequested();
-
-            AutomatedJournalDraft draft;
             try
             {
-                draft = AutomatedJournalDraftProjector.Project(journalEvent);
+                drafts.Add(AutomatedJournalDraftProjector.Project(journalEvent));
             }
             catch (Exception ex) when (ex is ArgumentException or ArgumentOutOfRangeException)
             {
@@ -99,8 +106,60 @@ public sealed class AutomatedJournalDraftIntakeService
                     Guid.Empty,
                     journalEvent.IdempotencyKey ?? BuildFallbackIdempotencyKey(journalEvent),
                     $"Projection failed: {ex.Message}"));
-                continue;
             }
+        }
+
+        return await IntakeCoreAsync(
+            new AutomatedJournalPreparedDraftIntakeRequest(
+                request.FundProfileId,
+                request.Currency,
+                drafts,
+                request.Actor,
+                request.LedgerBookId,
+                request.PeriodId,
+                request.EntityId,
+                request.TenantId,
+                request.CompanyId,
+                request.EvidenceAssessments),
+            skipped,
+            ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Admits prebuilt drafts (for example period-close closing entries) into the workbench
+    /// queue with the same idempotent dedup, chart mapping, and human approve lifecycle as
+    /// event-projected drafts.
+    /// </summary>
+    public Task<AutomatedJournalDraftIntakeResult> IntakeDraftsAsync(
+        AutomatedJournalPreparedDraftIntakeRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Drafts.Count == 0)
+            throw new ArgumentException("At least one automated journal draft is required.", nameof(request));
+
+        return IntakeCoreAsync(request, [], ct);
+    }
+
+    private async Task<AutomatedJournalDraftIntakeResult> IntakeCoreAsync(
+        AutomatedJournalPreparedDraftIntakeRequest request,
+        List<AutomatedJournalDraftIntakeSkip> skipped,
+        CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.FundProfileId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Currency);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Actor);
+
+        var workspace = await _configurationService
+            .GetWorkspaceAsync(request.FundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId)
+            .ConfigureAwait(false);
+        var chartLookup = ChartAccountLookup.Build(workspace.ChartOfAccounts);
+
+        var created = new List<ManualJournalEntryDraftDto>();
+
+        foreach (var draft in request.Drafts)
+        {
+            ct.ThrowIfCancellationRequested();
 
             var idempotencyKey = draft.Event.IdempotencyKey ?? BuildFallbackIdempotencyKey(draft.Event);
             var journalEntryId = BuildDeterministicJournalEntryId(request.FundProfileId, idempotencyKey);
@@ -123,7 +182,18 @@ public sealed class AutomatedJournalDraftIntakeService
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
-            var dto = BuildDraftDto(request, draft, journalEntryId, idempotencyKey, evidenceLinks, chartLookup);
+            var evidenceAssessment = request.EvidenceAssessments is not null &&
+                                     request.EvidenceAssessments.TryGetValue(idempotencyKey, out var retainedAssessment)
+                ? retainedAssessment
+                : null;
+            var dto = BuildDraftDto(
+                request,
+                draft,
+                journalEntryId,
+                idempotencyKey,
+                evidenceLinks,
+                chartLookup,
+                evidenceAssessment);
             var saved = await _workbench.SaveDraftAsync(
                 new SaveManualJournalEntryDraftRequest(
                     dto,
@@ -141,12 +211,13 @@ public sealed class AutomatedJournalDraftIntakeService
     }
 
     private static ManualJournalEntryDraftDto BuildDraftDto(
-        AutomatedJournalDraftIntakeRequest request,
+        AutomatedJournalPreparedDraftIntakeRequest request,
         AutomatedJournalDraft draft,
         Guid journalEntryId,
         string idempotencyKey,
         IReadOnlyList<string> evidenceLinks,
-        ChartAccountLookup chartLookup)
+        ChartAccountLookup chartLookup,
+        AutomatedJournalEvidenceAssessmentDto? evidenceAssessment)
     {
         var effectiveDate = draft.Metadata.EffectiveDate
             ?? DateOnly.FromDateTime(draft.Event.Timestamp.UtcDateTime);
@@ -165,7 +236,10 @@ public sealed class AutomatedJournalDraftIntakeService
                     SecurityId: line.account.Symbol is not null ? draft.Event.SecurityId : null,
                     SecurityDisplayName: line.account.Symbol,
                     Description: line.account.ToString(),
-                    EvidenceLink: firstEvidenceLink);
+                    EvidenceLink: firstEvidenceLink,
+                    Dimensions: LedgerDimensionMapper.ToDto(line.dimensions),
+                    LedgerAccountSymbol: line.account.Symbol,
+                    LedgerAccountFinancialAccountId: line.account.FinancialAccountId);
             })
             .ToArray();
 
@@ -191,7 +265,8 @@ public sealed class AutomatedJournalDraftIntakeService
             EntryType: MapEntryType(draft.Event.Kind),
             TreasuryContext: new TreasuryLedgerContextDto(
                 EffectiveDate: effectiveDate,
-                IdempotencyKey: idempotencyKey));
+                IdempotencyKey: idempotencyKey),
+            AutomationEvidenceAssessment: evidenceAssessment);
     }
 
     private static ManualJournalEntryTypeDto MapEntryType(AutomatedJournalEventKind kind)
@@ -203,6 +278,9 @@ public sealed class AutomatedJournalDraftIntakeService
             AutomatedJournalEventKind.CommissionAccrued or
             AutomatedJournalEventKind.WithholdingTaxAccrued => ManualJournalEntryTypeDto.AccruedExpense,
             AutomatedJournalEventKind.CorporateActionExpense => ManualJournalEntryTypeDto.Expense,
+            // Closing entries carry a dedicated type so the workbench posts them as the sanctioned
+            // ClosingEntry kind into the (closed) period being finalized.
+            AutomatedJournalEventKind.PeriodCloseClosingEntries => ManualJournalEntryTypeDto.ClosingEntry,
             _ => ManualJournalEntryTypeDto.General
         };
 

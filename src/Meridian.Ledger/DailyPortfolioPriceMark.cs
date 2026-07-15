@@ -1,6 +1,17 @@
 namespace Meridian.Ledger;
 
 /// <summary>
+/// Confidence assigned to a retained portfolio closing mark after provider and
+/// freshness checks. Operational valuation workflows reject marks below policy.
+/// </summary>
+public enum DailyPortfolioPriceConfidence : byte
+{
+    Low = 0,
+    Medium = 1,
+    High = 2
+}
+
+/// <summary>
 /// Daily mark and evidence for one valued portfolio position.
 /// </summary>
 public sealed record DailyPortfolioPriceMark
@@ -13,7 +24,9 @@ public sealed record DailyPortfolioPriceMark
         string PriceSource,
         string EvidenceReference,
         string? FinancialAccountId = null,
-        string? InstrumentType = null)
+        string? InstrumentType = null,
+        FairValueLevel FairValueLevel = FairValueLevel.Unclassified,
+        bool IsStalePriced = false)
     {
         if (string.IsNullOrWhiteSpace(Symbol))
             throw new ArgumentException("Symbol must not be null or whitespace.", nameof(Symbol));
@@ -36,6 +49,8 @@ public sealed record DailyPortfolioPriceMark
         this.EvidenceReference = EvidenceReference.Trim();
         this.FinancialAccountId = string.IsNullOrWhiteSpace(FinancialAccountId) ? null : FinancialAccountId.Trim();
         this.InstrumentType = string.IsNullOrWhiteSpace(InstrumentType) ? null : InstrumentType.Trim();
+        this.FairValueLevel = FairValueLevel;
+        this.IsStalePriced = IsStalePriced;
     }
 
     public string Symbol { get; }
@@ -53,4 +68,10 @@ public sealed record DailyPortfolioPriceMark
     public string? FinancialAccountId { get; }
 
     public string? InstrumentType { get; }
+
+    /// <summary>ASC 820 fair-value classification of the mark price.</summary>
+    public FairValueLevel FairValueLevel { get; }
+
+    /// <summary>True when the mark price was older than the valuation policy permitted but retained per policy.</summary>
+    public bool IsStalePriced { get; }
 }

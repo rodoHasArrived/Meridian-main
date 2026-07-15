@@ -517,6 +517,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
             }
             catch (ObjectDisposedException)
             {
+                // The previous token source was already disposed; nothing to cancel.
+                _loggingService.LogDebug(
+                    "Ignored cancel on already-disposed token source.",
+                    ("view", GetType().Name));
             }
 
             previousLoadCts.Dispose();
@@ -542,7 +546,13 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
                 });
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-load; benign.
+            _loggingService.LogDebug(
+                "Symbols page watchlist load cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load watchlists", ex);
@@ -1135,6 +1145,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(SymbolsPageViewModel)));
         }
 
         cts.Dispose();
@@ -1151,6 +1165,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(SymbolsPageViewModel)));
         }
     }
 

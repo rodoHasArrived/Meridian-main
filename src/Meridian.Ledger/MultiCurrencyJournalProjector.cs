@@ -1,3 +1,5 @@
+using static Meridian.Contracts.Ledger.LedgerCurrencyRounding;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -31,7 +33,4 @@ public static class MultiCurrencyJournalProjector
 
         return projection;
     }
-
-    private static decimal RoundCurrency(decimal amount)
-        => decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
 }

@@ -4,7 +4,7 @@ import { StrategyScreen } from "@/screens/strategy-screen";
 import { buildPlotToolState } from "@/screens/strategy-screen.view-model";
 import * as api from "@/lib/api";
 import { afterEach } from "vitest";
-import { renderWithRouter } from "@/test/render";
+import { renderWithRouter as renderRouter } from "@/test/render";
 import type { PromotionEvaluationResult, PromotionRecord, StrategyWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
 
 const twoRuns: StrategyWorkspaceResponse = {
@@ -60,6 +60,13 @@ const twoRunsWithPlotTool: StrategyWorkspaceResponse = {
     activeView: "workspace"
   }
 };
+
+function renderWithRouter(
+  ui: Parameters<typeof renderRouter>[0],
+  options?: Parameters<typeof renderRouter>[1]
+) {
+  return renderRouter(ui, options ?? { initialEntries: ["/strategy/promotions"] });
+}
 
 describe("StrategyScreen", () => {
   afterEach(() => {
@@ -119,16 +126,21 @@ describe("StrategyScreen", () => {
   });
 
   it("renders an honest PlotTool not-connected state when no payload is available", () => {
-    renderWithRouter(<StrategyScreen data={twoRuns} />);
+    renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/lab"] });
 
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getAllByText("PlotTool catalog not connected").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "PlotTool scatter observations unavailable" }))
+      .toHaveTextContent("No PlotTool observations yet");
+    expect(screen.getByRole("link", { name: "Review provider connections for PlotTool" }))
+      .toHaveAttribute("href", "/settings/providers");
     expect(screen.queryByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).not.toBeInTheDocument();
   });
 
-  it("renders the payload-backed PlotTool workstation view inside the Strategy lane", () => {
-    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />);
+  it("renders the payload-backed PlotTool workstation view with a table alternative", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />, { initialEntries: ["/strategy/lab"] });
 
     expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
@@ -139,11 +151,15 @@ describe("StrategyScreen", () => {
     expect(screen.getByLabelText("PlotTool chart legend")).toBeInTheDocument();
     expect(screen.getAllByText("Current marker").length).toBeGreaterThan(0);
     expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
+    expect(screen.getByText("View observation table").closest("details")).not.toHaveAttribute("open");
+    await user.click(screen.getByText("View observation table"));
+    expect(screen.getByText("View observation table").closest("details")).toHaveAttribute("open");
+    expect(screen.getByRole("table", { name: "PlotTool scatter observations" })).toBeInTheDocument();
   });
 
   it("links PlotTool notebook rows to the selected study detail panel", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />);
+    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />, { initialEntries: ["/strategy/lab"] });
 
     const firstStudy = screen.getByRole("row", { name: "Inspect Mean Reversion FX PlotTool study detail" });
     const secondStudy = screen.getByRole("row", { name: "Inspect Index Momentum PlotTool study detail" });
@@ -169,7 +185,7 @@ describe("StrategyScreen", () => {
 
   it("switches to the PlotTool statistics view", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />);
+    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />, { initialEntries: ["/strategy/lab"] });
 
     await user.click(screen.getByRole("tab", { name: "Statistics" }));
 
@@ -186,7 +202,7 @@ describe("StrategyScreen", () => {
 
   it("switches PlotTool tabs from keyboard navigation", async () => {
     const user = userEvent.setup();
-    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />);
+    renderWithRouter(<StrategyScreen data={twoRunsWithPlotTool} />, { initialEntries: ["/strategy/lab"] });
 
     screen.getByRole("tab", { name: "Workstation" }).focus();
     await user.keyboard("{ArrowRight}");
@@ -841,6 +857,53 @@ describe("StrategyScreen", () => {
     expect(screen.queryByText("Eligible for paper trading")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Initial cash ($)")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /promote to paper/i })).toBeDisabled();
+  });
+});
+
+describe("StrategyScreen route views", () => {
+  it("renders the overview route as a concise task hub", () => {
+    renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy"] });
+
+    const tablist = screen.getByRole("tablist", { name: "Strategy routes" });
+    expect(tablist).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Overview", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Strategy overview" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Choose the next strategy task" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Designer" })).toHaveAttribute("href", "/strategy/designer");
+    expect(screen.getByRole("link", { name: "Open Strategy Lab" })).toHaveAttribute("href", "/strategy/lab");
+    expect(screen.getByRole("link", { name: "Open Promotions" })).toHaveAttribute("href", "/strategy/promotions");
+    expect(screen.getByText("PlotTool analytics")).toBeInTheDocument();
+    expect(screen.getByText("Run history remains available, but PlotTool analytics needs a governed provider connection."))
+      .toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Review provider connections for PlotTool analytics" }))
+      .toHaveAttribute("href", "/settings/providers");
+    expect(screen.queryByText("PlotTool workstation")).not.toBeInTheDocument();
+    expect(screen.queryByText("Strategy run library")).not.toBeInTheDocument();
+  });
+
+  it("scopes /strategy/promotions to the run library and keeps raw run IDs in technical details", () => {
+    renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/promotions"] });
+
+    expect(screen.getByRole("tab", { name: "Promotions", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Promotions" })).toBeInTheDocument();
+    expect(screen.getByText("Strategy run library")).toBeInTheDocument();
+    const runReferences = screen.getByText("Run references").closest("details");
+    expect(runReferences).not.toBeNull();
+    expect(runReferences).not.toHaveAttribute("open");
+    expect(runReferences).toHaveTextContent("Run ID");
+    expect(runReferences).toHaveTextContent("run-1");
+    expect(screen.getByRole("region", { name: "Selected strategy run detail for Mean Reversion FX" }))
+      .not.toHaveTextContent("Run ID");
+    expect(screen.queryByText("PlotTool workstation")).not.toBeInTheDocument();
+  });
+
+  it("scopes /strategy/lab to the PlotTool workstation", () => {
+    renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/lab"] });
+
+    expect(screen.getByRole("tab", { name: "Strategy Lab", selected: true })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Strategy Lab" })).toBeInTheDocument();
+    expect(screen.getByText("PlotTool workstation")).toBeInTheDocument();
+    expect(screen.queryByText("Strategy run library")).not.toBeInTheDocument();
   });
 });
 

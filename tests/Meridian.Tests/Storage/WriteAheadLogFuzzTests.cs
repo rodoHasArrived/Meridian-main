@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Storage.Archival;
+using Meridian.Tests.Infrastructure;
 using Xunit;
 
 namespace Meridian.Tests.Storage;
@@ -9,31 +10,12 @@ namespace Meridian.Tests.Storage;
 /// byte-level corruption to verify that WAL recovery is robust in the face of
 /// crash scenarios. Covers the scenario described in the improvement brainstorm:
 /// "if the process crashes mid-write, the WAL file may contain a truncated JSON line."
+/// Scope is limited to generating and recovering from raw byte-level damage; well-formed-log
+/// behavior lives in <see cref="WriteAheadLogTests"/> and the configured corruption-response modes
+/// live in <see cref="WriteAheadLogCorruptionModeTests"/>.
 /// </summary>
-public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
+public sealed class WriteAheadLogFuzzTests : TempDirectoryAsyncTestBase
 {
-    private readonly string _walDir;
-
-    public WriteAheadLogFuzzTests()
-    {
-        _walDir = Path.Combine(Path.GetTempPath(), $"mdc_wal_fuzz_{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_walDir);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            try
-            {
-                if (Directory.Exists(_walDir))
-                    Directory.Delete(_walDir, recursive: true);
-                return;
-            }
-            catch (IOException) when (attempt < 4) { await Task.Delay(20); }
-            catch (UnauthorizedAccessException) when (attempt < 4) { await Task.Delay(20); }
-        }
-    }
 
     // ── Partial-write (truncated last line) ──────────────────────────────
 
@@ -46,7 +28,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
         await WriteValidRecordsAndTruncateLastAsync(validCount);
 
         // Act
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -66,7 +48,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
         await WriteValidRecordsAndTruncateLastAsync(validRecords: 2);
 
         // Act
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -87,7 +69,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
         await WriteValidRecordsAndTruncateLastAsync(validRecords: 1);
 
         // Act
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -111,7 +93,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
         await WriteValidRecordsThenInjectGarbageAsync(beforeCount, garbageLines: 3);
 
         // Act
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -130,7 +112,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
         await WriteValidRecordsThenInjectGarbageAsync(validRecords: 2, garbageLines: 2);
 
         long detectedCount = 0;
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Alert
@@ -151,11 +133,11 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
     public async Task Recovery_EmptyWalFile_RecoverySucceedsWithZeroRecords()
     {
         // Simulate a crash immediately after file creation before any data was written.
-        var emptyWalPath = Path.Combine(_walDir, "20260101T000000Z_001.wal");
+        var emptyWalPath = Path.Combine(TestDataRoot, "20260101T000000Z_001.wal");
         await File.WriteAllTextAsync(emptyWalPath, string.Empty);
 
         // Act
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -173,11 +155,11 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
     public async Task Recovery_HeaderOnlyWalFile_RecoverySucceedsWithZeroRecords()
     {
         // Simulate a crash right after writing the WAL header.
-        var walPath = Path.Combine(_walDir, "20260101T000000Z_001.wal");
+        var walPath = Path.Combine(TestDataRoot, "20260101T000000Z_001.wal");
         await File.WriteAllTextAsync(walPath, $"MDCWAL01|1|{DateTime.UtcNow:O}\n");
 
         // Act
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -187,6 +169,29 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
         // Assert
         await act.Should().NotThrowAsync();
         wal.LastRecoveryEventCount.Should().Be(0);
+    }
+
+    // ── Non-empty WAL file with an invalid header ─────────────────────────
+
+    [Fact]
+    public async Task Recovery_InvalidHeaderWalFile_ThrowsInsteadOfScanningAsEmpty()
+    {
+        // A non-empty file with the wrong magic may still hold records; scanning it as
+        // empty would let TruncateAsync delete it and recovery skip its contents.
+        var walPath = Path.Combine(TestDataRoot, "20260101T000000Z_001.wal");
+        await File.WriteAllTextAsync(
+            walPath,
+            "NOTAWAL|garbage\n1|2026-01-01T00:00:00Z|trade|deadbeef|{\"p\":1}\n");
+
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            CorruptionMode = WalCorruptionMode.Skip
+        });
+        var act = async () => await wal.InitializeAsync();
+
+        await act.Should().ThrowAsync<InvalidDataException>(
+            "an unreadable header must halt recovery instead of masquerading as an empty log");
     }
 
     // ── RepairAsync with partial writes ──────────────────────────────────
@@ -199,7 +204,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
         await WriteValidRecordsAndTruncateLastAsync(validCount);
 
         // Act
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -228,7 +233,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
         await RotateWalAsync();
 
         // Act
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Skip
@@ -253,7 +258,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
     /// </summary>
     private async Task WriteValidRecordsAndTruncateLastAsync(int validRecords)
     {
-        await using (var seed = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync }))
+        await using (var seed = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync }))
         {
             await seed.InitializeAsync();
             // Write one extra record so that truncation of the last record leaves exactly
@@ -264,7 +269,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
             // Do NOT commit so the records survive as uncommitted (recoverable) data.
         }
 
-        var walFile = Directory.GetFiles(_walDir, "*.wal")
+        var walFile = Directory.GetFiles(TestDataRoot, "*.wal")
             .OrderBy(f => f)
             .Last();
 
@@ -287,7 +292,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
     /// </summary>
     private async Task WriteValidRecordsThenInjectGarbageAsync(int validRecords, int garbageLines)
     {
-        await using (var seed = new WriteAheadLog(_walDir, new WalOptions { SyncMode = WalSyncMode.NoSync }))
+        await using (var seed = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync }))
         {
             await seed.InitializeAsync();
             for (int i = 0; i < validRecords; i++)
@@ -295,7 +300,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
             await seed.FlushAsync();
         }
 
-        var walFile = Directory.GetFiles(_walDir, "*.wal")
+        var walFile = Directory.GetFiles(TestDataRoot, "*.wal")
             .OrderBy(f => f)
             .Last();
 
@@ -312,7 +317,7 @@ public sealed class WriteAheadLogFuzzTests : IAsyncDisposable
     {
         // Open with tiny max file size so any new append triggers rotation,
         // making the seed file a "closed" file eligible for RepairAsync.
-        await using var wal = new WriteAheadLog(_walDir, new WalOptions
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             MaxWalFileSizeBytes = 1 // force immediate rotation on first append

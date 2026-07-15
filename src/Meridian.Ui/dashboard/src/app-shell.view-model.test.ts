@@ -36,6 +36,16 @@ const sessionPayload: AppShellWorkspacePayload = {
 };
 
 describe("app shell view model", () => {
+  it("keeps the skip link outside screenshot bounds until keyboard focus", () => {
+    const shellStyles = readFileSync(resolve(process.cwd(), "src/styles/app-shell.css"), "utf8");
+    const skipLinkRule = shellStyles.match(/\.skip-link\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+    const focusedSkipLinkRule = shellStyles.match(/\.skip-link:focus\s*\{(?<rule>[\s\S]*?)\}/)?.groups?.rule ?? "";
+
+    expect(skipLinkRule).toContain("left: -100vw");
+    expect(skipLinkRule).not.toContain("transform:");
+    expect(focusedSkipLinkRule).toContain("left: 0.75rem");
+  });
+
   it("keeps route-owned continuity builders outside shell internals", () => {
     const source = readFileSync(resolve(process.cwd(), "src/app-shell.view-model.ts"), "utf8");
     const continuitySource = readFileSync(resolve(process.cwd(), "src/app-shell.workflow-continuity.ts"), "utf8");
@@ -561,7 +571,7 @@ describe("app shell view model", () => {
     ]);
     expect(state.workflowContinuity.primaryOperatorFlowSteps.map((step) => [step.id, step.label, step.active, step.href])).toEqual([
       ["import", "Import", false, "/data/providers?symbol=AAPL"],
-      ["validate", "Validate", true, "/data/backfills?symbol=AAPL"],
+      ["validate", "Validate", true, "/data/operations?symbol=AAPL"],
       ["reconcile", "Reconcile", false, "/accounting/reconciliation?symbol=AAPL"],
       ["investigate", "Investigate", false, "/portfolio?symbol=AAPL"],
       ["approve", "Approve", false, "/accounting/approvals?symbol=AAPL"],
@@ -625,14 +635,14 @@ describe("app shell view model", () => {
 
     expect(state.workflowContinuity).toMatchObject({
       contextValue: "Portfolio / MSFT",
-      clearSubjectAriaLabel: "Clear operating scope: Subject MSFT, Account fund-1, Run run-9, Provider Alpaca, Window 2026-05-01 to 2026-05-15"
+      clearSubjectAriaLabel: "Clear operating scope: Subject MSFT, Account fund-1, Run Selected run, Provider Alpaca, Window 2026-05-01 to 2026-05-15"
     });
     expect(state.workflowContinuity.operatingScope.summary)
-      .toBe("Subject: MSFT / Account: fund-1 / Run: run-9 / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15");
+      .toBe("Subject: MSFT / Account: fund-1 / Run: Selected run / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15");
     expect(state.workflowContinuity.operatingScope.items.map((item) => [item.label, item.value])).toEqual([
       ["Subject", "MSFT"],
       ["Account", "fund-1"],
-      ["Run", "run-9"],
+      ["Run", "Selected run"],
       ["Provider", "Alpaca"],
       ["Window", "2026-05-01 to 2026-05-15"]
     ]);
@@ -643,6 +653,36 @@ describe("app shell view model", () => {
       ["reconciliation", "/accounting/reconciliation?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"],
       ["report-packs", "/reporting/report-packs?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
     ]);
+  });
+
+  it("uses workspace-specific run labels without exposing raw run identity", () => {
+    const accountingState = buildAppShellViewState({
+      pathname: "/accounting/ledger",
+      search: "?runId=run-42",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+    const reportingState = buildAppShellViewState({
+      pathname: "/reporting/run-status",
+      search: "?runId=report-run-board-202605",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: sessionPayload
+    });
+
+    expect(accountingState.workflowContinuity.operatingScope).toMatchObject({
+      runId: "run-42",
+      summary: "Run: Selected ledger run"
+    });
+    expect(reportingState.workflowContinuity.operatingScope).toMatchObject({
+      runId: "report-run-board-202605",
+      summary: "Run: Selected report run"
+    });
+    expect(accountingState.workflowContinuity.operatingScope.summary).not.toContain("run-42");
+    expect(reportingState.workflowContinuity.operatingScope.summary).not.toContain("report-run-board-202605");
   });
 
 
@@ -1314,7 +1354,7 @@ describe("app shell view model", () => {
       .toBe("Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup.");
     expect(state.workflowContinuity.decisionBrief).toMatchObject({
       label: "Decision brief",
-      title: "Resolve Brokerage sync failed",
+      title: "Brokerage sync failed",
       summary: "Settings is the highest-priority loaded issue. 4 focus items across workspaces: 2 blocked and 2 review.",
       reasonLabel: "Why now",
       reason: "Account sync failed after the last provider heartbeat.",

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Configuration;
 
 namespace Meridian.Contracts.Api;
@@ -96,7 +97,7 @@ public record ProviderStatusResponse(
     string ProviderId,
     string Name,
     string ProviderType,
-    bool IsConnected,
+    bool? IsConnected,
     bool IsEnabled,
     int Priority,
     int ActiveSubscriptions,
@@ -111,7 +112,9 @@ public record ProviderStatusResponse(
     string? LastFailureKind = null,
     int? FailedSubscriptions = null,
     int? RecoveringSubscriptions = null,
-    DateTimeOffset? LastSubscriptionMessageAt = null);
+    DateTimeOffset? LastSubscriptionMessageAt = null,
+    string? ConnectionState = null,
+    bool DiagnosticsAvailable = false);
 
 /// <summary>Response containing detailed provider metrics.</summary>
 public record ProviderMetricsResponse(
@@ -198,6 +201,73 @@ public record SymbolMappingResponse(
     string? YahooSymbol,
     string? Name,
     string? Figi);
+
+/// <summary>
+/// Additive registry projection used by both workstations during canonical-symbol migration.
+/// </summary>
+public sealed record CanonicalSymbolRegistryResponse(
+    string RegistryVersion,
+    SymbolResolutionMode ResolutionMode,
+    bool CompareModeReturnsLegacy,
+    long TotalMismatchCount,
+    DateTimeOffset? LastMismatchAt,
+    IReadOnlyList<CanonicalSymbolResolutionMismatchResponse> RecentMismatches,
+    IReadOnlyList<CanonicalSymbolMigrationResponse> Migrations,
+    IReadOnlyList<CanonicalSymbolRegistryEntryResponse> Symbols);
+
+/// <summary>Canonical security identity with aliases, provider symbols, and provenance.</summary>
+public sealed record CanonicalSymbolRegistryEntryResponse(
+    Guid? SecurityId,
+    string CanonicalTicker,
+    string? DisplayName,
+    string AssetClass,
+    string? Exchange,
+    string? Currency,
+    CanonicalSymbolIdentifiersResponse Identifiers,
+    IReadOnlyList<CanonicalSymbolAliasResponse> Aliases,
+    IReadOnlyList<CanonicalProviderAliasResponse> ProviderAliases,
+    IReadOnlyList<string> ProvenanceSources,
+    bool HasRecentMismatch);
+
+/// <summary>Industry identifiers that can resolve to the same durable security identity.</summary>
+public sealed record CanonicalSymbolIdentifiersResponse(
+    string? Isin,
+    string? Figi,
+    string? CompositeFigi,
+    string? Cusip,
+    string? Sedol);
+
+/// <summary>Validity-dated alias with its source and optional provider scope.</summary>
+public sealed record CanonicalSymbolAliasResponse(
+    string Alias,
+    string? Source,
+    string? Provider,
+    DateTimeOffset? ValidFrom,
+    DateTimeOffset? ValidTo,
+    bool IsActive);
+
+/// <summary>Arbitrary provider-scoped symbol plus merge provenance.</summary>
+public sealed record CanonicalProviderAliasResponse(
+    string Provider,
+    string Symbol,
+    string Source,
+    bool IsOverride,
+    DateTimeOffset? UpdatedAt);
+
+/// <summary>Recent Legacy-versus-Canonical comparison disagreement.</summary>
+public sealed record CanonicalSymbolResolutionMismatchResponse(
+    string Input,
+    string FromProvider,
+    string ToProvider,
+    string? LegacyResult,
+    string? CanonicalResult,
+    Guid? SecurityId,
+    DateTimeOffset ObservedAt);
+
+/// <summary>Idempotent migration receipt proving a legacy source was imported.</summary>
+public sealed record CanonicalSymbolMigrationResponse(
+    string MigrationId,
+    string SourceFingerprint);
 
 /// <summary>Response for setting storage profiles.</summary>
 public sealed record StorageProfileResponse(

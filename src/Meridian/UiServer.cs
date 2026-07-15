@@ -65,6 +65,7 @@ public sealed class UiServer : IAsyncDisposable
     /// <param name="configPath">Path to the configuration file.</param>
     /// <param name="port">HTTP port to listen on.</param>
     /// <param name="lifecycle">Optional process lifecycle coordinator used by local shutdown endpoints.</param>
+    /// <param name="apiHostOptions">Optional pre-resolved host options; when omitted they are read from configuration.</param>
     public UiServer(
         string configPath,
         int port = 8080,
@@ -113,6 +114,10 @@ public sealed class UiServer : IAsyncDisposable
                         .AllowCredentials());
             });
         }
+
+        // ADR-019: declare the typed deployment posture before feature composition so the
+        // production registration policy and the host resolve the same production answer.
+        builder.Services.DeclareMeridianDeploymentPosture(_apiHostOptions.ToDeploymentPosture());
 
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
@@ -170,6 +175,12 @@ public sealed class UiServer : IAsyncDisposable
             builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                 .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
             ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
+        builder.Services.AddSingleton(
+            builder.Configuration.GetSection(OrderManagementSystemOptions.SectionKey)
+                .Get<OrderManagementSystemOptions>()
+            ?? new OrderManagementSystemOptions());
+        builder.Services.Configure<Meridian.Execution.Margin.RegTMarginOptions>(
+            builder.Configuration.GetSection(Meridian.Execution.Margin.RegTMarginOptions.SectionKey));
         builder.Services.AddSingleton<IOrderGateway>(sp =>
             new Meridian.Execution.Adapters.PaperTradingGateway(
                 sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
@@ -190,7 +201,8 @@ public sealed class UiServer : IAsyncDisposable
                 operatorControls: sp.GetService<ExecutionOperatorControlService>(),
                 auditTrail: sp.GetService<ExecutionAuditTrailService>(),
                 portfolioState: portfolio,
-                sessionPersistence: sp.GetService<PaperSessionPersistenceService>());
+                sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
+                options: sp.GetRequiredService<OrderManagementSystemOptions>());
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(

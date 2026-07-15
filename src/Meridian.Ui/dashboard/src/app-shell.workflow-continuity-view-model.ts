@@ -1,4 +1,5 @@
 import { WORKSPACES, WORKSTATION_ROUTE_CATALOG, workspacePath } from "@/lib/workspace";
+import { pluralizeCount } from "@/lib/format";
 import {
   buildEvidenceTimelineCandidate,
   type EvidenceTimelineCandidate
@@ -76,7 +77,7 @@ export function buildWorkflowContinuityViewModel(
   const operatingScope = buildOperatingScopeFromSearch(search, {
     ...(operatingContextScope ?? {}),
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
-  });
+  }, pathname);
   const subjectSymbol = operatingScope.subjectSymbol;
   const currentRoute = `${pathname}${search}${hash}`;
   const trail = selectWorkflowContinuityTrail(pathname, hash);
@@ -428,7 +429,10 @@ function buildDecisionBriefViewModel({
   if (focusItem) {
     return {
       label: "Decision brief",
-      title: `Resolve ${focusItem.label}`,
+      // The masthead pill already behaves as the action. Keep its visible title to the
+      // operator-owned issue so common labels remain readable at the supported desktop
+      // viewport instead of truncating a redundant "Resolve" prefix.
+      title: focusItem.label,
       summary: `${focusItem.workspaceLabel} is the highest-priority loaded issue. ${operatorFocus.summary}`,
       reasonLabel: "Why now",
       reason: focusItem.detail,
@@ -987,7 +991,7 @@ function materializeScopedLinkedContextItem(
   };
 }
 function formatCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }
 
 function formatStatusCount(count: number, label: string): string {

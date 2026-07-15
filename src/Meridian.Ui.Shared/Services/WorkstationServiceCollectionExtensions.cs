@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.Accounting;
 using Meridian.Core.Contracts;
 using Meridian.Application.DirectLending;
 using Meridian.DataIntegration.Credentials;
@@ -38,6 +39,7 @@ using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.Reporting;
 using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
@@ -53,6 +55,7 @@ using Meridian.Ui.Shared.Workflows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
@@ -134,7 +137,9 @@ public static class WorkstationServiceCollectionExtensions
             {
                 var storageOptions = sp.GetRequiredService<StorageOptions>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "user-access-assignments.json");
-                return new FileScopedAccessAssignmentStore(persistencePath);
+                return new FileScopedAccessAssignmentStore(
+                    persistencePath,
+                    sp.GetService<ILogger<FileScopedAccessAssignmentStore>>());
             });
         }
         services.TryAddSingleton<ScopedAccessService>();
@@ -142,8 +147,13 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IScopedAuthorizationService>(sp => sp.GetRequiredService<ScopedAccessService>());
         services.TryAddSingleton<UserProfileRegistry>();
         services.TryAddSingleton<LoginSessionService>();
+        services.TryAddSingleton<InitialAccountBootstrapService>();
+        services.TryAddSingleton<FirstRunExperienceService>();
+        services.TryAddSingleton<DesktopWorkstationLaunchService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
+        services.TryAddSingleton<IngestionOperationsService>();
+        services.TryAddSingleton<StorageAssuranceService>();
         services.TryAddSingleton<SensitiveActionPolicyEngine>();
         services.TryAddSingleton<ImmutableAuditLogService>();
         services.TryAddSingleton<AccessReviewService>();
@@ -168,9 +178,17 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
-        services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
+        services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
+            sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+            sp.GetService<IAssetOperationsProjectionStore>() as IInstrumentPositionProjectionStore
+            ?? sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
+        services.TryAddSingleton<IPortfolioCashBalanceProvider, PortfolioLedgerCashBalanceProvider>();
+        services.TryAddSingleton<IPortfolioCashLadderQueryService, PortfolioCashLadderReadService>();
         services.TryAddSingleton<ISecurityMasterOperationalReadinessService, SecurityMasterOperationalReadinessService>();
         services.TryAddSingleton<IMultiAssetCoverageReadService, MultiAssetCoverageReadService>();
         services.TryAddSingleton<LedgerReadService>();
@@ -254,6 +272,13 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
+        // Consolidated risk path: the same service that powers the read-only risk dashboard is the
+        // IRiskValidator the OMS invokes before routing an order. Without this registration
+        // sp.GetService<IRiskValidator>() resolved to null at every composition root and the OMS
+        // pre-trade risk block was dead code — the drawdown circuit breaker and order-rate throttle
+        // never gated an order even while the dashboard reported them.
+        services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
+            sp.GetRequiredService<RiskRuleRuntimeService>());
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
@@ -301,7 +326,7 @@ public static class WorkstationServiceCollectionExtensions
             Meridian.Application.SecurityMaster.NullMultiAssetCoverageInvalidator>();
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
-            Meridian.Application.SecurityMaster.SecurityProjectionRebuildHandler>());
+            Meridian.Application.SecurityMaster.Rebuild.SecurityProjectionRebuildHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.CoverageInvalidationHandler>());
@@ -309,6 +334,43 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
+        var reportingConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING")
+            ?? Environment.GetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING");
+        if (!string.IsNullOrWhiteSpace(reportingConnectionString))
+        {
+            services.TryAddSingleton(new ReportingArtifactStoreOptions
+            {
+                ConnectionString = reportingConnectionString,
+                Schema = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_SCHEMA") ?? "reporting"
+            });
+            services.TryAddSingleton<ReportingMigrationRunner>();
+            services.TryAddSingleton<IReportingArtifactStore>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingArtifactStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<IReportingGovernanceRepository>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingGovernanceRepository(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<ReportingGovernanceService>();
+            services.TryAddSingleton<IReportingAccessGrantStore>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingAccessGrantStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<ReportingAccessGrantService>();
+            services.TryAddSingleton<IReportingDeliveryStore>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingDeliveryStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+        }
         services.TryAddSingleton<ReportingRunStoreOptions>(sp =>
             new ReportingRunStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "runs")));
         services.TryAddSingleton<IReportingRunStore>(sp =>
@@ -335,6 +397,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<DefaultReportingTemplateCatalog>();
+        services.TryAddSingleton<IReportingStarterKitCatalog, DefaultReportingStarterKitCatalog>();
         services.TryAddSingleton(sp =>
             new GovernedReportingTemplateCatalog(
                 sp.GetRequiredService<DefaultReportingTemplateCatalog>(),
@@ -354,13 +417,25 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
                 new DeterministicReportingSectionRenderer(),
                 () => DateTimeOffset.UtcNow,
-                sp.GetRequiredService<IReportingRunStore>()));
+                sp.GetRequiredService<IReportingRunStore>(),
+                // Null until the report-run stream broadcaster is registered (D1d); the null-object
+                // default keeps run execution unaffected in the meantime.
+                sp.GetService<IReportingRunNotifier>()));
         services.TryAddSingleton<ReportingScheduleStoreOptions>(sp =>
             new ReportingScheduleStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-schedules.json")));
         services.TryAddSingleton<IReportingScheduleStore>(sp =>
             new FileReportingScheduleStore(
                 sp.GetRequiredService<ReportingScheduleStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportingScheduleStore>>()));
+        services.TryAddSingleton<ReportingStarterKitStoreOptions>(sp =>
+            new ReportingStarterKitStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-starter-kit.json")));
+        services.TryAddSingleton<IReportingStarterKitStore>(sp =>
+            new FileReportingStarterKitStore(
+                sp.GetRequiredService<ReportingStarterKitStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportingStarterKitStore>>()));
+        services.TryAddSingleton<IReportingRunReadinessDependencyEvaluator, ReportingRunReadinessDependencyEvaluator>();
+        services.TryAddSingleton<ReportingRunReadinessService>();
+        services.TryAddSingleton<ReportingRunCertificationService>();
         services.TryAddSingleton<ReportingRunCommandService>();
         services.TryAddSingleton(sp =>
             new ReportingScheduleService(
@@ -368,7 +443,10 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IReportingScheduleStore>(),
                 sp.GetService<ReportPackDeliveryService>(),
                 sp.GetService<GovernedReportingTemplateCatalog>(),
-                sp.GetService<ReportWriterDatasetSourceService>()));
+                sp.GetService<ReportWriterDatasetSourceService>(),
+                sp.GetRequiredService<ReportingRunReadinessService>(),
+                sp.GetRequiredService<ReportingRunCertificationService>()));
+        services.TryAddSingleton<ReportingStarterKitService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
@@ -420,7 +498,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IExternalStatementReconciliationSourceAdapter, ExternalStatementReconciliationSourceAdapter>();
         services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
         services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
-            new SecurityMasterAccountingEventSourceAdapter(sp.GetService<ContractSecurityMasterQueryService>()));
+            new SecurityMasterAccountingEventSourceAdapter(
+                sp.GetService<ContractSecurityMasterQueryService>(),
+                sp.GetService<IAssetOperationsQueryService>()));
         services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));
@@ -445,6 +525,21 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
+            new FileDailyValuationPortfolioSource(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "daily-valuation-schedules.json")));
+        services.TryAddSingleton<IDailyValuationPortfolioSource>(sp =>
+            sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton<IDailyValuationScheduleStatusSource>(sp =>
+            sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton<FileAutomatedJournalScheduleStore>(sp =>
+            new FileAutomatedJournalScheduleStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "monthly-automated-journal-schedules.json")));
+        services.TryAddSingleton<IAutomatedJournalScheduleStore>(sp =>
+            sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<IAutomatedJournalScheduleStatusSource>(sp =>
+            sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<TimeProvider>(TimeProvider.System);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             new ManualJournalEntryWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryDraftStore>(),
@@ -453,7 +548,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ContractSecurityMasterQueryService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>(),
-                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>()));
+                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
+                sp.GetService<IGovernedLedgerPostingTarget>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton(sp =>
@@ -464,11 +560,31 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(sp =>
         {
             var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
+            var providerRegistry = sp.GetService<ProviderRegistry>();
             return new AutomatedJournalIntakeRunner(
                 sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
                 new FeeScheduleAccrualEventProducer(),
-                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster));
+                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster),
+                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
+                providerRegistry is null
+                    ? null
+                    : new DailyMarkToMarketService(new RegisteredHistoricalCloseMarkPriceSource(providerRegistry)));
         });
+        // The durable ledger book service is only registered when a persistence-backed ledger is
+        // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph
+        // still composes without Postgres; the bridge degrades the close-posting gate to Blocked.
+        services.TryAddSingleton<IAccountingClosePostingWorkbench>(sp =>
+            new AccountingClosePostingWorkbenchBridge(
+                sp.GetRequiredService<AutomatedJournalIntakeRunner>(),
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetRequiredService<IManualJournalEntryLifecycleService>(),
+                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>()));
+        services.TryAddSingleton<DailyValuationScheduledWorker>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
+        services.TryAddSingleton<AutomatedJournalScheduledWorker>();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, AutomatedJournalSchedulerHostedService>());
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -479,7 +595,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
             new PrivateCapitalCloseCockpitService(
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
-                sp.GetService<IOperationsContinuityWorkflowService>()));
+                sp.GetService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IDailyValuationScheduleStatusSource>(),
+                sp.GetService<IAutomatedJournalScheduleStatusSource>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
@@ -544,6 +662,16 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<QuoteStreamOptions>()));
         services.TryAddSingleton<IQuoteStreamBroadcaster>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
         services.TryAddSingleton<IQuoteUpdateNotifier>(sp => sp.GetRequiredService<QuoteStreamBroadcaster>());
+
+        // Report-run status stream (shadow until the SSE endpoint lands in D2). Shares the quote
+        // stream's registry cap and options. Registered as IReportingRunNotifier so run persistence
+        // wakes it (ReportingOrchestrationService resolves the notifier). No endpoint => no
+        // subscribers => no observable behaviour change yet.
+        services.TryAddSingleton(sp => new ReportRunStreamBroadcaster(
+            sp,
+            sp.GetRequiredService<StreamConnectionRegistry>(),
+            sp.GetRequiredService<QuoteStreamOptions>()));
+        services.TryAddSingleton<IReportingRunNotifier>(sp => sp.GetRequiredService<ReportRunStreamBroadcaster>());
 
         return services;
     }

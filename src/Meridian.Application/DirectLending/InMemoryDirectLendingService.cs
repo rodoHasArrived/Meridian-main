@@ -412,16 +412,20 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
             var terms = stored.TermsVersions[^1].Terms;
             var annualRate = ResolveAnnualRate(terms, stored.Servicing.CurrentRateReset);
-            var interestAmount = DirectLendingInterop.CalculateDailyAccrualAmount(
+            // Date-aware day count: Act/Act accrues against the actual year length of the
+            // accrual date (366 in leap years); other conventions keep fixed denominators.
+            var interestAmount = DirectLendingInterop.CalculateDailyAccrualAmountForDate(
                 stored.Servicing.Balances.PrincipalOutstanding,
                 annualRate,
-                (int)terms.DayCountBasis);
+                (int)terms.DayCountBasis,
+                request.AccrualDate);
 
             var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate && feeRate > 0m
-                ? DirectLendingInterop.CalculateDailyAccrualAmount(
+                ? DirectLendingInterop.CalculateDailyAccrualAmountForDate(
                     stored.Servicing.AvailableToDraw,
                     feeRate,
-                    (int)terms.DayCountBasis)
+                    (int)terms.DayCountBasis,
+                    request.AccrualDate)
                 : 0m;
 
             var entry = new DailyAccrualEntryDto(

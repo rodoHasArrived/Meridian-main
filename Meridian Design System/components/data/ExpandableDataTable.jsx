@@ -2,7 +2,8 @@
 // Each row can expand to show a full-width detail panel (audit trail, allocations, etc.).
 // Detail content is a slot (template, custom JSX). Smooth slide animation on expand/collapse.
 
-import React, { useState } from "react";
+import React from "react";
+const { useState } = React;
 
 let injected = false;
 function inject() {
@@ -10,19 +11,20 @@ function inject() {
   injected = true;
   const css = `
 .edt-wrap{overflow-x:auto;border:1px solid var(--border,#D7DCE2);
-  border-radius:var(--radius-chip,4px);background:var(--bg-light,#fff);}
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#fff);}
 .edt{width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .edt thead{position:sticky;top:0;z-index:1;background:var(--bg-medium,#F5F7FA);}
 .edt th{padding:9px 12px;text-align:left;white-space:nowrap;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6E7781);
+  letter-spacing:.03em;color:var(--text-muted,#59636F);
   border-bottom:1px solid var(--border,#D7DCE2);}
 .edt th.edt--r{text-align:right;}
+.edt th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--accent,#2F6F8F);}
 .edt th.edt--expand{width:34px;padding:9px 10px;text-align:center;}
 .edt th.edt--checkbox{padding:9px 10px;width:34px;text-align:center;}
-.edt td{padding:10px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
-  border-top:1px solid var(--border,#D7DCE2);font-variant-numeric:tabular-nums;}
+.edt td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
+  border-top:1px solid var(--border,#D7DCE2);font-variant-numeric:tabular-nums;height:40px;}
 .edt td.edt--expand{padding:7px 10px;text-align:center;cursor:pointer;}
 .edt td.edt--checkbox{padding:7px 10px;text-align:center;}
 .edt tbody tr:first-child td{border-top:none;}
@@ -40,7 +42,7 @@ function inject() {
 .edt__chevron{display:inline-block;transition:transform 200ms ease;font-size:12px;}
 .edt__chevron.edt--open{transform:rotate(90deg);}
 .edt__ckbox{width:18px;height:18px;cursor:pointer;border:1px solid var(--border,#D7DCE2);
-  border-radius:3px;appearance:none;background:var(--bg-light,#fff);
+  border-radius:var(--radius-chip,2px);appearance:none;background:var(--bg-light,#fff);
   transition:border-color 100ms ease,background-color 100ms ease;}
 .edt__ckbox:hover{border-color:var(--accent,#2F6F8F);}
 .edt__ckbox:checked{background:var(--accent,#2F6F8F);border-color:var(--accent,#2F6F8F);
@@ -122,7 +124,11 @@ export function ExpandableDataTable({
                 <th
                   key={c.key}
                   className={cls}
+                  scope="col"
+                  tabIndex={onSort && c.sortable !== false ? 0 : undefined}
+                  aria-sort={sorted ? (sortDir === "asc" ? "ascending" : "descending") : (onSort && c.sortable !== false ? "none" : undefined)}
                   onClick={onSort && c.sortable !== false ? () => onSort(c.key) : undefined}
+                  onKeyDown={onSort && c.sortable !== false ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSort(c.key); } } : undefined}
                   style={{ cursor: onSort && c.sortable !== false ? "pointer" : "default" }}
                 >
                   {c.label}
