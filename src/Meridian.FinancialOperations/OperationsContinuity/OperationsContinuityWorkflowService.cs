@@ -6,7 +6,6 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
-using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
@@ -163,7 +162,6 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private readonly IOperationsWorkflowAuditStore _auditStore;
     private readonly IOperationsStatusDerivationService _statusDerivation;
     private readonly OperationsLedgerPostingService _ledgerPosting;
-    private readonly IOperatorOverridesStore? _operatorOverridesStore;
 
     public OperationsContinuityWorkflowService(
         IOperationsContinuityRepository repository,
@@ -171,14 +169,12 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         IOperationsStatusDerivationService statusDerivation,
         ILedgerJournalStore? ledgerJournalStore = null,
         IOperationsContinuityTransactionalCommitStore? transactionalCommitStore = null,
-        ISecurityMasterQueryService? securityMasterQueryService = null,
-        IOperatorOverridesStore? operatorOverridesStore = null)
+        ISecurityMasterQueryService? securityMasterQueryService = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
         _ledgerPosting = new OperationsLedgerPostingService(ledgerJournalStore, transactionalCommitStore, securityMasterQueryService);
-        _operatorOverridesStore = operatorOverridesStore;
     }
 
     public async Task<OperationsTransitionResultDto> StartWorkflowAsync(
@@ -402,15 +398,6 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
-        // Security control: when the caller names override securities and a durable store is wired,
-        // re-derive the override count and approval flag from the recorded durable approval status,
-        // discarding the client-supplied values for those securities so a spoofed OverridesApproved
-        // cannot pass the SM_OVERRIDE gate. A request that omits OverrideSecurityIds is currently
-        // passed through unchanged; failing that path closed requires a server-authoritative
-        // override set and is tracked as follow-up hardening.
-        request = await DeriveOverrideApprovalFromDurableStateAsync(request, ct).ConfigureAwait(false);
-
         return await ApplyCommandAsync(
             workflowId,
             request.ExpectedVersion,
@@ -427,36 +414,6 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 return null;
             },
             ct: ct).ConfigureAwait(false);
-    }
-
-    private async Task<OperationsSecurityMasterResolveRequestDto> DeriveOverrideApprovalFromDurableStateAsync(
-        OperationsSecurityMasterResolveRequestDto request,
-        CancellationToken ct)
-    {
-        // Only consult the durable store when overrides are actually in scope. With no override
-        // securities named (or no store wired), preserve the caller-supplied values unchanged so
-        // existing call sites keep their current behavior and the store is never touched.
-        if (_operatorOverridesStore is null ||
-            request.OverrideSecurityIds is not { Count: > 0 } overrideSecurityIds)
-        {
-            return request;
-        }
-
-        var unapprovedCount = 0;
-        foreach (var securityId in overrideSecurityIds)
-        {
-            var overlay = await _operatorOverridesStore.GetAsync(securityId, ct).ConfigureAwait(false);
-            if (overlay?.ApprovalStatus != SecurityOverrideApprovalStatusDto.Approved)
-            {
-                unapprovedCount++;
-            }
-        }
-
-        return request with
-        {
-            OverrideRequestCount = unapprovedCount,
-            OverridesApproved = unapprovedCount == 0
-        };
     }
 
     public async Task<OperationsTransitionResultDto> ApproveSecurityMasterOverrideAsync(

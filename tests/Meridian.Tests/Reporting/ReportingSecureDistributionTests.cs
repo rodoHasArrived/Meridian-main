@@ -29,7 +29,6 @@ public sealed class ReportingSecureDistributionTests
         first.Token.Should().HaveLength(64).And.NotBe(second.Token);
         first.GrantId.Should().NotBe(second.GrantId);
         var retained = (await store.GetAsync(first.GrantId))!;
-        retained.Should().NotBeNull();
         retained.TokenHashSha256.Should().HaveLength(64).And.NotBe(first.Token);
         JsonSerializer.Serialize(retained).Should().NotContain(first.Token);
 
@@ -270,7 +269,6 @@ public sealed class ReportingSecureDistributionTests
         JsonSerializer.Serialize(queued).Should().NotContain(rawToken);
         JsonSerializer.Serialize(sent).Should().NotContain(rawToken);
         var retainedGrant = (await grantStore.GetAsync(sent.AccessGrantId!))!;
-        retainedGrant.Should().NotBeNull();
         retainedGrant.TokenHashSha256.Should().NotBe(rawToken);
 
         var validation = await grantService.ValidateAsync(new ReportingAccessGrantValidationRequest(

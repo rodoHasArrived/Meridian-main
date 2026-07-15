@@ -148,6 +148,23 @@ describe("WatchlistScreen", () => {
     expect(within(rows[1]).getByRole("link", { name: /View live quotes for AAPL/i })).toHaveAttribute("href", "/data/quotes?symbol=AAPL");
   });
 
+  it("opens a row context menu from the more-actions trigger and inspects the symbol", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
+
+    await user.click(screen.getByRole("button", { name: "More actions for AAPL" }));
+
+    expect(await screen.findByRole("menuitem", { name: "Copy symbol" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Open live quote" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("menuitem", { name: "Inspect symbol" }));
+
+    const table = await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
+    expect(within(table).getByRole("row", { name: /AAPL. Status Active/i })).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("requests live quotes only for the subscribed symbols", async () => {
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
 

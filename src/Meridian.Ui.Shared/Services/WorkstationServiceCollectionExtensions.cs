@@ -481,8 +481,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
-                sp.GetService<ContractSecurityMasterQueryService>(),
-                sp.GetService<Meridian.Storage.SecurityMaster.IOperatorOverridesStore>()));
+                sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
