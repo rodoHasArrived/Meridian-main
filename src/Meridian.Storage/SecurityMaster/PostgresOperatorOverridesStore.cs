@@ -149,16 +149,16 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         };
     }
 
-    public async Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
+    public async Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
         Guid securityId,
-        OperatorOverrideApprovalDecisionRequest request,
-        string reviewer,
+        OperatorOverrideDecisionRequest request,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var reviewer = request.Reviewer;
         if (string.IsNullOrWhiteSpace(reviewer))
         {
-            throw new ArgumentException("reviewer must be provided.", nameof(reviewer));
+            throw new ArgumentException("Reviewer must be provided.", nameof(request));
         }
 
         if (request.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
@@ -178,11 +178,21 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         if (existing is null)
         {
             // Nothing to review — a reviewer cannot decide on overrides that were never recorded.
-            return null;
+            throw new InvalidOperationException(
+                $"No operator overrides exist for security {securityId}; there is nothing to review.");
+        }
+
+        if (existing.ApprovalStatus != SecurityOverrideApprovalStatusDto.Pending)
+        {
+            // Only a pending overlay can be decided; an already-decided overlay must be re-patched first.
+            throw new InvalidOperationException(
+                $"Operator overrides for security {securityId} are {existing.ApprovalStatus}, not Pending; there is no pending decision to record.");
         }
 
         var reviewedAt = DateTimeOffset.UtcNow;
-        var reasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? existing.ReasonCode : request.ReasonCode.Trim();
+        // The decision request no longer carries a reason code; the reason travels with the patch that
+        // opened the overlay, so the decision preserves the existing value.
+        var reasonCode = existing.ReasonCode;
         var comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim();
         var auditTrail = Append(
             existing.AuditTrail,
