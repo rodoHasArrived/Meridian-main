@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `3125e6e7bbcd`
+- Source fingerprint: `f53e7ccf644a`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `92`
 - Open automated tasks: `0`
@@ -602,7 +602,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Options (OptionsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-options.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +29 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +30 more.
 
 #### Add provider wizard (`AddProviderWizard`)
 
@@ -844,7 +844,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Diagnostics (DiagnosticsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-diagnostics.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +15 more.
 
 #### Service manager (`ServiceManager`)
 
