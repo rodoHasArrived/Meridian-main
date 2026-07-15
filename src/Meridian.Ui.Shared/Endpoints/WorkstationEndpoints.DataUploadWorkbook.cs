@@ -372,6 +372,20 @@ public static partial class WorkstationEndpoints
         var headerPosition = ResolveWorkbookHeaderPosition(sheet);
         if (headerPosition < 0)
         {
+            if (sheet.Truncated)
+            {
+                // The sheet hit the row/cell cap before any header row was reached, so unread rows
+                // exist behind the cap. Block instead of reporting Empty; otherwise another sheet's
+                // data could still let the overall preview reach ReadyForReview.
+                issues.Add(new DataUploadValidationIssueDto(
+                    "Error",
+                    "rows",
+                    $"Sheet '{sheet.Name}' is too large to validate in full (over {MaxWorkbookRowsPerSheet} rows or {MaxWorkbookCellsPerSheet} cells) and no header row was reached. Split it into smaller uploads and re-upload.",
+                    RowNumber: null,
+                    SheetName: sheet.Name,
+                    CellReference: null));
+            }
+
             return new DataUploadWorkbookSheetPreviewDto(
                 sheet.Name,
                 template?.TemplateId,
@@ -381,8 +395,8 @@ public static partial class WorkstationEndpoints
                 PreviewRowCount: 0,
                 Headers: [],
                 PreviewRows: [],
-                Issues: [],
-                Status: "Empty");
+                Issues: issues,
+                Status: sheet.Truncated ? "NeedsRepair" : "Empty");
         }
 
         var headerRow = sheet.Rows[headerPosition];
