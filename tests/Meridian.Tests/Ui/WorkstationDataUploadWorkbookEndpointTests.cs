@@ -174,6 +174,47 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldNormalizeExcelDateSerials()
+    {
+        var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workbook-dates", Guid.NewGuid().ToString("N"));
+        Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", root);
+
+        try
+        {
+            await using var app = await CreateAppAsync();
+            var client = app.GetTestClient();
+            // XlsxWorkbookWriter writes DateOnly cells as Excel serials with a date-formatted style,
+            // exactly as Excel would when an operator types a date into the workbook.
+            var workbook = XlsxWorkbookWriter.CreateWorkbook(
+            [
+                WorkbookMetaSheet(("Entities", "entity-configuration")),
+                new XlsxWorksheet(
+                    "Entities",
+                    ["entity_id", "entity_name", "entity_type", "effective_from"],
+                    [
+                        new object?[] { "ENT-1", "Northwind Fund", "Fund", new DateOnly(2026, 1, 1) },
+                    ]),
+            ]);
+
+            using var content = BuildWorkbookUploadContent(workbook);
+            var response = await client.PostAsync(UiApiRoutes.WorkstationDataUploadWorkbookPreview, content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<DataUploadWorkbookPreviewResultDto>(ServerJsonOptions);
+            result.Should().NotBeNull();
+
+            var entities = result!.Sheets.Single(sheet => sheet.SheetName == "Entities");
+            entities.PreviewRows[0]["effective_from"].Should().Be("2026-01-01");
+            entities.Status.Should().Be("ReadyForReview");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", originalRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldNotBeReadyWhenNoDataRows()
     {
         var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");

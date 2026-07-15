@@ -752,6 +752,7 @@ public static partial class WorkstationEndpoints
         using var stream = new MemoryStream(fileBytes, writable: false);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var sharedStrings = ReadWorkbookSharedStrings(archive);
+        var dateStyles = ReadWorkbookDateStyles(archive);
         var sheets = new List<WorkbookSheetContent>();
         foreach (var (name, entryPath) in ResolveWorkbookSheetOrder(archive))
         {
@@ -775,7 +776,7 @@ public static partial class WorkstationEndpoints
                     break;
                 }
 
-                var values = ReadWorkbookRowValues(rowElement, sharedStrings).ToArray();
+                var values = ReadWorkbookRowValues(rowElement, sharedStrings, dateStyles).ToArray();
                 cellCount += values.Length;
                 rows.Add(values);
             }
@@ -906,7 +907,10 @@ public static partial class WorkstationEndpoints
             .ToArray();
     }
 
-    private static IEnumerable<string> ReadWorkbookRowValues(XElement row, IReadOnlyList<string> sharedStrings)
+    private static IEnumerable<string> ReadWorkbookRowValues(
+        XElement row,
+        IReadOnlyList<string> sharedStrings,
+        IReadOnlySet<int> dateStyles)
     {
         var nextColumn = 1;
         foreach (var cell in row.Elements(WorkbookSpreadsheetNamespace + "c"))
@@ -926,12 +930,15 @@ public static partial class WorkstationEndpoints
                 nextColumn++;
             }
 
-            yield return ReadWorkbookCellValue(cell, sharedStrings);
+            yield return ReadWorkbookCellValue(cell, sharedStrings, dateStyles);
             nextColumn = column + 1;
         }
     }
 
-    private static string ReadWorkbookCellValue(XElement cell, IReadOnlyList<string> sharedStrings)
+    private static string ReadWorkbookCellValue(
+        XElement cell,
+        IReadOnlyList<string> sharedStrings,
+        IReadOnlySet<int> dateStyles)
     {
         var value = cell.Element(WorkbookSpreadsheetNamespace + "v")?.Value
             ?? cell.Element(WorkbookSpreadsheetNamespace + "is")?.Value
@@ -943,7 +950,122 @@ public static partial class WorkstationEndpoints
             return sharedStrings[index];
         }
 
+        // Excel stores dates as numeric serials with a date-formatted style rather than text. Return
+        // an ISO date so a filled date column previews as "2026-06-01" (and required-field checks see
+        // a real date), not a raw serial such as "46174".
+        if ((type is null || type == "n")
+            && value.Length > 0
+            && int.TryParse(cell.Attribute("s")?.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var styleIndex)
+            && dateStyles.Contains(styleIndex)
+            && double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var serial)
+            && serial > 0)
+        {
+            try
+            {
+                var date = DateTime.FromOADate(serial);
+                return date.TimeOfDay == TimeSpan.Zero
+                    ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+                    : date.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+            }
+            catch (ArgumentException)
+            {
+                return value;
+            }
+        }
+
         return value;
+    }
+
+    /// <summary>
+    /// Returns the set of <c>cellXfs</c> style indices that carry a date or time number format, so
+    /// numeric cells using those styles can be normalized from Excel serials back to ISO dates.
+    /// </summary>
+    private static HashSet<int> ReadWorkbookDateStyles(ZipArchive archive)
+    {
+        var dateStyles = new HashSet<int>();
+        var entry = archive.GetEntry("xl/styles.xml");
+        if (entry is null)
+        {
+            return dateStyles;
+        }
+
+        var document = LoadWorkbookXml(entry);
+
+        var customDateFormatIds = new HashSet<int>();
+        foreach (var numberFormat in document.Descendants(WorkbookSpreadsheetNamespace + "numFmt"))
+        {
+            if (int.TryParse(numberFormat.Attribute("numFmtId")?.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id)
+                && IsDateFormatCode(numberFormat.Attribute("formatCode")?.Value))
+            {
+                customDateFormatIds.Add(id);
+            }
+        }
+
+        var cellFormats = document
+            .Descendants(WorkbookSpreadsheetNamespace + "cellXfs")
+            .Elements(WorkbookSpreadsheetNamespace + "xf")
+            .ToList();
+        for (var index = 0; index < cellFormats.Count; index++)
+        {
+            if (int.TryParse(cellFormats[index].Attribute("numFmtId")?.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var numFmtId)
+                && (IsBuiltInDateFormat(numFmtId) || customDateFormatIds.Contains(numFmtId)))
+            {
+                dateStyles.Add(index);
+            }
+        }
+
+        return dateStyles;
+    }
+
+    private static bool IsBuiltInDateFormat(int numFmtId)
+        => numFmtId is (>= 14 and <= 22) or (>= 45 and <= 47);
+
+    private static bool IsDateFormatCode(string? formatCode)
+    {
+        if (string.IsNullOrWhiteSpace(formatCode))
+        {
+            return false;
+        }
+
+        // Strip quoted literals, escaped characters, and bracketed tokens (e.g. [Red], [$-409]) so
+        // only genuine format letters remain, then look for date/time tokens.
+        var stripped = new System.Text.StringBuilder(formatCode.Length);
+        var inQuote = false;
+        for (var i = 0; i < formatCode.Length; i++)
+        {
+            var character = formatCode[i];
+            if (character == '"')
+            {
+                inQuote = !inQuote;
+                continue;
+            }
+
+            if (inQuote)
+            {
+                continue;
+            }
+
+            if (character == '\\')
+            {
+                i++;
+                continue;
+            }
+
+            if (character == '[')
+            {
+                while (i < formatCode.Length && formatCode[i] != ']')
+                {
+                    i++;
+                }
+
+                continue;
+            }
+
+            stripped.Append(character);
+        }
+
+        var text = stripped.ToString().ToLowerInvariant();
+        return text.IndexOfAny(['y', 'd', 'h', 's', 'm']) >= 0;
     }
 
     private static int? ResolveWorkbookColumnFromReference(string? cellReference)
