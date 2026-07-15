@@ -364,31 +364,27 @@ public sealed class JsonlStorageSink : IStorageSink
         // 3. Final flush — guaranteed no concurrent timer flushes after timer disposal
         if (_batchOptions.Enabled)
         {
-            var gateAcquired = false;
             try
             {
-                // WaitAsync(timeout) returns false when the gate could not be acquired in time.
-                // The result must be honoured: flushing without the gate races the swap-buffer,
-                // and releasing a semaphore that was never acquired corrupts its count.
-                gateAcquired = await _flushGate.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-                if (gateAcquired)
+                // Wait for the gate without a timeout: once _disposed is set and the timers are
+                // disposed, AppendAsync throws so no new flush can start — the gate is only ever
+                // held by an in-flight flush that will complete. Waiting unbounded (as
+                // WriterState.DisposeAsync already does) guarantees the final flush runs instead of
+                // timing out and then clearing _buffers with still-unwritten events. Release lives
+                // in the inner finally so a semaphore that was never acquired is never released.
+                await _flushGate.WaitAsync().ConfigureAwait(false);
+                try
                 {
                     await FlushBufferedBatchesUnderGateAsync(CancellationToken.None).ConfigureAwait(false);
                 }
-                else
+                finally
                 {
-                    _logger.LogWarning(
-                        "Final buffer flush during disposal skipped: could not acquire the flush gate within the timeout.");
+                    _flushGate.Release();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Final buffer flush during disposal failed");
-            }
-            finally
-            {
-                if (gateAcquired)
-                    _flushGate.Release();
             }
         }
 

@@ -113,9 +113,28 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
         }
 
         // Limit/stop orders are accepted but not immediately filled; track them as resting so
-        // cancel/modify can validate the order id later.
+        // cancel/modify can validate the order id later. Resting orders are keyed solely by id, so
+        // a duplicate id would collide in the tracking map and become impossible to cancel/modify
+        // independently — reject it instead of accepting an order the gateway cannot manage.
         var restingOrderId = request.ClientOrderId ?? $"PAPER-{fillSeq}";
-        var accepted = new ExecutionReport
+        if (!_restingOrders.TryAdd(restingOrderId, 0))
+        {
+            return new ExecutionReport
+            {
+                OrderId = restingOrderId,
+                ReportType = ExecutionReportType.Rejected,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                OrderStatus = OrderStatus.Rejected,
+                OrderQuantity = request.Quantity,
+                FilledQuantity = 0,
+                RejectReason = "An order with this client order id is already resting in the paper gateway.",
+                Timestamp = DateTimeOffset.UtcNow,
+                GatewayOrderId = $"PAPER-{fillSeq}"
+            };
+        }
+
+        return new ExecutionReport
         {
             OrderId = restingOrderId,
             ReportType = ExecutionReportType.New,
@@ -127,9 +146,6 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
             Timestamp = DateTimeOffset.UtcNow,
             GatewayOrderId = $"PAPER-{fillSeq}"
         };
-
-        _restingOrders.TryAdd(restingOrderId, 0);
-        return accepted;
     }
 
     /// <inheritdoc />
