@@ -220,13 +220,32 @@ public sealed class SharedStorageCoordinationStore : ICoordinationStore
         if (!File.Exists(leasePath))
             return null;
 
+        string json;
         try
         {
-            var json = await File.ReadAllTextAsync(leasePath, ct).ConfigureAwait(false);
+            json = await File.ReadAllTextAsync(leasePath, ct).ConfigureAwait(false);
+        }
+        catch (FileNotFoundException)
+        {
+            // The lease was released/deleted between the existence check and the read.
+            return null;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return null;
+        }
+        // A transient IO/permission failure must NOT be swallowed into "no lease": doing so
+        // would let a second instance take over a lease that is genuinely held, defeating
+        // mutual exclusion. Let it propagate so acquire/renew deny rather than grant.
+
+        try
+        {
             return JsonSerializer.Deserialize<LeaseRecord>(json, JsonOptions);
         }
-        catch
+        catch (JsonException)
         {
+            // Corrupt lease content is recoverable: treat it as absent so a fresh lease can be
+            // written over it. GetCorruptedLeaseFilesAsync reports these separately.
             return null;
         }
     }
