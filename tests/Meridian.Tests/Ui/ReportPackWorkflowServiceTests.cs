@@ -30,6 +30,9 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class ReportPackWorkflowServiceTests
 {
+    private const string TestTenantId = "tenant-a";
+    private const string TestCompanyId = "company-a";
+
     [Fact]
     public void Transition_FreshDraftSubmitApprovePublish_CompletesW4LifecycleWithoutLegacyIntermediateState()
     {
@@ -181,7 +184,8 @@ public sealed class ReportPackWorkflowServiceTests
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var approved = CreateApprovedPack(
             workflow,
-            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
+            accessContext: BoundAccessContext("author"));
         var published = workflow.Publish(
             approved.ReportId,
             "publisher",
@@ -1928,7 +1932,8 @@ public sealed class ReportPackWorkflowServiceTests
         var delivery = app.Services.GetRequiredService<ReportPackDeliveryService>();
         var approved = CreateApprovedPack(
             workflow,
-            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
+            accessContext: BoundAccessContext("author"));
         var published = workflow.Publish(
             approved.ReportId,
             "publisher",
@@ -2030,7 +2035,8 @@ public sealed class ReportPackWorkflowServiceTests
             "acct-1",
             "2026-03",
             new VersionedReportTemplateIdDto("board-pack", 1),
-            "author");
+            "author",
+            accessContext: BoundAccessContext("author"));
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
         var brandingTheme = new ReportBrandingThemeDto(
@@ -2447,18 +2453,22 @@ public sealed class ReportPackWorkflowServiceTests
     public async Task ReportingScheduleService_PersistsSchedulesAndRunsDueSchedules()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var templateCatalog = new DefaultReportingTemplateCatalog();
         var runStore = new FileReportingRunStore(
             new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
             NullLogger<FileReportingRunStore>.Instance);
         var orchestration = new ReportingOrchestrationService(
-            new DefaultReportingTemplateCatalog(),
+            templateCatalog,
             new DeterministicReportingSectionRenderer(),
             () => new DateTimeOffset(2026, 5, 1, 8, 0, 0, TimeSpan.Zero),
             runStore);
         var scheduleStore = new FileReportingScheduleStore(
             new ReportingScheduleStoreOptions(Path.Combine(root, "reporting-schedules.json")),
             NullLogger<FileReportingScheduleStore>.Instance);
-        var schedules = new ReportingScheduleService(orchestration, scheduleStore);
+        var schedules = new ReportingScheduleService(
+            orchestration,
+            scheduleStore,
+            readinessService: LegacyDraftReadiness(templateCatalog));
 
         var created = schedules.Upsert(new ReportingScheduleUpsertRequestDto(
             "sched-investor",
@@ -2482,7 +2492,10 @@ public sealed class ReportPackWorkflowServiceTests
         result.Schedule.DueAtUtc.Should().Be(new DateTimeOffset(2026, 6, 1, 8, 0, 0, TimeSpan.Zero));
         result.Schedule.NextAsOfDate.Should().Be(new DateOnly(2026, 6, 1));
 
-        var reloaded = new ReportingScheduleService(orchestration, scheduleStore);
+        var reloaded = new ReportingScheduleService(
+            orchestration,
+            scheduleStore,
+            readinessService: LegacyDraftReadiness(templateCatalog));
         reloaded.ListSchedules().Should().ContainSingle(schedule =>
             schedule.ScheduleId == "sched-investor" &&
             schedule.LastRunId == result.Run.RunId &&
@@ -2493,6 +2506,7 @@ public sealed class ReportPackWorkflowServiceTests
     public void Scenario_NewFundWorkspace_EmergingManagerStarterKitSeedsEditableReportingDesk()
     {
         var templateCatalog = new DefaultReportingTemplateCatalog();
+        var accessContext = BoundAccessContext("fund-controller");
         var orchestration = new ReportingOrchestrationService(
             templateCatalog,
             new DeterministicReportingSectionRenderer(),
@@ -2507,12 +2521,12 @@ public sealed class ReportPackWorkflowServiceTests
         var result = starterKits.Provision(
             "emerging-manager",
             "fund-controller",
-            new ReportAccessQueryContext("fund-controller"));
+            accessContext);
         var reporting = new ReportPackRunReadService(
                 templateCatalog,
                 scheduleService: schedules,
                 starterKitService: starterKits)
-            .BuildPayload();
+            .BuildPayload(accessContext);
 
         result.State.IsProvisioned.Should().BeTrue();
         result.State.SelectedKitId.Should().Be("emerging-manager");
@@ -2526,7 +2540,7 @@ public sealed class ReportPackWorkflowServiceTests
             schedule.ScheduleId == "starter-emerging-manager-investor-monthly" &&
             schedule.TemplateId == "investor-monthly-statement" &&
             schedule.RequestedBy == "fund-controller");
-        schedules.ListSchedules().Select(static schedule => schedule.ScheduleId).Should().BeEquivalentTo(result.State.SeedScheduleIds);
+        schedules.ListSchedules(accessContext).Select(static schedule => schedule.ScheduleId).Should().BeEquivalentTo(result.State.SeedScheduleIds);
         reporting.StarterKitState.Should().NotBeNull();
         reporting.StarterKitState!.SelectedKitId.Should().Be("emerging-manager");
         reporting.Templates.Select(static template => template.TemplateId).Should().BeEquivalentTo(result.State.EnabledTemplateIds);
@@ -2536,6 +2550,7 @@ public sealed class ReportPackWorkflowServiceTests
     public async Task ReportingScheduleService_DeliversConfiguredReportPackTargetsAfterScheduledRun()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var templateCatalog = new DefaultReportingTemplateCatalog();
         var workflow = new ReportPackWorkflowService();
         var approved = CreateApprovedPack(
             workflow,
@@ -2558,14 +2573,18 @@ public sealed class ReportPackWorkflowServiceTests
             new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
             NullLogger<FileReportingRunStore>.Instance);
         var orchestration = new ReportingOrchestrationService(
-            new DefaultReportingTemplateCatalog(),
+            templateCatalog,
             new DeterministicReportingSectionRenderer(),
             () => new DateTimeOffset(2026, 5, 1, 8, 0, 0, TimeSpan.Zero),
             runStore);
         var scheduleStore = new FileReportingScheduleStore(
             new ReportingScheduleStoreOptions(Path.Combine(root, "reporting-schedules.json")),
             NullLogger<FileReportingScheduleStore>.Instance);
-        var schedules = new ReportingScheduleService(orchestration, scheduleStore, delivery);
+        var schedules = new ReportingScheduleService(
+            orchestration,
+            scheduleStore,
+            delivery,
+            readinessService: LegacyDraftReadiness(templateCatalog));
 
         var created = schedules.Upsert(new ReportingScheduleUpsertRequestDto(
             "sched-board-distribution",
@@ -2623,7 +2642,11 @@ public sealed class ReportPackWorkflowServiceTests
 
         var reloadedDelivery = new ReportPackDeliveryService(workflow, deliveryStore);
         reloadedDelivery.GetHistory(reportingRunReportId).Should().HaveCount(2);
-        var reloadedSchedules = new ReportingScheduleService(orchestration, scheduleStore, reloadedDelivery);
+        var reloadedSchedules = new ReportingScheduleService(
+            orchestration,
+            scheduleStore,
+            reloadedDelivery,
+            readinessService: LegacyDraftReadiness(templateCatalog));
         reloadedSchedules.ListSchedules().Should().ContainSingle(schedule =>
             schedule.ScheduleId == "sched-board-distribution" &&
             schedule.DeliveryTargets != null &&
@@ -3061,7 +3084,12 @@ public sealed class ReportPackWorkflowServiceTests
         var scheduleStore = new FileReportingScheduleStore(
             new ReportingScheduleStoreOptions(Path.Combine(root, "reporting-schedules.json")),
             NullLogger<FileReportingScheduleStore>.Instance);
-        var schedules = new ReportingScheduleService(orchestration, scheduleStore, delivery, catalog);
+        var schedules = new ReportingScheduleService(
+            orchestration,
+            scheduleStore,
+            delivery,
+            catalog,
+            readinessService: LegacyDraftReadiness(catalog, catalog));
         var brandingTheme = new ReportBrandingThemeDto(
             "allocator-quarterly",
             "Allocator Quarterly",
@@ -3387,7 +3415,7 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
-    public async Task ReportingRunCommandService_CarriesRestatementAuthorizationThroughRequest()
+    public async Task ReportingRunCommandService_RejectsRestatementAuthorizationOutsideGovernedWorkflow()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         var runStore = new FileReportingRunStore(
@@ -3399,7 +3427,10 @@ public sealed class ReportPackWorkflowServiceTests
             new DeterministicReportingSectionRenderer(),
             () => new DateTimeOffset(2026, 5, 4, 9, 0, 0, TimeSpan.Zero),
             runStore);
-        var service = new ReportingRunCommandService(orchestration, catalog);
+        var service = new ReportingRunCommandService(
+            orchestration,
+            catalog,
+            readinessService: LegacyDraftReadiness(catalog));
 
         var initial = await service.RunAsync(
             new ReportingRunRequestDto("investor-monthly-statement", new DateOnly(2026, 5, 4), JobId: "adhoc-restate"),
@@ -3416,8 +3447,8 @@ public sealed class ReportPackWorkflowServiceTests
             CancellationToken.None);
         await blocked.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Released manifest*");
 
-        // Authorized restatement flows the flag through the request/service layer and succeeds.
-        var restated = await service.RunAsync(
+        // Ordinary report generation cannot authorize restatement; callers must use the governed request workflow.
+        var restatement = async () => await service.RunAsync(
             new ReportingRunRequestDto(
                 "investor-monthly-statement",
                 new DateOnly(2026, 5, 4),
@@ -3427,9 +3458,8 @@ public sealed class ReportPackWorkflowServiceTests
             "fund-controller",
             CancellationToken.None);
 
-        restated.Run.RunId.Should().Be("adhoc-restate-20260504-v2");
-        orchestration.GetAudit(initial.Run.RunId).Should().Contain(entry =>
-            entry.Action == "RestatementAuthorized" && entry.Notes.Contains("Q2 NAV correction"));
+        await restatement.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*governed restatement-request workflow*");
     }
 
     [Fact]
@@ -3445,7 +3475,10 @@ public sealed class ReportPackWorkflowServiceTests
             new DeterministicReportingSectionRenderer(),
             () => new DateTimeOffset(2026, 5, 4, 9, 0, 0, TimeSpan.Zero),
             runStore);
-        var service = new ReportingRunCommandService(orchestration, catalog);
+        var service = new ReportingRunCommandService(
+            orchestration,
+            catalog,
+            readinessService: LegacyDraftReadiness(catalog));
 
         var result = await service.RunAsync(
             new ReportingRunRequestDto(
@@ -3555,7 +3588,12 @@ public sealed class ReportPackWorkflowServiceTests
             () => new DateTimeOffset(2026, 5, 6, 12, 0, 0, TimeSpan.Zero),
             runStore);
         var datasetSource = new ReportWriterDatasetSourceService(workflow);
-        var commandService = new ReportingRunCommandService(orchestration, catalog, catalog, datasetSource);
+        var commandService = new ReportingRunCommandService(
+            orchestration,
+            catalog,
+            catalog,
+            datasetSource,
+            readinessService: LegacyDraftReadiness(catalog, catalog));
 
         var result = await commandService.RunAsync(
             new ReportingRunRequestDto(
@@ -3677,7 +3715,8 @@ public sealed class ReportPackWorkflowServiceTests
             scheduleStore,
             deliveryService: null,
             governedTemplateCatalog: catalog,
-            datasetSourceService: new ReportWriterDatasetSourceService(workflow));
+            datasetSourceService: new ReportWriterDatasetSourceService(workflow),
+            readinessService: LegacyDraftReadiness(catalog, catalog));
 
         schedules.Upsert(new ReportingScheduleUpsertRequestDto(
             "sched-source-backed",
@@ -4872,7 +4911,8 @@ public sealed class ReportPackWorkflowServiceTests
         var approved = CreateApprovedPack(
             workflow,
             [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
-            accessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user"));
+            accessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user"),
+            accessContext: BoundAccessContext("author"));
         var published = workflow.Publish(
             approved.ReportId,
             "publisher",
@@ -4910,7 +4950,8 @@ public sealed class ReportPackWorkflowServiceTests
             [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
             accessPolicy: new ReportAccessPolicyDto(
                 ReportAccessModeDto.Restricted,
-                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, UserRole.FundAccountant.ToString())]));
+                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, UserRole.FundAccountant.ToString())]),
+            accessContext: BoundAccessContext("author"));
         var published = workflow.Publish(
             approved.ReportId,
             "publisher",
@@ -4946,7 +4987,8 @@ public sealed class ReportPackWorkflowServiceTests
         var approved = CreateApprovedPack(
             workflow,
             [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
-            accessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user"));
+            accessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user"),
+            accessContext: BoundAccessContext("author"));
         var published = workflow.Publish(
             approved.ReportId,
             "publisher",
@@ -4980,7 +5022,8 @@ public sealed class ReportPackWorkflowServiceTests
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var approved = CreateApprovedPack(
             workflow,
-            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
+            accessContext: BoundAccessContext("author"));
         var published = workflow.Publish(
             approved.ReportId,
             "publisher",
@@ -5346,7 +5389,8 @@ public sealed class ReportPackWorkflowServiceTests
         ReportPackWorkflowService svc,
         IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,
         string templateName = "board-pack",
-        ReportAccessPolicyDto? accessPolicy = null)
+        ReportAccessPolicyDto? accessPolicy = null,
+        ReportAccessQueryContext? accessContext = null)
     {
         var created = svc.Create(
             "fund-a",
@@ -5355,10 +5399,27 @@ public sealed class ReportPackWorkflowServiceTests
             new VersionedReportTemplateIdDto(templateName, 1),
             "author",
             lineProvenance,
-            accessPolicy);
+            accessPolicy,
+            accessContext);
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         return svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
     }
+
+    private static ReportAccessQueryContext BoundAccessContext(
+        string actor,
+        string companyId = TestCompanyId,
+        IReadOnlyList<string>? groups = null) =>
+        new(actor, groups, companyId, TenantId: TestTenantId, RequireBoundScope: true);
+
+    private static ReportingRunReadinessService LegacyDraftReadiness(
+        IReportingTemplateCatalog catalog,
+        GovernedReportingTemplateCatalog? governedCatalog = null) =>
+        new(
+            catalog,
+            governedCatalog,
+            options: new ReportingRunReadinessOptions(
+                AllowLegacyUnscopedDrafts: true,
+                AllowDraftWhenDependencyEvaluatorIsUnavailable: true));
 
     private static void PublishWithLedgerEvidence(ReportPackWorkflowService svc, Guid reportId, string evidenceId = "ledger-evidence-1") =>
         svc.Publish(
@@ -5442,7 +5503,8 @@ public sealed class ReportPackWorkflowServiceTests
         string username = "controller.admin",
         FundOperationsWorkspaceReadService? workspaceService = null,
         string? roleProfileName = null,
-        string? companyId = null)
+        string? companyId = TestCompanyId,
+        string? tenantId = TestTenantId)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -5465,12 +5527,19 @@ public sealed class ReportPackWorkflowServiceTests
                 () => new DateTimeOffset(2026, 5, 5, 9, 0, 0, TimeSpan.Zero)));
         builder.Services.AddSingleton<ReportWriterDatasetSourceService>();
         builder.Services.AddSingleton<ReportWriterGridArtifactService>();
+        builder.Services.AddSingleton(sp =>
+            LegacyDraftReadiness(
+                sp.GetRequiredService<IReportingTemplateCatalog>(),
+                sp.GetRequiredService<GovernedReportingTemplateCatalog>()));
+        builder.Services.AddSingleton<ReportingRunCertificationService>();
         builder.Services.AddSingleton<ReportingRunCommandService>();
         builder.Services.AddSingleton(sp =>
             new ReportingScheduleService(
                 sp.GetRequiredService<IReportingOrchestrationService>(),
                 datasetSourceService: sp.GetRequiredService<ReportWriterDatasetSourceService>(),
-                governedTemplateCatalog: sp.GetRequiredService<GovernedReportingTemplateCatalog>()));
+                governedTemplateCatalog: sp.GetRequiredService<GovernedReportingTemplateCatalog>(),
+                readinessService: sp.GetRequiredService<ReportingRunReadinessService>(),
+                certificationService: sp.GetRequiredService<ReportingRunCertificationService>()));
         builder.Services.AddSingleton<ReportingStarterKitService>();
         builder.Services.AddSingleton<ReportPackWorkflowService>();
         builder.Services.AddSingleton<ReportPackDeliveryService>();
@@ -5492,6 +5561,11 @@ public sealed class ReportPackWorkflowServiceTests
             if (!string.IsNullOrWhiteSpace(companyId))
             {
                 context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = companyId.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(tenantId))
+            {
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = tenantId.Trim();
             }
 
             await next();
