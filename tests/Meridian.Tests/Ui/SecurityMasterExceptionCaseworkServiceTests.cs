@@ -755,8 +755,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
         {
             if (!_overrides.TryGetValue(securityId, out var existing))
             {
-                throw new InvalidOperationException(
-                    $"No operator overrides exist for security {securityId}.");
+                throw new InvalidOperationException($"No operator overrides exist for security '{securityId}'.");
             }
 
             var reviewedAt = DateTimeOffset.UtcNow;

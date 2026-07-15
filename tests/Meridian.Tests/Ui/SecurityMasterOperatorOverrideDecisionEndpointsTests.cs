@@ -121,8 +121,6 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
                 DateTimeOffset.UtcNow)
             {
                 ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,
-                // The reason code travels with the overlay (the patch that opened it); the decision
-                // preserves it rather than re-supplying it.
                 ReasonCode = "provider-symbol-confirmed"
             };
         }
@@ -149,8 +147,7 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
 
             if (!_overrides.TryGetValue(securityId, out var existing))
             {
-                throw new InvalidOperationException(
-                    $"No operator overrides exist for security {securityId}.");
+                throw new InvalidOperationException($"No operator overrides exist for security '{securityId}'.");
             }
 
             var reviewedAt = DateTimeOffset.UtcNow;

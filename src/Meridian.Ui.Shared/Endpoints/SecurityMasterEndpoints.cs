@@ -939,13 +939,13 @@ public static class SecurityMasterEndpoints
             [FromServices] IOperatorOverridesStore store,
             CancellationToken ct) =>
         {
-            // The reviewer identity is server-derived from the authenticated principal and overrides
-            // any caller-supplied value, so a decision can never be attributed to someone else.
-            var decision = request with { Reviewer = ResolveActor(context) };
+            // The reviewer identity is server-derived from the authenticated principal; overwrite any
+            // caller-supplied value so a client cannot spoof who approved the overlay.
+            var reviewer = ResolveActor(context);
             try
             {
                 var updated = await store
-                    .RecordApprovalDecisionAsync(securityId, decision, ct)
+                    .RecordApprovalDecisionAsync(securityId, request with { Reviewer = reviewer }, ct)
                     .ConfigureAwait(false);
                 return Results.Json(updated, jsonOptions);
             }
@@ -953,10 +953,9 @@ public static class SecurityMasterEndpoints
             {
                 return Results.BadRequest(new { error = exception.Message });
             }
-            catch (InvalidOperationException exception)
+            catch (InvalidOperationException)
             {
-                // No pending overlay to decide (missing row or already decided).
-                return Results.NotFound(new { error = exception.Message });
+                return Results.NotFound();
             }
         })
         .WithName("RecordSecurityMasterOperatorOverrideDecision")

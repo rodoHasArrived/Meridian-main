@@ -60,9 +60,9 @@ public sealed record OperatorOverridesPatchRequest(
 /// <summary>
 /// A reviewer's decision on a pending operator-override overlay. <see cref="Decision"/> must be
 /// <see cref="SecurityOverrideApprovalStatusDto.Approved"/> or
-/// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>; the reviewer identity and an optional
-/// comment are stamped onto the durable audit trail. <see cref="Reviewer"/> is server-derived from
-/// the authenticated principal, not supplied by the caller.
+/// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>; the reviewer identity is server-derived
+/// from the authenticated principal (not supplied by the caller), and an optional comment is stamped
+/// onto the durable audit trail.
 /// </summary>
 public sealed record OperatorOverrideDecisionRequest(
     SecurityOverrideApprovalStatusDto Decision,
