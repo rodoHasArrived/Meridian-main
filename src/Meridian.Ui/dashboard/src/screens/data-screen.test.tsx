@@ -681,7 +681,7 @@ describe("DataScreen", () => {
     expect(screen.getByRole("link", { name: "Validate live quotes after configuring Alpaca" }))
       .toHaveAttribute("href", "/data/quotes?symbol=AAPL");
     expect(screen.getByRole("link", { name: "Preview a historical backfill after configuring Alpaca" }))
-      .toHaveAttribute("href", "/data/operations");
+      .toHaveAttribute("href", "/data/backfills");
     expect(screen.getByRole("link", { name: "Check Trading readiness after configuring Alpaca" }))
       .toHaveAttribute("href", "/trading/readiness");
     await waitFor(() => expect(refreshProviderRouting).toHaveBeenCalledTimes(1));

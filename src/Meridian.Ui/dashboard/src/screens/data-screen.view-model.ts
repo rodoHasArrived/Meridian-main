@@ -4939,7 +4939,7 @@ export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): 
     actions.push({
       id: "backfill",
       label: "Preview a backfill",
-      href: WORKSTATION_ROUTE_CATALOG.dataOperations,
+      href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
       ariaLabel: `Preview a historical backfill after configuring ${providerLabel}`,
       variant: actions.length === 0 ? "default" : "outline"
     });

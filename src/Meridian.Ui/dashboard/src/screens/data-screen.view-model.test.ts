@@ -1522,7 +1522,7 @@ describe("data-screen view model", () => {
       {
         id: "backfill",
         label: "Preview a backfill",
-        href: "/data/operations",
+        href: "/data/backfills",
         ariaLabel: "Preview a historical backfill after configuring Yahoo Finance",
         variant: "default"
       }
@@ -1668,7 +1668,7 @@ describe("data-screen view model", () => {
       {
         id: "backfill",
         label: "Preview a backfill",
-        href: "/data/operations",
+        href: "/data/backfills",
         ariaLabel: "Preview a historical backfill after configuring Polygon.io",
         variant: "outline"
       },
