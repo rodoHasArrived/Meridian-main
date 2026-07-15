@@ -100,6 +100,28 @@ public sealed class ConfigJsonSchemaGenerator
             }
         };
 
+        properties["SecurityMasterWorkbench"] = AllowNull(new JsonObject
+        {
+            ["$ref"] = "#/$defs/SecurityMasterWorkbenchOptions"
+        });
+
+        _definitions["SecurityMasterWorkbenchOptions"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["additionalProperties"] = false,
+            ["properties"] = new JsonObject
+            {
+                ["SourcePrecedence"] = new JsonObject
+                {
+                    ["type"] = "array",
+                    ["items"] = CreateTypedSchema("string")
+                },
+                ["GoldenCopySource"] = AllowNull(CreateTypedSchema("string")),
+                ["RequireIndependentReviewer"] = CreateTypedSchema("boolean"),
+                ["MaxBulkResolveBatch"] = CreateTypedSchema("integer")
+            }
+        };
+
         properties["PaperTrading"] = AllowNull(new JsonObject
         {
             ["$ref"] = "#/$defs/PaperTradingHostOptions"

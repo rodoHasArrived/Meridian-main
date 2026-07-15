@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Reporting;
@@ -180,6 +182,13 @@ public sealed class ReportTemplateRegistryService
         if (record.Status != ReportTemplateLifecycleStatusDto.InReview)
         {
             throw new InvalidOperationException($"Template {id.Name}@v{id.Version} must be in review before approval.");
+        }
+
+        if (string.Equals(record.CreatedBy, actor, StringComparison.Ordinal)
+            || string.Equals(record.SubmittedBy, actor, StringComparison.Ordinal))
+        {
+            throw new UnauthorizedAccessException(
+                "The template creator or submitter cannot approve the same template version.");
         }
 
         var validationIssues = ValidateDefinition(record.Definition);
@@ -989,12 +998,13 @@ public sealed class FileReportTemplateGovernanceStore : IReportTemplateGovernanc
             try
             {
                 var json = File.ReadAllText(_options.SnapshotPath);
-                return JsonSerializer.Deserialize<ReportTemplateGovernanceSnapshot>(json, _jsonOptions)?.Records ?? [];
+                return JsonSerializer.Deserialize<ReportTemplateGovernanceSnapshot>(json, _jsonOptions)?.Records
+                    ?? throw new JsonException("Report template governance snapshot deserialized to null.");
             }
             catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
             {
-                _logger.LogWarning(ex, "Unable to load report template governance snapshot from {SnapshotPath}.", _options.SnapshotPath);
-                return [];
+                _logger.LogCritical(ex, "Report template governance snapshot at {SnapshotPath} is unreadable; reporting is blocked until the state is recovered.", _options.SnapshotPath);
+                throw new ReportingStateCorruptionException(_options.SnapshotPath, ex);
             }
         }
     }
@@ -1057,12 +1067,13 @@ public sealed class FileReportPackWorkflowRecordStore : IReportPackWorkflowRecor
             try
             {
                 var json = File.ReadAllText(_options.SnapshotPath);
-                return JsonSerializer.Deserialize<ReportPackWorkflowSnapshot>(json, _jsonOptions)?.Records ?? [];
+                return JsonSerializer.Deserialize<ReportPackWorkflowSnapshot>(json, _jsonOptions)?.Records
+                    ?? throw new JsonException("Report-pack workflow snapshot deserialized to null.");
             }
             catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
             {
-                _logger.LogWarning(ex, "Unable to load report-pack workflow snapshot from {SnapshotPath}.", _options.SnapshotPath);
-                return [];
+                _logger.LogCritical(ex, "Report-pack workflow snapshot at {SnapshotPath} is unreadable; reporting is blocked until the state is recovered.", _options.SnapshotPath);
+                throw new ReportingStateCorruptionException(_options.SnapshotPath, ex);
             }
         }
     }
@@ -1131,7 +1142,8 @@ public sealed class ReportPackWorkflowService
         VersionedReportTemplateIdDto templateId,
         string actor,
         IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance = null,
-        ReportAccessPolicyDto? accessPolicy = null)
+        ReportAccessPolicyDto? accessPolicy = null,
+        ReportAccessQueryContext? accessContext = null)
     {
         var accessIssues = ReportAccessPolicyEvaluator.Validate(accessPolicy);
         if (accessIssues.Count > 0)
@@ -1139,14 +1151,42 @@ public sealed class ReportPackWorkflowService
             throw new ArgumentException($"Report pack access policy is invalid: {string.Join("; ", accessIssues)}.");
         }
 
+        if (accessContext?.RequireBoundScope == true
+            && (string.IsNullOrWhiteSpace(accessContext.TenantId)
+                || string.IsNullOrWhiteSpace(accessContext.CompanyId)
+                || string.IsNullOrWhiteSpace(accessContext.ActorPrincipalId)))
+        {
+            throw new UnauthorizedAccessException(
+                "A server-resolved actor, tenant, and company scope is required to create a reporting pack.");
+        }
+
         var id = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
         var normalizedAccessPolicy = ReportAccessPolicyEvaluator.Normalize(accessPolicy, actor);
+        if (normalizedAccessPolicy.Mode == ReportAccessModeDto.CompanyWide
+            && string.IsNullOrWhiteSpace(normalizedAccessPolicy.CompanyId)
+            && !string.IsNullOrWhiteSpace(accessContext?.CompanyId))
+        {
+            normalizedAccessPolicy = normalizedAccessPolicy with { CompanyId = accessContext.CompanyId.Trim() };
+        }
+
+        if (accessContext?.RequireBoundScope == true
+            && !string.IsNullOrWhiteSpace(normalizedAccessPolicy.CompanyId)
+            && !string.Equals(normalizedAccessPolicy.CompanyId, accessContext.CompanyId, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException("The reporting pack access policy belongs to another company.");
+        }
+
+        var accessPolicyHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(normalizedAccessPolicy)))).ToLowerInvariant();
         var record = new ReportPackWorkflowRecordDto(id, fundProfileId, fundAccountId, period, templateId, ReportPackWorkflowStateDto.Draft, 1, now, actor, now,
             [new ReportPackAuditEventDto(now, actor, "create", ReportPackWorkflowStateDto.Draft, ReportPackWorkflowStateDto.Draft)]
             , null,
             NormalizeLineProvenance(lineProvenance),
-            AccessPolicy: normalizedAccessPolicy);
+            AccessPolicy: normalizedAccessPolicy,
+            TenantId: accessContext?.TenantId?.Trim(),
+            CompanyId: accessContext?.CompanyId?.Trim(),
+            AccessPolicySnapshotHash: accessPolicyHash);
         SaveAndIndex(record);
         return record;
     }

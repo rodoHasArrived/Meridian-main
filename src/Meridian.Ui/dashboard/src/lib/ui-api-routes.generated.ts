@@ -757,6 +757,7 @@ export const UI_API_ROUTES = {
   ReportingPackDeliveryPortalPackage: "/portal/reporting/packages/{packageId}",
   ReportingStructuredExport: "/api/fund-structure/reporting/structured-exports/{exportId}",
   ReportingRuns: "/api/fund-structure/reporting/runs",
+  ReportingRunReadiness: "/api/fund-structure/reporting/runs/readiness",
   ReportingRunAuditTrail: "/api/fund-structure/reporting/runs/{runId}/audit",
   ReportingRunStream: "/api/fund-structure/reporting/runs/{runId}/stream",
   ReportingRunReportWriterGrid: "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}",

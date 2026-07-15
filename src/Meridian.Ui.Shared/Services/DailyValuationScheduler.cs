@@ -327,6 +327,8 @@ public sealed class DailyValuationScheduledWorker
             var evidenceLinks = BuildEvidenceLinks(item, run, nowUtc);
             var blockers = run.Valuation.UnpricedSymbols
                 .Select(static symbol => $"{symbol}: no trusted closing mark available")
+                .Concat(run.Valuation.StalePricedSymbols
+                    .Select(static symbol => $"{symbol}: closing mark rejected — exceeds maximum mark-age policy"))
                 .ToArray();
 
             if (run.Valuation.Projection is null && blockers.Length > 0)
