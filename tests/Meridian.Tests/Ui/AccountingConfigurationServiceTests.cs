@@ -1519,8 +1519,9 @@ public sealed class AccountingConfigurationServiceTests
             "evidence://prices/MSFT/2026-06-30/correction",
             new DateOnly(2026, 6, 30),
             DailyPortfolioPriceConfidence.High));
-        var postedSchedule = (await scheduleSource.GetAsync(configured.ScheduleId)).Should().NotBeNull().Subject!;
-        await scheduleSource.SaveAsync(postedSchedule with
+        var postedSchedule = await scheduleSource.GetAsync(configured.ScheduleId);
+        postedSchedule.Should().NotBeNull();
+        await scheduleSource.SaveAsync(postedSchedule! with
         {
             State = DailyValuationScheduleStateDto.Scheduled,
             NextRunAtUtc = correctionAsOf,
@@ -1547,8 +1548,9 @@ public sealed class AccountingConfigurationServiceTests
         (await draftStore.ListAsync("fund-alpha", ManualJournalLedgerBookId))
             .Should().HaveCount(4)
             .And.OnlyContain(draft => draft.Status == ManualJournalEntryStatusDto.Posted);
-        var finalSchedule = (await scheduleSource.GetAsync(configured.ScheduleId)).Should().NotBeNull().Subject!;
-        finalSchedule.State.Should().Be(DailyValuationScheduleStateDto.Posted);
+        var finalSchedule = await scheduleSource.GetAsync(configured.ScheduleId);
+        finalSchedule.Should().NotBeNull();
+        finalSchedule!.State.Should().Be(DailyValuationScheduleStateDto.Posted);
         finalSchedule.JournalEntryIds.Should().BeEquivalentTo(correctionPosting.JournalEntryIds);
         journalStore.Appended.Should().HaveCount(4);
         journalStore.Appended.GroupBy(static write => write.Entry.Metadata.Symbol)

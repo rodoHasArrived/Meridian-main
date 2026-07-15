@@ -80,7 +80,7 @@ public static class BackfillPresentationService
                     SymbolsText: execution.Symbols.Length == 0
                         ? $"{execution.SymbolsProcessed:N0} symbol(s)"
                         : string.Join(", ", execution.Symbols),
-                    Provider: NormalizeProvider(sla?.Provider ?? defaultProvider),
+                    Provider: ResolveProvider(sla?.Provider, defaultProvider),
                     RangeText: FormatRange(execution.FromDate, execution.ToDate),
                     SlaTier: sla?.Tier,
                     SlaTierText: FormatTier(sla?.Tier),
@@ -169,6 +169,9 @@ public static class BackfillPresentationService
 
     private static string NormalizeProvider(string? provider) =>
         string.IsNullOrWhiteSpace(provider) ? "stooq" : provider.Trim().ToLowerInvariant();
+
+    private static string ResolveProvider(string? provider, string defaultProvider) =>
+        string.IsNullOrWhiteSpace(provider) ? defaultProvider : NormalizeProvider(provider);
 }
 
 public sealed record BackfillSymbolProgressPresentation(

@@ -161,6 +161,14 @@ public sealed class BackfillViewModelTests
     }
 
     [Fact]
+    public void BackfillPageSource_BindsReadOnlyProgressOneWay()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml"));
+
+        xaml.Should().Contain("Value=\"{Binding OverallProgressPercent, Mode=OneWay}\"");
+    }
+
+    [Fact]
     public void BackfillWorkbenchSection_ShouldOwnProgressJobsAndGapPresentationWithAdapterBindings()
     {
         var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.Sections.cs"));
