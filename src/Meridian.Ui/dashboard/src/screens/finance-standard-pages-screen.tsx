@@ -15,6 +15,7 @@ import { getOperationsCloseCalendar, getRunLedgerJournal, getRunTrialBalance } f
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
+import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -262,107 +263,8 @@ export function ReportPreviewValidationScreen({ data }: FinanceStandardScreenPro
   );
 }
 
-export function ReportRunDetailScreen({ data }: FinanceStandardScreenProps) {
-  const [searchParams] = useSearchParams();
-  const reporting = asRecord(data?.reporting);
-  const requestedRunId = searchParams.get("runId") ?? "";
-  const runs = readRecordArray(reporting, "recentRuns");
-  const run = runs.find((candidate) => readString(candidate, "runId", "") === requestedRunId) ?? runs[0] ?? null;
-  const runId = readString(run, "runId", requestedRunId || "No run selected");
-  const runTemplateId = readString(run, "templateId", "");
-  const retainedTemplateName = data?.reporting.templates?.find((candidate) => candidate.templateId === runTemplateId)?.name;
-  const reportName = readString(
-    run,
-    "reportName",
-    readString(run, "templateName", retainedTemplateName ?? presentReportingIdentifier(runTemplateId, "Report run"))
-  );
-  const status = readString(run, "status", "Draft");
-  const generatedFiles = readStringArray(run, "generatedFiles").length > 0
-    ? readStringArray(run, "generatedFiles")
-    : readStringArray(run, "artifacts");
-  const recipients = readStringArray(run, "distributionRecipients");
-  const started = resolveStartedLabel(run, status);
-  const completed = resolveCompletedLabel(run, status);
-  const parameters = buildRetainedParameterItems(run);
-  const auditTrail = readStringArray(run, "auditActions").map(presentStatusLabel);
-  const hasSelectedRun = run !== null && runId !== "No run selected";
-  const validationWarnings = readStringArray(run, "validationWarnings");
-  const isAwaitingApproval = status.toLowerCase().replace(/[^a-z]/g, "").includes("awaitingapproval");
-  const retainedAsOfDate = readString(run, "asOfDate", "");
-
-  return (
-    <div className="space-y-4">
-      <OperationalTrustSummary
-        source={{ value: hasSelectedRun ? "Retained report run" : "No run selected", tone: hasSelectedRun ? "ready" : "unknown" }}
-        scope={{ value: reportName, detail: presentRunPhase(status), tone: hasSelectedRun ? "ready" : "unknown" }}
-        freshness={{
-          value: presentReportingAsOfDate(retainedAsOfDate),
-          detail: hasRetainedReportingAsOfDate(retainedAsOfDate) ? completed : "Confirm the reporting period before approval.",
-          tone: hasSelectedRun && hasRetainedReportingAsOfDate(retainedAsOfDate) ? "ready" : hasSelectedRun ? "review" : "unknown"
-        }}
-        completeness={{
-          value: `${generatedFiles.length} outputs · ${validationWarnings.length} warnings`,
-          tone: validationWarnings.length > 0 || isAwaitingApproval || generatedFiles.length === 0 ? "review" : hasSelectedRun ? "ready" : "unknown"
-        }}
-        blocker={status.toLowerCase().includes("fail") ? { value: "Run failed", detail: "Review the audit trail before retrying.", tone: "blocked" } : undefined}
-        label="Report run confidence"
-      />
-      <Card className="panel-surface">
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <CardTitle>Report Run Detail</CardTitle>
-            <CardDescription>{reportName}</CardDescription>
-          </div>
-          <Badge variant={reportRunStatusVariant(status)}>{presentStatusLabel(status)}</Badge>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Workflow phase" value={presentRunPhase(status)} />
-          <FinanceFact label="Completed" value={completed} mono />
-          <FinanceFact label="Warnings" value={String(validationWarnings.length)} />
-          <TechnicalDetails label="Run audit details" className="md:col-span-3">
-            <dl className="grid gap-3 md:grid-cols-2">
-              <FinanceFact label="Run ID" value={runId} mono />
-              <FinanceFact label="Actor" value={readString(run, "actor", readString(run, "requestedBy", "browser-user"))} />
-              <FinanceFact label="Started" value={started} mono />
-              <FinanceFact label="Input datasets" value={readStringArray(run, "inputDatasets").join(", ") || "Retained reporting datasets"} />
-            </dl>
-          </TechnicalDetails>
-        </CardContent>
-      </Card>
-
-      <section className="grid gap-4 xl:grid-cols-2">
-        <FinanceList title="Parameters used" items={parameters} />
-        <TechnicalDetails label="Generated artifact references">
-          <FinanceList title="Generated files" items={generatedFiles.length > 0 ? generatedFiles : ["No generated files have been retained for this run yet."]} />
-        </TechnicalDetails>
-        <FinanceList title="Distribution recipients" items={recipients.length > 0 ? recipients : ["No downstream recipients have been released yet."]} />
-        <TechnicalDetails label="Run audit trail">
-          <FinanceList
-            title="Audit trail"
-            items={auditTrail.length > 0 ? auditTrail : [`Current workflow state: ${presentStatusLabel(status)}.`]}
-          />
-        </TechnicalDetails>
-      </section>
-
-      <div className="flex flex-wrap gap-2">
-        {hasSelectedRun && isAwaitingApproval ? (
-          <Button asChild size="sm">
-            <Link to={workstationRouteWithQuery("reportingRunStatus", { runId })}>Review approval</Link>
-          </Button>
-        ) : null}
-        {hasSelectedRun ? (
-          <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("reportingRunParameters", { cloneRunId: runId })}>Clone parameters</Link>
-          </Button>
-        ) : null}
-        {hasSelectedRun && !status.toLowerCase().includes("fail") ? (
-          <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("reportingPreviewValidation", { runId })}>Open preview</Link>
-          </Button>
-        ) : null}
-      </div>
-    </div>
-  );
+export function ReportRunDetailScreen(_props: FinanceStandardScreenProps) {
+  return <ReportRunGovernanceScreen />;
 }
 
 export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
@@ -1060,37 +962,6 @@ function presentFinanceDate(value: string): string {
     : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
 
-function presentRunPhase(status: string): string {
-  const normalized = normalizeStatus(status);
-  if (normalized.includes("fail") || normalized.includes("reject")) {
-    return "Needs correction";
-  }
-  if (normalized.includes("awaiting") || normalized.includes("pendingapproval") || normalized.includes("inreview")) {
-    return "Approval review";
-  }
-  if (normalized.includes("approved") || normalized.includes("released") || normalized.includes("published")) {
-    return "Released output";
-  }
-  if (normalized.includes("running") || normalized.includes("generating")) {
-    return "Generating output";
-  }
-  return "Run preparation";
-}
-
-function reportRunStatusVariant(status: string): "outline" | "warning" | "danger" | "success" {
-  const normalized = normalizeStatus(status);
-  if (normalized.includes("fail") || normalized.includes("reject")) {
-    return "danger";
-  }
-  if (normalized.includes("awaiting") || normalized.includes("pending") || normalized.includes("review")) {
-    return "warning";
-  }
-  if (normalized.includes("approved") || normalized.includes("released") || normalized.includes("published") || normalized.includes("complete")) {
-    return "success";
-  }
-  return "outline";
-}
-
 function approvalStatusVariant(status: string): "outline" | "warning" | "danger" | "success" {
   const normalized = normalizeStatus(status);
   if (normalized.includes("reject") || normalized.includes("needsfix") || normalized.includes("block")) {
@@ -1120,71 +991,6 @@ function resolveCloseWorkflowHref(item: OperationsCloseCalendarItem): string {
     fundAccountId: item.fundAccountId || null,
     periodId: item.periodId || null
   });
-}
-
-function resolveStartedLabel(run: UnknownRecord | null, status: string): string {
-  const retained = readString(run, "startedAtUtc", readString(run, "startedAt", ""));
-  if (retained) {
-    return retained;
-  }
-  return normalizeStatus(status) === "draft" ? "Not started" : "Start timestamp not retained";
-}
-
-function resolveCompletedLabel(run: UnknownRecord | null, status: string): string {
-  const retained = readString(run, "completedAtUtc", readString(run, "completedAt", ""));
-  if (retained) {
-    return retained;
-  }
-
-  const normalized = normalizeStatus(status);
-  if (normalized.includes("awaiting") || normalized.includes("pendingapproval") || normalized.includes("inreview")) {
-    return "Generation complete; approval pending";
-  }
-  if (normalized.includes("running") || normalized.includes("generating")) {
-    return "In progress";
-  }
-  if (normalized.includes("fail") || normalized.includes("reject")) {
-    return "Stopped before completion";
-  }
-  if (normalized.includes("approved") || normalized.includes("released") || normalized.includes("published") || normalized.includes("complete")) {
-    return "Completion timestamp not retained";
-  }
-  if (readString(run, "startedAtUtc", readString(run, "startedAt", ""))) {
-    return "In progress";
-  }
-  return "Not started";
-}
-
-function buildRetainedParameterItems(run: UnknownRecord | null): string[] {
-  const parameters = readRecord(run, "parameters");
-  const entries = parameters ? Object.entries(parameters) : [];
-  const retained = entries.flatMap(([key, value]) => {
-    const presented = presentParameterValue(value);
-    return presented ? [`${presentParameterLabel(key)}: ${presented}`] : [];
-  });
-
-  if (retained.length > 0) {
-    return retained;
-  }
-
-  const knownFields = [
-    "fundProfileId",
-    "portfolioId",
-    "entityId",
-    "asOfDate",
-    "ledgerBookId",
-    "accountingBasis",
-    "currency",
-    "consolidationLevel",
-    "outputFormat",
-    "datasetSourceId"
-  ];
-  const known = knownFields.flatMap((key) => {
-    const value = presentParameterValue(run?.[key]);
-    return value ? [`${presentParameterLabel(key)}: ${value}`] : [];
-  });
-
-  return known.length > 0 ? known : ["No retained parameter values are available for this run."];
 }
 
 function buildReportPreviewItems({
@@ -1238,32 +1044,6 @@ function buildReportOutputItems(references: string[], fallback: string): string[
     }
     return `Retained output reference ${index + 1}.`;
   });
-}
-
-function presentParameterLabel(key: string): string {
-  const spaced = key
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/\s+/g, " ")
-    .trim();
-  return spaced ? `${spaced.charAt(0).toUpperCase()}${spaced.slice(1)}` : "Parameter";
-}
-
-function presentParameterValue(value: unknown): string | null {
-  if (typeof value === "string" && value.trim()) {
-    return value.trim();
-  }
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return String(value);
-  }
-  if (typeof value === "boolean") {
-    return value ? "Yes" : "No";
-  }
-  if (Array.isArray(value)) {
-    const items = value.map((item) => presentParameterValue(item)).filter((item): item is string => Boolean(item));
-    return items.length > 0 ? items.join(", ") : null;
-  }
-  return null;
 }
 
 function FinanceFact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {

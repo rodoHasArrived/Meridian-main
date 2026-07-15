@@ -1383,8 +1383,8 @@ public sealed class AccountingConfigurationServiceTests
                     160m,
                     "trusted-close",
                     "evidence://prices/AAPL/2026-06-30",
-                    new DateOnly(2026, 6, 30),
-                    DailyPortfolioPriceConfidence.High))));
+                    FairValueLevel.Level1,
+                    new DateOnly(2026, 6, 30)))));
         var scheduleSource = new InMemoryDailyValuationPortfolioSource();
         await scheduleSource.SaveAsync(new DailyValuationScheduleWorkItem(
             "daily-valuation-fund-alpha",

@@ -133,6 +133,13 @@ public static class WorkstationTenantScopeEndpointFilters
         return group;
     }
 
+    public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(RequireTenantScope);
+        builder.WithMetadata(new WorkstationTenantScopeMetadata());
+        return builder;
+    }
+
     private static ValueTask<object?> RequireTenantScope(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
         var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context.HttpContext);

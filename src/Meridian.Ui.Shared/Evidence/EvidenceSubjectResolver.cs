@@ -557,26 +557,7 @@ public sealed class EvidenceSubjectResolver
         => mode is StrategyRunMode.Paper or StrategyRunMode.Live ? "Trading" : "Strategy";
 
     private IReadOnlyList<ReportPackDeliveryAttemptDto> ListReportPackDeliveryAttempts(int limit)
-    {
-        var service = _services.GetService<ReportPackDeliveryService>();
-        if (service is not null)
-        {
-            return service.ListAttempts(limit);
-        }
-
-        var store = _services.GetService<IReportPackDeliveryRecordStore>();
-        if (store is null)
-        {
-            return [];
-        }
-
-        return store.Load()
-            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
-            .ThenBy(static attempt => attempt.ReportId)
-            .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
-            .Take(Math.Clamp(limit, 1, 500))
-            .ToArray();
-    }
+        => ReportingDeliveryReadModelSecurity.ListVisibleAttempts(_services, limit).Attempts;
 
     private static string? TryResolveFundProfileIdFromFundEventId(string fundEventId)
     {

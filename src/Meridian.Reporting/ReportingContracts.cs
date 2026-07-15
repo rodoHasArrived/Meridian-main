@@ -57,6 +57,32 @@ public sealed record ReportingLineageReference(
     string ReconciliationCheckpointId,
     DateTimeOffset CapturedAtUtc);
 
+/// <summary>
+/// Immutable receipt for the durable server-owned source queried before rendering. The source
+/// checkpoint is deliberately distinct from the reconciliation/readiness checkpoint: one proves
+/// the exact ledger bytes and sequence boundary, while the other proves that those bytes were
+/// eligible for final reporting.
+/// </summary>
+public sealed record ReportingAuthoritativeSourceCheckpoint(
+    string SourceKind,
+    string SourceId,
+    string TenantId,
+    string OrganizationId,
+    string? CompanyId,
+    string FundId,
+    string LedgerBookId,
+    string AccountingPeriodId,
+    string AccountingBasis,
+    DateOnly AsOfDate,
+    DateTimeOffset CutoffUtc,
+    long HighestGlobalSequence,
+    int JournalEntryCount,
+    int LedgerLineCount,
+    string CheckpointId,
+    string CheckpointHash,
+    DateTimeOffset CapturedAtUtc,
+    ImmutableArray<string> EvidenceIds);
+
 public sealed record ReportingOutputManifest(
     string RunId,
     string TemplateId,
@@ -86,7 +112,9 @@ public sealed record ReportingOutputManifest(
     ReportingRunReadinessDto? Readiness = null,
     ReportingOperationalScope? OperationalScope = null,
     ReportingAccessScope? ImmutableAccessScope = null,
-    ReportingCertifiedSnapshotScope? CertifiedSnapshot = null);
+    ReportingCertifiedSnapshotScope? CertifiedSnapshot = null,
+    ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null,
+    ImmutableArray<IReadOnlyDictionary<string, string>> CertifiedDatasetRows = default);
 
 public sealed record ReportingRunReportWriterGridArtifact(
     string GridId,
@@ -127,7 +155,9 @@ public sealed record ReportingJobContract(
     ReportingRunReadinessDto? Readiness = null,
     ReportingOperationalScope? OperationalScope = null,
     ReportingAccessScope? ImmutableAccessScope = null,
-    ReportingCertifiedSnapshotScope? CertifiedSnapshot = null);
+    ReportingCertifiedSnapshotScope? CertifiedSnapshot = null,
+    ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null,
+    string? GovernedRunSeriesId = null);
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,
@@ -148,13 +178,22 @@ public sealed record ReportingRunAuditEntry(
 public sealed record ReportingRunSnapshot(
     ReportingOutputManifest Manifest,
     IReadOnlyList<ReportingRunAuditEntry> AuditTrail,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    string? CertifiedDatasetHashSha256 = null,
+    string? ManifestHashSha256 = null);
 
 public interface IReportingRunStore
 {
     IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25);
     ReportingOutputManifest? GetManifest(string runId);
+    ReportingOutputManifest? GetManifest(string tenantId, string runId) =>
+        GetManifest(runId) is { OperationalScope: { } scope } manifest
+        && string.Equals(scope.TenantId, tenantId, StringComparison.Ordinal)
+            ? manifest
+            : null;
     IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId);
+    IReadOnlyList<ReportingRunAuditEntry> GetAudit(string tenantId, string runId) =>
+        GetManifest(tenantId, runId) is null ? [] : GetAudit(runId);
     Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList<ReportingRunAuditEntry> auditTrail, CancellationToken ct = default);
 }
 

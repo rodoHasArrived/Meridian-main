@@ -1,6 +1,7 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
+import { useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
 import { ReportRunParametersScreen } from "@/screens/report-run-parameters-screen";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
@@ -119,11 +120,19 @@ const readyReadiness: ReportingRunReadiness = {
 
 async function renderScreen(initialEntry: string) {
   const result = renderWithRouter(
-    <ReportRunParametersScreen data={reportingData} accounting={accountingData} />,
+    <>
+      <ReportRunParametersScreen data={reportingData} accounting={accountingData} />
+      <LocationProbe />
+    </>,
     { initialEntries: [initialEntry] }
   );
   await waitForAsyncEffects();
   return result;
+}
+
+function LocationProbe() {
+  const location = useLocation();
+  return <output data-testid="current-location" className="sr-only">{location.pathname}{location.search}</output>;
 }
 
 describe("ReportRunParametersScreen", () => {
@@ -344,7 +353,7 @@ describe("ReportRunParametersScreen", () => {
     expect(screen.getByRole("region", { name: "Report run form" })).toHaveTextContent("Trial Balance Pack");
   });
 
-  it("submits the run and shows the result via the shared status view", async () => {
+  it("submits the exact normalized run and navigates to its governed detail", async () => {
     const runResult: ReportingRunResult = {
       run: {
         runId: "run-42",
@@ -368,13 +377,9 @@ describe("ReportRunParametersScreen", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: "Run Trial Balance Pack" })).toBeEnabled());
     await user.click(await screen.findByRole("button", { name: "Run Trial Balance Pack" }));
 
-    expect(await screen.findByText("Trial Balance Pack run created.")).toBeInTheDocument();
-    const status = screen.getByRole("status", { name: "Report run status" });
-    expect(status).toHaveTextContent("Run retained for audit review");
-    const runReference = within(status).getByText("Run reference").closest("details");
-    expect(runReference).not.toBeNull();
-    expect(runReference).not.toHaveAttribute("open");
-    expect(within(runReference as HTMLElement).getByText("run-42")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("current-location")).toHaveTextContent(
+      "/reporting/runs/detail?runId=run-42"
+    ));
     expect(api.runReportingNow).toHaveBeenCalledWith(
       expect.objectContaining({
         templateId: "trial-balance-pack",
@@ -386,6 +391,20 @@ describe("ReportRunParametersScreen", () => {
 
   it("round-trips the operator's exact scope, book, output, evidence, and template version through preflight and run", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.assessReportingRunReadiness).mockImplementation(async (request) => ({
+      ...readyReadiness,
+      resolvedTemplate: request.template!,
+      resolvedParameters: {
+        ...request.parameters!,
+        scope: {
+          ...request.parameters!.scope,
+          dimensions: {
+            ...(request.parameters!.scope.dimensions ?? {}),
+            organizationId: "org-server-normalized"
+          }
+        }
+      }
+    }));
     vi.mocked(api.runReportingNow).mockResolvedValue({
       run: {
         runId: "run-portfolio-42",
@@ -421,15 +440,25 @@ describe("ReportRunParametersScreen", () => {
     await user.selectOptions(screen.getByLabelText("Output format"), "Xlsx");
     await user.click(screen.getByLabelText("Include supporting schedules"));
     await user.click(screen.getByLabelText("Include evidence appendix"));
-    await user.clear(screen.getByLabelText("Template parameters (JSON)"));
-    await user.type(screen.getByLabelText("Template parameters (JSON)"), JSON.stringify({ reportingRegion: "EU" }));
+    fireEvent.change(screen.getByLabelText("Ledger dimensions (JSON)"), {
+      target: {
+        value: JSON.stringify({
+          strategyId: "private-credit",
+          positionId: "22222222-2222-2222-2222-222222222222",
+          externalGlDimensions: { Department: "Private Credit", Class: "Senior" }
+        })
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Template parameters (JSON)"), {
+      target: { value: JSON.stringify({ reportingRegion: "EU" }) }
+    });
     await user.clear(screen.getByLabelText("Report run as-of date"));
     await user.type(screen.getByLabelText("Report run as-of date"), "2026-06-30");
 
     const runButton = screen.getByRole("button", { name: "Run Trial Balance Pack" });
     await waitFor(() => expect(runButton).toBeEnabled());
 
-    const latestPreflightRequest = vi.mocked(api.assessReportingRunReadiness).mock.calls.at(-1)?.[0];
+    const latestPreflightRequest = vi.mocked(api.assessReportingRunReadiness).mock.calls.at(-1)?.[0]!;
     expect(latestPreflightRequest).toEqual(expect.objectContaining({
       templateId: "trial-balance-pack",
       template: { name: "trial-balance-pack", version: 1 },
@@ -441,7 +470,11 @@ describe("ReportRunParametersScreen", () => {
           entityId: null,
           portfolioId: "portfolio-credit",
           investorId: null,
-          dimensions: null
+          dimensions: {
+            strategyId: "private-credit",
+            positionId: "22222222-2222-2222-2222-222222222222",
+            externalGlDimensions: { Department: "Private Credit", Class: "Senior" }
+          }
         },
         periodId: "2026-Q2",
         asOfDate: "2026-06-30",
@@ -461,7 +494,19 @@ describe("ReportRunParametersScreen", () => {
     }));
 
     await user.click(runButton);
-    expect(api.runReportingNow).toHaveBeenCalledWith(latestPreflightRequest);
+    expect(api.runReportingNow).toHaveBeenCalledWith({
+      ...latestPreflightRequest,
+      parameters: {
+        ...latestPreflightRequest.parameters!,
+        scope: {
+          ...latestPreflightRequest.parameters!.scope,
+          dimensions: {
+            ...(latestPreflightRequest.parameters!.scope.dimensions ?? {}),
+            organizationId: "org-server-normalized"
+          }
+        }
+      }
+    });
   });
 
   it("blocks a final run when the matching server preflight denies final generation", async () => {
@@ -489,7 +534,8 @@ describe("ReportRunParametersScreen", () => {
     await user.selectOptions(screen.getByLabelText("Draft vs final"), "Final");
 
     expect(await screen.findByText("Final blocked")).toBeInTheDocument();
-    expect(screen.getByText("Final reporting output must include the supporting evidence appendix.")).toBeInTheDocument();
+    expect(screen.getAllByText("Final reporting output must include the supporting evidence appendix.").length)
+      .toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("button", { name: "Run Trial Balance Pack" })).toBeDisabled();
     expect(api.runReportingNow).not.toHaveBeenCalled();
   });

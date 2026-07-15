@@ -671,9 +671,10 @@ Evidence Workbench subject using the backend `reportId:attemptId` identity, so R
 delivery evidence packets or audit graph state locally. Publication review and delivery package
 panels render retained line provenance with the server-provided Financial Record Explorer hrefs
 rather than constructing ledger, portfolio, or Security & Instrument routes in React. The delivery
-history also renders backend-owned access, channel, and download summaries for email-link,
-secure-portal, evidence-vault, and internal-route packages instead of deriving recipient-facing
-copy from URL shape. When the shared package includes an access-expiry timestamp, React displays it
+history also renders backend-owned access, channel, and download summaries for retained legacy
+email-link, secure-portal, evidence-vault, and internal-route package labels instead of deriving
+recipient-facing copy or transport capability from a label or URL shape. When the shared package
+includes an access-expiry timestamp, React displays it
 beside the token-gated delivery link so operators can see when email-link or portal access closes.
 Schedule delivery-plan cards render the latest retained delivery access expiry, access/channel summary, and entitlement
 scope from the shared plan payload beside artifact integrity, retained download summary, notification proof, report-writer
@@ -694,11 +695,13 @@ Cross-fund consolidation cards follow the same rule: fund/entity counts, gross/n
 P&L, shadow-NAV, variance, source counts, readiness, and drill-through routes are rendered from
 `crossFundConsolidations` without browser-local roll-up math.
 Report-pack delivery cards render branding evidence from the shared package payload, while the
-download routes keep the actual styled artifact generation in shared services. HTML/PDF package
-downloads apply the selected theme colors, firm, logo, footer, and disclaimer server-side, and XLSX
-packages retain a Branding worksheet, so the browser exposes branded packets without recreating
-presentation rules in React. Email-link and secure-portal access links open token-gated shared HTML
-package views; callers that need the raw manifest use the same route with `format=json`.
+canonical artifact-vault downloads keep styled artifact generation in shared services. PDF output
+applies the selected theme colors, firm, logo, footer, and disclaimer server-side, and XLSX packages
+retain a Branding worksheet, so the browser exposes retained branding evidence without recreating
+presentation rules in React. Email-link and secure-portal recipients use server-issued, scoped
+access-grant exchange links with a single opaque fragment token. The browser rejects cross-origin,
+query-credential, and legacy raw-package routes and does not turn retained manifest paths into
+recipient downloads.
 It also renders shared `livePortfolioViews` rows for tick-linked portfolio reporting. React shows
 the backend-owned live/source-backed/stale/blocked state, gross/net exposure, cash, pending
 settlement, P&L, shadow NAV, liquidity and telemetry copy, source/cut freshness stamps, and links to
@@ -745,17 +748,11 @@ and disabled download controls without anchor `href` values until the backend ma
 ready.
 It does this instead of deriving export inventory from report-profile labels.
 The Reporting workspace also renders shared `brandingThemes` rows with firm identity, built-in or
-custom posture, color swatches, logo URI, footer text, and disclaimer copy. When the payload carries
-fund context, React can first preview the governed BoardPacket through the shared report-pack
-preview endpoint, then generate a governed BoardPacket report pack with PDF/XLSX/CSV artifacts by
-posting the selected `brandingThemeId` to the shared report-pack endpoint; without fund context the
-commands stay disabled instead of using a browser-local default. The preview request carries the
-selected branding theme id, and the preview status displays the service-owned report totals,
-trial-balance line count, asset-class sections, and normalized branding identity without calculating
-those values in React. Operators can also preview and generate a one-off custom branded pack by
-entering a theme id, firm name, colors, logo URI, footer, and disclaimer; the browser posts the
-shared `BrandingThemeOverride` contract for preview and generation and lets the backend normalize,
-validate, and retain the branded PDF/XLSX/CSV artifacts.
+custom posture, color swatches, logo URI, footer text, and disclaimer copy. Operators can stage a
+custom branding override for schedule or run configuration, but the browser does not call the
+retired pack preview or generation endpoints. Preview, certified artifact production, lifecycle
+creation, and release now proceed through the canonical governed-run parameter and run-detail
+workflows, where readiness and retained evidence remain server-owned.
 It also renders shared `scheduleDeliveryPlans` rows for scheduled report packs, including recipient,
 channel, delivery mode, PDF/XLS/CSV formats, readiness, retained package links, access-expiry
 timestamps, retained download summaries, latest artifact counts, checksum integrity summaries,
@@ -763,36 +760,41 @@ schedule/package branding theme, and version stamps from the backend payload. Ea
 delivery-plan row can also run its owning schedule through the shared schedule-run endpoint and
 reports the returned run id, delivery count, recipient-specific delivery count, and target
 delivery mode in the common schedule status lane.
-Those rows render typed drilldown links and next-action references from the shared payload, opening
-browser-safe evidence routes while executing shared POST actions for approval submission/review,
-publication, archive, and report-pack delivery. Restatements remain guarded by changed-line
-evidence requirements instead of being submitted as a one-click browser action.
+Those rows render typed drilldown links and retained next-action references from the shared payload.
+Browser-safe evidence routes remain inspectable, while legacy pack actions are presented only as
+historical context and route operators to the canonical governed-run detail. React does not post
+caller-supplied signers, hashes, manifest ids, retention paths, approvals, publication, archive,
+restatement, or delivery commands to retired pack lifecycle endpoints.
 The run cards also surface exact audit metadata from the shared run projection, including run id,
 template id, as-of date, trigger, status, attempt count, section count, linked-lineage count, and
 retained artifact names, so version-control review does not depend on parsing a prose lineage
 summary.
+The report-run parameter workspace mirrors the full optional `LedgerDimensionSet` through a JSON
+editor. React validates supported scalar fields, UUID-shaped book/instrument/position identifiers,
+fund and ledger-book consistency, and the `externalGlDimensions` string map before calling the
+authoritative readiness endpoint. The run command then posts the server-returned normalized
+parameters, including non-empty dimensions, so readiness and generation operate on the same exact
+projection. A code-only ledger selection may omit the dimension `bookId` for server resolution.
+Governed run responses consumed by React require canonical `normalizedParameters` and
+version-bound `actionAvailability` entries with `expectedVersion`. Any retained legacy parameter
+or action aliases are adapted only at the reporting-governance API boundary; screen components do
+not infer permissions or versions from those aliases. The same run detail requires the immutable
+access snapshot as `allowOwnerAccess` plus typed `User`, `Group`, or `Company` principals. React
+renders those values as policy evidence only; flattened principal ids are rejected at the API
+boundary rather than assigned a client-inferred principal kind or used to infer authorization.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
-payload and wires schedule save/upsert, due-run, run-now, pause, and resume controls through the shared
-schedule endpoints. Schedule drafts default from the current schedule, approved template, and
+payload and wires schedule save/upsert, run-now, pause, and resume controls through the shared
+schedule endpoints. Due schedules are leased and executed only by the hosted reporting worker; the
+browser has no public batch `run-due` control or API helper. Schedule drafts default from the current schedule, approved template, and
 distribution payload before posting back to the server. Retained delivery attempts render from the
 shared delivery-history payload, so browser Reporting shows actual
-recipient delivery state and retry history instead of static status chips. Delivered attempts also
-show the shared package mode, requested artifact formats, secure link, retained manifest path, and
-publication-approved branding theme, plus token-gated package artifact download links when the backend includes
-`ReportPackDeliveryPackageDto`; app-relative secure links render as anchors so operators can open
-the token-gated email-link or secure-portal package page, while artifact `DownloadRoute` values
-render as direct retained PDF/XLSX/CSV links with retained path, byte size, evidence id, SHA-256
-checksum, and version stamp integrity details. When the package or schedule plan carries
-`accessLinks`, the browser renders labelled access chips for secure portal/email package access,
-operator routes, retained manifests, and token-gated artifact downloads instead of exposing only
-raw secure-link strings. Workbook delivery packages can include an `artifact-xls` compatibility
-access link; React renders that server-provided `format=xls` route as an XLS package download while
-the backend keeps the canonical XLSX artifact and content type. When the package includes
-server-owned delivery notifications, React renders the notification subject, status, recipient,
-created/expires timestamps, body, and token-gated package href so operators can review the email-link
-or secure-portal outbox evidence without deriving it from raw secure links. Delivery-history rows can also record a failed email-link or portal
-delivery through the shared delivery-failure endpoint, preserving the original attempt as evidence
-for the failed retry path instead of keeping failure state only in operator notes. When a schedule targets a custom report-writer
+recipient delivery state and retry history instead of static status chips. The delivery panel is
+read-only: durable dispatch state and provider failure receipts are produced by the server-owned
+distribution worker, not a client-recorded failure mutation. Delivered attempts retain package
+mode, requested formats, manifest and publication evidence, canonical opaque-fragment access-grant
+links, notification proof, artifact integrity, and governed run ids. Runs with retained ids link to
+the governed run detail for release and distribution controls. Query-token package builders and
+the retired legacy package/delivery API helpers are not exposed by the browser. When a schedule targets a custom report-writer
 template that has not produced a published report-pack workflow record, those package rows still
 render because the backend now falls back to the generated reporting run and includes its retained
 manifest/report-writer artifact provenance on the delivery package; the browser renders the
@@ -808,17 +810,31 @@ backend validation checks so operators can distinguish descriptor-only packages 
 pivot, Top-N, contribution, and formula output delivered by the backend.
 Operators can also save or update schedule records
 from Reporting by choosing a template, cron, as-of date, due timestamp, recipient distribution,
-delivery mode, and PDF/XLSX/CSV formats, then staging multiple delivery targets before save so a
-single governed schedule can distribute secure-portal, email-link, evidence-vault, or internal-route
-packs to separate recipients. The browser posts the shared `ReportingScheduleUpsertRequestDto`
-instead of maintaining local schedule rules, including optional governed dataset rows when the
-backend has supplied them for report-writer grids and the current custom branding override so
-recurring generated-run packages retain the selected firm styling. Schedule cards also show configured delivery targets
+delivery mode, PDF/XLSX/CSV formats, and an explicit recipient principal id plus User/Group/Company
+kind, then staging multiple delivery targets before save so a single governed schedule can retain
+separate typed recipient targets. The browser blocks staging or saving a delivery target until both
+recipient fields are present; the server validates the target against immutable access and the
+recipient directory, then binds the ordered declarations under `deliveryTargetsSnapshotHash`.
+Email Link uses the configured
+`http-relay`; retained Evidence Vault and Internal Route mode labels use the local `secure-portal`
+path and do not imply separate transport adapters. The browser renders the caller-specific server
+transport catalog as the availability authority. It posts the shared
+`ReportingScheduleUpsertRequestDto` instead of maintaining local schedule rules, including a
+server-owned `datasetSourceId` and the current custom branding override. It never posts governed
+dataset rows; the server resolves certified report-writer input. Recurring generated-run packages
+therefore retain the selected firm styling without accepting client data as accounting evidence.
+Schedule cards also show configured delivery targets
 and the run-now status reports returned delivery counts or warnings from
 `ReportingScheduleRunResultDto`, keeping generated report runs distinct from packaged
 client/internal distributions. The backend applies the same governed template access policy to
 schedule saves and manual schedule runs as it does to ad-hoc report runs, so browser controls cannot
 schedule or execute user-locked custom templates outside the authorized owner, group, or company.
+Schedule records also mirror `releaseDeliveryHandoffs` and `accessPolicySnapshotHash`. The browser
+uses those server-owned fields to show whether post-generation delivery is blocked, awaiting
+governance release, or enqueued, plus a compact token-free handoff history of durable identifiers,
+formats, states, and timestamps. Package creation and bearer-grant issuance remain server-owned and
+occur only after release; React does not enqueue a handoff or render retained destination, subject,
+or body fields from this schedule history.
 The Reporting payload also omits schedule rows, schedule-delivery-plan rows, and delivery attempts
 whose template or report-pack workflow is not visible to the current user, so browser state cannot
 reveal locked recipients, cadence, package links, or delivery status for another user or group.
@@ -1271,6 +1287,8 @@ endpoint contracts for behavior also consumed by WPF or host workflows.
 - `docs/product/meridian-design-document.md`
 - `docs/architecture/desktop-layers.md`
 - `docs/source/generated/source-module-index.md`
+- `docs/reference/accounting-report-packs.md`
+- `docs/operators/governed-reporting-operations.md`
 
 Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, bulk triage, and bulk status/result lookup; keep these helpers aligned with `UiApiRoutes` and WPF consumers.
 

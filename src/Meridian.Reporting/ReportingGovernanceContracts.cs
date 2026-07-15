@@ -1,4 +1,6 @@
 using System.Collections.Immutable;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Meridian.Reporting;
 
@@ -37,7 +39,8 @@ public enum ReportingGovernancePermission
     ApproveRun,
     ReleaseRun,
     RequestRestatement,
-    ApproveRestatement
+    ApproveRestatement,
+    ExportPersistenceEvidence
 }
 
 public enum ReportingCommandOrigin
@@ -53,6 +56,59 @@ public enum ReportingGovernanceAccessMode
     Restricted,
     CompanyWide
 }
+
+[JsonConverter(typeof(ReportingAccessPrincipalKindJsonConverter))]
+public enum ReportingAccessPrincipalKind
+{
+    User,
+    Group,
+    Company
+}
+
+/// <summary>
+/// Strict wire converter for the immutable access-principal namespace. Numeric enum payloads are
+/// rejected so browser, desktop, audit JSON, and persisted policy snapshots share one unambiguous
+/// User/Group/Company representation.
+/// </summary>
+public sealed class ReportingAccessPrincipalKindJsonConverter
+    : JsonConverter<ReportingAccessPrincipalKind>
+{
+    public override ReportingAccessPrincipalKind Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.String
+            || !Enum.TryParse<ReportingAccessPrincipalKind>(
+                reader.GetString(),
+                ignoreCase: true,
+                out var kind)
+            || !Enum.IsDefined(kind))
+        {
+            throw new JsonException(
+                "Reporting access principal kind must be User, Group, or Company.");
+        }
+
+        return kind;
+    }
+
+    public override void Write(
+        Utf8JsonWriter writer,
+        ReportingAccessPrincipalKind value,
+        JsonSerializerOptions options)
+    {
+        if (!Enum.IsDefined(value))
+        {
+            throw new JsonException("Reporting access principal kind is invalid.");
+        }
+
+        writer.WriteStringValue(value.ToString());
+    }
+}
+
+public sealed record ReportingAccessPrincipalScope(
+    ReportingAccessPrincipalKind Kind,
+    string PrincipalId);
 
 public enum ReportingRestatementRequestState
 {
@@ -97,7 +153,8 @@ public sealed record ReportingAccessScope(
     string PolicyVersion,
     ReportingGovernanceAccessMode Mode,
     string? OwnerPrincipalId,
-    ImmutableArray<string> PrincipalIds,
+    bool AllowOwnerAccess,
+    ImmutableArray<ReportingAccessPrincipalScope> Principals,
     string PolicyHash);
 
 /// <summary>
@@ -114,7 +171,12 @@ public sealed record ReportingCertifiedSnapshotScope(
     string SnapshotId,
     string SnapshotHash,
     string ReconciliationCheckpointId,
-    DateTimeOffset CapturedAtUtc);
+    DateTimeOffset CapturedAtUtc,
+    string? SourceCheckpointId = null,
+    string? SourceCheckpointHash = null,
+    string? ReconciliationCheckpointHash = null,
+    string? ParametersCanonicalJson = null,
+    string? ParametersHash = null);
 
 /// <summary>Server-resolved authority snapshot used for one governed command.</summary>
 public sealed record ReportingAuthorityScope(
@@ -131,8 +193,21 @@ public sealed record ReportingAuthorityScope(
         !Permissions.IsDefaultOrEmpty && Permissions.Contains(permission);
 
     public bool HasPrincipal(string principalId) =>
-        StringComparer.Ordinal.Equals(ActorId, principalId)
-        || (!PrincipalIds.IsDefaultOrEmpty && PrincipalIds.Contains(principalId, StringComparer.Ordinal));
+        StringComparer.OrdinalIgnoreCase.Equals(ActorId, principalId)
+        || (!PrincipalIds.IsDefaultOrEmpty && PrincipalIds.Contains(principalId, StringComparer.OrdinalIgnoreCase));
+
+    public bool Matches(ReportingAccessPrincipalScope principal) =>
+        principal.Kind switch
+        {
+            ReportingAccessPrincipalKind.User =>
+                StringComparer.OrdinalIgnoreCase.Equals(ActorId, principal.PrincipalId),
+            ReportingAccessPrincipalKind.Group =>
+                !PrincipalIds.IsDefaultOrEmpty
+                && PrincipalIds.Contains(principal.PrincipalId, StringComparer.OrdinalIgnoreCase),
+            ReportingAccessPrincipalKind.Company =>
+                StringComparer.OrdinalIgnoreCase.Equals(CompanyId, principal.PrincipalId),
+            _ => false
+        };
 }
 
 public sealed record ReportingReadinessCheck(
@@ -146,6 +221,8 @@ public sealed record ReportingReadinessReceipt(
     string ReceiptHash,
     string RunId,
     string TenantId,
+    string OrganizationId,
+    string? CompanyId,
     string SnapshotId,
     string SnapshotHash,
     DateTimeOffset EvaluatedAtUtc,
@@ -217,7 +294,8 @@ public sealed record GovernedReportingRun(
     ReportingReadinessReceipt? Readiness,
     ReportingApprovalReceipt? Approval,
     ReportingReleaseReceipt? Release,
-    ImmutableArray<ReportingGovernanceAuditEntry> AuditTrail);
+    ImmutableArray<ReportingGovernanceAuditEntry> AuditTrail,
+    string? RestatementRequestId = null);
 
 public sealed record ReportingRestatementChangedLine(
     string LineKey,
@@ -240,7 +318,8 @@ public sealed record ReportingRestatementRequest(
     ReportingAuthorityScope? ApprovedBy,
     DateTimeOffset? ApprovedAtUtc,
     string? DraftRunId,
-    ImmutableArray<ReportingGovernanceAuditEntry> AuditTrail);
+    ImmutableArray<ReportingGovernanceAuditEntry> AuditTrail,
+    ImmutableArray<ReportingRestatementChangedLine> RequestedChangedLines = default);
 
 /// <summary>
 /// Ordinary creation intentionally has no restatement switch or predecessor field. Once a series
@@ -264,11 +343,68 @@ public sealed record ReportingRestatementRequestCommand(
 public sealed record ReportingRestatementApprovalCommand(
     string RequestId,
     long ExpectedRequestVersion,
-    ReportingCertifiedSnapshotScope ReplacementSnapshot);
+    ReportingCertifiedSnapshotScope ReplacementSnapshot,
+    string ReplacementRunId,
+    ImmutableArray<ReportingRestatementChangedLine> ChangedLines);
 
 public sealed record ReportingRestatementApprovalResult(
     ReportingRestatementRequest Request,
     GovernedReportingRun DraftRun);
+
+/// <summary>
+/// Durable governance formats are explicit so already-retained evidence is never interpreted with
+/// a newer contract or hash algorithm by accident.
+/// </summary>
+public enum ReportingGovernancePersistenceFormat : short
+{
+    LegacyV1 = 1,
+    CanonicalV2 = 2
+}
+
+public enum ReportingGovernancePersistenceDisposition
+{
+    Current,
+    LegacyReadOnlyRecertificationRequired,
+    IntegrityFailure
+}
+
+/// <summary>
+/// Tenant-scoped storage status. Legacy records expose only indexed identity and verified storage
+/// facts; their untyped access and incomplete certification claims are deliberately not promoted
+/// into the current governed-run model.
+/// </summary>
+public sealed record ReportingGovernancePersistenceStatus(
+    string TenantId,
+    ReportingGovernanceAuditAggregateKind AggregateKind,
+    string AggregateId,
+    long AggregateVersion,
+    ReportingGovernancePersistenceFormat StateFormat,
+    string StatePayloadHash,
+    bool StateChecksumVerified,
+    int AuditEventCount,
+    ImmutableArray<ReportingGovernancePersistenceFormat> AuditHashFormats,
+    bool AuditChainVerified,
+    ReportingGovernancePersistenceDisposition Disposition,
+    string Reason);
+
+public sealed record ReportingGovernanceRawAuditEnvelope(
+    long AggregateVersion,
+    string EventId,
+    string? PreviousHash,
+    string EventHash,
+    ReportingGovernancePersistenceFormat HashFormat,
+    string EventPayload,
+    string PayloadHash);
+
+/// <summary>
+/// Exact retained bytes for operator-controlled archival or remediation. Implementations return an
+/// export only after the state checksum, indexed identity, audit payload checksums, and audit chain
+/// have all been verified with their declared historical formats.
+/// </summary>
+public sealed record ReportingGovernancePersistenceExport(
+    ReportingGovernancePersistenceStatus Status,
+    string StatePayload,
+    ImmutableArray<ReportingGovernanceRawAuditEnvelope> AuditEvents);
 
 /// <summary>
 /// Repository boundary for a storage implementation that can atomically compare versions, append
@@ -283,6 +419,18 @@ public interface IReportingGovernanceRepository
 
 public interface IReportingGovernanceTransaction
 {
+    ValueTask<IReadOnlyList<ReportingGovernancePersistenceStatus>> ListPersistenceStatusAsync(
+        ReportingAuthorityScope authority,
+        CancellationToken cancellationToken = default) =>
+        ValueTask.FromResult<IReadOnlyList<ReportingGovernancePersistenceStatus>>([]);
+
+    ValueTask<ReportingGovernancePersistenceExport?> ExportPersistenceRecordAsync(
+        ReportingAuthorityScope authority,
+        ReportingGovernanceAuditAggregateKind aggregateKind,
+        string aggregateId,
+        CancellationToken cancellationToken = default) =>
+        ValueTask.FromResult<ReportingGovernancePersistenceExport?>(null);
+
     ValueTask<GovernedReportingRun?> GetRunAsync(
         string tenantId,
         string runId,
@@ -306,6 +454,12 @@ public interface IReportingGovernanceTransaction
         string tenantId,
         string requestId,
         CancellationToken cancellationToken = default);
+
+    ValueTask<IReadOnlyList<ReportingRestatementRequest>> ListRestatementRequestsBySeriesAsync(
+        string tenantId,
+        string seriesId,
+        CancellationToken cancellationToken = default) =>
+        ValueTask.FromResult<IReadOnlyList<ReportingRestatementRequest>>([]);
 
     ValueTask AddRestatementRequestAsync(
         string tenantId,

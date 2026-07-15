@@ -350,6 +350,19 @@ public static class WorkstationServiceCollectionExtensions
                     .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
                 return new PostgresReportingArtifactStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
             });
+            services.TryAddSingleton<IReportingArtifactCatalog>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingArtifactCatalog(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<IReportingArtifactAuditStore>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingArtifactAuditStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<ReportingArtifactVaultService>();
             services.TryAddSingleton<IReportingGovernanceRepository>(sp =>
             {
                 sp.GetRequiredService<ReportingMigrationRunner>()
@@ -357,6 +370,26 @@ public static class WorkstationServiceCollectionExtensions
                 return new PostgresReportingGovernanceRepository(sp.GetRequiredService<ReportingArtifactStoreOptions>());
             });
             services.TryAddSingleton<ReportingGovernanceService>();
+            services.TryAddSingleton<PostgresReportingReconciliationEvidenceStore>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingReconciliationEvidenceStore(
+                    sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<IReportingReconciliationEvidenceStore>(sp =>
+                sp.GetRequiredService<PostgresReportingReconciliationEvidenceStore>());
+            services.TryAddSingleton<IReportingReconciliationEvidenceRetentionStore>(sp =>
+                sp.GetRequiredService<PostgresReportingReconciliationEvidenceStore>());
+            services.TryAddSingleton<IReportingReconciliationEvidenceSource, ReportingReconciliationEvidenceSource>();
+            services.TryAddSingleton<ReportingReconciliationEvidenceRetentionService>();
+            services.TryAddSingleton<IReportingCertifiedArtifactProducer, DeterministicReportingCertifiedArtifactProducer>();
+            services.TryAddSingleton<IReportingArtifactRetentionAuthorityProvider, ReportingArtifactRetentionAuthorityProvider>();
+            services.TryAddSingleton<IReportingRestatementChangedLineResolver, GovernedReportingRestatementChangedLineResolver>();
+            services.TryAddSingleton<IReportingRestatementCertificationInputProvider, GovernedReportingRestatementCertificationInputProvider>();
+            services.TryAddSingleton<ReportingGovernanceCoordinatorService>();
+            services.TryAddSingleton<IReportingGovernanceEndpointCoordinator>(sp =>
+                sp.GetRequiredService<ReportingGovernanceCoordinatorService>());
             services.TryAddSingleton<IReportingAccessGrantStore>(sp =>
             {
                 sp.GetRequiredService<ReportingMigrationRunner>()
@@ -370,7 +403,12 @@ public static class WorkstationServiceCollectionExtensions
                     .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
                 return new PostgresReportingDeliveryStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
             });
+            services.AddSecureReportingDistribution();
         }
+        // Resolve the durable ledger dependencies only when a certification attempt is made. This
+        // keeps lightweight hosts startable while preserving fail-closed behavior: a run cannot be
+        // certified from fixtures or synthesized rows when the production ledger graph is absent.
+        services.TryAddSingleton<IReportingAuthoritativeSource, ServiceProviderReportingAuthoritativeSource>();
         services.TryAddSingleton<ReportingRunStoreOptions>(sp =>
             new ReportingRunStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "runs")));
         services.TryAddSingleton<IReportingRunStore>(sp =>
@@ -409,7 +447,6 @@ public static class WorkstationServiceCollectionExtensions
         // it is rebuilt from the persisted workflow records on construction.
         services.TryAddSingleton<IReportPackSecurityLineIndex, InMemoryReportPackSecurityLineIndex>();
         services.TryAddSingleton<ReportPackWorkflowService>();
-        services.TryAddSingleton<ReportPackDeliveryService>();
         services.TryAddSingleton<ReportWriterDatasetSourceService>();
         services.TryAddSingleton<ReportWriterGridArtifactService>();
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
@@ -441,11 +478,16 @@ public static class WorkstationServiceCollectionExtensions
             new ReportingScheduleService(
                 sp.GetRequiredService<IReportingOrchestrationService>(),
                 sp.GetService<IReportingScheduleStore>(),
-                sp.GetService<ReportPackDeliveryService>(),
+                deliveryService: null,
                 sp.GetService<GovernedReportingTemplateCatalog>(),
                 sp.GetService<ReportWriterDatasetSourceService>(),
                 sp.GetRequiredService<ReportingRunReadinessService>(),
-                sp.GetRequiredService<ReportingRunCertificationService>()));
+                sp.GetRequiredService<ReportingRunCertificationService>(),
+                sp.GetService<IReportingGovernanceEndpointCoordinator>(),
+                sp.GetService<IReportingRecipientDestinationResolver>()));
+        services.TryAddSingleton(ReportingScheduleWorkerOptions.Default);
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, ReportingScheduleHostedService>());
         services.TryAddSingleton<ReportingStarterKitService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
@@ -570,15 +612,18 @@ public static class WorkstationServiceCollectionExtensions
                     ? null
                     : new DailyMarkToMarketService(new RegisteredHistoricalCloseMarkPriceSource(providerRegistry)));
         });
-        // The durable ledger book service is only registered when a persistence-backed ledger is
-        // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph
-        // still composes without Postgres; the bridge degrades the close-posting gate to Blocked.
+        // Durable ledger and reporting-evidence services are present only when persistence-backed
+        // storage is configured. Resolve them optionally so lightweight hosts still compose; when
+        // present, the bridge must hand hard-close evidence to reporting before close completion is
+        // represented as certifiable.
         services.TryAddSingleton<IAccountingClosePostingWorkbench>(sp =>
             new AccountingClosePostingWorkbenchBridge(
                 sp.GetRequiredService<AutomatedJournalIntakeRunner>(),
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
                 sp.GetRequiredService<IManualJournalEntryLifecycleService>(),
-                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>()));
+                sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
+                sp.GetService<ReportingReconciliationEvidenceRetentionService>(),
+                sp.GetService<IFundProfileTenancyRegistry>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
@@ -773,4 +818,42 @@ public static class WorkstationServiceCollectionExtensions
 
     private static string ResolveWorkstationDataDirectory(IServiceProvider services)
         => Path.Combine(ResolveConfigDataRoot(services), "workstation");
+}
+
+/// <summary>
+/// Defers construction of the production ledger adapter until an actual certification request.
+/// Missing host capabilities therefore block the material operation with an explicit reporting
+/// availability error instead of either synthesizing data or preventing unrelated read-only hosts
+/// from starting.
+/// </summary>
+internal sealed class ServiceProviderReportingAuthoritativeSource : IReportingAuthoritativeSource
+{
+    private readonly IServiceProvider _services;
+
+    public ServiceProviderReportingAuthoritativeSource(IServiceProvider services)
+    {
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+    }
+
+    public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
+        ReportingRunParametersDto parameters,
+        ReportAccessQueryContext accessContext,
+        CancellationToken cancellationToken = default)
+    {
+        var journalStore = _services.GetService<ILedgerJournalStore>();
+        var tenancyRegistry = _services.GetService<IFundProfileTenancyRegistry>();
+        var fundStructure = _services.GetService<IFundStructureService>();
+        if (journalStore is null || tenancyRegistry is null || fundStructure is null)
+        {
+            throw new ReportingAuthoritativeSourceUnavailableException(
+                "The durable ledger journal, fund tenancy registry, and fund structure services are required for certified reporting.");
+        }
+
+        var source = new LedgerReportingAuthoritativeSource(
+            journalStore,
+            tenancyRegistry,
+            fundStructure,
+            _services.GetService<TimeProvider>());
+        return source.CaptureAsync(parameters, accessContext, cancellationToken);
+    }
 }

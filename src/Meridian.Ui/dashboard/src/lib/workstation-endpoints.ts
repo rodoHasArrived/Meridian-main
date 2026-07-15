@@ -126,13 +126,6 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   ledgerMappingWorkbench: "/api/fund-structure/ledger-mapping-view",
   ledgerMappingAssignments: UI_API_ROUTES.FundStructureLedgerMappingAssignments,
   transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview",
-  reportPackWorkflows: UI_API_ROUTES.ReportingPackWorkflows,
-  reportPackWorkflowDeliveries: UI_API_ROUTES.ReportingPackWorkflowDeliveries,
-  reportPackWorkflowDeliveryPackage: UI_API_ROUTES.ReportingPackWorkflowDeliveryPackage,
-  reportPackWorkflowDeliveryFailures: UI_API_ROUTES.ReportingPackWorkflowDeliveryFailures,
-  reportPackDeliveryPortalPackage: UI_API_ROUTES.ReportingPackDeliveryPortalPackage,
-  reportPackPreview: "/api/fund-structure/report-pack-preview",
-  reportPacks: UI_API_ROUTES.FundReportPacks,
   reportingStructuredExport: UI_API_ROUTES.ReportingStructuredExport,
   reportingTemplateDrafts: "/api/fund-structure/reporting/templates/drafts",
   reportingTemplateRender: "/api/fund-structure/reporting/templates/render",
@@ -143,7 +136,6 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingStarterKits: UI_API_ROUTES.ReportingStarterKits,
   reportingStarterKitProvision: UI_API_ROUTES.ReportingStarterKitProvision,
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
-  reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
   reportingScheduleResume: UI_API_ROUTES.ReportingScheduleResume,
   reportingScheduleRunNow: UI_API_ROUTES.ReportingScheduleRunNow
@@ -797,18 +789,6 @@ export function workstationOperationsContinuityEndpoint(options: {
   return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}${queryString(options)}`;
 }
 
-export function reportPackDeliveryPackageEndpoint(reportId: string, attemptId: string, token?: string): string {
-  return `${routeWithParam(
-    routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryPackage, "reportId", reportId),
-    "attemptId",
-    attemptId
-  )}${queryString({ token })}`;
-}
-
-export function reportPackDeliveryPortalPackageEndpoint(packageId: string, token?: string): string {
-  return `${routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage, "packageId", packageId)}${queryString({ token })}`;
-}
-
 export function reportingTemplateSubmitEndpoint(templateName: string, version: number): string {
   return reportingTemplateLifecycleEndpoint(templateName, version, "submit");
 }
@@ -1207,14 +1187,6 @@ export function reportPackEvidenceBundleEndpoint(reportId?: string): string {
   return reportId
     ? routeWithParam(UI_API_ROUTES.FundReportPackEvidenceBundle, "reportId", reportId)
     : EXPORT_API_ENDPOINTS.reportPackEvidenceBundle;
-}
-
-export function reportingPackDeliveriesEndpoint(reportId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveries, "reportId", reportId);
-}
-
-export function reportingPackDeliveryFailuresEndpoint(reportId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryFailures, "reportId", reportId);
 }
 
 export function reportingRunAuditTrailEndpoint(runId: string): string {

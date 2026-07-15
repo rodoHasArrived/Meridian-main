@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-13
+last_reviewed: 2026-07-15
 ---
 
 # src/Meridian.Storage
@@ -66,9 +66,15 @@ lookup paths, and evidence trails those layers rely on.
   cash-reconciliation audit packages. `FundStructure` owns the local JSON and in-memory
   fund-structure state stores, while PostgreSQL fund-structure service persistence stays in the
   storage-backed rows and migrations.
-- `Reporting/` - tenant-bound PostgreSQL storage for immutable report bytes, governed report
-  revisions, restatement requests, append-only lifecycle audit chains, access grants, and delivery
-  state. Reporting migrations share a schema-scoped advisory lock and checksummed migration ledger.
+- `Reporting/` - tenant-bound PostgreSQL storage for immutable report bytes and catalogs, governed
+  revisions, restatement requests, exact close/reconciliation receipts, append-only lifecycle and
+  access audit chains, opaque access-grant state, durable delivery jobs, and provider receipts.
+  Reporting migrations share a schema-scoped advisory lock and checksummed migration ledger;
+  immutable rows and authority/payload fields are guarded against update or deletion. The store uses
+  `MERIDIAN_REPORTING_CONNECTION_STRING` with the intentional ledger-connection fallback and
+  `MERIDIAN_REPORTING_SCHEMA` (default `reporting`); certified run and schedule/handoff snapshots
+  remain separate integrity-validated files under the resolved `DataRoot` and must be recovered as
+  part of the same reporting state set.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
   tiering, and scheduled cleanup.
 
@@ -309,6 +315,11 @@ state, and checksum agree. Lifecycle audit events are appended in the same seria
 database triggers require contiguous versions and the retained previous hash, and reject later
 updates or deletes. Restatement approval updates the request and creates the next report revision in
 one transaction, so a failed revision insert cannot leave an approved request without its draft.
+Reporting delivery persistence also keeps run and package identity separately, lists grants and
+receipt-bearing jobs only through exact tenant/package keys, and prevents authority, recipient,
+provider-message, access-grant, lifecycle, and receipt evidence from being replaced or moved
+backwards. Retry claims use leased skip-locked rows, while terminal provider and audited-download
+receipts append without overwriting prior evidence.
 
 ## Glossary
 
@@ -395,4 +406,7 @@ Route durable writes through WAL or atomic file helpers. Avoid direct unguarded 
 
 - `docs/architecture/module-map.md`
 - `docs/development/build-observability.md`
+- `docs/reference/accounting-report-packs.md`
+- `docs/reference/database-schema.md`
+- `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-roadmap-traceability.md`

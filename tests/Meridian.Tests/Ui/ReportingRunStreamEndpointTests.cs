@@ -66,6 +66,20 @@ public sealed class ReportingRunStreamEndpointTests
     }
 
     [Fact]
+    public async Task CrossTenantManifest_AdminOverrideStillReturns403()
+    {
+        await using var app = await CreateStreamAppAsync(
+            grantAdminOverride: true,
+            requestTenantId: "tenant-b",
+            requestCompanyId: "company-b");
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{SeededRunId}/stream");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task UnknownRun_Returns404()
     {
         await using var app = await CreateStreamAppAsync();
@@ -181,7 +195,8 @@ public sealed class ReportingRunStreamEndpointTests
         int maxConcurrentStreams = 8,
         bool includeTenantScope = true,
         string requestTenantId = SeededTenantId,
-        string requestCompanyId = SeededCompanyId)
+        string requestCompanyId = SeededCompanyId,
+        bool grantAdminOverride = false)
     {
         var orchestration = new ReportingOrchestrationService(
             new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
@@ -206,7 +221,8 @@ public sealed class ReportingRunStreamEndpointTests
                     "1",
                     ReportingGovernanceAccessMode.CompanyWide,
                     OwnerPrincipalId: null,
-                    PrincipalIds: ImmutableArray<string>.Empty,
+                    AllowOwnerAccess: false,
+                    Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
                     PolicyHash: "policy-hash-a")),
             CancellationToken.None);
 
@@ -239,7 +255,9 @@ public sealed class ReportingRunStreamEndpointTests
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "reporting-op";
             if (grantPermission)
             {
-                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewReporting;
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = grantAdminOverride
+                    ? UserPermission.ViewReporting | UserPermission.AdminMaintenance
+                    : UserPermission.ViewReporting;
             }
 
             if (includeTenantScope)

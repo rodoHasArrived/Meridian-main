@@ -830,6 +830,126 @@ public sealed class AccountingCloseServicesTests
     }
 
     [Fact]
+    public async Task Scenario_ClosePlan_PostCommitReportingHandoffFailureIsRetryableWithoutReopeningLedger()
+    {
+        var workflowId = Guid.Parse("48484848-4848-4848-4848-484848484849");
+        var ledgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var periodId = Guid.Parse("49494949-4949-4949-4949-494949494950");
+        const string completionId = "hard-close-49494949494949494949494949494950-v3";
+        var workflow = BuildCloseWorkflow(workflowId, firstTaskStatus: "Done", secondTaskStatus: "Done");
+        var lockedWorkflow = workflow with
+        {
+            Status = OperationsWorkflowStatusDto.Closed,
+            ClosePackage = new OperationsClosePackagePublicationDto(
+                "close-package-retry",
+                "report-pack-retry",
+                "manifest-retry",
+                "/workstation/reporting/packages/manifest-retry",
+                "sha256-close-package-retry",
+                DateTimeOffset.Parse("2026-04-03T12:10:00Z"),
+                "controller-reviewer",
+                "Retry the reporting evidence handoff without reopening.",
+                [],
+                [])
+        };
+        var workflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+        workflowService.GetAsync(workflowId, Arg.Any<CancellationToken>()).Returns(workflow);
+        workflowService.CloseWorkflowAsync(
+                workflowId,
+                Arg.Any<OperationsCloseWorkflowRequestDto>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new OperationsTransitionResultDto(
+                true,
+                null,
+                null,
+                lockedWorkflow,
+                [],
+                [],
+                NewVersion: workflow.Version + 1));
+        var postingWorkbench = Substitute.For<IAccountingClosePostingWorkbench>();
+        var readyGate = new ClosePostingGateDto(
+            "period-close-posting:retry",
+            "Post closing entries",
+            ClosePostingGateStateDto.Posted,
+            true,
+            0m,
+            0,
+            "Closing entries are retained and posted.");
+        postingWorkbench.EnsureClosingDraftQueuedAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        postingWorkbench.EvaluateAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(readyGate);
+        var hardClosed = new LedgerPeriodDto(
+            periodId,
+            ledgerBookId,
+            2026,
+            3,
+            "2026-03",
+            new DateOnly(2026, 3, 1),
+            new DateOnly(2026, 3, 31),
+            LedgerPeriodStatusDto.HardClosed,
+            DateTimeOffset.Parse("2026-03-01T00:00:00Z"),
+            DateTimeOffset.Parse("2026-04-03T12:09:00Z"),
+            3);
+        postingWorkbench.FinalizeHardCloseAsync(
+                Arg.Any<AccountingClosePostingContext>(),
+                Arg.Any<AccountingClosePostingCommand>(),
+                Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromException<LedgerPeriodDto>(new ReportingCloseEvidenceHandoffException(
+                    hardClosed,
+                    completionId,
+                    "Ledger hard close is committed, but reporting evidence retention is pending.",
+                    new InvalidOperationException("evidence store unavailable"))),
+                _ => Task.FromResult(hardClosed));
+
+        var service = new AccountingCloseManagementService(workflowService, postingWorkbench);
+        await ApproveRequiredCloseTasksAsync(service, workflowId, ledgerBookId);
+        var request = new LockClosePeriodRequestDto(
+            workflowId,
+            workflow.Version,
+            "controller-reviewer",
+            "Retry-safe reporting close handoff.",
+            "report-pack-retry",
+            [$"evidence:close-package:{workflowId:D}:2026-03:book:{ledgerBookId:D}:period-lock"],
+            CorrelationId: "close-lock-retry",
+            ClosePackageId: "close-package-retry",
+            ClosePackageManifestId: "manifest-retry",
+            ClosePackageRetainedManifestRoute: "/workstation/reporting/packages/manifest-retry");
+
+        var first = await service.LockClosePeriodAsync(request, "controller-reviewer");
+
+        first.Should().NotBeNull();
+        first!.IsLocked.Should().BeFalse("the workflow publication waits for reporting evidence retention");
+        first.Plan!.IsPeriodLocked.Should().BeTrue("the underlying ledger hard close already committed");
+        first.Issues.Should().ContainSingle(issue =>
+            issue.Code == "CloseReportingEvidenceHandoffPending"
+            && issue.TargetId == completionId
+            && issue.SuggestedAction!.Contains("Retry this same close command", StringComparison.Ordinal)
+            && issue.SuggestedAction.Contains("do not reopen", StringComparison.Ordinal));
+        await workflowService.DidNotReceiveWithAnyArgs().CloseWorkflowAsync(default, default!, default);
+
+        var retry = await service.LockClosePeriodAsync(request, "controller-reviewer");
+
+        retry.Should().NotBeNull();
+        retry!.IsLocked.Should().BeTrue();
+        retry.Issues.Should().BeEmpty();
+        await postingWorkbench.Received(2).FinalizeHardCloseAsync(
+            Arg.Any<AccountingClosePostingContext>(),
+            Arg.Any<AccountingClosePostingCommand>(),
+            Arg.Any<CancellationToken>());
+        await workflowService.Received(1).CloseWorkflowAsync(
+            workflowId,
+            Arg.Any<OperationsCloseWorkflowRequestDto>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public void Scenario_MonthEndFxTranslation_ReplayUsesStableAdjustmentIdAndRateLineage()
     {
         var service = new FxTranslationService();

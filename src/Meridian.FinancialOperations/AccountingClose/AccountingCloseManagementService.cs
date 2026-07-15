@@ -643,6 +643,43 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         var plan = BuildPeriodPlan(workflow);
         if (plan.IsPeriodLocked)
         {
+            if (_postingWorkbench is not null)
+            {
+                try
+                {
+                    await _postingWorkbench.FinalizeHardCloseAsync(
+                            RequirePostingContext(workflow, plan),
+                            new AccountingClosePostingCommand(
+                                resolvedActor,
+                                RequireText(request.Rationale, "Rationale"),
+                                NormalizeEvidenceLinks(request.EvidenceLinks),
+                                request.ActionOrigin,
+                                Role: "Fund Controller",
+                                CorrelationId: request.CorrelationId),
+                            ct)
+                        .ConfigureAwait(false);
+                }
+                catch (ReportingCloseEvidenceHandoffException ex)
+                {
+                    plan = await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false);
+                    plan = plan with
+                    {
+                        IsPeriodLocked = true,
+                        CloseCalendar = BuildCloseCalendar(plan.Tasks, isPeriodLocked: true)
+                    };
+                    return new ClosePeriodLockResultDto(
+                        false,
+                        plan,
+                        null,
+                        [new AccountingConfigurationValidationIssueDto(
+                            "CloseReportingEvidenceHandoffPending",
+                            AccountingConfigurationValidationSeverityDto.Critical,
+                            ex.Message,
+                            ex.CompletionCheckpointId,
+                            "The ledger hard close is durable. Retry this same close command after restoring the reporting evidence store; do not reopen the period.")]);
+                }
+            }
+
             plan = await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false);
             return new ClosePeriodLockResultDto(
                 true,
@@ -724,6 +761,25 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
                         CorrelationId: request.CorrelationId),
                     ct)
                 .ConfigureAwait(false);
+        }
+        catch (ReportingCloseEvidenceHandoffException ex)
+        {
+            plan = await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false);
+            plan = plan with
+            {
+                IsPeriodLocked = true,
+                CloseCalendar = BuildCloseCalendar(plan.Tasks, isPeriodLocked: true)
+            };
+            return new ClosePeriodLockResultDto(
+                false,
+                plan,
+                null,
+                [new AccountingConfigurationValidationIssueDto(
+                    "CloseReportingEvidenceHandoffPending",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    ex.Message,
+                    ex.CompletionCheckpointId,
+                    "The ledger hard close is durable. Retry this same close command after restoring the reporting evidence store; do not reopen the period.")]);
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or LedgerBookServiceException)
         {

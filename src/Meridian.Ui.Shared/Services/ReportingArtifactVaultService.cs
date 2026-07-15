@@ -43,7 +43,8 @@ public sealed record ReportingArtifactAccessContext(
     string BookId,
     string PeriodId,
     ImmutableArray<string> PrincipalIds,
-    string CorrelationId);
+    string CorrelationId,
+    ReportingAccessPrincipalScope? DelegatedPrincipal = null);
 
 public sealed record ReportingArtifactRetentionReceipt(
     ReportingRetainedArtifactPackage Package,
@@ -161,6 +162,47 @@ public sealed class ReportingArtifactVaultService
             package,
             catalogWrite.AlreadyExisted,
             auditEventIds.MoveToImmutable());
+    }
+
+    public async Task<ReportingRetainedArtifactPackage> GetPackageForReleaseAsync(
+        string packageId,
+        ReportingArtifactAccessContext context,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
+        ArgumentNullException.ThrowIfNull(context);
+        ValidateAccessContext(context);
+        var normalizedPackageId = packageId.Trim();
+        var package = await _catalog
+            .GetPackageAsync(context.TenantId, normalizedPackageId, cancellationToken)
+            .ConfigureAwait(false);
+        if (package is null
+            || !string.Equals(package.PackageId, normalizedPackageId, StringComparison.Ordinal)
+            || package.Artifacts.IsDefaultOrEmpty
+            || package.Artifacts.Any(static artifact => artifact is null)
+            || package.Artifacts.Select(static artifact => artifact.ArtifactId)
+                .Distinct(StringComparer.Ordinal).Count() != package.Artifacts.Length)
+        {
+            throw new ReportingArtifactVaultAccessDeniedException(
+                "Artifact package does not exist or is not accessible.");
+        }
+
+        foreach (var record in package.Artifacts)
+        {
+            ValidateCatalogRecord(record);
+            if (!string.Equals(record.PackageId, package.PackageId, StringComparison.Ordinal))
+            {
+                throw new ReportingArtifactCatalogIntegrityException(
+                    $"Retained artifact package '{package.PackageId}' contains an artifact bound to another package.");
+            }
+            if (ResolveAccessDenial(record, context) is not null)
+            {
+                throw new ReportingArtifactVaultAccessDeniedException(
+                    "Artifact package does not exist or is not accessible.");
+            }
+        }
+
+        return package;
     }
 
     public async Task<ReportingArtifactDownload> ReadForDownloadAsync(
@@ -437,7 +479,7 @@ public sealed class ReportingArtifactVaultService
         return record.Access.Mode switch
         {
             ReportingGovernanceAccessMode.Private
-                when !Same(context.ActorId, record.Access.OwnerPrincipalId) =>
+                when !HasPrivatePrincipal(record.Access, context) =>
                 "Authenticated principal does not own the private artifact.",
             ReportingGovernanceAccessMode.Restricted
                 when !HasRestrictedPrincipal(record.Access, context) =>
@@ -448,18 +490,49 @@ public sealed class ReportingArtifactVaultService
         };
     }
 
-    private static bool HasRestrictedPrincipal(
+    private static bool HasPrivatePrincipal(
         ReportingAccessScope access,
         ReportingArtifactAccessContext context)
     {
-        if (access.PrincipalIds.Any(principal => Same(principal, context.ActorId)))
+        if (access.AllowOwnerAccess
+            && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
+            && (SamePrincipal(access.OwnerPrincipalId, context.ActorId)
+                || context.DelegatedPrincipal is
+                    { Kind: ReportingAccessPrincipalKind.User } delegatedOwner
+                && SamePrincipal(access.OwnerPrincipalId, delegatedOwner.PrincipalId)))
         {
             return true;
         }
 
-        return !context.PrincipalIds.IsDefaultOrEmpty
-            && context.PrincipalIds.Any(contextPrincipal =>
-                access.PrincipalIds.Any(allowed => Same(allowed, contextPrincipal)));
+        return !access.Principals.IsDefaultOrEmpty
+               && access.Principals.Any(principal => ContextMatches(principal, context));
+    }
+
+    private static bool HasRestrictedPrincipal(
+        ReportingAccessScope access,
+        ReportingArtifactAccessContext context) =>
+        HasPrivatePrincipal(access, context);
+
+    private static bool ContextMatches(
+        ReportingAccessPrincipalScope principal,
+        ReportingArtifactAccessContext context)
+    {
+        if (context.DelegatedPrincipal is { } delegated
+            && delegated.Kind == principal.Kind
+            && SamePrincipal(delegated.PrincipalId, principal.PrincipalId))
+        {
+            return true;
+        }
+
+        return principal.Kind switch
+        {
+            ReportingAccessPrincipalKind.User => SamePrincipal(context.ActorId, principal.PrincipalId),
+            ReportingAccessPrincipalKind.Group =>
+                !context.PrincipalIds.IsDefaultOrEmpty
+                && context.PrincipalIds.Contains(principal.PrincipalId, StringComparer.OrdinalIgnoreCase),
+            ReportingAccessPrincipalKind.Company => SamePrincipal(context.CompanyId, principal.PrincipalId),
+            _ => false
+        };
     }
 
     private static void VerifyRead(
@@ -542,21 +615,45 @@ public sealed class ReportingArtifactVaultService
         }
 
         if (access.Mode == ReportingGovernanceAccessMode.Private
-            && string.IsNullOrWhiteSpace(access.OwnerPrincipalId))
+            && (!access.AllowOwnerAccess || string.IsNullOrWhiteSpace(access.OwnerPrincipalId))
+            && access.Principals.IsDefaultOrEmpty)
         {
-            throw new ArgumentException("Private reporting access requires an owner principal.", nameof(access));
+            throw new ArgumentException(
+                "Private reporting access requires enabled owner access or a named user principal.",
+                nameof(access));
         }
 
         if (access.Mode == ReportingGovernanceAccessMode.Restricted
-            && access.PrincipalIds.IsDefaultOrEmpty)
+            && (!access.AllowOwnerAccess || string.IsNullOrWhiteSpace(access.OwnerPrincipalId))
+            && access.Principals.IsDefaultOrEmpty)
         {
-            throw new ArgumentException("Restricted reporting access requires at least one principal.", nameof(access));
+            throw new ArgumentException(
+                "Restricted reporting access requires an enabled owner or at least one typed principal.",
+                nameof(access));
         }
 
-        if (access.Mode == ReportingGovernanceAccessMode.Restricted
-            && access.PrincipalIds.Any(string.IsNullOrWhiteSpace))
+        if (access.Mode == ReportingGovernanceAccessMode.Private
+            && !access.Principals.IsDefaultOrEmpty
+            && access.Principals.Any(static principal =>
+                principal.Kind != ReportingAccessPrincipalKind.User))
         {
-            throw new ArgumentException("Restricted reporting access principals cannot be blank.", nameof(access));
+            throw new ArgumentException(
+                "Private reporting access can retain only named user principals.",
+                nameof(access));
+        }
+
+        if (!access.Principals.IsDefaultOrEmpty
+            && (access.Principals.Any(static principal =>
+                    principal is null
+                    || !Enum.IsDefined(principal.Kind)
+                    || string.IsNullOrWhiteSpace(principal.PrincipalId))
+                || access.Principals.Any(principal => access.Principals.Count(candidate =>
+                    candidate.Kind == principal.Kind
+                    && Same(candidate.PrincipalId, principal.PrincipalId)) > 1)))
+        {
+            throw new ArgumentException(
+                "Reporting access principals require a valid kind, identity, and unique kind/identity pair.",
+                nameof(access));
         }
     }
 
@@ -604,6 +701,9 @@ public sealed class ReportingArtifactVaultService
 
     private static bool Same(string? left, string? right) =>
         string.Equals(left?.Trim(), right?.Trim(), StringComparison.Ordinal);
+
+    private static bool SamePrincipal(string? left, string? right) =>
+        string.Equals(left?.Trim(), right?.Trim(), StringComparison.OrdinalIgnoreCase);
 
     private static bool SameOptional(string? left, string? right) =>
         string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right)

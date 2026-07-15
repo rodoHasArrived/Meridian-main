@@ -3527,8 +3527,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             auditStore,
             derivation,
             ledgerJournalStore: new RecordingLedgerJournalStore(),
-            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()),
-            operatorOverridesStore: overridesStore);
+            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()));
     }
 
     private static async Task<(Guid WorkflowId, long Version)> StartImportNormalizeAsync(

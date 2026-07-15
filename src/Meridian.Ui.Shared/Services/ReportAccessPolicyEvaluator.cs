@@ -62,7 +62,7 @@ public static class ReportAccessPolicyEvaluator
         var normalized = Normalize(policy);
         var principals = normalized.Principals ?? [];
         if (normalized.Mode is ReportAccessModeDto.Private or ReportAccessModeDto.Restricted
-            && string.IsNullOrWhiteSpace(normalized.OwnerPrincipalId)
+            && (!normalized.AllowOwnerAccess || string.IsNullOrWhiteSpace(normalized.OwnerPrincipalId))
             && principals.Count == 0)
         {
             issues.Add("Private or restricted report access requires an owner or at least one allowed principal.");
@@ -180,8 +180,9 @@ public static class ReportAccessPolicyEvaluator
         }
 
         var access = manifest.ImmutableAccessScope;
-        if (!string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
-            && string.Equals(access.OwnerPrincipalId, actor, StringComparison.Ordinal))
+        if (access.AllowOwnerAccess
+            && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
+            && string.Equals(access.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase))
         {
             return Allow("Access granted to the immutable report owner.", [BuildUserPrincipal(actor!)]);
         }
@@ -191,24 +192,31 @@ public static class ReportAccessPolicyEvaluator
             return Allow("Access granted by the immutable company-wide report policy.", []);
         }
 
-        var effectivePrincipals = new HashSet<string>(StringComparer.Ordinal)
-        {
-            actor!
-        };
-        effectivePrincipals.Add(company!);
+        var groupIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var group in context?.GroupPrincipalIds ?? [])
         {
             if (!string.IsNullOrWhiteSpace(group))
             {
-                effectivePrincipals.Add(group.Trim());
+                groupIds.Add(group.Trim());
             }
         }
 
-        return access.Mode == ReportingGovernanceAccessMode.Restricted
-            && !access.PrincipalIds.IsDefaultOrEmpty
-            && access.PrincipalIds.Any(effectivePrincipals.Contains)
-                ? Allow("Access granted by the immutable restricted report audience.", [])
-                : Deny("The caller is not included in the immutable report access snapshot.");
+        bool Matches(ReportingAccessPrincipalScope principal) => principal.Kind switch
+        {
+            ReportingAccessPrincipalKind.User => string.Equals(principal.PrincipalId, actor, StringComparison.OrdinalIgnoreCase),
+            ReportingAccessPrincipalKind.Group => groupIds.Contains(principal.PrincipalId),
+            ReportingAccessPrincipalKind.Company => string.Equals(principal.PrincipalId, company, StringComparison.OrdinalIgnoreCase),
+            _ => false
+        };
+
+        var namedPrincipalMatched = !access.Principals.IsDefaultOrEmpty
+            && access.Principals.Any(principal =>
+                Matches(principal)
+                && (access.Mode == ReportingGovernanceAccessMode.Restricted
+                    || principal.Kind == ReportingAccessPrincipalKind.User));
+        return namedPrincipalMatched
+            ? Allow("Access granted by the immutable named report audience.", [])
+            : Deny("The caller is not included in the immutable report access snapshot.");
     }
 
     public static string BuildSummary(ReportAccessPolicyDto? policy)

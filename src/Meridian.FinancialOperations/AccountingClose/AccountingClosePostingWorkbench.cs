@@ -46,3 +46,27 @@ public interface IAccountingClosePostingWorkbench
         AccountingClosePostingCommand command,
         CancellationToken ct = default);
 }
+
+/// <summary>
+/// Signals that the ledger hard close is durable but the separately durable reporting-evidence
+/// handoff has not completed. Repeating the close command reuses the deterministic completion key.
+/// </summary>
+public sealed class ReportingCloseEvidenceHandoffException : InvalidOperationException
+{
+    public ReportingCloseEvidenceHandoffException(
+        LedgerPeriodDto hardClosedPeriod,
+        string completionCheckpointId,
+        string message,
+        Exception innerException)
+        : base(message, innerException)
+    {
+        HardClosedPeriod = hardClosedPeriod ?? throw new ArgumentNullException(nameof(hardClosedPeriod));
+        CompletionCheckpointId = string.IsNullOrWhiteSpace(completionCheckpointId)
+            ? throw new ArgumentException("A completion checkpoint id is required.", nameof(completionCheckpointId))
+            : completionCheckpointId;
+    }
+
+    public LedgerPeriodDto HardClosedPeriod { get; }
+
+    public string CompletionCheckpointId { get; }
+}

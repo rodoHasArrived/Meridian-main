@@ -482,8 +482,26 @@ export interface ReportingScheduleRow {
   description: string;
   deliveryTargetLabel: string;
   datasetSourceLabel: string;
+  accessPolicySnapshotLabel: string;
+  releaseGateLabel: string;
+  releaseGateVariant: Exclude<ReportingBadgeVariant, "default">;
+  releaseHandoffs: ReportingScheduledReleaseHandoffRow[];
   canPause: boolean;
   canResume: boolean;
+  ariaLabel: string;
+}
+
+export interface ReportingScheduledReleaseHandoffRow {
+  id: string;
+  runId: string;
+  distributionLabel: string;
+  transportId: string;
+  recipientLabel: string;
+  formatsLabel: string;
+  state: "PendingRelease" | "Enqueued";
+  stateVariant: Exclude<ReportingBadgeVariant, "default">;
+  createdLabel: string;
+  enqueuedLabel: string;
   ariaLabel: string;
 }
 
@@ -527,6 +545,7 @@ export interface ReportingDeliveryAccessLinkRow {
   kind: string;
   label: string;
   href: string;
+  requiresOpaqueFragment: boolean;
   tokenLabel: string;
   expiresLabel: string | null;
   description: string | null;

@@ -248,22 +248,11 @@ describe("finance standard pages", () => {
     expect(screen.getByRole("link", { name: "Choose report" })).toHaveAttribute("href", "/reporting/library");
   });
 
-  it("renders report run detail with clone and preview actions", async () => {
-    await renderPage(<ReportRunDetailScreen data={data} />, "/reporting/runs/detail?runId=run-tb-1");
+  it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {
+    await renderPage(<ReportRunDetailScreen data={data} />, "/reporting/runs/detail");
 
-    expect(screen.getByRole("heading", { name: "Report Run Detail" })).toBeInTheDocument();
-    expect(screen.getByText("run-tb-1")).toBeInTheDocument();
-    expect(screen.getByText("Run audit details").closest("details")).not.toHaveAttribute("open");
-    expect(screen.getByText("Entity Scope: Fund Alpha")).toBeInTheDocument();
-    expect(screen.getByText("Accounting Basis: GAAP")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Clone parameters" })).toHaveAttribute(
-      "href",
-      "/reporting/run?cloneRunId=run-tb-1"
-    );
-    expect(screen.getByRole("link", { name: "Open preview" })).toHaveAttribute(
-      "href",
-      "/reporting/preview?runId=run-tb-1"
-    );
+    expect(screen.getByRole("alert")).toHaveTextContent("Select a governed report run");
+    expect(screen.queryByText("Entity Scope: Fund Alpha")).not.toBeInTheDocument();
   });
 
   it("renders account detail with the standard trial-balance drill path fields", async () => {
