@@ -3120,10 +3120,9 @@ public sealed class ProviderLedgerReconciliationServiceTests
             CancellationToken ct = default) =>
             throw new NotSupportedException();
 
-        public Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
+        public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
             Guid requestedSecurityId,
-            OperatorOverrideApprovalDecisionRequest request,
-            string reviewer,
+            OperatorOverrideDecisionRequest request,
             CancellationToken ct = default) =>
             throw new NotSupportedException();
     }

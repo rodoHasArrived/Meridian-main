@@ -261,15 +261,6 @@ internal sealed class NullOperatorOverridesStore : IOperatorOverridesStore
             "Security Master is not configured. " +
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
 
-    public Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
-        Guid securityId,
-        OperatorOverrideApprovalDecisionRequest request,
-        string reviewer,
-        CancellationToken ct = default)
-        => Task.FromException<OperatorOverridesDto?>(new InvalidOperationException(
-            "Security Master is not configured. " +
-            "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
-
     public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
         Guid securityId,
         OperatorOverrideDecisionRequest request,

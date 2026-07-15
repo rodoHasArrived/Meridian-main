@@ -934,26 +934,33 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterOperatorOverrideDecision, async (
             Guid securityId,
-            OperatorOverrideApprovalDecisionRequest request,
+            OperatorOverrideDecisionRequest request,
             HttpContext context,
             [FromServices] IOperatorOverridesStore store,
             CancellationToken ct) =>
         {
-            var reviewer = ResolveActor(context);
+            // The reviewer identity is server-derived from the authenticated principal and overrides
+            // any caller-supplied value, so a decision can never be attributed to someone else.
+            var decision = request with { Reviewer = ResolveActor(context) };
             try
             {
                 var updated = await store
-                    .RecordApprovalDecisionAsync(securityId, request, reviewer, ct)
+                    .RecordApprovalDecisionAsync(securityId, decision, ct)
                     .ConfigureAwait(false);
-                return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+                return Results.Json(updated, jsonOptions);
             }
-            catch (ArgumentOutOfRangeException exception)
+            catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
             }
+            catch (InvalidOperationException exception)
+            {
+                // No pending overlay to decide (missing row or already decided).
+                return Results.NotFound(new { error = exception.Message });
+            }
         })
         .WithName("RecordSecurityMasterOperatorOverrideDecision")
-        .Accepts<OperatorOverrideApprovalDecisionRequest>("application/json")
+        .Accepts<OperatorOverrideDecisionRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

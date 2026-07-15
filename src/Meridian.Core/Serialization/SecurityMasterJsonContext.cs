@@ -137,11 +137,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(UpsertSecurityAliasRequest))]
 [JsonSerializable(typeof(OperatorOverridesDto))]
 [JsonSerializable(typeof(OperatorOverridesPatchRequest))]
-<<<<<<< Updated upstream
-[JsonSerializable(typeof(OperatorOverrideApprovalDecisionRequest))]
-=======
 [JsonSerializable(typeof(OperatorOverrideDecisionRequest))]
->>>>>>> Stashed changes
 [JsonSerializable(typeof(SecurityOverrideAuditEntryDto))]
 [JsonSerializable(typeof(SecurityOverrideAuditEntryDto[]))]
 [JsonSerializable(typeof(List<SecurityOverrideAuditEntryDto>))]
