@@ -25,7 +25,7 @@ Total items: **218**
 | `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 854 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 176 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
-| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 143 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
+| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | 226 | `NOTE` | ❌ | // NOTE: We intentionally use GetRequiredKeyedService here rather than |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 100 | `NOTE` | ❌ | note: $"series={run.SeriesId};revision={run.Revision}", |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 562 | `NOTE` | ❌ | note: $"predecessor={predecessor.RunId};request={request.RequestId}", |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 582 | `NOTE` | ❌ | note: $"draft={draftRun.RunId}", |
@@ -97,13 +97,13 @@ Total items: **218**
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 516 | `NOTE` | ❌ | note: "Coupon posted." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 536 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2023 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 913 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 2939 | `NOTE` | ❌ | note: "Semi-annual fixed coupon projected from the reference coupon schedule." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 2959 | `NOTE` | ❌ | note: "Principal paydown carries a small expected-versus-actual variance for operator review." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 2979 | `NOTE` | ❌ | note: "Final coupon and principal repayment remain pending until trustee schedule confirmation." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 3001 | `NOTE` | ❌ | note: "Validation coupon row used by browser workbench checks." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 3021 | `NOTE` | ❌ | note: "Validation amortization row keeps schedule selection consistent." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6127 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 917 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 2983 | `NOTE` | ❌ | note: "Semi-annual fixed coupon projected from the reference coupon schedule." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 3003 | `NOTE` | ❌ | note: "Principal paydown carries a small expected-versus-actual variance for operator review." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 3023 | `NOTE` | ❌ | note: "Final coupon and principal repayment remain pending until trustee schedule confirmation." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 3045 | `NOTE` | ❌ | note: "Validation coupon row used by browser workbench checks." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 3065 | `NOTE` | ❌ | note: "Validation amortization row keeps schedule selection consistent." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6171 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.test.tsx` | 76 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
@@ -118,12 +118,12 @@ Total items: **218**
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 883 | `NOTE` | ❌ | note: seed.note, |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx` | 41 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.test.tsx` | 541 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 123 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 139 | `NOTE` | ❌ | note: "Configured with paper API keys.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1426 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1936 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 327 | `NOTE` | ❌ | note: string; |
-| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 2479 | `NOTE` | ❌ | note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 125 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 141 | `NOTE` | ❌ | note: "Configured with paper API keys.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 1570 | `NOTE` | ❌ | note: "Backfill pressure is elevated.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.test.ts` | 2080 | `NOTE` | ❌ | note: "Checkpoint delay exceeded the review threshold.", |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 393 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts` | 2384 | `NOTE` | ❌ | note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported", |
 | `src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.test.tsx` | 44 | `NOTE` | ❌ | note: "Ready" |
 | `src/Meridian.Ui/dashboard/src/screens/operations-record-release-screen.view-model.test.ts` | 129 | `NOTE` | ❌ | note: "Ready" |
 | `src/Meridian.Ui/dashboard/src/screens/operator-readiness-console.view-model.test.ts` | 191 | `NOTE` | ❌ | note: "Ready", |
@@ -191,7 +191,7 @@ Total items: **218**
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1613 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 429 | `NOTE` | ❌ | note: "Close evidence reviewed." |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 437 | `NOTE` | ❌ | note: "Published to investor portal." |
-| `src/Meridian.Ui/dashboard/src/types/workstation-3.ts` | 1015 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/types/workstation-3.ts` | 1055 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 650 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1006 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1055 | `NOTE` | ❌ | note: string \| null; |
@@ -212,8 +212,8 @@ Total items: **218**
 | `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 483 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
 | `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 4154 | `NOTE` | ❌ | Note: "Delivered after approval.", |
 | `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs` | 418 | `NOTE` | ❌ | // Note: Status derives as ApprovalPending once all four gates are clean, which is expected |
-| `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 112 | `NOTE` | ❌ | Note: "Approved by controller.", |
-| `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 1757 | `NOTE` | ❌ | Note: "Delivered after restatement.", |
+| `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 115 | `NOTE` | ❌ | Note: "Approved by controller.", |
+| `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 1761 | `NOTE` | ❌ | Note: "Delivered after restatement.", |
 | `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 274 | `NOTE` | ❌ | Note: "ready", |
 | `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 186 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |
