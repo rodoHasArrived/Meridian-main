@@ -258,6 +258,47 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldCapValidationIssues()
+    {
+        var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workbook-issue-cap", Guid.NewGuid().ToString("N"));
+        Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", root);
+
+        try
+        {
+            await using var app = await CreateAppAsync();
+            var client = app.GetTestClient();
+            // Far more error rows than the per-sheet issue cap: every row omits the required
+            // entity_name, so without a cap this would emit one issue per row.
+            var rows = Enumerable
+                .Range(1, 1_500)
+                .Select(index => (IReadOnlyList<object?>)new object?[] { $"ENT-{index}", "", "Fund" })
+                .ToArray();
+            var workbook = XlsxWorkbookWriter.CreateWorkbook(
+            [
+                WorkbookMetaSheet(("Entities", "entity-configuration")),
+                new XlsxWorksheet("Entities", ["entity_id", "entity_name", "entity_type"], rows),
+            ]);
+
+            using var content = BuildWorkbookUploadContent(workbook);
+            var response = await client.PostAsync(UiApiRoutes.WorkstationDataUploadWorkbookPreview, content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<DataUploadWorkbookPreviewResultDto>(ServerJsonOptions);
+            result.Should().NotBeNull();
+            result!.Status.Should().Be("NeedsSchemaRepair");
+
+            var entities = result.Sheets.Single(sheet => sheet.SheetName == "Entities");
+            entities.Issues.Count.Should().BeLessThan(1_500);
+            entities.Issues.Should().Contain(issue => issue.Message.Contains("Validation stopped after", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", originalRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldRejectCyclicEntityHierarchy()
     {
         var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");

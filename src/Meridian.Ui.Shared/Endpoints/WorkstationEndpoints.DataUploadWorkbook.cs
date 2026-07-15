@@ -31,6 +31,7 @@ public static partial class WorkstationEndpoints
     private const int MaxWorkbookCellsPerSheet = 1_000_000;
     private const int MaxWorkbookSheets = 64;
     private const long MaxWorkbookCellsPerWorkbook = 2_000_000;
+    private const int MaxWorkbookIssuesPerSheet = 1_000;
 
     private const string OnboardingWorkbookSchemaVersion = "1";
     private const string OnboardingWorkbookFileName = "meridian-onboarding-workbook.xlsx";
@@ -447,6 +448,7 @@ public static partial class WorkstationEndpoints
 
         var previewRows = new List<IReadOnlyDictionary<string, string>>();
         var parsedRowCount = 0;
+        var validationTruncated = false;
         for (var position = headerPosition + 1; position < sheet.Rows.Count; position++)
         {
             var row = sheet.Rows[position];
@@ -461,50 +463,60 @@ public static partial class WorkstationEndpoints
             // the operator actually needs to fix.
             var displayRowNumber = sheet.RowNumbers[position];
 
-            // Excel omits empty trailing cells, so a row with fewer values than headers just means
-            // optional trailing columns were left blank (missing required cells are still caught by
-            // the per-cell check below). Only warn when a row carries more values than headers.
-            if (row.Count > headers.Length)
+            // Cap per-sheet issues: a large but in-bounds workbook (e.g. 200k rows each missing
+            // required cells) would otherwise allocate and serialize millions of issue DTOs. Once the
+            // cap is reached, stop validating further rows and record one truncation summary below.
+            if (issues.Count < MaxWorkbookIssuesPerSheet)
             {
-                issues.Add(new DataUploadValidationIssueDto(
-                    "Warning",
-                    "row",
-                    $"Row has {row.Count.ToString(CultureInfo.InvariantCulture)} values but the sheet has {headers.Length.ToString(CultureInfo.InvariantCulture)} headers; extra trailing values are ignored.",
-                    RowNumber: displayRowNumber,
-                    SheetName: sheet.Name,
-                    CellReference: $"{sheet.Name}!{displayRowNumber}"));
-            }
-
-            for (var column = 0; column < headers.Length; column++)
-            {
-                var header = headers[column];
-                if (header.Length == 0)
-                {
-                    continue;
-                }
-
-                var value = column < row.Count ? row[column].Trim() : string.Empty;
-                if (value.Length == 0 && requiredFieldNames.Contains(header))
-                {
-                    issues.Add(new DataUploadValidationIssueDto(
-                        "Error",
-                        header,
-                        $"Required value '{header}' is missing.",
-                        RowNumber: displayRowNumber,
-                        SheetName: sheet.Name,
-                        CellReference: $"{sheet.Name}!{WorkbookColumnLetter(column)}{displayRowNumber}"));
-                }
-
-                if (currencyColumns.Contains(column) && value.Length > 0 && !IsLikelyCurrencyCode(value))
+                // Excel omits empty trailing cells, so a row with fewer values than headers just means
+                // optional trailing columns were left blank (missing required cells are still caught by
+                // the per-cell check below). Only warn when a row carries more values than headers.
+                if (row.Count > headers.Length)
                 {
                     issues.Add(new DataUploadValidationIssueDto(
                         "Warning",
-                        header,
-                        $"Currency '{value}' is not a 3-letter ISO code.",
+                        "row",
+                        $"Row has {row.Count.ToString(CultureInfo.InvariantCulture)} values but the sheet has {headers.Length.ToString(CultureInfo.InvariantCulture)} headers; extra trailing values are ignored.",
                         RowNumber: displayRowNumber,
                         SheetName: sheet.Name,
-                        CellReference: $"{sheet.Name}!{WorkbookColumnLetter(column)}{displayRowNumber}"));
+                        CellReference: $"{sheet.Name}!{displayRowNumber}"));
                 }
+
+                for (var column = 0; column < headers.Length; column++)
+                {
+                    var header = headers[column];
+                    if (header.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    var value = column < row.Count ? row[column].Trim() : string.Empty;
+                    if (value.Length == 0 && requiredFieldNames.Contains(header))
+                    {
+                        issues.Add(new DataUploadValidationIssueDto(
+                            "Error",
+                            header,
+                            $"Required value '{header}' is missing.",
+                            RowNumber: displayRowNumber,
+                            SheetName: sheet.Name,
+                            CellReference: $"{sheet.Name}!{WorkbookColumnLetter(column)}{displayRowNumber}"));
+                    }
+
+                    if (currencyColumns.Contains(column) && value.Length > 0 && !IsLikelyCurrencyCode(value))
+                    {
+                        issues.Add(new DataUploadValidationIssueDto(
+                            "Warning",
+                            header,
+                            $"Currency '{value}' is not a 3-letter ISO code.",
+                            RowNumber: displayRowNumber,
+                            SheetName: sheet.Name,
+                            CellReference: $"{sheet.Name}!{WorkbookColumnLetter(column)}{displayRowNumber}"));
+                    }
+                }
+            }
+            else
+            {
+                validationTruncated = true;
             }
 
             if (previewRows.Count >= maxPreviewRows)
@@ -524,6 +536,19 @@ public static partial class WorkstationEndpoints
             }
 
             previewRows.Add(mapped);
+        }
+
+        if (validationTruncated)
+        {
+            // Blocking: rows past the issue cap were not validated, so the sheet cannot be certified
+            // ready with potentially unreported errors behind it.
+            issues.Add(new DataUploadValidationIssueDto(
+                "Error",
+                "rows",
+                $"Validation stopped after {MaxWorkbookIssuesPerSheet} issues on sheet '{sheet.Name}'; fix the reported cells and re-upload to surface any remaining issues.",
+                RowNumber: null,
+                SheetName: sheet.Name,
+                CellReference: null));
         }
 
         var status = HasWorkbookError(issues)
@@ -613,25 +638,33 @@ public static partial class WorkstationEndpoints
             var cellReference = $"{entitySheet.Name}!{WorkbookColumnLetter(parentColumn)}{displayRowNumber}";
             if (string.Equals(parent, entityId, StringComparison.OrdinalIgnoreCase))
             {
-                issues.Add(new DataUploadValidationIssueDto(
-                    "Error",
-                    "parent_entity_id",
-                    $"parent_entity_id '{parent}' refers to its own entity_id (self-referencing hierarchy).",
-                    RowNumber: displayRowNumber,
-                    SheetName: entitySheet.Name,
-                    CellReference: cellReference));
+                if (issues.Count < MaxWorkbookIssuesPerSheet)
+                {
+                    issues.Add(new DataUploadValidationIssueDto(
+                        "Error",
+                        "parent_entity_id",
+                        $"parent_entity_id '{parent}' refers to its own entity_id (self-referencing hierarchy).",
+                        RowNumber: displayRowNumber,
+                        SheetName: entitySheet.Name,
+                        CellReference: cellReference));
+                }
+
                 continue;
             }
 
             if (!entityIds.Contains(parent))
             {
-                issues.Add(new DataUploadValidationIssueDto(
-                    "Error",
-                    "parent_entity_id",
-                    $"parent_entity_id '{parent}' does not resolve to an entity_id in the '{entitySheet.Name}' sheet.",
-                    RowNumber: displayRowNumber,
-                    SheetName: entitySheet.Name,
-                    CellReference: cellReference));
+                if (issues.Count < MaxWorkbookIssuesPerSheet)
+                {
+                    issues.Add(new DataUploadValidationIssueDto(
+                        "Error",
+                        "parent_entity_id",
+                        $"parent_entity_id '{parent}' does not resolve to an entity_id in the '{entitySheet.Name}' sheet.",
+                        RowNumber: displayRowNumber,
+                        SheetName: entitySheet.Name,
+                        CellReference: cellReference));
+                }
+
                 continue;
             }
 
@@ -645,6 +678,11 @@ public static partial class WorkstationEndpoints
 
         foreach (var cyclicEntityId in DetectCyclicEntities(parentOf))
         {
+            if (issues.Count >= MaxWorkbookIssuesPerSheet)
+            {
+                break;
+            }
+
             if (!rowOf.TryGetValue(cyclicEntityId, out var cyclicRowNumber))
             {
                 continue;
@@ -657,6 +695,17 @@ public static partial class WorkstationEndpoints
                 RowNumber: cyclicRowNumber,
                 SheetName: entitySheet.Name,
                 CellReference: $"{entitySheet.Name}!{WorkbookColumnLetter(parentColumn)}{cyclicRowNumber}"));
+        }
+
+        if (issues.Count >= MaxWorkbookIssuesPerSheet)
+        {
+            issues.Add(new DataUploadValidationIssueDto(
+                "Error",
+                "parent_entity_id",
+                $"Cross-sheet validation stopped after {MaxWorkbookIssuesPerSheet} entity-hierarchy issues; fix the reported rows and re-upload to surface any remaining issues.",
+                RowNumber: null,
+                SheetName: entitySheet.Name,
+                CellReference: null));
         }
 
         return issues;
