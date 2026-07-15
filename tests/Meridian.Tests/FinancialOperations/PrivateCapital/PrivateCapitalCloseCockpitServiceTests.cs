@@ -1583,7 +1583,10 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             string? fundProfileId,
             Guid? ledgerBookId,
             string? periodId,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? entityId = null,
+            string? tenantId = null,
+            string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(status);
@@ -1597,7 +1600,10 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             string? fundProfileId,
             Guid? ledgerBookId,
             string? periodId,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null,
+            string? entityId = null)
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(status);

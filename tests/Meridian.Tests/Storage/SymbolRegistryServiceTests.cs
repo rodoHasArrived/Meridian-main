@@ -420,4 +420,18 @@ public sealed class SymbolRegistryServiceTests : IDisposable
         savedRegistry.Should().NotBeNull();
         savedRegistry!.Symbols.Should().ContainKey("TEST");
     }
+
+    [Fact]
+    public async Task SetMigrationMarkerAsync_ProcessRestart_PersistsMarkerThroughLockedStoreOperation()
+    {
+        await _service.InitializeAsync();
+
+        await _service.SetMigrationMarkerAsync("canonical-symbol-spine-v1", "FINGERPRINT-1");
+
+        var reloaded = new SymbolRegistryService(_testDirectory);
+        await reloaded.InitializeAsync();
+
+        (await reloaded.GetMigrationMarkerAsync("canonical-symbol-spine-v1"))
+            .Should().Be("FINGERPRINT-1");
+    }
 }

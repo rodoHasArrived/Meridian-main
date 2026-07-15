@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Store;
 
@@ -13,6 +14,14 @@ public enum AutomatedJournalScheduleKind
     DividendCapture = 1
 }
 
+/// <summary>Why a durable schedule-history row was appended.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<AutomatedJournalScheduleHistoryKind>))]
+public enum AutomatedJournalScheduleHistoryKind
+{
+    Execution = 0,
+    Rearm = 1
+}
+
 /// <summary>Durable audit entry for one deterministic scheduled execution.</summary>
 public sealed record AutomatedJournalScheduleRunHistory(
     string RunKey,
@@ -23,7 +32,16 @@ public sealed record AutomatedJournalScheduleRunHistory(
     string Summary,
     IReadOnlyList<Guid>? JournalEntryIds = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
-    IReadOnlyList<string>? Blockers = null)
+    IReadOnlyList<string>? Blockers = null,
+    string? PeriodId = null,
+    DateOnly? PeriodStart = null,
+    DateOnly? PeriodEnd = null,
+    decimal? EvidenceConfidenceScore = null,
+    AutomatedJournalEvidenceQualityDto? EvidenceQuality = null,
+    AutomatedJournalScheduleHistoryKind HistoryKind = AutomatedJournalScheduleHistoryKind.Execution,
+    string? Actor = null,
+    long? PreviousVersion = null,
+    long? ResultVersion = null)
 {
     public IReadOnlyList<Guid> JournalEntryIds { get; init; } = JournalEntryIds ?? [];
 
@@ -33,9 +51,9 @@ public sealed record AutomatedJournalScheduleRunHistory(
 }
 
 /// <summary>
-/// Persisted configuration for one explicit monthly fund/book/period/entity/currency scope.
-/// Work items are intentionally one-period records: NAV, high-water mark, fee terms, and
-/// positions are never silently rolled into a later month.
+/// Persisted configuration and durable current-cycle cursor for one recurring monthly
+/// fund/book/entity/currency scope. Completed cycles remain immutable in <see cref="RunHistory"/>;
+/// fee-basis values and their capital-account reconciliation never roll into a later month.
 /// </summary>
 public sealed record AutomatedJournalScheduleWorkItem(
     string ScheduleId,
@@ -70,7 +88,15 @@ public sealed record AutomatedJournalScheduleWorkItem(
     string? LastSummary = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
     IReadOnlyList<string>? Blockers = null,
-    IReadOnlyList<AutomatedJournalScheduleRunHistory>? RunHistory = null)
+    IReadOnlyList<AutomatedJournalScheduleRunHistory>? RunHistory = null,
+    bool RecurrenceEnabled = true,
+    decimal MinimumCapitalAccountConfidence = 0.90m,
+    AutomatedJournalCapitalAccountReconciliationDto? CapitalAccountReconciliation = null,
+    string? CreatedBy = null,
+    string? LastConfiguredBy = null,
+    decimal? LastEvidenceConfidenceScore = null,
+    AutomatedJournalEvidenceQualityDto? LastEvidenceQuality = null,
+    long Version = 0)
 {
     public IReadOnlyList<DividendAccrualPosition> Positions { get; init; } = Positions ?? [];
 
@@ -93,6 +119,25 @@ public interface IAutomatedJournalScheduleStore
     Task<AutomatedJournalScheduleWorkItem> SaveAsync(
         AutomatedJournalScheduleWorkItem workItem,
         CancellationToken ct = default);
+}
+
+/// <summary>Raised when a schedule save loses an optimistic-concurrency race.</summary>
+public sealed class AutomatedJournalScheduleConcurrencyException : InvalidOperationException
+{
+    public AutomatedJournalScheduleConcurrencyException(string scheduleId, long expectedVersion, long actualVersion)
+        : base(
+            $"Automated journal schedule '{scheduleId}' version is stale. Expected {expectedVersion}, current {actualVersion}.")
+    {
+        ScheduleId = scheduleId;
+        ExpectedVersion = expectedVersion;
+        ActualVersion = actualVersion;
+    }
+
+    public string ScheduleId { get; }
+
+    public long ExpectedVersion { get; }
+
+    public long ActualVersion { get; }
 }
 
 /// <summary>In-memory source for deterministic tests and lightweight composition.</summary>
@@ -139,12 +184,31 @@ public sealed class InMemoryAutomatedJournalScheduleStore :
         lock (_gate)
         {
             if (_items.TryGetValue(normalized.ScheduleId, out var existing) &&
-                !AutomatedJournalScheduleProjection.HasSameOwnership(existing, normalized))
+                !AutomatedJournalScheduleProjection.HasSameImmutableIdentity(existing, normalized))
             {
                 throw new InvalidOperationException(
-                    $"Automated journal schedule '{normalized.ScheduleId}' belongs to a different tenant or company scope.");
+                    $"Automated journal schedule '{normalized.ScheduleId}' belongs to a different immutable identity scope.");
             }
 
+            if (existing is null)
+            {
+                if (normalized.Version != 0)
+                {
+                    throw new AutomatedJournalScheduleConcurrencyException(
+                        normalized.ScheduleId,
+                        normalized.Version,
+                        actualVersion: 0);
+                }
+            }
+            else if (normalized.Version != existing.Version)
+            {
+                throw new AutomatedJournalScheduleConcurrencyException(
+                    normalized.ScheduleId,
+                    normalized.Version,
+                    existing.Version);
+            }
+
+            normalized = normalized with { Version = checked((existing?.Version ?? 0) + 1) };
             _items[normalized.ScheduleId] = normalized;
         }
 
@@ -155,12 +219,18 @@ public sealed class InMemoryAutomatedJournalScheduleStore :
         string? fundProfileId,
         Guid? ledgerBookId,
         string? periodId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null,
+        string? entityId = null)
         => AutomatedJournalScheduleProjection.ProjectStatus(
             await ListAsync(ct).ConfigureAwait(false),
             fundProfileId,
             ledgerBookId,
-            periodId);
+            periodId,
+            tenantId,
+            companyId,
+            entityId);
 }
 
 /// <summary>Atomic JSON-backed source with schedule state and run history in one snapshot.</summary>
@@ -219,19 +289,39 @@ public sealed class FileAutomatedJournalScheduleStore :
                     item.ScheduleId,
                     normalized.ScheduleId,
                     StringComparison.OrdinalIgnoreCase));
-                if (existing is not null && !AutomatedJournalScheduleProjection.HasSameOwnership(existing, normalized))
+                if (existing is not null && !AutomatedJournalScheduleProjection.HasSameImmutableIdentity(existing, normalized))
                 {
                     throw new InvalidOperationException(
-                        $"Automated journal schedule '{normalized.ScheduleId}' belongs to a different tenant or company scope.");
+                        $"Automated journal schedule '{normalized.ScheduleId}' belongs to a different immutable identity scope.");
                 }
+
+                if (existing is null)
+                {
+                    if (normalized.Version != 0)
+                    {
+                        throw new AutomatedJournalScheduleConcurrencyException(
+                            normalized.ScheduleId,
+                            normalized.Version,
+                            actualVersion: 0);
+                    }
+                }
+                else if (normalized.Version != existing.Version)
+                {
+                    throw new AutomatedJournalScheduleConcurrencyException(
+                        normalized.ScheduleId,
+                        normalized.Version,
+                        existing.Version);
+                }
+
+                var versioned = normalized with { Version = checked((existing?.Version ?? 0) + 1) };
 
                 var workItems = snapshot.WorkItems
                     .Where(item => !string.Equals(item.ScheduleId, normalized.ScheduleId, StringComparison.OrdinalIgnoreCase))
-                    .Append(normalized)
+                    .Append(versioned)
                     .OrderBy(static item => item.ScheduledForUtc)
                     .ThenBy(static item => item.ScheduleId, StringComparer.OrdinalIgnoreCase)
                     .ToArray();
-                return (new AutomatedJournalScheduleSnapshot(workItems), normalized);
+                return (new AutomatedJournalScheduleSnapshot(workItems), versioned);
             },
             ct).ConfigureAwait(false);
     }
@@ -240,12 +330,18 @@ public sealed class FileAutomatedJournalScheduleStore :
         string? fundProfileId,
         Guid? ledgerBookId,
         string? periodId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null,
+        string? entityId = null)
         => AutomatedJournalScheduleProjection.ProjectStatus(
             await ListAsync(ct).ConfigureAwait(false),
             fundProfileId,
             ledgerBookId,
-            periodId);
+            periodId,
+            tenantId,
+            companyId,
+            entityId);
 
     public sealed record AutomatedJournalScheduleSnapshot(
         IReadOnlyList<AutomatedJournalScheduleWorkItem> WorkItems);
@@ -253,11 +349,17 @@ public sealed class FileAutomatedJournalScheduleStore :
 
 internal static class AutomatedJournalScheduleProjection
 {
-    public static bool HasSameOwnership(
+    public static bool HasSameImmutableIdentity(
         AutomatedJournalScheduleWorkItem left,
         AutomatedJournalScheduleWorkItem right)
         => string.Equals(left.TenantId, right.TenantId, StringComparison.OrdinalIgnoreCase) &&
-           string.Equals(left.CompanyId, right.CompanyId, StringComparison.OrdinalIgnoreCase);
+           string.Equals(left.CompanyId, right.CompanyId, StringComparison.OrdinalIgnoreCase) &&
+           left.Kind == right.Kind &&
+           string.Equals(left.FundProfileId, right.FundProfileId, StringComparison.OrdinalIgnoreCase) &&
+           left.LedgerBookId == right.LedgerBookId &&
+           string.Equals(left.EntityId, right.EntityId, StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(left.Currency, right.Currency, StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(left.CreatedBy ?? left.Actor, right.CreatedBy ?? right.Actor, StringComparison.OrdinalIgnoreCase);
 
     public static AutomatedJournalScheduleWorkItem Normalize(AutomatedJournalScheduleWorkItem item)
     {
@@ -279,12 +381,21 @@ internal static class AutomatedJournalScheduleProjection
             throw new ArgumentOutOfRangeException(nameof(item), "Withholding tax rate must be at least 0 and below 1.");
         if (item.MinimumCorporateActionConfidence is < 0m or > 1m)
             throw new ArgumentOutOfRangeException(nameof(item), "Corporate-action confidence threshold must be between 0 and 1.");
+        if (item.MinimumCapitalAccountConfidence is < 0m or > 1m)
+            throw new ArgumentOutOfRangeException(nameof(item), "Capital-account confidence threshold must be between 0 and 1.");
+        var periodToken = item.PeriodStart.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
+        if (item.RecurrenceEnabled && !periodId.Contains(periodToken, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "A recurring automated-journal period id must contain its yyyy-MM period token so the durable cursor can advance deterministically.",
+                nameof(item));
+        }
 
         if (item.Kind == AutomatedJournalScheduleKind.FeeAccrual)
         {
-            RequireNonNegative(item.BeginningNav, "Beginning NAV");
-            RequireNonNegative(item.EndingNavBeforeFees, "Ending NAV before fees");
-            RequireNonNegative(item.HighWaterMark, "High-water mark");
+            ValidateOptionalNonNegative(item.BeginningNav, "Beginning NAV");
+            ValidateOptionalNonNegative(item.EndingNavBeforeFees, "Ending NAV before fees");
+            ValidateOptionalNonNegative(item.HighWaterMark, "High-water mark");
             RequireRate(item.ManagementFeeRate, "Management fee rate");
             RequireRate(item.PerformanceFeeRate, "Performance fee rate");
         }
@@ -299,6 +410,8 @@ internal static class AutomatedJournalScheduleProjection
             Currency = currency,
             TimeZoneId = timeZoneId,
             Actor = actor,
+            CreatedBy = Require(item.CreatedBy ?? actor, "Schedule creator"),
+            LastConfiguredBy = Require(item.LastConfiguredBy ?? item.CreatedBy ?? actor, "Last configured by"),
             TenantId = NormalizeOptional(item.TenantId),
             CompanyId = NormalizeOptional(item.CompanyId),
             ScheduledForUtc = scheduledForUtc,
@@ -308,7 +421,8 @@ internal static class AutomatedJournalScheduleProjection
             EvidenceLinks = item.EvidenceLinks ?? [],
             Blockers = item.Blockers ?? [],
             JournalEntryIds = item.JournalEntryIds ?? [],
-            RunHistory = item.RunHistory ?? []
+            RunHistory = item.RunHistory ?? [],
+            CapitalAccountReconciliation = NormalizeReconciliation(item.CapitalAccountReconciliation)
         };
     }
 
@@ -316,12 +430,22 @@ internal static class AutomatedJournalScheduleProjection
         IReadOnlyList<AutomatedJournalScheduleWorkItem> items,
         string? fundProfileId,
         Guid? ledgerBookId,
-        string? periodId)
+        string? periodId,
+        string? tenantId,
+        string? companyId,
+        string? entityId)
     {
+        var normalizedPeriodId = NormalizeOptional(periodId);
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        var normalizedEntityId = NormalizeOptional(entityId);
         var scoped = items
+            .Where(item => string.Equals(item.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => string.Equals(item.CompanyId, normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
             .Where(item => string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(item.FundProfileId, fundProfileId.Trim(), StringComparison.OrdinalIgnoreCase))
             .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId.Value)
-            .Where(item => string.IsNullOrWhiteSpace(periodId) || string.Equals(item.PeriodId, periodId.Trim(), StringComparison.OrdinalIgnoreCase))
+            .Where(item => normalizedEntityId is null || string.Equals(item.EntityId, normalizedEntityId, StringComparison.OrdinalIgnoreCase))
+            .SelectMany(item => ProjectCycles(item, normalizedPeriodId))
             .ToArray();
         if (scoped.Length == 0)
         {
@@ -338,30 +462,41 @@ internal static class AutomatedJournalScheduleProjection
                 BlockedCount: 0,
                 State: AutomatedJournalScheduleStateDto.NotConfigured,
                 Summary: "Monthly fee-accrual and dividend-capture schedules are not configured for this close scope.",
-                Blockers: ["Configure explicit monthly fee and dividend work items before relying on automated close preparation."]);
+                Blockers: ["Configure explicit monthly fee and dividend work items before relying on automated close preparation."],
+                EntityId: normalizedEntityId,
+                TenantId: normalizedTenantId,
+                CompanyId: normalizedCompanyId);
         }
 
         var state = SelectAggregateState(scoped);
-        var investigationCount = scoped.Count(static item => item.State == AutomatedJournalScheduleStateDto.NeedsInvestigation);
-        var blockedCount = scoped.Count(static item => item.State is AutomatedJournalScheduleStateDto.Blocked or AutomatedJournalScheduleStateDto.Failed);
-        var evidence = scoped.SelectMany(static item => item.EvidenceLinks)
+        var investigationCount = scoped.Count(static cycle => cycle.State == AutomatedJournalScheduleStateDto.NeedsInvestigation);
+        var blockedCount = scoped.Count(static cycle => cycle.State is AutomatedJournalScheduleStateDto.Blocked or AutomatedJournalScheduleStateDto.Failed);
+        var evidence = scoped.SelectMany(static cycle => cycle.EvidenceLinks)
             .DistinctBy(static link => $"{link.EvidenceId}|{link.Route}", StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var blockers = scoped.SelectMany(static item => item.Blockers)
+        var blockers = scoped.SelectMany(static cycle => cycle.Blockers)
             .Where(static blocker => !string.IsNullOrWhiteSpace(blocker))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var journalEntryIds = scoped.SelectMany(static item => item.JournalEntryIds)
+        var journalEntryIds = scoped.SelectMany(static cycle => cycle.JournalEntryIds)
             .Distinct()
             .ToArray();
-        var distinctFunds = scoped.Select(static item => item.FundProfileId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        var distinctBooks = scoped.Select(static item => item.LedgerBookId).Distinct().ToArray();
-        var distinctPeriods = scoped.Select(static item => item.PeriodId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var confidenceScores = scoped
+            .Where(static cycle => cycle.EvidenceConfidenceScore.HasValue)
+            .Select(static cycle => cycle.EvidenceConfidenceScore!.Value)
+            .ToArray();
+        var evidenceQualities = scoped
+            .Where(static cycle => cycle.EvidenceQuality.HasValue)
+            .Select(static cycle => cycle.EvidenceQuality!.Value)
+            .ToArray();
+        var distinctFunds = scoped.Select(static cycle => cycle.Item.FundProfileId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var distinctBooks = scoped.Select(static cycle => cycle.Item.LedgerBookId).Distinct().ToArray();
+        var distinctPeriods = scoped.Select(static cycle => cycle.PeriodId).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         var summary = state switch
         {
             AutomatedJournalScheduleStateDto.NeedsInvestigation => $"{investigationCount} monthly automated-journal run(s) need evidence investigation.",
             AutomatedJournalScheduleStateDto.Blocked or AutomatedJournalScheduleStateDto.Failed => $"{blockedCount} monthly automated-journal run(s) are blocked or failed.",
-            AutomatedJournalScheduleStateDto.DraftReady => $"{scoped.Count(static item => item.State == AutomatedJournalScheduleStateDto.DraftReady)} monthly run(s) produced governed drafts awaiting human approval.",
+            AutomatedJournalScheduleStateDto.DraftReady => $"{scoped.Count(static cycle => cycle.State == AutomatedJournalScheduleStateDto.DraftReady)} monthly run(s) produced governed drafts awaiting human approval.",
             AutomatedJournalScheduleStateDto.Running => "Monthly automated-journal work is running.",
             AutomatedJournalScheduleStateDto.Scheduled => "Monthly fee-accrual and dividend-capture work is scheduled.",
             _ => "Monthly automated-journal work completed without a required draft."
@@ -372,36 +507,106 @@ internal static class AutomatedJournalScheduleProjection
             ledgerBookId ?? (distinctBooks.Length == 1 ? distinctBooks[0] : null),
             NormalizeOptional(periodId) ?? (distinctPeriods.Length == 1 ? distinctPeriods[0] : null),
             scoped.Length,
-            scoped.Count(static item => item.IsEnabled),
-            scoped.Count(static item => item.Kind == AutomatedJournalScheduleKind.FeeAccrual),
-            scoped.Count(static item => item.Kind == AutomatedJournalScheduleKind.DividendCapture),
-            scoped.Count(static item => item.State == AutomatedJournalScheduleStateDto.DraftReady),
+            scoped.Count(static cycle => cycle.Item.IsEnabled),
+            scoped.Count(static cycle => cycle.Item.Kind == AutomatedJournalScheduleKind.FeeAccrual),
+            scoped.Count(static cycle => cycle.Item.Kind == AutomatedJournalScheduleKind.DividendCapture),
+            scoped.Count(static cycle => cycle.State == AutomatedJournalScheduleStateDto.DraftReady),
             investigationCount,
             blockedCount,
             state,
             summary,
             evidence,
             blockers,
-            journalEntryIds);
+            journalEntryIds,
+            confidenceScores.Length == 0 ? null : confidenceScores.Min(),
+            evidenceQualities.Length == 0 ? null : evidenceQualities.Min(),
+            journalEntryIds.Length,
+            normalizedEntityId,
+            normalizedTenantId,
+            normalizedCompanyId);
     }
 
     private static AutomatedJournalScheduleStateDto SelectAggregateState(
-        IReadOnlyList<AutomatedJournalScheduleWorkItem> items)
+        IReadOnlyList<AutomatedJournalScheduleCycleView> cycles)
     {
-        if (items.Any(static item => item.State == AutomatedJournalScheduleStateDto.NeedsInvestigation))
+        if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.NeedsInvestigation))
             return AutomatedJournalScheduleStateDto.NeedsInvestigation;
-        if (items.Any(static item => item.State == AutomatedJournalScheduleStateDto.Failed))
+        if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.Failed))
             return AutomatedJournalScheduleStateDto.Failed;
-        if (items.Any(static item => item.State == AutomatedJournalScheduleStateDto.Blocked))
+        if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.Blocked))
             return AutomatedJournalScheduleStateDto.Blocked;
-        if (items.Any(static item => item.State == AutomatedJournalScheduleStateDto.Running))
+        if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.Running))
             return AutomatedJournalScheduleStateDto.Running;
-        if (items.Any(static item => item.State == AutomatedJournalScheduleStateDto.DraftReady))
+        if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.DraftReady))
             return AutomatedJournalScheduleStateDto.DraftReady;
-        if (items.Any(static item => item.State == AutomatedJournalScheduleStateDto.Scheduled))
+        if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.Scheduled))
             return AutomatedJournalScheduleStateDto.Scheduled;
         return AutomatedJournalScheduleStateDto.NoDraftRequired;
     }
+
+    private static IEnumerable<AutomatedJournalScheduleCycleView> ProjectCycles(
+        AutomatedJournalScheduleWorkItem item,
+        string? periodId)
+    {
+        if (periodId is null)
+        {
+            yield return CurrentCycle(item);
+            yield break;
+        }
+
+        var currentMatches = string.Equals(item.PeriodId, periodId, StringComparison.OrdinalIgnoreCase);
+        var currentIsRearmed = currentMatches &&
+            item.State == AutomatedJournalScheduleStateDto.Scheduled &&
+            item.LastScheduledForUtc != item.ScheduledForUtc;
+        if (currentIsRearmed)
+        {
+            yield return CurrentCycle(item);
+            yield break;
+        }
+
+        var history = item.RunHistory
+            .Where(static entry => entry.HistoryKind == AutomatedJournalScheduleHistoryKind.Execution)
+            .Where(entry => string.Equals(entry.PeriodId ?? item.PeriodId, periodId, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static entry => entry.ScheduledForUtc)
+            .FirstOrDefault();
+        if (history is not null)
+        {
+            yield return new AutomatedJournalScheduleCycleView(
+                item,
+                history.PeriodId ?? periodId,
+                history.State,
+                history.EvidenceLinks,
+                history.Blockers,
+                history.JournalEntryIds,
+                history.EvidenceConfidenceScore,
+                history.EvidenceQuality);
+            yield break;
+        }
+
+        if (currentMatches)
+            yield return CurrentCycle(item);
+    }
+
+    private static AutomatedJournalScheduleCycleView CurrentCycle(AutomatedJournalScheduleWorkItem item)
+        => new(
+            item,
+            item.PeriodId,
+            item.State,
+            item.EvidenceLinks,
+            item.Blockers,
+            item.JournalEntryIds,
+            item.LastEvidenceConfidenceScore,
+            item.LastEvidenceQuality);
+
+    private sealed record AutomatedJournalScheduleCycleView(
+        AutomatedJournalScheduleWorkItem Item,
+        string PeriodId,
+        AutomatedJournalScheduleStateDto State,
+        IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
+        IReadOnlyList<string> Blockers,
+        IReadOnlyList<Guid> JournalEntryIds,
+        decimal? EvidenceConfidenceScore,
+        AutomatedJournalEvidenceQualityDto? EvidenceQuality);
 
     private static DateTimeOffset ResolveDueAtUtc(DateOnly dueDate, TimeOnly dueTime, string timeZoneId)
     {
@@ -435,11 +640,42 @@ internal static class AutomatedJournalScheduleProjection
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static void RequireNonNegative(decimal? value, string label)
+    private static AutomatedJournalCapitalAccountReconciliationDto? NormalizeReconciliation(
+        AutomatedJournalCapitalAccountReconciliationDto? reconciliation)
     {
-        if (!value.HasValue)
-            throw new ArgumentException($"{label} is required for fee-accrual schedules.");
-        if (value.Value < 0m)
+        if (reconciliation is null)
+            return null;
+        if (reconciliation.ConfidenceScore is < 0m or > 1m)
+            throw new ArgumentOutOfRangeException(nameof(reconciliation), "Capital-account reconciliation confidence must be between 0 and 1.");
+        if (reconciliation.MaximumVarianceTolerance < 0m)
+            throw new ArgumentOutOfRangeException(nameof(reconciliation), "Capital-account reconciliation tolerance cannot be negative.");
+        if (reconciliation.ReconciledBeginningNav < 0m ||
+            reconciliation.ReconciledEndingNavBeforeFees < 0m ||
+            reconciliation.ReconciledHighWaterMark < 0m ||
+            reconciliation.CapitalAccountOpeningBalance < 0m ||
+            reconciliation.CapitalAccountEndingBalanceBeforeFees < 0m ||
+            reconciliation.CapitalAccountHighWaterMark < 0m)
+        {
+            throw new ArgumentOutOfRangeException(nameof(reconciliation), "Capital-account reconciliation balances cannot be negative.");
+        }
+
+        return reconciliation with
+        {
+            ReconciliationId = Require(reconciliation.ReconciliationId, "Capital-account reconciliation id"),
+            PeriodId = Require(reconciliation.PeriodId, "Capital-account reconciliation period id"),
+            Currency = Require(reconciliation.Currency, "Capital-account reconciliation currency").ToUpperInvariant(),
+            SourceVersion = Require(reconciliation.SourceVersion, "Capital-account reconciliation source version"),
+            ReviewedBy = Require(reconciliation.ReviewedBy, "Capital-account reconciliation reviewer"),
+            EvidenceLinks = reconciliation.EvidenceLinks
+                .Where(static link => !string.IsNullOrWhiteSpace(link.Route))
+                .DistinctBy(static link => $"{link.EvidenceId}|{link.Route}", StringComparer.OrdinalIgnoreCase)
+                .ToArray()
+        };
+    }
+
+    private static void ValidateOptionalNonNegative(decimal? value, string label)
+    {
+        if (value is < 0m)
             throw new ArgumentOutOfRangeException(label, $"{label} cannot be negative.");
     }
 

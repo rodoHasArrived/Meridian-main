@@ -31,6 +31,11 @@ public sealed record PositionRecord(
 /// <param name="RealisedPnl">Cumulative realised P&amp;L.</param>
 /// <param name="Positions">All open positions at snapshot time.</param>
 /// <param name="AsOf">UTC timestamp of the snapshot.</param>
+/// <param name="TenantId">Immutable tenant owner of the snapshot.</param>
+/// <param name="CompanyId">Immutable company owner of the snapshot.</param>
+/// <param name="FundProfileId">Immutable fund-profile owner of the snapshot.</param>
+/// <param name="LedgerBookId">Immutable ledger-book owner of the snapshot.</param>
+/// <param name="EntityId">Immutable legal/reporting entity owner of the snapshot.</param>
 public sealed record AccountSnapshotRecord(
     string RunId,
     string AccountId,
@@ -41,7 +46,23 @@ public sealed record AccountSnapshotRecord(
     decimal UnrealisedPnl,
     decimal RealisedPnl,
     IReadOnlyList<PositionRecord> Positions,
-    DateTimeOffset AsOf);
+    DateTimeOffset AsOf,
+    string? TenantId = null,
+    string? CompanyId = null,
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    string? EntityId = null);
+
+/// <summary>
+/// Immutable accounting-owner scope used to retrieve a position snapshot without crossing a
+/// tenant, company, fund, ledger-book, or entity boundary.
+/// </summary>
+public sealed record PositionSnapshotOwnerScope(
+    string TenantId,
+    string CompanyId,
+    string FundProfileId,
+    Guid LedgerBookId,
+    string EntityId);
 
 /// <summary>
 /// Provides crash-safe persistence for per-account portfolio snapshots.
@@ -60,6 +81,16 @@ public interface IPositionSnapshotStore
     /// Returns <see langword="null"/> when none exists.
     /// </summary>
     Task<AccountSnapshotRecord?> GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves the latest snapshot owned by the exact accounting scope. Implementations must
+    /// not fall back to an unowned or differently owned run/account snapshot.
+    /// </summary>
+    Task<AccountSnapshotRecord?> GetLatestSnapshotAsync(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Streams all snapshots for the given run / account pair between

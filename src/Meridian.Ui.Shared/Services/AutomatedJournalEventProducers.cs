@@ -39,6 +39,7 @@ public sealed record DividendAccrualPosition(
 /// </summary>
 public sealed record CorporateActionDividendRequest(
     IReadOnlyList<DividendAccrualPosition> Positions,
+    string Currency,
     DateOnly WindowStart,
     DateOnly WindowEnd,
     DateTimeOffset AsOf,
@@ -67,6 +68,8 @@ public sealed class CorporateActionDividendEventProducer
         ArgumentNullException.ThrowIfNull(request);
         if (request.Positions.Count == 0)
             throw new ArgumentException("At least one position is required.", nameof(request));
+        if (string.IsNullOrWhiteSpace(request.Currency))
+            throw new ArgumentException("Dividend accounting currency is required.", nameof(request));
         if (request.WindowEnd < request.WindowStart)
             throw new ArgumentException("Dividend window end must not precede its start.", nameof(request));
         if (request.WithholdingTaxRate is < 0m or >= 1m)
@@ -74,6 +77,7 @@ public sealed class CorporateActionDividendEventProducer
         if (request.MinimumEvidenceConfidence is < 0m or > 1m)
             throw new ArgumentOutOfRangeException(nameof(request), "Minimum evidence confidence must be between 0 and 1.");
 
+        var expectedCurrency = request.Currency.Trim().ToUpperInvariant();
         var events = new List<AutomatedJournalEvent>();
         var skipped = new List<AutomatedJournalEventProductionSkip>();
         var evidenceAssessments = new Dictionary<string, AutomatedJournalEvidenceAssessmentDto>(StringComparer.OrdinalIgnoreCase);
@@ -123,6 +127,21 @@ public sealed class CorporateActionDividendEventProducer
                 foreach (var effectiveState in effectiveDividends)
                 {
                     var dividend = effectiveState.Effective;
+                    var actionCurrency = string.IsNullOrWhiteSpace(dividend.Currency)
+                        ? null
+                        : dividend.Currency.Trim().ToUpperInvariant();
+                    if (!string.Equals(actionCurrency, expectedCurrency, StringComparison.Ordinal))
+                    {
+                        skipped.Add(new AutomatedJournalEventProductionSkip(
+                            symbol,
+                            actionCurrency is null
+                                ? FormattableString.Invariant(
+                                    $"Corporate action {dividend.CorpActId:N} has no currency and cannot enter the exact {expectedCurrency} accounting scope.")
+                                : FormattableString.Invariant(
+                                    $"Corporate action {dividend.CorpActId:N} currency {actionCurrency} does not match the exact {expectedCurrency} accounting scope.")));
+                        continue;
+                    }
+
                     var currencySuffix = dividend.Currency is null ? "" : " " + dividend.Currency;
                     var amount = decimal.Round(
                         position.Quantity * dividend.DividendPerShare!.Value, 2, MidpointRounding.AwayFromZero);

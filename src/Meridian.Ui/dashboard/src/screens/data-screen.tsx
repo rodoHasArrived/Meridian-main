@@ -37,8 +37,12 @@ import {
   buildDataAnalyticsDegradedViewModel,
   DataAnalyticsDegradedRegion
 } from "@/screens/data-screen.analytics-status";
+import type { CellActionApi } from "@/screens/data-screen.cell-actions";
 import { useDataQueryPanel } from "@/screens/data-screen.query-panel.view-model";
-import { useDataQualityPanel } from "@/screens/data-screen.data-quality.view-model";
+import {
+  useDataQualityPanel,
+  type QualityDashboardFetcher
+} from "@/screens/data-screen.data-quality.view-model";
 import {
   CAPABILITY_LEGEND,
   useCapabilityMatrixPanel,
@@ -93,6 +97,8 @@ interface DataScreenProps {
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
   providerRoutingRefreshing?: boolean;
+  dataQualityFetcher?: QualityDashboardFetcher;
+  dataQualityActionApi?: Partial<CellActionApi>;
   onProviderSetupConfigured?: () => Promise<void> | void;
   onProviderRoutingRefresh?: () => Promise<void> | void;
 }
@@ -165,6 +171,8 @@ export function DataScreen({
   providerRoutingBindings = null,
   providerRoutingTrustSnapshots = null,
   providerRoutingRefreshing = false,
+  dataQualityFetcher,
+  dataQualityActionApi,
   onProviderSetupConfigured,
   onProviderRoutingRefresh
 }: DataScreenProps) {
@@ -193,7 +201,7 @@ export function DataScreen({
   ]);
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
   const queryPanel = useDataQueryPanel();
-  const qualityPanel = useDataQualityPanel();
+  const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
@@ -293,7 +301,12 @@ export function DataScreen({
             <div className="mt-4 space-y-4">
               {analyticsDegraded ? <DataAnalyticsDegradedRegion vm={analyticsDegraded} /> : null}
 
-              {!analyticsUnavailable.has("data-quality") ? <DataQualityRegion panel={qualityPanel} /> : null}
+              {!analyticsUnavailable.has("data-quality") ? (
+                <DataQualityRegion
+                  panel={qualityPanel}
+                  {...(dataQualityActionApi ? { actionApi: dataQualityActionApi } : {})}
+                />
+              ) : null}
 
               {!analyticsUnavailable.has("capability-matrix") ? <CapabilityMatrixRegion panel={capabilityMatrixPanel} /> : null}
 

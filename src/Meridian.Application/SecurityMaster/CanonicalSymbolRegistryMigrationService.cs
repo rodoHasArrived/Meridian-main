@@ -46,8 +46,10 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
         var externalInputs = await LoadExternalInputsAsync(config, cancellationToken).ConfigureAwait(false);
         var fingerprint = ComputeFingerprint(inlineMappings, externalInputs);
 
-        var persistedRegistry = _registryStore.GetRegistry();
-        if (persistedRegistry.MigrationMarkers.TryGetValue(MigrationId, out var completedFingerprint) &&
+        var completedFingerprint = await _registryStore
+            .GetMigrationMarkerAsync(MigrationId, cancellationToken)
+            .ConfigureAwait(false);
+        if (completedFingerprint is not null &&
             string.Equals(completedFingerprint, fingerprint, StringComparison.Ordinal))
         {
             return;
@@ -82,8 +84,9 @@ public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
             imported++;
         }
 
-        persistedRegistry.MigrationMarkers[MigrationId] = fingerprint;
-        await _registryStore.SaveRegistryAsync(cancellationToken).ConfigureAwait(false);
+        await _registryStore
+            .SetMigrationMarkerAsync(MigrationId, fingerprint, cancellationToken)
+            .ConfigureAwait(false);
         _logger.LogInformation(
             "Imported {Count} legacy symbol mappings into the canonical registry; legacy sources were retained for comparison and rollback.",
             imported);

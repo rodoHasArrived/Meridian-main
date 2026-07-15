@@ -41,6 +41,7 @@ import type {
 import { buildDataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   BackfillPreviewResult,
+  BackfillExecutionHistoryResponse,
   BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
   BackfillTriggerRequest,
@@ -211,10 +212,40 @@ export interface BackfillLiveProgressState {
   observedAt: string;
 }
 
+export type BackfillRemediationQueueSortColumn = "tier" | "deadline";
+
+export interface BackfillRemediationQueueSortState {
+  columnId: BackfillRemediationQueueSortColumn;
+  direction: "asc" | "desc";
+}
+
+export interface BackfillRemediationQueueRow {
+  executionId: string;
+  symbols: string;
+  provider: string;
+  tier: string;
+  tierSort: number;
+  status: string;
+  deadline: string;
+  deadlineSort: number;
+  workflow: string;
+  owner: string;
+  outcome: string;
+  evidence: string;
+}
+
+export interface BackfillRemediationQueueState {
+  rows: BackfillRemediationQueueRow[];
+  summary: string;
+  defaultProvider: string;
+  observedAt: string;
+}
+
 export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillPreviewResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   getProgress: (signal?: AbortSignal) => Promise<BackfillProgressResponse>;
+  getExecutions?: (signal?: AbortSignal) => Promise<BackfillExecutionHistoryResponse>;
 }
 
 export interface ProviderSetupLifecycleServices {
@@ -933,7 +964,8 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
-  getProgress: (signal) => workstationApi.getBackfillProgress({ signal })
+  getProgress: (signal) => workstationApi.getBackfillProgress({ signal }),
+  getExecutions: (signal) => workstationApi.getBackfillExecutionHistory(100, { signal })
 };
 const BACKFILL_PROGRESS_POLL_INTERVAL_MS = 500;
 const defaultProviderSetupLifecycle: ProviderSetupLifecycleServices = {};
@@ -1135,6 +1167,14 @@ export function useDataViewModel(
   const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
   const [liveProgress, setLiveProgress] = useState<BackfillProgressResponse | null>(null);
+  const [remediationHistory, setRemediationHistory] = useState<BackfillExecutionHistoryResponse | null>(null);
+  const [remediationHistoryLoading, setRemediationHistoryLoading] = useState(false);
+  const [remediationHistoryError, setRemediationHistoryError] = useState<string | null>(null);
+  const [remediationQueueSort, setRemediationQueueSort] = useState<BackfillRemediationQueueSortState>({
+    columnId: "tier",
+    direction: "asc"
+  });
+  const remediationHistoryRevisionRef = useRef(0);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
@@ -1223,6 +1263,56 @@ export function useDataViewModel(
   }, [backfillLifecycle.invalidate, uploadLifecycle.invalidate]);
 
   const workstream = useMemo(() => resolveDataWorkstream(pathname), [pathname]);
+  const getBackfillExecutions = services.getExecutions;
+  const refreshRemediationHistory = useCallback(async (signal?: AbortSignal) => {
+    if (!getBackfillExecutions) {
+      return;
+    }
+
+    const revision = remediationHistoryRevisionRef.current + 1;
+    remediationHistoryRevisionRef.current = revision;
+    setRemediationHistoryLoading(true);
+    setRemediationHistoryError(null);
+
+    try {
+      const response = await getBackfillExecutions(signal);
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistory(response);
+      }
+    } catch (failure: unknown) {
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistoryError(
+          describeApiError(failure, "Backfill remediation history is unavailable.").summary
+        );
+      }
+    } finally {
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistoryLoading(false);
+      }
+    }
+  }, [getBackfillExecutions]);
+
+  useEffect(() => {
+    if (workstream !== "backfills") {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    void refreshRemediationHistory(controller.signal);
+
+    return () => controller.abort();
+  }, [refreshRemediationHistory, workstream]);
+
+  const remediationQueueState = useMemo(
+    () => buildBackfillRemediationQueueState(remediationHistory, remediationQueueSort),
+    [remediationHistory, remediationQueueSort]
+  );
+  const toggleRemediationQueueSort = useCallback((columnId: string) => {
+    if (columnId !== "tier" && columnId !== "deadline") return;
+    setRemediationQueueSort((current) => current.columnId === columnId
+      ? { columnId, direction: current.direction === "asc" ? "desc" : "asc" }
+      : { columnId, direction: "asc" });
+  }, []);
   const selectedProvider = useMemo(
     () => resolveSelectedProvider(data?.providers ?? [], selectedProviderId),
     [data, selectedProviderId]
@@ -1590,6 +1680,11 @@ export function useDataViewModel(
       if (finalProgress && token.isCurrent()) {
         token.safeSetState(setLiveProgress, finalProgress);
       }
+      await refreshRemediationHistory(token.signal);
+      if (!token.isCurrent()) {
+        backfillLifecycle.markStale(token.version);
+        return;
+      }
       backfillLifecycle.succeed(token, { message: "Historical backfill run completed." });
     } catch (err) {
       if (!token.isCurrent()) {
@@ -1607,7 +1702,7 @@ export function useDataViewModel(
       }
       backfillLifecycle.finish(token);
     }
-  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, services]);
+  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, services]);
 
   const resetPlaidInstitutionSearch = useCallback(() => {
     plaidInstitutionSearchRevisionRef.current += 1;
@@ -2006,6 +2101,11 @@ export function useDataViewModel(
     result,
     runResultCard,
     liveProgressState,
+    remediationQueueState,
+    remediationHistoryLoading,
+    remediationHistoryError,
+    remediationQueueSort,
+    toggleRemediationQueueSort,
     error,
     busy,
     phase,
@@ -3987,6 +4087,63 @@ export function buildBackfillLiveProgressState(
       : null,
     observedAt
   };
+}
+
+export function buildBackfillRemediationQueueState(
+  response: BackfillExecutionHistoryResponse | null,
+  sort: BackfillRemediationQueueSortState = { columnId: "tier", direction: "asc" }
+): BackfillRemediationQueueState | null {
+  if (!response) return null;
+
+  const defaultProvider = formatBackfillValue(response.autoRemediation.defaultProvider, "Not configured");
+  const rows = response.executions
+    .filter((execution) => execution.autoRemediationSla !== null)
+    .map((execution): BackfillRemediationQueueRow => {
+      const sla = execution.autoRemediationSla!;
+      const dueAt = new Date(sla.dueAtUtc);
+      const deadlineSort = Number.isNaN(dueAt.getTime()) ? Number.MAX_SAFE_INTEGER : dueAt.getTime();
+      return {
+        executionId: execution.executionId,
+        symbols: execution.symbols.length > 0 ? execution.symbols.join(", ") : `${execution.symbolsProcessed} symbol${execution.symbolsProcessed === 1 ? "" : "s"}`,
+        provider: formatBackfillValue(sla.provider, defaultProvider),
+        tier: sla.tier === "SameBusinessDay" ? "Same business day" : "Standard",
+        tierSort: sla.tier === "SameBusinessDay" ? 0 : 1,
+        status: formatBackfillRemediationStatus(sla.status),
+        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : `${formatUtcMinute(dueAt)} UTC`,
+        deadlineSort,
+        workflow: formatBackfillValue(sla.downstreamWorkflow, "Unassigned"),
+        owner: sla.requiresOwnerAssignment ? "Assignment required" : "Not required",
+        outcome: formatBackfillValue(execution.autoRemediationLastOutcome, execution.status),
+        evidence: [
+          formatBackfillValue(sla.reasonCode, "Reason unavailable"),
+          sla.triggerSource,
+          sla.isCompatibilityDerived ? "Compatibility-derived legacy evidence" : null
+        ].filter(Boolean).join(" · ")
+      };
+    });
+
+  const direction = sort.direction === "asc" ? 1 : -1;
+  rows.sort((left, right) => {
+    const comparison = sort.columnId === "deadline"
+      ? left.deadlineSort - right.deadlineSort
+      : left.tierSort - right.tierSort || left.deadlineSort - right.deadlineSort;
+    return comparison === 0
+      ? left.executionId.localeCompare(right.executionId)
+      : comparison * direction;
+  });
+
+  return {
+    rows,
+    summary: `${rows.length} retained remediation execution${rows.length === 1 ? "" : "s"}; ${response.autoRemediation.withReason} carry typed reason evidence.`,
+    defaultProvider,
+    observedAt: formatBackfillProgressTimestamp(response.timestamp)
+  };
+}
+
+function formatBackfillRemediationStatus(status: string): string {
+  return status
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (value) => value.toUpperCase());
 }
 
 function resolveBackfillProviderProgressStatus(

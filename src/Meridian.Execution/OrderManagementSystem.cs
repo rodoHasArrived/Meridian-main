@@ -1,6 +1,10 @@
 using System.Collections.Concurrent;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
+using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
@@ -33,10 +37,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ConcurrentDictionary<string, string> _orderSessionIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource _reportPumpCts = new();
     private readonly Task _reportPumpTask;
-    private readonly ConcurrentDictionary<ExecutionReport, byte> _processedFillReports = new();
-    private readonly ConcurrentQueue<ExecutionReport> _processedFillReportOrder = new();
+    private readonly ITradeEventPublisher? _tradeEventPublisher;
+    private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<ExecutionReport, FillProcessingProgress> _fillProcessing = new();
+    private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
     private int _orderSequence;
-    private long _droppedExecutionReports;
 
     private const int MaxTrackedFillReports = 4096;
     private static readonly TimeSpan InitialReportStreamRetryDelay = TimeSpan.FromSeconds(1);
@@ -53,7 +58,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         PaperSessionPersistenceService? sessionPersistence = null,
         BrokerageConfiguration? brokerageConfiguration = null,
         ILiveOrderReadinessGate? liveOrderReadinessGate = null,
-        OrderManagementSystemOptions? options = null)
+        OrderManagementSystemOptions? options = null,
+        ITradeEventPublisher? tradeEventPublisher = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -65,6 +71,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
         _brokerageConfiguration = brokerageConfiguration;
+        _tradeEventPublisher = tradeEventPublisher;
         _options = options ?? new OrderManagementSystemOptions();
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
@@ -735,69 +742,171 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         decimal previousFilledQuantity,
         CancellationToken ct)
     {
-        if (!TryMarkFillProcessed(report))
-        {
-            return;
-        }
-
-        // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
-        // Alpaca filled_qty) while fill consumers treat each report as a discrete
-        // trade, so only the increment since the last tracked fill may be forwarded —
-        // otherwise partial fills are double-applied (5 then 10 becomes 15, not 10).
-        var incrementQuantity = report.FilledQuantity - previousFilledQuantity;
-        if (incrementQuantity <= 0m)
-        {
-            return;
-        }
-
-        var fillIncrement = incrementQuantity == report.FilledQuantity
-            ? report
-            : report with { FilledQuantity = incrementQuantity };
-
-        // Only fills for orders this OMS placed may mutate the paper portfolio;
-        // stream reports for external/untracked orders are still published below
-        // for observers but must not corrupt tracked positions.
         var orderId = report.ClientOrderId ?? report.OrderId;
-        if (_portfolioState is PaperTradingPortfolio paperPortfolio
-            && !string.IsNullOrWhiteSpace(orderId)
-            && _orders.ContainsKey(orderId))
+        if (!_fillProcessing.TryGetValue(report, out var progress))
         {
-            paperPortfolio.ApplyFill(fillIncrement);
+            // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
+            // Alpaca filled_qty) while fill consumers treat each report as a discrete
+            // trade, so only the increment since the last tracked fill may be forwarded.
+            var incrementQuantity = report.FilledQuantity - previousFilledQuantity;
+            if (incrementQuantity <= 0m)
+                return;
+
+            var fillIncrement = incrementQuantity == report.FilledQuantity
+                ? report
+                : report with { FilledQuantity = incrementQuantity };
+            progress = _fillProcessing.GetOrAdd(
+                report,
+                _ => new FillProcessingProgress(
+                    fillIncrement,
+                    report.FilledQuantity,
+                    !string.IsNullOrWhiteSpace(orderId) && _orders.ContainsKey(orderId)));
         }
 
-        await RecordSessionFillAsync(sessionId, fillIncrement, ct).ConfigureAwait(false);
-
-        if (!_executionChannel.Writer.TryWrite(fillIncrement))
+        await progress.Gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            var dropped = Interlocked.Increment(ref _droppedExecutionReports);
+            if (progress.IsComplete)
+                return;
+
+            var fillIncrement = progress.FillIncrement;
+
+            if (!progress.PortfolioApplied)
+            {
+                var realisedPnlBefore = _portfolioState?.RealisedPnl ?? 0m;
+
+                // Only fills for orders this OMS placed may mutate the paper portfolio;
+                // stream reports for external/untracked orders are still published below.
+                if (_portfolioState is PaperTradingPortfolio paperPortfolio
+                    && progress.IsTrackedOrder)
+                {
+                    paperPortfolio.ApplyFill(fillIncrement);
+                    progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
+                }
+
+                progress.NewCash = _portfolioState?.Cash ?? 0m;
+                progress.PortfolioApplied = true;
+            }
+
+            if (!progress.TradeEventPublished)
+            {
+                if (_tradeEventPublisher is not null && progress.IsTrackedOrder)
+                {
+                    progress.TradeEvent ??= CreateTradeExecutedEvent(
+                        fillIncrement,
+                        progress.CumulativeFilledQuantity,
+                        progress.RealizedPnl,
+                        progress.NewCash,
+                        ResolveFinancialAccountId(orderId));
+                    _tradeEventPublisher.Publish(progress.TradeEvent);
+                }
+
+                progress.TradeEventPublished = true;
+            }
+
+            if (!progress.SessionRecorded)
+            {
+                await RecordSessionFillAsync(sessionId, fillIncrement, ct).ConfigureAwait(false);
+                progress.SessionRecorded = true;
+            }
+
+            if (!progress.ExecutionReportPublished)
+            {
+                // FullMode.Wait must be observed asynchronously. TryWrite here silently lost
+                // accepted fills whenever subscribers lagged behind the configured capacity.
+                await _executionChannel.Writer.WriteAsync(fillIncrement, ct).ConfigureAwait(false);
+                progress.ExecutionReportPublished = true;
+            }
+
+            progress.IsComplete = true;
+            TrackCompletedFill(report);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Preserve the per-side-effect progress object. An identical gateway replay can
+            // resume at the failed step without applying portfolio/session/publication twice.
             _logger.LogError(
-                "Execution report channel full; dropped fill report for order {OrderId} ({Symbol} {FilledQuantity} @ {FillPrice}); {DroppedCount} dropped in total — ExecutionReports consumers must drain faster",
-                fillIncrement.OrderId, fillIncrement.Symbol, fillIncrement.FilledQuantity, fillIncrement.FillPrice, dropped);
+                ex,
+                "Fill processing paused for order {OrderId} ({Symbol} {FilledQuantity} @ {FillPrice}); a replay will resume the unfinished side effects",
+                progress.FillIncrement.OrderId,
+                progress.FillIncrement.Symbol,
+                progress.FillIncrement.FilledQuantity,
+                progress.FillIncrement.FillPrice);
+        }
+        finally
+        {
+            progress.Gate.Release();
         }
     }
 
-    /// <summary>
-    /// Marks a fill report as processed; returns <see langword="false"/> when the identical
-    /// report was already handled via the other path (sync ack vs. report stream).
-    /// <see cref="ExecutionReport"/> is a record, so value equality identifies the replayed
-    /// ack; distinct fills always differ in timestamp and cumulative filled quantity.
-    /// </summary>
-    private bool TryMarkFillProcessed(ExecutionReport report)
+    private void TrackCompletedFill(ExecutionReport report)
     {
-        if (!_processedFillReports.TryAdd(report, 0))
+        _completedFillReportOrder.Enqueue(report);
+        while (_completedFillReportOrder.Count > MaxTrackedFillReports
+            && _completedFillReportOrder.TryDequeue(out var oldest))
         {
-            return false;
+            if (_fillProcessing.TryGetValue(oldest, out var progress) && progress.IsComplete)
+                _fillProcessing.TryRemove(oldest, out _);
         }
-
-        _processedFillReportOrder.Enqueue(report);
-        while (_processedFillReportOrder.Count > MaxTrackedFillReports
-            && _processedFillReportOrder.TryDequeue(out var oldest))
-        {
-            _processedFillReports.TryRemove(oldest, out _);
-        }
-
-        return true;
     }
+
+    private string? ResolveFinancialAccountId(string? orderId)
+        => !string.IsNullOrWhiteSpace(orderId)
+            && _orderFinancialAccountIds.TryGetValue(orderId, out var accountId)
+                ? accountId
+                : null;
+
+    private static TradeExecutedEvent CreateTradeExecutedEvent(
+        ExecutionReport fillIncrement,
+        decimal cumulativeFilledQuantity,
+        decimal realizedPnl,
+        decimal newCash,
+        string? financialAccountId)
+    {
+        if (fillIncrement.FillPrice is not { } fillPrice)
+        {
+            throw new InvalidOperationException(
+                $"Fill report '{fillIncrement.OrderId}' for '{fillIncrement.Symbol}' has no execution price.");
+        }
+
+        var canonicalIdentity = string.Join(
+            "|",
+            EncodeIdentityPart(fillIncrement.OrderId),
+            EncodeIdentityPart(fillIncrement.ClientOrderId),
+            EncodeIdentityPart(fillIncrement.GatewayOrderId),
+            EncodeIdentityPart(fillIncrement.Symbol),
+            ((int)fillIncrement.Side).ToString(CultureInfo.InvariantCulture),
+            fillIncrement.FilledQuantity.ToString(CultureInfo.InvariantCulture),
+            cumulativeFilledQuantity.ToString(CultureInfo.InvariantCulture),
+            fillPrice.ToString(CultureInfo.InvariantCulture),
+            (fillIncrement.Commission ?? 0m).ToString(CultureInfo.InvariantCulture),
+            fillIncrement.Timestamp.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture),
+            EncodeIdentityPart(financialAccountId));
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity));
+        var fillId = new Guid(hash.AsSpan(0, 16));
+
+        return new TradeExecutedEvent(
+            fillId,
+            fillIncrement.ClientOrderId ?? fillIncrement.OrderId,
+            fillIncrement.Symbol,
+            fillIncrement.Side,
+            fillIncrement.FilledQuantity,
+            fillPrice,
+            fillIncrement.Commission ?? 0m,
+            realizedPnl,
+            newCash,
+            fillIncrement.Timestamp,
+            financialAccountId);
+    }
+
+    private static string EncodeIdentityPart(string? value)
+        => value is null
+            ? "-"
+            : Convert.ToBase64String(Encoding.UTF8.GetBytes(value));
 
     private static OrderState CreateRejectedState(
         string orderId,
@@ -1158,6 +1267,26 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         {
             _orders.TryRemove(removableOrderId, out _);
             _orderSessionIds.TryRemove(removableOrderId, out _);
+            _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
         }
+    }
+
+    private sealed class FillProcessingProgress(
+        ExecutionReport fillIncrement,
+        decimal cumulativeFilledQuantity,
+        bool isTrackedOrder)
+    {
+        public SemaphoreSlim Gate { get; } = new(1, 1);
+        public ExecutionReport FillIncrement { get; } = fillIncrement;
+        public decimal CumulativeFilledQuantity { get; } = cumulativeFilledQuantity;
+        public bool IsTrackedOrder { get; } = isTrackedOrder;
+        public TradeExecutedEvent? TradeEvent { get; set; }
+        public decimal RealizedPnl { get; set; }
+        public decimal NewCash { get; set; }
+        public bool PortfolioApplied { get; set; }
+        public bool TradeEventPublished { get; set; }
+        public bool SessionRecorded { get; set; }
+        public bool ExecutionReportPublished { get; set; }
+        public volatile bool IsComplete;
     }
 }

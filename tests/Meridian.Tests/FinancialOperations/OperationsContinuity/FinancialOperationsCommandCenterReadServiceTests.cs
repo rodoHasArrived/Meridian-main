@@ -1137,7 +1137,7 @@ public sealed class FinancialOperationsCommandCenterReadServiceTests
 
     private sealed class StubPrivateCapitalCloseCockpitService(PrivateCapitalCloseCockpitDto cockpit) : IPrivateCapitalCloseCockpitService
     {
-        public Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default)
+        public Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
             => Task.FromResult(cockpit);
     }
 }

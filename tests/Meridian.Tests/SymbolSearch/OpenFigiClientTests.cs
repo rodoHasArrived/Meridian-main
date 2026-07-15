@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.OpenFigi;
@@ -305,17 +306,25 @@ public sealed class OpenFigiClientParsingTests
     }
 
     [Fact]
-    public async Task LookupByTicker_WhenApiReturns429_ThrowsHttpRequestException()
+    public async Task LookupByTicker_WhenApiReturns429_ThrowsTypedRateLimitException()
     {
         using var handler = new StubHttpMessageHandler(_ =>
-            new HttpResponseMessage((HttpStatusCode)429)
+        {
+            var response = new HttpResponseMessage((HttpStatusCode)429)
             {
                 Content = new StringContent("{\"error\":\"Too Many Requests\"}", Encoding.UTF8, "application/json")
-            });
+            };
+            response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(45));
+            return response;
+        });
         using var httpClient = new HttpClient(handler);
         using var client = new OpenFigiClient(httpClient: httpClient);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => client.LookupByTickerAsync("AAPL"));
+        var exception = await Assert.ThrowsAsync<RateLimitException>(
+            () => client.LookupByTickerAsync("AAPL"));
+
+        exception.Provider.Should().Be("openfigi");
+        exception.RetryAfter.Should().Be(TimeSpan.FromSeconds(45));
     }
 
     [Fact]

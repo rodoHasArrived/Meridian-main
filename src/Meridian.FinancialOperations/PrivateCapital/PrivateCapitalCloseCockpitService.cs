@@ -60,7 +60,9 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         Guid? fundAccountId = null,
         string? periodId = null,
         string? entityId = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
 
@@ -68,25 +70,25 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
                         _manualJournalEntryWorkbenchService is null
             ? null
             : await _manualJournalEntryWorkbenchService
-                .GetWorkbenchAsync(fundProfileId, ledgerBookId, ct)
+                .GetWorkbenchAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId)
                 .ConfigureAwait(false);
         var activity = workbench?.PrivateCapitalActivity ?? (_manualJournalEntryWorkbenchService is null
             ? null
             : await _manualJournalEntryWorkbenchService
-                .GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct)
+                .GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId)
                 .ConfigureAwait(false));
         var dailyValuationStatus = _dailyValuationScheduleStatusSource is null
             ? null
             : await _dailyValuationScheduleStatusSource
-                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct)
+                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct, entityId, tenantId, companyId)
                 .ConfigureAwait(false);
         var automatedJournalStatus = _automatedJournalScheduleStatusSource is null
             ? null
             : await _automatedJournalScheduleStatusSource
-                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct)
+                .GetStatusAsync(fundProfileId, ledgerBookId, periodId, ct, tenantId, companyId, entityId)
                 .ConfigureAwait(false);
         var dailyValuationDrafts = FilterDailyValuationDrafts(workbench, periodId);
-        var automatedJournalDrafts = FilterAutomatedJournalDrafts(workbench, periodId);
+        var automatedJournalDrafts = FilterAutomatedJournalDrafts(workbench, periodId, entityId);
         var workflows = await LoadWorkflowsAsync(fundAccountId, ledgerBookId, periodId, ct).ConfigureAwait(false);
         var records = FilterFundEventRecords(activity, periodId, entityId);
         var subledgers = FilterSubledgers(activity, records);
@@ -146,7 +148,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             PlannedCapabilities: PlannedCapabilities,
             ApprovalHistory: approvalHistory,
             NavSupportPackages: navSupportPackages,
-            EvidencePackages: evidencePackages);
+            EvidencePackages: evidencePackages,
+            DailyValuationStatus: dailyValuationStatus);
     }
 
     private async Task<IReadOnlyList<OperationsContinuityWorkflowDto>> LoadWorkflowsAsync(
@@ -802,46 +805,69 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         DailyValuationScheduleStatusDto schedule,
         IReadOnlyList<ManualJournalEntryDraftDto> drafts)
     {
-        var latestDraft = drafts
-            .OrderByDescending(static draft => draft.AccountingDate)
-            .ThenByDescending(static draft => draft.UpdatedAtUtc)
-            .FirstOrDefault();
+        var scopedIds = schedule.JournalEntryIds.ToHashSet();
+        var scopedDrafts = scopedIds.Count == 0
+            ? []
+            : drafts.Where(draft => scopedIds.Contains(draft.JournalEntryId)).ToArray();
+        var missingDraftCount = scopedIds.Count - scopedDrafts.Length;
         var evidence = schedule.EvidenceLinks
-            .Concat(latestDraft?.EvidenceLinks.Select((route, index) => new OperationsEvidenceLinkDto(
-                $"daily-valuation-draft:{latestDraft.JournalEntryId:D}:{index + 1}",
+            .Concat(scopedDrafts.SelectMany(draft => draft.EvidenceLinks.Select((route, index) => new OperationsEvidenceLinkDto(
+                $"daily-valuation-draft:{draft.JournalEntryId:D}:{index + 1}",
                 "Daily valuation draft evidence",
                 route,
                 "manual-journal-workbench",
-                latestDraft.UpdatedAtUtc)) ?? [])
+                draft.UpdatedAtUtc))))
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        if (latestDraft is not null)
+        var currentRunBlocked = schedule.State is DailyValuationScheduleStateDto.Blocked or
+            DailyValuationScheduleStateDto.Failed;
+        if (currentRunBlocked)
         {
-            var isReady = latestDraft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked;
-            var isBlocked = latestDraft.Status is ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected;
-            var laneStatus = isReady
+            return Lane(
+                "daily-valuation",
+                "Daily valuation",
+                EvidenceStatusDto.Blocked,
+                isReady: false,
+                schedule.Summary,
+                UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketSchedules,
+                evidence,
+                schedule.State == DailyValuationScheduleStateDto.Failed
+                    ? "Repair and rerun the failed daily valuation schedule"
+                    : "Resolve the daily valuation portfolio or mark-quality blockers");
+        }
+
+        if (scopedIds.Count > 0)
+        {
+            var allPosted = missingDraftCount == 0 && scopedDrafts.All(static draft =>
+                draft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked);
+            var anyBlocked = scopedDrafts.Any(static draft =>
+                draft.Status is ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected) ||
+                missingDraftCount > 0;
+            var laneStatus = allPosted
                 ? EvidenceStatusDto.Ready
-                : isBlocked
+                : anyBlocked
                     ? EvidenceStatusDto.Blocked
                     : EvidenceStatusDto.ReviewRequired;
-            var summary = isReady
-                ? $"Daily valuation draft '{latestDraft.JournalEntryId:D}' is {latestDraft.Status} with retained closing-mark evidence."
-                : isBlocked
-                    ? $"Daily valuation draft '{latestDraft.JournalEntryId:D}' is {latestDraft.Status} and blocks close readiness."
-                    : $"Daily valuation draft '{latestDraft.JournalEntryId:D}' is {latestDraft.Status} and still requires approval or posting.";
+            var summary = allPosted
+                ? $"All {scopedDrafts.Length} daily valuation draft(s) are posted with retained closing-mark evidence."
+                : missingDraftCount > 0
+                    ? $"Daily valuation batch is missing {missingDraftCount} retained draft(s) and blocks close readiness."
+                    : anyBlocked
+                        ? "One or more daily valuation drafts require repair before close readiness."
+                        : $"Daily valuation batch has {scopedDrafts.Length} draft(s) awaiting governed approval or posting.";
 
             return Lane(
                 "daily-valuation",
                 "Daily valuation",
                 laneStatus,
-                isReady,
+                allPosted,
                 summary,
                 UiApiRoutes.LedgerManualJournalEntryDrafts,
                 evidence,
-                isBlocked
-                    ? "Repair or reject the blocked daily valuation draft"
-                    : "Approve and post the governed daily valuation draft");
+                anyBlocked
+                    ? "Repair or reject the blocked daily valuation batch"
+                    : "Approve and post the governed daily valuation batch");
         }
 
         var scheduleReady = schedule.State == DailyValuationScheduleStateDto.NoAdjustment;
@@ -859,6 +885,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             DailyValuationScheduleStateDto.Blocked => "Resolve the daily valuation portfolio or mark-quality blockers",
             DailyValuationScheduleStateDto.Failed => "Repair and rerun the failed daily valuation schedule",
             DailyValuationScheduleStateDto.DraftReady => "Open the governed daily valuation draft for approval",
+            DailyValuationScheduleStateDto.Posted => "Review retained daily valuation posting evidence",
             _ => "Wait for or run the configured daily valuation schedule"
         };
 
@@ -1352,7 +1379,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private static IReadOnlyList<ManualJournalEntryDraftDto> FilterAutomatedJournalDrafts(
         ManualJournalEntryWorkbenchDto? workbench,
-        string? periodId)
+        string? periodId,
+        string? entityId)
     {
         if (workbench is null)
         {
@@ -1360,6 +1388,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         }
 
         var normalizedPeriodId = Normalize(periodId);
+        var normalizedEntityId = Normalize(entityId);
         return workbench.Drafts
             .Where(static draft => draft.TreasuryContext?.IdempotencyKey is { } key &&
                 (key.StartsWith("mgmt-fee|", StringComparison.OrdinalIgnoreCase) ||
@@ -1369,6 +1398,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .Where(draft => normalizedPeriodId is null ||
                             string.Equals(draft.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase) ||
                             MatchesPeriod(draft.AccountingDate, normalizedPeriodId))
+            .Where(draft => normalizedEntityId is null ||
+                            string.Equals(draft.EntityId, normalizedEntityId, StringComparison.OrdinalIgnoreCase))
             .ToArray();
     }
 

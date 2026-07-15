@@ -1,4 +1,6 @@
+using Meridian.Application.SecurityMaster;
 using Meridian.Execution.Adapters;
+using Meridian.Execution.Events;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -87,10 +89,74 @@ public static class BrokerageServiceRegistration
                 portfolioState,
                 brokerageConfiguration: brokerageConfiguration,
                 liveOrderReadinessGate: liveOrderReadinessGate,
-                options: orderManagementOptions);
+                options: orderManagementOptions,
+                tradeEventPublisher: sp.GetService<ITradeEventPublisher>());
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Explicitly composes accepted execution fills into one caller-owned ledger scope.
+    /// This registration deliberately requires ledger and durable-store factories because
+    /// brokerage execution alone cannot infer the correct accounting book or period.
+    /// </summary>
+    public static IServiceCollection AddTradeFillLedgerPosting(
+        this IServiceCollection services,
+        string postingScope,
+        Func<IServiceProvider, Ledger.Ledger> ledgerFactory,
+        Func<IServiceProvider, ITradeFillPostingStore> postingStoreFactory,
+        Action<TradeFillLedgerPostingOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentException.ThrowIfNullOrWhiteSpace(postingScope);
+        ArgumentNullException.ThrowIfNull(ledgerFactory);
+        ArgumentNullException.ThrowIfNull(postingStoreFactory);
+
+        var normalizedScope = postingScope.Trim();
+        var options = new TradeFillLedgerPostingOptions();
+        configure?.Invoke(options);
+        if (options.ChannelCapacity <= 0)
+            throw new ArgumentOutOfRangeException(nameof(options.ChannelCapacity), "Trade-fill channel capacity must be positive.");
+        if (options.DrainTimeout is { } drainTimeout
+            && (drainTimeout <= TimeSpan.Zero || drainTimeout == Timeout.InfiniteTimeSpan))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.DrainTimeout), "Trade-fill drain timeout must be positive and finite.");
+        }
+        if (options.CancellationTimeout is { } cancellationTimeout
+            && (cancellationTimeout <= TimeSpan.Zero || cancellationTimeout == Timeout.InfiniteTimeSpan))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.CancellationTimeout), "Trade-fill cancellation timeout must be positive and finite.");
+        }
+        if (services.Any(static descriptor =>
+                descriptor.ServiceType == typeof(ITradeEventPublisher)
+                || descriptor.ServiceType == typeof(ITradeFillPostingStore)
+                || descriptor.ServiceType == typeof(LedgerPostingConsumer)))
+        {
+            throw new InvalidOperationException(
+                "A trade-fill publisher or posting store is already registered. Compose multiple ledger scopes explicitly instead of allowing one registration to shadow another.");
+        }
+
+        services.AddSingleton<ITradeFillPostingStore>(postingStoreFactory);
+        services.AddSingleton<LedgerPostingConsumer>(sp =>
+        {
+            var securityGate = sp.GetRequiredService<ISecurityValidationGateService>();
+
+            return new LedgerPostingConsumer(
+                ledgerFactory(sp),
+                sp.GetRequiredService<ILogger<LedgerPostingConsumer>>(),
+                sp.GetRequiredService<ITradeFillPostingStore>(),
+                normalizedScope,
+                channelCapacity: options.ChannelCapacity,
+                securityValidationGate: securityGate,
+                requireSecurityMasterPostingGate: true,
+                drainTimeout: options.DrainTimeout,
+                cancellationTimeout: options.CancellationTimeout);
+        });
+        services.AddSingleton<ITradeEventPublisher>(sp =>
+            sp.GetRequiredService<LedgerPostingConsumer>());
 
         return services;
     }
@@ -153,4 +219,14 @@ public static class BrokerageServiceRegistration
             $"No brokerage gateway registered with key '{gatewayId}'. " +
             "Register gateways using AddBrokerageGateway<T>(gatewayId) before calling AddBrokerageExecution().");
     }
+}
+
+/// <summary>Runtime controls for the explicit fill-to-ledger consumer.</summary>
+public sealed class TradeFillLedgerPostingOptions
+{
+    public int ChannelCapacity { get; set; } = 10_000;
+
+    public TimeSpan? DrainTimeout { get; set; }
+
+    public TimeSpan? CancellationTimeout { get; set; }
 }

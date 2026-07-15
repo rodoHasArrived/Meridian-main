@@ -3,10 +3,11 @@ using Meridian.Execution.Sdk;
 namespace Meridian.Execution.Events;
 
 /// <summary>
-/// Domain event raised when an order fill is applied to the portfolio.
-/// Published by both paper-trading and live-execution paths so that
-/// downstream consumers (e.g. <see cref="LedgerPostingConsumer"/>) can
-/// react without the portfolio holding a hard dependency on the ledger.
+/// Canonical event for an accepted execution fill. For an OMS-tracked paper order it is published
+/// after the portfolio mutation; live fills can carry zero realized P&amp;L when no portfolio
+/// accounting context is attached. An order manager publishes it only for tracked orders and when an
+/// <see cref="ITradeEventPublisher"/> is explicitly composed for the owning ledger scope; merely
+/// enabling paper or live execution does not create an accounting book implicitly.
 /// </summary>
 /// <param name="FillId">Unique identifier for the fill that triggered this event.</param>
 /// <param name="OrderId">The order that produced the fill.</param>
@@ -19,7 +20,7 @@ namespace Meridian.Execution.Events;
 ///     Realized P&amp;L produced by this fill (non-zero only when the fill closes or reduces
 ///     an existing position).
 /// </param>
-/// <param name="NewCash">Portfolio cash balance after applying the fill.</param>
+/// <param name="NewCash">Portfolio cash balance after applying the fill, or zero when unavailable.</param>
 /// <param name="OccurredAt">Wall-clock timestamp of the fill.</param>
 /// <param name="FinancialAccountId">
 ///     Optional brokerage account ID. <c>null</c> when the portfolio operates on a single
@@ -30,7 +31,7 @@ public sealed record TradeExecutedEvent(
     string OrderId,
     string Symbol,
     OrderSide Side,
-    long FilledQuantity,
+    decimal FilledQuantity,
     decimal FillPrice,
     decimal Commission,
     decimal RealizedPnl,

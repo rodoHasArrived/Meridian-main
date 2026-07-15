@@ -3,8 +3,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.OperationsContinuity;
@@ -414,7 +416,8 @@ public sealed partial class WorkstationEndpointsTests
     {
         await using var app = await CreateAppAsync(
             RegisterOperationsContinuityServices,
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: null);
         var client = app.GetTestClient();
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
@@ -448,6 +451,7 @@ public sealed partial class WorkstationEndpointsTests
         var plan = await planResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
         plan.Should().NotBeNull();
         plan!.ClosePlanId.Should().Be($"close-plan-{workflowId:D}");
+        plan.WorkflowVersion.Should().Be(start.Workflow.Version);
         plan.FundProfileId.Should().Be(fundAccountId.ToString("D"));
         plan.LedgerBookId.Should().Be(ledgerBookId);
         plan.PeriodId.Should().Be("2026-07");
@@ -997,7 +1001,8 @@ public sealed partial class WorkstationEndpointsTests
     {
         await using var app = await CreateAppAsync(
             RegisterOperationsContinuityServices,
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: null);
         var client = app.GetTestClient();
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
@@ -1126,7 +1131,8 @@ public sealed partial class WorkstationEndpointsTests
     {
         await using var app = await CreateAppAsync(
             RegisterOperationsContinuityServices,
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: null);
         var client = app.GetTestClient();
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
@@ -1169,6 +1175,258 @@ public sealed partial class WorkstationEndpointsTests
         result.Plan!.IsPeriodLocked.Should().BeFalse();
         result.Issues.Should().Contain(issue => issue.Code == "ClosePeriodLockEvidenceMissing");
         result.Issues.Should().Contain(issue => issue.Code == "ClosePeriodLockReportPackMissing");
+    }
+
+    [Theory]
+    [InlineData("tenant-other", "tenant-alpha")]
+    [InlineData("tenant-alpha", "company-other")]
+    [InlineData("tenant-alpha", "")]
+    public async Task LedgerCloseManagementEndpoints_ForeignTenantOrCompany_DeniesPlanLockAndReopen(
+        string ownerTenantId,
+        string ownerCompanyId)
+    {
+        var workflowId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var fundAccountId = Guid.NewGuid();
+        var plan = BuildScopedClosePlan(workflowId, ledgerBookId, fundAccountId);
+        var service = Substitute.For<IAccountingCloseManagementService>();
+        service.GetPeriodPlanScopedAsync(
+                workflowId,
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(plan);
+        var ledger = BuildScopedCloseLedger(ledgerBookId, fundAccountId);
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.ResolveAsync("fund-profile-alpha", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-profile-alpha", ownerTenantId, ownerCompanyId));
+
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton(service);
+                services.AddSingleton(ledger);
+                services.AddSingleton(registry);
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller,
+            currentUserCompanyId: "tenant-alpha");
+        var client = app.GetTestClient();
+        var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan
+            .Replace("{workflowId:guid}", workflowId.ToString("D"));
+
+        using var planResponse = await client.GetAsync(planRoute);
+        using var lockResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodLock,
+            new LockClosePeriodRequestDto(workflowId, 7, "actor", "scope probe", "report", []));
+        using var reopenResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodReopen,
+            new ReopenClosePeriodRequestDto(
+                workflowId,
+                7,
+                "actor",
+                "Controller",
+                "scope probe",
+                "incident",
+                "justification",
+                "approval",
+                "impact",
+                ["evidence:scope-probe"],
+                "correlation"));
+
+        planResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        lockResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        reopenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceiveWithAnyArgs().LockClosePeriodScopedAsync(default!, default!, default, default, default);
+        await service.DidNotReceiveWithAnyArgs().ReopenClosePeriodScopedAsync(default!, default!, default, default, default);
+    }
+
+    [Fact]
+    public async Task LedgerCloseManagementEndpoints_MissingTenantScope_DeniesPlanLockAndReopen()
+    {
+        var workflowId = Guid.NewGuid();
+        var plan = BuildScopedClosePlan(workflowId, Guid.NewGuid(), Guid.NewGuid());
+        var service = Substitute.For<IAccountingCloseManagementService>();
+        service.GetPeriodPlanScopedAsync(
+                workflowId,
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(plan);
+
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton(service),
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller,
+            currentUserCompanyId: null);
+        var client = app.GetTestClient();
+        var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan
+            .Replace("{workflowId:guid}", workflowId.ToString("D"));
+
+        using var planResponse = await client.GetAsync(planRoute);
+        using var lockResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodLock,
+            new LockClosePeriodRequestDto(workflowId, 7, "actor", "scope probe", "report", []));
+        using var reopenResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodReopen,
+            new ReopenClosePeriodRequestDto(
+                workflowId,
+                7,
+                "actor",
+                "Controller",
+                "scope probe",
+                "incident",
+                "justification",
+                "approval",
+                "impact",
+                ["evidence:scope-probe"],
+                "correlation"));
+
+        planResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        lockResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        reopenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await service.DidNotReceiveWithAnyArgs().LockClosePeriodScopedAsync(default!, default!, default, default, default);
+        await service.DidNotReceiveWithAnyArgs().ReopenClosePeriodScopedAsync(default!, default!, default, default, default);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LedgerCloseManagementEndpoints_MissingLedgerOrOwnershipService_FailsClosed(bool registerLedger)
+    {
+        var workflowId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var fundAccountId = Guid.NewGuid();
+        var plan = BuildScopedClosePlan(workflowId, ledgerBookId, fundAccountId);
+        var service = Substitute.For<IAccountingCloseManagementService>();
+        service.GetPeriodPlanScopedAsync(
+                workflowId,
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(plan);
+
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton(service);
+                if (registerLedger)
+                {
+                    services.AddSingleton(BuildScopedCloseLedger(ledgerBookId, fundAccountId));
+                }
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller,
+            currentUserCompanyId: "tenant-alpha");
+        var client = app.GetTestClient();
+        var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan
+            .Replace("{workflowId:guid}", workflowId.ToString("D"));
+
+        using var planResponse = await client.GetAsync(planRoute);
+        using var lockResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodLock,
+            new LockClosePeriodRequestDto(workflowId, 7, "actor", "scope probe", "report", []));
+        using var reopenResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodReopen,
+            new ReopenClosePeriodRequestDto(
+                workflowId,
+                7,
+                "actor",
+                "Controller",
+                "scope probe",
+                "incident",
+                "justification",
+                "approval",
+                "impact",
+                ["evidence:scope-probe"],
+                "correlation"));
+
+        planResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        lockResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        reopenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task LedgerCloseManagementEndpoints_CorrectLedgerFundAndOwnerScope_AllowsPlanLockAndReopen()
+    {
+        var workflowId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var fundAccountId = Guid.NewGuid();
+        var plan = BuildScopedClosePlan(workflowId, ledgerBookId, fundAccountId);
+        var service = Substitute.For<IAccountingCloseManagementService>();
+        service.GetPeriodPlanScopedAsync(
+                workflowId,
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(plan);
+        service.LockClosePeriodScopedAsync(
+                Arg.Any<LockClosePeriodRequestDto>(),
+                Arg.Any<string>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new ClosePeriodLockResultDto(false, plan, null));
+        service.ReopenClosePeriodScopedAsync(
+                Arg.Any<ReopenClosePeriodRequestDto>(),
+                Arg.Any<string>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new ClosePeriodReopenResultDto(false, plan, null, null));
+        var ledger = BuildScopedCloseLedger(ledgerBookId, fundAccountId);
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.ResolveAsync("fund-profile-alpha", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-profile-alpha", "tenant-alpha", "tenant-alpha"));
+
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton(service);
+                services.AddSingleton(ledger);
+                services.AddSingleton(registry);
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller,
+            currentUserCompanyId: "tenant-alpha");
+        var client = app.GetTestClient();
+        var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan
+            .Replace("{workflowId:guid}", workflowId.ToString("D"));
+
+        using var planResponse = await client.GetAsync(planRoute);
+        using var lockResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodLock,
+            new LockClosePeriodRequestDto(workflowId, 7, "actor", "scope probe", "report", []));
+        using var reopenResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementPeriodReopen,
+            new ReopenClosePeriodRequestDto(
+                workflowId,
+                7,
+                "actor",
+                "Controller",
+                "scope probe",
+                "incident",
+                "justification",
+                "approval",
+                "impact",
+                ["evidence:scope-probe"],
+                "correlation"));
+
+        planResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        lockResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        reopenResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        await service.Received(1).LockClosePeriodScopedAsync(
+            Arg.Any<LockClosePeriodRequestDto>(),
+            "ops-user",
+            "tenant-alpha",
+            "tenant-alpha",
+            Arg.Any<CancellationToken>());
+        await service.Received(1).ReopenClosePeriodScopedAsync(
+            Arg.Any<ReopenClosePeriodRequestDto>(),
+            "ops-user",
+            "tenant-alpha",
+            "tenant-alpha",
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -2032,7 +2290,8 @@ public sealed partial class WorkstationEndpointsTests
 
         await using (var app = await CreateAppAsync(
             services => RegisterDurableOperationsContinuityServices(services, dataRoot),
-            currentUserPermissions: UserPermission.AdminMaintenance))
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: null))
         {
             var client = app.GetTestClient();
 
@@ -2087,7 +2346,8 @@ public sealed partial class WorkstationEndpointsTests
 
         await using var restartedApp = await CreateAppAsync(
             services => RegisterDurableOperationsContinuityServices(services, dataRoot),
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: null);
         var restartedClient = restartedApp.GetTestClient();
 
         var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan.Replace("{workflowId:guid}", workflowId.ToString("D"));
@@ -2503,6 +2763,56 @@ public sealed partial class WorkstationEndpointsTests
             LiveCapabilities: ["Fund/book/period close lane projection"],
             PlannedCapabilities: ["Live payment release"]);
 
+    private static ClosePeriodPlanDto BuildScopedClosePlan(
+        Guid workflowId,
+        Guid ledgerBookId,
+        Guid fundAccountId)
+        => new(
+            $"close-plan-{workflowId:D}",
+            fundAccountId.ToString("D"),
+            ledgerBookId,
+            "2026-06",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30),
+            new DateOnly(2026, 7, 5),
+            IsPeriodLocked: true,
+            Tasks: [],
+            LateAdjustments: [],
+            MaterialityPolicy: new MaterialityPolicyDto("scope-test", 10_000m, 0.01m, "USD", "Controller", true),
+            WorkflowVersion: 7);
+
+    private static ILedgerBookService BuildScopedCloseLedger(Guid ledgerBookId, Guid fundAccountId)
+    {
+        var ledger = Substitute.For<ILedgerBookService>();
+        ledger.GetBookAsync(ledgerBookId, Arg.Any<CancellationToken>())
+            .Returns(new LedgerBookDto(
+                ledgerBookId,
+                "fund-profile-alpha",
+                fundAccountId,
+                FundStructureNodeKindDto.Account,
+                "Fund Alpha primary ledger",
+                "USD",
+                DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                DateTimeOffset.Parse("2026-06-30T23:59:59Z")));
+        ledger.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(
+            [
+                new LedgerPeriodDto(
+                    Guid.NewGuid(),
+                    ledgerBookId,
+                    2026,
+                    6,
+                    "2026-06",
+                    new DateOnly(2026, 6, 1),
+                    new DateOnly(2026, 6, 30),
+                    LedgerPeriodStatusDto.HardClosed,
+                    DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
+                    DateTimeOffset.Parse("2026-07-03T12:00:00Z"),
+                    3)
+            ]);
+        return ledger;
+    }
+
     private sealed class StubPrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
     {
         private readonly PrivateCapitalCloseCockpitDto _cockpit;
@@ -2522,7 +2832,9 @@ public sealed partial class WorkstationEndpointsTests
             Guid? fundAccountId = null,
             string? periodId = null,
             string? entityId = null,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
         {
             ct.ThrowIfCancellationRequested();
             _captured?.Add((fundProfileId, ledgerBookId, fundAccountId, periodId, entityId));

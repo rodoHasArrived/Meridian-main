@@ -9,7 +9,9 @@ using Npgsql;
 
 namespace Meridian.Storage.Ledger;
 
-public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStore
+public sealed class PostgresLedgerJournalStore :
+    ITransactionalLedgerJournalStore,
+    ILedgerPostingIdentityCollisionLookup
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
@@ -215,6 +217,59 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         return await ReadJournalEntriesAsync(command, ct).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<LedgerJournalEntryRecord>> FindPostingIdentityCollisionsAsync(
+        LedgerPostingIdentity identity,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(identity);
+        if (identity.JournalEntryId == Guid.Empty)
+            throw new ArgumentException("Journal entry id is required.", nameof(identity));
+        if (identity.AggregateId == Guid.Empty)
+            throw new ArgumentException("Aggregate id is required.", nameof(identity));
+
+        // Deliberately do not apply the ambient tenant read filter here. Journal-entry and command
+        // ids are database-global write identities, so a cross-tenant collision must fail closed
+        // rather than reaching the unique constraint as an unexplained append failure.
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = CreateJournalEntryReadCommand(connection);
+        var predicates = new List<string>
+        {
+            "je.journal_entry_id = @identity_journal_entry_id"
+        };
+        command.Parameters.AddWithValue("identity_journal_entry_id", identity.JournalEntryId);
+
+        if (identity.CommandId.HasValue)
+        {
+            predicates.Add("je.command_id = @identity_command_id");
+            command.Parameters.AddWithValue("identity_command_id", identity.CommandId.Value);
+        }
+
+        var aggregatePredicates = new List<string>();
+        if (identity.SourceEventId.HasValue)
+        {
+            aggregatePredicates.Add("je.source_event_id = @identity_source_event_id");
+            command.Parameters.AddWithValue("identity_source_event_id", identity.SourceEventId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(identity.IdempotencyKey))
+        {
+            aggregatePredicates.Add(
+                "lower(btrim(je.metadata ->> 'idempotencyKey')) = lower(@identity_idempotency_key)");
+            command.Parameters.AddWithValue("identity_idempotency_key", identity.IdempotencyKey.Trim());
+        }
+
+        if (aggregatePredicates.Count > 0)
+        {
+            predicates.Add(
+                $"(je.aggregate_id = @identity_aggregate_id and ({string.Join(" or ", aggregatePredicates)}))");
+            command.Parameters.AddWithValue("identity_aggregate_id", identity.AggregateId);
+        }
+
+        command.CommandText += $" where ({string.Join(" or ", predicates)})";
+        command.CommandText += " order by je.global_sequence, jl.line_no;";
+        return await ReadJournalEntriesAsync(command, ct).ConfigureAwait(false);
+    }
+
     public async Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
@@ -294,6 +349,48 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         long expectedVersion,
         PeriodCloseEventRecord? closeEvent = null,
         CancellationToken ct = default)
+        => await SavePeriodCoreAsync(
+                period,
+                expectedVersion,
+                closeEvent,
+                requireClosedTemporaryAccounts: false,
+                ct)
+            .ConfigureAwait(false);
+
+    public async Task<LedgerAccountingPeriod> SaveHardClosedPeriodAsync(
+        LedgerAccountingPeriod period,
+        long expectedVersion,
+        PeriodCloseEventRecord closeEvent,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(period);
+        ArgumentNullException.ThrowIfNull(closeEvent);
+        if (!string.Equals(period.Status, "HardClosed", StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Atomic hard-close persistence requires a HardClosed target period.", nameof(period));
+        }
+
+        if (!_options.EnablePeriodLocking)
+        {
+            throw new LedgerValidationException(
+                "Atomic hard-close persistence requires ledger period row locking to be enabled.");
+        }
+
+        return await SavePeriodCoreAsync(
+                period,
+                expectedVersion,
+                closeEvent,
+                requireClosedTemporaryAccounts: true,
+                ct)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<LedgerAccountingPeriod> SavePeriodCoreAsync(
+        LedgerAccountingPeriod period,
+        long expectedVersion,
+        PeriodCloseEventRecord? closeEvent,
+        bool requireClosedTemporaryAccounts,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(period);
 
@@ -313,19 +410,31 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         }
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        // Hard-close relies on the shared period-row lock for exclusion. ReadCommitted gives the
+        // balance recheck a fresh snapshot after any earlier append that held the row lock commits;
+        // using one transaction-wide snapshot here could otherwise hide that just-completed append.
+        var isolationLevel = requireClosedTemporaryAccounts
+            ? IsolationLevel.ReadCommitted
+            : IsolationLevel.Serializable;
+        await using var transaction = await connection.BeginTransactionAsync(isolationLevel, ct).ConfigureAwait(false);
 
         var current = await LoadPeriodAsync(
                 connection,
                 transaction,
                 period.PeriodId,
-                forUpdate: _options.EnablePeriodLocking,
+                forUpdate: requireClosedTemporaryAccounts || _options.EnablePeriodLocking,
                 ct: ct)
             .ConfigureAwait(false);
 
         LedgerAccountingPeriod saved;
         if (current is null)
         {
+            if (requireClosedTemporaryAccounts)
+            {
+                throw new LedgerBookNotFoundException(
+                    $"Ledger period '{period.PeriodId}' was not found for atomic hard-close.");
+            }
+
             if (expectedVersion != 0)
             {
                 throw PeriodVersionConflict(period.PeriodId, expectedVersion, actualVersion: 0);
@@ -339,6 +448,16 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
             if (current.Version != expectedVersion)
             {
                 throw PeriodVersionConflict(period.PeriodId, expectedVersion, current.Version);
+            }
+
+            if (requireClosedTemporaryAccounts)
+            {
+                await EnsureTemporaryAccountsClosedAsync(
+                        connection,
+                        transaction,
+                        current,
+                        ct)
+                    .ConfigureAwait(false);
             }
 
             saved = period with { Version = expectedVersion + 1 };
@@ -1308,6 +1427,57 @@ public sealed class PostgresLedgerJournalStore : ITransactionalLedgerJournalStor
         command.Parameters.AddWithValue("recorded_at", closeEvent.RecordedAt.UtcDateTime);
         command.Parameters.AddWithValue("period_version", periodVersion);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task EnsureTemporaryAccountsClosedAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerAccountingPeriod period,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select jl.account_name,
+                   case
+                       when jl.account_type = 'Revenue' then sum(jl.credit) - sum(jl.debit)
+                       else sum(jl.debit) - sum(jl.credit)
+                   end as balance
+            from {Qualified("journal_entries")} je
+            join {Qualified("journal_legs")} jl on jl.journal_entry_id = je.journal_entry_id
+            where je.period_id = @period_id
+              and jl.account_type in ('Revenue', 'Expense')
+            group by jl.account_name,
+                     jl.account_type,
+                     jl.symbol,
+                     jl.financial_account_id,
+                     jl.dimensions
+            having sum(jl.debit) <> sum(jl.credit)
+            order by jl.account_name,
+                     jl.financial_account_id,
+                     jl.dimensions::text;
+            """;
+        command.Parameters.AddWithValue("period_id", period.PeriodId);
+
+        var residuals = new List<(string AccountName, decimal Balance)>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            residuals.Add((reader.GetString(0), reader.GetDecimal(1)));
+        }
+
+        if (residuals.Count == 0)
+        {
+            return;
+        }
+
+        var preview = string.Join(
+            "; ",
+            residuals.Take(5).Select(static row =>
+                FormattableString.Invariant($"{row.AccountName}={row.Balance}")));
+        throw new LedgerBookValidationException(
+            $"Accounting period '{period.Label}' cannot be hard-closed while {residuals.Count} revenue/expense balance(s) remain non-zero ({preview}). Post and approve the closing-entry draft before period lock.");
     }
 
     private static void AddPeriodParameters(NpgsqlCommand command, LedgerAccountingPeriod period)

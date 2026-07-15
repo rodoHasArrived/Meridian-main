@@ -14,13 +14,15 @@ import {
 import { renderWithRouter } from "@/test/render";
 import type {
   BackfillProgressResponse,
+  BackfillExecutionHistoryResponse,
   BackfillPreviewResult,
   BackfillTriggerResult,
   DataWorkspaceResponse,
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
   ProviderReadinessSummary,
-  ProviderSetupResult
+  ProviderSetupResult,
+  QualityDashboardResponse
 } from "@/types";
 
 const data: DataWorkspaceResponse = {
