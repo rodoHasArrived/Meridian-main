@@ -173,6 +173,37 @@ public sealed class DailyValuationPositionServiceTests
         result.Blockers.Should().ContainSingle(message => message.Contains("duplicate security/account", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task ResolveAdHocAsync_MissingHistoricalSecurityState_DoesNotFallBackToCurrentRecord()
+    {
+        var registry = Substitute.For<ICanonicalSymbolRegistry>();
+        registry.GetDefinition("AAPL").Returns(new CanonicalSymbolDefinition
+        {
+            Canonical = "AAPL",
+            DisplayName = "Apple Inc.",
+            SecurityId = SecurityId,
+            AssetClass = "Equity",
+            Exchange = "NASDAQ",
+            Currency = "USD",
+            Aliases = ["AAPL"]
+        });
+        var securityMaster = Substitute.For<ISecurityMasterQueryService>();
+        securityMaster.GetByIdAsOfAsync(SecurityId, ValuationAsOf, Arg.Any<CancellationToken>())
+            .Returns((SecurityDetailDto?)null);
+        securityMaster.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(SecurityDetail(SecurityStatusDto.Active, "USD"));
+        var service = new DailyValuationPositionService(null, registry, securityMaster);
+
+        var result = await service.ResolveAdHocAsync(
+            [new MarkToMarketPosition("AAPL", 10m, 150m, "account-a")],
+            "USD",
+            ValuationAsOf);
+
+        result.IsReady.Should().BeFalse();
+        result.Blockers.Should().ContainSingle(message => message.Contains("no authoritative as-of record", StringComparison.OrdinalIgnoreCase));
+        await securityMaster.DidNotReceive().GetByIdAsync(SecurityId, Arg.Any<CancellationToken>());
+    }
+
     private static DailyValuationPositionService CreateService(
         IPositionSnapshotStore? store = null,
         SecurityStatusDto securityStatus = SecurityStatusDto.Active,

@@ -54,6 +54,8 @@ public sealed record AutomatedJournalScheduleRunHistory(
 /// Persisted configuration and durable current-cycle cursor for one recurring monthly
 /// fund/book/entity/currency scope. Completed cycles remain immutable in <see cref="RunHistory"/>;
 /// fee-basis values and their capital-account reconciliation never roll into a later month.
+/// Recurring dividend quantities are never retained here; named snapshot scopes are resolved
+/// from durable position history at each execution.
 /// </summary>
 public sealed record AutomatedJournalScheduleWorkItem(
     string ScheduleId,
@@ -96,7 +98,9 @@ public sealed record AutomatedJournalScheduleWorkItem(
     string? LastConfiguredBy = null,
     decimal? LastEvidenceConfidenceScore = null,
     AutomatedJournalEvidenceQualityDto? LastEvidenceQuality = null,
-    long Version = 0)
+    long Version = 0,
+    IReadOnlyList<AutomatedJournalPositionSnapshotScope>? PositionSnapshotScopes = null,
+    int MaximumPositionAgeDays = 7)
 {
     public IReadOnlyList<DividendAccrualPosition> Positions { get; init; } = Positions ?? [];
 
@@ -107,6 +111,9 @@ public sealed record AutomatedJournalScheduleWorkItem(
     public IReadOnlyList<string> Blockers { get; init; } = Blockers ?? [];
 
     public IReadOnlyList<AutomatedJournalScheduleRunHistory> RunHistory { get; init; } = RunHistory ?? [];
+
+    public IReadOnlyList<AutomatedJournalPositionSnapshotScope> PositionSnapshotScopes { get; init; } =
+        PositionSnapshotScopes ?? [];
 }
 
 /// <summary>Durable source for explicitly configured monthly automated-journal work.</summary>
@@ -383,6 +390,8 @@ internal static class AutomatedJournalScheduleProjection
             throw new ArgumentOutOfRangeException(nameof(item), "Corporate-action confidence threshold must be between 0 and 1.");
         if (item.MinimumCapitalAccountConfidence is < 0m or > 1m)
             throw new ArgumentOutOfRangeException(nameof(item), "Capital-account confidence threshold must be between 0 and 1.");
+        if (item.MaximumPositionAgeDays < 0)
+            throw new ArgumentOutOfRangeException(nameof(item), "Maximum position age cannot be negative.");
         var periodToken = item.PeriodStart.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
         if (item.RecurrenceEnabled && !periodId.Contains(periodToken, StringComparison.Ordinal))
         {
@@ -422,7 +431,13 @@ internal static class AutomatedJournalScheduleProjection
             Blockers = item.Blockers ?? [],
             JournalEntryIds = item.JournalEntryIds ?? [],
             RunHistory = item.RunHistory ?? [],
-            CapitalAccountReconciliation = NormalizeReconciliation(item.CapitalAccountReconciliation)
+            CapitalAccountReconciliation = NormalizeReconciliation(item.CapitalAccountReconciliation),
+            PositionSnapshotScopes = item.PositionSnapshotScopes
+                .Select(static scope => new AutomatedJournalPositionSnapshotScope(
+                    Require(scope.RunId, "Position snapshot run id"),
+                    Require(scope.AccountId, "Position snapshot account id")))
+                .DistinctBy(static scope => $"{scope.RunId}|{scope.AccountId}", StringComparer.OrdinalIgnoreCase)
+                .ToArray()
         };
     }
 

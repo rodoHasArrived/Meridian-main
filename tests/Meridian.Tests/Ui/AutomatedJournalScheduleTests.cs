@@ -1,8 +1,12 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
+using Meridian.Storage;
+using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -318,6 +322,103 @@ public sealed class AutomatedJournalScheduleTests
             draft.AutomationEvidenceAssessment != null &&
             draft.AutomationEvidenceAssessment.Quality == AutomatedJournalEvidenceQualityDto.High &&
             !draft.AutomationEvidenceAssessment.RequiresInvestigation);
+        drafts.Should().OnlyContain(static draft => draft.EvidenceLinks.Any(link =>
+            link.Contains("position-snapshots", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
+    public async Task RecurringDividendSchedule_ResolvesEachCyclePositionAfterRestart()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "automated-journal-dividend-restart-tests", Guid.NewGuid().ToString("N"));
+        var snapshotPath = Path.Combine(directory, "monthly-schedules.json");
+        var actions = new[]
+        {
+            DividendAction(new DateOnly(2026, 7, 2), 0.26m, new DateOnly(2026, 7, 16), "USD", new DateOnly(2026, 7, 3)),
+            DividendAction(new DateOnly(2026, 8, 2), 0.30m, new DateOnly(2026, 8, 16), "USD", new DateOnly(2026, 8, 3))
+        };
+        try
+        {
+            var firstFixture = await CreateFileFixtureAsync(directory, initializeConfiguration: true, actions);
+            var firstStore = new FileAutomatedJournalScheduleStore(snapshotPath);
+            await firstStore.SaveAsync(DividendSchedule("dividend-cycle-restart"));
+
+            var july = await CreateWorker(firstStore, firstFixture.Runner, new CycleDividendPositionResolver())
+                .RunDueAsync(DueAt);
+
+            july.Runs.Should().ContainSingle().Which.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+            (await firstStore.GetAsync("dividend-cycle-restart"))!.PeriodId.Should().Be("2026-08");
+
+            var restartedStore = new FileAutomatedJournalScheduleStore(snapshotPath);
+            var restartedFixture = await CreateFileFixtureAsync(directory, initializeConfiguration: false, actions);
+            var august = await CreateWorker(restartedStore, restartedFixture.Runner, new CycleDividendPositionResolver())
+                .RunDueAsync(new DateTimeOffset(2026, 9, 1, 9, 0, 0, TimeSpan.Zero));
+
+            august.Runs.Should().ContainSingle().Which.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+            var drafts = (await restartedFixture.Workbench.GetWorkbenchAsync(
+                "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts;
+            drafts.Should().Contain(draft => draft.AccountingDate == new DateOnly(2026, 7, 2) && draft.TotalDebits == 104m);
+            drafts.Should().Contain(draft => draft.AccountingDate == new DateOnly(2026, 8, 2) && draft.TotalDebits == 75m);
+            drafts.Should().NotContain(draft => draft.TotalDebits > 100_000m,
+                "the config-time quantity is not an execution authority");
+            drafts.Should().OnlyContain(static draft => draft.EvidenceLinks.Any(link =>
+                link.Contains("position-snapshots", StringComparison.OrdinalIgnoreCase)));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task PositionSnapshotResolver_ReconstructsExDateHoldingsAcrossChangesAndRestart()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "automated-journal-position-history-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var options = new StorageOptions { RootPath = directory };
+            var firstStore = new JsonlPositionSnapshotStore(options, NullLogger<JsonlPositionSnapshotStore>.Instance);
+            await firstStore.SaveSnapshotAsync(PositionSnapshot(new DateTimeOffset(2026, 6, 30, 20, 0, 0, TimeSpan.Zero), 400m));
+            await firstStore.SaveSnapshotAsync(PositionSnapshot(new DateTimeOffset(2026, 7, 10, 20, 0, 0, TimeSpan.Zero), 200m));
+            await firstStore.SaveSnapshotAsync(PositionSnapshot(new DateTimeOffset(2026, 7, 20, 20, 0, 0, TimeSpan.Zero), quantity: null));
+
+            var restartedStore = new JsonlPositionSnapshotStore(options, NullLogger<JsonlPositionSnapshotStore>.Instance);
+            var resolution = await new PositionSnapshotAutomatedJournalDividendPositionResolver(restartedStore)
+                .ResolveAsync(DividendSchedule("dividend-authoritative-history"), DueAt);
+
+            resolution.IsReady.Should().BeTrue();
+            resolution.Positions.Should().Contain(position => position.Quantity == 400m);
+            resolution.Positions.Should().Contain(position => position.Quantity == 200m);
+            resolution.Positions.Should().Contain(position => position.Quantity == 0m,
+                "an omitted symbol in a later authoritative snapshot is retained as a zero-quantity tombstone");
+            resolution.Positions.Should().OnlyContain(static position =>
+                position.PositionAsOfUtc.HasValue && position.PositionEvidenceReferences.Count == 1);
+
+            var actions = new[]
+            {
+                DividendAction(new DateOnly(2026, 7, 2), 0.26m, new DateOnly(2026, 7, 16), "USD", new DateOnly(2026, 7, 3)),
+                DividendAction(new DateOnly(2026, 7, 12), 0.26m, new DateOnly(2026, 7, 26), "USD", new DateOnly(2026, 7, 13)),
+                DividendAction(new DateOnly(2026, 7, 25), 0.26m, new DateOnly(2026, 8, 8), "USD", new DateOnly(2026, 7, 26))
+            };
+            var production = await new CorporateActionDividendEventProducer(new FakeSecurityMasterQueryService(actions))
+                .ProduceAsync(new CorporateActionDividendRequest(
+                    resolution.Positions,
+                    "USD",
+                    new DateOnly(2026, 7, 1),
+                    new DateOnly(2026, 7, 31),
+                    DueAt,
+                    MaximumPositionAgeDays: 7));
+
+            production.Events.Should().HaveCount(2);
+            production.Events.Select(static item => item.Amount).Should().BeEquivalentTo([104m, 52m]);
+            production.Events.Should().OnlyContain(static item => item.EvidenceReferences.Any(reference =>
+                reference.Kind == "position-snapshot"));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
     }
 
     [Fact]
@@ -511,8 +612,13 @@ public sealed class AutomatedJournalScheduleTests
 
     private static AutomatedJournalScheduledWorker CreateWorker(
         IAutomatedJournalScheduleStore store,
-        AutomatedJournalIntakeRunner runner)
-        => new(store, runner, NullLogger<AutomatedJournalScheduledWorker>.Instance);
+        AutomatedJournalIntakeRunner runner,
+        IAutomatedJournalDividendPositionResolver? positionResolver = null)
+        => new(
+            store,
+            runner,
+            NullLogger<AutomatedJournalScheduledWorker>.Instance,
+            positionResolver ?? new CycleDividendPositionResolver());
 
     private static AutomatedJournalScheduleWorkItem FeeSchedule(string scheduleId)
         => new(
@@ -587,13 +693,22 @@ public sealed class AutomatedJournalScheduleTests
             DueTimeLocal: new TimeOnly(9, 0),
             TimeZoneId: "UTC",
             Actor: "automated-journal-scheduler",
-            Positions: [new DividendAccrualPosition("AAPL", 400m)],
+            Positions: [new DividendAccrualPosition("AAPL", 999_999m)],
             WithholdingTaxRate: withholdingRate,
             MinimumCorporateActionConfidence: minimumConfidence,
             TenantId: "tenant-alpha",
-            CompanyId: "company-alpha");
+            CompanyId: "company-alpha",
+            PositionSnapshotScopes: [new AutomatedJournalPositionSnapshotScope("run-alpha", "account-alpha")]);
 
     private static CorporateActionDto DividendAction(
+        DateOnly? payDate,
+        string? currency,
+        DateOnly? recordDate)
+        => DividendAction(new DateOnly(2026, 7, 2), 0.26m, payDate, currency, recordDate);
+
+    private static CorporateActionDto DividendAction(
+        DateOnly exDate,
+        decimal dividendPerShare,
         DateOnly? payDate,
         string? currency,
         DateOnly? recordDate)
@@ -601,9 +716,9 @@ public sealed class AutomatedJournalScheduleTests
             CorpActId: Guid.NewGuid(),
             SecurityId: SecurityId,
             EventType: CorporateActionEventTypes.Dividend,
-            ExDate: new DateOnly(2026, 7, 2),
+            ExDate: exDate,
             PayDate: payDate,
-            DividendPerShare: 0.26m,
+            DividendPerShare: dividendPerShare,
             Currency: currency,
             SplitRatio: null,
             NewSecurityId: null,
@@ -613,6 +728,26 @@ public sealed class AutomatedJournalScheduleTests
             SubscriptionPricePerShare: null,
             RightsPerShare: null,
             RecordDate: recordDate);
+
+    private static AccountSnapshotRecord PositionSnapshot(DateTimeOffset asOf, decimal? quantity)
+        => new(
+            "run-alpha",
+            "account-alpha",
+            "Account Alpha",
+            "Brokerage",
+            Cash: 0m,
+            MarginBalance: 0m,
+            UnrealisedPnl: 0m,
+            RealisedPnl: 0m,
+            Positions: quantity.HasValue
+                ? [new PositionRecord("AAPL", quantity.Value, 100m, 0m, 0m)]
+                : [],
+            AsOf: asOf,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha",
+            FundProfileId: "fund-alpha",
+            LedgerBookId: BookId,
+            EntityId: "entity-alpha");
 
     private sealed record Fixture(
         AutomatedJournalIntakeRunner Runner,
@@ -639,6 +774,42 @@ public sealed class AutomatedJournalScheduleTests
             ct.ThrowIfCancellationRequested();
             Scopes.Add(scope);
             return Task.FromResult(Reconciliation);
+        }
+    }
+
+    private sealed class CycleDividendPositionResolver : IAutomatedJournalDividendPositionResolver
+    {
+        public Task<AutomatedJournalDividendPositionResolution> ResolveAsync(
+            AutomatedJournalScheduleWorkItem workItem,
+            DateTimeOffset evaluatedAtUtc,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var quantity = workItem.PeriodStart.Month == 7 ? 400m : 250m;
+            var asOf = new DateTimeOffset(workItem.PeriodStart.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+            var route = $"evidence://position-snapshots/run-alpha/account-alpha?asOf={Uri.EscapeDataString(asOf.ToString("O"))}";
+            var reference = new JournalEvidenceReference(
+                $"position:{workItem.PeriodId}",
+                route,
+                "position-snapshot",
+                "position-snapshot-store",
+                asOf,
+                "automated-journal",
+                "account-alpha");
+            return Task.FromResult(new AutomatedJournalDividendPositionResolution(
+                [new DividendAccrualPosition(
+                    "AAPL",
+                    quantity,
+                    FinancialAccountId: "account-alpha",
+                    PositionAsOfUtc: asOf,
+                    PositionEvidenceReferences: [reference])],
+                [new OperationsEvidenceLinkDto(
+                    reference.EvidenceId,
+                    "Authoritative ex-date position snapshot",
+                    route,
+                    reference.SourceSystem,
+                    asOf)],
+                []));
         }
     }
 

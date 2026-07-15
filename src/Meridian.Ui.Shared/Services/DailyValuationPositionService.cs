@@ -270,11 +270,12 @@ public sealed class DailyValuationPositionService
                 continue;
             }
 
-            var security = await _securityMaster.GetByIdAsOfAsync(securityId, valuationAsOfUtc, ct).ConfigureAwait(false)
-                           ?? await _securityMaster.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            var security = await _securityMaster
+                .GetByIdAsOfAsync(securityId, valuationAsOfUtc, ct)
+                .ConfigureAwait(false);
             if (security is null)
             {
-                blockers.Add($"Position symbol '{symbol}' resolved to Security Master id '{securityId:D}', but no authoritative record exists.");
+                blockers.Add($"Position symbol '{symbol}' resolved to Security Master id '{securityId:D}', but no authoritative as-of record exists at {valuationAsOfUtc:O}.");
                 continue;
             }
 

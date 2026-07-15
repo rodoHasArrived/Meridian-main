@@ -102,4 +102,16 @@ public interface IPositionSnapshotStore
         DateTimeOffset from,
         DateTimeOffset to,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Streams snapshots for the exact accounting owner between the inclusive UTC bounds.
+    /// Implementations must not fall back to legacy unowned or differently owned history.
+    /// </summary>
+    IAsyncEnumerable<AccountSnapshotRecord> GetSnapshotHistoryAsync(
+        string runId,
+        string accountId,
+        PositionSnapshotOwnerScope ownerScope,
+        DateTimeOffset from,
+        DateTimeOffset to,
+        CancellationToken ct = default);
 }

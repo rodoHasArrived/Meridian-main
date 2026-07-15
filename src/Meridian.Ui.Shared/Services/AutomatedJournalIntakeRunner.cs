@@ -23,7 +23,8 @@ public sealed record RunDividendDraftIntakeRequest(
     string? CompanyId = null,
     decimal WithholdingTaxRate = 0m,
     DateTimeOffset? AsOf = null,
-    decimal MinimumEvidenceConfidence = 0.75m);
+    decimal MinimumEvidenceConfidence = 0.75m,
+    int MaximumPositionAgeDays = 7);
 
 /// <summary>
 /// Request to accrue period fees from fund fee terms and land the drafts in the manual
@@ -192,7 +193,8 @@ public sealed class AutomatedJournalIntakeRunner
                 request.WindowEnd,
                 request.AsOf ?? DateTimeOffset.UtcNow,
                 request.WithholdingTaxRate,
-                request.MinimumEvidenceConfidence),
+                request.MinimumEvidenceConfidence,
+                request.MaximumPositionAgeDays),
             ct).ConfigureAwait(false);
 
         var intake = production.Events.Count == 0

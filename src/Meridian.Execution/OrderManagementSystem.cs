@@ -38,6 +38,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly CancellationTokenSource _reportPumpCts = new();
     private readonly Task _reportPumpTask;
     private readonly ITradeEventPublisher? _tradeEventPublisher;
+    private readonly ITradeFillHandoffFailureStore? _tradeFillHandoffFailureStore;
+    private readonly Task _handoffRecoveryTask;
     private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<ExecutionReport, FillProcessingProgress> _fillProcessing = new();
     private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
@@ -59,7 +61,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         BrokerageConfiguration? brokerageConfiguration = null,
         ILiveOrderReadinessGate? liveOrderReadinessGate = null,
         OrderManagementSystemOptions? options = null,
-        ITradeEventPublisher? tradeEventPublisher = null)
+        ITradeEventPublisher? tradeEventPublisher = null,
+        ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -72,6 +75,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _sessionPersistence = sessionPersistence;
         _brokerageConfiguration = brokerageConfiguration;
         _tradeEventPublisher = tradeEventPublisher;
+        _tradeFillHandoffFailureStore = tradeFillHandoffFailureStore;
         _options = options ?? new OrderManagementSystemOptions();
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
@@ -89,6 +93,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         // rejects, and cancels that arrive after the synchronous submit ack still reach
         // order state, session persistence, and downstream fill consumers.
         _reportPumpTask = Task.Run(() => PumpGatewayExecutionReportsAsync(_reportPumpCts.Token));
+        _handoffRecoveryTask = _tradeEventPublisher is not null && _tradeFillHandoffFailureStore is not null
+            ? Task.Run(() => ReplayRetainedAccountingHandoffsAsync(_reportPumpCts.Token))
+            : Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -383,6 +390,34 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 ErrorMessage = report.RejectReason
             };
         }
+        catch (AccountingHandoffException ex)
+        {
+            var filledState = _orders.TryGetValue(orderId, out var retainedState)
+                ? retainedState
+                : orderState;
+            _logger.LogCritical(
+                ex,
+                "Order {OrderId} filled but accounting handoff failed; retained={HandoffRetained}",
+                orderId,
+                ex.WasRetained);
+            await RecordOrderLifecycleAuditAsync(
+                    action: "AccountingHandoffFailed",
+                    outcome: "AttentionRequired",
+                    orderId: orderId,
+                    state: filledState,
+                    report: null,
+                    message: ex.Message,
+                    ct: ct)
+                .ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                ErrorMessage = ex.Message,
+                OrderState = filledState
+            };
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to submit order {OrderId} for {Symbol}", orderId, safeRequest.Symbol);
@@ -599,7 +634,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _executionChannel.Writer.TryComplete();
 
         // Dispose the CTS only after the pump has finished using its token.
-        _reportPumpTask.ContinueWith(
+        Task.WhenAll(_reportPumpTask, _handoffRecoveryTask).ContinueWith(
             static (_, state) => ((CancellationTokenSource)state!).Dispose(),
             _reportPumpCts,
             CancellationToken.None,
@@ -616,6 +651,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// to avoid backpressure.
     /// </summary>
     public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
+
+    /// <summary>
+    /// Returns OMS-level accounting handoff failures that could not enter the primary publisher.
+    /// These records survive process restart when a failure store is composed.
+    /// </summary>
+    public Task<IReadOnlyList<RetainedTradeFillHandoffFailure>> GetAccountingHandoffFailuresAsync(
+        CancellationToken ct = default)
+        => _tradeFillHandoffFailureStore?.LoadPendingAsync(ct)
+           ?? Task.FromResult<IReadOnlyList<RetainedTradeFillHandoffFailure>>([]);
 
     private string GenerateOrderId()
     {
@@ -692,6 +736,91 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                     ? MaxReportStreamRetryDelay
                     : TimeSpan.FromTicks(Math.Min(retryDelay.Ticks * 2, MaxReportStreamRetryDelay.Ticks));
             }
+        }
+    }
+
+    private async Task ReplayRetainedAccountingHandoffsAsync(CancellationToken ct)
+    {
+        if (_tradeEventPublisher is null || _tradeFillHandoffFailureStore is null)
+            return;
+
+        IReadOnlyList<RetainedTradeFillHandoffFailure> retained;
+        try
+        {
+            retained = await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, "Could not load retained accounting handoff failures");
+            return;
+        }
+
+        foreach (var failure in retained)
+        {
+            if (ct.IsCancellationRequested)
+                return;
+            try
+            {
+                _tradeEventPublisher.Publish(failure.TradeEvent);
+                await _tradeFillHandoffFailureStore
+                    .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(
+                    ex,
+                    "Retained accounting handoff replay failed for fill {FillId}; the durable failure record remains pending",
+                    failure.TradeEvent.FillId);
+                try
+                {
+                    await _tradeFillHandoffFailureStore
+                        .RetainAsync(failure.TradeEvent, ex.Message, CancellationToken.None)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception retentionException)
+                {
+                    _logger.LogCritical(
+                        retentionException,
+                        "Could not update retained accounting handoff failure for fill {FillId}",
+                        failure.TradeEvent.FillId);
+                }
+            }
+        }
+    }
+
+    private async Task<bool> RetainAccountingHandoffFailureAsync(
+        TradeExecutedEvent tradeEvent,
+        Exception publisherFailure,
+        CancellationToken ct)
+    {
+        if (_tradeFillHandoffFailureStore is null)
+        {
+            _logger.LogCritical(
+                publisherFailure,
+                "Accounting publisher rejected fill {FillId} and no durable OMS handoff-failure store is configured",
+                tradeEvent.FillId);
+            return false;
+        }
+
+        try
+        {
+            await _tradeFillHandoffFailureStore
+                .RetainAsync(tradeEvent, publisherFailure.Message, ct)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception retentionFailure)
+        {
+            _logger.LogCritical(
+                retentionFailure,
+                "Accounting publisher and OMS failure-store retention both failed for fill {FillId}; the order path will fail closed",
+                tradeEvent.FillId);
+            return false;
         }
     }
 
@@ -798,7 +927,19 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                         progress.RealizedPnl,
                         progress.NewCash,
                         ResolveFinancialAccountId(orderId));
-                    _tradeEventPublisher.Publish(progress.TradeEvent);
+                    try
+                    {
+                        _tradeEventPublisher.Publish(progress.TradeEvent);
+                    }
+                    catch (Exception ex)
+                    {
+                        var wasRetained = await RetainAccountingHandoffFailureAsync(
+                                progress.TradeEvent,
+                                ex,
+                                CancellationToken.None)
+                            .ConfigureAwait(false);
+                        throw new AccountingHandoffException(progress.TradeEvent, wasRetained, ex);
+                    }
                 }
 
                 progress.TradeEventPublished = true;
@@ -820,6 +961,10 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
             progress.IsComplete = true;
             TrackCompletedFill(report);
+        }
+        catch (AccountingHandoffException)
+        {
+            throw;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -1288,5 +1433,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         public bool SessionRecorded { get; set; }
         public bool ExecutionReportPublished { get; set; }
         public volatile bool IsComplete;
+    }
+
+    private sealed class AccountingHandoffException : Exception
+    {
+        public AccountingHandoffException(
+            TradeExecutedEvent tradeEvent,
+            bool wasRetained,
+            Exception innerException)
+            : base(
+                $"Execution fill '{tradeEvent.FillId:D}' was accepted by the broker but its accounting handoff failed"
+                + (wasRetained
+                    ? "; the event is durably retained for restart replay."
+                    : "; no durable fallback accepted the event and the order result is fail-closed."),
+                innerException)
+        {
+            WasRetained = wasRetained;
+        }
+
+        public bool WasRetained { get; }
     }
 }

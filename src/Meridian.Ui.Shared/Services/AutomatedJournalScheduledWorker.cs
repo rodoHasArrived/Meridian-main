@@ -35,16 +35,19 @@ public sealed class AutomatedJournalScheduledWorker
     private readonly IAutomatedJournalScheduleStore _store;
     private readonly AutomatedJournalIntakeRunner _intakeRunner;
     private readonly ILogger<AutomatedJournalScheduledWorker> _logger;
+    private readonly IAutomatedJournalDividendPositionResolver? _dividendPositionResolver;
     private readonly SemaphoreSlim _runGate = new(1, 1);
 
     public AutomatedJournalScheduledWorker(
         IAutomatedJournalScheduleStore store,
         AutomatedJournalIntakeRunner intakeRunner,
-        ILogger<AutomatedJournalScheduledWorker> logger)
+        ILogger<AutomatedJournalScheduledWorker> logger,
+        IAutomatedJournalDividendPositionResolver? dividendPositionResolver = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _intakeRunner = intakeRunner ?? throw new ArgumentNullException(nameof(intakeRunner));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _dividendPositionResolver = dividendPositionResolver;
     }
 
     public async Task<AutomatedJournalScheduledBatchResult> RunDueAsync(
@@ -140,26 +143,58 @@ public sealed class AutomatedJournalScheduledWorker
 
         try
         {
-            if (item.Kind == AutomatedJournalScheduleKind.DividendCapture && item.Positions.Count == 0)
+            AutomatedJournalDividendPositionResolution? dividendPositions = null;
+            if (item.Kind == AutomatedJournalScheduleKind.DividendCapture)
             {
-                const string blocker = "No positions are configured for the monthly dividend-capture scope.";
-                return await CompleteAsync(
-                    running,
-                    runKey,
-                    nowUtc,
-                    AutomatedJournalScheduleStateDto.Blocked,
-                    blocker,
-                    [],
-                    [],
-                    [blocker],
-                    null,
-                    null,
-                    ct).ConfigureAwait(false);
+                if (_dividendPositionResolver is null)
+                {
+                    const string blocker = "The server-owned dividend position resolver is unavailable.";
+                    return await CompleteAsync(
+                        running, runKey, nowUtc, AutomatedJournalScheduleStateDto.Blocked, blocker,
+                        [], [], [blocker], null, null, ct).ConfigureAwait(false);
+                }
+
+                dividendPositions = await _dividendPositionResolver
+                    .ResolveAsync(item, nowUtc, ct)
+                    .ConfigureAwait(false);
+                if (!dividendPositions.IsReady)
+                {
+                    const string summary = "Monthly dividend capture is blocked because authoritative ex-date position history is unavailable.";
+                    return await CompleteAsync(
+                        running,
+                        runKey,
+                        nowUtc,
+                        AutomatedJournalScheduleStateDto.Blocked,
+                        summary,
+                        [],
+                        dividendPositions.EvidenceLinks,
+                        dividendPositions.Blockers,
+                        null,
+                        null,
+                        ct).ConfigureAwait(false);
+                }
+
+                if (dividendPositions.Positions.Count == 0)
+                {
+                    const string summary = "Authoritative position history confirms that no open ex-date holdings require a dividend draft for this cycle.";
+                    return await CompleteAsync(
+                        running,
+                        runKey,
+                        nowUtc,
+                        AutomatedJournalScheduleStateDto.NoDraftRequired,
+                        summary,
+                        [],
+                        dividendPositions.EvidenceLinks,
+                        [],
+                        null,
+                        null,
+                        ct).ConfigureAwait(false);
+                }
             }
 
             var run = item.Kind == AutomatedJournalScheduleKind.FeeAccrual
                 ? await RunFeeAccrualAsync(item, nowUtc, ct).ConfigureAwait(false)
-                : await RunDividendCaptureAsync(item, scheduledForUtc, ct).ConfigureAwait(false);
+                : await RunDividendCaptureAsync(item, dividendPositions!.Positions, nowUtc, ct).ConfigureAwait(false);
             return await CompleteFromIntakeAsync(running, runKey, run, nowUtc, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -221,14 +256,15 @@ public sealed class AutomatedJournalScheduledWorker
 
     private Task<AutomatedJournalIntakeRunResult> RunDividendCaptureAsync(
         AutomatedJournalScheduleWorkItem item,
-        DateTimeOffset scheduledForUtc,
+        IReadOnlyList<DividendAccrualPosition> positions,
+        DateTimeOffset evaluatedAtUtc,
         CancellationToken ct)
         => _intakeRunner.RunDividendIntakeAsync(
             new RunDividendDraftIntakeRequest(
                 FundProfileId: item.FundProfileId,
                 Currency: item.Currency,
                 Actor: item.Actor,
-                Positions: item.Positions,
+                Positions: positions,
                 WindowStart: item.PeriodStart,
                 WindowEnd: item.PeriodEnd,
                 LedgerBookId: item.LedgerBookId,
@@ -237,8 +273,9 @@ public sealed class AutomatedJournalScheduledWorker
                 TenantId: item.TenantId,
                 CompanyId: item.CompanyId,
                 WithholdingTaxRate: item.WithholdingTaxRate,
-                AsOf: scheduledForUtc,
-                MinimumEvidenceConfidence: item.MinimumCorporateActionConfidence),
+                AsOf: evaluatedAtUtc,
+                MinimumEvidenceConfidence: item.MinimumCorporateActionConfidence,
+                MaximumPositionAgeDays: item.MaximumPositionAgeDays),
             ct);
 
     private async Task<AutomatedJournalScheduledRunResult> CompleteFromIntakeAsync(

@@ -27,6 +27,7 @@ using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
 using Meridian.Storage.Ledger;
+using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -108,6 +109,20 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
         services.TryAddSingleton<IAutomatedJournalScheduleStatusSource>(sp =>
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<IAutomatedJournalDividendPositionResolver>(sp =>
+            new PositionSnapshotAutomatedJournalDividendPositionResolver(
+                sp.GetService<IPositionSnapshotStore>()));
+        services.TryAddSingleton<IAccountingReportPackageService>(sp =>
+            new AccountingReportPackageService(
+                sp.GetService<IAccountingCloseManagementService>(),
+                new StorageOptions
+                {
+                    RootPath = Path.GetDirectoryName(ResolveAccountingDataDirectory(sp))
+                        ?? ResolveAccountingDataDirectory(sp)
+                }));
+        services.TryAddSingleton<IAutomatedJournalCapitalAccountReconciliationResolver>(sp =>
+            new AccountingReportPackageCapitalAccountReconciliationResolver(
+                () => sp.GetRequiredService<IAccountingReportPackageService>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             ActivatorUtilities.CreateInstance<ManualJournalEntryWorkbenchService>(sp));

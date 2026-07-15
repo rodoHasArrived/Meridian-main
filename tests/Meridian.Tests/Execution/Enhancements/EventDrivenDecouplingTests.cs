@@ -2,11 +2,14 @@ using System.Diagnostics;
 using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Execution;
 using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Execution.Enhancements;
@@ -19,6 +22,11 @@ namespace Meridian.Tests.Execution.Enhancements;
 public sealed class EventDrivenDecouplingTests
 {
     private const string TestPostingScope = "test-ledger/open-period";
+    private static readonly TradeFillLedgerPostingContext TestPostingContext = new(
+        TestPostingScope,
+        Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+        Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+        Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"));
 
     // -------------------------------------------------------------------------
     // TradeExecutedEvent
@@ -60,10 +68,11 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
 
         var evt = new TradeExecutedEvent(
@@ -100,10 +109,11 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
 
         consumer.Publish(new TradeExecutedEvent(
@@ -117,14 +127,75 @@ public sealed class EventDrivenDecouplingTests
     }
 
     [Fact]
+    public async Task LedgerPostingConsumer_DoesNotAcknowledgeOrProjectBeforeDurableTargetConfirms()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var store = new InMemoryTradeFillPostingStore(TestPostingScope);
+        var releasePersistence = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var target = new InMemoryTradeFillLedgerPostingTarget
+        {
+            BeforePersistAsync = _ => releasePersistence.Task
+        };
+        var consumer = new LedgerPostingConsumer(
+            target,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            store,
+            TestPostingContext,
+            projectionLedger: ledger,
+            securityValidationGate: new PassingSecurityValidationGate());
+
+        consumer.Publish(MakeBuyEvent("AAPL"));
+        await target.PersistStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        store.PostedCount.Should().Be(0, "the WAL acknowledgement must wait for durable persistence");
+        (await store.LoadPendingAsync()).Should().ContainSingle();
+        ledger.Journal.Should().BeEmpty("the in-memory projection advances only after persistence");
+
+        releasePersistence.TrySetResult();
+        await consumer.DisposeAsync();
+
+        store.PostedCount.Should().Be(1);
+        ledger.Journal.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task LedgerPostingConsumer_EconomicFingerprint_CoversSideQuantityPriceFeesPnlAndSecurity()
+    {
+        var baseline = new TradeExecutedEvent(
+            Guid.NewGuid(), "ord-fingerprint", "AAPL", OrderSide.Sell,
+            FilledQuantity: 10m, FillPrice: 100m, Commission: 2m,
+            RealizedPnl: 5m, NewCash: 1_005m, DateTimeOffset.UtcNow);
+        var baselineFingerprint = await CaptureTradeFingerprintAsync(baseline, PassingSecurityValidationGate.SecurityId);
+        var variants = new[]
+        {
+            baseline with { Side = OrderSide.Buy },
+            baseline with { FilledQuantity = 11m },
+            baseline with { FillPrice = 101m },
+            baseline with { Commission = 3m },
+            baseline with { RealizedPnl = 6m }
+        };
+
+        foreach (var variant in variants)
+        {
+            (await CaptureTradeFingerprintAsync(variant, PassingSecurityValidationGate.SecurityId))
+                .Should().NotBe(baselineFingerprint);
+        }
+        (await CaptureTradeFingerprintAsync(
+                baseline,
+                Guid.Parse("99999999-9999-9999-9999-999999999999")))
+            .Should().NotBe(baselineFingerprint);
+    }
+
+    [Fact]
     public async Task LedgerPostingConsumer_SellWithGain_PostsRealizedGainEntry()
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
 
         consumer.Publish(new TradeExecutedEvent(
@@ -144,10 +215,11 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
 
         consumer.Publish(new TradeExecutedEvent(
@@ -167,10 +239,11 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new BlockingSecurityValidationGate());
 
         consumer.Publish(new TradeExecutedEvent(
@@ -188,10 +261,11 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope);
+            TestPostingContext,
+            projectionLedger: ledger);
 
         consumer.Publish(new TradeExecutedEvent(
             Guid.NewGuid(), "ord-ungated", "AAPL", OrderSide.Buy,
@@ -208,10 +282,11 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new UnresolvedSecurityValidationGate());
 
         consumer.Publish(new TradeExecutedEvent(
@@ -234,10 +309,11 @@ public sealed class EventDrivenDecouplingTests
         var ledger = new Meridian.Ledger.Ledger();
         var gate = new BlockableSecurityValidationGate();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             channelCapacity: 1,
             securityValidationGate: gate);
 
@@ -263,10 +339,11 @@ public sealed class EventDrivenDecouplingTests
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
 
         await consumer.DisposeAsync();
@@ -289,10 +366,11 @@ public sealed class EventDrivenDecouplingTests
                     NullLogger<WalTradeFillPostingStore>.Instance);
                 var gate = new NonCooperativeSecurityValidationGate();
                 var consumer = new LedgerPostingConsumer(
-                    firstLedger,
+                    new InMemoryTradeFillLedgerPostingTarget(),
                     NullLogger<LedgerPostingConsumer>.Instance,
                     firstStore,
-                    TestPostingScope,
+                    TestPostingContext,
+                    projectionLedger: firstLedger,
                     channelCapacity: 1,
                     securityValidationGate: gate,
                     drainTimeout: TimeSpan.FromMilliseconds(25),
@@ -329,10 +407,11 @@ public sealed class EventDrivenDecouplingTests
                 new TradeFillPostingStoreOptions(root, TestPostingScope),
                 NullLogger<WalTradeFillPostingStore>.Instance);
             var recoveredConsumer = new LedgerPostingConsumer(
-                recoveredLedger,
+                new InMemoryTradeFillLedgerPostingTarget(),
                 NullLogger<LedgerPostingConsumer>.Instance,
                 recoveredStore,
-                TestPostingScope,
+                TestPostingContext,
+                projectionLedger: recoveredLedger,
                 channelCapacity: 1,
                 securityValidationGate: new PassingSecurityValidationGate());
 
@@ -350,6 +429,274 @@ public sealed class EventDrivenDecouplingTests
     }
 
     [Fact]
+    public async Task Scenario_WalAppendFailure_SnapshotRetainsFillAcrossProcessRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var options = new TradeFillPostingStoreOptions(root, TestPostingScope)
+        {
+            WalAppendOverride = (_, _, _) => throw new IOException("simulated WAL device outage")
+        };
+        var evt = MakeBuyEvent("AAPL");
+        try
+        {
+            await using (var failedWalStore = new WalTradeFillPostingStore(
+                             options,
+                             NullLogger<WalTradeFillPostingStore>.Instance))
+            {
+                var acceptance = await failedWalStore.AcceptAsync(evt);
+                acceptance.ShouldEnqueue.Should().BeTrue();
+                (await failedWalStore.LoadPendingAsync()).Should().ContainSingle();
+            }
+
+            File.Exists(options.SnapshotPath).Should().BeTrue();
+            await using var recovered = new WalTradeFillPostingStore(
+                new TradeFillPostingStoreOptions(root, TestPostingScope),
+                NullLogger<WalTradeFillPostingStore>.Instance);
+
+            var pending = await recovered.LoadPendingAsync();
+
+            pending.Should().ContainSingle();
+            pending[0].TradeEvent.Should().Be(evt);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_OmsAccountingHandoff_WalOutage_ReplaysAfterProcessRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var failedWalOptions = new TradeFillPostingStoreOptions(root, TestPostingScope)
+        {
+            WalAppendOverride = (_, _, _) => throw new IOException("simulated WAL device outage")
+        };
+        try
+        {
+            Guid retainedFillId;
+            {
+                await using var firstStore = new WalTradeFillPostingStore(
+                    failedWalOptions,
+                    NullLogger<WalTradeFillPostingStore>.Instance);
+                var gate = new NonCooperativeSecurityValidationGate();
+                var consumer = new LedgerPostingConsumer(
+                    new InMemoryTradeFillLedgerPostingTarget(),
+                    NullLogger<LedgerPostingConsumer>.Instance,
+                    firstStore,
+                    TestPostingContext,
+                    projectionLedger: new Meridian.Ledger.Ledger(),
+                    securityValidationGate: gate,
+                    drainTimeout: TimeSpan.FromMilliseconds(25),
+                    cancellationTimeout: TimeSpan.FromMilliseconds(25));
+                using var oms = new OrderManagementSystem(
+                    new ImmediateFillGateway(),
+                    NullLogger<OrderManagementSystem>.Instance,
+                    tradeEventPublisher: consumer);
+
+                var result = await oms.PlaceOrderAsync(new OrderRequest
+                {
+                    Symbol = "AAPL",
+                    Side = OrderSide.Buy,
+                    Type = OrderType.Market,
+                    Quantity = 10m
+                });
+                result.Success.Should().BeTrue();
+                await gate.ValidationStarted.WaitAsync(TimeSpan.FromSeconds(2));
+                var pending = await firstStore.LoadPendingAsync();
+                pending.Should().ContainSingle();
+                retainedFillId = pending[0].TradeEvent.FillId;
+
+                await consumer.DisposeAsync();
+                gate.Release();
+                Func<Task> completion = async () => await consumer.ProcessingCompletion;
+                await completion.Should().ThrowAsync<OperationCanceledException>();
+                (await firstStore.LoadPendingAsync()).Should().ContainSingle();
+            }
+
+            var recoveredLedger = new Meridian.Ledger.Ledger();
+            await using var recoveredStore = new WalTradeFillPostingStore(
+                new TradeFillPostingStoreOptions(root, TestPostingScope),
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            var recoveredConsumer = new LedgerPostingConsumer(
+                new InMemoryTradeFillLedgerPostingTarget(),
+                NullLogger<LedgerPostingConsumer>.Instance,
+                recoveredStore,
+                TestPostingContext,
+                projectionLedger: recoveredLedger,
+                securityValidationGate: new PassingSecurityValidationGate());
+
+            await recoveredConsumer.DisposeAsync();
+
+            recoveredLedger.Journal.Should().ContainSingle(entry => entry.Metadata.FillId == retainedFillId);
+            (await recoveredStore.LoadPendingAsync()).Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_OmsPrimaryWalAndSnapshotFail_ResultFailsClosedAndFallbackReplaysAfterRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var primaryOptions = new TradeFillPostingStoreOptions(Path.Combine(root, "primary"), TestPostingScope)
+        {
+            WalAppendOverride = (_, _, _) => throw new IOException("simulated primary WAL outage"),
+            SnapshotWriteOverride = (_, _) => throw new IOException("simulated primary snapshot outage")
+        };
+        var failureOptions = new TradeFillHandoffFailureStoreOptions(
+            Path.Combine(root, "fallback"),
+            TestPostingScope);
+        try
+        {
+            Guid fillId;
+            await using (var primaryStore = new WalTradeFillPostingStore(
+                             primaryOptions,
+                             NullLogger<WalTradeFillPostingStore>.Instance))
+            await using (var failureStore = new AtomicTradeFillHandoffFailureStore(failureOptions))
+            {
+                var consumer = new LedgerPostingConsumer(
+                    new InMemoryTradeFillLedgerPostingTarget(),
+                    NullLogger<LedgerPostingConsumer>.Instance,
+                    primaryStore,
+                    TestPostingContext,
+                    securityValidationGate: new PassingSecurityValidationGate());
+                using var oms = new OrderManagementSystem(
+                    new ImmediateFillGateway(),
+                    NullLogger<OrderManagementSystem>.Instance,
+                    tradeEventPublisher: consumer,
+                    tradeFillHandoffFailureStore: failureStore);
+
+                var result = await oms.PlaceOrderAsync(new OrderRequest
+                {
+                    Symbol = "AAPL",
+                    Side = OrderSide.Buy,
+                    Type = OrderType.Market,
+                    Quantity = 10m
+                });
+
+                result.Success.Should().BeFalse("a broker fill without primary accounting acceptance is fail-closed");
+                result.OrderState!.Status.Should().Be(OrderStatus.Filled,
+                    "the broker fill must not be rewritten as a rejected order");
+                result.ErrorMessage.Should().Contain("durably retained for restart replay");
+                var failures = await oms.GetAccountingHandoffFailuresAsync();
+                failures.Should().ContainSingle();
+                fillId = failures[0].TradeEvent.FillId;
+                await consumer.DisposeAsync();
+            }
+
+            var recoveredLedger = new Meridian.Ledger.Ledger();
+            await using var recoveredPrimaryStore = new WalTradeFillPostingStore(
+                new TradeFillPostingStoreOptions(Path.Combine(root, "primary"), TestPostingScope),
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            await using var recoveredFailureStore = new AtomicTradeFillHandoffFailureStore(failureOptions);
+            var recoveredConsumer = new LedgerPostingConsumer(
+                new InMemoryTradeFillLedgerPostingTarget(),
+                NullLogger<LedgerPostingConsumer>.Instance,
+                recoveredPrimaryStore,
+                TestPostingContext,
+                projectionLedger: recoveredLedger,
+                securityValidationGate: new PassingSecurityValidationGate());
+            using var recoveredOms = new OrderManagementSystem(
+                new ImmediateFillGateway(),
+                NullLogger<OrderManagementSystem>.Instance,
+                tradeEventPublisher: recoveredConsumer,
+                tradeFillHandoffFailureStore: recoveredFailureStore);
+
+            await WaitForNoHandoffFailuresAsync(recoveredOms);
+            await recoveredConsumer.DisposeAsync();
+
+            recoveredLedger.Journal.Should().ContainSingle(entry => entry.Metadata.FillId == fillId);
+            (await recoveredPrimaryStore.LoadPendingAsync()).Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task WalTradeFillPostingStore_BookPeriodRollover_UsesIndependentScopePartitions()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var periodOne = new TradeFillPostingStoreOptions(root, "book-a/period-2026-06");
+        var periodTwo = new TradeFillPostingStoreOptions(root, "book-a/period-2026-07");
+        try
+        {
+            await using var first = new WalTradeFillPostingStore(
+                periodOne,
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            await using var second = new WalTradeFillPostingStore(
+                periodTwo,
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            var firstFill = MakeBuyEvent("AAPL");
+            var secondFill = MakeBuyEvent("MSFT");
+
+            await first.AcceptAsync(firstFill);
+            await second.AcceptAsync(secondFill);
+
+            periodOne.ScopeDirectory.Should().NotBe(periodTwo.ScopeDirectory);
+            (await first.LoadPendingAsync()).Select(item => item.TradeEvent.FillId)
+                .Should().Equal(firstFill.FillId);
+            (await second.LoadPendingAsync()).Select(item => item.TradeEvent.FillId)
+                .Should().Equal(secondFill.FillId);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task WalTradeFillPostingStore_CompactsCompletedHistoryAndRecoversPendingSnapshot()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var options = new TradeFillPostingStoreOptions(root, TestPostingScope)
+        {
+            CompactionRecordThreshold = 2,
+            MaxWalFileSizeBytes = 1_024
+        };
+        var stillPending = MakeBuyEvent("PENDING");
+        try
+        {
+            await using (var store = new WalTradeFillPostingStore(
+                             options,
+                             NullLogger<WalTradeFillPostingStore>.Instance))
+            {
+                for (var index = 0; index < 24; index++)
+                {
+                    var completed = MakeBuyEvent($"DONE{index}");
+                    await store.AcceptAsync(completed);
+                    await store.MarkPostedAsync(completed.FillId);
+                }
+                await store.AcceptAsync(stillPending);
+            }
+
+            Directory.GetFiles(options.WalDirectory, "*.wal").Should().HaveCountLessThanOrEqualTo(3);
+            new FileInfo(options.SnapshotPath).Length.Should().BeLessThan(16 * 1024);
+
+            await using var recovered = new WalTradeFillPostingStore(
+                options,
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            var pending = await recovered.LoadPendingAsync();
+
+            pending.Should().ContainSingle();
+            pending[0].TradeEvent.Should().Be(stillPending);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_TransientPostingDependencyFailure_ReplayPostsWithoutDuplicateJournals()
     {
         var ledger = new Meridian.Ledger.Ledger();
@@ -357,10 +704,11 @@ public sealed class EventDrivenDecouplingTests
         var gate = new FailOnceSecurityValidationGate();
         var evt = MakeBuyEvent("AAPL") with { Commission = 2m };
         var firstConsumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             store,
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: gate);
 
         firstConsumer.Publish(evt);
@@ -372,10 +720,11 @@ public sealed class EventDrivenDecouplingTests
         pendingAfterFailure[0].FailureCount.Should().Be(1);
 
         var recoveredConsumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             store,
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: gate);
         await recoveredConsumer.DisposeAsync();
 
@@ -389,10 +738,11 @@ public sealed class EventDrivenDecouplingTests
         var ledger = new Meridian.Ledger.Ledger();
         var store = new InMemoryTradeFillPostingStore(TestPostingScope);
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             store,
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
         var evt = MakeBuyEvent("AAPL");
 
@@ -410,11 +760,13 @@ public sealed class EventDrivenDecouplingTests
         var ledger = new Meridian.Ledger.Ledger();
         var store = new FailOnceAcknowledgementStore(TestPostingScope);
         var evt = MakeBuyEvent("AAPL");
+        var postingTarget = new InMemoryTradeFillLedgerPostingTarget();
         var firstConsumer = new LedgerPostingConsumer(
-            ledger,
+            postingTarget,
             NullLogger<LedgerPostingConsumer>.Instance,
             store,
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
 
         firstConsumer.Publish(evt);
@@ -424,10 +776,11 @@ public sealed class EventDrivenDecouplingTests
         (await store.LoadPendingAsync()).Should().ContainSingle();
 
         var recoveredConsumer = new LedgerPostingConsumer(
-            ledger,
+            postingTarget,
             NullLogger<LedgerPostingConsumer>.Instance,
             store,
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
         await recoveredConsumer.DisposeAsync();
 
@@ -437,14 +790,56 @@ public sealed class EventDrivenDecouplingTests
     }
 
     [Fact]
+    public async Task LedgerPostingConsumer_ReplayWithReorderedRetainedLines_FailsClosedAndRemainsPending()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var store = new FailOnceAcknowledgementStore(TestPostingScope);
+        var postingTarget = new InMemoryTradeFillLedgerPostingTarget();
+        var evt = MakeBuyEvent("AAPL");
+        var firstConsumer = new LedgerPostingConsumer(
+            postingTarget,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            store,
+            TestPostingContext,
+            projectionLedger: ledger,
+            securityValidationGate: new PassingSecurityValidationGate());
+        firstConsumer.Publish(evt);
+        await firstConsumer.DisposeAsync();
+        (await store.LoadPendingAsync()).Should().ContainSingle();
+
+        postingTarget.ReplaceRetainedJournal(entry => new JournalEntry(
+            entry.JournalEntryId,
+            entry.Timestamp,
+            entry.Description,
+            entry.Lines.Reverse().ToArray(),
+            entry.Metadata));
+        var recoveredProjection = new Meridian.Ledger.Ledger();
+        var recoveredConsumer = new LedgerPostingConsumer(
+            postingTarget,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            store,
+            TestPostingContext,
+            projectionLedger: recoveredProjection,
+            securityValidationGate: new PassingSecurityValidationGate());
+
+        await recoveredConsumer.DisposeAsync();
+
+        recoveredProjection.Journal.Should().BeEmpty();
+        var retained = await store.LoadPendingAsync();
+        retained.Should().ContainSingle();
+        retained[0].LastFailure.Should().Contain("canonical economic fingerprint and ordered lines");
+    }
+
+    [Fact]
     public async Task LedgerPostingConsumer_ConcurrentDisposeCalls_AwaitSameBoundedShutdown()
     {
         var ledger = new Meridian.Ledger.Ledger();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: new PassingSecurityValidationGate());
         consumer.Publish(MakeBuyEvent("AAPL"));
 
@@ -459,10 +854,11 @@ public sealed class EventDrivenDecouplingTests
         var ledger = new Meridian.Ledger.Ledger();
         var gate = new BlockingCancellationCallbackSecurityValidationGate();
         var consumer = new LedgerPostingConsumer(
-            ledger,
+            new InMemoryTradeFillLedgerPostingTarget(),
             NullLogger<LedgerPostingConsumer>.Instance,
             new InMemoryTradeFillPostingStore(TestPostingScope),
-            TestPostingScope,
+            TestPostingContext,
+            projectionLedger: ledger,
             securityValidationGate: gate,
             drainTimeout: TimeSpan.FromMilliseconds(25),
             cancellationTimeout: TimeSpan.FromMilliseconds(25));
@@ -494,6 +890,36 @@ public sealed class EventDrivenDecouplingTests
                 throw new TimeoutException($"Timed out waiting for {expected} pending trade fills.");
             await Task.Delay(10);
         }
+    }
+
+    private static async Task WaitForNoHandoffFailuresAsync(OrderManagementSystem oms)
+    {
+        var timeoutAt = DateTimeOffset.UtcNow.AddSeconds(5);
+        while ((await oms.GetAccountingHandoffFailuresAsync()).Count != 0)
+        {
+            if (DateTimeOffset.UtcNow >= timeoutAt)
+                throw new TimeoutException("Timed out waiting for retained accounting handoff replay.");
+            await Task.Delay(10);
+        }
+    }
+
+    private static async Task<string> CaptureTradeFingerprintAsync(
+        TradeExecutedEvent tradeEvent,
+        Guid securityId)
+    {
+        var target = new InMemoryTradeFillLedgerPostingTarget();
+        var consumer = new LedgerPostingConsumer(
+            target,
+            NullLogger<LedgerPostingConsumer>.Instance,
+            new InMemoryTradeFillPostingStore(TestPostingScope),
+            TestPostingContext,
+            securityValidationGate: new PassingSecurityValidationGate(securityId));
+        consumer.Publish(tradeEvent);
+        await consumer.DisposeAsync();
+
+        return target.RetainedEntries
+            .Single(entry => entry.Metadata.ActivityType == "trade-fill")
+            .Metadata.Tags!["tradeFill.fingerprint"];
     }
 
     private static TradeExecutedEvent MakeBuyEvent(string symbol) => new(
@@ -685,6 +1111,123 @@ public sealed class EventDrivenDecouplingTests
                 ct);
     }
 
+    private sealed class ImmediateFillGateway : IExecutionGateway, IExecutionGatewayModeProvider
+    {
+        public string GatewayId => "paper";
+
+        public ExecutionMode ExecutionMode => ExecutionMode.Paper;
+
+        public bool IsConnected => true;
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            var orderId = request.ClientOrderId ?? Guid.NewGuid().ToString("N");
+            return Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ClientOrderId = orderId,
+                ReportType = ExecutionReportType.Fill,
+                Symbol = request.Symbol,
+                Side = request.Side,
+                OrderStatus = OrderStatus.Filled,
+                OrderQuantity = request.Quantity,
+                FilledQuantity = request.Quantity,
+                FillPrice = request.LimitPrice ?? 100m,
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
+
+        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<ExecutionReport> ModifyOrderAsync(
+            string orderId,
+            OrderModification modification,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public async IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    private sealed class InMemoryTradeFillLedgerPostingTarget : ITradeFillLedgerPostingTarget
+    {
+        private readonly object _sync = new();
+        private readonly Dictionary<Guid, LedgerJournalEntryRecord> _retained = [];
+        private long _sequence;
+
+        public Func<LedgerJournalEntryWrite, Task>? BeforePersistAsync { get; init; }
+
+        public TaskCompletionSource PersistStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public IReadOnlyList<JournalEntry> RetainedEntries
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _retained.Values
+                        .OrderBy(static record => record.GlobalSequence)
+                        .Select(static record => record.Entry)
+                        .ToArray();
+                }
+            }
+        }
+
+        public async Task<TradeFillLedgerPostingConfirmation> PostAndConfirmAsync(
+            LedgerJournalEntryWrite write,
+            CancellationToken ct = default)
+        {
+            PersistStarted.TrySetResult();
+            if (BeforePersistAsync is not null)
+                await BeforePersistAsync(write).WaitAsync(ct);
+
+            lock (_sync)
+            {
+                if (_retained.TryGetValue(write.Entry.JournalEntryId, out var retained))
+                    return new TradeFillLedgerPostingConfirmation(retained, WasAppended: false);
+
+                var record = new LedgerJournalEntryRecord(
+                    write.Entry,
+                    write.AggregateId,
+                    write.PeriodId,
+                    write.CommandId,
+                    write.CorrelationId,
+                    ++_sequence,
+                    DateTimeOffset.UtcNow,
+                    write.AccountingBasis,
+                    write.AccountingPolicyId,
+                    write.AccountingPolicyVersion,
+                    write.RuleId,
+                    write.RuleVersion,
+                    write.SourceEventId,
+                    write.SourceJournalEntryId,
+                    write.PostingKind,
+                    write.AdjustmentApproval);
+                _retained.Add(write.Entry.JournalEntryId, record);
+                return new TradeFillLedgerPostingConfirmation(record, WasAppended: true);
+            }
+        }
+
+        public void ReplaceRetainedJournal(Func<JournalEntry, JournalEntry> replace)
+        {
+            lock (_sync)
+            {
+                foreach (var (id, record) in _retained.ToArray())
+                    _retained[id] = record with { Entry = replace(record.Entry) };
+            }
+        }
+    }
+
     private sealed class InMemoryTradeFillPostingStore(string postingScope) : ITradeFillPostingStore
     {
         private readonly object _sync = new();
@@ -693,6 +1236,17 @@ public sealed class EventDrivenDecouplingTests
         private long _sequence;
 
         public string PostingScope { get; } = postingScope;
+
+        public int PostedCount
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _posted.Count;
+                }
+            }
+        }
 
         public Task<TradeFillPostingAcceptance> AcceptAsync(
             TradeExecutedEvent tradeEvent,
@@ -807,6 +1361,12 @@ public sealed class EventDrivenDecouplingTests
     private sealed class PassingSecurityValidationGate : ISecurityValidationGateService
     {
         public static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        private readonly Guid _securityId;
+
+        public PassingSecurityValidationGate(Guid? securityId = null)
+        {
+            _securityId = securityId ?? SecurityId;
+        }
 
         public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
             string symbol,
@@ -827,10 +1387,10 @@ public sealed class EventDrivenDecouplingTests
             CancellationToken ct = default)
             => Task.FromResult(BuildResult(symbol ?? securityId.ToString(), workflow));
 
-        private static SecurityValidationGateResultDto BuildResult(string symbol, SecurityValidationWorkflowDto workflow)
+        private SecurityValidationGateResultDto BuildResult(string symbol, SecurityValidationWorkflowDto workflow)
         {
             var report = new SecurityValidationReportDto(
-                SecurityId,
+                _securityId,
                 Scope: "Security",
                 EvaluatedAtUtc: DateTimeOffset.UtcNow,
                 HasBlockingIssues: false,

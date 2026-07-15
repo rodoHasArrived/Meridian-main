@@ -198,6 +198,64 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task AsyncFill_WhenPublisherCannotAccept_IsExposedAsDurableHandoffFailureAcrossRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-oms-handoff-tests", Guid.NewGuid().ToString("N"));
+        var options = new TradeFillHandoffFailureStoreOptions(root, "book-a/period-open");
+        try
+        {
+            Guid fillId;
+            await using (var failureStore = new AtomicTradeFillHandoffFailureStore(options))
+            {
+                var gateway = new StreamingGateway
+                {
+                    SubmitAck = BuildReport(
+                        "pending",
+                        OrderStatus.Accepted,
+                        ExecutionReportType.New,
+                        filledQty: 0m,
+                        fillPrice: null)
+                };
+                using var oms = new OrderManagementSystem(
+                    gateway,
+                    NullLogger<OrderManagementSystem>.Instance,
+                    tradeEventPublisher: new AlwaysFailTradeEventPublisher(),
+                    tradeFillHandoffFailureStore: failureStore);
+                var result = await oms.PlaceOrderAsync(new OrderRequest
+                {
+                    Symbol = "AAPL",
+                    Side = OrderSide.Buy,
+                    Type = OrderType.Market,
+                    Quantity = 10m
+                });
+
+                await gateway.PublishAsync(BuildReport(
+                    result.OrderId,
+                    OrderStatus.Filled,
+                    ExecutionReportType.Fill,
+                    filledQty: 10m,
+                    fillPrice: 150m));
+                var failures = await WaitForHandoffFailuresAsync(oms, expected: 1);
+
+                failures.Should().ContainSingle();
+                failures[0].LastFailure.Should().Contain("primary accounting persistence unavailable");
+                fillId = failures[0].TradeEvent.FillId;
+                oms.GetOrder(result.OrderId)!.Status.Should().Be(OrderStatus.Filled);
+            }
+
+            await using var reopened = new AtomicTradeFillHandoffFailureStore(options);
+            var recovered = await reopened.LoadPendingAsync();
+
+            recovered.Should().ContainSingle(item => item.TradeEvent.FillId == fillId);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_ExecutionBurstSaturatesSubscriber_BackpressurePreservesEveryFill()
     {
         var publisher = new RecordingTradeEventPublisher();
@@ -292,6 +350,22 @@ public sealed class OrderManagementSystemReportStreamTests
         condition().Should().BeTrue(because);
     }
 
+    private static async Task<IReadOnlyList<RetainedTradeFillHandoffFailure>> WaitForHandoffFailuresAsync(
+        OrderManagementSystem oms,
+        int expected)
+    {
+        var deadline = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(5);
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            var failures = await oms.GetAccountingHandoffFailuresAsync();
+            if (failures.Count == expected)
+                return failures;
+            await Task.Delay(10);
+        }
+
+        return await oms.GetAccountingHandoffFailuresAsync();
+    }
+
     /// <summary>
     /// Gateway double whose asynchronous report stream is driven by the test. Optionally
     /// replays the submit ack on the stream, mirroring <c>BaseBrokerageGateway</c>.
@@ -357,5 +431,11 @@ public sealed class OrderManagementSystemReportStreamTests
 
             base.Publish(tradeEvent);
         }
+    }
+
+    private sealed class AlwaysFailTradeEventPublisher : ITradeEventPublisher
+    {
+        public void Publish(TradeExecutedEvent tradeEvent)
+            => throw new IOException("primary accounting persistence unavailable");
     }
 }

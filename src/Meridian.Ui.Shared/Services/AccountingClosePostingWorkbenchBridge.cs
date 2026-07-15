@@ -186,14 +186,6 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             .OrderByDescending(static draft => draft.PostedAtUtc)
             .ThenByDescending(static draft => draft.JournalEntryId)
             .ToArray();
-        var closeLocked = retainedClosingBatches.FirstOrDefault(static batch =>
-            batch.Status == ManualJournalEntryStatusDto.CloseLocked);
-        if (closeLocked is not null)
-        {
-            throw new InvalidOperationException(
-                $"Closing batch '{closeLocked.JournalEntryId:D}' is close-locked and cannot be reversed until the governed restatement workflow releases that lock.");
-        }
-
         var reversalDrafts = workbench.Drafts
             .Where(draft => draft.ReversalOfJournalEntryId.HasValue &&
                             retainedClosingBatches.Any(batch => batch.JournalEntryId == draft.ReversalOfJournalEntryId.Value))
@@ -211,7 +203,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         var activeClosingBatches = new List<ManualJournalEntryDraftDto>();
         foreach (var batch in retainedClosingBatches)
         {
-            if (batch.Status == ManualJournalEntryStatusDto.Posted)
+            if (batch.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked)
             {
                 activeClosingBatches.Add(batch);
                 continue;
@@ -288,8 +280,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                     continue;
                 }
 
-                var reversed = await _lifecycle.ApplyLifecycleActionAsync(
-                        new JournalEntryLifecycleActionRequestDto(
+                var lifecycleRequest = new JournalEntryLifecycleActionRequestDto(
                             batch.JournalEntryId,
                             scope.FundProfileId,
                             JournalEntryLifecycleActionDto.Reverse,
@@ -302,9 +293,19 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                             PeriodIsLocked: false,
                             LedgerBookId: context.LedgerBookId,
                             TenantId: context.TenantId,
-                            CompanyId: context.CompanyId),
-                        ct)
-                    .ConfigureAwait(false);
+                            CompanyId: context.CompanyId);
+                var reversed = batch.Status == ManualJournalEntryStatusDto.CloseLocked
+                    ? _lifecycle is ManualJournalEntryWorkbenchService governedLifecycle
+                        ? await governedLifecycle.ReverseCloseLockedClosingEntryForGovernedReopenAsync(
+                                lifecycleRequest,
+                                period.PeriodId,
+                                period.Version,
+                                BuildReopenCommandHash(context, period.PeriodId, command),
+                                ct)
+                            .ConfigureAwait(false)
+                        : throw new InvalidOperationException(
+                            "The configured journal lifecycle service cannot verify and release a close-locked closing batch through the governed reopen receipt.")
+                    : await _lifecycle.ApplyLifecycleActionAsync(lifecycleRequest, ct).ConfigureAwait(false);
                 var generated = reversed.GeneratedJournalEntries.SingleOrDefault(draft =>
                     draft.ReversalOfJournalEntryId == batch.JournalEntryId)
                     ?? throw new InvalidOperationException(
