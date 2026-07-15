@@ -53,10 +53,14 @@ public sealed class FileShadowProjectionWriter : IShadowProjectionWriter
         try
         {
             await using (var stream = new FileStream(
-                tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                tempPath, FileMode.Create, FileAccess.Write, FileShare.None,
+                bufferSize: 4096, FileOptions.Asynchronous))
             {
                 await JsonSerializer.SerializeAsync(stream, payload, JsonOptions, ct).ConfigureAwait(false);
                 await stream.FlushAsync(ct).ConfigureAwait(false);
+                // FlushAsync only reaches the OS cache; force the bytes to physical disk before the
+                // rename so a crash right after File.Move cannot surface a zero/partial file.
+                stream.Flush(flushToDisk: true);
             }
 
             File.Move(tempPath, path, overwrite: true);
