@@ -337,6 +337,7 @@ import type {
   MaintenanceSchedulesResponse
 } from "@/types";
 import { createReportingRunsApi } from "@/lib/api/reporting-runs.api";
+import { createProviderModulesApi } from "@/lib/api/provider-modules.api";
 import {
   AUTH_API_ENDPOINTS,
   ADMIN_OPERATIONS_API_ENDPOINTS,
@@ -4205,55 +4206,13 @@ export async function createFundStructureSetupDraft(draft: FundStructureSetupDra
   return postJson<FundStructureSetupResult>(FUND_STRUCTURE_API_ENDPOINTS.setupDraftCreate, draft, options);
 }
 
-// ---------------------------------------------------------------------------
-// Provider Module Setup API (Settings > Provider Setup)
-// ---------------------------------------------------------------------------
-
-import type {
-  ProviderModuleStatus,
-  ProviderModuleCatalogueEntry,
-  UpsertProviderModuleRequest,
-  ProviderModuleSetupResult,
-  ProviderModuleTestResult,
-} from "@/types/provider-setup";
-
-const PROVIDER_MODULE_API = {
-  modules: "/api/providers/modules",
-  catalogue: "/api/providers/modules/catalogue",
-  moduleById: (moduleId: string) => `/api/providers/modules/${encodeURIComponent(moduleId)}`,
-  enabled: (moduleId: string) => `/api/providers/modules/${encodeURIComponent(moduleId)}/enabled`,
-  test: (moduleId: string) => `/api/providers/modules/${encodeURIComponent(moduleId)}/test`,
-  restart: "/api/providers/restart",
-};
-
-export function getProviderModules(options: ApiRequestOptions = {}) {
-  return getJson<ProviderModuleStatus[]>(PROVIDER_MODULE_API.modules, options);
-}
-
-export function getProviderModuleCatalogue(options: ApiRequestOptions = {}) {
-  return getJson<ProviderModuleCatalogueEntry[]>(PROVIDER_MODULE_API.catalogue, options);
-}
-
-export function upsertProviderModule(request: UpsertProviderModuleRequest, options: ApiRequestOptions = {}) {
-  return postJson<ProviderModuleSetupResult>(PROVIDER_MODULE_API.modules, request, options);
-}
-
-export function updateProviderModule(moduleId: string, request: UpsertProviderModuleRequest, options: ApiRequestOptions = {}) {
-  return putJson<ProviderModuleSetupResult>(PROVIDER_MODULE_API.moduleById(moduleId), request, options);
-}
-
-export function deleteProviderModule(moduleId: string, options: ApiRequestOptions = {}) {
-  return deleteJson<ProviderModuleSetupResult>(PROVIDER_MODULE_API.moduleById(moduleId), options);
-}
-
-export function setProviderModuleEnabled(moduleId: string, enabled: boolean, options: ApiRequestOptions = {}) {
-  return putJson<ProviderModuleSetupResult>(PROVIDER_MODULE_API.enabled(moduleId), { enabled }, options);
-}
-
-export function testProviderModule(moduleId: string, options: ApiRequestOptions = {}) {
-  return postJson<ProviderModuleTestResult>(PROVIDER_MODULE_API.test(moduleId), undefined, options);
-}
-
-export function restartProviderHost(options: ApiRequestOptions = {}) {
-  return postJson<{ restarting: boolean; message: string }>(PROVIDER_MODULE_API.restart, undefined, options);
-}
+export const {
+  getProviderModules,
+  getProviderModuleCatalogue,
+  upsertProviderModule,
+  updateProviderModule,
+  deleteProviderModule,
+  setProviderModuleEnabled,
+  testProviderModule,
+  restartProviderHost
+} = createProviderModulesApi(getJson, postJson, putJson, deleteJson);

@@ -1,4 +1,5 @@
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.Events;
 using Meridian.Execution.Interfaces;

@@ -1532,7 +1532,11 @@ describe("accounting-screen close-cockpit view model", () => {
 
       await waitFor(() => expect(result.current.closingEntriesGate).not.toBeNull());
       expect(result.current.closingEntriesGate?.isReadyForLock).toBe(false);
-      expect(result.current.lockClosePeriodDisabledReason).toContain("Closing entries must be Posted or Not required before period lock");
+      expect(result.current.lockClosePeriodDisabledReason).toContain(
+        state === "Required"
+          ? "Queue and post closing entries before locking the period"
+          : "Closing entries must be Posted or Not required before period lock"
+      );
 
       await act(async () => {
         await result.current.lockClosePeriod();
