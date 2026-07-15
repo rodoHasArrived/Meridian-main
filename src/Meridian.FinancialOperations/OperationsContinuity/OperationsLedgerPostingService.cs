@@ -7,7 +7,6 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
-using Npgsql;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
@@ -79,27 +78,6 @@ internal sealed class OperationsLedgerPostingService
                     OperationsGateKeyDto.LedgerPosting,
                     "Critical",
                     evidence));
-            }
-            catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UniqueViolation)
-            {
-                // Cross-instance race: another horizontally-scaled writer committed the same posting
-                // identity concurrently. Only treat this as an idempotent success (mirroring
-                // DurableLedgerPostingTarget.PostAsync) once the store confirms an existing retained
-                // posting. If the store cannot confirm the collision, rethrow rather than assume the
-                // write succeeded — the transaction was rolled back, so silently proceeding would
-                // report a durable posting that does not exist.
-                if (_ledgerJournalStore is not ILedgerPostingIdentityCollisionLookup lookup)
-                {
-                    throw;
-                }
-
-                var collisions = await lookup
-                    .FindPostingIdentityCollisionsAsync(LedgerPostingIdentity.FromWrite(journalWrite), ct)
-                    .ConfigureAwait(false) ?? [];
-                if (collisions.Count == 0)
-                {
-                    throw;
-                }
             }
         }
 

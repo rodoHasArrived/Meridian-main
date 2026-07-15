@@ -641,7 +641,12 @@ public sealed class ParquetStorageSink : IStorageSink
 
     private string GetBufferKey(MarketEvent evt)
     {
-        return $"{evt.EffectiveSymbol}_{evt.Type}_{evt.Timestamp.Date:yyyyMMdd}";
+        // Key each buffer by its full destination path so every event in a buffer maps to exactly
+        // one output file. Keying only by symbol/type/date would co-mingle events the policy routes
+        // to different directories (BySource/ByAssetClass/Hierarchical/Canonical); the flush writes
+        // the whole drained buffer to GetFilePath(events[0]), so those events would be misplaced
+        // into the first event's directory and diverge from the JSONL layout.
+        return GetFilePath(evt);
     }
 
     private string GetFilePath(MarketEvent evt)
