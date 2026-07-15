@@ -5,6 +5,21 @@ using Meridian.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
 
+internal sealed class DailyValuationPendingDraftException : InvalidOperationException
+{
+    public DailyValuationPendingDraftException(
+        IReadOnlyList<Guid> pendingJournalEntryIds,
+        ManualJournalEntryStatusDto pendingStatus,
+        string scope)
+        : base(
+            $"Daily valuation correction for {scope} is blocked while {pendingJournalEntryIds.Count} prior same-day draft(s), including '{pendingJournalEntryIds[0]:D}', remain pending ({pendingStatus}); post or reject the pending batch before creating a corrected mark.")
+    {
+        PendingJournalEntryIds = pendingJournalEntryIds;
+    }
+
+    public IReadOnlyList<Guid> PendingJournalEntryIds { get; }
+}
+
 /// <summary>
 /// Batch of automated economic events (dividends, interest, fees, withholding) to admit
 /// into the manual journal workbench queue for the named fund profile.
@@ -19,7 +34,8 @@ public sealed record AutomatedJournalDraftIntakeRequest(
     string? EntityId = null,
     string? TenantId = null,
     string? CompanyId = null,
-    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null);
+    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null,
+    string? BatchCorrelationId = null);
 
 /// <summary>
 /// Batch of prebuilt automated journal drafts (for example period-close closing entries,
@@ -36,7 +52,8 @@ public sealed record AutomatedJournalPreparedDraftIntakeRequest(
     string? EntityId = null,
     string? TenantId = null,
     string? CompanyId = null,
-    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null);
+    IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null,
+    string? BatchCorrelationId = null);
 
 /// <summary>
 /// One event the intake did not turn into a new draft, with the reason it was skipped.
@@ -120,7 +137,8 @@ public sealed class AutomatedJournalDraftIntakeService
                 request.EntityId,
                 request.TenantId,
                 request.CompanyId,
-                request.EvidenceAssessments),
+                request.EvidenceAssessments,
+                BatchCorrelationId: null),
             skipped,
             ct).ConfigureAwait(false);
     }
@@ -156,6 +174,10 @@ public sealed class AutomatedJournalDraftIntakeService
         var chartLookup = ChartAccountLookup.Build(workspace.ChartOfAccounts);
 
         var created = new List<ManualJournalEntryDraftDto>();
+        var existingDrafts = await _draftStore
+            .ListAsync(request.FundProfileId, request.LedgerBookId, ct, request.TenantId, request.CompanyId)
+            .ConfigureAwait(false);
+        EnsureNoPendingDailyValuationCorrections(request, existingDrafts);
 
         foreach (var draft in request.Drafts)
         {
@@ -198,7 +220,9 @@ public sealed class AutomatedJournalDraftIntakeService
                 new SaveManualJournalEntryDraftRequest(
                     dto,
                     Actor: request.Actor,
-                    CorrelationId: idempotencyKey,
+                    CorrelationId: string.IsNullOrWhiteSpace(request.BatchCorrelationId)
+                        ? idempotencyKey
+                        : request.BatchCorrelationId,
                     EvidenceLinks: evidenceLinks,
                     LedgerBookId: request.LedgerBookId,
                     TenantId: request.TenantId,
@@ -209,6 +233,96 @@ public sealed class AutomatedJournalDraftIntakeService
 
         return new AutomatedJournalDraftIntakeResult(created, skipped);
     }
+
+    private static void EnsureNoPendingDailyValuationCorrections(
+        AutomatedJournalPreparedDraftIntakeRequest request,
+        IReadOnlyList<ManualJournalEntryDraftDto> existingDrafts)
+    {
+        foreach (var draft in request.Drafts.Where(static item =>
+                     item.Event.Kind == AutomatedJournalEventKind.FairValueMarkAdjustment))
+        {
+            var idempotencyKey = string.IsNullOrWhiteSpace(draft.Metadata.IdempotencyKey)
+                ? BuildFallbackIdempotencyKey(draft.Event)
+                : draft.Metadata.IdempotencyKey.Trim();
+            var journalEntryId = BuildDeterministicJournalEntryId(request.FundProfileId, idempotencyKey);
+            if (existingDrafts.Any(existing => existing.JournalEntryId == journalEntryId))
+            {
+                continue;
+            }
+
+            var effectiveDate = draft.Metadata.EffectiveDate ??
+                                DateOnly.FromDateTime(draft.Event.Timestamp.UtcDateTime);
+            var pendingOverlap = existingDrafts.FirstOrDefault(existingDraft =>
+                IsPendingDailyValuationDraft(existingDraft) &&
+                existingDraft.AccountingDate == effectiveDate &&
+                string.Equals(existingDraft.PeriodId, request.PeriodId, StringComparison.OrdinalIgnoreCase) &&
+                HasOverlappingValuationScope(existingDraft, draft));
+            if (pendingOverlap is not null)
+            {
+                var pendingIds = existingDrafts
+                    .Where(IsPendingDailyValuationDraft)
+                    .Where(existingDraft => existingDraft.AccountingDate == effectiveDate)
+                    .Where(existingDraft => string.Equals(
+                        existingDraft.PeriodId,
+                        request.PeriodId,
+                        StringComparison.OrdinalIgnoreCase))
+                    .Select(static existingDraft => existingDraft.JournalEntryId)
+                    .Where(static id => id != Guid.Empty)
+                    .Distinct()
+                    .OrderBy(static id => id)
+                    .ToArray();
+                throw new DailyValuationPendingDraftException(
+                    pendingIds,
+                    pendingOverlap.Status,
+                    DescribeValuationScope(draft));
+            }
+        }
+    }
+
+    private static bool IsPendingDailyValuationDraft(ManualJournalEntryDraftDto draft)
+        => draft.TreasuryContext?.IdempotencyKey?.StartsWith("fair-value|", StringComparison.OrdinalIgnoreCase) == true &&
+           draft.Status is ManualJournalEntryStatusDto.Draft or
+               ManualJournalEntryStatusDto.NeedsFix or
+               ManualJournalEntryStatusDto.Submitted or
+               ManualJournalEntryStatusDto.Approved;
+
+    private static bool HasOverlappingValuationScope(
+        ManualJournalEntryDraftDto existing,
+        AutomatedJournalDraft candidate)
+    {
+        var existingScopes = existing.Lines
+            .Select(static line => new ValuationScopeKey(
+                line.SecurityId ?? line.Dimensions?.InstrumentId,
+                NormalizeOptional(line.LedgerAccountSymbol ?? line.SecurityDisplayName),
+                NormalizeOptional(line.LedgerAccountFinancialAccountId)))
+            .Where(static key => key.SecurityId.HasValue || key.Symbol is not null)
+            .ToHashSet();
+        var candidateScopes = candidate.Lines
+            .Select(line => new ValuationScopeKey(
+                candidate.Event.SecurityId ?? line.dimensions?.InstrumentId,
+                NormalizeOptional(line.account.Symbol ?? candidate.Event.Symbol),
+                NormalizeOptional(line.account.FinancialAccountId)))
+            .Where(static key => key.SecurityId.HasValue || key.Symbol is not null)
+            .ToHashSet();
+
+        if (existingScopes.Count == 0 || candidateScopes.Count == 0)
+            return true;
+
+        return existingScopes.Overlaps(candidateScopes);
+    }
+
+    private static string DescribeValuationScope(AutomatedJournalDraft draft)
+    {
+        var line = draft.Lines.FirstOrDefault();
+        var symbol = NormalizeOptional(line.account?.Symbol) ?? NormalizeOptional(draft.Event.Symbol) ?? "unknown security";
+        var account = NormalizeOptional(line.account?.FinancialAccountId) ?? "unscoped account";
+        return $"{symbol}/{account}";
+    }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpperInvariant();
+
+    private sealed record ValuationScopeKey(Guid? SecurityId, string? Symbol, string? FinancialAccountId);
 
     private static ManualJournalEntryDraftDto BuildDraftDto(
         AutomatedJournalPreparedDraftIntakeRequest request,

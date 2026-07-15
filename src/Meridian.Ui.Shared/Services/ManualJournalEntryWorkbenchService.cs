@@ -709,6 +709,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var timestamp = ToAccountingTimestamp(draft.AccountingDate);
         var description = NormalizeOptional(draft.Memo) ?? $"Manual journal entry {draft.JournalEntryId:D}";
+        var securityLineage = await ResolveSecurityMasterPostingLineageAsync(draft, chartByPath, ct)
+            .ConfigureAwait(false);
         var lines = new List<LedgerEntry>(draft.Lines.Count);
 
         foreach (var line in draft.Lines)
@@ -749,7 +751,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             timestamp,
             description,
             lines,
-            BuildManualJournalEntryMetadata(draft, postingCommand, evidenceLinks, recordedAtUtc));
+            BuildManualJournalEntryMetadata(draft, postingCommand, evidenceLinks, recordedAtUtc, securityLineage));
 
         return new LedgerJournalEntryWrite(
             entry,
@@ -827,7 +829,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ManualJournalEntryDraftDto draft,
         AccountingPostingCommandDto postingCommand,
         IReadOnlyList<string> evidenceLinks,
-        DateTimeOffset recordedAtUtc)
+        DateTimeOffset recordedAtUtc,
+        ManualJournalSecurityMasterLineage? securityLineage)
     {
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
@@ -840,6 +843,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AddMetadataTag(tags, "companyId", draft.CompanyId);
         AddMetadataTag(tags, "sourceEventId", postingCommand.SourceEventId?.ToString("D"));
         AddMetadataTag(tags, "sourceJournalEntryId", postingCommand.SourceJournalEntryId?.ToString("D"));
+        AddMetadataTag(tags, "securityMasterProvenance", securityLineage?.Provenance);
+        AddMetadataTag(tags, "securityMasterLineage", securityLineage?.Lineage);
         if (evidenceLinks.Count > 0)
         {
             tags["evidenceLinks"] = string.Join("|", evidenceLinks);
@@ -847,8 +852,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
 
         return new JournalEntryMetadata(
             ActivityType: "ManualJournalEntry",
+            Symbol: securityLineage?.Symbol,
+            SecurityId: securityLineage?.SecurityId,
             ProjectId: NormalizeOptional(draft.FundProfileId),
             LedgerBook: draft.LedgerBookId?.ToString("D"),
+            FinancialAccountId: securityLineage?.FinancialAccountId,
             EffectiveDate: postingCommand.TreasuryContext?.EffectiveDate ?? draft.AccountingDate,
             IdempotencyKey: postingCommand.IdempotencyKey,
             FundEventId: NormalizeOptional(postingCommand.TreasuryContext?.FundEventId),
@@ -867,6 +875,116 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 RetainedBy: NormalizeOptional(draft.PostedBy) ?? "manual-journal-entry-workbench",
                 SubjectId: draft.JournalEntryId.ToString("D"))).ToArray());
     }
+
+    private async Task<ManualJournalSecurityMasterLineage?> ResolveSecurityMasterPostingLineageAsync(
+        ManualJournalEntryDraftDto draft,
+        IReadOnlyDictionary<string, ChartOfAccountsNodeDto> chartByPath,
+        CancellationToken ct)
+    {
+        var instrumentLines = draft.Lines
+            .Select(line => (Line: line, Account: chartByPath.GetValueOrDefault(line.AccountPath)))
+            .Where(static item =>
+                item.Line.SecurityId.HasValue ||
+                item.Line.Dimensions?.InstrumentId.HasValue == true ||
+                !string.IsNullOrWhiteSpace(item.Line.LedgerAccountSymbol) ||
+                !string.IsNullOrWhiteSpace(item.Account?.Symbol))
+            .ToArray();
+        if (instrumentLines.Length == 0)
+            return null;
+
+        var securityIds = instrumentLines
+            .Select(static item => item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId)
+            .Where(static value => value.HasValue && value.Value != Guid.Empty)
+            .Select(static value => value!.Value)
+            .Distinct()
+            .ToArray();
+        if (securityIds.Length != 1)
+        {
+            throw new InvalidOperationException(
+                securityIds.Length == 0
+                    ? "Instrument-bearing manual journal lines require a resolved Security Master security id before posting."
+                    : "Manual journal entries must be split by Security Master security id before posting.");
+        }
+
+        if (_securityMasterQueryService is null)
+        {
+            throw new InvalidOperationException(
+                "Instrument-bearing manual journal posting requires an authoritative Security Master query service.");
+        }
+
+        var securityId = securityIds[0];
+        var asOfUtc = new DateTimeOffset(draft.AccountingDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var security = await _securityMasterQueryService.GetByIdAsOfAsync(securityId, asOfUtc, ct).ConfigureAwait(false)
+                       ?? await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false)
+                       ?? throw new InvalidOperationException(
+                           $"Security Master security '{securityId:D}' was not found at posting time.");
+        if (security.Status != SecurityStatusDto.Active)
+        {
+            throw new InvalidOperationException(
+                $"Security Master security '{securityId:D}' is {security.Status}; only active securities can be posted.");
+        }
+
+        if (!string.Equals(security.Currency?.Trim(), draft.Currency?.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Security Master security '{securityId:D}' currency '{security.Currency}' does not match journal base currency '{draft.Currency}'; governed FX translation is required.");
+        }
+
+        var symbols = instrumentLines
+            .Select(static item => NormalizeOptional(item.Line.LedgerAccountSymbol) ?? NormalizeOptional(item.Account?.Symbol))
+            .Where(static value => value is not null)
+            .Select(static value => value!.ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (symbols.Length != 1)
+        {
+            throw new InvalidOperationException(
+                symbols.Length == 0
+                    ? $"Security Master security '{securityId:D}' requires one instrument symbol before posting."
+                    : "Manual journal entries with multiple instrument symbols must be split before posting.");
+        }
+
+        var symbol = symbols[0];
+        if (!SecurityMasterRecordContainsSymbol(security, symbol))
+        {
+            throw new InvalidOperationException(
+                $"Instrument symbol '{symbol}' does not match authoritative Security Master record '{securityId:D}'.");
+        }
+
+        var securityIdToken = securityId.ToString("N");
+        var provenance = $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{security.Status};version:{security.Version};currency:{security.Currency.Trim().ToUpperInvariant()}";
+        var lineage = string.Join(
+            '|',
+            instrumentLines.Select(item =>
+                $"{symbol}:{securityIdToken}:ledger-map:manual-journal:{symbol}:{securityIdToken}:{Uri.EscapeDataString(item.Line.AccountPath)}:sm-approval:security-master-active:{securityIdToken}:security-status:{security.Status}:{provenance}"));
+        var financialAccounts = instrumentLines
+            .Select(static item => NormalizeOptional(item.Line.LedgerAccountFinancialAccountId))
+            .Where(static value => value is not null)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new ManualJournalSecurityMasterLineage(
+            securityId,
+            symbol,
+            financialAccounts.Length == 1 ? financialAccounts[0] : null,
+            provenance,
+            lineage);
+    }
+
+    private static bool SecurityMasterRecordContainsSymbol(SecurityDetailDto security, string symbol)
+        => string.Equals(security.DisplayName?.Trim(), symbol, StringComparison.OrdinalIgnoreCase) ||
+           security.Identifiers.Any(identifier =>
+               string.Equals(identifier.Value?.Trim(), symbol, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(identifier.NormalizedValue?.Trim(), symbol, StringComparison.OrdinalIgnoreCase)) ||
+           security.Aliases.Any(alias =>
+               alias.IsEnabled && string.Equals(alias.AliasValue?.Trim(), symbol, StringComparison.OrdinalIgnoreCase));
+
+    private sealed record ManualJournalSecurityMasterLineage(
+        Guid SecurityId,
+        string Symbol,
+        string? FinancialAccountId,
+        string Provenance,
+        string Lineage);
 
     private static AccountingPostingIntentDto BuildManualPostingIntent(ManualJournalEntryDraftDto draft)
     {

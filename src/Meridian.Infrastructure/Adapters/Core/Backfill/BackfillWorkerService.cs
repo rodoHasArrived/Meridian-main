@@ -313,12 +313,10 @@ public sealed class BackfillWorkerService : IDisposable
                     // Typed RateLimitException (thrown directly or wrapped in aggregate/inner chains)
                     // is located here, so a dedicated typed catch would duplicate this path.
                     var rateLimit = FindRateLimitException(ex);
-                    var retryAfter = rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex);
-                    var isRateLimited = rateLimit is not null ||
-                                        retryAfter.HasValue ||
-                                        IsHttp429(ex) ||
-                                        ex.Message.Contains("429") ||
-                                        ex.Message.Contains("rate limit", StringComparison.OrdinalIgnoreCase);
+                    var isRateLimited = IsRateLimited(ex);
+                    var retryAfter = isRateLimited
+                        ? rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex)
+                        : null;
 
                     if (isRateLimited && request.AssignedProvider != null)
                     {
@@ -387,6 +385,16 @@ public sealed class BackfillWorkerService : IDisposable
         }
 
         return ex.InnerException is { } innerException ? FindRateLimitException(innerException) : null;
+    }
+
+    /// <summary>
+    /// Classifies rate limiting only from typed provider metadata or a preserved HTTP 429 status.
+    /// Exception-message text is deliberately not treated as an accounting-relevant signal.
+    /// </summary>
+    internal static bool IsRateLimited(Exception ex)
+    {
+        ArgumentNullException.ThrowIfNull(ex);
+        return FindRateLimitException(ex) is not null || IsHttp429(ex);
     }
 
     /// <summary>
@@ -504,19 +512,13 @@ public sealed class BackfillWorkerService : IDisposable
 
     private static bool IsHttp429(Exception ex)
     {
-        var current = ex;
-        while (current != null)
-        {
-            if (current is HttpRequestException httpRequestException &&
-                httpRequestException.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            {
-                return true;
-            }
+        if (ex is HttpRequestException { StatusCode: System.Net.HttpStatusCode.TooManyRequests })
+            return true;
 
-            current = current.InnerException;
-        }
+        if (ex is AggregateException aggregate)
+            return aggregate.Flatten().InnerExceptions.Any(IsHttp429);
 
-        return false;
+        return ex.InnerException is not null && IsHttp429(ex.InnerException);
     }
 
     /// <summary>

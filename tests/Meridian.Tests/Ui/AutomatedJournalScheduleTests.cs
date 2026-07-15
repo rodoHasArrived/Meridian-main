@@ -4,6 +4,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -26,8 +27,11 @@ public sealed class AutomatedJournalScheduleTests
         saved.ScheduledForUtc.Should().Be(DueAt);
         (await worker.RunDueAsync(DueAt.AddTicks(-1))).Runs.Should().BeEmpty();
 
+        using var services = new ServiceCollection()
+            .AddSingleton(worker)
+            .BuildServiceProvider();
         var hosted = new AutomatedJournalSchedulerHostedService(
-            worker,
+            services,
             new FixedTimeProvider(DueAt),
             NullLogger<AutomatedJournalSchedulerHostedService>.Instance);
         var due = await hosted.RunOnceAsync();
@@ -35,10 +39,18 @@ public sealed class AutomatedJournalScheduleTests
         var run = due.Runs.Should().ContainSingle().Subject;
         run.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
         run.JournalEntryIds.Should().HaveCount(2);
+        run.NextPeriodId.Should().Be("2026-08");
+        run.NextScheduledForUtc.Should().Be(new DateTimeOffset(2026, 9, 1, 9, 0, 0, TimeSpan.Zero));
         (await worker.RunDueAsync(DueAt.AddMinutes(1))).Runs.Should().BeEmpty();
         var persisted = await store.GetAsync("fees-2026-07");
         persisted!.RunHistory.Should().ContainSingle();
-        persisted.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        persisted.State.Should().Be(AutomatedJournalScheduleStateDto.Scheduled);
+        persisted.PeriodId.Should().Be("2026-08");
+        persisted.PeriodStart.Should().Be(new DateOnly(2026, 8, 1));
+        persisted.PeriodEnd.Should().Be(new DateOnly(2026, 8, 31));
+        persisted.ScheduledForUtc.Should().Be(new DateTimeOffset(2026, 9, 1, 9, 0, 0, TimeSpan.Zero));
+        persisted.CapitalAccountReconciliation.Should().BeNull("each recurring fee cycle requires a new reviewed tie-out");
+        persisted.RunHistory.Single().State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
         var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
         workbench.Drafts.Should().HaveCount(2);
         workbench.Drafts.Should().OnlyContain(static draft =>
@@ -76,6 +88,106 @@ public sealed class AutomatedJournalScheduleTests
     }
 
     [Fact]
+    public async Task FeeSchedule_WithoutReviewedCapitalAccountEvidence_BlocksBeforeDraftCreation()
+    {
+        var fixture = CreateFixture();
+        var store = new InMemoryAutomatedJournalScheduleStore();
+        await store.SaveAsync(FeeSchedule("fees-missing-capital-evidence") with
+        {
+            CapitalAccountReconciliation = null
+        });
+
+        var result = await CreateWorker(store, fixture.Runner).RunDueAsync(DueAt);
+
+        var run = result.Runs.Should().ContainSingle().Subject;
+        run.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        run.Blockers.Should().Contain(item => item.Contains("capital-account reconciliation", StringComparison.OrdinalIgnoreCase));
+        (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FeeSchedule_LowConfidenceCapitalAccountEvidence_NeedsInvestigationAndCanBeRearmed()
+    {
+        var fixture = CreateFixture();
+        var store = new InMemoryAutomatedJournalScheduleStore();
+        await store.SaveAsync(FeeSchedule("fees-low-confidence") with
+        {
+            CapitalAccountReconciliation = Reconciliation(confidence: 0.60m)
+        });
+        var worker = CreateWorker(store, fixture.Runner);
+
+        var first = await worker.RunDueAsync(DueAt);
+
+        first.Runs.Should().ContainSingle().Which.State.Should().Be(AutomatedJournalScheduleStateDto.NeedsInvestigation);
+        (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().BeEmpty();
+        var retained = (await store.GetAsync("fees-low-confidence"))!;
+        await store.SaveAsync(retained with
+        {
+            CapitalAccountReconciliation = Reconciliation(),
+            State = AutomatedJournalScheduleStateDto.Scheduled,
+            LastScheduledForUtc = null,
+            Blockers = [],
+            EvidenceLinks = []
+        });
+
+        var retry = await worker.RunDueAsync(DueAt.AddMinutes(1));
+
+        retry.Runs.Should().ContainSingle().Which.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        var advanced = (await store.GetAsync("fees-low-confidence"))!;
+        advanced.PeriodId.Should().Be("2026-08");
+        advanced.RunHistory.Should().ContainSingle(history =>
+            history.State == AutomatedJournalScheduleStateDto.DraftReady &&
+            history.JournalEntryIds.Count == 2);
+    }
+
+    [Fact]
+    public async Task RunDueForScope_ExecutesOnlyExactTenantAndCompany()
+    {
+        var fixture = CreateFixture();
+        var store = new InMemoryAutomatedJournalScheduleStore();
+        await store.SaveAsync(FeeSchedule("fees-tenant-a") with { TenantId = "tenant-a", CompanyId = "company-a" });
+        await store.SaveAsync(FeeSchedule("fees-tenant-b") with { TenantId = "tenant-b", CompanyId = "company-b" });
+        var worker = CreateWorker(store, fixture.Runner);
+
+        var result = await worker.RunDueForScopeAsync(DueAt, "tenant-a", "company-a");
+
+        result.Runs.Should().ContainSingle().Which.ScheduleId.Should().Be("fees-tenant-a");
+        (await store.GetAsync("fees-tenant-a"))!.PeriodId.Should().Be("2026-08");
+        (await store.GetAsync("fees-tenant-b"))!.State.Should().Be(AutomatedJournalScheduleStateDto.Scheduled);
+    }
+
+    [Fact]
+    public async Task ScheduleStore_RejectsIdentityTakeover_ButAllowsNewHumanConfigurator()
+    {
+        var store = new InMemoryAutomatedJournalScheduleStore();
+        var original = await store.SaveAsync(FeeSchedule("fees-owned") with
+        {
+            TenantId = "tenant-a",
+            CompanyId = "company-a",
+            Actor = "creator-a",
+            CreatedBy = "creator-a"
+        });
+
+        var reconfigured = await store.SaveAsync(original with
+        {
+            Actor = "controller-b",
+            LastConfiguredBy = "controller-b"
+        });
+        reconfigured.Actor.Should().Be("controller-b");
+        reconfigured.CreatedBy.Should().Be("creator-a");
+
+        var takeover = () => store.SaveAsync(original with
+        {
+            TenantId = "tenant-b",
+            CompanyId = "company-b",
+            Actor = "attacker",
+            CreatedBy = "attacker"
+        });
+        await takeover.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*different immutable identity scope*");
+    }
+
+    [Fact]
     public async Task PersistedRunningClaim_RestartsWithSameRunKey_AndDeduplicatesDraftsAndHistory()
     {
         var directory = Path.Combine(Path.GetTempPath(), "automated-journal-schedule-tests", Guid.NewGuid().ToString("N"));
@@ -84,7 +196,7 @@ public sealed class AutomatedJournalScheduleTests
         {
             var fixture = CreateFixture();
             var firstStore = new FileAutomatedJournalScheduleStore(snapshotPath);
-            await firstStore.SaveAsync(FeeSchedule("fees-restart-2026-07"));
+            var original = await firstStore.SaveAsync(FeeSchedule("fees-restart-2026-07"));
             var firstRun = await CreateWorker(firstStore, fixture.Runner).RunDueAsync(DueAt);
             firstRun.Runs.Should().ContainSingle();
             var completed = (await firstStore.GetAsync("fees-restart-2026-07"))!;
@@ -94,10 +206,11 @@ public sealed class AutomatedJournalScheduleTests
                 CompletedAtUtc = null,
                 Summary = "Simulated process termination after intake and before completion."
             };
-            await firstStore.SaveAsync(completed with
+            await firstStore.SaveAsync(original with
             {
                 State = AutomatedJournalScheduleStateDto.Running,
                 LastRunAtUtc = null,
+                LastScheduledForUtc = DueAt,
                 RunHistory = [runningHistory]
             });
 
@@ -109,7 +222,8 @@ public sealed class AutomatedJournalScheduleTests
             restartedRun.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
             var persisted = (await restartedStore.GetAsync("fees-restart-2026-07"))!;
             persisted.RunHistory.Should().ContainSingle("a restart replaces the durable record for the same run key");
-            persisted.JournalEntryIds.Should().BeEquivalentTo(firstRun.Runs.Single().JournalEntryIds);
+            persisted.RunHistory.Single().JournalEntryIds.Should().BeEquivalentTo(firstRun.Runs.Single().JournalEntryIds);
+            persisted.PeriodId.Should().Be("2026-08");
             (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().HaveCount(2,
                 "downstream deterministic ids must deduplicate a restart after intake");
         }
@@ -262,7 +376,38 @@ public sealed class AutomatedJournalScheduleTests
             EndingNavBeforeFees: 1_100_000m,
             HighWaterMark: 1_050_000m,
             ManagementFeeRate: 0.02m,
-            PerformanceFeeRate: 0.20m);
+            PerformanceFeeRate: 0.20m,
+            CapitalAccountReconciliation: Reconciliation());
+
+    private static AutomatedJournalCapitalAccountReconciliationDto Reconciliation(
+        decimal confidence = 0.98m,
+        bool reconciled = true,
+        decimal maximumVarianceTolerance = 0m)
+        => new(
+            ReconciliationId: "capital-tie-out-2026-07",
+            PeriodId: "2026-07",
+            Currency: "USD",
+            ReconciledBeginningNav: 1_000_000m,
+            ReconciledEndingNavBeforeFees: 1_100_000m,
+            ReconciledHighWaterMark: 1_050_000m,
+            CapitalAccountOpeningBalance: 1_000_000m,
+            CapitalAccountEndingBalanceBeforeFees: 1_100_000m,
+            CapitalAccountHighWaterMark: 1_050_000m,
+            MaximumVarianceTolerance: maximumVarianceTolerance,
+            ConfidenceScore: confidence,
+            IsReconciled: reconciled,
+            SourceVersion: "capital-ledger:v42",
+            ReviewedBy: "fund-controller",
+            ReviewedAtUtc: DueAt.AddHours(-2),
+            EvidenceLinks:
+            [
+                new OperationsEvidenceLinkDto(
+                    "capital-tie-out-evidence-2026-07",
+                    "Reviewed capital-account reconciliation",
+                    "evidence://capital-accounts/fund-alpha/2026-07/v42",
+                    "capital-account-subledger",
+                    DueAt.AddHours(-2))
+            ]);
 
     private static AutomatedJournalScheduleWorkItem DividendSchedule(
         string scheduleId,

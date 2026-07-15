@@ -51,14 +51,19 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
 
         try
         {
-            var period = await ResolvePeriodAsync(context, ct).ConfigureAwait(false);
+            var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
             var preview = await _runner
-                .PreviewPeriodCloseAsync(ToIntakeRequest(context, period.PeriodId, "close-gate-preview"), ct)
+                .PreviewPeriodCloseAsync(ToIntakeRequest(context, scope, "close-gate-preview"), ct)
                 .ConfigureAwait(false);
             var workbench = await _workbench
-                .GetWorkbenchAsync(context.FundProfileId, context.LedgerBookId, ct)
+                .GetWorkbenchAsync(
+                    scope.FundProfileId,
+                    context.LedgerBookId,
+                    ct,
+                    context.TenantId,
+                    context.CompanyId)
                 .ConfigureAwait(false);
-            return BuildGate(context, period.PeriodId, preview, workbench.Drafts);
+            return BuildGate(context, scope.Period.PeriodId, preview, workbench.Drafts);
         }
         catch (InvalidOperationException ex)
         {
@@ -86,9 +91,9 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             return before;
         }
 
-        var period = await ResolvePeriodAsync(context, ct).ConfigureAwait(false);
+        var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
         await _runner.RunPeriodCloseIntakeAsync(
-                ToIntakeRequest(context, period.PeriodId, command.Actor),
+                ToIntakeRequest(context, scope, command.Actor),
                 ct)
             .ConfigureAwait(false);
         return await EvaluateAsync(context, ct).ConfigureAwait(false);
@@ -101,7 +106,9 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
     {
         ValidateContext(context);
         ValidateHumanCommand(command, requireController: false);
-        var period = await ResolvePeriodAsync(context, ct).ConfigureAwait(false);
+        var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
+        var ledgerBookService = _ledgerBookService!;
+        var period = scope.Period;
         if (period.Status == LedgerPeriodStatusDto.HardClosed)
         {
             return period;
@@ -143,7 +150,9 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
     {
         ValidateContext(context);
         ValidateHumanCommand(command, requireController: true);
-        var period = await ResolvePeriodAsync(context, ct).ConfigureAwait(false);
+        var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
+        var ledgerBookService = _ledgerBookService!;
+        var period = scope.Period;
         if (period.Status is not LedgerPeriodStatusDto.HardClosed and not LedgerPeriodStatusDto.SoftClosed)
         {
             throw new InvalidOperationException(
@@ -151,26 +160,35 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         }
 
         var workbench = await _workbench
-            .GetWorkbenchAsync(context.FundProfileId, context.LedgerBookId, ct)
+            .GetWorkbenchAsync(
+                scope.FundProfileId,
+                context.LedgerBookId,
+                ct,
+                context.TenantId,
+                context.CompanyId)
             .ConfigureAwait(false);
-        var closingBatches = workbench.Drafts
+        var retainedClosingBatches = workbench.Drafts
             .Where(draft =>
                 draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry &&
                 draft.LedgerBookId == context.LedgerBookId &&
                 string.Equals(draft.PeriodId, period.PeriodId.ToString("D"), StringComparison.OrdinalIgnoreCase) &&
-                draft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.Reversed)
+                draft.Status is ManualJournalEntryStatusDto.Posted
+                    or ManualJournalEntryStatusDto.Reversed
+                    or ManualJournalEntryStatusDto.CloseLocked)
             .OrderByDescending(static draft => draft.PostedAtUtc)
             .ThenByDescending(static draft => draft.JournalEntryId)
             .ToArray();
-        if (closingBatches.Length == 0)
+        var closeLocked = retainedClosingBatches.FirstOrDefault(static batch =>
+            batch.Status == ManualJournalEntryStatusDto.CloseLocked);
+        if (closeLocked is not null)
         {
             throw new InvalidOperationException(
-                $"Period '{context.PeriodId}' has no retained posted closing batch to reverse.");
+                $"Closing batch '{closeLocked.JournalEntryId:D}' is close-locked and cannot be reversed until the governed restatement workflow releases that lock.");
         }
 
         var reversalDrafts = workbench.Drafts
             .Where(draft => draft.ReversalOfJournalEntryId.HasValue &&
-                            closingBatches.Any(batch => batch.JournalEntryId == draft.ReversalOfJournalEntryId.Value))
+                            retainedClosingBatches.Any(batch => batch.JournalEntryId == draft.ReversalOfJournalEntryId.Value))
             .GroupBy(static draft => draft.ReversalOfJournalEntryId!.Value)
             .ToDictionary(
                 static group => group.Key,
@@ -178,23 +196,43 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                     .OrderByDescending(static draft => draft.UpdatedAtUtc)
                     .ThenByDescending(static draft => draft.JournalEntryId)
                     .First());
-        foreach (var batch in closingBatches)
+
+        // A posted reversal fully unwinds an older closing batch and must not be reversed again on
+        // a later restatement cycle. A Reversed source with a still-pending reversal is the partial
+        // state of the current reopen attempt and remains active for retry.
+        var activeClosingBatches = new List<ManualJournalEntryDraftDto>();
+        foreach (var batch in retainedClosingBatches)
+        {
+            if (batch.Status == ManualJournalEntryStatusDto.Posted)
+            {
+                activeClosingBatches.Add(batch);
+                continue;
+            }
+
+            if (!reversalDrafts.TryGetValue(batch.JournalEntryId, out var retainedReversal))
+            {
+                throw new InvalidOperationException(
+                    $"Closing batch '{batch.JournalEntryId:D}' is marked Reversed without its retained reversal draft; reopen fails closed.");
+            }
+
+            if (retainedReversal.Status is not ManualJournalEntryStatusDto.Posted
+                and not ManualJournalEntryStatusDto.CloseLocked)
+            {
+                activeClosingBatches.Add(batch);
+            }
+        }
+
+        foreach (var batch in activeClosingBatches)
         {
             if (reversalDrafts.ContainsKey(batch.JournalEntryId))
             {
                 continue;
             }
 
-            if (batch.Status == ManualJournalEntryStatusDto.Reversed)
-            {
-                throw new InvalidOperationException(
-                    $"Closing batch '{batch.JournalEntryId:D}' is marked Reversed without its retained reversal draft; reopen fails closed.");
-            }
-
             var reversed = await _lifecycle.ApplyLifecycleActionAsync(
                     new JournalEntryLifecycleActionRequestDto(
                         batch.JournalEntryId,
-                        context.FundProfileId,
+                        scope.FundProfileId,
                         JournalEntryLifecycleActionDto.Reverse,
                         command.Actor,
                         batch.Version,
@@ -203,7 +241,9 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                         command.EvidenceLinks,
                         command.ActionOrigin,
                         PeriodIsLocked: false,
-                        LedgerBookId: context.LedgerBookId),
+                        LedgerBookId: context.LedgerBookId,
+                        TenantId: context.TenantId,
+                        CompanyId: context.CompanyId),
                     ct)
                 .ConfigureAwait(false);
             var generated = reversed.GeneratedJournalEntries.SingleOrDefault(draft =>
@@ -213,18 +253,22 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             reversalDrafts[batch.JournalEntryId] = generated;
         }
 
-        if (reversalDrafts.Count != closingBatches.Length)
+        var activeReversals = activeClosingBatches
+            .Select(batch => reversalDrafts.TryGetValue(batch.JournalEntryId, out var reversal)
+                ? reversal
+                : throw new InvalidOperationException(
+                    $"Closing batch '{batch.JournalEntryId:D}' has no retained source-linked reversal draft."))
+            .ToArray();
+        if (activeReversals.Any(draft => !IsSameReopenReplay(draft, command)))
         {
-            throw new InvalidOperationException("Not every retained closing batch has a source-linked reversal draft.");
+            throw new InvalidOperationException(
+                "Retained reversal drafts do not match this reopen actor, correlation, reason, and evidence; retry is rejected.");
         }
 
         if (period.Status == LedgerPeriodStatusDto.SoftClosed)
         {
-            if (reversalDrafts.Values.Any(draft => !IsSameReopenReplay(draft, command)))
-            {
-                throw new InvalidOperationException(
-                    "The ledger period is already soft-closed, but retained reversal drafts do not match this reopen correlation/evidence; retry is rejected.");
-            }
+            // The durable period transition already completed on an earlier attempt. The exact
+            // reversal replay match above proves this is a retry, not a new reopen command.
         }
         else
         {
@@ -242,8 +286,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         }
 
         var evaluated = await EvaluateAsync(context, ct).ConfigureAwait(false);
-        var reversalRows = reversalDrafts.Values.ToArray();
-        var pendingCount = reversalRows.Count(static draft =>
+        var pendingCount = activeReversals.Count(static draft =>
             draft.Status is not ManualJournalEntryStatusDto.Posted and not ManualJournalEntryStatusDto.CloseLocked);
         return evaluated with
         {
@@ -251,10 +294,12 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             IsReadyForLock = false,
             Detail = pendingCount > 0
                 ? $"{pendingCount} governed closing-entry reversal draft(s) await independent approval and posting before restatement can be reclosed."
-                : "All retained closing-entry reversals are posted; apply the restatement and rerun the closing-entry delta before reclose.",
+                : activeClosingBatches.Count == 0
+                    ? "No active retained closing batch requires reversal; apply the restatement and rerun the closing-entry gate before reclose."
+                    : "All active closing-entry reversals are posted; apply the restatement and rerun the closing-entry delta before reclose.",
             EvidenceLinks = command.EvidenceLinks,
-            ClosingBatchJournalEntryIds = closingBatches.Select(static draft => draft.JournalEntryId).ToArray(),
-            ReversalDraftJournalEntryIds = reversalRows.Select(static draft => draft.JournalEntryId).ToArray()
+            ClosingBatchJournalEntryIds = activeClosingBatches.Select(static draft => draft.JournalEntryId).ToArray(),
+            ReversalDraftJournalEntryIds = activeReversals.Select(static draft => draft.JournalEntryId).ToArray()
         };
     }
 
@@ -262,17 +307,19 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         ManualJournalEntryDraftDto reversalDraft,
         AccountingClosePostingCommand command)
     {
-        var hasEvidenceMatch = command.EvidenceLinks.Any(requested =>
-            reversalDraft.EvidenceLinks.Any(retained =>
-                string.Equals(requested, retained, StringComparison.OrdinalIgnoreCase)));
-        if (!hasEvidenceMatch)
+        if (string.IsNullOrWhiteSpace(command.CorrelationId))
         {
             return false;
         }
 
-        return string.IsNullOrWhiteSpace(command.CorrelationId) ||
-               reversalDraft.LifecycleTransitions.Any(transition =>
-                   string.Equals(transition.CorrelationId, command.CorrelationId, StringComparison.OrdinalIgnoreCase));
+        var transition = reversalDraft.LifecycleTransitions.LastOrDefault(item =>
+            item.Action == JournalEntryLifecycleActionDto.Reverse &&
+            string.Equals(item.Actor, command.Actor, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(item.CorrelationId, command.CorrelationId, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(item.Notes, command.Reason, StringComparison.Ordinal));
+        return transition is not null && command.EvidenceLinks.All(requested =>
+            transition.EvidenceLinks.Any(retained =>
+                string.Equals(requested, retained, StringComparison.OrdinalIgnoreCase)));
     }
 
     private static ClosePostingGateDto BuildGate(
@@ -298,6 +345,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             .Where(static draft =>
                 draft.ReversalOfJournalEntryId.HasValue &&
                 draft.Status is not ManualJournalEntryStatusDto.Posted and not ManualJournalEntryStatusDto.CloseLocked)
+            .Where(draft => closingBatches.Contains(draft.ReversalOfJournalEntryId!.Value))
             .ToArray();
         if (pendingReversals.Length > 0)
         {
@@ -388,14 +436,16 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
 
     private static RunPeriodCloseDraftIntakeRequest ToIntakeRequest(
         AccountingClosePostingContext context,
-        Guid ledgerPeriodId,
+        ResolvedPostingScope scope,
         string actor)
         => new(
-            context.FundProfileId,
+            scope.FundProfileId,
             context.Currency,
             actor,
-            ledgerPeriodId,
-            context.LedgerBookId);
+            scope.Period.PeriodId,
+            context.LedgerBookId,
+            TenantId: context.TenantId,
+            CompanyId: context.CompanyId);
 
     private static ClosePostingGateDto Blocked(AccountingClosePostingContext context, string detail)
         => new(
@@ -410,29 +460,55 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
     private static string GateId(AccountingClosePostingContext context, Guid? ledgerPeriodId)
         => $"period-close-posting:{context.LedgerBookId:N}:{ledgerPeriodId?.ToString("N") ?? context.PeriodId.Trim()}";
 
-    private async Task<LedgerPeriodDto> ResolvePeriodAsync(
+    private async Task<ResolvedPostingScope> ResolveScopeAsync(
         AccountingClosePostingContext context,
         CancellationToken ct)
     {
-        var periods = await RequireLedgerBookService()
+        var ledgerBookService = _ledgerBookService
+            ?? throw new InvalidOperationException(
+                LedgerUnavailableDetail);
+        var book = await ledgerBookService.GetBookAsync(context.LedgerBookId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Ledger book '{context.LedgerBookId:D}' was not found for the closing-entry gate.");
+        if (book.FundStructureNodeId != context.FundAccountId)
+        {
+            throw new InvalidOperationException(
+                $"Close workflow '{context.WorkflowId:D}' fund account '{context.FundAccountId:D}' does not own ledger book '{context.LedgerBookId:D}'.");
+        }
+
+        if (!string.Equals(book.BaseCurrency, context.Currency, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Close workflow currency '{context.Currency}' does not match ledger book '{context.LedgerBookId:D}' base currency '{book.BaseCurrency}'.");
+        }
+
+        var periods = await ledgerBookService
             .ListPeriodsAsync(new LedgerPeriodQuery(LedgerBookId: context.LedgerBookId), ct)
             .ConfigureAwait(false);
         var hasGuid = Guid.TryParse(context.PeriodId, out var requestedId);
-        return periods.FirstOrDefault(period =>
-                   (hasGuid && period.PeriodId == requestedId) ||
-                   string.Equals(period.Label, context.PeriodId, StringComparison.OrdinalIgnoreCase))
-               ?? throw new InvalidOperationException(
-                   $"Ledger period '{context.PeriodId}' was not found in book '{context.LedgerBookId:D}'.");
+        var period = periods.FirstOrDefault(candidate =>
+                         (hasGuid && candidate.PeriodId == requestedId) ||
+                         string.Equals(candidate.Label, context.PeriodId, StringComparison.OrdinalIgnoreCase))
+                     ?? throw new InvalidOperationException(
+                         $"Ledger period '{context.PeriodId}' was not found in book '{context.LedgerBookId:D}'.");
+        return new ResolvedPostingScope(book.FundProfileId, book, period);
     }
 
     private static void ValidateContext(AccountingClosePostingContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentException.ThrowIfNullOrWhiteSpace(context.FundProfileId);
         ArgumentException.ThrowIfNullOrWhiteSpace(context.Currency);
-        if (context.LedgerBookId == Guid.Empty || string.IsNullOrWhiteSpace(context.PeriodId))
+        if (context.WorkflowId == Guid.Empty ||
+            context.FundAccountId == Guid.Empty ||
+            context.LedgerBookId == Guid.Empty ||
+            string.IsNullOrWhiteSpace(context.PeriodId))
         {
-            throw new ArgumentException("Period-close posting context requires ledger book and period ids.", nameof(context));
+            throw new ArgumentException("Period-close posting context requires workflow, fund account, ledger book, and period ids.", nameof(context));
+        }
+
+        if (string.IsNullOrWhiteSpace(context.TenantId) != string.IsNullOrWhiteSpace(context.CompanyId))
+        {
+            throw new ArgumentException("Period-close posting context must carry tenant and company scope together.", nameof(context));
         }
     }
 
@@ -463,6 +539,18 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
             }
 
             ArgumentException.ThrowIfNullOrWhiteSpace(command.ApprovalReference);
+            ArgumentException.ThrowIfNullOrWhiteSpace(command.CorrelationId);
+            if (!command.EvidenceLinks.Any(link =>
+                    link.Contains(command.ApprovalReference, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(
+                    "Closing-entry reversal evidence must reference the governed reopen approval.");
+            }
         }
     }
+
+    private sealed record ResolvedPostingScope(
+        string FundProfileId,
+        LedgerBookDto Book,
+        LedgerPeriodDto Period);
 }

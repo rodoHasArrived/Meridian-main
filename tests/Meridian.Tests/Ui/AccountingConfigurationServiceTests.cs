@@ -1,9 +1,11 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Accounting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
@@ -18,6 +20,7 @@ public sealed class AccountingConfigurationServiceTests
 {
     private static readonly Guid ManualJournalLedgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid ManualJournalPeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid DailyValuationAaplSecurityId = Guid.Parse("A1111111-1111-4111-8111-111111111111");
 
     [Fact]
     public async Task AccountingConfigurationService_IsolatesWorkspacesByTenantAndCompanyScope()
@@ -1372,6 +1375,7 @@ public sealed class AccountingConfigurationServiceTests
             draftStore,
             configuration,
             new InMemoryAccountingActionAuditStore(),
+            securityMasterQueryService: new DailyValuationSecurityMasterQueryService(),
             journalStore: journalStore,
             postingTarget: postingTarget);
         var intake = new AutomatedJournalDraftIntakeService(workbench, draftStore, configuration);
@@ -1394,7 +1398,7 @@ public sealed class AccountingConfigurationServiceTests
             ManualJournalLedgerBookId,
             ManualJournalPeriodId,
             asOf,
-            [new MarkToMarketPosition("AAPL", 100m, 150m)],
+            [new MarkToMarketPosition("AAPL", 100m, 150m, SecurityId: DailyValuationAaplSecurityId)],
             "valuation-policy-1",
             "Daily close",
             "market-close",
@@ -1464,6 +1468,18 @@ public sealed class AccountingConfigurationServiceTests
 
         posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
         journalStore.Appended.Should().ContainSingle("the duplicate valuation run must not append again");
+        var postedWrite = journalStore.Appended.Single();
+        postedWrite.Entry.Metadata.SecurityId.Should().Be(DailyValuationAaplSecurityId);
+        postedWrite.Entry.Metadata.Symbol.Should().Be("AAPL");
+        postedWrite.Entry.Metadata.Tags!["securityMasterProvenance"].Should()
+            .Contain($"security-master:{DailyValuationAaplSecurityId:N}")
+            .And.Contain("server-resolved:true")
+            .And.Contain("approved:true");
+        postedWrite.Entry.Metadata.Tags["securityMasterLineage"].Should()
+            .Contain($"AAPL:{DailyValuationAaplSecurityId:N}")
+            .And.Contain("ledger-map:manual-journal:AAPL")
+            .And.Contain("sm-approval:security-master-active")
+            .And.Contain("security-status:Active");
 
         // Simulate a process restart: rebuild every read from the retained durable journal.
         var restartedLedger = await journalStore.HydrateFundLedgerAsOfAsync(
@@ -7362,6 +7378,92 @@ public sealed class AccountingConfigurationServiceTests
             return Task.FromResult<MarkPriceQuote?>(
                 string.Equals(symbol, "AAPL", StringComparison.OrdinalIgnoreCase) ? quote : null);
         }
+    }
+
+    private sealed class DailyValuationSecurityMasterQueryService
+        : Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+    {
+        private static readonly JsonElement EmptyTerms = JsonDocument.Parse("{}").RootElement.Clone();
+
+        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(securityId == DailyValuationAaplSecurityId ? CreateAaplDetail() : null);
+
+        public Task<SecurityDetailDto?> GetByIdAsOfAsync(
+            Guid securityId,
+            DateTimeOffset asOfUtc,
+            CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
+
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(
+            SecurityIdentifierKind identifierKind,
+            string identifierValue,
+            string? provider,
+            CancellationToken ct = default,
+            DateTimeOffset? asOfUtc = null)
+            => Task.FromResult<SecurityDetailDto?>(
+                identifierKind == SecurityIdentifierKind.Ticker &&
+                string.Equals(identifierValue, "AAPL", StringComparison.OrdinalIgnoreCase)
+                    ? CreateAaplDetail()
+                    : null);
+
+        public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(
+            SecuritySearchRequest request,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecuritySummaryDto>>([]);
+
+        public Task<IReadOnlyList<SecurityMasterEventEnvelope>> GetHistoryAsync(
+            SecurityHistoryRequest request,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<SecurityMasterEventEnvelope>>([]);
+
+        public Task<SecurityEconomicDefinitionRecord?> GetEconomicDefinitionByIdAsync(
+            Guid securityId,
+            CancellationToken ct = default)
+            => Task.FromResult<SecurityEconomicDefinitionRecord?>(null);
+
+        public Task<TradingParametersDto?> GetTradingParametersAsync(
+            Guid securityId,
+            DateTimeOffset asOf,
+            CancellationToken ct = default)
+            => Task.FromResult<TradingParametersDto?>(null);
+
+        public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(
+            Guid securityId,
+            CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<CorporateActionDto>>([]);
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(
+            Guid securityId,
+            CancellationToken ct = default)
+            => Task.FromResult<PreferredEquityTermsDto?>(null);
+
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(
+            Guid securityId,
+            CancellationToken ct = default)
+            => Task.FromResult<ConvertibleEquityTermsDto?>(null);
+
+        private static SecurityDetailDto CreateAaplDetail()
+            => new(
+                DailyValuationAaplSecurityId,
+                "Equity",
+                SecurityStatusDto.Active,
+                "Apple Inc.",
+                "USD",
+                EmptyTerms,
+                EmptyTerms,
+                Identifiers:
+                [
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.Ticker,
+                        "AAPL",
+                        IsPrimary: true,
+                        ValidFrom: new DateTimeOffset(1980, 12, 12, 0, 0, 0, TimeSpan.Zero),
+                        NormalizedValue: "AAPL")
+                ],
+                Aliases: [],
+                Version: 7,
+                EffectiveFrom: new DateTimeOffset(1980, 12, 12, 0, 0, 0, TimeSpan.Zero),
+                EffectiveTo: null);
     }
 
     private sealed class WritableManualJournalLedgerJournalStore(

@@ -27,18 +27,17 @@ public static class LedgerPeriodPostingGuard
             return;
         }
 
-        // Period-close closing entries are the sanctioned exception to the closed-period posting
-        // bar. They are produced only by the governed period-close workflow after human approval,
-        // and they must post into the period being closed to finalize it (zero temporary accounts,
-        // roll net income to retained earnings). Their posting date is already constrained to the
-        // period's date range above, so permit them for both soft- and hard-closed periods.
-        if (entry.PostingKind == LedgerPostingKindDto.ClosingEntry)
-        {
-            return;
-        }
-
         if (string.Equals(period.Status, "SoftClosed", StringComparison.Ordinal))
         {
+            // Period-close closing entries are the sanctioned soft-close exception. They are
+            // produced only by the governed period-close workflow after human approval and must
+            // post before hard close so the hard-close transition remains the final mutation
+            // boundary for the period.
+            if (entry.PostingKind == LedgerPostingKindDto.ClosingEntry)
+            {
+                return;
+            }
+
             if (entry.PostingKind == LedgerPostingKindDto.Adjustment)
             {
                 if (entry.AdjustmentApproval is null)

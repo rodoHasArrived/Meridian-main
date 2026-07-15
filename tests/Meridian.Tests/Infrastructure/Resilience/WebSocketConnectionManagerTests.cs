@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Authentication;
+using System.Diagnostics;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Resilience;
@@ -101,6 +102,40 @@ public class WebSocketConnectionManagerTests
 
             await manager.DisposeAsync();
         }
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WhenReconnectTransactionIgnoresCancellation_IsBoundedAndIdempotent()
+    {
+        var manager = new WebSocketConnectionManager(
+            providerName: "test-provider",
+            config: null,
+            logger: null,
+            shutdownTimeout: TimeSpan.FromMilliseconds(40));
+        var supervisor = GetPrivateField<ProviderConnectionSupervisor>(manager, "_supervisor");
+        supervisor.Should().NotBeNull();
+        await supervisor!.ConnectAsync(static _ => Task.CompletedTask);
+        supervisor.MarkConnectionLost().Should().BeTrue();
+        var reconnectEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reconnectRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reconnectTask = supervisor.ReconnectAsync(async _ =>
+        {
+            reconnectEntered.TrySetResult(true);
+            await reconnectRelease.Task;
+        });
+        await reconnectEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        var elapsed = Stopwatch.StartNew();
+        await manager.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(1));
+        elapsed.Stop();
+
+        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
+        manager.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        await manager.DisposeAsync();
+
+        reconnectRelease.TrySetResult(true);
+        (await reconnectTask.WaitAsync(TimeSpan.FromSeconds(1))).Should().BeFalse();
+        manager.IsConnected.Should().BeFalse();
     }
 
     [Fact]

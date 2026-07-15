@@ -662,7 +662,7 @@ public sealed class AlphaVantageParsingTests
     }
 
     [Fact]
-    public async Task GetDailyBarsAsync_WhenRateLimited_ThrowsHttpRequestException()
+    public async Task GetDailyBarsAsync_WhenRateLimited_ThrowsTypedRateLimitException()
     {
         using var handler = new StubHttpMessageHandler(_ =>
             new HttpResponseMessage(HttpStatusCode.OK)
@@ -674,7 +674,7 @@ public sealed class AlphaVantageParsingTests
 
         Func<Task> act = () => provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 
-        await act.Should().ThrowAsync<HttpRequestException>()
+        await act.Should().ThrowAsync<Meridian.Core.Exceptions.RateLimitException>()
             .WithMessage("*rate limit*");
     }
 }

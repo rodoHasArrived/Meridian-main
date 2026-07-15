@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.Ledger;
@@ -1060,10 +1061,15 @@ public static partial class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var result = await service.GetPeriodPlanAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return result is null
+            var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, workflowId).ConfigureAwait(false);
+            if (!scope.IsAccessible)
+            {
+                return CloseWorkflowScopeDenied();
+            }
+
+            return scope.Plan is null
                 ? Results.NotFound(new { error = $"Close workflow '{workflowId}' was not found." })
-                : Results.Json(result, jsonOptions);
+                : Results.Json(scope.Plan, jsonOptions);
         })
         .WithName("GetLedgerCloseManagementPeriodPlan")
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
@@ -1088,11 +1094,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor ?? string.Empty);
                 var result = await service
-                    .ConfigurePeriodPlanAsync(
+                    .ConfigurePeriodPlanScopedAsync(
                         request with { Actor = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1138,11 +1156,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.RequestedBy);
                 var result = await service
-                    .RequestLateAdjustmentAsync(
+                    .RequestLateAdjustmentScopedAsync(
                         request with { RequestedBy = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1188,11 +1218,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
-                    .ReviewLateAdjustmentAsync(
+                    .ReviewLateAdjustmentScopedAsync(
                         request with { Actor = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1238,11 +1280,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
-                    .SignOffCloseTaskAsync(
+                    .SignOffCloseTaskScopedAsync(
                         request with { Actor = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1288,11 +1342,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
-                    .ReviewCloseEvidenceAsync(
+                    .ReviewCloseEvidenceScopedAsync(
                         request with { Actor = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1338,15 +1404,27 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
-                    .LockClosePeriodAsync(
+                    .LockClosePeriodScopedAsync(
                         request with
                         {
                             Actor = actor,
                             ActionOrigin = OperationsActionOriginDto.HumanOperator
                         },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1367,6 +1445,77 @@ public static partial class LedgerEndpoints
         })
         .WithName("LockLedgerCloseManagementPeriod")
         .Produces<ClosePeriodLockResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerCloseManagementPeriodReopen, async (
+            ReopenClosePeriodRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context) ||
+                !TryResolveControllerRole(context, out var controllerRole))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingCloseManagementService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
+                var actor = ResolveMutationActor(context, request.Actor);
+                var result = await service
+                    .ReopenClosePeriodScopedAsync(
+                        request with
+                        {
+                            Actor = actor,
+                            Role = controllerRole
+                        },
+                        actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return result is null
+                    ? Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." })
+                    : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+            catch (NotSupportedException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status501NotImplemented);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or LedgerBookServiceException)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("ReopenLedgerCloseManagementPeriod")
+        .Produces<ClosePeriodReopenResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -2231,6 +2380,98 @@ public static partial class LedgerEndpoints
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending);
 
+    private static async Task<CloseWorkflowTenantScope> ResolveCloseWorkflowTenantScopeAsync(
+        HttpContext context,
+        IAccountingCloseManagementService service,
+        Guid workflowId)
+    {
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        var plan = await service
+            .GetPeriodPlanScopedAsync(workflowId, tenant.TenantId, tenant.CompanyId, context.RequestAborted)
+            .ConfigureAwait(false);
+        if (plan is null || !tenant.HasTenantScope)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: true);
+        }
+
+        if (plan.LedgerBookId is not { } ledgerBookId || ledgerBookId == Guid.Empty)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+
+        var ledgerBookService = context.RequestServices.GetService<ILedgerBookService>();
+        if (ledgerBookService is null)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+
+        try
+        {
+            var book = await ledgerBookService.GetBookAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            if (book is null ||
+                !Guid.TryParse(plan.FundProfileId, out var fundAccountId) ||
+                fundAccountId == Guid.Empty ||
+                book.FundStructureNodeId != fundAccountId ||
+                !string.Equals(book.BaseCurrency, plan.MaterialityPolicy.Currency, StringComparison.OrdinalIgnoreCase))
+            {
+                return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+            }
+
+            var periods = await ledgerBookService
+                .ListPeriodsAsync(new LedgerPeriodQuery(LedgerBookId: ledgerBookId), context.RequestAborted)
+                .ConfigureAwait(false);
+            var hasPeriodId = Guid.TryParse(plan.PeriodId, out var requestedPeriodId);
+            if (!periods.Any(period =>
+                    (hasPeriodId && period.PeriodId == requestedPeriodId) ||
+                    string.Equals(period.Label, plan.PeriodId, StringComparison.OrdinalIgnoreCase)))
+            {
+                return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+            }
+
+            var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+            if (registry is not null)
+            {
+                var owner = await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
+                if (owner is not null &&
+                    (!owner.IsHeldBy(tenant.TenantId) ||
+                     (!string.IsNullOrWhiteSpace(owner.CompanyId) &&
+                      !string.IsNullOrWhiteSpace(tenant.CompanyId) &&
+                      !string.Equals(owner.CompanyId, tenant.CompanyId, StringComparison.OrdinalIgnoreCase))))
+                {
+                    return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+                }
+            }
+
+            var guard = context.RequestServices.GetService<IFundProfileTenantGuard>();
+            if (guard is not null)
+            {
+                var decision = await guard
+                    .EvaluateAsync(tenant, book.FundProfileId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                if (!decision.IsAllowed)
+                {
+                    return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+                }
+            }
+
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: true);
+        }
+        catch (LedgerBookServiceException)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+    }
+
+    private static IResult CloseWorkflowScopeDenied()
+        => Results.Problem(
+            "The requested close workflow is not accessible to the current tenant and company.",
+            statusCode: StatusCodes.Status403Forbidden);
+
+    private sealed record CloseWorkflowTenantScope(
+        ClosePeriodPlanDto? Plan,
+        WorkstationTenantContext TenantContext,
+        bool IsAccessible);
+
     /// <summary>
     /// Tenant isolation (SEC-005 slice 3) for body-supplied fund scopes on POST read/preview routes the
     /// query-string <see cref="FundProfileScopeEndpointFilters"/> filter cannot see. Returns true (allow)
@@ -2263,6 +2504,28 @@ public static partial class LedgerEndpoints
             context,
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending);
+
+    private static bool TryResolveControllerRole(HttpContext context, out string role)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var rawRole) &&
+            rawRole is UserRole userRole &&
+            userRole == UserRole.Controller)
+        {
+            role = "Controller";
+            return true;
+        }
+
+        var profile = HttpContextWorkstationTenantContextAccessor.Resolve(context).RoleProfileName;
+        if (string.Equals(profile, "Controller", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(profile, "Fund Controller", StringComparison.OrdinalIgnoreCase))
+        {
+            role = profile!.Trim();
+            return true;
+        }
+
+        role = string.Empty;
+        return false;
+    }
 
     private static bool HasLedgerCertificationPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);

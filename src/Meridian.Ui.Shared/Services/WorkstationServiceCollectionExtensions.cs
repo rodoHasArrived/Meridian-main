@@ -16,6 +16,8 @@ using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Catalog;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
@@ -489,6 +491,11 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<FileDailyValuationPortfolioSource>());
         services.TryAddSingleton<IDailyValuationScheduleStatusSource>(sp =>
             sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton(sp =>
+            new DailyValuationPositionService(
+                sp.GetService<IPositionSnapshotStore>(),
+                sp.GetService<ICanonicalSymbolRegistry>(),
+                sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<FileAutomatedJournalScheduleStore>(sp =>
             new FileAutomatedJournalScheduleStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "monthly-automated-journal-schedules.json")));
@@ -509,6 +516,7 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IGovernedLedgerPostingTarget>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton<DailyValuationBatchLifecycleService>();
         services.TryAddSingleton(sp =>
             new AutomatedJournalDraftIntakeService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -518,14 +526,19 @@ public static class WorkstationServiceCollectionExtensions
         {
             var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
             var providerRegistry = sp.GetService<ProviderRegistry>();
+            var journalStore = sp.GetService<ILedgerJournalStore>();
+            var positionService = sp.GetRequiredService<DailyValuationPositionService>();
             return new AutomatedJournalIntakeRunner(
                 sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
                 new FeeScheduleAccrualEventProducer(),
                 securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster),
                 sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
-                providerRegistry is null
+                providerRegistry is null || journalStore is null
                     ? null
-                    : new DailyMarkToMarketService(new RegisteredHistoricalCloseMarkPriceSource(providerRegistry)));
+                    : new DailyMarkToMarketService(
+                        new RegisteredHistoricalCloseMarkPriceSource(providerRegistry),
+                        new LedgerMarkToMarketCarryingValueSource(journalStore)),
+                positionService);
         });
         // The durable ledger book service is only registered when a persistence-backed ledger is
         // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph

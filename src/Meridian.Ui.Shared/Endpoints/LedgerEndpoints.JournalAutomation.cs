@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -37,11 +38,11 @@ public static partial class LedgerEndpoints
                     item.ScheduleId,
                     scheduleId.Trim(),
                     StringComparison.OrdinalIgnoreCase))
-                .Where(item => tenantContext.TenantId is null || string.Equals(
+                .Where(item => string.Equals(
                     item.TenantId,
                     tenantContext.TenantId,
                     StringComparison.OrdinalIgnoreCase))
-                .Where(item => tenantContext.CompanyId is null || string.Equals(
+                .Where(item => string.Equals(
                     item.CompanyId,
                     tenantContext.CompanyId,
                     StringComparison.OrdinalIgnoreCase))
@@ -77,18 +78,32 @@ public static partial class LedgerEndpoints
                     return EndpointHelpers.Forbidden();
                 }
 
+                if (existing is not null && existing.JournalEntryIds.Count > 0)
+                {
+                    return Results.Conflict(new
+                    {
+                        error = $"Automated journal schedule '{existing.ScheduleId}' cannot be re-armed while its current cycle retains governed drafts. Resolve those drafts before changing the cycle."
+                    });
+                }
+
+                var actor = ResolveMutationActor(context, request.Actor);
+
                 var saved = await store.SaveAsync(request with
                 {
-                    Actor = ResolveMutationActor(context, request.Actor),
+                    Actor = actor,
+                    CreatedBy = existing?.CreatedBy ?? existing?.Actor ?? actor,
+                    LastConfiguredBy = actor,
                     TenantId = tenantContext.TenantId,
                     CompanyId = tenantContext.CompanyId,
-                    State = existing?.State ?? AutomatedJournalScheduleStateDto.Scheduled,
+                    State = AutomatedJournalScheduleStateDto.Scheduled,
                     LastRunAtUtc = existing?.LastRunAtUtc,
-                    LastScheduledForUtc = existing?.LastScheduledForUtc,
-                    JournalEntryIds = existing?.JournalEntryIds ?? [],
-                    LastSummary = existing?.LastSummary,
-                    EvidenceLinks = existing?.EvidenceLinks ?? [],
-                    Blockers = existing?.Blockers ?? [],
+                    LastScheduledForUtc = null,
+                    JournalEntryIds = [],
+                    LastSummary = existing is null
+                        ? $"Monthly {request.Kind} work is scheduled."
+                        : $"Monthly {request.Kind} work was re-armed by {actor} after configuration review.",
+                    EvidenceLinks = [],
+                    Blockers = [],
                     RunHistory = existing?.RunHistory ?? []
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(saved, jsonOptions);
@@ -106,6 +121,7 @@ public static partial class LedgerEndpoints
         .Produces<AutomatedJournalScheduleWorkItem>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -124,7 +140,12 @@ public static partial class LedgerEndpoints
             }
 
             var timeProvider = context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System;
-            var result = await worker.RunDueAsync(timeProvider.GetUtcNow(), context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var result = await worker.RunDueForScopeAsync(
+                timeProvider.GetUtcNow(),
+                tenantContext.TenantId,
+                tenantContext.CompanyId,
+                context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("RunDueLedgerJournalAutomationMonthlySchedules")
@@ -182,6 +203,42 @@ public static partial class LedgerEndpoints
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var existing = await source.GetAsync(request.ScheduleId, context.RequestAborted).ConfigureAwait(false);
+                if (existing is not null &&
+                    (!string.Equals(existing.TenantId, tenantContext.TenantId, StringComparison.OrdinalIgnoreCase) ||
+                     !string.Equals(existing.CompanyId, tenantContext.CompanyId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
+                if (existing is not null && existing.JournalEntryIds.Count > 0)
+                {
+                    var draftStore = context.RequestServices.GetService<IManualJournalEntryDraftStore>();
+                    if (draftStore is null)
+                    {
+                        return ServiceUnavailable();
+                    }
+
+                    foreach (var journalEntryId in existing.JournalEntryIds)
+                    {
+                        var draft = await draftStore.GetAsync(
+                            existing.FundProfileId,
+                            journalEntryId,
+                            context.RequestAborted,
+                            existing.TenantId,
+                            existing.CompanyId).ConfigureAwait(false);
+                        if (draft is null || draft.Status is ManualJournalEntryStatusDto.Draft or
+                            ManualJournalEntryStatusDto.NeedsFix or
+                            ManualJournalEntryStatusDto.Submitted or
+                            ManualJournalEntryStatusDto.Approved)
+                        {
+                            return Results.Conflict(new
+                            {
+                                error = $"Daily valuation schedule '{existing.ScheduleId}' cannot be reconfigured while retained batch draft '{journalEntryId:D}' is pending. Post or reject the current batch first."
+                            });
+                        }
+                    }
+                }
+
                 var saved = await source.SaveAsync(request with
                 {
                     Actor = ResolveMutationActor(context, request.Actor),
@@ -190,9 +247,11 @@ public static partial class LedgerEndpoints
                     State = DailyValuationScheduleStateDto.Scheduled,
                     LastRunAtUtc = existing?.LastRunAtUtc,
                     LastScheduledForUtc = null,
-                    JournalEntryId = existing?.JournalEntryId,
+                    JournalEntryId = null,
+                    JournalEntryIds = [],
+                    BatchCorrelationId = null,
                     LastSummary = $"Daily valuation is scheduled for {request.NextRunAtUtc:O}.",
-                    EvidenceLinks = existing?.EvidenceLinks ?? [],
+                    EvidenceLinks = [],
                     Blockers = []
                 }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(saved, jsonOptions);
@@ -201,11 +260,16 @@ public static partial class LedgerEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
+            catch (InvalidOperationException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
         })
         .WithName("ConfigureLedgerJournalAutomationDailyMarkToMarketSchedule")
         .Produces<DailyValuationScheduleWorkItem>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -223,12 +287,66 @@ public static partial class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var result = await worker.RunDueAsync(DateTimeOffset.UtcNow, context.RequestAborted).ConfigureAwait(false);
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var timeProvider = context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System;
+            var result = await worker.RunDueForScopeAsync(
+                timeProvider.GetUtcNow(),
+                tenantContext.TenantId,
+                tenantContext.CompanyId,
+                context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("RunDueLedgerJournalAutomationDailyMarkToMarketSchedules")
         .Produces<DailyValuationScheduledBatchResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketBatchLifecycle, async (
+            DailyValuationBatchLifecycleRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<DailyValuationBatchLifecycleService>();
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await service.ApproveAndPostAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("ApproveAndPostLedgerJournalAutomationDailyMarkToMarketBatch")
+        .Produces<DailyValuationBatchLifecycleResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

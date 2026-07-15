@@ -1,5 +1,6 @@
 using Meridian.Application.Accounting;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
@@ -44,7 +45,9 @@ public sealed record RunFeeAccrualDraftIntakeRequest(
     string? CompanyId = null,
     DateTimeOffset? AsOf = null,
     IReadOnlyList<string>? EvidenceLinks = null,
-    DateTimeOffset? EvidenceRetainedAtUtc = null);
+    DateTimeOffset? EvidenceRetainedAtUtc = null,
+    AutomatedJournalCapitalAccountReconciliationDto? CapitalAccountReconciliation = null,
+    decimal MinimumCapitalAccountConfidence = 0.90m);
 
 /// <summary>
 /// Request to project period-close closing entries from a closed ledger period's trial
@@ -84,7 +87,8 @@ public sealed record RunDailyMarkToMarketDraftIntakeRequest(
     bool RequireCompleteCoverage = true,
     string? EntityId = null,
     string? TenantId = null,
-    string? CompanyId = null);
+    string? CompanyId = null,
+    string? BatchCorrelationId = null);
 
 /// <summary>
 /// Outcome of one automated intake run: producer-side skips plus the intake result
@@ -103,7 +107,8 @@ public sealed record AutomatedJournalIntakeRunResult(
 /// <summary>Valuation evidence and workbench intake outcome for one daily-close run.</summary>
 public sealed record DailyMarkToMarketIntakeRunResult(
     DailyMarkToMarketRun Valuation,
-    AutomatedJournalDraftIntakeResult Intake);
+    AutomatedJournalDraftIntakeResult Intake,
+    string? BatchCorrelationId = null);
 
 internal sealed record PeriodCloseDraftPreview(
     LedgerPeriodDto Period,
@@ -126,19 +131,22 @@ public sealed class AutomatedJournalIntakeRunner
     private readonly CorporateActionDividendEventProducer? _dividendProducer;
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly DailyMarkToMarketService? _dailyMarkToMarketService;
+    private readonly DailyValuationPositionService? _dailyValuationPositionService;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
         FeeScheduleAccrualEventProducer feeProducer,
         CorporateActionDividendEventProducer? dividendProducer = null,
         ILedgerBookService? ledgerBookService = null,
-        DailyMarkToMarketService? dailyMarkToMarketService = null)
+        DailyMarkToMarketService? dailyMarkToMarketService = null,
+        DailyValuationPositionService? dailyValuationPositionService = null)
     {
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
         _dividendProducer = dividendProducer;
         _ledgerBookService = ledgerBookService;
         _dailyMarkToMarketService = dailyMarkToMarketService;
+        _dailyValuationPositionService = dailyValuationPositionService;
     }
 
     public async Task<AutomatedJournalIntakeRunResult> RunDividendIntakeAsync(
@@ -202,6 +210,20 @@ public sealed class AutomatedJournalIntakeRunner
             throw new ArgumentException("Ledger period id is required.", nameof(request));
         if (request.MaximumMarkAgeDays < 0)
             throw new ArgumentOutOfRangeException(nameof(request), "Maximum mark age cannot be negative.");
+        if (_dailyValuationPositionService is null)
+        {
+            throw new InvalidOperationException(
+                "Daily mark-to-market intake requires canonical Security Master position resolution, which is not configured.");
+        }
+
+        var positionResolution = await _dailyValuationPositionService
+            .ResolveAdHocAsync(request.Positions, request.Currency, request.AsOf, ct)
+            .ConfigureAwait(false);
+        if (!positionResolution.IsReady)
+        {
+            throw new InvalidOperationException(
+                $"Daily mark-to-market intake is blocked: {string.Join(" ", positionResolution.Blockers)}");
+        }
 
         // The scheduled valuation's maximum mark age maps onto the ledger stale-price policy: marks
         // older than the bound are blocked from the fair-value draft and surfaced for review. The
@@ -222,30 +244,61 @@ public sealed class AutomatedJournalIntakeRunner
                 request.PeriodId.ToString("D"),
                 request.AsOf,
                 request.Currency,
-                request.Positions,
+                positionResolution.Positions,
                 request.Actor,
-                request.Reason),
+                request.Reason,
+                new MarkPriceQualityPolicy(
+                    TimeSpan.FromDays(request.MaximumMarkAgeDays),
+                    request.MinimumConfidence,
+                    request.RequireCompleteCoverage,
+                    RequireObservedDate: true),
+                request.LedgerBookId),
             ct).ConfigureAwait(false);
 
-        if (valuation.Approval is null)
+        var batchCorrelationId = BuildDailyValuationBatchCorrelationId(
+            request,
+            positionResolution.Positions,
+            valuation.Approvals,
+            request.BatchCorrelationId);
+
+        if (valuation.Approvals.Count == 0)
         {
-            return new DailyMarkToMarketIntakeRunResult(valuation, EmptyIntake);
+            return new DailyMarkToMarketIntakeRunResult(valuation, EmptyIntake, batchCorrelationId);
         }
 
         var intake = await _intake.IntakeDraftsAsync(
             new AutomatedJournalPreparedDraftIntakeRequest(
                 request.FundProfileId,
                 request.Currency,
-                [valuation.Approval.Draft],
+                valuation.Approvals.Select(static approval => approval.Draft).ToArray(),
                 request.Actor,
                 request.LedgerBookId,
                 request.PeriodId.ToString("D"),
                 request.EntityId,
                 request.TenantId,
-                request.CompanyId),
+                request.CompanyId,
+                BatchCorrelationId: batchCorrelationId),
             ct).ConfigureAwait(false);
 
-        return new DailyMarkToMarketIntakeRunResult(valuation, intake);
+        return new DailyMarkToMarketIntakeRunResult(valuation, intake, batchCorrelationId);
+    }
+
+    private static string BuildDailyValuationBatchCorrelationId(
+        RunDailyMarkToMarketDraftIntakeRequest request,
+        IReadOnlyList<MarkToMarketPosition> positions,
+        IReadOnlyList<AutomatedJournalApproval> approvals,
+        string? requestedCorrelationSeed)
+    {
+        var draftRevision = approvals.Count == 0
+            ? "no-adjustment"
+            : string.Join('|', approvals
+                .Select(static approval => approval.Draft.Metadata.IdempotencyKey)
+                .Where(static key => !string.IsNullOrWhiteSpace(key))
+                .Order(StringComparer.Ordinal));
+        var seed = FormattableString.Invariant(
+            $"daily-valuation-batch|{requestedCorrelationSeed?.Trim() ?? "unseeded"}|{request.FundProfileId.Trim().ToLowerInvariant()}|{request.LedgerBookId:N}|{request.PeriodId:N}|{request.AsOf.ToUniversalTime():O}|{DailyValuationPositionService.ComputeStaticPositionHash(positions)}|{draftRevision}");
+        return new Guid(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(seed)).AsSpan(0, 16))
+            .ToString("D");
     }
 
     /// <summary>

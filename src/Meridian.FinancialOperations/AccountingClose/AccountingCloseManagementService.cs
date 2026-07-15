@@ -14,35 +14,90 @@ public interface IAccountingCloseManagementService
 {
     Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default);
 
+    Task<ClosePeriodPlanDto?> GetPeriodPlanScopedAsync(
+        Guid workflowId,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => GetPeriodPlanAsync(workflowId, ct);
+
     Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
         CreateLateAdjustmentRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodPlanDto?> RequestLateAdjustmentScopedAsync(
+        CreateLateAdjustmentRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => RequestLateAdjustmentAsync(request, actor, ct);
 
     Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
         ReviewLateAdjustmentRequestDto request,
         string actor,
         CancellationToken ct = default);
 
+    Task<ClosePeriodPlanDto?> ReviewLateAdjustmentScopedAsync(
+        ReviewLateAdjustmentRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => ReviewLateAdjustmentAsync(request, actor, ct);
+
     Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
         SignOffCloseTaskRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodPlanDto?> SignOffCloseTaskScopedAsync(
+        SignOffCloseTaskRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => SignOffCloseTaskAsync(request, actor, ct);
 
     Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
         ReviewCloseEvidenceRequestDto request,
         string actor,
         CancellationToken ct = default);
 
+    Task<ClosePeriodPlanDto?> ReviewCloseEvidenceScopedAsync(
+        ReviewCloseEvidenceRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => ReviewCloseEvidenceAsync(request, actor, ct);
+
     Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
         UpsertClosePeriodPlanConfigurationRequestDto request,
         string actor,
         CancellationToken ct = default);
 
+    Task<ClosePeriodPlanDto?> ConfigurePeriodPlanScopedAsync(
+        UpsertClosePeriodPlanConfigurationRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => ConfigurePeriodPlanAsync(request, actor, ct);
+
     Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
         LockClosePeriodRequestDto request,
         string actor,
         CancellationToken ct = default);
+
+    Task<ClosePeriodLockResultDto?> LockClosePeriodScopedAsync(
+        LockClosePeriodRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => LockClosePeriodAsync(request, actor, ct);
 
     Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
         ReopenClosePeriodRequestDto request,
@@ -50,6 +105,14 @@ public interface IAccountingCloseManagementService
         CancellationToken ct = default)
         => Task.FromException<ClosePeriodReopenResultDto?>(
             new NotSupportedException("This accounting close service does not support governed period reopen."));
+
+    Task<ClosePeriodReopenResultDto?> ReopenClosePeriodScopedAsync(
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
+        => ReopenClosePeriodAsync(request, actor, ct);
 }
 
 public sealed class AccountingCloseManagementService : IAccountingCloseManagementService
@@ -109,7 +172,16 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         _postingWorkbench = postingWorkbench ?? throw new ArgumentNullException(nameof(postingWorkbench));
     }
 
-    public async Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default)
+    public Task<ClosePeriodPlanDto?> GetPeriodPlanAsync(
+        Guid workflowId,
+        CancellationToken ct = default)
+        => GetPeriodPlanScopedAsync(workflowId, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> GetPeriodPlanScopedAsync(
+        Guid workflowId,
+        string? tenantId,
+        string? companyId,
+        CancellationToken ct = default)
     {
         if (workflowId == Guid.Empty)
         {
@@ -117,12 +189,22 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         var workflow = await _workflowService.GetAsync(workflowId, ct).ConfigureAwait(false);
-        return workflow is null ? null : await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
+        return workflow is null
+            ? null
+            : await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
+    public Task<ClosePeriodPlanDto?> RequestLateAdjustmentAsync(
         CreateLateAdjustmentRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => RequestLateAdjustmentScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> RequestLateAdjustmentScopedAsync(
+        CreateLateAdjustmentRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -208,12 +290,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
+    public Task<ClosePeriodPlanDto?> ReviewLateAdjustmentAsync(
         ReviewLateAdjustmentRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => ReviewLateAdjustmentScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> ReviewLateAdjustmentScopedAsync(
+        ReviewLateAdjustmentRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -300,12 +390,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
+    public Task<ClosePeriodPlanDto?> SignOffCloseTaskAsync(
         SignOffCloseTaskRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => SignOffCloseTaskScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> SignOffCloseTaskScopedAsync(
+        SignOffCloseTaskRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -443,12 +541,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
+    public Task<ClosePeriodPlanDto?> ReviewCloseEvidenceAsync(
         ReviewCloseEvidenceRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => ReviewCloseEvidenceScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> ReviewCloseEvidenceScopedAsync(
+        ReviewCloseEvidenceRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -536,12 +642,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
+    public Task<ClosePeriodPlanDto?> ConfigurePeriodPlanAsync(
         UpsertClosePeriodPlanConfigurationRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => ConfigurePeriodPlanScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodPlanDto?> ConfigurePeriodPlanScopedAsync(
+        UpsertClosePeriodPlanConfigurationRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -618,12 +732,20 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             _writeGate.Release();
         }
 
-        return await BuildPeriodPlanWithGateAsync(workflow, ct).ConfigureAwait(false);
+        return await BuildPeriodPlanWithGateAsync(workflow, ct, tenantId, companyId).ConfigureAwait(false);
     }
 
-    public async Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
+    public Task<ClosePeriodLockResultDto?> LockClosePeriodAsync(
         LockClosePeriodRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => LockClosePeriodScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodLockResultDto?> LockClosePeriodScopedAsync(
+        LockClosePeriodRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -643,7 +765,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         var plan = BuildPeriodPlan(workflow);
         if (plan.IsPeriodLocked)
         {
-            plan = await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false);
+            plan = await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false);
             return new ClosePeriodLockResultDto(
                 true,
                 plan,
@@ -661,7 +783,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         var issues = BuildClosePeriodLockIssues(request, workflow, plan);
         if (issues.Count > 0)
         {
-            plan = await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false);
+            plan = await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false);
             return new ClosePeriodLockResultDto(false, plan, null, issues);
         }
 
@@ -679,7 +801,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         try
         {
             closingGate = await _postingWorkbench.EnsureClosingDraftQueuedAsync(
-                    RequirePostingContext(workflow, plan),
+                    RequirePostingContext(workflow, plan, tenantId, companyId),
                     new AccountingClosePostingCommand(
                         resolvedActor,
                         RequireText(request.Rationale, "Rationale"),
@@ -714,7 +836,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         try
         {
             await _postingWorkbench.FinalizeHardCloseAsync(
-                    RequirePostingContext(workflow, plan),
+                    RequirePostingContext(workflow, plan, tenantId, companyId),
                     new AccountingClosePostingCommand(
                         resolvedActor,
                         RequireText(request.Rationale, "Rationale"),
@@ -758,7 +880,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
         var updatedPlan = transition.Workflow is null
             ? plan
-            : await BuildPeriodPlanWithGateAsync(transition.Workflow, ct).ConfigureAwait(false);
+            : await BuildPeriodPlanWithGateAsync(transition.Workflow, ct, tenantId, companyId).ConfigureAwait(false);
         var transitionIssues = transition.Success
             ? Array.Empty<AccountingConfigurationValidationIssueDto>()
             : transition.Blockers
@@ -771,9 +893,17 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
             transitionIssues);
     }
 
-    public async Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
+    public Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
         ReopenClosePeriodRequestDto request,
         string actor,
+        CancellationToken ct = default)
+        => ReopenClosePeriodScopedAsync(request, actor, tenantId: null, companyId: null, ct: ct);
+
+    public async Task<ClosePeriodReopenResultDto?> ReopenClosePeriodScopedAsync(
+        ReopenClosePeriodRequestDto request,
+        string actor,
+        string? tenantId,
+        string? companyId,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -809,7 +939,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         {
             return new ClosePeriodReopenResultDto(
                 false,
-                await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false),
+                await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false),
                 null,
                 null,
                 [new AccountingConfigurationValidationIssueDto(
@@ -824,7 +954,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         {
             return new ClosePeriodReopenResultDto(
                 false,
-                await AttachClosingEntriesGateAsync(plan, workflow, ct).ConfigureAwait(false),
+                await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false),
                 null,
                 null,
                 [new AccountingConfigurationValidationIssueDto(
@@ -847,7 +977,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         }
 
         var reversalGate = await _postingWorkbench.ReopenAndQueueClosingReversalsAsync(
-                RequirePostingContext(workflow, plan),
+                RequirePostingContext(workflow, plan, tenantId, companyId),
                 new AccountingClosePostingCommand(
                     resolvedActor,
                     RequireText(request.Rationale, "Rationale"),
@@ -947,13 +1077,23 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
     private async Task<ClosePeriodPlanDto> BuildPeriodPlanWithGateAsync(
         OperationsContinuityWorkflowDto workflow,
-        CancellationToken ct)
-        => await AttachClosingEntriesGateAsync(BuildPeriodPlan(workflow), workflow, ct).ConfigureAwait(false);
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
+        => await AttachClosingEntriesGateAsync(
+                BuildPeriodPlan(workflow),
+                workflow,
+                ct,
+                tenantId,
+                companyId)
+            .ConfigureAwait(false);
 
     private async Task<ClosePeriodPlanDto> AttachClosingEntriesGateAsync(
         ClosePeriodPlanDto plan,
         OperationsContinuityWorkflowDto workflow,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? tenantId = null,
+        string? companyId = null)
     {
         if (_postingWorkbench is null)
         {
@@ -964,7 +1104,7 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
         try
         {
             gate = await _postingWorkbench
-                .EvaluateAsync(RequirePostingContext(workflow, plan), ct)
+                .EvaluateAsync(RequirePostingContext(workflow, plan, tenantId, companyId), ct)
                 .ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
@@ -1025,7 +1165,9 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
     private static AccountingClosePostingContext RequirePostingContext(
         OperationsContinuityWorkflowDto workflow,
-        ClosePeriodPlanDto plan)
+        ClosePeriodPlanDto plan,
+        string? tenantId = null,
+        string? companyId = null)
     {
         if (workflow.LedgerBookId is not { } ledgerBookId || ledgerBookId == Guid.Empty)
         {
@@ -1035,10 +1177,12 @@ public sealed class AccountingCloseManagementService : IAccountingCloseManagemen
 
         return new AccountingClosePostingContext(
             workflow.WorkflowId,
-            plan.FundProfileId,
+            workflow.FundAccountId,
             ledgerBookId,
             workflow.PeriodId,
-            plan.MaterialityPolicy.Currency);
+            plan.MaterialityPolicy.Currency,
+            tenantId,
+            companyId);
     }
 
     private static AccountingConfigurationValidationIssueDto ClosingEntriesIssue(ClosePostingGateDto gate)
