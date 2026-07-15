@@ -969,7 +969,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.RecordedRunCount.Should().Be(0);
         workspace.Ledger.Journal.Select(static row => row.Description)
             .Should()
-            .Equal("capital contribution", "administration accrual");
+            .Equal("administration accrual", "capital contribution");
         workspace.Ledger.TrialBalance.Should().ContainSingle(row =>
             row.AccountName == "Assets:Cash" && row.Balance == 1_000m);
         workspace.Ledger.TrialBalance.Should().ContainSingle(row =>
