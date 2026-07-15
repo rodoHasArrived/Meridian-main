@@ -53,6 +53,7 @@ import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.dat
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
 import { resultToneClass } from "@/screens/data-screen.tone-styles";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
   DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataViewModel
@@ -159,8 +160,13 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
 const dataRouteTabs = [
   { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, workstream: "overview" },
   { id: "providers", label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders, workstream: "providers" },
+<<<<<<< HEAD
   { id: "import", label: "Import", route: WORKSTATION_ROUTE_CATALOG.dataImport, workstream: "import" },
   { id: "backfills", label: "Backfills", route: WORKSTATION_ROUTE_CATALOG.dataBackfills, workstream: "backfills" },
+=======
+  { id: "operations", label: "Ingestion operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations, workstream: "operations" },
+  { id: "assurance", label: "Storage assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance, workstream: "assurance" },
+>>>>>>> 8facbd635d8f4063eabf809bf413de18c7345b25
   { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports, workstream: "exports" },
   { id: "query", label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery, workstream: "query" }
 ] as const;
@@ -181,6 +187,14 @@ const dataRouteViewCopy: Record<string, { title: string; description: string }> 
   backfills: {
     title: "Backfill queue",
     description: "Historical repair jobs with operator-visible status, ranges, and result evidence."
+  },
+  operations: {
+    title: "Ingestion Operations Center",
+    description: "Resumable jobs, transitions, failures, retries, checkpoints, and retained operator evidence."
+  },
+  assurance: {
+    title: "Storage & Data Assurance",
+    description: "Storage health, quality alerts, canonicalization parity, capacity, and guarded maintenance."
   },
   exports: {
     title: "Export packages",
@@ -238,6 +252,8 @@ export function DataScreen({
   const showProviderWorkstream = activeWorkstream === "providers";
   const showImportWorkstream = activeWorkstream === "import";
   const showBackfillWorkstream = activeWorkstream === "backfills";
+  const showOperationsWorkstream = activeWorkstream === "operations";
+  const showAssuranceWorkstream = activeWorkstream === "assurance";
   const showExportWorkstream = activeWorkstream === "exports";
   const showQueryWorkstream = activeWorkstream === "query";
 
@@ -471,6 +487,8 @@ export function DataScreen({
         ) : null}
 
         {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
+        {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
+        {showAssuranceWorkstream ? <StorageAssuranceWorkstream /> : null}
 
         {showExportWorkstream ? <DataExportWorkstream vm={vm} /> : null}
 
