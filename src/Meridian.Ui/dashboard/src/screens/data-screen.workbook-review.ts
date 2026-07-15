@@ -262,8 +262,10 @@ export function buildDataUploadWorkbookReviewState(
     commitDisabled: !ready,
     commitDisabledReason: ready
       ? null
-      : errorCount > 0
-        ? `Resolve ${errorCount.toLocaleString()} blocking issue${errorCount === 1 ? "" : "s"} before committing this workbook.`
-        : "Every non-empty sheet must be ready for review before committing."
+      : result.totalParsedRowCount === 0
+        ? "Add at least one data row to the workbook before committing."
+        : errorCount > 0
+          ? `Resolve ${errorCount.toLocaleString()} blocking issue${errorCount === 1 ? "" : "s"} before committing this workbook.`
+          : "Every non-empty sheet must be ready for review before committing."
   };
 }

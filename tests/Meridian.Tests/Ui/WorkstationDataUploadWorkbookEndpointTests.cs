@@ -174,6 +174,40 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldNotBeReadyWhenNoDataRows()
+    {
+        var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workbook-empty", Guid.NewGuid().ToString("N"));
+        Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", root);
+
+        try
+        {
+            await using var app = await CreateAppAsync();
+            var client = app.GetTestClient();
+            // A pristine workbook download: recognized tabs, headers, but no data rows.
+            var workbook = XlsxWorkbookWriter.CreateWorkbook(
+            [
+                WorkbookMetaSheet(("Entities", "entity-configuration")),
+                new XlsxWorksheet("Entities", ["entity_id", "entity_name", "entity_type"], []),
+            ]);
+
+            using var content = BuildWorkbookUploadContent(workbook);
+            var response = await client.PostAsync(UiApiRoutes.WorkstationDataUploadWorkbookPreview, content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<DataUploadWorkbookPreviewResultDto>(ServerJsonOptions);
+            result.Should().NotBeNull();
+            result!.TotalParsedRowCount.Should().Be(0);
+            result.Status.Should().Be("NeedsSchemaRepair");
+            result.NextAction.Should().Contain("no data rows");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", originalRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldRejectUnmappedSheet()
     {
         var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");

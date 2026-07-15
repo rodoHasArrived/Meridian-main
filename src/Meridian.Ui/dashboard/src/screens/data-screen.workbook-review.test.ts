@@ -69,6 +69,24 @@ describe("buildDataUploadWorkbookReviewState", () => {
     expect(state.commitDisabled).toBe(true);
   });
 
+  it("blocks commit with a data-row prompt when the workbook has no rows", () => {
+    const result = buildReadyResult();
+    result.status = "NeedsSchemaRepair";
+    result.totalParsedRowCount = 0;
+    result.sheets = result.sheets.map((sheet) => ({
+      ...sheet,
+      parsedRowCount: 0,
+      previewRowCount: 0,
+      previewRows: [],
+      status: "Empty"
+    }));
+
+    const state = buildDataUploadWorkbookReviewState(result);
+
+    expect(state.commitDisabled).toBe(true);
+    expect(state.commitDisabledReason).toContain("data row");
+  });
+
   it("surfaces a preview error when the request failed", () => {
     const state = buildDataUploadWorkbookReviewState(null, {
       errorSummary: "Workbook preview accepts .xlsx files."

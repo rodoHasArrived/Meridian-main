@@ -333,13 +333,16 @@ public static partial class WorkstationEndpoints
 
         var hasError = sheetPreviews.Any(sheet => HasWorkbookError(sheet.Issues))
             || HasWorkbookError(crossSheetIssues)
-            || sheetPreviews.Count == 0;
+            || sheetPreviews.Count == 0
+            || totalParsedRows == 0;
         var status = hasError ? "NeedsSchemaRepair" : "ReadyForReview";
         var nextAction = sheetPreviews.Count == 0
             ? "No data sheets were recognized. Download the onboarding workbook and fill in its data tabs before uploading."
-            : status == "ReadyForReview"
-                ? "Review each sheet's rows, then route the retained workbook into validation and reconciliation."
-                : "Fix the flagged cells in Excel and re-upload the corrected workbook.";
+            : totalParsedRows == 0
+                ? "The workbook has no data rows yet. Fill in at least one data tab before uploading."
+                : status == "ReadyForReview"
+                    ? "Review each sheet's rows, then route the retained workbook into validation and reconciliation."
+                    : "Fix the flagged cells in Excel and re-upload the corrected workbook.";
 
         return new DataUploadWorkbookPreviewResultDto(
             UploadId: uploadId,

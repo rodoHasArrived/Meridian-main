@@ -1442,6 +1442,9 @@ export function useDataViewModel(
   const previewDataUploadWorkbook = useCallback(async (file: File | null) => {
     const validationError = validateWorkbookUploadSelection(uploadCatalog, file);
     if (validationError) {
+      // Invalidate any in-flight preview so an earlier request cannot later resolve and overwrite
+      // this rejection with a success state for the file the operator just replaced.
+      workbookLifecycle.invalidate();
       setWorkbookFileName(file?.name ?? null);
       setWorkbookError(buildDataErrorState(validationError));
       setWorkbookPreviewResult(null);
@@ -1485,6 +1488,7 @@ export function useDataViewModel(
     uploadCatalog,
     workbookLifecycle.fail,
     workbookLifecycle.finish,
+    workbookLifecycle.invalidate,
     workbookLifecycle.markStale,
     workbookLifecycle.start,
     workbookLifecycle.succeed
