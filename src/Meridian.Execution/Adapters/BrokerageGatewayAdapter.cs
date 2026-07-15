@@ -12,12 +12,21 @@ namespace Meridian.Execution.Adapters;
 
 /// <summary>
 /// Bridges an <see cref="IBrokerageGateway"/> (from Execution.Sdk) to the
-/// <see cref="IOrderGateway"/> contract used by <see cref="Interfaces.IExecutionContext"/>.
-/// This allows any brokerage provider to plug into the existing execution framework
-/// without modifying the strategy-facing interfaces.
+/// <see cref="IOrderGateway"/> contract, mapping broker capabilities, order state, and execution
+/// reports between the two shapes.
 /// </summary>
+/// <remarks>
+/// This adapter is an <b>internal implementation detail</b> of the execution layer. It is never
+/// registered as a directly resolvable order-submission service: live order submission and
+/// cancellation are owned exclusively by <see cref="OrderManagementSystem"/> (the OMS), which runs
+/// the pre-trade gate stack (placement gate, live-order readiness, operator controls, security
+/// master, and risk validation) before any order reaches a broker. The live <see cref="IOrderGateway"/>
+/// exposed through dependency injection is a read-only view over this adapter
+/// (<see cref="OmsGovernedBrokerageOrderGateway"/>) whose submission and cancellation members are
+/// blocked, so no caller can bypass the OMS gates by resolving <see cref="IOrderGateway"/> directly.
+/// </remarks>
 [ImplementsAdr("ADR-015", "Adapts live brokerage gateways to the IOrderGateway contract")]
-public sealed class BrokerageGatewayAdapter : IOrderGateway
+internal sealed class BrokerageGatewayAdapter : IOrderGateway
 {
     private readonly IBrokerageGateway _inner;
     private readonly ILogger<BrokerageGatewayAdapter> _logger;
