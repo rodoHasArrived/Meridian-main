@@ -266,11 +266,6 @@ public sealed class DailyMarkToMarketServiceTests
     {
         private readonly Dictionary<string, MarkPriceQuote> _quotes = new(StringComparer.OrdinalIgnoreCase);
 
-<<<<<<< Updated upstream
-        public MapPriceSource Add(string symbol, decimal price)
-        {
-            _quotes[symbol] = new MarkPriceQuote(price, "test-source", $"evidence:{symbol}");
-=======
         public MapPriceSource Add(
             string symbol,
             decimal price,
@@ -284,7 +279,6 @@ public sealed class DailyMarkToMarketServiceTests
                 evidenceReference ?? $"evidence:{symbol}",
                 observedOn ?? DateOnly.FromDateTime(AsOf.UtcDateTime),
                 confidence);
->>>>>>> Stashed changes
             return this;
         }
 
