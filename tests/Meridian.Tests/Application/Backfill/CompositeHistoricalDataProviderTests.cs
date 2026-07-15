@@ -451,6 +451,70 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
     }
 
     [Fact]
+    public async Task GetDailyBarsAsync_CanonicalResolutionCancellation_PropagatesWithoutCallingProvider()
+    {
+        var provider = CreateMockProvider("p1", priority: 1);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var resolver = new Mock<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>();
+        resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "p1", cts.Token))
+            .ThrowsAsync(new OperationCanceledException(cts.Token));
+
+        using var composite = new CompositeHistoricalDataProvider(
+            new[] { provider.Object },
+            resolver.Object,
+            enableRateLimitRotation: false);
+
+        var act = () => composite.GetDailyBarsAsync("SPY", null, null, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        provider.Verify(
+            p => p.GetDailyBarsAsync(
+                It.IsAny<string>(),
+                It.IsAny<DateOnly?>(),
+                It.IsAny<DateOnly?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never,
+            "a cancelled canonical lookup must stop the provider chain");
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_CrossValidationCancellation_PropagatesToCaller()
+    {
+        var bars = CreateBars("SPY", 3);
+        var primary = CreateMockProvider("p1", priority: 1);
+        primary.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+        var validation = CreateMockProvider("p2", priority: 2);
+
+        using var cts = new CancellationTokenSource();
+        var resolver = new Mock<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>();
+        resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "p1", cts.Token))
+            .ReturnsAsync("SPY");
+        resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "p2", cts.Token))
+            .ThrowsAsync(new OperationCanceledException(cts.Token));
+
+        using var composite = new CompositeHistoricalDataProvider(
+            new[] { primary.Object, validation.Object },
+            resolver.Object,
+            enableCrossValidation: true,
+            enableRateLimitRotation: false);
+
+        var act = () => composite.GetDailyBarsAsync("SPY", null, null, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        validation.Verify(
+            p => p.GetDailyBarsAsync(
+                It.IsAny<string>(),
+                It.IsAny<DateOnly?>(),
+                It.IsAny<DateOnly?>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never,
+            "cross-validation must stop when its canonical lookup is cancelled");
+    }
+
+    [Fact]
     public async Task GetDailyBarsAsync_RaisesProgressEvents_AcrossFailover()
     {
         var bars = CreateBars("SPY", 3);

@@ -591,6 +591,10 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             var mapped = await _symbolResolver.MapSymbolAsync(symbol, "input", providerName, ct).ConfigureAwait(false);
             return mapped ?? symbol;
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _log.Debug(ex, "Symbol resolution failed for {Symbol} -> {Provider}", symbol, providerName);
