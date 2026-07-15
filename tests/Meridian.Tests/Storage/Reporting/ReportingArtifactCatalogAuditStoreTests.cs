@@ -168,13 +168,13 @@ public sealed class ReportingArtifactCatalogAuditStoreTests : IClassFixture<Repo
             $"delete from {Qualified("reporting_artifact_audit")} where sequence = @sequence;",
             ("sequence", auditReceipt.Sequence));
         Func<Task> forkAuditChain = () => ExecuteAsync(
-            $"""
-            insert into {Qualified("reporting_artifact_audit")} (
+            $$"""
+            insert into {{Qualified("reporting_artifact_audit")}} (
                 sequence, event_id, occurred_at_utc, action, actor_tenant_id, target_tenant_id,
                 package_id, artifact_id, previous_hash, entry_hash, event_payload)
             values (
                 @sequence, @event_id, @occurred_at_utc, 'ContentAccessed', 'actor-tenant', 'target-tenant',
-                'package', 'artifact', @previous_hash, @entry_hash, '{{}}');
+                'package', 'artifact', @previous_hash, @entry_hash, '{}');
             """,
             ("sequence", auditReceipt.Sequence + 10),
             ("event_id", NewId("forged-event")),
