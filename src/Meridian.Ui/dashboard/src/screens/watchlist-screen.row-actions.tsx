@@ -34,6 +34,13 @@ export type WatchlistRowActionId = "inspect" | "open-quote" | "copy-symbol" | "r
 export interface WatchlistRowActionContext {
   symbol: string;
   isRemoving: boolean;
+  /**
+   * The view-model's remove label, which encodes the two-step confirmation state
+   * ("Remove" -> "Confirm remove" -> "Removing…"). Surfaced verbatim so the menu
+   * entry stays honest about the pending-confirmation requirement, matching the
+   * inline row button rather than always reading "Remove".
+   */
+  removeLabel: string;
 }
 
 export interface BuildWatchlistRowActionsOptions {
@@ -72,7 +79,7 @@ export function buildWatchlistRowActions(
     item("open-quote", "Open live quote", <LineChart className="h-4 w-4" aria-hidden="true" />),
     item("copy-symbol", "Copy symbol", <Copy className="h-4 w-4" aria-hidden="true" />),
     { id: "watchlist-row-divider", type: "divider" },
-    item("remove", `Remove ${row.symbol}`, <Trash2 className="h-4 w-4" aria-hidden="true" />, {
+    item("remove", row.removeLabel, <Trash2 className="h-4 w-4" aria-hidden="true" />, {
       danger: true,
       disabled: busy || row.isRemoving
     })

@@ -15,6 +15,7 @@ function makeRow(overrides: Partial<WatchlistRowViewModel> = {}): WatchlistRowVi
   return {
     symbol: "AAPL",
     isRemoving: false,
+    removeLabel: "Remove",
     quoteHref: "/data/quotes?symbol=AAPL",
     ...overrides
   } as WatchlistRowViewModel;
@@ -156,8 +157,21 @@ describe("useWatchlistRowActions", () => {
     render(<Harness row={makeRow({ symbol: "GME" })} options={baseOptions({ onRemove })} />);
 
     await user.click(screen.getByRole("button", { name: "Open actions" }));
-    await user.click(await screen.findByRole("menuitem", { name: /Remove GME/ }));
+    await user.click(await screen.findByRole("menuitem", { name: "Remove" }));
 
     expect(onRemove).toHaveBeenCalledWith("GME");
+  });
+
+  it("surfaces the two-step remove confirmation state in the menu label", async () => {
+    const user = userEvent.setup();
+    const onRemove = vi.fn();
+    // Row already awaiting its confirmation click: the view-model relabels remove.
+    const row = makeRow({ symbol: "GME", removeLabel: "Confirm remove" });
+
+    render(<Harness row={row} options={baseOptions({ onRemove })} />);
+
+    await user.click(screen.getByRole("button", { name: "Open actions" }));
+    expect(await screen.findByRole("menuitem", { name: "Confirm remove" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Remove" })).not.toBeInTheDocument();
   });
 });
