@@ -62,8 +62,11 @@ internal static class CompressedJsonlStream
 
     private static Codec DetectCodec(Stream source, string path)
     {
-        // Prefer the actual content signature so a mislabeled file (e.g. gzip bytes written under a
-        // ".zst" name) is still decoded correctly rather than corrupting every line.
+        // Prefer the actual content signature so a file is decoded by what it contains, not what its
+        // name claims. This covers both directions of a mislabeled name: compressed bytes under the
+        // wrong suffix are still decoded, and — importantly — raw JSONL that a tiering copy renamed
+        // to .zst/.lz4 (TierMigrationService raw-copies non-gzip tiers) is read as raw instead of
+        // being forced through a decompressor that would fail on every line.
         if (source.CanSeek)
         {
             // Save and restore the exact starting position rather than seeking to absolute 0, so a
@@ -79,10 +82,15 @@ internal static class CompressedJsonlStream
                 return Codec.Zstd;
             if (read >= 4 && header[0] == 0x04 && header[1] == 0x22 && header[2] == 0x4D && header[3] == 0x18)
                 return Codec.Lz4;
+
+            // We saw the real leading bytes and no gzip/zstd/lz4 signature matched. Those formats
+            // always begin with a fixed signature, so the content is not actually one of them — read
+            // it raw. Only brotli (which has no signature) is still trusted from the extension here.
+            return HasSuffix(path, ".br") ? Codec.Brotli : Codec.None;
         }
 
-        // No stable signature matched (or the stream is not seekable): fall back to the declared
-        // extension. Brotli has no reliable magic number, so the extension is the only signal for it.
+        // The stream is not seekable, so the leading bytes cannot be inspected: fall back to the
+        // declared extension.
         if (HasSuffix(path, ".br"))
             return Codec.Brotli;
         if (HasSuffix(path, ".gz") || HasSuffix(path, ".gzip"))

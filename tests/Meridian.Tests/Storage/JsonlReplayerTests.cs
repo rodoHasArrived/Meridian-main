@@ -91,6 +91,21 @@ public sealed class JsonlReplayerTests : IDisposable
         result[0].Symbol.Should().Be("DIA");
     }
 
+    [Fact]
+    public async Task ReadEventsAsync_WhenRawJsonlHasCompressedExtension_ReadsAsRaw()
+    {
+        // TierMigrationService raw-copies non-gzip tiers, producing a .zst-named file that actually
+        // holds uncompressed JSONL. With no zstd signature present, it must be read raw, not forced
+        // through a decompressor (which would fail and drop every line).
+        var file = Path.Combine(_tempRoot, "events.jsonl.zst");
+        await File.WriteAllTextAsync(file, SerializeLine(BuildTrade("EEM", 1)));
+
+        var result = await ReadAllAsync(new JsonlReplayer(file));
+
+        result.Should().ContainSingle();
+        result[0].Symbol.Should().Be("EEM");
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_tempRoot))
