@@ -186,6 +186,34 @@ public sealed class ImmutableAuditLogServiceTests
         }
     }
 
+    [Fact]
+    public void VerifyIntegrity_AfterReloadWithNullPersistedRecord_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mdc_compliance_audit_{Guid.NewGuid():N}.jsonl");
+        try
+        {
+            var actor = CreateActor();
+            var original = new ImmutableAuditLogService(path);
+            original.Append(actor, CreateRequest("payment-1"));
+
+            // A record replaced by the JSON literal `null` deserializes without error but is not a
+            // valid event; the reload must still flag the log as corrupt rather than drop it silently.
+            File.AppendAllText(path, "null" + Environment.NewLine);
+
+            var reloaded = new ImmutableAuditLogService(path);
+
+            reloaded.VerifyIntegrity().Should().BeFalse(
+                "a persisted null record removes a real event and must fail the integrity check");
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
     private static ActorContext CreateActor() => new(
         ActorId: "treasury-ops-1",
         Roles: ["TreasuryOperator"],

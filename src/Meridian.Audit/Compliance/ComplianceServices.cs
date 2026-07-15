@@ -100,6 +100,13 @@ public sealed class ImmutableAuditLogService
     /// <paramref name="persistencePath"/>. Existing events are rehydrated on construction so the
     /// tamper-evident hash chain continues from the last persisted event rather than an empty log.
     /// </summary>
+    /// <remarks>
+    /// Assumes a single writer per <paramref name="persistencePath"/>; the host registers this as a
+    /// singleton. The in-process append lock does not coordinate separate processes (or instances)
+    /// writing the same file, and because each instance chains off its own in-memory tail, concurrent
+    /// writers on a shared path would fork the chain regardless of file locking. Multi-writer support
+    /// (re-reading the durable tail under a cross-process lock) is a separate design, out of scope here.
+    /// </remarks>
     public ImmutableAuditLogService(string persistencePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(persistencePath);
@@ -198,10 +205,16 @@ public sealed class ImmutableAuditLogService
                 continue;
             }
 
-            if (evt is not null)
+            if (evt is null)
             {
-                _events.Enqueue(evt);
+                // A non-blank line that deserializes to null (e.g. the JSON literal `null`) is a
+                // removed or corrupt record rather than a valid event — Deserialize returns null
+                // without throwing, so flag it like a parse failure instead of silently dropping it.
+                _persistedRecordCorrupt = true;
+                continue;
             }
+
+            _events.Enqueue(evt);
         }
     }
 
