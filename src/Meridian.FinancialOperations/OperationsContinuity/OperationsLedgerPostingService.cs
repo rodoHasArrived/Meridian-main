@@ -83,19 +83,22 @@ internal sealed class OperationsLedgerPostingService
             catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UniqueViolation)
             {
                 // Cross-instance race: another horizontally-scaled writer committed the same posting
-                // identity concurrently. Treat an already-retained posting as an idempotent success
-                // (mirroring DurableLedgerPostingTarget.PostAsync) instead of surfacing the raw
-                // unique violation as a critical ledger blocker. When the store can confirm the
-                // collision and finds none, the violation is not a duplicate and is rethrown.
-                if (_ledgerJournalStore is ILedgerPostingIdentityCollisionLookup lookup)
+                // identity concurrently. Only treat this as an idempotent success (mirroring
+                // DurableLedgerPostingTarget.PostAsync) once the store confirms an existing retained
+                // posting. If the store cannot confirm the collision, rethrow rather than assume the
+                // write succeeded — the transaction was rolled back, so silently proceeding would
+                // report a durable posting that does not exist.
+                if (_ledgerJournalStore is not ILedgerPostingIdentityCollisionLookup lookup)
                 {
-                    var collisions = await lookup
-                        .FindPostingIdentityCollisionsAsync(LedgerPostingIdentity.FromWrite(journalWrite), ct)
-                        .ConfigureAwait(false);
-                    if (collisions.Count == 0)
-                    {
-                        throw;
-                    }
+                    throw;
+                }
+
+                var collisions = await lookup
+                    .FindPostingIdentityCollisionsAsync(LedgerPostingIdentity.FromWrite(journalWrite), ct)
+                    .ConfigureAwait(false) ?? [];
+                if (collisions.Count == 0)
+                {
+                    throw;
                 }
             }
         }

@@ -112,10 +112,23 @@ public sealed class AuditChainService : IAuditChainService
             {
                 try
                 {
-                    var lines = await File.ReadAllLinesAsync(chainLogPath, ct).ConfigureAwait(false);
-                    if (lines.Length > 0)
+                    // Only the last entry's hash is needed to chain the next one; stream the file
+                    // and keep just the final non-empty line so memory stays bounded as the log grows.
+                    string? lastLine = null;
+                    using (var reader = new StreamReader(chainLogPath))
                     {
-                        var lastLine = lines[^1];
+                        string? line;
+                        while ((line = await reader.ReadLineAsync(ct).ConfigureAwait(false)) is not null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                lastLine = line;
+                            }
+                        }
+                    }
+
+                    if (lastLine is not null)
+                    {
                         using var doc = JsonDocument.Parse(lastLine);
                         if (doc.RootElement.TryGetProperty("hash"u8, out var hashElement))
                         {

@@ -169,7 +169,8 @@ public sealed class ImmutableAuditLogService
             return;
         }
 
-        foreach (var line in File.ReadAllLines(_persistencePath))
+        // Stream lines lazily so startup memory stays bounded as the audit log grows.
+        foreach (var line in File.ReadLines(_persistencePath))
         {
             if (string.IsNullOrWhiteSpace(line))
             {

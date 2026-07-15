@@ -66,9 +66,12 @@ internal static class CompressedJsonlStream
         // ".zst" name) is still decoded correctly rather than corrupting every line.
         if (source.CanSeek)
         {
+            // Save and restore the exact starting position rather than seeking to absolute 0, so a
+            // stream that was handed to us mid-read (or a substream) is left where it started.
+            var originalPosition = source.Position;
             Span<byte> header = stackalloc byte[4];
             var read = ReadHeader(source, header);
-            source.Seek(0, SeekOrigin.Begin);
+            source.Position = originalPosition;
 
             if (read >= 2 && header[0] == 0x1F && header[1] == 0x8B)
                 return Codec.Gzip;
