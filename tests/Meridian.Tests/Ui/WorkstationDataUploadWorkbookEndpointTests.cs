@@ -174,6 +174,47 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldNotWarnOnBlankTrailingColumns()
+    {
+        var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workbook-trailing", Guid.NewGuid().ToString("N"));
+        Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", root);
+
+        try
+        {
+            await using var app = await CreateAppAsync();
+            var client = app.GetTestClient();
+            // Required trade fields populated; optional trailing columns (currency..source_document_id)
+            // left blank, so Excel omits those cells and the row is shorter than the header.
+            var workbook = XlsxWorkbookWriter.CreateWorkbook(
+            [
+                WorkbookMetaSheet(("Trades", "trade-data")),
+                new XlsxWorksheet(
+                    "Trades",
+                    ["trade_id", "trade_date", "account_code", "symbol", "side", "quantity", "price", "currency", "strategy_id", "source_system", "source_document_id"],
+                    [
+                        ["TRD-1", "2026-06-01", "FUND-A", "AAPL", "Buy", "100", "187.25"],
+                    ]),
+            ]);
+
+            using var content = BuildWorkbookUploadContent(workbook);
+            var response = await client.PostAsync(UiApiRoutes.WorkstationDataUploadWorkbookPreview, content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<DataUploadWorkbookPreviewResultDto>(ServerJsonOptions);
+            result.Should().NotBeNull();
+
+            var trades = result!.Sheets.Single(sheet => sheet.SheetName == "Trades");
+            trades.Status.Should().Be("ReadyForReview");
+            trades.Issues.Should().NotContain(issue => issue.Field == "row");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", originalRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldNormalizeExcelDateSerials()
     {
         var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");

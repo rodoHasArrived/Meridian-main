@@ -29,6 +29,8 @@ public static partial class WorkstationEndpoints
     private const int MaxWorkbookColumns = 256;
     private const int MaxWorkbookRowsPerSheet = 200_000;
     private const int MaxWorkbookCellsPerSheet = 1_000_000;
+    private const int MaxWorkbookSheets = 64;
+    private const long MaxWorkbookCellsPerWorkbook = 2_000_000;
 
     private const string OnboardingWorkbookSchemaVersion = "1";
     private const string OnboardingWorkbookFileName = "meridian-onboarding-workbook.xlsx";
@@ -456,12 +458,15 @@ public static partial class WorkstationEndpoints
             parsedRowCount++;
             var displayRowNumber = headerRowNumber + parsedRowCount;
 
-            if (row.Count != headers.Length)
+            // Excel omits empty trailing cells, so a row with fewer values than headers just means
+            // optional trailing columns were left blank (missing required cells are still caught by
+            // the per-cell check below). Only warn when a row carries more values than headers.
+            if (row.Count > headers.Length)
             {
                 issues.Add(new DataUploadValidationIssueDto(
                     "Warning",
                     "row",
-                    $"Row has {row.Count.ToString(CultureInfo.InvariantCulture)} values for {headers.Length.ToString(CultureInfo.InvariantCulture)} headers.",
+                    $"Row has {row.Count.ToString(CultureInfo.InvariantCulture)} values but the sheet has {headers.Length.ToString(CultureInfo.InvariantCulture)} headers; extra trailing values are ignored.",
                     RowNumber: displayRowNumber,
                     SheetName: sheet.Name,
                     CellReference: $"{sheet.Name}!{displayRowNumber}"));
@@ -754,8 +759,16 @@ public static partial class WorkstationEndpoints
         var sharedStrings = ReadWorkbookSharedStrings(archive);
         var dateStyles = ReadWorkbookDateStyles(archive);
         var sheets = new List<WorkbookSheetContent>();
+        var workbookCellCount = 0L;
         foreach (var (name, entryPath) in ResolveWorkbookSheetOrder(archive))
         {
+            // Workbook-level caps: the per-sheet limits do not bound total work when a highly
+            // compressible .xlsx packs many small sheets, so reject abusive sheet/cell totals.
+            if (sheets.Count >= MaxWorkbookSheets)
+            {
+                throw new InvalidDataException($"Workbook contains more than {MaxWorkbookSheets} worksheets.");
+            }
+
             var entry = archive.GetEntry(entryPath);
             if (entry is null)
             {
@@ -779,6 +792,12 @@ public static partial class WorkstationEndpoints
                 var values = ReadWorkbookRowValues(rowElement, sharedStrings, dateStyles).ToArray();
                 cellCount += values.Length;
                 rows.Add(values);
+            }
+
+            workbookCellCount += cellCount;
+            if (workbookCellCount > MaxWorkbookCellsPerWorkbook)
+            {
+                throw new InvalidDataException($"Workbook exceeds the {MaxWorkbookCellsPerWorkbook} total cell limit.");
             }
 
             sheets.Add(new WorkbookSheetContent(name, rows, truncated));
