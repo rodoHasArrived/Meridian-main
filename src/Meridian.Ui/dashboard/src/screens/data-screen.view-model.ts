@@ -1443,8 +1443,11 @@ export function useDataViewModel(
     const validationError = validateWorkbookUploadSelection(uploadCatalog, file);
     if (validationError) {
       // Invalidate any in-flight preview so an earlier request cannot later resolve and overwrite
-      // this rejection with a success state for the file the operator just replaced.
+      // this rejection with a success state for the file the operator just replaced. The aborted
+      // request's finally block is gated on the (now stale) token, so it will not clear the busy
+      // flag; clear it here so the panel leaves the Previewing state and shows the validation error.
       workbookLifecycle.invalidate();
+      setWorkbookBusy(false);
       setWorkbookFileName(file?.name ?? null);
       setWorkbookError(buildDataErrorState(validationError));
       setWorkbookPreviewResult(null);

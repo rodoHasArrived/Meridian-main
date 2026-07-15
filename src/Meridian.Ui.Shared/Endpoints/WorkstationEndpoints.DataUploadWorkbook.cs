@@ -368,8 +368,8 @@ public static partial class WorkstationEndpoints
         int maxPreviewRows)
     {
         var issues = new List<DataUploadValidationIssueDto>();
-        var headerRow = sheet.Rows.FirstOrDefault(row => row.Any(cell => !string.IsNullOrWhiteSpace(cell)));
-        if (headerRow is null)
+        var headerPosition = ResolveWorkbookHeaderPosition(sheet);
+        if (headerPosition < 0)
         {
             return new DataUploadWorkbookSheetPreviewDto(
                 sheet.Name,
@@ -384,7 +384,8 @@ public static partial class WorkstationEndpoints
                 Status: "Empty");
         }
 
-        var headerRowNumber = sheet.Rows.ToList().IndexOf(headerRow) + 1;
+        var headerRow = sheet.Rows[headerPosition];
+        var headerRowNumber = sheet.RowNumbers[headerPosition];
         var headers = headerRow.Select(header => header.Trim()).ToArray();
         var namedHeaders = headers.Where(header => header.Length > 0).ToArray();
 
@@ -446,20 +447,19 @@ public static partial class WorkstationEndpoints
 
         var previewRows = new List<IReadOnlyDictionary<string, string>>();
         var parsedRowCount = 0;
-        var dataRows = sheet.Rows.Skip(headerRowNumber).ToArray();
-        for (var dataIndex = 0; dataIndex < dataRows.Length; dataIndex++)
+        for (var position = headerPosition + 1; position < sheet.Rows.Count; position++)
         {
-            var row = dataRows[dataIndex];
+            var row = sheet.Rows[position];
             if (row.All(string.IsNullOrWhiteSpace))
             {
                 continue;
             }
 
             parsedRowCount++;
-            // Report the true worksheet row (header row + position within the data range, 1-based),
-            // not parsedRowCount, so blank rows between data rows do not shift issue row/cell
-            // references off the cell the operator actually needs to fix.
-            var displayRowNumber = headerRowNumber + dataIndex + 1;
+            // Use the row's real worksheet number (Excel omits blank rows from sheetData, so a
+            // positional index would drift) so issue row/cell references stay aligned to the cell
+            // the operator actually needs to fix.
+            var displayRowNumber = sheet.RowNumbers[position];
 
             // Excel omits empty trailing cells, so a row with fewer values than headers just means
             // optional trailing columns were left blank (missing required cells are still caught by
@@ -566,11 +566,25 @@ public static partial class WorkstationEndpoints
         columns.TryGetValue("parent_entity_id", out var parentColumn);
         var hasParentColumn = columns.ContainsKey("parent_entity_id");
 
-        var headerRowNumber = ResolveWorkbookHeaderRowNumber(entitySheet);
-        var dataRows = entitySheet.Rows.Skip(headerRowNumber).Where(row => row.Any(cell => !string.IsNullOrWhiteSpace(cell))).ToArray();
+        var headerPosition = ResolveWorkbookHeaderPosition(entitySheet);
+        if (headerPosition < 0)
+        {
+            return [];
+        }
+
+        var dataRows = new List<(int Number, IReadOnlyList<string> Values)>();
+        for (var position = headerPosition + 1; position < entitySheet.Rows.Count; position++)
+        {
+            var values = entitySheet.Rows[position];
+            if (values.Any(cell => !string.IsNullOrWhiteSpace(cell)))
+            {
+                dataRows.Add((entitySheet.RowNumbers[position], values));
+            }
+        }
+
         var entityIds = new HashSet<string>(
             dataRows
-                .Select(row => entityIdColumn < row.Count ? row[entityIdColumn].Trim() : string.Empty)
+                .Select(row => entityIdColumn < row.Values.Count ? row.Values[entityIdColumn].Trim() : string.Empty)
                 .Where(id => id.Length > 0),
             StringComparer.OrdinalIgnoreCase);
 
@@ -580,18 +594,16 @@ public static partial class WorkstationEndpoints
         }
 
         var issues = new List<DataUploadValidationIssueDto>();
-        for (var index = 0; index < dataRows.Length; index++)
+        foreach (var (displayRowNumber, values) in dataRows)
         {
-            var row = dataRows[index];
-            var parent = parentColumn < row.Count ? row[parentColumn].Trim() : string.Empty;
+            var parent = parentColumn < values.Count ? values[parentColumn].Trim() : string.Empty;
             if (parent.Length == 0)
             {
                 continue;
             }
 
-            var displayRowNumber = headerRowNumber + index + 1;
             var cellReference = $"{entitySheet.Name}!{WorkbookColumnLetter(parentColumn)}{displayRowNumber}";
-            var entityId = entityIdColumn < row.Count ? row[entityIdColumn].Trim() : string.Empty;
+            var entityId = entityIdColumn < values.Count ? values[entityIdColumn].Trim() : string.Empty;
             if (string.Equals(parent, entityId, StringComparison.OrdinalIgnoreCase))
             {
                 issues.Add(new DataUploadValidationIssueDto(
@@ -710,17 +722,17 @@ public static partial class WorkstationEndpoints
         return result;
     }
 
-    private static int ResolveWorkbookHeaderRowNumber(WorkbookSheetContent sheet)
+    private static int ResolveWorkbookHeaderPosition(WorkbookSheetContent sheet)
     {
         for (var index = 0; index < sheet.Rows.Count; index++)
         {
             if (sheet.Rows[index].Any(cell => !string.IsNullOrWhiteSpace(cell)))
             {
-                return index + 1;
+                return index;
             }
         }
 
-        return 0;
+        return -1;
     }
 
     private static bool IsReservedWorkbookSheet(string sheetName)
@@ -780,8 +792,10 @@ public static partial class WorkstationEndpoints
 
             var document = LoadWorkbookXml(entry);
             var rows = new List<IReadOnlyList<string>>();
+            var rowNumbers = new List<int>();
             var truncated = false;
             var cellCount = 0;
+            var previousRowNumber = 0;
             foreach (var rowElement in document
                 .Descendants(WorkbookSpreadsheetNamespace + "sheetData")
                 .Elements(WorkbookSpreadsheetNamespace + "row"))
@@ -792,9 +806,19 @@ public static partial class WorkstationEndpoints
                     break;
                 }
 
+                // Excel omits blank rows from sheetData, so trust each row's own 1-based index (r) to
+                // keep issue row/cell references aligned to the real worksheet, falling back to a
+                // running counter only when the attribute is missing or not monotonic.
+                var rowNumber = int.TryParse(rowElement.Attribute("r")?.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedNumber)
+                    && parsedNumber > previousRowNumber
+                        ? parsedNumber
+                        : previousRowNumber + 1;
+                previousRowNumber = rowNumber;
+
                 var values = ReadWorkbookRowValues(rowElement, sharedStrings, dateStyles).ToArray();
                 cellCount += values.Length;
                 rows.Add(values);
+                rowNumbers.Add(rowNumber);
             }
 
             workbookCellCount += cellCount;
@@ -803,7 +827,7 @@ public static partial class WorkstationEndpoints
                 throw new InvalidDataException($"Workbook exceeds the {MaxWorkbookCellsPerWorkbook} total cell limit.");
             }
 
-            sheets.Add(new WorkbookSheetContent(name, rows, truncated));
+            sheets.Add(new WorkbookSheetContent(name, rows, rowNumbers, truncated));
         }
 
         return sheets;
@@ -1111,5 +1135,9 @@ public static partial class WorkstationEndpoints
         return index == 0 ? null : index;
     }
 
-    private sealed record WorkbookSheetContent(string Name, IReadOnlyList<IReadOnlyList<string>> Rows, bool Truncated = false);
+    private sealed record WorkbookSheetContent(
+        string Name,
+        IReadOnlyList<IReadOnlyList<string>> Rows,
+        IReadOnlyList<int> RowNumbers,
+        bool Truncated = false);
 }
