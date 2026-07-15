@@ -22,13 +22,7 @@ import {
   presentReportingIdentifier,
   presentReportingStatusLabel
 } from "@/screens/reporting-screen.view-model";
-import type {
-  AccountingWorkspaceResponse,
-  LedgerJournalLine,
-  LedgerTrialBalanceLine,
-  OperationsCloseCalendar,
-  OperationsCloseCalendarItem
-} from "@/types";
+import type { AccountingWorkspaceResponse, LedgerJournalLine, LedgerTrialBalanceLine, OperationsCloseCalendar } from "@/types";
 
 interface FinanceStandardScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -479,11 +473,6 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
             <Link to={workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: account.sourceJournalEntryId, runId: requestedRunId || null })}>Open source journal entry</Link>
           </Button>
         ) : null}
-        {account?.approvalIds && account.approvalIds.length > 0 ? (
-          <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("accountingApprovals", { approvalId: account.approvalIds[0] })}>Review approvals</Link>
-          </Button>
-        ) : null}
       </div>
     </div>
   );
@@ -781,12 +770,11 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
   }, [fundAccountId, periodId]);
 
   const items = calendar?.items ?? [];
-  const closeRows = items.map((item) => {
+  const closeItems = items.map((item) => {
     const nextTask = item.nextDueLabel ?? "No next task retained";
     const owner = item.nextDueOwner ?? "Unassigned";
     const due = item.nextDueDate ? presentFinanceDate(item.nextDueDate) : "No due date";
-    const summary = `${presentFinancePeriod(item.periodId)}: ${nextTask} · ${presentStatusLabel(item.status)} · owner ${owner} · due ${due} · ${item.blockerCount} blocker(s) · ${item.completedApprovalCount}/${item.requiredApprovalCount} approvals`;
-    return { item, summary };
+    return `${presentFinancePeriod(item.periodId)}: ${nextTask} · ${presentStatusLabel(item.status)} · owner ${owner} · due ${due} · ${item.blockerCount} blocker(s) · ${item.completedApprovalCount}/${item.requiredApprovalCount} approvals`;
   });
   const calendarFreshness = buildFinanceFreshness(calendar?.generatedAtUtc);
 
@@ -812,50 +800,7 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
       </Card>
       {loading ? <StatusBanner role="status" tone="info" title="Loading close calendar" detail="Loading retained workflow deadlines, blockers, and approvals." /> : null}
       {errorText ? <StatusBanner role="alert" tone="danger" title="Close calendar unavailable" detail={errorText} /> : null}
-      {!loading && !errorText ? (
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="text-base">Close workflow queue</CardTitle>
-            <CardDescription>Open a period to acknowledge tasks, submit approvals, or close from the governed workflow.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {closeRows.length > 0 ? (
-              <ul className="space-y-2" aria-label="Close workflow queue">
-                {closeRows.map(({ item, summary }) => (
-                  <li
-                    key={item.workflowId}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/15 px-3 py-2"
-                  >
-                    <div className="min-w-0 space-y-2">
-                      <div className="text-sm text-foreground">{summary}</div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant={item.blockerCount > 0 ? "warning" : "outline"}>
-                          {item.blockerCount} blocker{item.blockerCount === 1 ? "" : "s"}
-                        </Badge>
-                        <Badge
-                          variant={item.requiredApprovalCount > 0 && item.completedApprovalCount >= item.requiredApprovalCount ? "success" : "outline"}
-                        >
-                          {item.completedApprovalCount}/{item.requiredApprovalCount} approvals
-                        </Badge>
-                      </div>
-                    </div>
-                    <Button asChild size="sm" variant="outline">
-                      <Link
-                        to={resolveCloseWorkflowHref(item)}
-                        aria-label={`Open close workflow for ${presentFinancePeriod(item.periodId)}`}
-                      >
-                        Open close workflow
-                      </Link>
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">No close workflows match the selected scope.</p>
-            )}
-          </CardContent>
-        </Card>
-      ) : null}
+      {!loading && !errorText ? <FinanceList title="Close workflow queue" items={closeItems.length > 0 ? closeItems : ["No close workflows match the selected scope."]} /> : null}
       {items.length > 0 || fundAccountId ? (
         <TechnicalDetails label="Close workflow references">
           <dl className="grid gap-2 text-xs md:grid-cols-2">
@@ -913,14 +858,9 @@ export function EvidenceDetailScreen() {
 export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
   const closePlan = firstRecord(asRecord(data), "closePlans");
   const approvals = readRecordArray(closePlan, "approvals");
-  const approvalRows = approvals.map((approval, index) => {
-    const approvalId = readString(approval, "approvalId", "");
-    return {
-      approvalId,
-      label: readString(approval, "label", approvalId || `Approval ${index + 1}`),
-      status: readString(approval, "status", "Pending")
-    };
-  });
+  const approvalItems = approvals.length > 0
+    ? approvals.map((approval) => `${readString(approval, "label", readString(approval, "approvalId", "Approval"))}: ${readString(approval, "status", "Pending")}`)
+    : [];
 
   return (
     <div className="space-y-4">
@@ -930,46 +870,24 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
           <CardDescription>Approvals show what is being approved, why it is ready, what changed, supporting evidence, downstream effects, and risk.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Pending approvals" value={String(approvalRows.length)} />
+          <FinanceFact label="Pending approvals" value={String(approvalItems.length)} />
           <FinanceFact label="Queue source" value={approvals.length > 0 ? "Accounting workspace" : "No approval feed supplied"} />
           <FinanceFact label="Decision authority" value="Governed approval workflow" />
         </CardContent>
       </Card>
-      {approvalRows.length > 0 ? (
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="text-base">Approval queue</CardTitle>
-            <CardDescription>Open a pending approval to review its evidence and record the decision in the governed workflow.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2" aria-label="Pending approvals">
-              {approvalRows.map((row) => (
-                <li
-                  key={row.approvalId || row.label}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/15 px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-foreground">{row.label}</div>
-                    <div className="break-all font-mono text-xs text-muted-foreground">{row.approvalId || "No approval reference retained"}</div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={approvalStatusVariant(row.status)}>{presentStatusLabel(row.status)}</Badge>
-                    <Button asChild size="sm" variant="outline">
-                      <Link
-                        to={row.approvalId
-                          ? workstationRouteWithQuery("accountingApprovals", { approvalId: row.approvalId })
-                          : WORKSTATION_ROUTE_CATALOG.accountingApprovals}
-                        aria-label={`Review and decide ${row.label}`}
-                      >
-                        Review &amp; decide
-                      </Link>
-                    </Button>
-                  </div>
+      {approvalItems.length > 0 ? (
+        <>
+          <FinanceList title="Approval queue" items={approvalItems} />
+          <TechnicalDetails label="Approval references">
+            <ul className="space-y-2 text-xs text-muted-foreground">
+              {approvals.map((approval) => (
+                <li key={readString(approval, "approvalId", readString(approval, "label", "approval"))} className="font-mono">
+                  {readString(approval, "approvalId", "Reference unavailable")}
                 </li>
               ))}
             </ul>
-          </CardContent>
-        </Card>
+          </TechnicalDetails>
+        </>
       ) : (
         <StatusBanner
           role="status"
@@ -1089,37 +1007,6 @@ function reportRunStatusVariant(status: string): "outline" | "warning" | "danger
     return "success";
   }
   return "outline";
-}
-
-function approvalStatusVariant(status: string): "outline" | "warning" | "danger" | "success" {
-  const normalized = normalizeStatus(status);
-  if (normalized.includes("reject") || normalized.includes("needsfix") || normalized.includes("block")) {
-    return "danger";
-  }
-  if (normalized.includes("approved") || normalized.includes("complete") || normalized.includes("released")) {
-    return "success";
-  }
-  if (normalized.includes("pending") || normalized.includes("await") || normalized.includes("submit") || normalized.includes("review")) {
-    return "warning";
-  }
-  return "outline";
-}
-
-/**
- * Prefer the close item's own retained deep link into its governed workflow.
- * Fall back to the Operations Continuity queue scoped to the item's fund
- * account and period when the retained route is missing or points outside the
- * in-app workstation (for example an /api/ read-model path).
- */
-function resolveCloseWorkflowHref(item: OperationsCloseCalendarItem): string {
-  const route = item.route?.trim();
-  if (route && route.startsWith("/") && !route.startsWith("//") && !route.startsWith("/api/")) {
-    return route;
-  }
-  return workstationRouteWithQuery("accountingOperationsContinuity", {
-    fundAccountId: item.fundAccountId || null,
-    periodId: item.periodId || null
-  });
 }
 
 function resolveStartedLabel(run: UnknownRecord | null, status: string): string {

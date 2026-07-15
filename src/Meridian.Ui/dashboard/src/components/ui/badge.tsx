@@ -13,8 +13,5 @@ import { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/
  * <Badge variant="live" dot>LIVE</Badge>
  */
 export type BadgeProps = DesignSystemBadgeProps;
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
 export const Badge = DesignSystemBadge;

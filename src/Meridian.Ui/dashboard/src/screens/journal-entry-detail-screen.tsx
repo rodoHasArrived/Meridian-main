@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { formatCurrency } from "@/lib/format";
 import { LedgerTable, type LedgerRow } from "@/components/accounting/LedgerTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -189,26 +188,6 @@ export function JournalEntryDetailScreen() {
           )}
         </CardContent>
       </Card>
-
-      {view.dataCompleteness === "summary-only" ? (
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle>Posting summary</CardTitle>
-            <CardDescription>System-posted totals from the run ledger. Line-level detail lives in the run&apos;s Ledger Explorer.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <dl className="grid gap-3 sm:grid-cols-2">
-              <JournalEntryFact label="Total debits" value={formatCurrency(view.totalDebits)} />
-              <JournalEntryFact label="Total credits" value={formatCurrency(view.totalCredits)} />
-            </dl>
-            {runId ? (
-              <Button asChild size="sm" variant="outline">
-                <Link to={workstationRouteWithQuery("accountingLedger", { runId })}>Open in Ledger Explorer</Link>
-              </Button>
-            ) : null}
-          </CardContent>
-        </Card>
-      ) : null}
 
       {view.dataCompleteness === "full" ? (
         <Card className="panel-surface">

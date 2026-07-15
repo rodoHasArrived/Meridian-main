@@ -56,8 +56,7 @@
       "Bash(git -C \"D:/Meridian-cashladder-datajoin\" status --short)",
       "Bash(gh auth *)",
       "Bash(git log *)",
-      "Bash(git status *)",
-      "Bash(git rev-list *)"
+      "Bash(git status *)"
     ]
   }
 }
