@@ -119,7 +119,7 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         {
             services.TryAddSingleton<SymbolRegistryService>(sp =>
             {
-                var configStore = sp.GetRequiredService<ConfigStore>();
+                var configStore = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
                 return new SymbolRegistryService(configStore.GetDataRoot());
             });
             services.TryAddSingleton<ISymbolRegistryService>(sp =>
