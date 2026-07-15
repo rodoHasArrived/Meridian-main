@@ -908,7 +908,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .Concat(draftEvidence)
             .DistinctBy(static link => $"{link.EvidenceId}|{link.Route}", StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var summary = allPosted
+        var summary = isReady && allPosted
             ? $"{scopedDrafts.Count} monthly fee/dividend draft(s) are posted with retained evidence."
             : $"{schedule.Summary} Configured={schedule.ConfiguredCount}, enabled={schedule.EnabledCount}, fee={schedule.FeeScheduleCount}, dividend={schedule.DividendScheduleCount}, ready={schedule.DraftReadyCount}, investigation={schedule.NeedsInvestigationCount}, blocked={schedule.BlockedCount}.";
         var requiredAction = schedule.State switch
