@@ -109,15 +109,20 @@ public sealed class RiskRuleRuntimeService : IRiskValidator
     private RiskValidationResult EvaluateDrawdownGuardrail()
     {
         var portfolio = Resolve<IPortfolioState>();
-        var portfolioValue = portfolio?.PortfolioValue ?? 0m;
-        if (portfolioValue <= 0m)
+        if (portfolio is null)
         {
-            // No portfolio value to measure against (e.g. execution state not yet wired) — the
-            // drawdown circuit breaker cannot trip, matching BuildDrawdownStatus's 0% baseline.
+            // Execution state not yet wired — the drawdown circuit breaker cannot trip.
             return RiskValidationResult.Approved();
         }
 
-        var totalPnl = (portfolio?.RealisedPnl ?? 0m) + (portfolio?.UnrealisedPnl ?? 0m);
+        var portfolioValue = portfolio.PortfolioValue;
+        if (portfolioValue <= 0m)
+        {
+            // No portfolio value to measure against, matching BuildDrawdownStatus's 0% baseline.
+            return RiskValidationResult.Approved();
+        }
+
+        var totalPnl = portfolio.RealisedPnl + portfolio.UnrealisedPnl;
         var drawdownPercent = (totalPnl / portfolioValue) * 100m;
         var maxDrawdownPercent = GetMaxDrawdownPercent();
 
