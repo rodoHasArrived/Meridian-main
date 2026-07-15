@@ -12,7 +12,7 @@ public interface IWorkstationSecurityMasterApiClient
         Guid securityId, CancellationToken ct = default);
 
     Task<ApiResponse<OperatorOverridesDto>> RecordOperatorOverrideDecisionAsync(
-        Guid securityId, OperatorOverrideApprovalDecisionRequest request, CancellationToken ct = default);
+        Guid securityId, OperatorOverrideDecisionRequest request, CancellationToken ct = default);
 
     Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
         Guid securityId,
@@ -63,7 +63,7 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
             SecurityIdRoute(UiApiRoutes.SecurityMasterOperatorOverrides, securityId), ct);
 
     public Task<ApiResponse<OperatorOverridesDto>> RecordOperatorOverrideDecisionAsync(
-        Guid securityId, OperatorOverrideApprovalDecisionRequest request, CancellationToken ct = default)
+        Guid securityId, OperatorOverrideDecisionRequest request, CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<OperatorOverridesDto>(
             SecurityIdRoute(UiApiRoutes.SecurityMasterOperatorOverrideDecision, securityId), request, ct);
 

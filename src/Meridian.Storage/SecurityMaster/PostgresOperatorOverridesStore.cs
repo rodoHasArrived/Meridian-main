@@ -149,16 +149,15 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         };
     }
 
-    public async Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
+    public async Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
         Guid securityId,
-        OperatorOverrideApprovalDecisionRequest request,
-        string reviewer,
+        OperatorOverrideDecisionRequest request,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (string.IsNullOrWhiteSpace(reviewer))
+        if (string.IsNullOrWhiteSpace(request.Reviewer))
         {
-            throw new ArgumentException("reviewer must be provided.", nameof(reviewer));
+            throw new ArgumentException("reviewer must be provided.", nameof(request));
         }
 
         if (request.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
@@ -169,6 +168,8 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
                 "Approval decision must be Approved or Rejected.");
         }
 
+        var reviewer = request.Reviewer.Trim();
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection
             .BeginTransactionAsync(IsolationLevel.Serializable, ct)
@@ -178,11 +179,21 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         if (existing is null)
         {
             // Nothing to review — a reviewer cannot decide on overrides that were never recorded.
-            return null;
+            throw new InvalidOperationException(
+                $"No operator overrides exist for security '{securityId}'; there is nothing to review.");
+        }
+
+        if (existing.ApprovalStatus != SecurityOverrideApprovalStatusDto.Pending)
+        {
+            // Only a Pending overlay is reviewable; an already-decided overlay must be re-patched
+            // (which resets it to Pending) before another decision can be recorded.
+            throw new InvalidOperationException(
+                $"Operator overrides for security '{securityId}' are '{existing.ApprovalStatus}', not Pending; " +
+                "re-patch the overlay before recording another decision.");
         }
 
         var reviewedAt = DateTimeOffset.UtcNow;
-        var reasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? existing.ReasonCode : request.ReasonCode.Trim();
+        var reasonCode = existing.ReasonCode;
         var comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim();
         var auditTrail = Append(
             existing.AuditTrail,

@@ -748,27 +748,25 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             return Task.FromResult(updated);
         }
 
-        public Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
+        public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
             Guid securityId,
-            OperatorOverrideApprovalDecisionRequest request,
-            string reviewer,
+            OperatorOverrideDecisionRequest request,
             CancellationToken ct = default)
         {
             if (!_overrides.TryGetValue(securityId, out var existing))
             {
-                return Task.FromResult<OperatorOverridesDto?>(null);
+                throw new InvalidOperationException($"No operator overrides exist for security '{securityId}'.");
             }
 
             var reviewedAt = DateTimeOffset.UtcNow;
             var updated = existing with
             {
                 ApprovalStatus = request.Decision,
-                ReasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? existing.ReasonCode : request.ReasonCode,
-                ReviewedBy = reviewer,
+                ReviewedBy = request.Reviewer,
                 ReviewedAt = reviewedAt
             };
             _overrides[securityId] = updated;
-            return Task.FromResult<OperatorOverridesDto?>(updated);
+            return Task.FromResult(updated);
         }
     }
 
