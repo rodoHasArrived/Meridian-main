@@ -1243,16 +1243,20 @@ function Install-Desktop {
                 Write-Info "Preparing to install MSIX package..."
             }
 
-            # Trust certificate if not using a production certificate and not skipped
-            if (-not $NoTrustCert -and [string]::IsNullOrWhiteSpace($certPfxPath)) {
+            # Trust the package certificate for local installation unless the
+            # caller confirms it is already trusted.
+            if (-not $NoTrustCert) {
                 $certTrusted = Install-TrustedCertificate -MsixPath $msixFile.FullName
                 if (-not $certTrusted) {
-                    Write-Warn "Certificate was not trusted. Installation may fail."
+                    throw "The MSIX signing certificate could not be trusted."
                 }
             }
 
             # Install the MSIX package
             $installedSuccessfully = Install-MsixPackage -MsixPath $msixFile.FullName
+            if (-not $installedSuccessfully) {
+                throw "MSIX package installation failed: $($msixFile.FullName)"
+            }
 
             if ($useNotificationModule) {
                 Complete-BuildStep -Success $installedSuccessfully -Message $(if ($installedSuccessfully) { "Application installed" } else { "Installation skipped or failed" })
