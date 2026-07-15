@@ -18,6 +18,7 @@ public interface IOperatorOverridesStore
         CancellationToken ct = default);
 
     /// <summary>
+<<<<<<< Updated upstream
     /// Records a reviewer's approve/reject decision for a security's pending operator overrides,
     /// transitioning the persisted approval status and appending to the audit trail. Returns
     /// <see langword="null"/> when no override record exists for <paramref name="securityId"/> (there
@@ -28,5 +29,15 @@ public interface IOperatorOverridesStore
         Guid securityId,
         OperatorOverrideApprovalDecisionRequest request,
         string reviewer,
+=======
+    /// Records a reviewer's Approved/Rejected decision on the current override overlay, stamping the
+    /// reviewer identity and time and appending a durable audit entry. Throws
+    /// <see cref="InvalidOperationException"/> when no override row exists or it is not Pending, and
+    /// <see cref="ArgumentException"/> when the decision is not Approved/Rejected or the reviewer is blank.
+    /// </summary>
+    Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+        Guid securityId,
+        OperatorOverrideDecisionRequest request,
+>>>>>>> Stashed changes
         CancellationToken ct = default);
 }

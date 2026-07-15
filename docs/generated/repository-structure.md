@@ -307,6 +307,75 @@ Meridian-main
 │   │   │   ├── CHANGELOG.md
 │   │   │   └── SKILL.md
 │   │   └── skills_provider.py
+│   ├── worktrees
+│   │   ├── agent-a00f3994a69a0ee0c
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a1ab53fc61d7b5c61
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a528b73a4b44bc4e1
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a53058980bc28ac55
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a536047e943040a35
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a589c0d4d23369e31
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a66336df8a00c7dc6
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a6a05e9b5098c532e
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a7ab8351d1e57ccc4
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a84bff8b4e8114749
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-a9c5cad62d2ecaedb
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-ab14995e657747718
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-adf2e1cc969c20a38
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── agent-ae51898dac2b0d34d
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── sm-supply
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   ├── vibrant-cohen-76da14
+│   │   │   └── src
+│   │   │       └── Meridian.Ui
+│   │   │           └── dashboard
+│   │   └── xenodochial-carson-47ecb3
+│   │       └── src
+│   │           └── Meridian.Ui
+│   │               └── dashboard
 │   ├── launch.json
 │   ├── settings.json
 │   └── settings.local.json
@@ -884,7 +953,6 @@ Meridian-main
 │   ├── labeler.yml
 │   ├── labels.yml
 │   ├── markdown-link-check-config.json
-│   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── pull_request_template.md
 │   ├── pull_request_template_desktop.md
 │   └── spellcheck-config.yml
@@ -5725,7 +5793,6 @@ Meridian-main
 │   │   │   │   │   └── workstation-screen-view-states.ts
 │   │   │   │   ├── Meridian.Ui
 │   │   │   │   │   └── dashboard
-│   │   │   │   │       └── package-lock.json
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
 │   │   │   │   │   ├── accounting-screen.approvals.ts
@@ -7190,7 +7257,6 @@ Meridian-main
 │   │   │   ├── generate_mixed_credit_status_set.py
 │   │   │   └── mixed-credit-status-set.json
 │   │   ├── workstation
-│   │   │   └── security-instrument-explorer-parity.json
 │   │   └── security-instrument-explorer-parity.json
 │   ├── Meridian.Backtesting.Tests
 │   │   ├── AdvancedCarryDecisionEngineTests.cs
@@ -8621,7 +8687,8 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   └── shared-pattern-suggest.ps1
+│   │   ├── shared-pattern-suggest.ps1
+│   │   └── test-gap-scan.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json

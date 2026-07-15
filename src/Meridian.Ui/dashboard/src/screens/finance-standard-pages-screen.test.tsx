@@ -291,6 +291,7 @@ describe("finance standard pages", () => {
     expect(trustSummary).toHaveTextContent("Needs review");
     expect(screen.getByRole("link", { name: "Open ledger activity" })).toHaveAttribute("href", "/accounting/ledger?runId=run-42");
     expect(screen.getByRole("link", { name: "Open source journal entry" })).toHaveAttribute("href", "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42");
+    expect(screen.getByRole("link", { name: "Review approvals" })).toHaveAttribute("href", "/accounting/approvals?approvalId=approval-je-1");
   });
 
   it("does not present account freshness as current when no ledger run is available", async () => {
@@ -376,14 +377,19 @@ describe("finance standard pages", () => {
 
     expect(screen.getByRole("heading", { name: "Close Calendar" })).toBeInTheDocument();
     expect(await screen.findByText(/June 2026: Run trial balance · Ledger Posting Draft · owner Controller · due Jul 3, 2026/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open close workflow for June 2026" })).toHaveAttribute("href", "/accounting/operations-continuity");
     expect(screen.getByRole("link", { name: "Open Operations Continuity" })).toHaveAttribute("href", "/accounting/operations-continuity");
   });
 
-  it("renders approval inbox review prompts", async () => {
+  it("renders approval inbox rows with per-approval decision links", async () => {
     await renderPage(<ApprovalInboxScreen data={data} />, "/accounting/approvals/inbox");
 
     expect(screen.getByRole("heading", { name: "Approval Inbox" })).toBeInTheDocument();
-    expect(screen.getByText("Journal entry approval: Pending")).toBeInTheDocument();
+    expect(screen.getByText("Journal entry approval")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Review and decide Journal entry approval" })).toHaveAttribute(
+      "href",
+      "/accounting/approvals?approvalId=approval-je-1"
+    );
     expect(screen.getByText("What evidence supports it?")).toBeInTheDocument();
   });
 

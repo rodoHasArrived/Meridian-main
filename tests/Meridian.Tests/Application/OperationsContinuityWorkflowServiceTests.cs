@@ -7,6 +7,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Application;
@@ -1104,6 +1105,82 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         var timeline = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
         timeline.Select(entry => entry.EventType).Should().Contain("security-master-override-approved");
+    }
+
+    // ── Track C: SM_OVERRIDE gate is derived from durable override state, not client input ──────────
+    // These three tests are RED until Track C lands (they reference the new
+    // OperationsSecurityMasterResolveRequestDto.OverrideSecurityIds field and the new
+    // IOperatorOverridesStore ctor dependency). Keep them on the Track C branch.
+
+    [Fact]
+    public async Task ResolveSecurityMasterMappings_WithPendingOverrideInStore_RaisesApprovalBlocker_EvenWhenClientClaimsApproved()
+    {
+        // The server must derive override approval from durable state and ignore a spoofed
+        // client "OverridesApproved: true" while the store still reports Pending.
+        var securityId = Guid.NewGuid();
+        var store = new StubOperatorOverridesStore(new Dictionary<Guid, SecurityOverrideApprovalStatusDto>
+        {
+            [securityId] = SecurityOverrideApprovalStatusDto.Pending
+        });
+        var service = CreateServiceWithOverrides(store, out _);
+        var (workflowId, normalizedVersion) = await StartImportNormalizeAsync(service);
+
+        var security = await service.ResolveSecurityMasterMappingsAsync(
+            workflowId,
+            new OperationsSecurityMasterResolveRequestDto(
+                normalizedVersion,
+                "ops-user",
+                OverrideRequestCount: 0,   // client under-reports the count …
+                OverridesApproved: true,   // … and spoofs approval
+                OverrideSecurityIds: new[] { securityId }));
+
+        security.Workflow!.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
+    }
+
+    [Fact]
+    public async Task ResolveSecurityMasterMappings_AllOverridesApprovedInStore_DoesNotRaiseApprovalBlocker()
+    {
+        var securityId = Guid.NewGuid();
+        var store = new StubOperatorOverridesStore(new Dictionary<Guid, SecurityOverrideApprovalStatusDto>
+        {
+            [securityId] = SecurityOverrideApprovalStatusDto.Approved
+        });
+        var service = CreateServiceWithOverrides(store, out _);
+        var (workflowId, normalizedVersion) = await StartImportNormalizeAsync(service);
+
+        var security = await service.ResolveSecurityMasterMappingsAsync(
+            workflowId,
+            new OperationsSecurityMasterResolveRequestDto(
+                normalizedVersion,
+                "ops-user",
+                OverrideRequestCount: 5,    // client noise …
+                OverridesApproved: false,   // … and under-claims; server trusts durable Approved status
+                OverrideSecurityIds: new[] { securityId }));
+
+        security.Success.Should().BeTrue(security.ErrorMessage);
+        security.Workflow!.Status.Should().NotBe(OperationsWorkflowStatusDto.ApprovalPending);
+    }
+
+    [Fact]
+    public async Task ResolveSecurityMasterMappings_NoOverrideSecurityIds_DoesNotConsultOverrideStore()
+    {
+        // With no override securities in scope, the derivation must short-circuit and never touch the store.
+        var store = new StubOperatorOverridesStore(failIfCalled: true);
+        var service = CreateServiceWithOverrides(store, out _);
+        var (workflowId, normalizedVersion) = await StartImportNormalizeAsync(service);
+
+        var security = await service.ResolveSecurityMasterMappingsAsync(
+            workflowId,
+            new OperationsSecurityMasterResolveRequestDto(
+                normalizedVersion,
+                "ops-user",
+                OverrideRequestCount: 0,
+                OverridesApproved: false,
+                OverrideSecurityIds: Array.Empty<Guid>()));
+
+        security.Success.Should().BeTrue(security.ErrorMessage);
+        security.Workflow!.Status.Should().NotBe(OperationsWorkflowStatusDto.ApprovalPending);
+        store.GetWasCalled.Should().BeFalse();
     }
 
     [Fact]
@@ -3435,6 +3512,78 @@ public sealed class OperationsContinuityWorkflowServiceTests
             derivation,
             registerLedgerJournalStore ? ledgerJournalStore ?? new RecordingLedgerJournalStore() : null,
             securityMasterQueryService: new StaticSecurityMasterQueryService(securityStatuses ?? DefaultAuthoritativeSecurityStatuses()));
+    }
+
+    // ── Track C helpers (RED until the IOperatorOverridesStore ctor dependency is added) ────────────
+    private static OperationsContinuityWorkflowService CreateServiceWithOverrides(
+        StubOperatorOverridesStore overridesStore,
+        out InMemoryOperationsWorkflowAuditStore auditStore)
+    {
+        var derivation = new OperationsStatusDerivationService();
+        var repository = new InMemoryOperationsContinuityRepository(derivation);
+        auditStore = new InMemoryOperationsWorkflowAuditStore();
+        return new OperationsContinuityWorkflowService(
+            repository,
+            auditStore,
+            derivation,
+            ledgerJournalStore: new RecordingLedgerJournalStore(),
+            securityMasterQueryService: new StaticSecurityMasterQueryService(DefaultAuthoritativeSecurityStatuses()),
+            operatorOverridesStore: overridesStore);
+    }
+
+    private static async Task<(Guid WorkflowId, long Version)> StartImportNormalizeAsync(
+        OperationsContinuityWorkflowService service)
+    {
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(), "2026-05", null, "custodian", "ops-user"));
+        var import = await service.ImportBrokerDataAsync(
+            start.Workflow!.WorkflowId,
+            new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized imported rows"));
+        return (start.Workflow.WorkflowId, normalized.Workflow!.Version);
+    }
+
+    private sealed class StubOperatorOverridesStore : IOperatorOverridesStore
+    {
+        private readonly IReadOnlyDictionary<Guid, SecurityOverrideApprovalStatusDto> _statuses;
+        private readonly bool _failIfCalled;
+
+        public StubOperatorOverridesStore(
+            IReadOnlyDictionary<Guid, SecurityOverrideApprovalStatusDto>? statuses = null,
+            bool failIfCalled = false)
+        {
+            _statuses = statuses ?? new Dictionary<Guid, SecurityOverrideApprovalStatusDto>();
+            _failIfCalled = failIfCalled;
+        }
+
+        public bool GetWasCalled { get; private set; }
+
+        public Task<OperatorOverridesDto?> GetAsync(Guid securityId, CancellationToken ct = default)
+        {
+            GetWasCalled = true;
+            if (_failIfCalled)
+            {
+                throw new InvalidOperationException(
+                    "Override store must not be consulted when no override securities are in scope.");
+            }
+
+            return Task.FromResult(_statuses.TryGetValue(securityId, out var status)
+                ? new OperatorOverridesDto(securityId, new Dictionary<string, string>(), "operator-1", DateTimeOffset.UtcNow)
+                {
+                    ApprovalStatus = status
+                }
+                : null);
+        }
+
+        public Task<OperatorOverridesDto> PatchAsync(
+            Guid securityId, OperatorOverridesPatchRequest request, string updatedBy, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+            Guid securityId, OperatorOverrideDecisionRequest request, CancellationToken ct = default)
+            => throw new NotSupportedException();
     }
 
 
