@@ -36,7 +36,7 @@ public static class DailyPortfolioPricingDraftBuilder
                 RetainedBy: input.Policy.ApprovedBy,
                 SubjectId: line.Symbol,
                 Description: FormattableString.Invariant(
-                    $"{line.Symbol} marked at {line.MarkPrice} via {line.PriceSource}; observed {(line.PriceObservedOn.HasValue ? line.PriceObservedOn.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "unknown")}; confidence {line.Confidence}")).Normalize())
+                    $"{line.Symbol} marked at {line.MarkPrice} via {line.PriceSource}")).Normalize())
             .ToArray();
 
         var description = FormattableString.Invariant(
@@ -52,6 +52,15 @@ public static class DailyPortfolioPricingDraftBuilder
             IdempotencyKey: idempotencyKey,
             EvidenceReferences: evidence);
 
+        var fairValueLevels = string.Join(
+            ",",
+            projection.Lines
+                .Select(static line => line.FairValueLevel)
+                .Distinct()
+                .OrderBy(static level => level)
+                .Select(static level => level.ToString()));
+        var stalePricedCount = projection.Lines.Count(static line => line.IsStalePriced);
+
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["valuation.policyId"] = input.Policy.PolicyId,
@@ -59,7 +68,9 @@ public static class DailyPortfolioPricingDraftBuilder
             ["valuation.periodId"] = input.PeriodId,
             ["valuation.baseCurrency"] = input.BaseCurrency,
             ["valuation.totalMarketValue"] = projection.TotalMarketValue.ToString(CultureInfo.InvariantCulture),
-            ["valuation.netUnrealizedGainOrLoss"] = projection.NetUnrealizedGainOrLoss.ToString(CultureInfo.InvariantCulture)
+            ["valuation.netUnrealizedGainOrLoss"] = projection.NetUnrealizedGainOrLoss.ToString(CultureInfo.InvariantCulture),
+            ["valuation.fairValueLevels"] = fairValueLevels,
+            ["valuation.stalePricedCount"] = stalePricedCount.ToString(CultureInfo.InvariantCulture)
         };
 
         var metadata = new JournalEntryMetadata(

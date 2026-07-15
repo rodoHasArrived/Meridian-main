@@ -17,5 +17,5 @@ public sealed record DailyPortfolioPricingLine(
     string ValuationMethod,
     string? FinancialAccountId,
     string? InstrumentType,
-    DateOnly? PriceObservedOn = null,
-    DailyPortfolioPriceConfidence Confidence = DailyPortfolioPriceConfidence.High);
+    FairValueLevel FairValueLevel = FairValueLevel.Unclassified,
+    bool IsStalePriced = false);
