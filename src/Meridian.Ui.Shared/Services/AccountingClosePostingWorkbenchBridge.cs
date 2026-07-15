@@ -14,19 +14,27 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
     private readonly AutomatedJournalIntakeRunner _runner;
     private readonly IManualJournalEntryWorkbenchService _workbench;
     private readonly IManualJournalEntryLifecycleService _lifecycle;
-    private readonly ILedgerBookService _ledgerBookService;
+    // Optional: the durable ledger book service is only registered when a persistence-backed
+    // ledger (Postgres) is configured. Without it the close-posting gate degrades to Blocked
+    // rather than failing composition, matching the workstation's "durable ledger optional" pattern.
+    private readonly ILedgerBookService? _ledgerBookService;
 
     public AccountingClosePostingWorkbenchBridge(
         AutomatedJournalIntakeRunner runner,
         IManualJournalEntryWorkbenchService workbench,
         IManualJournalEntryLifecycleService lifecycle,
-        ILedgerBookService ledgerBookService)
+        ILedgerBookService? ledgerBookService)
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _workbench = workbench ?? throw new ArgumentNullException(nameof(workbench));
         _lifecycle = lifecycle ?? throw new ArgumentNullException(nameof(lifecycle));
-        _ledgerBookService = ledgerBookService ?? throw new ArgumentNullException(nameof(ledgerBookService));
+        _ledgerBookService = ledgerBookService;
     }
+
+    private ILedgerBookService RequireLedgerBookService()
+        => _ledgerBookService
+            ?? throw new InvalidOperationException(
+                "The durable ledger book service is not configured; period-close posting requires a persistence-backed ledger.");
 
     public async Task<ClosePostingGateDto> EvaluateAsync(
         AccountingClosePostingContext context,
@@ -107,7 +115,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                 $"Ledger period '{period.Label}' cannot be hard-closed while the closing-entry gate is {gate.State}: {gate.Detail}");
         }
 
-        var closed = await _ledgerBookService.ClosePeriodAsync(
+        var closed = await RequireLedgerBookService().ClosePeriodAsync(
                 period.PeriodId,
                 new CloseLedgerPeriodRequest(
                     LedgerPeriodCloseKindDto.HardClose,
@@ -212,7 +220,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         }
         else
         {
-            await _ledgerBookService.ReopenPeriodAsync(
+            await RequireLedgerBookService().ReopenPeriodAsync(
                     period.PeriodId,
                     new ReopenLedgerPeriodRequest(
                         command.Actor,
@@ -398,7 +406,7 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         AccountingClosePostingContext context,
         CancellationToken ct)
     {
-        var periods = await _ledgerBookService
+        var periods = await RequireLedgerBookService()
             .ListPeriodsAsync(new LedgerPeriodQuery(LedgerBookId: context.LedgerBookId), ct)
             .ConfigureAwait(false);
         var hasGuid = Guid.TryParse(context.PeriodId, out var requestedId);

@@ -361,7 +361,11 @@ public sealed class LedgerBookServiceTests
             "2026-P04",
             new DateOnly(2026, 4, 1),
             new DateOnly(2026, 4, 30)));
-        await store.AppendAsync(BuildBalancedEntry(period.PeriodId, revenue: 1_000m, expense: 250m));
+        await store.AppendAsync(BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 1_000m,
+            expense: 250m,
+            timestamp: DateTimeOffset.Parse("2026-04-30T21:00:00Z")));
         await service.ClosePeriodAsync(
             period.PeriodId,
             new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
