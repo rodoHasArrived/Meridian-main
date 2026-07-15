@@ -38,6 +38,7 @@ import type {
   DataOperationsRouteFocusCardState,
   DataOperationsWorkstream
 } from "@/screens/data-screen.route-state";
+import { buildDataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   BackfillPreviewResult,
   BackfillProviderProgressSnapshot,
@@ -51,6 +52,7 @@ import type {
   DataUploadTemplate,
   DataUploadTemplateCatalog,
   DataUploadValidationIssue,
+  DataUploadWorkbookPreviewResult,
   DataWorkspaceResponse,
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
@@ -516,6 +518,12 @@ export interface DataUploadPanelState {
   acceptedFileTypes: string;
   maxFileSizeLabel: string;
   templateDownload: {
+    fileName: string;
+    href: string;
+    label: string;
+    ariaLabel: string;
+  } | null;
+  workbookDownload: {
     fileName: string;
     href: string;
     label: string;
@@ -1135,6 +1143,10 @@ export function useDataViewModel(
   const [uploadPreviewResult, setUploadPreviewResult] = useState<DataUploadPreviewResult | null>(null);
   const [uploadError, setUploadError] = useState<ApiErrorDisplay | null>(null);
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [workbookFileName, setWorkbookFileName] = useState<string | null>(null);
+  const [workbookPreviewResult, setWorkbookPreviewResult] = useState<DataUploadWorkbookPreviewResult | null>(null);
+  const [workbookError, setWorkbookError] = useState<ApiErrorDisplay | null>(null);
+  const [workbookBusy, setWorkbookBusy] = useState(false);
   const backfillLifecycle = useRequestLifecycle({
     operation: "historical backfill command",
     runningMessage: "Submitting historical backfill command.",
@@ -1150,6 +1162,15 @@ export function useDataViewModel(
     successMessage: "Source data upload preview completed.",
     failureMessage: "Source data upload preview failed.",
     staleMessage: "Older source data upload preview discarded.",
+    maxRetries: 0
+  });
+  const workbookLifecycle = useRequestLifecycle({
+    operation: "onboarding workbook preview",
+    idleMessage: "Ready to preview the onboarding workbook.",
+    runningMessage: "Previewing onboarding workbook.",
+    successMessage: "Onboarding workbook preview completed.",
+    failureMessage: "Onboarding workbook preview failed.",
+    staleMessage: "Older onboarding workbook preview discarded.",
     maxRetries: 0
   });
 
@@ -1303,6 +1324,14 @@ export function useDataViewModel(
       uploadPreviewResult
     ]
   );
+  const workbookReviewState = useMemo(
+    () => buildDataUploadWorkbookReviewState(workbookPreviewResult, {
+      busy: workbookBusy,
+      errorSummary: workbookError?.summary ?? null,
+      fileName: workbookFileName
+    }),
+    [workbookPreviewResult, workbookBusy, workbookError, workbookFileName]
+  );
 
   const openBackfillDialog = useCallback(() => {
     backfillLifecycle.invalidate();
@@ -1408,6 +1437,64 @@ export function useDataViewModel(
     uploadLifecycle.markStale,
     uploadLifecycle.start,
     uploadLifecycle.succeed
+  ]);
+
+  const previewDataUploadWorkbook = useCallback(async (file: File | null) => {
+    const validationError = validateWorkbookUploadSelection(uploadCatalog, file);
+    if (validationError) {
+      // Invalidate any in-flight preview so an earlier request cannot later resolve and overwrite
+      // this rejection with a success state for the file the operator just replaced. The aborted
+      // request's finally block is gated on the (now stale) token, so it will not clear the busy
+      // flag; clear it here so the panel leaves the Previewing state and shows the validation error.
+      workbookLifecycle.invalidate();
+      setWorkbookBusy(false);
+      setWorkbookFileName(file?.name ?? null);
+      setWorkbookError(buildDataErrorState(validationError));
+      setWorkbookPreviewResult(null);
+      return;
+    }
+
+    const token = workbookLifecycle.start({ runningMessage: `Previewing ${file!.name}.` });
+    if (!token) return;
+    token.safeSetState(setWorkbookBusy, true);
+    token.safeSetState(setWorkbookFileName, file!.name);
+    token.safeSetState(setWorkbookError, null);
+    token.safeSetState(setWorkbookPreviewResult, null);
+
+    try {
+      const response = await workstationApi.previewDataUploadWorkbook(
+        { file: file! },
+        { signal: token.signal }
+      );
+      if (!token.isCurrent()) {
+        workbookLifecycle.markStale(token.version);
+        return;
+      }
+
+      token.safeSetState(setWorkbookPreviewResult, response);
+      workbookLifecycle.succeed(token, { message: "Onboarding workbook preview completed." });
+    } catch (err) {
+      if (!token.isCurrent()) {
+        workbookLifecycle.markStale(token.version);
+        return;
+      }
+
+      token.safeSetState(setWorkbookError, buildDataErrorState(err, "Onboarding workbook preview failed."));
+      workbookLifecycle.fail(token, err, { fallback: "Onboarding workbook preview failed." });
+    } finally {
+      if (token.isCurrent()) {
+        token.safeSetState(setWorkbookBusy, false);
+      }
+      workbookLifecycle.finish(token);
+    }
+  }, [
+    uploadCatalog,
+    workbookLifecycle.fail,
+    workbookLifecycle.finish,
+    workbookLifecycle.invalidate,
+    workbookLifecycle.markStale,
+    workbookLifecycle.start,
+    workbookLifecycle.succeed
   ]);
 
   const previewBackfill = useCallback(async () => {
@@ -1905,6 +1992,12 @@ export function useDataViewModel(
     uploadError,
     uploadBusy,
     uploadRequestStatus: uploadLifecycle.status,
+    previewDataUploadWorkbook,
+    workbookReviewState,
+    workbookError,
+    workbookBusy,
+    workbookFileName,
+    workbookRequestStatus: workbookLifecycle.status,
     dialogOpen,
     openBackfillDialog,
     closeBackfillDialog,
@@ -2005,6 +2098,15 @@ export function buildDataUploadPanelState(
         ariaLabel: `Download ${selectedTemplate.label} CSV template`
       }
     : null;
+  const workbookFileName = resolvedCatalog.workbookFileName?.trim();
+  const workbookDownload = workbookFileName
+    ? {
+        fileName: workbookFileName,
+        href: workstationApi.getOnboardingWorkbookDownloadUrl(),
+        label: "Download onboarding workbook (.xlsx)",
+        ariaLabel: "Download the Meridian onboarding workbook as an Excel .xlsx file"
+      }
+    : null;
   const issueRows = (preview?.issues ?? []).map(buildDataUploadIssueRow);
   const previewHeaders = preview?.headers.slice(0, 6) ?? [];
   const previewRows = (preview?.previewRows ?? []).slice(0, 3).map((row, index) => ({
@@ -2045,6 +2147,7 @@ export function buildDataUploadPanelState(
     acceptedFileTypes,
     maxFileSizeLabel: formatDataUploadFileSize(resolvedCatalog.maxFileBytes),
     templateDownload,
+    workbookDownload,
     fileInput: {
       id: "data-upload-source-file",
       label: busy ? "Previewing file" : "Upload CSV file",
@@ -4096,6 +4199,32 @@ function validateDataUploadSelection(
 
   if (Number.isFinite(file.size) && file.size > catalog.maxFileBytes) {
     return `Upload preview accepts files up to ${formatDataUploadFileSize(catalog.maxFileBytes)}.`;
+  }
+
+  return null;
+}
+
+function validateWorkbookUploadSelection(
+  catalog: DataUploadTemplateCatalog,
+  file: File | null
+): string | null {
+  if (!file) {
+    return "Choose an .xlsx workbook before previewing.";
+  }
+
+  const acceptedExtensions = (catalog.workbookAcceptedFileExtensions ?? [".xlsx"]).map((extension) =>
+    extension.toLowerCase()
+  );
+  const fileName = file.name.toLowerCase();
+  if (!acceptedExtensions.some((extension) => fileName.endsWith(extension))) {
+    return `Workbook preview accepts ${acceptedExtensions.join(", ")} files.`;
+  }
+
+  const maxBytes = catalog.workbookMaxFileBytes && catalog.workbookMaxFileBytes > 0
+    ? catalog.workbookMaxFileBytes
+    : catalog.maxFileBytes;
+  if (Number.isFinite(file.size) && file.size > maxBytes) {
+    return `Workbook preview accepts files up to ${formatDataUploadFileSize(maxBytes)}.`;
   }
 
   return null;

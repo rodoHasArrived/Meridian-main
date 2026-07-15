@@ -427,6 +427,31 @@ describe("data-screen view model", () => {
     expect(buildDataUploadTemplateCsv(template!)).toContain("trade_id,trade_date,account_code,symbol,side,quantity,price");
   });
 
+  it("surfaces the onboarding workbook download when the catalog advertises it", () => {
+    const catalog = {
+      ...defaultDataUploadTemplateCatalog,
+      workbookFileName: "meridian-onboarding-workbook.xlsx",
+      workbookAcceptedFileExtensions: [".xlsx"],
+      workbookMaxFileBytes: 15 * 1024 * 1024
+    };
+
+    const withWorkbook = buildDataUploadPanelState(catalog, "trade-data", null, null, false, null);
+    expect(withWorkbook.workbookDownload).not.toBeNull();
+    expect(withWorkbook.workbookDownload?.fileName).toBe("meridian-onboarding-workbook.xlsx");
+    expect(withWorkbook.workbookDownload?.href).toContain("/uploads/templates/workbook");
+    expect(withWorkbook.workbookDownload?.label).toContain(".xlsx");
+
+    const withoutWorkbook = buildDataUploadPanelState(
+      defaultDataUploadTemplateCatalog,
+      "trade-data",
+      null,
+      null,
+      false,
+      null
+    );
+    expect(withoutWorkbook.workbookDownload).toBeNull();
+  });
+
   it("derives route-aware loading state with operator recovery actions", () => {
     const overview = buildDataLoadingState("overview");
     expect(overview).toMatchObject({

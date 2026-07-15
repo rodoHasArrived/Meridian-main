@@ -19,6 +19,8 @@ export const WORKSTATION_API_ENDPOINTS = {
   dataQuery: UI_API_ROUTES.WorkstationDataQuery,
   dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
   dataUploadPreview: UI_API_ROUTES.WorkstationDataUploadPreview,
+  dataUploadWorkbook: UI_API_ROUTES.WorkstationDataUploadWorkbook,
+  dataUploadWorkbookPreview: UI_API_ROUTES.WorkstationDataUploadWorkbookPreview,
   ingestionOperations: UI_API_ROUTES.WorkstationIngestionOperations,
   ingestionOperation: UI_API_ROUTES.WorkstationIngestionOperationById,
   ingestionOperationAction: UI_API_ROUTES.WorkstationIngestionOperationAction,

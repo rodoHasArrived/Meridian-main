@@ -1089,6 +1089,9 @@ export interface DataUploadTemplateCatalog {
   acceptedFileExtensions: string[];
   maxPreviewRows: number;
   maxFileBytes: number;
+  workbookFileName?: string | null;
+  workbookAcceptedFileExtensions?: string[] | null;
+  workbookMaxFileBytes?: number;
 }
 
 export interface DataUploadValidationIssue {
@@ -1096,6 +1099,37 @@ export interface DataUploadValidationIssue {
   field: string;
   message: string;
   rowNumber: number | null;
+  sheetName?: string | null;
+  cellReference?: string | null;
+}
+
+export interface DataUploadWorkbookSheetPreview {
+  sheetName: string;
+  templateId: string | null;
+  templateLabel: string | null;
+  dataDomain: string | null;
+  parsedRowCount: number;
+  previewRowCount: number;
+  headers: string[];
+  previewRows: Record<string, string>[];
+  issues: DataUploadValidationIssue[];
+  status: "ReadyForReview" | "NeedsRepair" | "Empty" | string;
+}
+
+export interface DataUploadWorkbookPreviewResult {
+  uploadId: string;
+  fileName: string;
+  fileSizeBytes: number;
+  contentType: string;
+  uploadedBy: string;
+  uploadedAtUtc: string;
+  retainedPath: string;
+  sheetCount: number;
+  totalParsedRowCount: number;
+  sheets: DataUploadWorkbookSheetPreview[];
+  crossSheetIssues: DataUploadValidationIssue[];
+  status: "ReadyForReview" | "NeedsSchemaRepair" | string;
+  nextAction: string;
 }
 
 export interface DataUploadPreviewResult {
