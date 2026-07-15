@@ -525,6 +525,7 @@ public sealed record OperationsSecurityMasterResolveRequestDto(
     int OverrideRequestCount = 0,
     bool OverridesApproved = false,
     int MissingAccountingTermCount = 0,
+    IReadOnlyList<Guid>? OverrideSecurityIds = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
 public sealed record OperationsLedgerDraftRequestDto(

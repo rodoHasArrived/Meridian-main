@@ -16,57 +16,16 @@ public sealed record MarkToMarketPosition(
     string? InstrumentType = null);
 
 /// <summary>
-/// A resolved mark price with its provenance for valuation evidence.
+/// A resolved mark price with its provenance for valuation evidence. <see cref="Level"/> records
+/// the ASC 820 fair-value classification of the price and <see cref="PriceAsOf"/> the date the
+/// price was observed, so downstream valuation can assess defensibility and freshness.
 /// </summary>
 public sealed record MarkPriceQuote(
     decimal Price,
     string Source,
     string EvidenceReference,
-    DateOnly? ObservedOn = null,
-    DailyPortfolioPriceConfidence Confidence = DailyPortfolioPriceConfidence.High);
-
-/// <summary>
-/// Trust policy applied before provider marks can enter a governed valuation draft.
-/// </summary>
-public sealed record MarkPriceQualityPolicy
-{
-    public static MarkPriceQualityPolicy Standard { get; } = new(
-        TimeSpan.FromDays(3),
-        DailyPortfolioPriceConfidence.Medium,
-        RequireCompleteCoverage: false,
-        RequireObservedDate: true);
-
-    public MarkPriceQualityPolicy(
-        TimeSpan maximumAge,
-        DailyPortfolioPriceConfidence minimumConfidence,
-        bool RequireCompleteCoverage = true,
-        bool RequireObservedDate = true)
-    {
-        if (maximumAge < TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(maximumAge), "Maximum mark age cannot be negative.");
-
-        MaximumAge = maximumAge;
-        MinimumConfidence = minimumConfidence;
-        this.RequireCompleteCoverage = RequireCompleteCoverage;
-        this.RequireObservedDate = RequireObservedDate;
-    }
-
-    public TimeSpan MaximumAge { get; }
-
-    public DailyPortfolioPriceConfidence MinimumConfidence { get; }
-
-    public bool RequireCompleteCoverage { get; }
-
-    public bool RequireObservedDate { get; }
-}
-
-/// <summary>Provider mark rejected by the valuation trust policy.</summary>
-public sealed record MarkPriceRejection(
-    string Symbol,
-    string Reason,
-    DateOnly? ObservedOn = null,
-    DailyPortfolioPriceConfidence? Confidence = null,
-    string? EvidenceReference = null);
+    FairValueLevel Level = FairValueLevel.Unclassified,
+    DateOnly? PriceAsOf = null);
 
 /// <summary>
 /// Supplies mark prices for daily portfolio valuation. Implementations return null when
@@ -88,8 +47,7 @@ public sealed record DailyMarkToMarketRequest(
     string BaseCurrency,
     IReadOnlyList<MarkToMarketPosition> Positions,
     string Actor,
-    string Reason,
-    MarkPriceQualityPolicy? QualityPolicy = null);
+    string Reason);
 
 /// <summary>
 /// Outcome of a daily mark-to-market preparation run. <see cref="Approval"/> is a
@@ -99,16 +57,19 @@ public sealed record DailyMarkToMarketRequest(
 public sealed record DailyMarkToMarketRun(
     DailyPortfolioPricingProjection? Projection,
     AutomatedJournalApproval? Approval,
-    IReadOnlyList<string> UnpricedSymbols,
-    IReadOnlyList<MarkPriceRejection>? RejectedMarks = null)
+    IReadOnlyList<string> UnpricedSymbols)
 {
-    public IReadOnlyList<MarkPriceRejection> RejectedMarks { get; init; } = RejectedMarks ?? [];
-
     /// <summary>True when a governed draft was submitted for approval.</summary>
     public bool HasDraft => Approval is not null;
 
-    /// <summary>True when strict completeness policy blocked the whole valuation batch.</summary>
-    public bool IsBlocked => Approval is null && RejectedMarks.Count > 0;
+    /// <summary>
+    /// Stale-priced symbols surfaced for review: those blocked by a
+    /// <see cref="StalePriceHandling.Block"/> policy (excluded from the draft) and those retained
+    /// under a <see cref="StalePriceHandling.Flag"/> policy (included in the draft but flagged).
+    /// Symbols stale under an <see cref="StalePriceHandling.Allow"/> policy are tolerated silently
+    /// and are not listed here.
+    /// </summary>
+    public IReadOnlyList<string> StalePricedSymbols { get; init; } = [];
 }
 
 /// <summary>
@@ -145,9 +106,10 @@ public sealed class DailyMarkToMarketService
             throw new ArgumentException("Reason is required.", nameof(request));
 
         var asOfDate = DateOnly.FromDateTime(request.AsOf.UtcDateTime);
-        var qualityPolicy = request.QualityPolicy ?? MarkPriceQualityPolicy.Standard;
+        var stalePricePolicy = request.Policy.StalePricePolicy;
         var marks = new List<DailyPortfolioPriceMark>(request.Positions.Count);
-        var rejected = new List<MarkPriceRejection>();
+        var unpriced = new List<string>();
+        var stalePriced = new List<string>();
 
         foreach (var position in request.Positions)
         {
@@ -156,27 +118,41 @@ public sealed class DailyMarkToMarketService
             var quote = await _priceSource.GetMarkPriceAsync(position.Symbol, asOfDate, ct).ConfigureAwait(false);
             if (quote is null)
             {
-                rejected.Add(new MarkPriceRejection(position.Symbol, "No closing mark was available."));
+                unpriced.Add(position.Symbol);
                 _log.Warning(
                     "No mark price available for {Symbol} as of {AsOfDate}; position excluded from fair-value draft",
                     position.Symbol, asOfDate);
                 continue;
             }
 
-            var rejectionReason = EvaluateMarkQuality(quote, asOfDate, qualityPolicy);
-            if (rejectionReason is not null)
+            // A price whose observation date is unknown cannot be assessed for freshness and is
+            // treated as fresh; policies wanting to block unknown-date prices should not supply them.
+            var assessment = quote.PriceAsOf is { } priceAsOf
+                ? stalePricePolicy.Assess(priceAsOf, asOfDate)
+                : StalePriceAssessment.Fresh;
+
+            if (assessment is { IsStale: true, Handling: StalePriceHandling.Block })
             {
-                rejected.Add(new MarkPriceRejection(
-                    position.Symbol,
-                    rejectionReason,
-                    quote.ObservedOn,
-                    quote.Confidence,
-                    quote.EvidenceReference));
+                stalePriced.Add(position.Symbol);
                 _log.Warning(
-                    "Rejected mark for {Symbol} as of {AsOfDate}: {Reason}",
-                    position.Symbol, asOfDate, rejectionReason);
+                    "Mark price for {Symbol} is stale by {AgeDays}d (policy max {MaxAgeDays}d); blocked from fair-value draft",
+                    position.Symbol, assessment.AgeDays, stalePricePolicy.MaxAgeDays);
                 continue;
             }
+
+            // Only a Flag policy annotates and reports a retained stale mark; Allow tolerates it silently.
+            var flagStale = assessment is { IsStale: true, Handling: StalePriceHandling.Flag };
+            if (flagStale)
+            {
+                stalePriced.Add(position.Symbol);
+                _log.Warning(
+                    "Mark price for {Symbol} is stale by {AgeDays}d (policy max {MaxAgeDays}d); retained and flagged",
+                    position.Symbol, assessment.AgeDays, stalePricePolicy.MaxAgeDays);
+            }
+
+            var fairValueLevel = quote.Level == FairValueLevel.Unclassified
+                ? request.Policy.DefaultFairValueLevel
+                : quote.Level;
 
             marks.Add(new DailyPortfolioPriceMark(
                 position.Symbol,
@@ -187,29 +163,16 @@ public sealed class DailyMarkToMarketService
                 quote.EvidenceReference,
                 position.FinancialAccountId,
                 position.InstrumentType,
-                quote.ObservedOn,
-                quote.Confidence));
-        }
-
-        var unpriced = rejected
-            .Select(static item => item.Symbol)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        if (qualityPolicy.RequireCompleteCoverage && rejected.Count > 0)
-        {
-            _log.Warning(
-                "Daily mark-to-market run for fund {FundId} period {PeriodId} blocked because {RejectedCount} marks failed completeness policy",
-                request.Policy.FundId, request.PeriodId, rejected.Count);
-            return new DailyMarkToMarketRun(null, null, unpriced, rejected);
+                fairValueLevel,
+                flagStale));
         }
 
         if (marks.Count == 0)
         {
             _log.Warning(
-                "Daily mark-to-market run for fund {FundId} period {PeriodId} priced no positions ({UnpricedCount} unpriced)",
-                request.Policy.FundId, request.PeriodId, unpriced.Length);
-            return new DailyMarkToMarketRun(null, null, unpriced, rejected);
+                "Daily mark-to-market run for fund {FundId} period {PeriodId} priced no positions ({UnpricedCount} unpriced, {StaleCount} stale)",
+                request.Policy.FundId, request.PeriodId, unpriced.Count, stalePriced.Count);
+            return new DailyMarkToMarketRun(null, null, unpriced) { StalePricedSymbols = stalePriced };
         }
 
         var projection = DailyPortfolioPricingProjector.Project(new DailyPortfolioPricingInput(
@@ -225,7 +188,7 @@ public sealed class DailyMarkToMarketService
             _log.Information(
                 "Daily marks for fund {FundId} period {PeriodId} produced no unrealized movement; nothing to post",
                 request.Policy.FundId, request.PeriodId);
-            return new DailyMarkToMarketRun(projection, null, unpriced, rejected);
+            return new DailyMarkToMarketRun(projection, null, unpriced) { StalePricedSymbols = stalePriced };
         }
 
         var approval = AutomatedJournalApproval.Submit(
@@ -238,28 +201,8 @@ public sealed class DailyMarkToMarketService
         _log.Information(
             "Submitted fair-value draft {ApprovalId} for fund {FundId} period {PeriodId}: {LineCount} lines, net unrealized {NetUnrealized} ({UnpricedCount} unpriced)",
             approval.ApprovalId, request.Policy.FundId, request.PeriodId,
-            draft.Lines.Count, projection.NetUnrealizedGainOrLoss, unpriced.Length);
+            draft.Lines.Count, projection.NetUnrealizedGainOrLoss, unpriced.Count);
 
-        return new DailyMarkToMarketRun(projection, approval, unpriced, rejected);
-    }
-
-    private static string? EvaluateMarkQuality(
-        MarkPriceQuote quote,
-        DateOnly asOfDate,
-        MarkPriceQualityPolicy policy)
-    {
-        if (quote.Price <= 0m)
-            return $"Closing mark price must be positive (was {quote.Price}).";
-        if (quote.Confidence < policy.MinimumConfidence)
-            return $"Mark confidence {quote.Confidence} is below required {policy.MinimumConfidence}.";
-        if (!quote.ObservedOn.HasValue)
-            return policy.RequireObservedDate ? "Mark observation date is required." : null;
-        if (quote.ObservedOn.Value > asOfDate)
-            return $"Mark observation date {quote.ObservedOn:yyyy-MM-dd} is after valuation date {asOfDate:yyyy-MM-dd}.";
-
-        var age = TimeSpan.FromDays(asOfDate.DayNumber - quote.ObservedOn.Value.DayNumber);
-        return age > policy.MaximumAge
-            ? $"Mark is {age.TotalDays:0} days old; maximum allowed age is {policy.MaximumAge.TotalDays:0} days."
-            : null;
+        return new DailyMarkToMarketRun(projection, approval, unpriced) { StalePricedSymbols = stalePriced };
     }
 }

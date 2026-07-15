@@ -46,23 +46,24 @@ type ButtonChildProps = React.HTMLAttributes<HTMLElement> & {
   className?: string;
   "aria-busy"?: true;
   "aria-disabled"?: true;
+  "data-design-system-component"?: string;
   tabIndex?: number;
   title?: string;
 };
 
 const buttonVariantClasses: Record<NonNullable<DesignSystemButtonProps["variant"]>, string> = {
-  default: "border-primary bg-primary text-primary-foreground hover:bg-[var(--ws-accent-hover)] active:bg-[var(--ws-accent-pressed)]",
-  secondary: "border-border bg-secondary text-secondary-foreground hover:border-[var(--border-hover)] hover:bg-[var(--ws-row-hover)] active:bg-[var(--ws-rail-active)]",
-  outline: "border-border bg-transparent text-foreground hover:border-[var(--border-hover)] hover:bg-[var(--ws-row-hover)] active:bg-[var(--ws-rail-active)]",
-  ghost: "border-transparent bg-transparent text-muted-foreground hover:bg-[var(--ws-row-hover)] hover:text-foreground active:bg-[var(--ws-rail-active)]",
-  destructive: "border-danger/60 bg-danger/10 text-danger hover:bg-danger/15"
+  default: "mds-btn--primary border-primary bg-primary text-primary-foreground hover:bg-[var(--ws-accent-hover)] active:bg-[var(--ws-accent-pressed)]",
+  secondary: "mds-btn--ghost mds-btn--secondary border-border bg-secondary text-secondary-foreground hover:border-[var(--border-hover)] hover:bg-[var(--ws-row-hover)] active:bg-[var(--ws-rail-active)]",
+  outline: "mds-btn--ghost mds-btn--outline border-border bg-transparent text-foreground hover:border-[var(--border-hover)] hover:bg-[var(--ws-row-hover)] active:bg-[var(--ws-rail-active)]",
+  ghost: "mds-btn--link mds-btn--ghost-action border-transparent bg-transparent text-muted-foreground hover:bg-[var(--ws-row-hover)] hover:text-foreground active:bg-[var(--ws-rail-active)]",
+  destructive: "mds-btn--danger border-danger/60 bg-danger/10 text-danger hover:bg-danger/15"
 };
 
 const buttonSizeClasses: Record<NonNullable<DesignSystemButtonProps["size"]>, string> = {
-  sm: "min-h-8 px-3 py-1.5 text-xs",
-  default: "min-h-9 px-4 py-2 text-sm",
-  lg: "min-h-11 px-6 py-3 text-base",
-  icon: "h-9 w-9 p-0 text-sm"
+  sm: "mds-btn--sm min-h-8 px-3 py-1.5 text-xs",
+  default: "mds-btn--default min-h-9 px-4 py-2 text-sm",
+  lg: "mds-btn--lg min-h-11 px-6 py-3 text-base",
+  icon: "mds-btn--icon h-9 w-9 p-0 text-sm"
 };
 
 export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButtonProps>(
@@ -83,7 +84,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
   }, ref) => {
     const vm = buildButtonCommandViewModel({ disabled, busy, busyLabel, disabledReason, title });
     const classes = cn(
-      "inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
+      "mds-btn inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
       buttonVariantClasses[variant],
       buttonSizeClasses[size],
       vm.disabled && asChild && "pointer-events-none opacity-50",
@@ -112,6 +113,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
         className: cn(classes, child.props.className),
         "aria-busy": vm.ariaBusy,
         "aria-disabled": vm.ariaDisabled,
+        "data-design-system-component": "Button",
         tabIndex: vm.asChildTabIndex ?? tabIndex ?? child.props.tabIndex,
         title: vm.title ?? child.props.title,
         onClick: handleClick
@@ -124,6 +126,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
         className={classes}
         disabled={vm.disabled}
         aria-busy={vm.ariaBusy}
+        data-design-system-component="Button"
         onClick={onClick}
         tabIndex={tabIndex}
         title={vm.title}

@@ -54,6 +54,7 @@ import type {
   DataQueryResult,
   DataUploadPreviewResult,
   DataUploadTemplateCatalog,
+  DataUploadWorkbookPreviewResult,
   DataWorkspaceResponse,
   EquityCurveSummary,
   EvidenceCompleteness,
@@ -1890,6 +1891,30 @@ export function previewDataUpload(
   formData.append("templateId", request.templateId);
   formData.append("file", request.file);
   return postFormData<DataUploadPreviewResult>(WORKSTATION_API_ENDPOINTS.dataUploadPreview, formData, options);
+}
+
+export function getOnboardingWorkbookDownloadUrl(templateIds?: string[]): string {
+  const base = WORKSTATION_API_ENDPOINTS.dataUploadWorkbook;
+  const selected = (templateIds ?? []).map((id) => id.trim()).filter(Boolean);
+  if (selected.length === 0) {
+    return base;
+  }
+
+  const query = new URLSearchParams({ templateIds: selected.join(",") });
+  return `${base}?${query.toString()}`;
+}
+
+export function previewDataUploadWorkbook(
+  request: { file: File },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("file", request.file);
+  return postFormData<DataUploadWorkbookPreviewResult>(
+    WORKSTATION_API_ENDPOINTS.dataUploadWorkbookPreview,
+    formData,
+    options
+  );
 }
 
 export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {

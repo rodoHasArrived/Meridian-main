@@ -34,10 +34,6 @@ function readAccountingViewModel() {
   return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.view-model.ts"), "utf8");
 }
 
-function readAccountingSecurityMasterPanels() {
-  return readFileSync(resolve(process.cwd(), "src/screens/accounting-screen.security-master-panels.tsx"), "utf8");
-}
-
 function readDesignSystemPrimitives() {
   return readFileSync(resolve(process.cwd(), "src/design-system/primitives.tsx"), "utf8");
 }
@@ -113,8 +109,11 @@ describe("dashboard design-system contract", () => {
     const componentNames = new Set(manifest.components.map((component) => component.name));
     const bridge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/assets.ts");
     const primitives = readDesignSystemPrimitives();
-    const button = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/ui/button.tsx");
-    const badge = readDesignSystemPrimitives();
+    const button = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/button.tsx");
+    const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/badge.tsx");
+    const status = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/status.tsx");
+    const masthead = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/masthead.tsx");
+    const navRail = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/nav-rail.tsx");
     const topbar = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workstation-topbar.tsx");
     const nav = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workspace-nav.tsx");
     const statusBar = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workstation-status-bar.tsx");
@@ -142,16 +141,19 @@ describe("dashboard design-system contract", () => {
     expect(bridge).toContain("DESIGN_SYSTEM_MANIFEST_FILE");
     expect(bridge).toContain("DESIGN_SYSTEM_SHELL_ASSET_MAPPINGS");
     expect(bridge).toContain("DESIGN_SYSTEM_CORE_COMPONENTS");
-    expect(primitives).toContain("export const DESIGN_SYSTEM_TOKEN_METADATA");
-    expect(primitives).toContain("export const DesignSystemButton");
-    expect(primitives).toContain("export function DesignSystemBadge");
-    expect(primitives).toContain("export function DesignSystemStatus");
-    expect(primitives).toContain("export function DesignSystemMasthead");
-    expect(primitives).toContain("export function DesignSystemNavRail");
-    expect(primitives).toContain('"workstation-masthead", "mds-masthead", "ws-masthead"');
-    expect(primitives).toContain('"operator-rail", "mds-nav-rail", "op-rail"');
-    expect(button).toContain("DesignSystemButton");
-    expect(badge).toContain("DesignSystemBadge");
+    expect(primitives).toContain('export { DesignSystemButton, type DesignSystemButtonProps } from "@/design-system/button"');
+    expect(primitives).toContain('export { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/badge"');
+    expect(primitives).toContain('export { DesignSystemTrustStrip } from "@/design-system/trust-strip"');
+    expect(button).toContain("export const DesignSystemButton");
+    expect(badge).toContain("export function DesignSystemBadge");
+    expect(badge).toContain("mds-badge__dot");
+    expect(status).toContain("export function DesignSystemStatus");
+    expect(masthead).toContain("export function DesignSystemMasthead");
+    expect(masthead).toContain("workstation-masthead mds-masthead ws-masthead");
+    expect(navRail).toContain("export function DesignSystemNavRail");
+    expect(navRail).toContain("mds-nav-rail op-rail");
+    expect(navRail).toContain("operator-rail-nav op-rail__nav");
+    expect(navRail).toContain("operator-nav-item op-nav-item");
     expect(topbar).toContain("DesignSystemMasthead");
     expect(nav).toContain("DesignSystemNavRail");
     expect(nav).toContain("meridianWorkspaceIconAssets[item.key]");
@@ -177,7 +179,7 @@ describe("dashboard design-system contract", () => {
     expect(app).toContain("<DesignSystemMasthead");
     expect(app).toContain("meridianBrandAssets.markLight");
     expect(nav).toContain('import { meridianWorkspaceIconAssets } from "@/design-system/assets"');
-    expect(nav).toContain('import { DesignSystemNavRail } from "@/design-system/primitives"');
+    expect(nav).toContain('import { DesignSystemNavRail, designSystemNavRailClasses } from "@/design-system/primitives"');
     expect(nav).toContain("meridianWorkspaceIconAssets[item.key]");
 
     expect(existsSync(resolveDashboardAsset("app.ico"))).toBe(true);
@@ -431,17 +433,10 @@ describe("dashboard design-system contract", () => {
 
   it("keeps Security Master schedules on shared workbench primitives with view-model copy", () => {
     const screen = readAccountingScreen();
-<<<<<<< HEAD
-    const securityMasterPanels = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/accounting-screen.security-master-panels.tsx");
-    const viewModel = readAccountingViewModel();
-
-    expect(screen).toContain('import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels"');
-=======
     const securityMasterPanels = readAccountingSecurityMasterPanels();
     const viewModel = readAccountingViewModel();
 
     expect(screen).toContain('from "@/screens/accounting-screen.security-master-panels"');
->>>>>>> 8facbd635d8f4063eabf809bf413de18c7345b25
     expect(securityMasterPanels).toContain("export function SecuritySchedulesPanel");
     expect(securityMasterPanels).toContain("<DenseDataTable");
     expect(securityMasterPanels).toContain("<ToolbarStrip");
@@ -454,24 +449,10 @@ describe("dashboard design-system contract", () => {
   });
 
   it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    const badge = readDesignSystemPrimitives();
-<<<<<<< HEAD
-    const sharedToneMappings = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/shared-tone-mappings.ts");
-=======
-=======
-=======
->>>>>>> fd56968ac52a0e15075f728e2d70bc9c54cc6d60
     // The badge variant vocabulary now lives in the design-system primitive adapter that
     // `@/components/ui/badge` re-exports, so assert the semantic tones at their source.
     const badge = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/badge.tsx");
     const sharedToneMappings = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/shared-tone-mappings.ts");
-<<<<<<< HEAD
->>>>>>> bc00bfd6a5c542ab8d7e5f96a4f054e5239c4708
-=======
->>>>>>> fd56968ac52a0e15075f728e2d70bc9c54cc6d60
->>>>>>> 8facbd635d8f4063eabf809bf413de18c7345b25
     const evidenceScreen = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.tsx");
     const evidenceAssuranceLists = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-assurance-lists.tsx");
     const evidenceViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/evidence-workbench-screen.view-model.ts");
@@ -491,12 +472,8 @@ describe("dashboard design-system contract", () => {
     expect(sharedToneMappings).toContain("return \"outline\"");
     expect(evidenceScreen).toContain('import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings"');
     expect(evidenceScreen).toContain("readinessToneToBadgeVariant(panel.statusTone)");
-<<<<<<< HEAD
     expect(evidenceAssuranceLists).toContain('import { readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings"');
     expect(evidenceAssuranceLists).toContain("readinessToneToBadgeVariant(row.tone)");
-=======
-    expect(evidenceScreen).toContain("readinessToneToBadgeVariant(row.tone)");
->>>>>>> 8facbd635d8f4063eabf809bf413de18c7345b25
     expect(evidenceScreen).toContain("evidenceStatusToneToTextClass(tone)");
     expect(evidenceScreen).toContain("actionBadgeVariant[action.tone]");
 
