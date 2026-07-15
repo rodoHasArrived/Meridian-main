@@ -853,6 +853,7 @@ public static partial class WorkstationEndpoints
         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
         var sharedStrings = ReadWorkbookSharedStrings(archive);
         var dateStyles = ReadWorkbookDateStyles(archive);
+        var usesDate1904 = ReadWorkbookUsesDate1904(archive);
         var sheets = new List<WorkbookSheetContent>();
         var workbookCellCount = 0L;
         foreach (var (name, entryPath) in ResolveWorkbookSheetOrder(archive))
@@ -895,7 +896,7 @@ public static partial class WorkstationEndpoints
                         : previousRowNumber + 1;
                 previousRowNumber = rowNumber;
 
-                var values = ReadWorkbookRowValues(rowElement, sharedStrings, dateStyles).ToArray();
+                var values = ReadWorkbookRowValues(rowElement, sharedStrings, dateStyles, usesDate1904).ToArray();
                 cellCount += values.Length;
                 rows.Add(values);
                 rowNumbers.Add(rowNumber);
@@ -963,13 +964,20 @@ public static partial class WorkstationEndpoints
         }
 
         var rels = LoadWorkbookXml(relsEntry);
-        var relationshipTargets = rels
-            .Descendants(WorkbookPackageRelationshipsNamespace + "Relationship")
-            .Where(relationship => relationship.Attribute("Id")?.Value is { Length: > 0 })
-            .ToDictionary(
-                relationship => relationship.Attribute("Id")!.Value,
-                relationship => relationship.Attribute("Target")?.Value ?? string.Empty,
-                StringComparer.Ordinal);
+        var relationshipTargets = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var relationship in rels.Descendants(WorkbookPackageRelationshipsNamespace + "Relationship"))
+        {
+            var relationshipId = relationship.Attribute("Id")?.Value;
+            if (string.IsNullOrEmpty(relationshipId))
+            {
+                continue;
+            }
+
+            // Tolerate malformed packages with duplicate relationship ids (first mapping wins)
+            // instead of letting ToDictionary throw ArgumentException, which the preview handler does
+            // not translate and would surface as a 500 rather than a bad-request workbook error.
+            relationshipTargets.TryAdd(relationshipId, relationship.Attribute("Target")?.Value ?? string.Empty);
+        }
 
         var workbook = LoadWorkbookXml(workbookEntry);
 
@@ -1036,7 +1044,8 @@ public static partial class WorkstationEndpoints
     private static IEnumerable<string> ReadWorkbookRowValues(
         XElement row,
         IReadOnlyList<string> sharedStrings,
-        IReadOnlySet<int> dateStyles)
+        IReadOnlySet<int> dateStyles,
+        bool usesDate1904)
     {
         var nextColumn = 1;
         foreach (var cell in row.Elements(WorkbookSpreadsheetNamespace + "c"))
@@ -1056,7 +1065,7 @@ public static partial class WorkstationEndpoints
                 nextColumn++;
             }
 
-            yield return ReadWorkbookCellValue(cell, sharedStrings, dateStyles);
+            yield return ReadWorkbookCellValue(cell, sharedStrings, dateStyles, usesDate1904);
             nextColumn = column + 1;
         }
     }
@@ -1064,7 +1073,8 @@ public static partial class WorkstationEndpoints
     private static string ReadWorkbookCellValue(
         XElement cell,
         IReadOnlyList<string> sharedStrings,
-        IReadOnlySet<int> dateStyles)
+        IReadOnlySet<int> dateStyles,
+        bool usesDate1904)
     {
         var value = cell.Element(WorkbookSpreadsheetNamespace + "v")?.Value
             ?? cell.Element(WorkbookSpreadsheetNamespace + "is")?.Value
@@ -1088,7 +1098,9 @@ public static partial class WorkstationEndpoints
         {
             try
             {
-                var date = DateTime.FromOADate(serial);
+                // FromOADate uses the 1900 date system; workbooks flagged date1904 store serials
+                // 1462 days lower for the same calendar date, so shift before converting.
+                var date = DateTime.FromOADate(usesDate1904 ? serial + 1462 : serial);
                 return date.TimeOfDay == TimeSpan.Zero
                     ? date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
                     : date.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
@@ -1100,6 +1112,28 @@ public static partial class WorkstationEndpoints
         }
 
         return value;
+    }
+
+    /// <summary>
+    /// Returns whether the workbook uses Excel's 1904 date system (<c>workbookPr date1904</c>), whose
+    /// serials are 1462 days lower than the default 1900 system for the same calendar date.
+    /// </summary>
+    private static bool ReadWorkbookUsesDate1904(ZipArchive archive)
+    {
+        var entry = archive.GetEntry("xl/workbook.xml");
+        if (entry is null)
+        {
+            return false;
+        }
+
+        var document = LoadWorkbookXml(entry);
+        var flag = document
+            .Descendants(WorkbookSpreadsheetNamespace + "workbookPr")
+            .Select(properties => properties.Attribute("date1904")?.Value)
+            .FirstOrDefault(value => !string.IsNullOrEmpty(value));
+
+        return string.Equals(flag, "1", StringComparison.Ordinal)
+            || string.Equals(flag, "true", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
