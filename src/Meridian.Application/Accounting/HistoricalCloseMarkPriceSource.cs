@@ -44,13 +44,6 @@ public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
             }
 
             var source = string.IsNullOrWhiteSpace(bar.Source) ? _provider.Name : bar.Source;
-            var ageDays = asOf.DayNumber - bar.SessionDate.DayNumber;
-            var confidence = ageDays switch
-            {
-                <= 0 => DailyPortfolioPriceConfidence.High,
-                <= 3 => DailyPortfolioPriceConfidence.Medium,
-                _ => DailyPortfolioPriceConfidence.Low
-            };
             return new MarkPriceQuote(
                 bar.Close,
                 source,

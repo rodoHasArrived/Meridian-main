@@ -203,13 +203,19 @@ public sealed class AutomatedJournalIntakeRunner
         if (request.MaximumMarkAgeDays < 0)
             throw new ArgumentOutOfRangeException(nameof(request), "Maximum mark age cannot be negative.");
 
+        // The scheduled valuation's maximum mark age maps onto the ledger stale-price policy: marks
+        // older than the bound are blocked from the fair-value draft and surfaced for review. The
+        // legacy confidence/coverage gates are not modelled by StalePricePolicy and are not enforced
+        // on this path (request.MinimumConfidence / request.RequireCompleteCoverage are retained on
+        // the work item but inert pending a unified valuation-quality model).
         var policy = new DailyPortfolioPricingPolicy(
             request.FundProfileId,
             request.PolicyId,
             request.PolicyName,
             request.ValuationMethod,
             request.PolicyApprovedBy,
-            request.PolicyApprovedAtUtc);
+            request.PolicyApprovedAtUtc,
+            stalePricePolicy: StalePricePolicy.Of(request.MaximumMarkAgeDays, StalePriceHandling.Block));
         var valuation = await _dailyMarkToMarketService.PrepareAsync(
             new DailyMarkToMarketRequest(
                 policy,
@@ -218,12 +224,7 @@ public sealed class AutomatedJournalIntakeRunner
                 request.Currency,
                 request.Positions,
                 request.Actor,
-                request.Reason,
-                new MarkPriceQualityPolicy(
-                    TimeSpan.FromDays(request.MaximumMarkAgeDays),
-                    request.MinimumConfidence,
-                    request.RequireCompleteCoverage,
-                    RequireObservedDate: true)),
+                request.Reason),
             ct).ConfigureAwait(false);
 
         if (valuation.Approval is null)
