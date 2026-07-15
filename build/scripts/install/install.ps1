@@ -543,7 +543,6 @@ function Show-Help {
     Write-Host "  .\install.ps1 -Mode UninstallDesktop           # Uninstall Desktop App"
     Write-Host ""
     Write-Host "Environment Variables (Desktop Mode):" -ForegroundColor Yellow
-    Write-Host "  MDC_APPINSTALLER_URI      URI for AppInstaller auto-update"
     Write-Host "  MDC_SIGNING_CERT_PFX      Path to signing certificate (PFX)"
     Write-Host "  MDC_SIGNING_CERT_PASSWORD Password for signing certificate"
     Write-Host ""
@@ -1204,7 +1203,7 @@ function Install-Desktop {
                 Show-BuildError -Error "MSIX package not found at expected location" `
                     -Suggestion "Check build output and ensure the project packaged correctly" `
                     -Details @(
-                        "Expected MSIX/MSIXBundle in: $outputPath",
+                        "Expected MSIX in: $outputPath",
                         "Check publish output directory: $outputPath"
                     )
             }

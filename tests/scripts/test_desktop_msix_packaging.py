@@ -47,6 +47,8 @@ class DesktopMsixPackagingTests(unittest.TestCase):
         self.assertIn("The MSIX signing certificate could not be trusted", self.installer)
         self.assertIn("MSIX package installation failed", self.installer)
         self.assertNotIn('-not $NoTrustCert -and [string]::IsNullOrWhiteSpace($certPfxPath)', self.installer)
+        self.assertNotIn("MDC_APPINSTALLER_URI      URI", self.installer)
+        self.assertNotIn("Expected MSIX/MSIXBundle", self.installer)
 
     @unittest.skipUnless(os.name == "nt" and shutil.which("pwsh"), "requires PowerShell on Windows")
     def test_unsigned_packaging_materializes_manifest_and_assets(self) -> None:
