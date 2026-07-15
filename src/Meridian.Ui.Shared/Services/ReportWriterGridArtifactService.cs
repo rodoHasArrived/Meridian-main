@@ -39,7 +39,7 @@ public sealed class ReportWriterGridArtifactService
         ArgumentException.ThrowIfNullOrWhiteSpace(gridId);
 
         var manifest = GetManifest(runId);
-        EnsureTemplateAccess(manifest.TemplateId, accessContext);
+        EnsureRunAccess(manifest, accessContext);
 
         return GetGrid(manifest, runId, gridId);
     }
@@ -56,7 +56,7 @@ public sealed class ReportWriterGridArtifactService
         ArgumentException.ThrowIfNullOrWhiteSpace(gridId);
 
         var manifest = GetManifest(runId);
-        EnsureTemplateAccess(manifest.TemplateId, accessContext);
+        EnsureRunAccess(manifest, accessContext);
         var grid = GetGrid(manifest, runId, gridId);
         var normalizedFormat = NormalizeFormat(format);
         var safeRunId = SanitizeFileName(runId);
@@ -102,14 +102,9 @@ public sealed class ReportWriterGridArtifactService
         return EnrichGridArtifact(grid);
     }
 
-    private void EnsureTemplateAccess(string templateId, ReportAccessQueryContext? accessContext)
+    private void EnsureRunAccess(ReportingOutputManifest manifest, ReportAccessQueryContext? accessContext)
     {
-        if (_governedTemplateCatalog is null)
-        {
-            return;
-        }
-
-        var evaluation = _governedTemplateCatalog.EvaluateAccess(templateId, accessContext);
+        var evaluation = ReportAccessPolicyEvaluator.Evaluate(manifest, accessContext);
         if (!evaluation.IsAccessible)
         {
             throw new UnauthorizedAccessException(evaluation.Reason);

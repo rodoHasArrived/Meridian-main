@@ -428,6 +428,7 @@ describe("workstation API endpoint catalog", () => {
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage).toBe("/portal/reporting/packages/{packageId}");
     expect(WORKSTATION_API_ENDPOINTS.reportingStructuredExport).toBe("/api/workstation/reporting/structured-exports/{exportId}");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingStructuredExport).toBe("/api/fund-structure/reporting/structured-exports/{exportId}");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunReadiness).toBe("/api/fund-structure/reporting/runs/readiness");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunAuditTrail).toBe("/api/fund-structure/reporting/runs/{runId}/audit");
     expect(reportingRunAuditTrailEndpoint("run / 1")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/audit"

@@ -388,6 +388,9 @@ public static class WorkstationServiceCollectionExtensions
             new FileReportingStarterKitStore(
                 sp.GetRequiredService<ReportingStarterKitStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportingStarterKitStore>>()));
+        services.TryAddSingleton<IReportingRunReadinessDependencyEvaluator, ReportingRunReadinessDependencyEvaluator>();
+        services.TryAddSingleton<ReportingRunReadinessService>();
+        services.TryAddSingleton<ReportingRunCertificationService>();
         services.TryAddSingleton<ReportingRunCommandService>();
         services.TryAddSingleton(sp =>
             new ReportingScheduleService(
@@ -395,7 +398,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IReportingScheduleStore>(),
                 sp.GetService<ReportPackDeliveryService>(),
                 sp.GetService<GovernedReportingTemplateCatalog>(),
-                sp.GetService<ReportWriterDatasetSourceService>()));
+                sp.GetService<ReportWriterDatasetSourceService>(),
+                sp.GetRequiredService<ReportingRunReadinessService>(),
+                sp.GetRequiredService<ReportingRunCertificationService>()));
         services.TryAddSingleton<ReportingStarterKitService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();

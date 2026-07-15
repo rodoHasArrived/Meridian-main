@@ -2565,6 +2565,14 @@ export function runReportingNow(request: ReportingRunRequest, options: ApiReques
   return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
 }
 
+export function assessReportingRunReadiness(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
+  return postJson<import("@/types").ReportingRunReadiness>(
+    FUND_STRUCTURE_API_ENDPOINTS.reportingRunReadiness,
+    request,
+    options
+  );
+}
+
 export function previewReportPack(request: FundReportPackPreviewRequest, options: ApiRequestOptions = {}) {
   return postJson<FundReportPackPreview>(FUND_STRUCTURE_API_ENDPOINTS.reportPackPreview, request, options);
 }

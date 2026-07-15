@@ -135,6 +135,7 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingTemplateDrafts: "/api/fund-structure/reporting/templates/drafts",
   reportingTemplateRender: "/api/fund-structure/reporting/templates/render",
   reportingRuns: UI_API_ROUTES.ReportingRuns,
+  reportingRunReadiness: UI_API_ROUTES.ReportingRunReadiness,
   reportingRunAuditTrail: UI_API_ROUTES.ReportingRunAuditTrail,
   reportingRunReportWriterGrid: UI_API_ROUTES.ReportingRunReportWriterGrid,
   reportingStarterKits: UI_API_ROUTES.ReportingStarterKits,
