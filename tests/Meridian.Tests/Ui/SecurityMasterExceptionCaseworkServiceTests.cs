@@ -753,9 +753,25 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             OperatorOverrideDecisionRequest request,
             CancellationToken ct = default)
         {
+            ArgumentNullException.ThrowIfNull(request);
+            if (string.IsNullOrWhiteSpace(request.Reviewer))
+            {
+                throw new ArgumentException("reviewer must be provided.", nameof(request));
+            }
+
+            if (request.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
+            {
+                throw new ArgumentOutOfRangeException(nameof(request), request.Decision, "Approval decision must be Approved or Rejected.");
+            }
+
             if (!_overrides.TryGetValue(securityId, out var existing))
             {
                 throw new InvalidOperationException($"No operator overrides exist for security '{securityId}'.");
+            }
+
+            if (existing.ApprovalStatus != SecurityOverrideApprovalStatusDto.Pending)
+            {
+                throw new InvalidOperationException($"Operator overrides for security '{securityId}' are '{existing.ApprovalStatus}', not Pending.");
             }
 
             var reviewedAt = DateTimeOffset.UtcNow;
