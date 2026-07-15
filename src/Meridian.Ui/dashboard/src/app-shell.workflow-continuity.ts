@@ -347,6 +347,7 @@ export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryO
 
   if (route.startsWith(WORKSTATION_ROUTE_CATALOG.dataBackfills)
     || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataOperations)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataAssurance)
     || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataQuotes)
     || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataAlerts)) {
     return "validate";
