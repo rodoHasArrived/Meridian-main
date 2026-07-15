@@ -74,6 +74,19 @@ review what it understood, and you commit it into the governed stores.*
 Effort key: **S** = days, **M** = 1–2 weeks, **L** = 1+ month.
 Audience key: **H** = hobbyist, **Q** = academic, **I** = institutional/fund-ops.
 
+> **Implementation status (2026-07-15):** Ideas 1 and 2 are now implemented. Rather than adding
+> ClosedXML, the builder and parser reuse Meridian's existing Office-format seams —
+> `Meridian.Storage.Export.XlsxWorkbookWriter` for generation and the
+> `CsvPartnerFileParser` ZipArchive/shared-string technique for reading — so no new package
+> dependency was introduced. Because `XlsxWorkbookWriter` is a values-only writer, the workbook
+> ships an **Instructions** sheet, header-only data tabs, a visible **Field reference** sheet
+> (label / required / example / description per field), and a `_meta` sheet stamping template id and
+> schema version, in place of the styled dropdowns, header comments, and frozen panes the original
+> sketch envisioned (those remain a follow-up if a richer writer is adopted). New surface:
+> `GET /api/workstation/data/uploads/templates/workbook` (Idea 1) and
+> `POST /api/workstation/data/uploads/workbook/preview` (Idea 2, multi-sheet preview with per-cell
+> and cross-sheet `parent_entity_id` validation). Idea 3's commit rails remain the next step.
+
 ---
 
 ## Idea 1 — The Meridian Onboarding Workbook

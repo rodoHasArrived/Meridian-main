@@ -288,6 +288,8 @@ public static partial class WorkstationEndpoints
         .ProducesValidationProblem()
         .Produces(403)
         .Produces(501);
+
+        MapDataUploadWorkbookEndpoints(group, jsonOptions);
     }
 
     private static DataUploadTemplateCatalogDto BuildDataUploadTemplateCatalog()
@@ -538,7 +540,10 @@ public static partial class WorkstationEndpoints
                     SetupChecklist = BuildDataUploadSetupChecklist(template.TemplateId),
                     MappingGuidance = BuildDataUploadMappingGuidance(template.TemplateId)
                 })
-                .ToArray()
+                .ToArray(),
+            WorkbookFileName = OnboardingWorkbookFileName,
+            WorkbookAcceptedFileExtensions = OnboardingWorkbookAcceptedExtensions,
+            WorkbookMaxFileBytes = DataUploadWorkbookMaxFileBytes
         };
 
     private static IReadOnlyList<string> BuildDataUploadSourceKinds(string templateId)

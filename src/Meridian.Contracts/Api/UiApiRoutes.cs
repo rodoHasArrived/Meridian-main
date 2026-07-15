@@ -625,6 +625,8 @@ public static class UiApiRoutes
     public const string WorkstationDataReplacementCost = "/api/workstation/data/replacement-cost";
     public const string WorkstationDataUploadTemplates = "/api/workstation/data/uploads/templates";
     public const string WorkstationDataUploadPreview = "/api/workstation/data/uploads/preview";
+    public const string WorkstationDataUploadWorkbook = "/api/workstation/data/uploads/templates/workbook";
+    public const string WorkstationDataUploadWorkbookPreview = "/api/workstation/data/uploads/workbook/preview";
     public const string WorkstationBankStatementImport = "/api/workstation/data/uploads/bank-statements/import";
     public const string WorkstationProviderIntegrationTemplates = "/api/workstation/provider-integrations/templates";
     public const string WorkstationProviderIntegrationTemplateById = "/api/workstation/provider-integrations/templates/{manifestId}";

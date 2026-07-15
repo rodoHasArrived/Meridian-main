@@ -505,6 +505,8 @@ export const UI_API_ROUTES = {
   WorkstationDataReplacementCost: "/api/workstation/data/replacement-cost",
   WorkstationDataUploadTemplates: "/api/workstation/data/uploads/templates",
   WorkstationDataUploadPreview: "/api/workstation/data/uploads/preview",
+  WorkstationDataUploadWorkbook: "/api/workstation/data/uploads/templates/workbook",
+  WorkstationDataUploadWorkbookPreview: "/api/workstation/data/uploads/workbook/preview",
   WorkstationBankStatementImport: "/api/workstation/data/uploads/bank-statements/import",
   WorkstationProviderIntegrationTemplates: "/api/workstation/provider-integrations/templates",
   WorkstationProviderIntegrationTemplateById: "/api/workstation/provider-integrations/templates/{manifestId}",
