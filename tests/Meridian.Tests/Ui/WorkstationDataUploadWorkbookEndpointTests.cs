@@ -174,6 +174,49 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldReportActualRowNumberAfterBlankRow()
+    {
+        var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "workbook-gap", Guid.NewGuid().ToString("N"));
+        Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", root);
+
+        try
+        {
+            await using var app = await CreateAppAsync();
+            var client = app.GetTestClient();
+            // Header on row 1, a blank row 2, then a data row 3 that is missing entity_name. The issue
+            // must point at B3, not B2 (the pre-fix behavior that keyed off the parsed-row count).
+            var workbook = XlsxWorkbookWriter.CreateWorkbook(
+            [
+                WorkbookMetaSheet(("Entities", "entity-configuration")),
+                new XlsxWorksheet(
+                    "Entities",
+                    ["entity_id", "entity_name", "entity_type"],
+                    [
+                        Array.Empty<object?>(),
+                        new object?[] { "ENT-1", "", "Fund" },
+                    ]),
+            ]);
+
+            using var content = BuildWorkbookUploadContent(workbook);
+            var response = await client.PostAsync(UiApiRoutes.WorkstationDataUploadWorkbookPreview, content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<DataUploadWorkbookPreviewResultDto>(ServerJsonOptions);
+            result.Should().NotBeNull();
+
+            var entities = result!.Sheets.Single(sheet => sheet.SheetName == "Entities");
+            var missing = entities.Issues.Single(issue => issue.Field == "entity_name");
+            missing.RowNumber.Should().Be(3);
+            missing.CellReference.Should().Be("Entities!B3");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", originalRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_WorkbookPreview_ShouldNotWarnOnBlankTrailingColumns()
     {
         var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");

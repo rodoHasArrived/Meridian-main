@@ -456,7 +456,10 @@ public static partial class WorkstationEndpoints
             }
 
             parsedRowCount++;
-            var displayRowNumber = headerRowNumber + parsedRowCount;
+            // Report the true worksheet row (header row + position within the data range, 1-based),
+            // not parsedRowCount, so blank rows between data rows do not shift issue row/cell
+            // references off the cell the operator actually needs to fix.
+            var displayRowNumber = headerRowNumber + dataIndex + 1;
 
             // Excel omits empty trailing cells, so a row with fewer values than headers just means
             // optional trailing columns were left blank (missing required cells are still caught by
