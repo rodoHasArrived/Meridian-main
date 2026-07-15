@@ -130,7 +130,6 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
         onClick={onClick}
         tabIndex={tabIndex}
         title={vm.title}
-        data-design-system-component="Button"
         {...props}
       >
         {vm.showBusyIndicator && <Loader2 className="h-4 w-4 animate-spin" aria-hidden={vm.iconAriaHidden} />}
