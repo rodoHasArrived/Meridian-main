@@ -1,0 +1,614 @@
+using System.Collections.Immutable;
+using System.Security.Cryptography;
+using Meridian.Reporting;
+
+namespace Meridian.Ui.Shared.Services;
+
+/// <summary>
+/// Exact rendered bytes supplied by the reporting renderer. The vault clones these bytes before
+/// hashing or awaiting so caller-owned buffers cannot change during retention.
+/// </summary>
+public sealed record ReportingRenderedArtifact(
+    string ArtifactId,
+    string FileName,
+    string ContentType,
+    ReadOnlyMemory<byte> Content);
+
+/// <summary>
+/// Immutable package metadata bound to the exact operational, access-policy, and certified-input
+/// snapshots used to render it.
+/// </summary>
+public sealed record ReportingArtifactPackageRetentionRequest(
+    string PackageId,
+    string RunId,
+    string SeriesId,
+    int Revision,
+    ReportingOperationalScope Scope,
+    ReportingAccessScope Access,
+    ReportingCertifiedSnapshotScope Snapshot,
+    string ManifestId,
+    string ManifestHash,
+    ImmutableArray<ReportingRenderedArtifact> Artifacts);
+
+/// <summary>
+/// Server-resolved access context. API callers must never be allowed to populate this record
+/// directly; identity and scope adapters resolve it from the authenticated session.
+/// </summary>
+public sealed record ReportingArtifactAccessContext(
+    string ActorId,
+    string TenantId,
+    string OrganizationId,
+    string? CompanyId,
+    string? FundId,
+    string BookId,
+    string PeriodId,
+    ImmutableArray<string> PrincipalIds,
+    string CorrelationId);
+
+public sealed record ReportingArtifactRetentionReceipt(
+    ReportingRetainedArtifactPackage Package,
+    bool CatalogAlreadyExisted,
+    ImmutableArray<string> AuditEventIds);
+
+public sealed record ReportingArtifactDownload(
+    ReportingRetainedArtifactRecord Artifact,
+    byte[] Content,
+    DateTimeOffset AccessedAtUtc,
+    string AuditEventId);
+
+public sealed class ReportingArtifactVaultAccessDeniedException : UnauthorizedAccessException
+{
+    public ReportingArtifactVaultAccessDeniedException(string message) : base(message)
+    {
+    }
+}
+
+/// <summary>
+/// Connects generated package bytes to tenant-scoped immutable blob storage and authoritative
+/// scope metadata. Every successful read is integrity checked and durably audited before bytes are
+/// returned; audit or integrity failures therefore fail closed.
+/// </summary>
+public sealed class ReportingArtifactVaultService
+{
+    private readonly IReportingArtifactStore _artifactStore;
+    private readonly IReportingArtifactCatalog _catalog;
+    private readonly IReportingArtifactAuditStore _auditStore;
+    private readonly TimeProvider _timeProvider;
+
+    public ReportingArtifactVaultService(
+        IReportingArtifactStore artifactStore,
+        IReportingArtifactCatalog catalog,
+        IReportingArtifactAuditStore auditStore,
+        TimeProvider? timeProvider = null)
+    {
+        _artifactStore = artifactStore ?? throw new ArgumentNullException(nameof(artifactStore));
+        _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+        _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
+    public async Task<ReportingArtifactRetentionReceipt> RetainPackageAsync(
+        ReportingArtifactPackageRetentionRequest request,
+        ReportingAuthorityScope authority,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(authority);
+        ValidateRetentionRequest(request);
+        ValidateRetentionAuthority(request.Scope, authority);
+
+        var retained = ImmutableArray.CreateBuilder<ReportingRetainedArtifactRecord>(request.Artifacts.Length);
+        var writeResults = new List<ReportingArtifactWriteResult>(request.Artifacts.Length);
+
+        foreach (var artifact in request.Artifacts)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var content = artifact.Content.ToArray();
+            var expectedHash = ComputeSha256(content);
+            var expectedIdentity = new ReportingArtifactIdentity(request.Scope.TenantId, expectedHash);
+            var write = await _artifactStore
+                .StoreAsync(new ReportingArtifactWriteRequest(request.Scope.TenantId, content), cancellationToken)
+                .ConfigureAwait(false);
+
+            EnsureWriteMatchesExactBytes(expectedIdentity, content.LongLength, write);
+            writeResults.Add(write);
+            retained.Add(new ReportingRetainedArtifactRecord(
+                request.PackageId,
+                request.RunId,
+                request.SeriesId,
+                request.Revision,
+                request.Scope,
+                request.Access,
+                request.Snapshot,
+                request.ManifestId,
+                request.ManifestHash.ToLowerInvariant(),
+                artifact.ArtifactId,
+                artifact.FileName,
+                artifact.ContentType,
+                write.Identity,
+                write.ByteSize,
+                write.StoredAtUtc));
+        }
+
+        var package = new ReportingRetainedArtifactPackage(request.PackageId, retained.MoveToImmutable());
+        var catalogWrite = await _catalog.AddPackageAsync(package, cancellationToken).ConfigureAwait(false);
+        var auditEventIds = ImmutableArray.CreateBuilder<string>(package.Artifacts.Length);
+
+        for (var index = 0; index < package.Artifacts.Length; index++)
+        {
+            var record = package.Artifacts[index];
+            var action = catalogWrite.AlreadyExisted || writeResults[index].AlreadyExisted
+                ? ReportingArtifactAuditAction.RetentionVerified
+                : ReportingArtifactAuditAction.ArtifactRetained;
+            var receipt = await AppendAndVerifyAuditAsync(
+                new ReportingArtifactAuditEvent(
+                    Guid.NewGuid().ToString("N"),
+                    _timeProvider.GetUtcNow(),
+                    action,
+                    authority.ActorId,
+                    authority.TenantId,
+                    record.Scope.TenantId,
+                    record.PackageId,
+                    record.ArtifactId,
+                    record.Identity.ContentHashSha256,
+                    authority.CorrelationId,
+                    Reason: null),
+                cancellationToken).ConfigureAwait(false);
+            auditEventIds.Add(receipt.EventId);
+        }
+
+        return new ReportingArtifactRetentionReceipt(
+            package,
+            catalogWrite.AlreadyExisted,
+            auditEventIds.MoveToImmutable());
+    }
+
+    public async Task<ReportingArtifactDownload> ReadForDownloadAsync(
+        string packageId,
+        string artifactId,
+        ReportingArtifactAccessContext context,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifactId);
+        ArgumentNullException.ThrowIfNull(context);
+        ValidateAccessContext(context);
+
+        var normalizedPackageId = packageId.Trim();
+        var normalizedArtifactId = artifactId.Trim();
+        var record = await _catalog
+            .GetArtifactAsync(context.TenantId, normalizedPackageId, normalizedArtifactId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (record is null)
+        {
+            await AuditDeniedAsync(
+                normalizedPackageId,
+                normalizedArtifactId,
+                context,
+                targetTenantId: context.TenantId,
+                contentHash: null,
+                "Artifact does not exist or is not accessible.",
+                cancellationToken).ConfigureAwait(false);
+            throw new ReportingArtifactVaultAccessDeniedException("Artifact does not exist or is not accessible.");
+        }
+
+        try
+        {
+            ValidateCatalogRecord(record);
+        }
+        catch (ReportingArtifactCatalogIntegrityException ex)
+        {
+            await AuditIntegrityFailureAsync(record, context, ex.Message, cancellationToken).ConfigureAwait(false);
+            throw;
+        }
+
+        var denialReason = ResolveAccessDenial(record, context);
+        if (denialReason is not null)
+        {
+            await AuditDeniedAsync(
+                record.PackageId,
+                record.ArtifactId,
+                context,
+                record.Scope.TenantId,
+                record.Identity.ContentHashSha256,
+                denialReason,
+                cancellationToken).ConfigureAwait(false);
+            throw new ReportingArtifactVaultAccessDeniedException("Artifact does not exist or is not accessible.");
+        }
+
+        ReportingArtifactReadResult read;
+        try
+        {
+            read = await _artifactStore.ReadAsync(record.Identity, cancellationToken).ConfigureAwait(false);
+            VerifyRead(record, read);
+        }
+        catch (Exception ex) when (ex is ReportingArtifactIntegrityException or ReportingArtifactNotFoundException)
+        {
+            await AuditIntegrityFailureAsync(record, context, ex.Message, cancellationToken).ConfigureAwait(false);
+            throw;
+        }
+
+        var accessedAtUtc = _timeProvider.GetUtcNow();
+        var auditReceipt = await AppendAndVerifyAuditAsync(
+            new ReportingArtifactAuditEvent(
+                Guid.NewGuid().ToString("N"),
+                accessedAtUtc,
+                ReportingArtifactAuditAction.ContentAccessed,
+                context.ActorId,
+                context.TenantId,
+                record.Scope.TenantId,
+                record.PackageId,
+                record.ArtifactId,
+                record.Identity.ContentHashSha256,
+                context.CorrelationId,
+                Reason: null),
+            cancellationToken).ConfigureAwait(false);
+
+        return new ReportingArtifactDownload(record, read.Content, accessedAtUtc, auditReceipt.EventId);
+    }
+
+    private async ValueTask AuditDeniedAsync(
+        string packageId,
+        string artifactId,
+        ReportingArtifactAccessContext context,
+        string targetTenantId,
+        string? contentHash,
+        string reason,
+        CancellationToken cancellationToken) =>
+        await AppendAndVerifyAuditAsync(
+            new ReportingArtifactAuditEvent(
+                Guid.NewGuid().ToString("N"),
+                _timeProvider.GetUtcNow(),
+                ReportingArtifactAuditAction.AccessDenied,
+                context.ActorId,
+                context.TenantId,
+                targetTenantId,
+                packageId,
+                artifactId,
+                contentHash,
+                context.CorrelationId,
+                reason),
+            cancellationToken).ConfigureAwait(false);
+
+    private async ValueTask AuditIntegrityFailureAsync(
+        ReportingRetainedArtifactRecord record,
+        ReportingArtifactAccessContext context,
+        string reason,
+        CancellationToken cancellationToken) =>
+        await AppendAndVerifyAuditAsync(
+            new ReportingArtifactAuditEvent(
+                Guid.NewGuid().ToString("N"),
+                _timeProvider.GetUtcNow(),
+                ReportingArtifactAuditAction.IntegrityFailure,
+                context.ActorId,
+                context.TenantId,
+                record.Scope.TenantId,
+                record.PackageId,
+                record.ArtifactId,
+                record.Identity.ContentHashSha256,
+                context.CorrelationId,
+                reason),
+            cancellationToken).ConfigureAwait(false);
+
+    private async ValueTask<ReportingArtifactAuditReceipt> AppendAndVerifyAuditAsync(
+        ReportingArtifactAuditEvent auditEvent,
+        CancellationToken cancellationToken)
+    {
+        var receipt = await _auditStore.AppendAsync(auditEvent, cancellationToken).ConfigureAwait(false);
+        if (receipt is null
+            || !string.Equals(receipt.EventId, auditEvent.EventId, StringComparison.Ordinal)
+            || receipt.Sequence <= 0
+            || !IsSha256(receipt.Hash)
+            || (receipt.PreviousHash is not null && !IsSha256(receipt.PreviousHash)))
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Artifact audit store returned an invalid receipt for event '{auditEvent.EventId}'.");
+        }
+
+        return receipt;
+    }
+
+    private static void ValidateRetentionRequest(ReportingArtifactPackageRetentionRequest request)
+    {
+        RequireValue(request.PackageId, nameof(request.PackageId));
+        RequireValue(request.RunId, nameof(request.RunId));
+        RequireValue(request.SeriesId, nameof(request.SeriesId));
+        RequireValue(request.ManifestId, nameof(request.ManifestId));
+        if (request.Revision <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(request.Revision), "Reporting package revisions must be positive.");
+        }
+
+        ValidateOperationalScope(request.Scope);
+        ValidateAccessScope(request.Access);
+        if (request.Access.Mode == ReportingGovernanceAccessMode.CompanyWide
+            && string.IsNullOrWhiteSpace(request.Scope.CompanyId))
+        {
+            throw new ArgumentException(
+                "Company-wide reporting access requires an immutable company scope.",
+                nameof(request));
+        }
+        ValidateSnapshotScope(request.Scope, request.Snapshot);
+        RequireSha256(request.ManifestHash, nameof(request.ManifestHash));
+        if (request.Artifacts.IsDefaultOrEmpty)
+        {
+            throw new ArgumentException("A reporting package must contain at least one rendered artifact.", nameof(request));
+        }
+
+        var artifactIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var artifact in request.Artifacts)
+        {
+            RequireValue(artifact.ArtifactId, nameof(artifact.ArtifactId));
+            RequireValue(artifact.FileName, nameof(artifact.FileName));
+            RequireValue(artifact.ContentType, nameof(artifact.ContentType));
+            if (artifact.Content.IsEmpty)
+            {
+                throw new ArgumentException($"Rendered artifact '{artifact.ArtifactId}' is empty.", nameof(request));
+            }
+
+            if (!artifactIds.Add(artifact.ArtifactId))
+            {
+                throw new ArgumentException($"Rendered artifact id '{artifact.ArtifactId}' is duplicated.", nameof(request));
+            }
+        }
+    }
+
+    private static void ValidateRetentionAuthority(
+        ReportingOperationalScope scope,
+        ReportingAuthorityScope authority)
+    {
+        RequireValue(authority.ActorId, nameof(authority.ActorId));
+        RequireValue(authority.CorrelationId, nameof(authority.CorrelationId));
+        if (!authority.HasPermission(ReportingGovernancePermission.ExecuteRun))
+        {
+            throw new ReportingArtifactVaultAccessDeniedException(
+                "Retaining rendered artifacts requires server-resolved ExecuteRun authority.");
+        }
+
+        if (!Same(authority.TenantId, scope.TenantId)
+            || !Same(authority.OrganizationId, scope.OrganizationId)
+            || !SameOptional(authority.CompanyId, scope.CompanyId))
+        {
+            throw new ReportingArtifactVaultAccessDeniedException(
+                "Artifact retention authority is not bound to the run's tenant and organizational scope.");
+        }
+    }
+
+    private static void ValidateCatalogRecord(ReportingRetainedArtifactRecord record)
+    {
+        try
+        {
+            ArgumentNullException.ThrowIfNull(record.Identity);
+            RequireValue(record.PackageId, nameof(record.PackageId));
+            RequireValue(record.ArtifactId, nameof(record.ArtifactId));
+            RequireValue(record.Identity.TenantId, nameof(record.Identity.TenantId));
+            RequireSha256(record.Identity.ContentHashSha256, nameof(record.Identity.ContentHashSha256));
+            ValidateOperationalScope(record.Scope);
+            ValidateAccessScope(record.Access);
+            if (record.Access.Mode == ReportingGovernanceAccessMode.CompanyWide
+                && string.IsNullOrWhiteSpace(record.Scope.CompanyId))
+            {
+                throw new ArgumentException(
+                    "Company-wide reporting access has no immutable company scope.",
+                    nameof(record));
+            }
+            ValidateSnapshotScope(record.Scope, record.Snapshot);
+            RequireSha256(record.ManifestHash, nameof(record.ManifestHash));
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Artifact catalog metadata for '{record.PackageId}/{record.ArtifactId}' is invalid: {ex.Message}");
+        }
+
+        if (!Same(record.Identity.TenantId, record.Scope.TenantId))
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Artifact '{record.PackageId}/{record.ArtifactId}' is bound to a different tenant than its content address.");
+        }
+
+        if (record.ByteLength <= 0)
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Artifact '{record.PackageId}/{record.ArtifactId}' has an invalid retained byte length.");
+        }
+    }
+
+    private static string? ResolveAccessDenial(
+        ReportingRetainedArtifactRecord record,
+        ReportingArtifactAccessContext context)
+    {
+        var scope = record.Scope;
+        if (!Same(context.TenantId, scope.TenantId))
+        {
+            return "Authenticated tenant does not match retained artifact tenant.";
+        }
+
+        if (!Same(context.OrganizationId, scope.OrganizationId)
+            || !SameOptional(context.CompanyId, scope.CompanyId)
+            || !SameOptional(context.FundId, scope.FundId)
+            || !Same(context.BookId, scope.BookId)
+            || !Same(context.PeriodId, scope.PeriodId))
+        {
+            return "Authenticated operational scope does not match retained artifact scope.";
+        }
+
+        return record.Access.Mode switch
+        {
+            ReportingGovernanceAccessMode.Private
+                when !Same(context.ActorId, record.Access.OwnerPrincipalId) =>
+                "Authenticated principal does not own the private artifact.",
+            ReportingGovernanceAccessMode.Restricted
+                when !HasRestrictedPrincipal(record.Access, context) =>
+                "Authenticated principal is not included in the retained access-policy snapshot.",
+            ReportingGovernanceAccessMode.CompanyWide when string.IsNullOrWhiteSpace(scope.CompanyId) =>
+                "Company-wide artifact has no immutable company binding.",
+            _ => null
+        };
+    }
+
+    private static bool HasRestrictedPrincipal(
+        ReportingAccessScope access,
+        ReportingArtifactAccessContext context)
+    {
+        if (access.PrincipalIds.Any(principal => Same(principal, context.ActorId)))
+        {
+            return true;
+        }
+
+        return !context.PrincipalIds.IsDefaultOrEmpty
+            && context.PrincipalIds.Any(contextPrincipal =>
+                access.PrincipalIds.Any(allowed => Same(allowed, contextPrincipal)));
+    }
+
+    private static void VerifyRead(
+        ReportingRetainedArtifactRecord record,
+        ReportingArtifactReadResult read)
+    {
+        if (!Same(read.Identity.TenantId, record.Identity.TenantId)
+            || !string.Equals(
+                read.Identity.ContentHashSha256,
+                record.Identity.ContentHashSha256,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ReportingArtifactIntegrityException(
+                record.Identity,
+                "artifact store returned a different content address");
+        }
+
+        if (read.ByteSize != record.ByteLength || read.Content.LongLength != record.ByteLength)
+        {
+            throw new ReportingArtifactIntegrityException(
+                record.Identity,
+                $"catalog size {record.ByteLength} does not match retrieved size {read.Content.LongLength}");
+        }
+
+        var actualHash = ComputeSha256(read.Content);
+        if (!string.Equals(actualHash, record.Identity.ContentHashSha256, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ReportingArtifactIntegrityException(
+                record.Identity,
+                $"retrieved SHA-256 {actualHash} does not match immutable catalog identity");
+        }
+    }
+
+    private static void EnsureWriteMatchesExactBytes(
+        ReportingArtifactIdentity expectedIdentity,
+        long expectedByteLength,
+        ReportingArtifactWriteResult write)
+    {
+        if (!Same(write.Identity.TenantId, expectedIdentity.TenantId)
+            || !string.Equals(
+                write.Identity.ContentHashSha256,
+                expectedIdentity.ContentHashSha256,
+                StringComparison.OrdinalIgnoreCase)
+            || write.ByteSize != expectedByteLength)
+        {
+            throw new ReportingArtifactIntegrityException(
+                expectedIdentity,
+                "artifact store receipt does not match the exact rendered bytes supplied for retention");
+        }
+    }
+
+    private static void ValidateAccessContext(ReportingArtifactAccessContext context)
+    {
+        RequireValue(context.ActorId, nameof(context.ActorId));
+        RequireValue(context.TenantId, nameof(context.TenantId));
+        RequireValue(context.OrganizationId, nameof(context.OrganizationId));
+        RequireValue(context.BookId, nameof(context.BookId));
+        RequireValue(context.PeriodId, nameof(context.PeriodId));
+        RequireValue(context.CorrelationId, nameof(context.CorrelationId));
+    }
+
+    private static void ValidateOperationalScope(ReportingOperationalScope scope)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        RequireValue(scope.TenantId, nameof(scope.TenantId));
+        RequireValue(scope.OrganizationId, nameof(scope.OrganizationId));
+        RequireValue(scope.BookId, nameof(scope.BookId));
+        RequireValue(scope.PeriodId, nameof(scope.PeriodId));
+    }
+
+    private static void ValidateAccessScope(ReportingAccessScope access)
+    {
+        ArgumentNullException.ThrowIfNull(access);
+        RequireValue(access.PolicyId, nameof(access.PolicyId));
+        RequireValue(access.PolicyVersion, nameof(access.PolicyVersion));
+        RequireSha256(access.PolicyHash, nameof(access.PolicyHash));
+        if (!Enum.IsDefined(access.Mode))
+        {
+            throw new ArgumentOutOfRangeException(nameof(access), "Reporting access mode is invalid.");
+        }
+
+        if (access.Mode == ReportingGovernanceAccessMode.Private
+            && string.IsNullOrWhiteSpace(access.OwnerPrincipalId))
+        {
+            throw new ArgumentException("Private reporting access requires an owner principal.", nameof(access));
+        }
+
+        if (access.Mode == ReportingGovernanceAccessMode.Restricted
+            && access.PrincipalIds.IsDefaultOrEmpty)
+        {
+            throw new ArgumentException("Restricted reporting access requires at least one principal.", nameof(access));
+        }
+
+        if (access.Mode == ReportingGovernanceAccessMode.Restricted
+            && access.PrincipalIds.Any(string.IsNullOrWhiteSpace))
+        {
+            throw new ArgumentException("Restricted reporting access principals cannot be blank.", nameof(access));
+        }
+    }
+
+    private static void ValidateSnapshotScope(
+        ReportingOperationalScope scope,
+        ReportingCertifiedSnapshotScope snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        RequireValue(snapshot.SnapshotId, nameof(snapshot.SnapshotId));
+        RequireSha256(snapshot.SnapshotHash, nameof(snapshot.SnapshotHash));
+        RequireValue(snapshot.ReconciliationCheckpointId, nameof(snapshot.ReconciliationCheckpointId));
+        if (!Same(snapshot.TenantId, scope.TenantId)
+            || !Same(snapshot.OrganizationId, scope.OrganizationId)
+            || !SameOptional(snapshot.CompanyId, scope.CompanyId)
+            || !SameOptional(snapshot.FundId, scope.FundId)
+            || !Same(snapshot.BookId, scope.BookId)
+            || !Same(snapshot.PeriodId, scope.PeriodId))
+        {
+            throw new ArgumentException(
+                "Certified snapshot scope does not exactly match the reporting run scope.",
+                nameof(snapshot));
+        }
+    }
+
+    private static void RequireValue(string? value, string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException($"{parameterName} is required.", parameterName);
+        }
+    }
+
+    private static void RequireSha256(string? value, string parameterName)
+    {
+        if (!IsSha256(value))
+        {
+            throw new ArgumentException(
+                $"{parameterName} must contain exactly 64 hexadecimal SHA-256 characters.",
+                parameterName);
+        }
+    }
+
+    private static bool IsSha256(string? value) =>
+        value is { Length: 64 } && value.All(Uri.IsHexDigit);
+
+    private static bool Same(string? left, string? right) =>
+        string.Equals(left?.Trim(), right?.Trim(), StringComparison.Ordinal);
+
+    private static bool SameOptional(string? left, string? right) =>
+        string.IsNullOrWhiteSpace(left) && string.IsNullOrWhiteSpace(right)
+        || Same(left, right);
+
+    private static string ComputeSha256(ReadOnlySpan<byte> content) =>
+        Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant();
+}

@@ -52,8 +52,8 @@ public sealed class FileReportingScheduleStore : IReportingScheduleStore
             }
             catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
             {
-                _logger.LogWarning(ex, "Unable to load reporting schedule snapshot from {SnapshotPath}.", _options.SnapshotPath);
-                return [];
+                _logger.LogCritical(ex, "Reporting schedule snapshot at {SnapshotPath} is unreadable; execution is blocked.", _options.SnapshotPath);
+                throw new ReportingStateCorruptionException(_options.SnapshotPath, ex);
             }
         }
     }
@@ -81,6 +81,8 @@ public sealed class ReportingScheduleService
     private readonly ReportPackDeliveryService? _deliveryService;
     private readonly GovernedReportingTemplateCatalog? _governedTemplateCatalog;
     private readonly ReportWriterDatasetSourceService? _datasetSourceService;
+    private readonly ReportingRunReadinessService? _readinessService;
+    private readonly ReportingRunCertificationService? _certificationService;
     private readonly IReportingScheduleStore? _store;
     private readonly Dictionary<string, ReportingScheduleRecordDto> _schedules = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _gate = new();
@@ -90,12 +92,16 @@ public sealed class ReportingScheduleService
         IReportingScheduleStore? store = null,
         ReportPackDeliveryService? deliveryService = null,
         GovernedReportingTemplateCatalog? governedTemplateCatalog = null,
-        ReportWriterDatasetSourceService? datasetSourceService = null)
+        ReportWriterDatasetSourceService? datasetSourceService = null,
+        ReportingRunReadinessService? readinessService = null,
+        ReportingRunCertificationService? certificationService = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         _deliveryService = deliveryService;
         _governedTemplateCatalog = governedTemplateCatalog;
         _datasetSourceService = datasetSourceService;
+        _readinessService = readinessService;
+        _certificationService = certificationService;
         _store = store;
         foreach (var schedule in _store?.Load() ?? [])
         {
@@ -104,10 +110,16 @@ public sealed class ReportingScheduleService
     }
 
     public IReadOnlyList<ReportingScheduleRecordDto> ListSchedules(int limit = 100)
+        => ListSchedules(accessContext: null, limit);
+
+    public IReadOnlyList<ReportingScheduleRecordDto> ListSchedules(
+        ReportAccessQueryContext? accessContext,
+        int limit = 100)
     {
         lock (_gate)
         {
             return _schedules.Values
+                .Where(schedule => IsScheduleInScope(schedule, accessContext))
                 .OrderBy(static schedule => schedule.DueAtUtc)
                 .ThenBy(static schedule => schedule.ScheduleId, StringComparer.OrdinalIgnoreCase)
                 .Take(Math.Clamp(limit, 1, 500))
@@ -136,12 +148,22 @@ public sealed class ReportingScheduleService
         }
 
         EnsureTemplateAccess(request.TemplateId, accessContext);
+        EnsureBoundContext(accessContext);
+        if (accessContext?.RequireBoundScope == true && request.DatasetRows is { Count: > 0 })
+        {
+            throw new InvalidOperationException(
+                "Governed reporting schedules cannot retain caller-supplied rows; select a server-owned dataset source.");
+        }
 
         lock (_gate)
         {
             var now = DateTimeOffset.UtcNow;
             var scheduleId = request.ScheduleId.Trim();
             var existing = _schedules.GetValueOrDefault(scheduleId);
+            if (existing is not null)
+            {
+                EnsureScheduleInScope(existing, accessContext);
+            }
             var deliveryTargets = request.DeliveryTargets is null
                 ? existing?.DeliveryTargets
                 : NormalizeDeliveryTargets(request.DeliveryTargets);
@@ -176,7 +198,13 @@ public sealed class ReportingScheduleService
                 datasetRows,
                 datasetSourceId,
                 brandingThemeId,
-                brandingThemeOverride);
+                brandingThemeOverride,
+                Template: request.Template ?? existing?.Template,
+                RunParameters: request.RunParameters ?? existing?.RunParameters,
+                TenantId: existing?.TenantId ?? NormalizeDatasetSourceId(accessContext?.TenantId),
+                CompanyId: existing?.CompanyId ?? NormalizeDatasetSourceId(accessContext?.CompanyId),
+                AccessPolicySnapshot: CaptureTemplateAccessPolicy(request.TemplateId, accessContext),
+                LastReadiness: existing?.LastReadiness);
             _schedules[record.ScheduleId] = record;
             PersistSchedules();
             return record;
@@ -184,6 +212,12 @@ public sealed class ReportingScheduleService
     }
 
     public ReportingScheduleRecordDto SetState(string scheduleId, ReportingScheduleStateDto state)
+        => SetState(scheduleId, state, accessContext: null);
+
+    public ReportingScheduleRecordDto SetState(
+        string scheduleId,
+        ReportingScheduleStateDto state,
+        ReportAccessQueryContext? accessContext)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
         lock (_gate)
@@ -192,6 +226,8 @@ public sealed class ReportingScheduleService
             {
                 throw new KeyNotFoundException("reporting schedule not found");
             }
+
+            EnsureScheduleInScope(current, accessContext);
 
             var updated = current with
             {
@@ -226,17 +262,25 @@ public sealed class ReportingScheduleService
             }
         }
 
-        EnsureTemplateAccess(schedule.TemplateId, accessContext);
-        return await RunScheduleAsync(schedule, requestedBy, isDueRun: false, ct).ConfigureAwait(false);
+        EnsureScheduleAccess(schedule, accessContext);
+        EnsureScheduleInScope(schedule, accessContext);
+        return await RunScheduleAsync(schedule, requestedBy, isDueRun: false, accessContext, ct).ConfigureAwait(false);
     }
 
     public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default)
+        => await RunDueAsync(nowUtc, accessContext: null, ct).ConfigureAwait(false);
+
+    public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(
+        DateTimeOffset nowUtc,
+        ReportAccessQueryContext? accessContext,
+        CancellationToken ct = default)
     {
         ReportingScheduleRecordDto[] dueSchedules;
         lock (_gate)
         {
             dueSchedules = _schedules.Values
                 .Where(static schedule => schedule.State == ReportingScheduleStateDto.Active)
+                .Where(schedule => IsScheduleInScope(schedule, accessContext))
                 .Where(schedule => schedule.DueAtUtc <= nowUtc)
                 .OrderBy(static schedule => schedule.DueAtUtc)
                 .ThenBy(static schedule => schedule.ScheduleId, StringComparer.OrdinalIgnoreCase)
@@ -247,7 +291,7 @@ public sealed class ReportingScheduleService
         foreach (var schedule in dueSchedules)
         {
             ct.ThrowIfCancellationRequested();
-            results.Add(await RunScheduleAsync(schedule, requestedBy: null, isDueRun: true, ct).ConfigureAwait(false));
+            results.Add(await RunScheduleAsync(schedule, requestedBy: null, isDueRun: true, accessContext, ct).ConfigureAwait(false));
         }
 
         return new ReportingDueScheduleRunResultDto(nowUtc, results);
@@ -257,6 +301,7 @@ public sealed class ReportingScheduleService
         ReportingScheduleRecordDto schedule,
         string? requestedBy,
         bool isDueRun,
+        ReportAccessQueryContext? accessContext,
         CancellationToken ct)
     {
         if (schedule.State != ReportingScheduleStateDto.Active)
@@ -265,11 +310,53 @@ public sealed class ReportingScheduleService
         }
 
         var actor = string.IsNullOrWhiteSpace(requestedBy) ? schedule.RequestedBy : requestedBy.Trim();
+        var effectiveAccessContext = accessContext ?? new ReportAccessQueryContext(
+            ActorPrincipalId: actor,
+            CompanyId: schedule.CompanyId,
+            TenantId: schedule.TenantId,
+            RequireBoundScope: !string.IsNullOrWhiteSpace(schedule.TenantId));
+        EnsureScheduleInScope(schedule, effectiveAccessContext);
+        EnsureScheduleAccess(schedule, effectiveAccessContext);
+        var runRequest = new ReportingRunRequestDto(
+            schedule.TemplateId,
+            schedule.NextAsOfDate,
+            schedule.MaxRetries,
+            schedule.ScheduleId,
+            actor,
+            schedule.DatasetRows,
+            schedule.DatasetSourceId,
+            RetryReason: isDueRun
+                ? $"scheduled due run for {schedule.CronExpression}"
+                : $"manual schedule run requested by {actor}",
+            AllowRestatement: false,
+            Template: schedule.Template,
+            Parameters: schedule.RunParameters);
+        var readiness = _readinessService is null
+            ? throw new InvalidOperationException("Server reporting readiness is unavailable; scheduled execution is blocked.")
+            : await _readinessService.AssessAsync(runRequest, effectiveAccessContext, ct).ConfigureAwait(false);
+        var isFinal = readiness.ResolvedParameters.Finality == ReportingFinalityDto.Final;
+        if (!readiness.CanGenerateDraft || isFinal && !readiness.CanGenerateFinal)
+        {
+            throw new ReportingRunReadinessBlockedException(readiness);
+        }
+
         var datasetRows = ResolveDatasetRows(schedule);
         var datasetSourceEvidence = ResolveDatasetSourceEvidence(schedule);
-        var accessPolicy = ResolveTemplateAccessPolicy(schedule.TemplateId);
+        var accessPolicy = schedule.AccessPolicySnapshot;
+        var certified = effectiveAccessContext.RequireBoundScope
+            ? (_certificationService ?? throw new InvalidOperationException("Reporting snapshot certification is unavailable; scheduled execution is blocked."))
+                .Certify(
+                    (_governedTemplateCatalog ?? throw new InvalidOperationException("The governed reporting template catalog is unavailable."))
+                        .Get(readiness.ResolvedTemplate),
+                    readiness,
+                    datasetRows,
+                    datasetSourceEvidence.SourceId,
+                    effectiveAccessContext)
+            : null;
         var contract = new ReportingJobContract(
-            schedule.ScheduleId,
+            effectiveAccessContext.RequireBoundScope
+                ? $"{effectiveAccessContext.TenantId}-{schedule.ScheduleId}"
+                : schedule.ScheduleId,
             schedule.TemplateId,
             schedule.NextAsOfDate,
             ReportingRunTrigger.Scheduled,
@@ -286,10 +373,16 @@ public sealed class ReportingScheduleService
             AccessPolicy: accessPolicy,
             RetryReason: isDueRun
                 ? $"scheduled due run for {schedule.CronExpression}"
-                : $"manual schedule run requested by {actor}");
+                : $"manual schedule run requested by {actor}",
+            ResolvedTemplate: readiness.ResolvedTemplate,
+            ResolvedParameters: readiness.ResolvedParameters,
+            Readiness: readiness,
+            OperationalScope: certified?.OperationalScope,
+            ImmutableAccessScope: certified?.AccessScope,
+            CertifiedSnapshot: certified?.Snapshot);
         var manifest = await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false);
         var run = ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId));
-        var advanced = AdvanceSchedule(schedule, manifest);
+        var advanced = AdvanceSchedule(schedule, manifest) with { LastReadiness = readiness };
         var delivery = DeliverScheduledPackages(schedule, manifest, actor);
         lock (_gate)
         {
@@ -309,6 +402,13 @@ public sealed class ReportingScheduleService
         if (targets.Count == 0)
         {
             return ([], []);
+        }
+
+        if (manifest.Status != ReportingRunStatus.Released)
+        {
+            return ([], targets
+                .Select(target => $"Delivery target '{target.DistributionId}' is awaiting governed release of run '{manifest.RunId}'.")
+                .ToArray());
         }
 
         if (_deliveryService is null)
@@ -682,6 +782,18 @@ public sealed class ReportingScheduleService
         }
     }
 
+    private ReportAccessPolicyDto CaptureTemplateAccessPolicy(
+        string templateId,
+        ReportAccessQueryContext? accessContext)
+    {
+        var policy = ReportAccessPolicyEvaluator.Normalize(ResolveTemplateAccessPolicy(templateId));
+        return policy.Mode == ReportAccessModeDto.CompanyWide
+            && string.IsNullOrWhiteSpace(policy.CompanyId)
+            && !string.IsNullOrWhiteSpace(accessContext?.CompanyId)
+                ? policy with { CompanyId = accessContext.CompanyId.Trim() }
+                : policy;
+    }
+
     private static IReadOnlyList<ReportingScheduleDeliveryTargetDto>? NormalizeDeliveryTargets(
         IReadOnlyList<ReportingScheduleDeliveryTargetDto>? targets)
     {
@@ -731,10 +843,66 @@ public sealed class ReportingScheduleService
     private void EnsureTemplateAccess(string templateId, ReportAccessQueryContext? accessContext)
     {
         var accessEvaluation = _governedTemplateCatalog?.EvaluateAccess(templateId, accessContext)
-            ?? ReportAccessPolicyEvaluator.Evaluate(null, accessContext);
+            ?? ReportAccessPolicyEvaluator.Evaluate((ReportAccessPolicyDto?)null, accessContext);
         if (!accessEvaluation.IsAccessible)
         {
             throw new UnauthorizedAccessException(accessEvaluation.Reason);
+        }
+    }
+
+    private static void EnsureScheduleAccess(
+        ReportingScheduleRecordDto schedule,
+        ReportAccessQueryContext? accessContext)
+    {
+        var evaluation = ReportAccessPolicyEvaluator.Evaluate(schedule.AccessPolicySnapshot, accessContext);
+        if (!evaluation.IsAccessible)
+        {
+            throw new UnauthorizedAccessException(evaluation.Reason);
+        }
+    }
+
+    private static bool IsScheduleInScope(
+        ReportingScheduleRecordDto schedule,
+        ReportAccessQueryContext? accessContext)
+    {
+        if (accessContext is null || !accessContext.RequireBoundScope)
+        {
+            return true;
+        }
+
+        if (string.IsNullOrWhiteSpace(accessContext.ActorPrincipalId)
+            || string.IsNullOrWhiteSpace(accessContext.TenantId)
+            || string.IsNullOrWhiteSpace(accessContext.CompanyId))
+        {
+            return false;
+        }
+
+        return string.Equals(schedule.TenantId, accessContext.TenantId, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(schedule.CompanyId, accessContext.CompanyId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void EnsureScheduleInScope(
+        ReportingScheduleRecordDto schedule,
+        ReportAccessQueryContext? accessContext)
+    {
+        if (!IsScheduleInScope(schedule, accessContext))
+        {
+            throw new UnauthorizedAccessException("The reporting schedule is outside the current tenant and company scope.");
+        }
+    }
+
+    private static void EnsureBoundContext(ReportAccessQueryContext? accessContext)
+    {
+        if (accessContext is null || !accessContext.RequireBoundScope)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(accessContext.ActorPrincipalId)
+            || string.IsNullOrWhiteSpace(accessContext.TenantId)
+            || string.IsNullOrWhiteSpace(accessContext.CompanyId))
+        {
+            throw new UnauthorizedAccessException("A bound actor, tenant, and company scope is required for reporting schedules.");
         }
     }
 

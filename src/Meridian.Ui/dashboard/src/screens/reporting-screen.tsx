@@ -63,6 +63,12 @@ import {
   type ReportBrandingDraftState
 } from "@/screens/reporting-screen.branding-access";
 import type { ExportsReportRunDraftState } from "@/screens/reporting-screen.exports-runner";
+import {
+  buildDefaultReportRunParameterDraft,
+  validateAndBuildReportingRunParameters,
+  type ReportRunParameterDraftField,
+  type ReportRunParameterDraftState
+} from "@/screens/report-run-parameters-screen.view-model";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {
   ReportWriterDesignerGrid,
@@ -103,6 +109,7 @@ import type {
   ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
+  ReportingRunParameters,
   ReportingRunRequest,
   RenderReportTemplateRequest,
   ReportingScheduleUpsertRequest,
@@ -738,8 +745,31 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       if (field === "cronExpression" || field === "nextAsOfDate") {
         next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc);
       }
+      if (field === "nextAsOfDate") {
+        next.runParameters = {
+          ...next.runParameters,
+          periodId: value.slice(0, 7)
+        };
+      }
+      if (field === "templateId") {
+        const selectedTemplate = vm.templateRows.find((template) => template.id === value && template.canRunOnDemand);
+        if (selectedTemplate) {
+          next.templateId = selectedTemplate.templateName;
+          next.templateVersion = selectedTemplate.versionNumber;
+        }
+      }
       return next;
     });
+  }
+
+  function updateScheduleRunParameters(field: ReportRunParameterDraftField, value: string | boolean) {
+    setScheduleDraft((current) => ({
+      ...current,
+      runParameters: {
+        ...current.runParameters,
+        [field]: value
+      } as ReportRunParameterDraftState
+    }));
   }
 
   function toggleScheduleDraftFormat(format: ReportingScheduleArtifactFormat, isSelected: boolean) {
@@ -778,7 +808,20 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       return;
     }
 
-    const request = buildReportingScheduleUpsertRequest(scheduleDraft, brandingDraft);
+    let request: ReportingScheduleUpsertRequest;
+    try {
+      request = buildReportingScheduleUpsertRequest(scheduleDraft, brandingDraft, vm.templateRows);
+    } catch (error) {
+      const display = describeApiError(error, "The reporting schedule parameters are incomplete.");
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Save reporting schedule",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+      return;
+    }
     const targets = request.deliveryTargets ?? [];
     if (targets.some((target) => (target.formats ?? []).length === 0)) {
       setScheduleActionStatus({
@@ -2116,6 +2159,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           status={scheduleActionStatus}
           runningScheduleActionId={runningScheduleActionId}
           onDraftChange={updateScheduleDraft}
+          onRunParameterChange={updateScheduleRunParameters}
           onToggleFormat={toggleScheduleDraftFormat}
           onStageTarget={stageScheduleDraftDeliveryTarget}
           onRemoveTarget={removeScheduleDraftDeliveryTarget}
@@ -2934,7 +2978,8 @@ function buildStructuredExportDownloadHref(
 
 export function buildExportsReportRunRequest(
   template: ReportingTemplateRow | null,
-  draft: ExportsReportRunDraftState
+  draft: ExportsReportRunDraftState,
+  parameters?: ReportingRunParameters | null
 ): ReportingRunRequest {
   // Authorized restatement targets a specific released run's series: reuse its job id and as-of
   // date so the regenerated run versions into the same series (-v2) and trips the governed guard.
@@ -2960,10 +3005,15 @@ export function buildExportsReportRunRequest(
 
   return {
     templateId: template.templateName,
+    template: {
+      name: template.templateName,
+      version: template.versionNumber
+    },
     asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
     maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
-    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null
+    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null,
+    parameters: parameters ?? null
   };
 }
 
@@ -3011,6 +3061,10 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
   const scheduleId = normalizeIdentifierToken(schedule?.scheduleId, `sched-${templateId}`);
   const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, new Date().toISOString().slice(0, 10));
   const dueAtUtc = normalizeDraftText(schedule?.dueAtUtc, `${nextAsOfDate}T20:00:00Z`);
+  const retainedTemplate = schedule?.template
+    ?? (template
+      ? { name: template.templateId, version: parseReportTemplateVersion(template.version) ?? 1 }
+      : { name: templateId, version: 1 });
 
   return {
     scheduleId,
@@ -3026,7 +3080,13 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     deliveryMode: normalizeReportingScheduleDeliveryMode(firstTarget?.deliveryMode),
     deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
     formats: buildScheduleFormatSelection(firstTarget?.formats),
-    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget)
+    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget),
+    templateVersion: retainedTemplate.version,
+    runParameters: buildDefaultReportRunParameterDraft({
+      fundProfileId: reporting?.selectedFundProfileId ?? reporting?.fundProfileId,
+      asOfDate: nextAsOfDate,
+      parameters: schedule?.runParameters
+    })
   };
 }
 
@@ -3100,13 +3160,29 @@ export function resolveReportingScheduleDueAtUtc(
 
 function buildReportingScheduleUpsertRequest(
   draft: ReportingScheduleDraftState,
-  brandingDraft: ReportBrandingDraftState
+  brandingDraft: ReportBrandingDraftState,
+  templates: ReportingTemplateRow[]
 ): ReportingScheduleUpsertRequest {
   const scheduleId = normalizeIdentifierToken(draft.scheduleId, "sched-reporting-pack");
   const templateId = normalizeIdentifierToken(draft.templateId, "investor-monthly-statement");
   const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, new Date().toISOString().slice(0, 10));
   const deliveryNote = normalizeDraftText(draft.deliveryNote, "");
   const brandingThemeOverride = buildReportBrandingOverride(brandingDraft);
+  const parameterValidation = validateAndBuildReportingRunParameters(draft.runParameters, nextAsOfDate);
+  if (!parameterValidation.parameters) {
+    throw new Error(parameterValidation.issues.join(" "));
+  }
+  const exactTemplate = templates.find((template) =>
+    template.templateName === templateId && template.versionNumber === draft.templateVersion)
+    ?? templates
+      .filter((template) => template.templateName === templateId && template.canRunOnDemand)
+      .reduce<ReportingTemplateRow | null>(
+        (latest, template) => !latest || template.versionNumber > latest.versionNumber ? template : latest,
+        null
+      );
+  if (!exactTemplate) {
+    throw new Error("Select an approved reporting template version before saving the schedule.");
+  }
 
   return {
     scheduleId,
@@ -3121,7 +3197,12 @@ function buildReportingScheduleUpsertRequest(
     deliveryTargets: buildReportingScheduleDeliveryTargets(draft, deliveryNote),
     datasetSourceId: normalizeOptionalDatasetSourceId(draft.datasetSourceId),
     brandingThemeId: brandingThemeOverride.themeId,
-    brandingThemeOverride
+    brandingThemeOverride,
+    template: {
+      name: exactTemplate.templateName,
+      version: exactTemplate.versionNumber
+    },
+    runParameters: parameterValidation.parameters
   };
 }
 

@@ -1,0 +1,31 @@
+version: 1
+task_id: reporting-p0-completion
+intent: reporting-system-production-readiness
+selected_skill: meridian-implementation-assurance
+work_mode: implementation
+branch: codex/reporting-p0-foundation
+planned_paths:
+  - src/Meridian.Contracts/**
+  - src/Meridian.Reporting/**
+  - src/Meridian.Storage/Reporting/**
+  - src/Meridian.Application/**
+  - src/Meridian.Ui.Shared/**
+  - src/Meridian.Ui/dashboard/**
+  - src/Meridian.Wpf/**
+  - tests/Meridian.Tests/**
+  - docs/**
+memory_tags:
+  - reporting
+  - governance
+  - point-in-time
+  - immutable-artifacts
+  - distribution
+  - tenant-safety
+success_criteria:
+  - Reporting runs use sealed point-in-time inputs and retain a deterministic snapshot receipt.
+  - All visible run parameters reach the server and server-owned readiness blocks unsafe execution.
+  - One tenant-safe maker-checker lifecycle governs approval, release, and restatement.
+  - Released artifact bytes and audit evidence are immutable, durable, and fail closed on corruption.
+  - Distribution uses scoped opaque grants, durable queueing, truthful transports, retries, and receipts.
+  - Shared contracts, browser, WPF compatibility, documentation, tests, local CI, and GitHub Actions agree.
+promotion_candidates: []

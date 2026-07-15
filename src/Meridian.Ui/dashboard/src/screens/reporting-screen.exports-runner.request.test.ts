@@ -6,6 +6,7 @@ import type { ReportingTemplateRow } from "@/screens/reporting-screen.view-model
 function template(overrides: Partial<ReportingTemplateRow> = {}): ReportingTemplateRow {
   return {
     templateName: "investor-monthly-statement",
+    versionNumber: 1,
     hasWriterGrids: false,
     ...overrides
   } as ReportingTemplateRow;
@@ -35,6 +36,8 @@ describe("buildExportsReportRunRequest restatement authorization", () => {
     expect(request.allowRestatement).toBeUndefined();
     expect(request.jobId).toBeUndefined();
     expect(request.retryReason).toBeUndefined();
+    expect(request.template).toEqual({ name: "investor-monthly-statement", version: 1 });
+    expect(request.parameters).toBeNull();
   });
 
   it("targets the released run's series and carries the trimmed reason when restating", () => {

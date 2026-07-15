@@ -240,6 +240,23 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         };
     }
 
+    public async Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+        Guid securityId,
+        OperatorOverrideDecisionRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var result = await RecordApprovalDecisionAsync(
+                securityId,
+                new OperatorOverrideApprovalDecisionRequest(request.Decision, Comment: request.Comment),
+                request.Reviewer,
+                ct)
+            .ConfigureAwait(false);
+
+        return result ?? throw new InvalidOperationException(
+            $"No operator overrides exist for security '{securityId:D}'.");
+    }
+
     private async Task<(Dictionary<string, string> Values, IReadOnlyList<SecurityOverrideAuditEntryDto> AuditTrail)> LoadForUpdateAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
