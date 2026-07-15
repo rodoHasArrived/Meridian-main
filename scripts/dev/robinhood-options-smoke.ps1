@@ -775,6 +775,8 @@ function Wait-ForShellReady {
     $initialMarkers = $selectionMarkers + $shellMarkers + $PageMarkers
     $startupState = @{
         ContinuationInvoked = $false
+        ContextSeedInvoked = $false
+        ContextEnterInvoked = $false
         Root = $Root
     }
 
@@ -806,6 +808,30 @@ function Wait-ForShellReady {
                 Write-Log "Optional development authentication detected. Continuing without credentials."
                 Invoke-OrClickElement -Element $continueWithoutCredentials
                 $startupState.ContinuationInvoked = $true
+                return $null
+            }
+        }
+
+        if (-not $startupState.ContextEnterInvoked) {
+            $enterWorkstation = Find-FirstElementByAutomationIds -Root $activeRoot -AutomationIds @("EnterWorkstationButton")
+            if ($null -eq $enterWorkstation) {
+                $enterWorkstation = Find-FirstElementByNames -Root $activeRoot -Names @("Enter Workstation", "Enter Fund")
+            }
+
+            if ($null -ne $enterWorkstation -and $enterWorkstation.Current.IsEnabled) {
+                Write-Log "Enabled operating context detected. Entering the workstation."
+                Invoke-OrClickElement -Element $enterWorkstation
+                $startupState.ContextEnterInvoked = $true
+                return $null
+            }
+        }
+
+        if (-not $startupState.ContextSeedInvoked -and -not $startupState.ContextEnterInvoked) {
+            $seedContexts = Find-FirstElementByNames -Root $activeRoot -Names @("Seed Sample Contexts", "Seed Sample Profiles")
+            if ($null -ne $seedContexts -and $seedContexts.Current.IsEnabled) {
+                Write-Log "Empty operating context detected. Seeding sample contexts."
+                Invoke-OrClickElement -Element $seedContexts
+                $startupState.ContextSeedInvoked = $true
                 return $null
             }
         }

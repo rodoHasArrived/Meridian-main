@@ -70,6 +70,9 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('$selectionMarkers = @("Operating Context",', self.script)
         self.assertIn('@("Seed Sample Contexts", "Seed Sample Profiles")', self.script)
         self.assertIn('Enter workstation control did not become enabled after seeding sample contexts.', self.script)
+        self.assertIn('ContextSeedInvoked = $false', self.script)
+        self.assertIn('ContextEnterInvoked = $false', self.script)
+        self.assertIn('Enabled operating context detected. Entering the workstation.', self.script)
 
 
 if __name__ == "__main__":
