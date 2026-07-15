@@ -2,6 +2,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Npgsql;
 
 namespace Meridian.FinancialOperations.Ledger;
 
@@ -149,7 +150,28 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         };
 
         EnsureAccountingPeriodAcceptsPosting(approvedWrite, period);
-        await journalStore.AppendAsync(approvedWrite, ct).ConfigureAwait(false);
+        try
+        {
+            await journalStore.AppendAsync(approvedWrite, ct).ConfigureAwait(false);
+        }
+        catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UniqueViolation)
+        {
+            // Cross-instance race: another horizontally-scaled writer committed the same posting
+            // identity between the pre-append replay check and this append. Resolve it as an
+            // idempotent replay — mirroring the single-instance check above and
+            // DurableLedgerPostingTarget.PostAsync — instead of surfacing the raw unique violation.
+            var raced = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
+            if (raced is null)
+            {
+                throw;
+            }
+
+            return new PostedPostingRuleJournalCandidateResultDto(
+                candidate with { PostingCommand = approvedCommand },
+                BuildPostedResult(raced, ledgerBookId),
+                WasReplay: true);
+        }
+
         var posted = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
         return new PostedPostingRuleJournalCandidateResultDto(
             candidate with { PostingCommand = approvedCommand },

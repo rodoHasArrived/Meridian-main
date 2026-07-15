@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Npgsql;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
 
@@ -78,6 +79,24 @@ internal sealed class OperationsLedgerPostingService
                     OperationsGateKeyDto.LedgerPosting,
                     "Critical",
                     evidence));
+            }
+            catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                // Cross-instance race: another horizontally-scaled writer committed the same posting
+                // identity concurrently. Treat an already-retained posting as an idempotent success
+                // (mirroring DurableLedgerPostingTarget.PostAsync) instead of surfacing the raw
+                // unique violation as a critical ledger blocker. When the store can confirm the
+                // collision and finds none, the violation is not a duplicate and is rethrown.
+                if (_ledgerJournalStore is ILedgerPostingIdentityCollisionLookup lookup)
+                {
+                    var collisions = await lookup
+                        .FindPostingIdentityCollisionsAsync(LedgerPostingIdentity.FromWrite(journalWrite), ct)
+                        .ConfigureAwait(false);
+                    if (collisions.Count == 0)
+                    {
+                        throw;
+                    }
+                }
             }
         }
 

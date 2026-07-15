@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -162,8 +161,7 @@ public sealed class MemoryMappedJsonlReader
     {
         Interlocked.Increment(ref _filesRead);
 
-        var isCompressed = file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
-                          file.EndsWith(".gzip", StringComparison.OrdinalIgnoreCase);
+        var isCompressed = CompressedJsonlStream.IsCompressed(file);
 
         var fileInfo = new FileInfo(file);
         var useMemoryMapping = !isCompressed && fileInfo.Length >= _options.MinFileSizeForMapping;
@@ -177,7 +175,7 @@ public sealed class MemoryMappedJsonlReader
         }
         else
         {
-            await foreach (var evt in ReadFileStreamingAsync(file, isCompressed, ct))
+            await foreach (var evt in ReadFileStreamingAsync(file, ct))
             {
                 yield return evt;
             }
@@ -319,16 +317,12 @@ public sealed class MemoryMappedJsonlReader
     /// </summary>
     private async IAsyncEnumerable<MarketEvent> ReadFileStreamingAsync(
         string file,
-        bool isCompressed,
         [EnumeratorCancellation] CancellationToken ct)
     {
         await using var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, useAsync: true);
-        Stream stream = fs;
-
-        if (isCompressed)
-        {
-            stream = new GZipStream(fs, CompressionMode.Decompress);
-        }
+        // Shared codec detection (magic bytes, extension fallback) so streaming replay honors every
+        // compression suffix the storage policy can emit, not just gzip.
+        Stream stream = CompressedJsonlStream.Decompress(fs, file);
 
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 64 * 1024);
 
@@ -473,9 +467,7 @@ public sealed class MemoryMappedJsonlReader
 
         var files = Directory.EnumerateFiles(_root, "*.jsonl*", SearchOption.AllDirectories).ToList();
         var totalSize = files.Sum(f => new FileInfo(f).Length);
-        var compressedCount = files.Count(f =>
-            f.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
-            f.EndsWith(".gzip", StringComparison.OrdinalIgnoreCase));
+        var compressedCount = files.Count(CompressedJsonlStream.IsCompressed);
 
         return new FileStatistics(
             files.Count,

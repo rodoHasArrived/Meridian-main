@@ -120,6 +120,42 @@ public sealed class ImmutableAuditLogServiceTests
         audit.VerifyIntegrity().Should().BeTrue("concurrent appends must not fork the hash chain");
     }
 
+    [Fact]
+    public void Append_WithDurablePath_RehydratesChainAfterRestart()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mdc_compliance_audit_{Guid.NewGuid():N}.jsonl");
+        try
+        {
+            var actor = CreateActor();
+
+            // First "process": append to the durable log.
+            var original = new ImmutableAuditLogService(path);
+            var firstHash = original.Append(actor, CreateRequest("payment-1")).Hash;
+            var secondHash = original.Append(actor, CreateRequest("payment-2")).Hash;
+
+            // Second "process": a fresh instance over the same path must recover the full history
+            // instead of starting empty (the in-memory-only implementation lost everything here).
+            var reloaded = new ImmutableAuditLogService(path);
+
+            reloaded.GetAll().Select(static e => e.Hash).Should()
+                .ContainInOrder(firstHash, secondHash, "persisted audit events must survive a restart");
+            reloaded.VerifyIntegrity().Should().BeTrue("the rehydrated hash chain must still verify");
+
+            // A new append must continue the persisted chain, not fork from an empty log.
+            var third = reloaded.Append(actor, CreateRequest("payment-3"));
+            third.PreviousHash.Should().Be(secondHash,
+                "an append after restart must chain onto the last persisted event");
+            reloaded.VerifyIntegrity().Should().BeTrue();
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
     private static ActorContext CreateActor() => new(
         ActorId: "treasury-ops-1",
         Roles: ["TreasuryOperator"],

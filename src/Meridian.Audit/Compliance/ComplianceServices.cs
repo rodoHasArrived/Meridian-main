@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using Meridian.Identity.Auth;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Audit.Compliance;
 
@@ -64,13 +66,41 @@ public sealed class CompliancePolicyEngine : ICompliancePolicyEngine
 
 public sealed class ImmutableAuditLogService
 {
+    private static readonly JsonSerializerOptions PersistenceOptions =
+        new(JsonSerializerDefaults.Web) { WriteIndented = false };
+
     private readonly ConcurrentQueue<AuditEvent> _events = new();
 
-    // The append sequence (read tail hash → compute hash → enqueue) must be atomic.
+    // The append sequence (read tail hash → compute hash → persist → enqueue) must be atomic.
     // ConcurrentQueue makes each individual operation thread-safe, but two concurrent
     // callers would otherwise read the same predecessor hash and chain off it, silently
     // forking the tamper-evident hash chain and breaking VerifyIntegrity.
     private readonly Lock _appendLock = new();
+
+    // When set, every appended event is durably persisted (and the chain is rehydrated from disk on
+    // construction) so compliance history survives a restart. Null keeps the service purely
+    // in-memory for hosts and tests that do not configure a durable audit path.
+    private readonly string? _persistencePath;
+
+    /// <summary>
+    /// Creates a purely in-memory audit log. Events are lost on restart; use the
+    /// <see cref="ImmutableAuditLogService(string)"/> overload for durable, compliance-grade storage.
+    /// </summary>
+    public ImmutableAuditLogService()
+    {
+    }
+
+    /// <summary>
+    /// Creates a durable audit log backed by an append-only JSONL file at
+    /// <paramref name="persistencePath"/>. Existing events are rehydrated on construction so the
+    /// tamper-evident hash chain continues from the last persisted event rather than an empty log.
+    /// </summary>
+    public ImmutableAuditLogService(string persistencePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(persistencePath);
+        _persistencePath = persistencePath;
+        LoadPersistedEvents();
+    }
 
     public AuditEvent Append(ActorContext actor, ComplianceActionRequest request)
     {
@@ -100,8 +130,69 @@ public sealed class ImmutableAuditLogService
             PreviousHash: previousHash);
 
         var hashed = pending with { Hash = AuditHash.Compute(pending) };
+
+        // Persist before publishing to the in-memory queue: a failed durable write must not leave an
+        // event visible in memory but absent from disk, which would fork the chain after a restart.
+        Persist(hashed);
         _events.Enqueue(hashed);
         return hashed;
+    }
+
+    private void Persist(AuditEvent evt)
+    {
+        if (_persistencePath is null)
+        {
+            return;
+        }
+
+        var directory = Path.GetDirectoryName(_persistencePath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var payload = JsonSerializer.Serialize(evt, PersistenceOptions);
+
+        // Copy-on-write append (temp file → fsync → atomic rename → directory fsync) so a crash
+        // mid-write can never leave a torn line that would corrupt the tamper-evident chain. The
+        // append is already serialized by _appendLock, so blocking on the async primitive here does
+        // not add contention; compliance events are low-volume and privileged.
+        AtomicFileWriter.AppendLinesAsync(_persistencePath, [payload], CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+    }
+
+    private void LoadPersistedEvents()
+    {
+        if (_persistencePath is null || !File.Exists(_persistencePath))
+        {
+            return;
+        }
+
+        foreach (var line in File.ReadAllLines(_persistencePath))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            AuditEvent? evt;
+            try
+            {
+                evt = JsonSerializer.Deserialize<AuditEvent>(line, PersistenceOptions);
+            }
+            catch (JsonException)
+            {
+                // Tolerate a torn trailing line from a legacy non-atomic write; a corrupt interior
+                // line simply breaks the chain, which VerifyIntegrity then reports as tampering.
+                continue;
+            }
+
+            if (evt is not null)
+            {
+                _events.Enqueue(evt);
+            }
+        }
     }
 
     public IReadOnlyList<AuditEvent> GetAll() => _events.ToArray();

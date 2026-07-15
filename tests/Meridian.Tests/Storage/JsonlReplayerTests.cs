@@ -63,10 +63,46 @@ public sealed class JsonlReplayerTests : IDisposable
         result[0].Symbol.Should().Be("QQQ");
     }
 
+    [Fact]
+    public async Task ReadEventsAsync_WhenFileHasGzipExtension_DecompressesAndReplays()
+    {
+        // The storage policy can emit a ".gzip" suffix; the reader must recognize it, not only ".gz".
+        var file = Path.Combine(_tempRoot, "events.jsonl.gzip");
+        await WriteGzipAsync(file, BuildTrade("IWM", 1));
+
+        var result = await ReadAllAsync(new JsonlReplayer(file));
+
+        result.Should().ContainSingle();
+        result[0].Symbol.Should().Be("IWM");
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenGzipContentHasMismatchedCodecExtension_DetectsCodecFromContent()
+    {
+        // A JSONL file can be named with a codec suffix (e.g. .zst) while actually holding gzip bytes.
+        // Detection prefers the leading magic bytes, so the file is decoded by its real content
+        // rather than fed to the reader as undecoded bytes (which silently drops every line).
+        var file = Path.Combine(_tempRoot, "events.jsonl.zst");
+        await WriteGzipAsync(file, BuildTrade("DIA", 1));
+
+        var result = await ReadAllAsync(new JsonlReplayer(file));
+
+        result.Should().ContainSingle();
+        result[0].Symbol.Should().Be("DIA");
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_tempRoot))
             Directory.Delete(_tempRoot, recursive: true);
+    }
+
+    private async Task WriteGzipAsync(string file, MarketEvent evt)
+    {
+        await using var fs = File.Create(file);
+        await using var gzip = new GZipStream(fs, CompressionMode.Compress);
+        await using var writer = new StreamWriter(gzip);
+        await writer.WriteAsync(SerializeLine(evt));
     }
 
     private static MarketEvent BuildTrade(string symbol, long sequence)
