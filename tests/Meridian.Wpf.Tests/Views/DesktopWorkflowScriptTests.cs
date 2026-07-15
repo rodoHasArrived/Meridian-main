@@ -188,6 +188,15 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void DesktopWorkflowRunner_ShouldPreserveWorkflowDiagnosticsAsArtifacts()
+    {
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\desktop-workflow-runner.yml"));
+
+        workflow.Should().Contain("-OutputRoot artifacts/desktop-workflows");
+        workflow.Should().Contain("path: artifacts/desktop-workflows/");
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldBringMeridianToForegroundBeforeSavingCapture()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));

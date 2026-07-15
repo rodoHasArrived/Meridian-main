@@ -69,6 +69,7 @@ jobs:
         run: >
           scripts/dev/run-desktop-workflow.ps1
           -Workflow ${{ inputs.workflow }}
+          -OutputRoot artifacts/desktop-workflows
 
       - name: Upload run artifacts
         if: always()
