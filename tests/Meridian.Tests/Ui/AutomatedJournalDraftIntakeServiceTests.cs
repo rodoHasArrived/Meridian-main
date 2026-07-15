@@ -193,7 +193,8 @@ public sealed class AutomatedJournalDraftIntakeServiceTests
             Guid.Parse("44444444-4444-4444-8444-444444444444"),
             Guid.Parse("dddddddd-dddd-4ddd-8ddd-dddddddddddd"),
             "NVDA",
-            "batch-a") with { EntityId = "entity-beta" };
+            "batch-a") with
+        { EntityId = "entity-beta" };
         var candidate = new AutomatedJournalDraft(
             new AutomatedJournalEvent(
                 AutomatedJournalEventKind.FairValueMarkAdjustment,
