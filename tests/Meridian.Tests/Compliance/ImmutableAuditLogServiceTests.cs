@@ -156,6 +156,36 @@ public sealed class ImmutableAuditLogServiceTests
         }
     }
 
+    [Fact]
+    public void VerifyIntegrity_AfterReloadWithCorruptPersistedRecord_ReturnsFalse()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mdc_compliance_audit_{Guid.NewGuid():N}.jsonl");
+        try
+        {
+            var actor = CreateActor();
+            var original = new ImmutableAuditLogService(path);
+            original.Append(actor, CreateRequest("payment-1"));
+            original.Append(actor, CreateRequest("payment-2"));
+
+            // Corrupt the durable log with an unparseable trailing record.
+            File.AppendAllText(path, "{ not valid json" + Environment.NewLine);
+
+            // A fresh instance loads the surviving prefix but must not report the shortened,
+            // still-internally-consistent chain as valid — the corruption has to surface.
+            var reloaded = new ImmutableAuditLogService(path);
+
+            reloaded.VerifyIntegrity().Should().BeFalse(
+                "a tamper-evident log must report corruption of a persisted record, not silently drop it");
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
     private static ActorContext CreateActor() => new(
         ActorId: "treasury-ops-1",
         Roles: ["TreasuryOperator"],

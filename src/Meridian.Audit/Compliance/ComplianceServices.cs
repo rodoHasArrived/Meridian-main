@@ -77,6 +77,11 @@ public sealed class ImmutableAuditLogService
     // forking the tamper-evident hash chain and breaking VerifyIntegrity.
     private readonly Lock _appendLock = new();
 
+    // Set when a persisted record fails to parse while loading. A tamper-evident log must surface
+    // that corruption rather than silently dropping the record and reporting the shortened prefix as
+    // valid, so VerifyIntegrity fails closed. Written only during construction (single-threaded).
+    private bool _persistedRecordCorrupt;
+
     // When set, every appended event is durably persisted (and the chain is rehydrated from disk on
     // construction) so compliance history survives a restart. Null keeps the service purely
     // in-memory for hosts and tests that do not configure a durable audit path.
@@ -184,8 +189,12 @@ public sealed class ImmutableAuditLogService
             }
             catch (JsonException)
             {
-                // Tolerate a torn trailing line from a legacy non-atomic write; a corrupt interior
-                // line simply breaks the chain, which VerifyIntegrity then reports as tampering.
+                // A persisted record that no longer parses is corruption or tampering, not something
+                // to silently drop from a tamper-evident log. Flag it so VerifyIntegrity reports the
+                // log invalid even when the surviving records still chain among themselves (e.g. a
+                // truncated trailing record whose absence a plain prefix would hide). The records
+                // that did load are still enqueued so GetAll can expose them for investigation.
+                _persistedRecordCorrupt = true;
                 continue;
             }
 
@@ -200,6 +209,13 @@ public sealed class ImmutableAuditLogService
 
     public bool VerifyIntegrity()
     {
+        // A record that failed to parse on load broke the durable chain; the surviving in-memory
+        // records may still chain among themselves, so report the corruption explicitly here.
+        if (_persistedRecordCorrupt)
+        {
+            return false;
+        }
+
         string? expectedPrevious = null;
         foreach (var evt in _events)
         {
