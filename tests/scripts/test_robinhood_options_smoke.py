@@ -66,6 +66,11 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('[System.Windows.Automation.AutomationElement]::FromHandle($Process.MainWindowHandle)', self.script)
         self.assertIn('$root = Wait-ForShellReady', self.script)
 
+    def test_empty_operating_context_seeds_samples_before_entering(self) -> None:
+        self.assertIn('$selectionMarkers = @("Operating Context",', self.script)
+        self.assertIn('@("Seed Sample Contexts", "Seed Sample Profiles")', self.script)
+        self.assertIn('Enter workstation control did not become enabled after seeding sample contexts.', self.script)
+
 
 if __name__ == "__main__":
     unittest.main()

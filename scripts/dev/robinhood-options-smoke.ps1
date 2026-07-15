@@ -713,7 +713,27 @@ function Invoke-EnterWorkstation {
         $enterButton = $null
     }
 
-    if ($null -ne $enterButton) {
+    if ($null -eq $enterButton -or -not $enterButton.Current.IsEnabled) {
+        $seedButton = Find-FirstElementByNames -Root $Root -Names @("Seed Sample Contexts", "Seed Sample Profiles")
+        if ($null -ne $seedButton -and $seedButton.Current.IsEnabled) {
+            Write-Log "No selectable operating context is available. Seeding sample contexts."
+            Invoke-OrClickElement -Element $seedButton
+            $enterButton = Wait-Until -TimeoutSeconds 12 -FailureMessage "Enter workstation control did not become enabled after seeding sample contexts." -Condition {
+                $candidate = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("EnterWorkstationButton")
+                if ($null -eq $candidate) {
+                    $candidate = Find-FirstElementByNames -Root $Root -Names @("Enter Workstation", "Enter Fund")
+                }
+
+                if ($null -ne $candidate -and $candidate.Current.IsEnabled) {
+                    return $candidate
+                }
+
+                return $null
+            }
+        }
+    }
+
+    if ($null -ne $enterButton -and $enterButton.Current.IsEnabled) {
         Invoke-OrClickElement -Element $enterButton
         return
     }
@@ -750,7 +770,7 @@ function Wait-ForShellReady {
         [int]$TimeoutSeconds = 45
     )
 
-    $selectionMarkers = @("Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
+    $selectionMarkers = @("Operating Context", "Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
     $shellMarkers = @("Strategy Workspace", "Trading Workspace", "Data Workspace", "Accounting Workspace")
     $initialMarkers = $selectionMarkers + $shellMarkers + $PageMarkers
     $startupState = @{
