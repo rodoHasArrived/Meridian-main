@@ -46,7 +46,11 @@ public static class BrokerageServiceRegistration
             return ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
         });
 
-        // Register the BrokerageGatewayAdapter that bridges IBrokerageGateway → IOrderGateway
+        // Register the DI-resolvable IOrderGateway. In paper mode this is the fully functional
+        // PaperTradingGateway (paper sessions have no live broker and no gate stack to bypass).
+        // In live mode the raw BrokerageGatewayAdapter is an internal detail owned by the OMS;
+        // the resolvable gateway is a read-only view whose submit/cancel members are blocked, so
+        // live order placement cannot bypass the OMS pre-trade gate stack via IOrderGateway.
         services.TryAddSingleton<IOrderGateway>(sp =>
         {
             var brokerageConfig = sp.GetRequiredService<BrokerageConfiguration>();
@@ -59,10 +63,12 @@ public static class BrokerageServiceRegistration
                 return new Adapters.PaperTradingGateway(paperLogger, secMaster, sp.GetService<Adapters.PaperTradingGatewayOptions>());
             }
 
-            // Resolve the named brokerage gateway via keyed registration
+            // Resolve the named brokerage gateway via keyed registration, then expose it as an
+            // OMS-governed read-only view rather than a directly submittable gateway.
             var gateway = ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
             var adapterLogger = sp.GetRequiredService<ILogger<BrokerageGatewayAdapter>>();
-            return new BrokerageGatewayAdapter(gateway, adapterLogger, brokerageConfig);
+            var adapter = new BrokerageGatewayAdapter(gateway, adapterLogger, brokerageConfig);
+            return new OmsGovernedBrokerageOrderGateway(adapter);
         });
 
         // Register the OMS with the resolved gateway
