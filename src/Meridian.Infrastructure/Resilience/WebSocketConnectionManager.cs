@@ -42,6 +42,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     private DateTimeOffset? _lastMessageReceivedAt;
     private DateTimeOffset? _lastHeartbeatReceivedAt;
     private int _lastPublishedLifecycleState = (int)ProviderConnectionLifecycleState.Configured;
+    private int _disposed;
 
     /// <summary>
     /// Event raised when connection is lost (heartbeat timeout or WebSocket close).
@@ -519,6 +520,11 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        // Idempotent per the IAsyncDisposable contract: a second dispose must not
+        // re-run DisconnectAsync against the supervisor's already-disposed gates.
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            return;
+
         using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         try
         {

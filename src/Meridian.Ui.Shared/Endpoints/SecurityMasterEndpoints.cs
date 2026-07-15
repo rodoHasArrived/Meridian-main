@@ -921,6 +921,47 @@ public static class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
+        /// <summary>
+        /// Records a reviewer's approve/reject decision for a security's pending operator overrides,
+        /// transitioning the persisted approval status and appending to the durable audit trail.
+        /// Requires the <c>ModifySecurityMaster</c> permission; the reviewer is server-derived from the
+        /// authenticated principal.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns the merged overrides snapshot after the decision is applied, <c>404</c> when
+        /// no overrides exist for the security, or <c>400</c> when the decision is not Approved or
+        /// Rejected.</para>
+        /// </remarks>
+        group.MapPost(UiApiRoutes.SecurityMasterOperatorOverrideDecision, async (
+            Guid securityId,
+            OperatorOverrideApprovalDecisionRequest request,
+            HttpContext context,
+            [FromServices] IOperatorOverridesStore store,
+            CancellationToken ct) =>
+        {
+            var reviewer = ResolveActor(context);
+            try
+            {
+                var updated = await store
+                    .RecordApprovalDecisionAsync(securityId, request, reviewer, ct)
+                    .ConfigureAwait(false);
+                return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+            }
+            catch (ArgumentOutOfRangeException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+        })
+        .WithName("RecordSecurityMasterOperatorOverrideDecision")
+        .Accepts<OperatorOverrideApprovalDecisionRequest>("application/json")
+        .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
         // PATCH /api/security-master/equities/{securityId}/preferred-terms
         group.MapMethods("/api/security-master/equities/{securityId:guid}/preferred-terms", [HttpMethods.Patch], async (
             Guid securityId,

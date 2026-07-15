@@ -445,12 +445,12 @@ public sealed class AutomatedJournalIntakeRunner
             return events;
 
         return events.Select(journalEvent => journalEvent with
-            {
-                EvidenceReferences = journalEvent.EvidenceReferences
+        {
+            EvidenceReferences = journalEvent.EvidenceReferences
                     .Concat(references)
                     .DistinctBy(static reference => reference.Uri, StringComparer.OrdinalIgnoreCase)
                     .ToArray()
-            })
+        })
             .ToArray();
     }
 }

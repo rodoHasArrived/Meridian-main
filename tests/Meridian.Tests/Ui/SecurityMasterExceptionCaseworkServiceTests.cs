@@ -747,6 +747,29 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             _overrides[securityId] = updated;
             return Task.FromResult(updated);
         }
+
+        public Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
+            Guid securityId,
+            OperatorOverrideApprovalDecisionRequest request,
+            string reviewer,
+            CancellationToken ct = default)
+        {
+            if (!_overrides.TryGetValue(securityId, out var existing))
+            {
+                return Task.FromResult<OperatorOverridesDto?>(null);
+            }
+
+            var reviewedAt = DateTimeOffset.UtcNow;
+            var updated = existing with
+            {
+                ApprovalStatus = request.Decision,
+                ReasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? existing.ReasonCode : request.ReasonCode,
+                ReviewedBy = reviewer,
+                ReviewedAt = reviewedAt
+            };
+            _overrides[securityId] = updated;
+            return Task.FromResult<OperatorOverridesDto?>(updated);
+        }
     }
 
     private static string CreateTempRoot()

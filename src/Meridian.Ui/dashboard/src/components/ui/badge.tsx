@@ -13,4 +13,5 @@ import { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/
  * <Badge variant="live" dot>LIVE</Badge>
  */
 export type BadgeProps = DesignSystemBadgeProps;
+
 export const Badge = DesignSystemBadge;

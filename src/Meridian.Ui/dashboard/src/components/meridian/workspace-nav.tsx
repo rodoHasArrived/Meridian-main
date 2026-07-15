@@ -23,6 +23,10 @@ import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
  * **Status tones** for nav items are one of:
  * `"live"`, `"review"`, `"paper"`, `"preview"`, `"setup"`, or `"muted"` — each has a
  * matching `.operator-nav-status-*` CSS modifier.
+ *
+ * @example
+ * // Mount inside the .workstation-shell grid:
+ * <WorkspaceNav />
  */
 interface WorkspaceNavProps {
   className?: string;
@@ -61,7 +65,6 @@ export function WorkspaceNav({
         const iconSrc = meridianWorkspaceIconAssets[item.key];
         const expanded = expandedWorkspaces.has(item.key);
         const subMenuId = `workspace-nav-${density}-${item.key}-sections`;
-
         return (
           <React.Fragment key={item.key}>
             <div className={designSystemNavRailClasses.group}>
@@ -77,20 +80,10 @@ export function WorkspaceNav({
                   )}
                   onClick={onNavigate}
                 >
-                  <img
-                    className={designSystemNavRailClasses.itemIcon}
-                    src={iconSrc}
-                    width="16"
-                    height="16"
-                    alt=""
-                    aria-hidden="true"
-                  />
+                  <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
                   <span className="truncate font-medium">{item.label}</span>
                   {!compact ? (
-                    <span className={cn(
-                      designSystemNavRailClasses.status,
-                      designSystemNavRailClasses.statusTone(item.statusTone)
-                    )}>
+                    <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.statusTone))}>
                       <span className={designSystemNavRailClasses.statusDot} aria-hidden="true" />
                       {item.statusLabel}
                     </span>
@@ -114,13 +107,10 @@ export function WorkspaceNav({
                 ) : null}
               </div>
             </div>
-            {item.subItems.length > 0 ? (
+            {item.subItems.length > 0 && (
               <div
                 id={subMenuId}
-                className={cn(
-                  designSystemNavRailClasses.subItems,
-                  !expanded && designSystemNavRailClasses.subItemsCollapsed
-                )}
+                className={cn(designSystemNavRailClasses.subItems, !expanded && designSystemNavRailClasses.subItemsCollapsed)}
                 role="group"
                 aria-label={`${item.label} pages`}
                 aria-hidden={!expanded}
@@ -142,7 +132,7 @@ export function WorkspaceNav({
                   </Link>
                 )) : null}
               </div>
-            ) : null}
+            )}
           </React.Fragment>
         );
       })}

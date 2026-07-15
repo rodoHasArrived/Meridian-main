@@ -137,6 +137,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(UpsertSecurityAliasRequest))]
 [JsonSerializable(typeof(OperatorOverridesDto))]
 [JsonSerializable(typeof(OperatorOverridesPatchRequest))]
+[JsonSerializable(typeof(OperatorOverrideApprovalDecisionRequest))]
 [JsonSerializable(typeof(SecurityOverrideAuditEntryDto))]
 [JsonSerializable(typeof(SecurityOverrideAuditEntryDto[]))]
 [JsonSerializable(typeof(List<SecurityOverrideAuditEntryDto>))]

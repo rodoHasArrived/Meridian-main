@@ -54,9 +54,9 @@ public sealed class SystemHealthService
     /// <summary>
     /// Gets detailed diagnostics for a specific provider.
     /// </summary>
-    public async Task<ProviderDiagnostics?> GetProviderDiagnosticsAsync(string provider, CancellationToken ct = default)
+    public async Task<ProviderDiagnosticsSnapshot?> GetProviderDiagnosticsAsync(string provider, CancellationToken ct = default)
     {
-        return await _apiClient.GetAsync<ProviderDiagnostics>(BuildProviderDiagnosticsRoute(provider), ct);
+        return await _apiClient.GetAsync<ProviderDiagnosticsSnapshot>(BuildProviderDiagnosticsRoute(provider), ct);
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ public sealed class ProviderHealth
     public List<string> Issues { get; set; } = new();
 }
 
-public sealed class ProviderDiagnostics
+public sealed class ProviderDiagnosticsSnapshot
 {
     public string Provider { get; set; } = string.Empty;
     public bool IsConnected { get; set; }
