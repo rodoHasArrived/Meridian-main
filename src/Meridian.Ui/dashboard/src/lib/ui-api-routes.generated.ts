@@ -300,6 +300,7 @@ export const UI_API_ROUTES = {
   SecurityMasterCorporateActionsInboxApply: "/api/security-master/corporate-actions/inbox/apply",
   SecurityMasterCoverageDraft: "/api/security-master/coverage/draft/{symbol}",
   SecurityMasterOperatorOverrides: "/api/security-master/{securityId:guid}/operator-overrides",
+  SecurityMasterOperatorOverrideDecision: "/api/security-master/{securityId:guid}/operator-overrides/decision",
   SecurityMasterConflicts: "/api/security-master/conflicts",
   SecurityMasterConflictResolve: "/api/security-master/conflicts/{conflictId:guid}/resolve",
   SecurityMasterWorkbenchField: "/api/security-master/{securityId:guid}/workbench/field",

@@ -363,6 +363,7 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
+    public const string SecurityMasterOperatorOverrideDecision = "/api/security-master/{securityId:guid}/operator-overrides/decision";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
 

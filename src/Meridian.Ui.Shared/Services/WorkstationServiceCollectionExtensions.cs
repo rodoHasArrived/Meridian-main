@@ -271,6 +271,13 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
+        // Consolidated risk path: the same service that powers the read-only risk dashboard is the
+        // IRiskValidator the OMS invokes before routing an order. Without this registration
+        // sp.GetService<IRiskValidator>() resolved to null at every composition root and the OMS
+        // pre-trade risk block was dead code — the drawdown circuit breaker and order-rate throttle
+        // never gated an order even while the dashboard reported them.
+        services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
+            sp.GetRequiredService<RiskRuleRuntimeService>());
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
