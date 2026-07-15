@@ -56,3 +56,14 @@ public sealed record OperatorOverridesPatchRequest(
 {
     public string? ReasonCode { get; init; }
 }
+
+/// <summary>
+/// Records a reviewer's approval decision for a security's pending operator overrides. The
+/// <see cref="Decision"/> must be either <see cref="SecurityOverrideApprovalStatusDto.Approved"/> or
+/// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>; the acting reviewer is server-derived
+/// from the authenticated principal, not supplied by the caller.
+/// </summary>
+public sealed record OperatorOverrideApprovalDecisionRequest(
+    SecurityOverrideApprovalStatusDto Decision,
+    string? ReasonCode = null,
+    string? Comment = null);
