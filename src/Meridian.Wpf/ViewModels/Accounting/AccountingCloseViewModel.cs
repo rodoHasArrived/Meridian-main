@@ -1467,12 +1467,12 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
 
             ApplyClosePeriodLockIssues(result.Issues);
             ClosePeriodLockStatusText = result.Plan is
-                {
-                    ClosingEntriesGate.State: ClosePostingGateStateDto.DraftQueued or
+            {
+                ClosingEntriesGate.State: ClosePostingGateStateDto.DraftQueued or
                         ClosePostingGateStateDto.Submitted or
                         ClosePostingGateStateDto.Approved or
                         ClosePostingGateStateDto.Posted
-                } preparedPlan
+            } preparedPlan
                     ? $"Prepared closing-entry workflow for close period {preparedPlan.PeriodId}; human approval and posting remain governed."
                     : $"Closing-entry preparation is blocked by {result.Issues.Count} issue(s).";
         }
