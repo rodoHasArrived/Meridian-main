@@ -115,14 +115,13 @@ public abstract class WebSocketProviderBase :
     /// </remarks>
     public virtual ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
     {
-        var capabilities = ProviderCapabilities;
         return new ProviderRateLimitDiagnosticSnapshot(
             ProviderId: ProviderId,
             Surface: ProviderRateLimitSurfaces.Streaming,
             ObservedAt: DateTimeOffset.UtcNow,
             RequestsInWindow: 0,
-            MaxRequestsPerWindow: capabilities.MaxRequestsPerWindow,
-            Window: capabilities.RateLimitWindow,
+            MaxRequestsPerWindow: 0,
+            Window: TimeSpan.Zero,
             IsRateLimited: false,
             ResetAt: null,
             UsageRatio: 0,

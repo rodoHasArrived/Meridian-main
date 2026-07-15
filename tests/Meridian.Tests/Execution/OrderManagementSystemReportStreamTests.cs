@@ -192,7 +192,7 @@ public sealed class OrderManagementSystemReportStreamTests
         publisher.AcceptedEvents.Single().FillId.Should().NotBeEmpty();
         publisher.AcceptedEvents.Single().FinancialAccountId.Should().Be(accountId.ToString("D"));
         publishedReport.FilledQuantity.Should().Be(10m);
-        portfolio.Positions["AAPL"].Quantity.Should().Be(10m,
+        portfolio.Positions["AAPL"].Quantity.Should().Be(10L,
             "retry resumes after publication and must not reapply the portfolio side effect");
         portfolio.Cash.Should().Be(98_500m);
     }
