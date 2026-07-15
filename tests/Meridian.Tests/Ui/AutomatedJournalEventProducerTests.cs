@@ -865,7 +865,7 @@ public sealed class AutomatedJournalEventProducerTests
     }
 
     [Fact]
-    public async Task ClosePostingBridge_ReopenRetry_ReusesRetainedReversalAndRejectsDifferentCorrelation()
+    public async Task ClosePostingBridge_CloseLockedReopenRetry_ReleasesThroughReceiptAndRejectsDifferentCorrelation()
     {
         var journalPeriod = new LedgerAccountingPeriod(
             ClosedPeriodId,
@@ -919,11 +919,13 @@ public sealed class AutomatedJournalEventProducerTests
         var created = intake.Intake.Created.Should().ContainSingle().Subject;
         var postedClosingBatch = created with
         {
-            Status = ManualJournalEntryStatusDto.Posted,
+            Status = ManualJournalEntryStatusDto.CloseLocked,
             UpdatedAtUtc = AsOf,
             Version = created.Version + 1,
             PostedAtUtc = AsOf,
-            PostedBy = "fund-controller"
+            PostedBy = "fund-controller",
+            ClosedLockedAtUtc = AsOf,
+            CloseLockedBy = "close-controller"
         };
         await fixture.DraftStore.SaveAsync(postedClosingBatch);
 
@@ -999,7 +1001,7 @@ public sealed class AutomatedJournalEventProducerTests
         var afterInterruptedAttempt = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
         afterInterruptedAttempt.Drafts.Should().ContainSingle(draft =>
             draft.JournalEntryId == postedClosingBatch.JournalEntryId &&
-            draft.Status == ManualJournalEntryStatusDto.Posted);
+            draft.Status == ManualJournalEntryStatusDto.CloseLocked);
         afterInterruptedAttempt.Drafts.Should().NotContain(draft =>
             draft.ReversalOfJournalEntryId == postedClosingBatch.JournalEntryId);
 
@@ -1029,6 +1031,12 @@ public sealed class AutomatedJournalEventProducerTests
         retained.Drafts.Count(draft =>
                 draft.ReversalOfJournalEntryId == postedClosingBatch.JournalEntryId)
             .Should().Be(1, "retries and rejected correlations must reuse the retained reversal draft");
+        retained.Drafts.Should().ContainSingle(draft =>
+            draft.JournalEntryId == postedClosingBatch.JournalEntryId &&
+            draft.Status == ManualJournalEntryStatusDto.Reversed &&
+            draft.LifecycleTransitions.Any(transition =>
+                transition.Action == JournalEntryLifecycleActionDto.Reverse &&
+                transition.FromStatus == ManualJournalEntryStatusDto.CloseLocked));
     }
 
     [Fact]
