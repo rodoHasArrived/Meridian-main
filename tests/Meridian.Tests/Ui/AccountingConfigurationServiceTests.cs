@@ -1429,9 +1429,11 @@ public sealed class AccountingConfigurationServiceTests
             intake,
             new FeeScheduleAccrualEventProducer(),
             dailyMarkToMarketService: new DailyMarkToMarketService(
-                priceSource,
-                new LedgerMarkToMarketCarryingValueSource(journalStore)),
-            dailyValuationPositionService: positionService);
+                new StaticMarkPriceSource(new MarkPriceQuote(
+                    160m,
+                    "trusted-close",
+                    "evidence://prices/AAPL/2026-06-30",
+                    PriceAsOf: new DateOnly(2026, 6, 30)))));
         var scheduleSource = new InMemoryDailyValuationPortfolioSource();
         var configured = await scheduleSource.SaveAsync(new DailyValuationScheduleWorkItem(
             "daily-valuation-fund-alpha",

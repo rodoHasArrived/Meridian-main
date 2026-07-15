@@ -128,7 +128,15 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
         var declaredHash = reader.GetString(1);
         VerifyPayloadHash("artifact catalog record", declaredHash, payload);
         var artifact = DeserializeArtifact(payload);
-        ValidateArtifact(artifact);
+        try
+        {
+            ValidateArtifact(artifact);
+        }
+        catch (ArgumentException exception)
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Retained artifact metadata is invalid: {exception.Message}");
+        }
         if (!string.Equals(artifact.Scope.TenantId, normalizedTenantId, StringComparison.Ordinal)
             || !string.Equals(artifact.PackageId, normalizedPackageId, StringComparison.Ordinal)
             || !string.Equals(artifact.ArtifactId, normalizedArtifactId, StringComparison.Ordinal))
@@ -390,6 +398,33 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
         ValidateHash(artifact.Snapshot.SnapshotHash, nameof(artifact.Snapshot.SnapshotHash));
         ValidateHash(artifact.Identity.ContentHashSha256, nameof(artifact.Identity.ContentHashSha256));
 
+        if (!Enum.IsDefined(artifact.Access.Mode))
+        {
+            throw new ArgumentOutOfRangeException(nameof(artifact), "Reporting artifact access mode is invalid.");
+        }
+
+        if (artifact.Access.Mode == ReportingGovernanceAccessMode.Private
+            && string.IsNullOrWhiteSpace(artifact.Access.OwnerPrincipalId))
+        {
+            throw new ArgumentException("Private reporting artifact access requires an owner principal.", nameof(artifact));
+        }
+
+        if (artifact.Access.Mode == ReportingGovernanceAccessMode.Restricted
+            && artifact.Access.PrincipalIds.IsDefaultOrEmpty)
+        {
+            throw new ArgumentException(
+                "Restricted reporting artifact access requires at least one principal.",
+                nameof(artifact));
+        }
+
+        if (artifact.Access.Mode == ReportingGovernanceAccessMode.CompanyWide
+            && string.IsNullOrWhiteSpace(artifact.Scope.CompanyId))
+        {
+            throw new ArgumentException(
+                "Company-wide reporting artifact access requires an immutable company scope.",
+                nameof(artifact));
+        }
+
         if (!string.Equals(artifact.Scope.TenantId, artifact.Identity.TenantId, StringComparison.Ordinal)
             || !string.Equals(artifact.Scope.TenantId, artifact.Snapshot.TenantId, StringComparison.Ordinal)
             || !string.Equals(artifact.Scope.OrganizationId, artifact.Snapshot.OrganizationId, StringComparison.Ordinal)
@@ -434,7 +469,10 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
         && string.Equals(expected.PolicyVersion, candidate.PolicyVersion, StringComparison.Ordinal)
         && expected.Mode == candidate.Mode
         && string.Equals(expected.OwnerPrincipalId, candidate.OwnerPrincipalId, StringComparison.Ordinal)
-        && expected.PrincipalIds.SequenceEqual(candidate.PrincipalIds, StringComparer.Ordinal)
+        && ((expected.PrincipalIds.IsDefault && candidate.PrincipalIds.IsDefault)
+            || (!expected.PrincipalIds.IsDefault
+                && !candidate.PrincipalIds.IsDefault
+                && expected.PrincipalIds.SequenceEqual(candidate.PrincipalIds, StringComparer.Ordinal)))
         && string.Equals(expected.PolicyHash, candidate.PolicyHash, StringComparison.Ordinal);
 
     private static string SerializePackage(ReportingRetainedArtifactPackage package) =>
@@ -462,7 +500,12 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
 
     private static void VerifyPayloadHash(string label, string declaredHash, string payload)
     {
-        ValidateHash(declaredHash, nameof(declaredHash));
+        if (!IsLowercaseSha256(declaredHash))
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Retained {label} carries an invalid SHA-256 hash.");
+        }
+
         var actualHash = ComputeSha256(payload);
         if (!string.Equals(declaredHash, actualHash, StringComparison.Ordinal))
         {
@@ -518,16 +561,18 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
 
     private static void ValidateHash(string value, string parameterName)
     {
-        if (string.IsNullOrEmpty(value)
-            || value.Length != 64
-            || !value.All(Uri.IsHexDigit)
-            || !string.Equals(value, value.ToLowerInvariant(), StringComparison.Ordinal))
+        if (!IsLowercaseSha256(value))
         {
             throw new ArgumentException(
                 "Reporting catalog hashes must contain exactly 64 lowercase hexadecimal characters.",
                 parameterName);
         }
     }
+
+    private static bool IsLowercaseSha256(string? value) =>
+        value is { Length: 64 }
+        && value.All(Uri.IsHexDigit)
+        && string.Equals(value, value.ToLowerInvariant(), StringComparison.Ordinal);
 
     private static void ValidateDatabaseIdentifier(string value, string parameterName)
     {
