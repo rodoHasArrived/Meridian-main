@@ -6,6 +6,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Xunit;
@@ -267,8 +268,13 @@ public sealed class AutomatedJournalEventProducerTests
     [Fact]
     public async Task Runner_FeeAccrual_LandsDraftsInWorkbenchQueue()
     {
-        var fixture = CreateIntakeFixture();
-        var runner = new AutomatedJournalIntakeRunner(fixture.Intake, new FeeScheduleAccrualEventProducer());
+        var fixture = CreateIntakeFixture(tenantId: "tenant-alpha", companyId: "company-alpha");
+        var resolver = new StubCapitalAccountReconciliationResolver(FeeReconciliation());
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            capitalAccountReconciliationResolver: resolver,
+            timeProvider: new FixedTimeProvider(AsOf));
 
         var result = await runner.RunFeeAccrualIntakeAsync(new RunFeeAccrualDraftIntakeRequest(
             FundProfileId: "fund-alpha",
@@ -282,48 +288,79 @@ public sealed class AutomatedJournalEventProducerTests
             PerformanceFeeRate: 0.20m,
             LedgerBookId: BookId,
             EntityId: "entity-alpha",
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha",
+            EvidenceLinks: ["evidence://client/forged-ready-assertion"],
             EvidenceRetainedAtUtc: AsOf,
-            CapitalAccountReconciliation: FeeReconciliation()));
+            CapitalAccountReconciliation: FeeReconciliation(confidence: 0.01m)));
 
         result.ProducerSkips.Should().BeEmpty();
         result.Intake.Created.Should().HaveCount(2);
         result.Intake.Created.Should().OnlyContain(draft => draft.Status == ManualJournalEntryStatusDto.Draft);
+        result.Intake.Created.Should().OnlyContain(draft =>
+            !draft.EvidenceLinks.Contains("evidence://client/forged-ready-assertion"));
+        resolver.Scopes.Should().ContainSingle().Which.Should().Be(new AutomatedJournalCapitalAccountReconciliationScope(
+            "tenant-alpha",
+            "company-alpha",
+            "fund-alpha",
+            BookId,
+            "entity-alpha",
+            "2026-Q2",
+            "USD",
+            AsOf));
+        result.EvidenceAssessments.Values.Should().OnlyContain(assessment =>
+            assessment.ConfidenceScore == 0.98m &&
+            assessment.EvidenceLinks.Contains("evidence://capital-accounts/fund-alpha/2026-Q2/v42"));
 
-        var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        var workbench = await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha");
         workbench.Drafts.Should().HaveCount(2, "fee accrual drafts must be visible in the close cockpit's queue");
     }
 
     [Fact]
     public async Task Runner_FeeAccrual_WithoutReviewedCapitalAccountEvidence_FailsClosed()
     {
-        var fixture = CreateIntakeFixture();
-        var runner = new AutomatedJournalIntakeRunner(fixture.Intake, new FeeScheduleAccrualEventProducer());
+        var fixture = CreateIntakeFixture(tenantId: "tenant-alpha", companyId: "company-alpha");
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            timeProvider: new FixedTimeProvider(AsOf));
 
-        var result = await runner.RunFeeAccrualIntakeAsync(FeeIntakeRequest());
+        var result = await runner.RunFeeAccrualIntakeAsync(FeeIntakeRequest() with
+        {
+            CapitalAccountReconciliation = FeeReconciliation()
+        });
 
         result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
         result.ReadinessBlockers.Should().Contain(item =>
-            item.Contains("capital-account reconciliation", StringComparison.OrdinalIgnoreCase));
+            item.Contains("source is unavailable", StringComparison.OrdinalIgnoreCase));
         result.Intake.Created.Should().BeEmpty();
-        (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().BeEmpty();
+        (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts.Should().BeEmpty();
     }
 
     [Fact]
     public async Task Runner_FeeAccrual_ClientCannotLowerServerConfidenceOrVarianceBounds()
     {
-        var fixture = CreateIntakeFixture();
-        var runner = new AutomatedJournalIntakeRunner(fixture.Intake, new FeeScheduleAccrualEventProducer());
+        var fixture = CreateIntakeFixture(tenantId: "tenant-alpha", companyId: "company-alpha");
+        var resolver = new StubCapitalAccountReconciliationResolver(FeeReconciliation(confidence: 0.80m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            capitalAccountReconciliationResolver: resolver,
+            timeProvider: new FixedTimeProvider(AsOf));
 
         var lowConfidence = await runner.RunFeeAccrualIntakeAsync(FeeIntakeRequest() with
         {
-            CapitalAccountReconciliation = FeeReconciliation(confidence: 0.80m),
+            CapitalAccountReconciliation = FeeReconciliation(),
             MinimumCapitalAccountConfidence = 0m
         });
+        resolver.Reconciliation = FeeReconciliation(
+            maximumVarianceTolerance: 100m,
+            capitalAccountOpeningBalance: 999_999.98m);
         var looseTolerance = await runner.RunFeeAccrualIntakeAsync(FeeIntakeRequest() with
         {
-            CapitalAccountReconciliation = FeeReconciliation(
-                maximumVarianceTolerance: 100m,
-                capitalAccountOpeningBalance: 999_999.98m)
+            CapitalAccountReconciliation = FeeReconciliation()
         });
 
         lowConfidence.Readiness.Should().Be(AutomatedJournalIntakeReadiness.NeedsInvestigation);
@@ -331,7 +368,8 @@ public sealed class AutomatedJournalEventProducerTests
         looseTolerance.Readiness.Should().Be(AutomatedJournalIntakeReadiness.NeedsInvestigation);
         looseTolerance.ReadinessBlockers.Should().Contain(item =>
             item.Contains("server-governed tolerance 0.01", StringComparison.OrdinalIgnoreCase));
-        (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().BeEmpty();
+        (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts.Should().BeEmpty();
     }
 
     [Fact]
@@ -393,7 +431,9 @@ public sealed class AutomatedJournalEventProducerTests
 
     private static IntakeFixture CreateIntakeFixture(
         ILedgerJournalStore? journalStore = null,
-        IManualJournalEntryDraftStore? retainedDraftStore = null)
+        IManualJournalEntryDraftStore? retainedDraftStore = null,
+        string? tenantId = null,
+        string? companyId = null)
     {
         var configurationStore = new InMemoryAccountingConfigurationStore();
         configurationStore.SaveAsync(new AccountingConfigurationWorkspaceDto(
@@ -417,7 +457,9 @@ public sealed class AutomatedJournalEventProducerTests
             JournalTemplates: [],
             PostingRules: [],
             ValidationIssues: [],
-            AuditTrail: [])).GetAwaiter().GetResult();
+            AuditTrail: [],
+            TenantId: tenantId,
+            CompanyId: companyId)).GetAwaiter().GetResult();
 
         var configurationService = new AccountingConfigurationService(
             configurationStore,
@@ -1112,6 +1154,8 @@ public sealed class AutomatedJournalEventProducerTests
             PerformanceFeeRate: 0.20m,
             LedgerBookId: BookId,
             EntityId: "entity-alpha",
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha",
             EvidenceRetainedAtUtc: AsOf);
 
     private static AutomatedJournalCapitalAccountReconciliationDto FeeReconciliation(
@@ -1143,6 +1187,29 @@ public sealed class AutomatedJournalEventProducerTests
                     "capital-account-subledger",
                     AsOf.AddMinutes(-5))
             ]);
+
+    private sealed class StubCapitalAccountReconciliationResolver(
+        AutomatedJournalCapitalAccountReconciliationDto? reconciliation)
+        : IAutomatedJournalCapitalAccountReconciliationResolver
+    {
+        public AutomatedJournalCapitalAccountReconciliationDto? Reconciliation { get; set; } = reconciliation;
+
+        public List<AutomatedJournalCapitalAccountReconciliationScope> Scopes { get; } = [];
+
+        public Task<AutomatedJournalCapitalAccountReconciliationDto?> ResolveAsync(
+            AutomatedJournalCapitalAccountReconciliationScope scope,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            Scopes.Add(scope);
+            return Task.FromResult(Reconciliation);
+        }
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
+    }
 
     private sealed class FakeSecurityMasterQueryService : ISecurityMasterQueryService
     {

@@ -583,7 +583,9 @@ public static class WorkstationServiceCollectionExtensions
                         new RegisteredHistoricalCloseMarkPriceSource(providerRegistry),
                         new LedgerMarkToMarketCarryingValueSource(journalStore)),
                 positionService,
-                sp.GetRequiredService<AutomatedJournalEvidencePolicy>());
+                sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
+                sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
+                sp.GetRequiredService<TimeProvider>());
         });
         // The durable ledger book service is only registered when a persistence-backed ledger is
         // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph

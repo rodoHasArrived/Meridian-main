@@ -51,7 +51,8 @@ public sealed class AutomatedJournalScheduleTests
         persisted.ScheduledForUtc.Should().Be(new DateTimeOffset(2026, 9, 1, 9, 0, 0, TimeSpan.Zero));
         persisted.CapitalAccountReconciliation.Should().BeNull("each recurring fee cycle requires a new reviewed tie-out");
         persisted.RunHistory.Single().State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
-        var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        var workbench = await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha");
         workbench.Drafts.Should().HaveCount(2);
         workbench.Drafts.Should().OnlyContain(static draft =>
             draft.Status == ManualJournalEntryStatusDto.Draft &&
@@ -68,7 +69,9 @@ public sealed class AutomatedJournalScheduleTests
                 "automated-journal-scheduler",
                 firstDraft.Version,
                 ActionOrigin: OperationsActionOriginDto.AssistantDraft,
-                LedgerBookId: BookId));
+                LedgerBookId: BookId,
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha"));
         await automatedSubmit.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*human operator approval is required*");
     }
@@ -92,17 +95,16 @@ public sealed class AutomatedJournalScheduleTests
     {
         var fixture = CreateFixture();
         var store = new InMemoryAutomatedJournalScheduleStore();
-        await store.SaveAsync(FeeSchedule("fees-missing-capital-evidence") with
-        {
-            CapitalAccountReconciliation = null
-        });
+        fixture.CapitalAccountResolver.Reconciliation = null;
+        await store.SaveAsync(FeeSchedule("fees-missing-capital-evidence"));
 
         var result = await CreateWorker(store, fixture.Runner).RunDueAsync(DueAt);
 
         var run = result.Runs.Should().ContainSingle().Subject;
         run.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         run.Blockers.Should().Contain(item => item.Contains("capital-account reconciliation", StringComparison.OrdinalIgnoreCase));
-        (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().BeEmpty();
+        (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts.Should().BeEmpty();
     }
 
     [Fact]
@@ -110,20 +112,19 @@ public sealed class AutomatedJournalScheduleTests
     {
         var fixture = CreateFixture();
         var store = new InMemoryAutomatedJournalScheduleStore();
-        await store.SaveAsync(FeeSchedule("fees-low-confidence") with
-        {
-            CapitalAccountReconciliation = Reconciliation(confidence: 0.60m)
-        });
+        fixture.CapitalAccountResolver.Reconciliation = Reconciliation(confidence: 0.60m);
+        await store.SaveAsync(FeeSchedule("fees-low-confidence"));
         var worker = CreateWorker(store, fixture.Runner);
 
         var first = await worker.RunDueAsync(DueAt);
 
         first.Runs.Should().ContainSingle().Which.State.Should().Be(AutomatedJournalScheduleStateDto.NeedsInvestigation);
-        (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().BeEmpty();
+        (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts.Should().BeEmpty();
         var retained = (await store.GetAsync("fees-low-confidence"))!;
+        fixture.CapitalAccountResolver.Reconciliation = Reconciliation();
         await store.SaveAsync(retained with
         {
-            CapitalAccountReconciliation = Reconciliation(),
             State = AutomatedJournalScheduleStateDto.Scheduled,
             LastScheduledForUtc = null,
             Blockers = [],
@@ -141,15 +142,35 @@ public sealed class AutomatedJournalScheduleTests
     }
 
     [Fact]
+    public async Task DelayedFeeSchedule_EvaluatesServerEvidenceAtActualExecutionTime()
+    {
+        var fixture = CreateFixture();
+        var reviewedAt = DueAt.AddMinutes(15);
+        var executedAt = DueAt.AddHours(1);
+        fixture.CapitalAccountResolver.Reconciliation = Reconciliation(reviewedAtUtc: reviewedAt);
+        var store = new InMemoryAutomatedJournalScheduleStore();
+        await store.SaveAsync(FeeSchedule("fees-delayed"));
+
+        var result = await CreateWorker(store, fixture.Runner).RunDueAsync(executedAt);
+
+        result.EvaluatedAtUtc.Should().Be(executedAt);
+        result.Runs.Should().ContainSingle().Which.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        fixture.CapitalAccountResolver.Scopes.Should().ContainSingle().Which.EvaluatedAtUtc.Should().Be(executedAt);
+        var history = (await store.GetAsync("fees-delayed"))!.RunHistory.Should().ContainSingle().Subject;
+        history.ScheduledForUtc.Should().Be(DueAt);
+        history.CompletedAtUtc.Should().Be(executedAt);
+    }
+
+    [Fact]
     public async Task RunDueForScope_ExecutesOnlyExactTenantAndCompany()
     {
         var fixture = CreateFixture();
         var store = new InMemoryAutomatedJournalScheduleStore();
-        await store.SaveAsync(FeeSchedule("fees-tenant-a") with { TenantId = "tenant-a", CompanyId = "company-a" });
+        await store.SaveAsync(FeeSchedule("fees-tenant-a") with { TenantId = "tenant-alpha", CompanyId = "company-alpha" });
         await store.SaveAsync(FeeSchedule("fees-tenant-b") with { TenantId = "tenant-b", CompanyId = "company-b" });
         var worker = CreateWorker(store, fixture.Runner);
 
-        var result = await worker.RunDueForScopeAsync(DueAt, "tenant-a", "company-a");
+        var result = await worker.RunDueForScopeAsync(DueAt, "tenant-alpha", "company-alpha");
 
         result.Runs.Should().ContainSingle().Which.ScheduleId.Should().Be("fees-tenant-a");
         (await store.GetAsync("fees-tenant-a"))!.PeriodId.Should().Be("2026-08");
@@ -262,7 +283,8 @@ public sealed class AutomatedJournalScheduleTests
             persisted.RunHistory.Should().ContainSingle("a restart replaces the durable record for the same run key");
             persisted.RunHistory.Single().JournalEntryIds.Should().BeEquivalentTo(firstRun.Runs.Single().JournalEntryIds);
             persisted.PeriodId.Should().Be("2026-08");
-            (await restartedFixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().HaveCount(2,
+            (await restartedFixture.Workbench.GetWorkbenchAsync(
+                "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts.Should().HaveCount(2,
                 "a fully reconstructed process graph must load the durable drafts and deduplicate restart intake");
         }
         finally
@@ -286,7 +308,8 @@ public sealed class AutomatedJournalScheduleTests
         var result = await CreateWorker(store, fixture.Runner).RunDueAsync(DueAt);
 
         result.Runs.Should().ContainSingle().Which.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
-        var drafts = (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts;
+        var drafts = (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts;
         drafts.Should().HaveCount(2);
         drafts.Should().Contain(draft => draft.Memo.Contains("Dividend declared", StringComparison.OrdinalIgnoreCase) && draft.TotalDebits == 104m);
         drafts.Should().Contain(draft => draft.Memo.Contains("Withholding tax", StringComparison.OrdinalIgnoreCase) && draft.TotalDebits == 15.60m);
@@ -310,7 +333,8 @@ public sealed class AutomatedJournalScheduleTests
         run.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         run.Blockers.Should().ContainSingle(item =>
             item.Contains("No eligible corporate-action evidence", StringComparison.OrdinalIgnoreCase));
-        (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts.Should().BeEmpty();
+        (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts.Should().BeEmpty();
         var persisted = await store.GetAsync("dividends-no-evidence-2026-07");
         persisted!.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         persisted.RunHistory.Should().ContainSingle(history =>
@@ -333,7 +357,8 @@ public sealed class AutomatedJournalScheduleTests
         var run = result.Runs.Should().ContainSingle().Subject;
         run.State.Should().Be(AutomatedJournalScheduleStateDto.NeedsInvestigation);
         run.Blockers.Should().Contain(item => item.Contains("Needs investigation", StringComparison.OrdinalIgnoreCase));
-        var drafts = (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts;
+        var drafts = (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts;
         drafts.Should().HaveCount(2, "both dividend and withholding drafts inherit the same source-evidence grade");
         drafts.Should().OnlyContain(draft =>
             draft.Status == ManualJournalEntryStatusDto.NeedsFix &&
@@ -350,10 +375,13 @@ public sealed class AutomatedJournalScheduleTests
             draft.FundProfileId,
             "fund-controller",
             draft.Version,
-            LedgerBookId: BookId));
+            LedgerBookId: BookId,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha"));
         await submit.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*critical validation issues*");
-        var retained = (await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId)).Drafts;
+        var retained = (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts;
         retained.Should().OnlyContain(static item =>
             item.Status == ManualJournalEntryStatusDto.NeedsFix &&
             item.SubmittedAtUtc == null &&
@@ -377,7 +405,8 @@ public sealed class AutomatedJournalScheduleTests
             EvidenceLinks = [new OperationsEvidenceLinkDto("corp-act", "Corporate action", "/evidence/corp-act", "security-master", DueAt)]
         });
 
-        var status = await store.GetStatusAsync("fund-alpha", BookId, "2026-07");
+        var status = await store.GetStatusAsync(
+            "fund-alpha", BookId, "2026-07", tenantId: "tenant-alpha", companyId: "company-alpha", entityId: "entity-alpha");
 
         status.ConfiguredCount.Should().Be(2);
         status.EnabledCount.Should().Be(2);
@@ -388,6 +417,64 @@ public sealed class AutomatedJournalScheduleTests
         status.State.Should().Be(AutomatedJournalScheduleStateDto.NeedsInvestigation);
         status.EvidenceLinks.Should().ContainSingle();
         status.Blockers.Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData(AutomatedJournalScheduleStateDto.Scheduled)]
+    [InlineData(AutomatedJournalScheduleStateDto.Running)]
+    public async Task StatusProjection_ActiveCurrentCycleWinsSamePeriodCompletedHistory(
+        AutomatedJournalScheduleStateDto currentState)
+    {
+        var oldDraftId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var store = new InMemoryAutomatedJournalScheduleStore();
+        await store.SaveAsync(FeeSchedule($"fees-current-{currentState}") with
+        {
+            State = currentState,
+            LastScheduledForUtc = DueAt,
+            JournalEntryIds = [],
+            RunHistory =
+            [
+                new AutomatedJournalScheduleRunHistory(
+                    "old-completed-run",
+                    DueAt.AddDays(-1),
+                    DueAt.AddDays(-1),
+                    DueAt.AddDays(-1).AddMinutes(1),
+                    AutomatedJournalScheduleStateDto.DraftReady,
+                    "Older cycle produced a draft.",
+                    JournalEntryIds: [oldDraftId],
+                    PeriodId: "2026-07",
+                    PeriodStart: new DateOnly(2026, 7, 1),
+                    PeriodEnd: new DateOnly(2026, 7, 31))
+            ]
+        });
+
+        var status = await store.GetStatusAsync(
+            "fund-alpha", BookId, "2026-07", tenantId: "tenant-alpha", companyId: "company-alpha", entityId: "entity-alpha");
+
+        status.State.Should().Be(currentState);
+        status.JournalEntryIds.Should().BeEmpty();
+        status.DraftReadyCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task StatusProjection_ScheduledCycleOutranksDraftReadyPeer()
+    {
+        var store = new InMemoryAutomatedJournalScheduleStore();
+        await store.SaveAsync(FeeSchedule("fees-current-scheduled") with
+        {
+            State = AutomatedJournalScheduleStateDto.Scheduled,
+            JournalEntryIds = []
+        });
+        await store.SaveAsync(DividendSchedule("dividends-draft-ready") with
+        {
+            State = AutomatedJournalScheduleStateDto.DraftReady,
+            JournalEntryIds = [Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")]
+        });
+
+        var status = await store.GetStatusAsync(
+            "fund-alpha", BookId, "2026-07", tenantId: "tenant-alpha", companyId: "company-alpha", entityId: "entity-alpha");
+
+        status.State.Should().Be(AutomatedJournalScheduleStateDto.Scheduled);
     }
 
     [Fact]
@@ -447,12 +534,15 @@ public sealed class AutomatedJournalScheduleTests
             HighWaterMark: 1_050_000m,
             ManagementFeeRate: 0.02m,
             PerformanceFeeRate: 0.20m,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha",
             CapitalAccountReconciliation: Reconciliation());
 
     private static AutomatedJournalCapitalAccountReconciliationDto Reconciliation(
         decimal confidence = 0.98m,
         bool reconciled = true,
-        decimal maximumVarianceTolerance = 0m)
+        decimal maximumVarianceTolerance = 0m,
+        DateTimeOffset? reviewedAtUtc = null)
         => new(
             ReconciliationId: "capital-tie-out-2026-07",
             PeriodId: "2026-07",
@@ -468,7 +558,7 @@ public sealed class AutomatedJournalScheduleTests
             IsReconciled: reconciled,
             SourceVersion: "capital-ledger:v42",
             ReviewedBy: "fund-controller",
-            ReviewedAtUtc: DueAt.AddHours(-2),
+            ReviewedAtUtc: reviewedAtUtc ?? DueAt.AddHours(-2),
             EvidenceLinks:
             [
                 new OperationsEvidenceLinkDto(
@@ -476,7 +566,7 @@ public sealed class AutomatedJournalScheduleTests
                     "Reviewed capital-account reconciliation",
                     "evidence://capital-accounts/fund-alpha/2026-07/v42",
                     "capital-account-subledger",
-                    DueAt.AddHours(-2))
+                    reviewedAtUtc ?? DueAt.AddHours(-2))
             ]);
 
     private static AutomatedJournalScheduleWorkItem DividendSchedule(
@@ -499,7 +589,9 @@ public sealed class AutomatedJournalScheduleTests
             Actor: "automated-journal-scheduler",
             Positions: [new DividendAccrualPosition("AAPL", 400m)],
             WithholdingTaxRate: withholdingRate,
-            MinimumCorporateActionConfidence: minimumConfidence);
+            MinimumCorporateActionConfidence: minimumConfidence,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha");
 
     private static CorporateActionDto DividendAction(
         DateOnly? payDate,
@@ -524,11 +616,30 @@ public sealed class AutomatedJournalScheduleTests
 
     private sealed record Fixture(
         AutomatedJournalIntakeRunner Runner,
-        ManualJournalEntryWorkbenchService Workbench);
+        ManualJournalEntryWorkbenchService Workbench,
+        StubCapitalAccountReconciliationResolver CapitalAccountResolver);
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => utcNow;
+    }
+
+    private sealed class StubCapitalAccountReconciliationResolver(
+        AutomatedJournalCapitalAccountReconciliationDto? reconciliation)
+        : IAutomatedJournalCapitalAccountReconciliationResolver
+    {
+        public AutomatedJournalCapitalAccountReconciliationDto? Reconciliation { get; set; } = reconciliation;
+
+        public List<AutomatedJournalCapitalAccountReconciliationScope> Scopes { get; } = [];
+
+        public Task<AutomatedJournalCapitalAccountReconciliationDto?> ResolveAsync(
+            AutomatedJournalCapitalAccountReconciliationScope scope,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            Scopes.Add(scope);
+            return Task.FromResult(Reconciliation);
+        }
     }
 
     private static Fixture CreateFixture(IReadOnlyList<CorporateActionDto>? corporateActions = null)
@@ -577,12 +688,15 @@ public sealed class AutomatedJournalScheduleTests
         var securityMaster = corporateActions is null
             ? null
             : new FakeSecurityMasterQueryService(corporateActions);
+        var capitalAccountResolver = new StubCapitalAccountReconciliationResolver(Reconciliation());
         return new Fixture(
             new AutomatedJournalIntakeRunner(
                 intake,
                 new FeeScheduleAccrualEventProducer(),
-                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster)),
-            workbench);
+                securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster),
+                capitalAccountReconciliationResolver: capitalAccountResolver),
+            workbench,
+            capitalAccountResolver);
     }
 
     private static AccountingConfigurationWorkspaceDto ConfigurationWorkspace()
@@ -607,7 +721,9 @@ public sealed class AutomatedJournalScheduleTests
             JournalTemplates: [],
             PostingRules: [],
             ValidationIssues: [],
-            AuditTrail: []);
+            AuditTrail: [],
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha");
 
     private static ChartOfAccountsNodeDto Node(string path, string name, string type)
         => new(NodeId: path, Path: path, AccountName: name, AccountType: type);

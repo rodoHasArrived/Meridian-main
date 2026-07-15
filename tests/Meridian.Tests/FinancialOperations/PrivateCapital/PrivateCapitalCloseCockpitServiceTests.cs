@@ -162,7 +162,71 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             lane.Summary.Contains("fee=1", StringComparison.OrdinalIgnoreCase) &&
             lane.Summary.Contains("dividend=1", StringComparison.OrdinalIgnoreCase) &&
             lane.EvidenceLinks.Any(link => link.Route == "evidence://corporate-actions/low") &&
-            lane.RequiredActions.Contains("Investigate low-confidence corporate-action evidence before approval"));
+                lane.RequiredActions.Contains("Investigate low-confidence corporate-action evidence before approval"));
+    }
+
+    [Theory]
+    [InlineData(AutomatedJournalScheduleStateDto.Scheduled)]
+    [InlineData(AutomatedJournalScheduleStateDto.Running)]
+    public async Task GetCockpitAsync_ActiveScheduleNeverFallsBackToOlderPostedDrafts(
+        AutomatedJournalScheduleStateDto state)
+    {
+        var activity = BuildActivity();
+        var oldDraftId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var oldPostedDraft = new ManualJournalEntryDraftDto(
+            JournalEntryId: oldDraftId,
+            Status: ManualJournalEntryStatusDto.Posted,
+            FundProfileId,
+            LedgerBookId: activity.LedgerBookId,
+            AccountingBasis: AccountingBasisKindDto.Primary,
+            AccountingDate: new DateOnly(2026, 6, 30),
+            PeriodId,
+            EntityId,
+            FundNodeId: null,
+            Currency: "USD",
+            Memo: "Older posted management fee",
+            PreparedBy: "controller",
+            CreatedAtUtc: DateTimeOffset.UtcNow.AddHours(-2),
+            UpdatedAtUtc: DateTimeOffset.UtcNow.AddHours(-1),
+            Version: 3,
+            Lines: [],
+            EvidenceLinks: ["evidence://fees/old-posted-cycle"],
+            ValidationIssues: [],
+            TreasuryContext: new TreasuryLedgerContextDto(IdempotencyKey: "mgmt-fee|fund-alpha|2026-06"),
+            PostedAtUtc: DateTimeOffset.UtcNow.AddHours(-1),
+            PostedBy: "controller");
+        var status = new AutomatedJournalScheduleStatusDto(
+            FundProfileId,
+            activity.LedgerBookId,
+            PeriodId,
+            ConfiguredCount: 1,
+            EnabledCount: 1,
+            FeeScheduleCount: 1,
+            DividendScheduleCount: 0,
+            DraftReadyCount: 0,
+            NeedsInvestigationCount: 0,
+            BlockedCount: 0,
+            State: state,
+            Summary: $"Current fee schedule is {state}.",
+            JournalEntryIds: []);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity, [oldPostedDraft]),
+            null,
+            null,
+            new StubAutomatedJournalScheduleStatusSource(status));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "scheduled-accruals" &&
+            lane.Status == EvidenceStatusDto.ReviewRequired &&
+            !lane.IsReady &&
+            lane.EvidenceLinks.All(link => link.Route != "evidence://fees/old-posted-cycle"));
     }
 
     [Fact]

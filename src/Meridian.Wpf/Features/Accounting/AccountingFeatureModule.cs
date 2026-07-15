@@ -136,7 +136,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                         new RegisteredHistoricalCloseMarkPriceSource(providerRegistry),
                         new LedgerMarkToMarketCarryingValueSource(journalStore)),
                 sp.GetRequiredService<DailyValuationPositionService>(),
-                sp.GetRequiredService<AutomatedJournalEvidencePolicy>());
+                sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
+                sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
+                sp.GetRequiredService<TimeProvider>());
         });
         services.TryAddSingleton<IAccountingClosePostingWorkbench>(sp =>
             new AccountingClosePostingWorkbenchBridge(

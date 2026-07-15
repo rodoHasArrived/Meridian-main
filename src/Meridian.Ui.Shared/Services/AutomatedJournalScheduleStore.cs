@@ -537,10 +537,10 @@ internal static class AutomatedJournalScheduleProjection
             return AutomatedJournalScheduleStateDto.Blocked;
         if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.Running))
             return AutomatedJournalScheduleStateDto.Running;
-        if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.DraftReady))
-            return AutomatedJournalScheduleStateDto.DraftReady;
         if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.Scheduled))
             return AutomatedJournalScheduleStateDto.Scheduled;
+        if (cycles.Any(static cycle => cycle.State == AutomatedJournalScheduleStateDto.DraftReady))
+            return AutomatedJournalScheduleStateDto.DraftReady;
         return AutomatedJournalScheduleStateDto.NoDraftRequired;
     }
 
@@ -555,10 +555,9 @@ internal static class AutomatedJournalScheduleProjection
         }
 
         var currentMatches = string.Equals(item.PeriodId, periodId, StringComparison.OrdinalIgnoreCase);
-        var currentIsRearmed = currentMatches &&
-            item.State == AutomatedJournalScheduleStateDto.Scheduled &&
-            item.LastScheduledForUtc != item.ScheduledForUtc;
-        if (currentIsRearmed)
+        var currentIsActive = currentMatches &&
+            item.State is AutomatedJournalScheduleStateDto.Scheduled or AutomatedJournalScheduleStateDto.Running;
+        if (currentIsActive)
         {
             yield return CurrentCycle(item);
             yield break;

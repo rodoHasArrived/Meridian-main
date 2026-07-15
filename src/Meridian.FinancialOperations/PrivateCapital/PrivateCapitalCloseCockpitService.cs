@@ -905,10 +905,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         IReadOnlyList<ManualJournalEntryDraftDto> drafts)
     {
         var scopedIds = schedule.JournalEntryIds.ToHashSet();
-        var scopedDrafts = scopedIds.Count == 0
-            ? drafts
-            : drafts.Where(draft => scopedIds.Contains(draft.JournalEntryId)).ToArray();
-        var allPosted = scopedDrafts.Count > 0 && scopedDrafts.All(static draft =>
+        var scopedDrafts = drafts.Where(draft => scopedIds.Contains(draft.JournalEntryId)).ToArray();
+        var allPosted = scopedDrafts.Length > 0 && scopedDrafts.All(static draft =>
             draft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked);
         var anyNeedsFix = scopedDrafts.Any(static draft =>
             draft.Status is ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected);
@@ -916,7 +914,9 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         var isBlocked = schedule.State is AutomatedJournalScheduleStateDto.NeedsInvestigation or
             AutomatedJournalScheduleStateDto.Blocked or
             AutomatedJournalScheduleStateDto.Failed || anyNeedsFix;
-        var isReady = !isBlocked && (allPosted || readyWithoutDraft);
+        var isReady = !isBlocked &&
+            (readyWithoutDraft ||
+             schedule.State == AutomatedJournalScheduleStateDto.DraftReady && allPosted);
         var laneStatus = isReady
             ? EvidenceStatusDto.Ready
             : schedule.State == AutomatedJournalScheduleStateDto.NotConfigured
@@ -936,7 +936,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .DistinctBy(static link => $"{link.EvidenceId}|{link.Route}", StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var summary = isReady && allPosted
-            ? $"{scopedDrafts.Count} monthly fee/dividend draft(s) are posted with retained evidence."
+            ? $"{scopedDrafts.Length} monthly fee/dividend draft(s) are posted with retained evidence."
             : $"{schedule.Summary} Configured={schedule.ConfiguredCount}, enabled={schedule.EnabledCount}, fee={schedule.FeeScheduleCount}, dividend={schedule.DividendScheduleCount}, ready={schedule.DraftReadyCount}, investigation={schedule.NeedsInvestigationCount}, blocked={schedule.BlockedCount}.";
         var requiredAction = schedule.State switch
         {

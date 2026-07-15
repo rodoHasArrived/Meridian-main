@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Application.Composition.Features;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Config;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;

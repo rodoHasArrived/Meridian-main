@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +67,43 @@ public sealed partial class WorkstationEndpointsTests
             history.ResultVersion == rearmed.Version);
         staleResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
         runningResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData(null, "tenant-test")]
+    public async Task AutomationScheduleMutations_RequireTenantAndCompany_WhenRolloutGateIsDisabled(
+        string? companyId,
+        string? tenantId)
+    {
+        var store = new InMemoryAutomatedJournalScheduleStore();
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton<IAutomatedJournalScheduleStore>(store);
+                services.AddSingleton(FundScopedWriteTenantOptions.Disabled);
+            },
+            mapLedgerApi: true,
+            currentUserPermissions: Meridian.Identity.Auth.UserPermission.AdminMaintenance,
+            currentUserCompanyId: companyId,
+            currentUserTenantId: tenantId);
+        var client = app.GetTestClient();
+
+        var configure = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerJournalAutomationMonthlySchedules,
+            MonthlySchedule("tenant-scope-required"),
+            ServerJsonOptions);
+        var runMonthly = await client.PostAsync(
+            UiApiRoutes.LedgerJournalAutomationMonthlyRunDue,
+            content: null);
+        var runDaily = await client.PostAsync(
+            UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketRunDue,
+            content: null);
+
+        configure.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        runMonthly.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        runDaily.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await store.ListAsync()).Should().BeEmpty();
     }
 
     [Fact]
