@@ -33,7 +33,8 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         var grant = BuildGrant(NewTenantId(), tokenHash, ["statement.pdf"], maxUses: 2);
         (await _grantStore.TryCreateAsync(grant)).Should().BeTrue();
 
-        var retained = (await _grantStore.GetAsync(grant.GrantId)).Should().NotBeNull().Subject!;
+        var retained = (await _grantStore.GetAsync(grant.GrantId))!;
+        retained.Should().NotBeNull();
         var rawRow = await QueryGrantRowJsonAsync(grant.GrantId);
         retained.TokenHashSha256.Should().MatchRegex("^[0-9a-f]{64}$");
         retained.TokenHashSha256.Should().NotBe(rawToken);
@@ -51,7 +52,8 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
             _grantStore.TryUpdateAsync(retained.GrantId, retained.Version, second));
 
         competing.Count(static result => result).Should().Be(1);
-        var after = (await _grantStore.GetAsync(secret.GrantId)).Should().NotBeNull().Subject!;
+        var after = (await _grantStore.GetAsync(grant.GrantId))!;
+        after.Should().NotBeNull();
         after.UseCount.Should().Be(1);
         after.Version.Should().Be(1);
     }
@@ -203,7 +205,8 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
         };
         (await _deliveryStore.TryUpdateAsync(job.JobId, sent.Version, delivered)).Should().BeTrue();
 
-        var retained = (await _deliveryStore.GetAsync(job.JobId)).Should().NotBeNull().Subject!;
+        var retained = (await _deliveryStore.GetAsync(job.JobId))!;
+        retained.Should().NotBeNull();
         retained.State.Should().Be(ReportingDeliveryState.Delivered);
         retained.AttemptCount.Should().Be(2);
         retained.Receipts.Should().Equal(published, accessed);

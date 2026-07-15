@@ -134,7 +134,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetRequiredService<IOperationsStatusDerivationService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IOperationsContinuityTransactionalCommitStore>(),
-                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>()));
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                sp.GetService<Meridian.Storage.SecurityMaster.IOperatorOverridesStore>()));
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
         services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
