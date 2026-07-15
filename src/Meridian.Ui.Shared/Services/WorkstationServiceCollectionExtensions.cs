@@ -16,6 +16,8 @@ using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Catalog;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
@@ -528,6 +530,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
         services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
+        services.TryAddSingleton<IAutomatedJournalCapitalAccountReconciliationResolver>(sp =>
+            new AccountingReportPackageCapitalAccountReconciliationResolver(
+                () => sp.GetRequiredService<IAccountingReportPackageService>()));
 
         services.TryAddSingleton<IReconciliationRunRepository>(sp =>
             new FileReconciliationRunRepository(
@@ -574,6 +579,11 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<FileDailyValuationPortfolioSource>());
         services.TryAddSingleton<IDailyValuationScheduleStatusSource>(sp =>
             sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton(sp =>
+            new DailyValuationPositionService(
+                sp.GetService<IPositionSnapshotStore>(),
+                sp.GetService<ICanonicalSymbolRegistry>(),
+                sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<FileAutomatedJournalScheduleStore>(sp =>
             new FileAutomatedJournalScheduleStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "monthly-automated-journal-schedules.json")));
@@ -581,6 +591,9 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
         services.TryAddSingleton<IAutomatedJournalScheduleStatusSource>(sp =>
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<IAutomatedJournalDividendPositionResolver>(sp =>
+            new PositionSnapshotAutomatedJournalDividendPositionResolver(
+                sp.GetService<IPositionSnapshotStore>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             new ManualJournalEntryWorkbenchService(
@@ -594,6 +607,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IGovernedLedgerPostingTarget>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton<DailyValuationBatchLifecycleService>();
+        services.TryAddSingleton(AutomatedJournalEvidencePolicy.Default);
         services.TryAddSingleton(sp =>
             new AutomatedJournalDraftIntakeService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -603,14 +618,22 @@ public static class WorkstationServiceCollectionExtensions
         {
             var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
             var providerRegistry = sp.GetService<ProviderRegistry>();
+            var journalStore = sp.GetService<ILedgerJournalStore>();
+            var positionService = sp.GetRequiredService<DailyValuationPositionService>();
             return new AutomatedJournalIntakeRunner(
                 sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
                 new FeeScheduleAccrualEventProducer(),
                 securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster),
                 sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
-                providerRegistry is null
+                providerRegistry is null || journalStore is null
                     ? null
-                    : new DailyMarkToMarketService(new RegisteredHistoricalCloseMarkPriceSource(providerRegistry)));
+                    : new DailyMarkToMarketService(
+                        new RegisteredHistoricalCloseMarkPriceSource(providerRegistry),
+                        new LedgerMarkToMarketCarryingValueSource(journalStore)),
+                positionService,
+                sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
+                sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
+                sp.GetRequiredService<TimeProvider>());
         });
         // Durable ledger and reporting-evidence services are present only when persistence-backed
         // storage is configured. Resolve them optionally so lightweight hosts still compose; when

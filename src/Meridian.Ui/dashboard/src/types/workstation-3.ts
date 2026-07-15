@@ -345,6 +345,7 @@ export interface LockClosePeriodRequest {
   closePackageManifestId?: string | null;
   closePackageRetainedManifestRoute?: string | null;
   actionOrigin?: OperationsActionOrigin | null;
+  prepareClosingEntriesOnly?: boolean;
 }
 
 export interface ClosePeriodLockResult {
@@ -365,8 +366,46 @@ export interface CloseOperatingCoverageItem {
   blockingIssues?: AccountingConfigurationValidationIssue[] | null;
 }
 
+export type ClosePostingGateState =
+  | "Unavailable"
+  | "NotRequired"
+  | "Required"
+  | "DraftQueued"
+  | "Submitted"
+  | "Approved"
+  | "Posted"
+  | "ReversalQueued"
+  | "Blocked";
+
+export interface ClosePostingBalance {
+  accountName: string;
+  accountType: string;
+  balance: number;
+  symbol?: string | null;
+  financialAccountId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+}
+
+export interface ClosePostingGate {
+  gateId: string;
+  label: string;
+  state: ClosePostingGateState;
+  isReadyForLock: boolean;
+  netIncomeRoll: number;
+  temporaryAccountBalanceCount: number;
+  detail: string;
+  draftJournalEntryId?: string | null;
+  draftStatus?: ManualJournalEntryStatus | null;
+  idempotencyKey?: string | null;
+  balances?: ClosePostingBalance[] | null;
+  evidenceLinks?: string[] | null;
+  closingBatchJournalEntryIds?: string[] | null;
+  reversalDraftJournalEntryIds?: string[] | null;
+}
+
 export interface ClosePeriodPlan {
   closePlanId: string;
+  workflowVersion?: number | null;
   fundProfileId: string;
   ledgerBookId: string | null;
   periodId: string;
@@ -382,6 +421,7 @@ export interface ClosePeriodPlan {
   configuration?: ClosePeriodPlanConfiguration | null;
   evidenceReviews?: CloseEvidenceReview[] | null;
   operatingCoverage?: CloseOperatingCoverageItem[] | null;
+  closingEntriesGate?: ClosePostingGate | null;
 }
 
 export interface ReportCertification {

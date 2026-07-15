@@ -23,7 +23,8 @@ public sealed record ProviderRateLimitDiagnosticSnapshot(
     bool IsRateLimited,
     DateTimeOffset? ResetAt,
     double UsageRatio,
-    string? Reason = null)
+    string? Reason = null,
+    bool StateAvailable = true)
 {
     public int RemainingRequests => Math.Max(0, MaxRequestsPerWindow - RequestsInWindow);
 }

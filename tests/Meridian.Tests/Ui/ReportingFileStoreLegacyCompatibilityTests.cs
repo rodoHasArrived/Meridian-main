@@ -66,7 +66,7 @@ public sealed class ReportingFileStoreLegacyCompatibilityTests
 
         store.HasLegacyRuns(tenantB).Should().BeFalse();
         store.ListLegacyRunInventory(tenantB).Should().BeEmpty();
-        (() => store.ExportLegacyRun("legacy-run", tenantB))
+        ((Action)(() => store.ExportLegacyRun("legacy-run", tenantB)))
             .Should().Throw<UnauthorizedAccessException>();
         store.HasLegacyRuns(recovery).Should().BeTrue();
         store.ListLegacyRunInventory(recovery).Should().ContainSingle(entry =>
@@ -77,7 +77,7 @@ public sealed class ReportingFileStoreLegacyCompatibilityTests
             && !entry.IsArchived
             && entry.Remediation.Contains("freshly recertify", StringComparison.Ordinal));
         store.ExportLegacyRun("legacy-run", recovery).Should().Be(exactRawEntry);
-        (() => store.ListRuns()).Should().Throw<ReportingLegacyStateRequiresArchiveException>();
+        ((Action)(() => store.ListRuns())).Should().Throw<ReportingLegacyStateRequiresArchiveException>();
         var blockedSave = () => store.SaveAsync(BasicManifest("blocked-current"), []);
         await blockedSave.Should().ThrowAsync<ReportingLegacyStateRequiresArchiveException>();
 
@@ -147,11 +147,11 @@ public sealed class ReportingFileStoreLegacyCompatibilityTests
         store.ListLegacyScheduleInventory(tenantA).Should().BeEmpty(
             "a null-policy v1 schedule is recovery-only even for the matching tenant");
         store.ListLegacyScheduleInventory(tenantB).Should().BeEmpty();
-        (() => store.ExportLegacySchedule("legacy-scoped", tenantB))
+        ((Action)(() => store.ExportLegacySchedule("legacy-scoped", tenantB)))
             .Should().Throw<UnauthorizedAccessException>();
         store.ListLegacyScheduleInventory(recovery).Should().HaveCount(2);
         store.ExportLegacySchedule("legacy-unscoped", recovery).Should().Be(exactUnscopedRaw);
-        (() => store.Load()).Should().Throw<ReportingLegacyStateRequiresArchiveException>();
+        ((Action)(() => store.Load())).Should().Throw<ReportingLegacyStateRequiresArchiveException>();
 
         var receipt = store.ArchiveLegacySnapshot(
             recovery,
@@ -213,8 +213,8 @@ public sealed class ReportingFileStoreLegacyCompatibilityTests
                 [typedTarget])
         };
 
-        (() => store.Save([untyped])).Should().Throw<InvalidDataException>();
-        (() => store.Save([missingHash])).Should().Throw<InvalidDataException>();
+        ((Action)(() => store.Save([untyped]))).Should().Throw<InvalidDataException>();
+        ((Action)(() => store.Save([missingHash]))).Should().Throw<InvalidDataException>();
         store.Save([valid]);
 
         store.Load().Should().ContainSingle(schedule => schedule.ScheduleId == "valid");
@@ -254,6 +254,9 @@ public sealed class ReportingFileStoreLegacyCompatibilityTests
             ImmutableArray<string>.Empty,
             1,
             ReportingRunTrigger.AdHoc,
+            ReportWriterGrids: ImmutableArray<ReportingRunReportWriterGridArtifact>.Empty,
+            RenderedReportWriterGrids: ImmutableArray<ReportWriterGridRenderDto>.Empty,
+            ReportWriterGridDiffs: ImmutableArray<ReportWriterGridDiffDto>.Empty,
             CertifiedDatasetRows: ImmutableArray<IReadOnlyDictionary<string, string>>.Empty);
 
     private static string SerializeCommittedV1RunSnapshot(ReportingRunSnapshot run)

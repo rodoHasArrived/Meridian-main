@@ -276,7 +276,10 @@ public sealed record CompositionOptions
     /// </summary>
     public static CompositionOptions BackfillOnly => new()
     {
-        EnableSymbolManagement = false,
+        // Backfill is a provider-scoped identity workflow. Keep the canonical symbol spine
+        // enabled so the worker/coordinator/factory paths cannot silently fall back to raw
+        // input symbols when provider aliases are required.
+        EnableSymbolManagement = true,
         EnableBackfillServices = true,
         EnableEtlServices = true,
         EnableMaintenanceServices = false,

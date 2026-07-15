@@ -76,6 +76,10 @@ internal sealed class CrossProviderValidator
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             _log.Debug(ex, "Cross-validation failed for {Symbol}", symbol);

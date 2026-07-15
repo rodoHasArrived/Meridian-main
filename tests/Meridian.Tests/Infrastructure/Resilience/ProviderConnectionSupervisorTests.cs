@@ -1,5 +1,6 @@
 using System.Net.WebSockets;
 using System.Security.Authentication;
+using System.Diagnostics;
 using FluentAssertions;
 using Meridian.Infrastructure.Resilience;
 using Xunit;
@@ -134,6 +135,66 @@ public sealed class ProviderConnectionSupervisorTests
         (await reconnectTask.WaitAsync(TimeSpan.FromSeconds(5))).Should().BeFalse();
         cleanupCalled.Should().BeTrue();
         supervisor.GetSnapshot().LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+    }
+
+    [Fact]
+    public async Task DisconnectAndDispose_NonCooperativeReconnect_RemainCallerBoundedAndTerminal()
+    {
+        var supervisor = CreateSupervisor();
+        await EstablishAndLoseConnectionAsync(supervisor);
+        var transactionEntered = NewSignal();
+        var releaseTransaction = NewSignal();
+        var reconnectTask = supervisor.ReconnectAsync(async _ =>
+        {
+            transactionEntered.TrySetResult(true);
+            await releaseTransaction.Task;
+        });
+        await transactionEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        using var disconnectCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
+        var elapsed = Stopwatch.StartNew();
+        Func<Task> disconnect = async () => await supervisor.DisconnectAsync(
+            static _ => Task.CompletedTask,
+            disconnectCts.Token);
+
+        await disconnect.Should().ThrowAsync<OperationCanceledException>();
+        elapsed.Stop();
+        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
+
+        using var disposeCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
+        await supervisor.DisposeAsync(disposeCts.Token).AsTask().WaitAsync(TimeSpan.FromSeconds(1));
+        supervisor.GetSnapshot().LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        supervisor.IsReconnecting.Should().BeFalse();
+
+        releaseTransaction.TrySetResult(true);
+        (await reconnectTask.WaitAsync(TimeSpan.FromSeconds(1))).Should().BeFalse(
+            "a reconnect transaction that returns after disposal cannot reactivate the provider");
+        await supervisor.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DisconnectAsync_NonCooperativeCleanup_RemainsCallerBoundedAndTerminal()
+    {
+        await using var supervisor = CreateSupervisor();
+        await supervisor.ConnectAsync(static _ => Task.CompletedTask);
+        var cleanupEntered = NewSignal();
+        var releaseCleanup = NewSignal();
+        using var disconnectCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
+        var elapsed = Stopwatch.StartNew();
+
+        Func<Task> disconnect = async () => await supervisor.DisconnectAsync(async _ =>
+        {
+            cleanupEntered.TrySetResult(true);
+            await releaseCleanup.Task;
+        }, disconnectCts.Token);
+
+        await cleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        await disconnect.Should().ThrowAsync<OperationCanceledException>();
+        elapsed.Stop();
+
+        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
+        supervisor.GetSnapshot().LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        releaseCleanup.TrySetResult(true);
     }
 
     [Fact]

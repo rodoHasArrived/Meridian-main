@@ -398,7 +398,8 @@ public sealed record LockClosePeriodRequestDto(
     string? ClosePackageId = null,
     string? ClosePackageManifestId = null,
     string? ClosePackageRetainedManifestRoute = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    bool PrepareClosingEntriesOnly = false)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
@@ -513,7 +514,8 @@ public sealed record ClosePeriodPlanDto(
     ClosePeriodPlanConfigurationDto? Configuration = null,
     IReadOnlyList<CloseEvidenceReviewDto>? EvidenceReviews = null,
     IReadOnlyList<CloseOperatingCoverageItemDto>? OperatingCoverage = null,
-    ClosePostingGateDto? ClosingEntriesGate = null)
+    ClosePostingGateDto? ClosingEntriesGate = null,
+    long WorkflowVersion = 0)
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues { get; init; } =
         ValidationIssues ?? [];
@@ -986,6 +988,14 @@ public interface IManualJournalEntryDraftStore
         string? companyId = null);
 
     Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);
+
+    /// <summary>
+    /// Persists a related set of journal drafts as one workbench mutation. Implementations must
+    /// make the complete set visible together or leave the retained set unchanged.
+    /// </summary>
+    Task SaveBatchAsync(
+        IReadOnlyList<ManualJournalEntryDraftDto> drafts,
+        CancellationToken ct = default);
 }
 
 public interface IAccountingConfigurationStore

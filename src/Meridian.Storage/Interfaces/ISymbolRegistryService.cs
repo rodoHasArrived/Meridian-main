@@ -74,6 +74,17 @@ public interface ISymbolRegistryService
     IEnumerable<SymbolRegistryEntry> GetSymbolsByAssetClass(string assetClass);
 
     /// <summary>
+    /// Gets the retained fingerprint for a completed registry migration while holding the
+    /// registry mutation gate.
+    /// </summary>
+    Task<string?> GetMigrationMarkerAsync(string migrationId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Persists a registry migration fingerprint while holding the registry mutation gate.
+    /// </summary>
+    Task SetMigrationMarkerAsync(string migrationId, string fingerprint, CancellationToken ct = default);
+
+    /// <summary>
     /// Saves the registry to disk.
     /// </summary>
     Task SaveRegistryAsync(CancellationToken ct = default);

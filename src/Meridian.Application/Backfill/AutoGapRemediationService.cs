@@ -417,7 +417,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
             [gap.Symbol],
             from,
             to,
-            provider ?? _policy.DefaultProvider,
+            provider ?? gap.Provider ?? _policy.DefaultProvider,
             AutoRemediationTriggerSource.DataQualityGap,
             $"gap:{gap.Severity}:{gap.Duration}",
             (int)Math.Max(gap.EstimatedMissedEvents, 1),
@@ -438,7 +438,7 @@ public sealed class AutoGapRemediationService : IDataQualityGapRemediationServic
     {
         ArgumentNullException.ThrowIfNull(gap);
 
-        var normalizedProvider = NormalizeProvider(provider);
+        var normalizedProvider = NormalizeProvider(provider ?? gap.Provider);
         var from = DateOnly.FromDateTime(gap.GapStart.UtcDateTime);
         var to = DateOnly.FromDateTime(gap.GapEnd.UtcDateTime);
         var idempotencyKey = BuildIdempotencyKey(

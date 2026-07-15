@@ -741,8 +741,17 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Private-capital close cockpit service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var cockpit = await service
-                .GetCockpitAsync(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId, context.RequestAborted)
+                .GetCockpitAsync(
+                    fundProfileId,
+                    ledgerBookId,
+                    fundAccountId,
+                    periodId,
+                    entityId,
+                    context.RequestAborted,
+                    tenantContext.TenantId,
+                    tenantContext.CompanyId)
                 .ConfigureAwait(false);
             return Results.Json(cockpit, jsonOptions);
         })
@@ -2898,35 +2907,6 @@ public static partial class WorkstationEndpoints
             return Results.File(filePath, contentType);
         }).ExcludeFromDescription();
     }
-
-    private static string WorkstationSubroute(string route)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(route);
-        return route.StartsWith(WorkstationApiRoutePrefix, StringComparison.Ordinal)
-            ? route[WorkstationApiRoutePrefix.Length..]
-            : route;
-    }
-
-    private static string PortfolioSubroute(string route)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(route);
-        return route.StartsWith(PortfolioApiRoutePrefix, StringComparison.Ordinal)
-            ? route[PortfolioApiRoutePrefix.Length..]
-            : route;
-    }
-
-    /// <summary>
-    /// Standard 503 for workstation read surfaces whose backing services are not registered.
-    /// Workspace endpoints must fail honestly instead of serving fabricated fallback data.
-    /// </summary>
-    private static IResult WorkstationServiceUnavailable(string detail)
-        => Results.Problem(detail, statusCode: StatusCodes.Status503ServiceUnavailable);
-
-    private static IResult StrategyReadServiceUnavailable()
-        => WorkstationServiceUnavailable("Strategy run read service is not registered; live workspace data is unavailable.");
-
-    private static IResult DataReadServicesUnavailable()
-        => WorkstationServiceUnavailable("Neither the strategy run read service nor the configuration store is registered; live data-workspace telemetry is unavailable.");
 
     // PR-03: returns typed DTO instead of anonymous object.
     // Returns null when the strategy run read service is not registered so the route can

@@ -331,6 +331,44 @@ describe("DenseDataTable", () => {
     expect(screen.getByRole("row", { name: "SYM129 Watched" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Show all/ })).not.toBeInTheDocument();
   });
+
+  it("invokes onRowContextMenu with the row for a right-click gesture", () => {
+    const onRowContextMenu = vi.fn();
+
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        onRowContextMenu={onRowContextMenu}
+        emptyText="No rows"
+        ariaLabel="Context table"
+      />
+    );
+
+    fireEvent.contextMenu(screen.getByRole("row", { name: "MSFT Monitored" }));
+
+    expect(onRowContextMenu).toHaveBeenCalledTimes(1);
+    expect(onRowContextMenu.mock.calls[0][0]).toEqual({ id: "msft", symbol: "MSFT", status: "Monitored" });
+  });
+
+  it("leaves rows without a context-menu handler when onRowContextMenu is omitted", () => {
+    render(
+      <DenseDataTable
+        columns={columns}
+        rows={rows}
+        getRowId={(row) => row.id}
+        getRowAriaLabel={(row) => `${row.symbol} ${row.status}`}
+        emptyText="No rows"
+        ariaLabel="No context table"
+      />
+    );
+
+    // A right-click with no handler must not throw and must not select the row.
+    fireEvent.contextMenu(screen.getByRole("row", { name: "AAPL Active" }));
+    expect(screen.getByRole("row", { name: "AAPL Active" })).not.toHaveAttribute("aria-selected");
+  });
 });
 
 function getTestRowId(row: TestRow) {

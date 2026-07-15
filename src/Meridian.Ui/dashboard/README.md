@@ -74,6 +74,12 @@ Current dense-row detail consumers covered by regression tests include Portfolio
 Portfolio run evidence, Trading recent fills, Data backfill queue rows, Data export rows, and
 Security Master lots.
 
+The Data backfill workstream reads `/api/backfill/executions` as the durable remediation evidence
+source. Its remediation SLA queue keeps server-owned tier, deadline, status, provider, workflow,
+owner-assignment, outcome, and compatibility-derived provenance visible, with operator sorting on
+SLA tier and deadline. Live provider-attempt progress remains a separate bounded projection so a
+dropped transient notification cannot erase the retained execution/SLA record.
+
 ## Important workflows
 
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.

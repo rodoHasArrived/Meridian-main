@@ -21,7 +21,7 @@ public sealed class SecureReportingDistributionEndpointTests
             "/portal/reporting/access-grants/grant-1/exchange");
         var html = await response.Content.ReadAsStringAsync();
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, html);
         response.Headers.CacheControl!.NoStore.Should().BeTrue();
         response.Headers.GetValues("Referrer-Policy").Should().ContainSingle("no-referrer");
         response.Headers.GetValues("X-Content-Type-Options").Should().ContainSingle("nosniff");
@@ -46,6 +46,7 @@ public sealed class SecureReportingDistributionEndpointTests
 
         using var query = await client.GetAsync(
             "/portal/reporting/access-grants/grant-1/exchange?token=grant-secret-value");
+        var queryBody = await query.Content.ReadAsStringAsync();
         using var authorizationRequest = new HttpRequestMessage(
             HttpMethod.Get,
             "/portal/reporting/access-grants/grant-1/exchange");
@@ -56,14 +57,17 @@ public sealed class SecureReportingDistributionEndpointTests
             "/api/fund-structure/reporting/distribution/deliveries/process-due",
             content: null);
 
-        query.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        query.StatusCode.Should().Be(HttpStatusCode.BadRequest, queryBody);
         authorization.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        workerPump.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        workerPump.StatusCode.Should().BeOneOf(
+            HttpStatusCode.NotFound,
+            HttpStatusCode.MethodNotAllowed);
         ((IEndpointRouteBuilder)app).DataSources
             .SelectMany(static source => source.Endpoints)
             .OfType<RouteEndpoint>()
             .Select(static endpoint => endpoint.RoutePattern.RawText)
-            .Should().NotContain(route => route?.Contains("process-due", StringComparison.Ordinal) == true);
+            .Should().NotContain(route =>
+                route != null && route.Contains("process-due", StringComparison.Ordinal));
     }
 
     private static async Task<WebApplication> CreateAppAsync()

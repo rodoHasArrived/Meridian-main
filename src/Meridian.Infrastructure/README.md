@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-06-05
+last_reviewed: 2026-07-15
 ---
 
 # src/Meridian.Infrastructure
@@ -30,11 +30,20 @@ This layer owns external integration details while depending on lower contracts 
 
 Use this module for provider implementation, external service integration, and adapter behavior.
 
-WebSocket streaming adapters that derive from `WebSocketProviderBase` expose
-`IProviderConnectionDiagnosticsSource` for safe provider-level health snapshots. Consumers should
-use that optional seam for connection state, heartbeat time, reconnect status, subscription health
-counts, last subscription message time, and last safe error category instead of reaching into
-provider-specific transport internals.
+Every `IMarketDataClient` now inherits the ProviderSdk-owned
+`IProviderConnectionDiagnosticsSource` contract. Adapters without a lifecycle supervisor receive a
+conservative compatibility snapshot that never claims a live connection; supervised adapters must
+override it with runtime evidence. `WebSocketProviderBase` supplies shared WebSocket state,
+heartbeat, reconnect, and safe failure diagnostics; Robinhood supplies the same normalized shape
+from `PollingProviderBase`; NYSE and Interactive Brokers retain subscription-health and
+transport-specific lifecycle evidence. For polling, raw-socket, simulation, and fallback
+diagnostics, `WebSocketState` is `None`. Consumers should use this contract instead of reaching
+into provider-specific transport internals.
+
+The public diagnostics interface, lifecycle/failure enums, and snapshot record retain their
+existing namespaces but are owned by ProviderSdk so plugin contracts do not depend on concrete
+Infrastructure. Infrastructure publishes type forwarders for adapters compiled against the former
+assembly location.
 
 Provider registry paths normalize configured provider identifiers before factory lookup, and the
 registry can hold multiple adapter contracts for one provider family ID. This allows identifiers

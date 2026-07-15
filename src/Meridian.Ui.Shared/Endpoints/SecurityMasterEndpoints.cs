@@ -939,13 +939,13 @@ public static class SecurityMasterEndpoints
             [FromServices] IOperatorOverridesStore store,
             CancellationToken ct) =>
         {
-            // The reviewer identity is server-derived from the authenticated principal; overwrite any
-            // caller-supplied value so a client cannot spoof who approved the overlay.
-            var reviewer = ResolveActor(context);
+            // The reviewer identity is server-derived from the authenticated principal, never taken
+            // from the request body, so a client cannot attribute a decision to someone else.
+            var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
             try
             {
                 var updated = await store
-                    .RecordApprovalDecisionAsync(securityId, request with { Reviewer = reviewer }, ct)
+                    .RecordApprovalDecisionAsync(securityId, decision, ct)
                     .ConfigureAwait(false);
                 return Results.Json(updated, jsonOptions);
             }
@@ -953,10 +953,18 @@ public static class SecurityMasterEndpoints
             {
                 return Results.BadRequest(new { error = exception.Message });
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException exception) when (exception.Message.Contains("No operator overrides exist", StringComparison.Ordinal))
             {
+                // Expected domain condition: no overlay exists to decide on.
                 return Results.NotFound();
             }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("not Pending", StringComparison.Ordinal))
+            {
+                // Expected domain condition: the overlay exists but is not in a reviewable (Pending) state.
+                return Results.Conflict(new { error = exception.Message });
+            }
+            // Any other InvalidOperationException (e.g. Security Master not configured) is an operational
+            // failure and is intentionally left to surface as a 500 rather than be masked as a 404.
         })
         .WithName("RecordSecurityMasterOperatorOverrideDecision")
         .Accepts<OperatorOverrideDecisionRequest>("application/json")
@@ -964,6 +972,7 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);

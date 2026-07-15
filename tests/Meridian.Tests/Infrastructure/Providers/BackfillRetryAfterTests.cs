@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http;
+using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
 using Xunit;
 
@@ -11,6 +13,63 @@ namespace Meridian.Tests.Infrastructure.Adapters;
 /// </summary>
 public sealed class BackfillRetryAfterTests
 {
+    [Fact]
+    public void IsRateLimited_MessageOnlySignal_IsNotClassifiedAsRateLimit()
+    {
+        var ex = new InvalidOperationException("provider said rate limit 429 but supplied no typed status");
+
+        Assert.False(BackfillWorkerService.IsRateLimited(ex));
+    }
+
+    [Fact]
+    public void IsRateLimited_TypedAndHttpStatusSignals_AreClassified()
+    {
+        Assert.True(BackfillWorkerService.IsRateLimited(
+            new RateLimitException("quota exhausted", provider: "test")));
+        Assert.True(BackfillWorkerService.IsRateLimited(
+            new HttpRequestException("too many requests", null, HttpStatusCode.TooManyRequests)));
+        Assert.True(BackfillWorkerService.IsRateLimited(new AggregateException(
+            new InvalidOperationException("first provider failed"),
+            new HttpRequestException("second provider throttled", null, HttpStatusCode.TooManyRequests))));
+    }
+
+    [Fact]
+    public void TryExtractRetryAfter_NestedAggregateSecondBranch_ExtractsTypedMetadata()
+    {
+        var ex = new AggregateException(
+            new InvalidOperationException("first provider failed"),
+            new AggregateException(
+                new InvalidOperationException("fallback failed"),
+                new RateLimitException(
+                    "final provider throttled",
+                    provider: "alphavantage",
+                    symbol: "AAPL",
+                    retryAfter: TimeSpan.FromSeconds(37))));
+
+        BackfillWorkerService.TryExtractRetryAfter(ex).Should().Be(TimeSpan.FromSeconds(37));
+        BackfillWorkerService.ResolveRateLimitedProvider(ex, "first-provider").Should().Be("alphavantage");
+    }
+
+    [Fact]
+    public void ResolveRateLimitedProvider_TypedProviderMissing_FallsBackToAssignedProvider()
+    {
+        var ex = new RateLimitException("quota exhausted", retryAfter: TimeSpan.FromSeconds(10));
+
+        BackfillWorkerService.ResolveRateLimitedProvider(ex, "assigned-provider")
+            .Should().Be("assigned-provider");
+    }
+
+    [Fact]
+    public void ResolveRateLimitedProvider_LaterAggregateBranchHasProvider_UsesTypedProvider()
+    {
+        var ex = new AggregateException(
+            new RateLimitException("first provider omitted identity"),
+            new RateLimitException("fallback provider throttled", provider: "alphavantage"));
+
+        BackfillWorkerService.ResolveRateLimitedProvider(ex, "assigned-provider")
+            .Should().Be("alphavantage");
+    }
+
     [Fact]
     public void TryExtractRetryAfter_NoRetryAfterInMessage_ReturnsNull()
     {

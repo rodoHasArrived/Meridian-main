@@ -263,11 +263,11 @@ public sealed class ReportingGovernanceRepositoryTests : IClassFixture<Reporting
         legacyStatus.StateChecksumVerified.Should().BeTrue();
         legacyStatus.AuditChainVerified.Should().BeTrue();
         legacyStatus.AuditHashFormats.Should().OnlyContain(
-            ReportingGovernancePersistenceFormat.LegacyV1);
+            format => format == ReportingGovernancePersistenceFormat.LegacyV1);
         currentStatus.Disposition.Should().Be(ReportingGovernancePersistenceDisposition.Current);
         currentStatus.AggregateVersion.Should().Be(2);
         currentStatus.AuditHashFormats.Should().OnlyContain(
-            ReportingGovernancePersistenceFormat.CanonicalV2);
+            format => format == ReportingGovernancePersistenceFormat.CanonicalV2);
         export.Should().NotBeNull();
         export!.Status.Should().BeEquivalentTo(legacyStatus);
         export.AuditEvents.Should().ContainSingle()
@@ -796,6 +796,19 @@ public sealed class ReportingGovernanceRepositoryTests : IClassFixture<Reporting
 
 public sealed class ReportingGovernanceDatabaseFixture : IAsyncLifetime
 {
+    private static JsonObject RequiredObject(
+        JsonObject root,
+        string pascalName,
+        string camelName) =>
+        (root[pascalName] ?? root[camelName])?.AsObject()
+        ?? throw new InvalidOperationException($"The payload did not contain '{pascalName}'.");
+
+    private static string PropertyName(
+        JsonObject value,
+        string pascalName,
+        string camelName) =>
+        value.ContainsKey(pascalName) ? pascalName : camelName;
+
     private const string ConnectionStringVariable = "MERIDIAN_REPORTING_CONNECTION_STRING";
     private PostgresTestServer? _server;
 

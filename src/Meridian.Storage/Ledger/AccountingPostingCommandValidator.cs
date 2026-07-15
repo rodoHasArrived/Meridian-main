@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text.Json;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -6,6 +8,8 @@ namespace Meridian.Storage.Ledger;
 
 public static class AccountingPostingCommandValidator
 {
+    internal const string PostingCommandFingerprintTag = "postingCommandFingerprint";
+
     public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write)
     {
         ArgumentNullException.ThrowIfNull(write);
@@ -94,6 +98,7 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Accounting posting command requires approved or not-required reviewer state before append.");
         }
 
+        ValidateBookContext(write, command);
         ValidateTypedAssertions(command);
 
         var entry = NormalizeEntryMetadata(write.Entry, command);
@@ -113,6 +118,60 @@ public static class AccountingPostingCommandValidator
 
     private static bool RequiresApproval(AccountingPostingIntentDto intent)
         => intent is not AccountingPostingIntentDto.AutomatedDraft;
+
+    private static void ValidateBookContext(
+        LedgerJournalEntryWrite write,
+        AccountingPostingCommandDto command)
+    {
+        if (command.BookContext is not { } context)
+        {
+            if (RequiresAuthoritativeBookContext(command))
+            {
+                throw new LedgerValidationException(
+                    "Typed accounting posting commands require authoritative book context before append.");
+            }
+
+            return;
+        }
+
+        var writeBookId = command.LedgerBookId ?? write.LedgerBookId;
+        if (writeBookId != context.LedgerBookId)
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command book context ledger book must match the ledger write book.");
+        }
+
+        if (context.PeriodId != write.PeriodId)
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command book context period must match the ledger write period.");
+        }
+
+        if (context.AccountingBasis != write.AccountingBasis)
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command book context basis must match the ledger write accounting basis.");
+        }
+
+        if (!string.Equals(
+                context.AccountingPolicyId?.Trim(),
+                write.AccountingPolicyId?.Trim(),
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                context.AccountingPolicyVersion?.Trim(),
+                write.AccountingPolicyVersion?.Trim(),
+                StringComparison.Ordinal))
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command book context policy must match the ledger write accounting policy and version.");
+        }
+    }
+
+    private static bool RequiresAuthoritativeBookContext(AccountingPostingCommandDto command)
+        => command.BookPositionId.HasValue ||
+           command.EconomicEvent is not null ||
+           command.ProjectionLineage is not null ||
+           command.RulePackReference is not null;
 
     private static void ValidateTypedAssertions(AccountingPostingCommandDto command)
     {
@@ -205,7 +264,8 @@ public static class AccountingPostingCommandValidator
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["postingCommandId"] = command.CommandId.ToString("D"),
-            ["approvalState"] = command.ApprovalState.ToString()
+            ["approvalState"] = command.ApprovalState.ToString(),
+            [PostingCommandFingerprintTag] = ComputePostingCommandFingerprint(command)
         };
 
         AddTag(tags, "approvalId", command.ApprovalId);
@@ -228,6 +288,68 @@ public static class AccountingPostingCommandValidator
         AddTag(tags, "selectedRuleId", command.RulePackReference?.SelectedRuleId);
         AddTag(tags, "selectedRuleVersion", command.RulePackReference?.SelectedRuleVersion);
         return tags;
+    }
+
+    internal static string ComputePostingCommandFingerprint(AccountingPostingCommandDto command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        var element = JsonSerializer.SerializeToElement(
+            command,
+            AccountingPostingCommandFingerprintJsonContext.Default.AccountingPostingCommandDto);
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            WriteCanonicalJson(writer, element);
+        }
+
+        var hash = SHA256.HashData(stream.ToArray());
+        return $"sha256:{Convert.ToHexString(hash).ToLowerInvariant()}";
+    }
+
+    private static void WriteCanonicalJson(Utf8JsonWriter writer, JsonElement element)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (var property in element
+                             .EnumerateObject()
+                             .OrderBy(static property => property.Name, StringComparer.Ordinal))
+                {
+                    writer.WritePropertyName(property.Name);
+                    WriteCanonicalJson(writer, property.Value);
+                }
+
+                writer.WriteEndObject();
+                break;
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray())
+                {
+                    WriteCanonicalJson(writer, item);
+                }
+
+                writer.WriteEndArray();
+                break;
+            case JsonValueKind.String:
+                writer.WriteStringValue(element.GetString());
+                break;
+            case JsonValueKind.Number:
+                writer.WriteRawValue(element.GetRawText(), skipInputValidation: true);
+                break;
+            case JsonValueKind.True:
+                writer.WriteBooleanValue(true);
+                break;
+            case JsonValueKind.False:
+                writer.WriteBooleanValue(false);
+                break;
+            case JsonValueKind.Null:
+                writer.WriteNullValue();
+                break;
+            default:
+                throw new LedgerValidationException(
+                    $"Accounting posting command contains unsupported JSON value kind '{element.ValueKind}'.");
+        }
     }
 
     private static void AddTag(IDictionary<string, string> tags, string key, string? value)

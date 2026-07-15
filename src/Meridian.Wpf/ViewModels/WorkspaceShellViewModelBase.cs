@@ -1,5 +1,7 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
+using System.Globalization;
+using System.Windows.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
@@ -14,13 +16,25 @@ namespace Meridian.Wpf.ViewModels;
 public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
 {
     private WorkspaceCommandGroup _commandGroup = new();
+    private WorkspaceAttentionRibbonViewModel _attentionRibbon;
 
     protected WorkspaceShellViewModelBase(WorkspaceShellDefinition workspaceDefinition)
     {
         WorkspaceDefinition = workspaceDefinition ?? throw new ArgumentNullException(nameof(workspaceDefinition));
+        _attentionRibbon = WorkspaceAttentionRibbonViewModel.ForWorkspace(
+            workspaceDefinition.WorkspaceId,
+            ExecuteAttentionPrimaryAction);
     }
 
+    public event EventHandler<string>? AttentionPrimaryActionRequested;
+
     public WorkspaceShellDefinition WorkspaceDefinition { get; }
+
+    public WorkspaceAttentionRibbonViewModel AttentionRibbon
+    {
+        get => _attentionRibbon;
+        protected set => SetProperty(ref _attentionRibbon, value);
+    }
 
     public WorkspaceCommandGroup CommandGroup
     {
@@ -33,6 +47,136 @@ public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
             }
         }
     }
+    private void ExecuteAttentionPrimaryAction(string actionId)
+    {
+        if (!string.IsNullOrWhiteSpace(actionId))
+        {
+            AttentionPrimaryActionRequested?.Invoke(this, actionId);
+        }
+    }
+}
+
+public sealed class WorkspaceAttentionRibbonViewModel : BindableBase
+{
+    private static readonly DateTimeOffset PlaceholderTimestamp = new(2026, 06, 15, 09, 00, 00, TimeSpan.Zero);
+    private readonly Action<string> _executePrimaryAction;
+
+    private WorkspaceAttentionRibbonViewModel(
+        string workspaceId,
+        string severity,
+        string summaryText,
+        DateTimeOffset timestamp,
+        string primaryActionLabel,
+        string primaryActionTarget,
+        Action<string> executePrimaryAction)
+    {
+        WorkspaceId = workspaceId;
+        Severity = severity;
+        SummaryText = summaryText;
+        Timestamp = timestamp;
+        PrimaryActionLabel = primaryActionLabel;
+        PrimaryActionTarget = primaryActionTarget;
+        _executePrimaryAction = executePrimaryAction;
+        PrimaryActionCommand = new WorkspaceAttentionRibbonCommand(() => _executePrimaryAction(PrimaryActionTarget), () => !string.IsNullOrWhiteSpace(PrimaryActionTarget));
+    }
+
+    public string WorkspaceId { get; }
+
+    public string Severity { get; }
+
+    public string SeverityLabel => Severity switch
+    {
+        WorkspaceAttentionSeverity.Healthy => "Healthy",
+        WorkspaceAttentionSeverity.Warning => "Warning",
+        WorkspaceAttentionSeverity.Error => "Error",
+        _ => "Info"
+    };
+
+    public string Tone => Severity switch
+    {
+        WorkspaceAttentionSeverity.Healthy => WorkspaceTone.Success,
+        WorkspaceAttentionSeverity.Warning => WorkspaceTone.Warning,
+        WorkspaceAttentionSeverity.Error => WorkspaceTone.Danger,
+        _ => WorkspaceTone.Info
+    };
+
+    public string IconGlyph => Severity switch
+    {
+        WorkspaceAttentionSeverity.Healthy => "\uE930",
+        WorkspaceAttentionSeverity.Warning => "\uE7BA",
+        WorkspaceAttentionSeverity.Error => "\uEA39",
+        _ => "\uE946"
+    };
+
+    public string SummaryText { get; }
+
+    public DateTimeOffset Timestamp { get; }
+
+    public string TimestampText => Timestamp.ToLocalTime().ToString("MMM d, HH:mm", CultureInfo.InvariantCulture);
+
+    public string SummaryWithTimestamp => $"{SummaryText} Updated {TimestampText}.";
+
+    public string PrimaryActionLabel { get; }
+
+    public string PrimaryActionTarget { get; }
+
+    public ICommand PrimaryActionCommand { get; }
+
+    public string PanelAutomationId => $"{WorkspaceId}AttentionRibbon";
+
+    public string IconContainerAutomationId => $"{WorkspaceId}AttentionRibbonIconContainer";
+
+    public string IconAutomationId => $"{WorkspaceId}AttentionRibbonIcon";
+
+    public string SeverityAutomationId => $"{WorkspaceId}AttentionRibbonSeverity";
+
+    public string SummaryAutomationId => $"{WorkspaceId}AttentionRibbonSummary";
+
+    public string PrimaryActionAutomationId => $"{WorkspaceId}AttentionRibbonPrimaryAction";
+
+    public static WorkspaceAttentionRibbonViewModel ForWorkspace(string workspaceId, Action<string> executePrimaryAction)
+    {
+        var normalized = workspaceId.ToLowerInvariant();
+        return normalized switch
+        {
+            "trading" => new(normalized, WorkspaceAttentionSeverity.Warning, "Paper-first execution is available; select an operating context before promoting live desk actions.", PlaceholderTimestamp, "Choose Context", "Settings", executePrimaryAction),
+            "portfolio" => new(normalized, WorkspaceAttentionSeverity.Informational, "Portfolio cockpit is reading exposure, import, multi-asset, and close-readiness placeholders until shared coverage refresh completes.", PlaceholderTimestamp, "Review Imports", "PortfolioImport", executePrimaryAction),
+            "accounting" => new(normalized, WorkspaceAttentionSeverity.Error, "Accounting attention is focused on unresolved reconciliation, approval, and evidence blockers before close sign-off.", PlaceholderTimestamp, "Open Reconciliation", "FundReconciliation", executePrimaryAction),
+            "reporting" => new(normalized, WorkspaceAttentionSeverity.Healthy, "Reporting packs, schedules, and export presets are ready for governed review.", PlaceholderTimestamp, "Open Reports", "FundReportPack", executePrimaryAction),
+            "strategy" => new(normalized, WorkspaceAttentionSeverity.Warning, "Strategy runs require promotion review before trading, portfolio, or accounting handoff.", PlaceholderTimestamp, "Review Runs", "StrategyRuns", executePrimaryAction),
+            "data" => new(normalized, WorkspaceAttentionSeverity.Informational, "Data workspace is using provider and quality posture adapters while source-backed diagnostics continue to load.", PlaceholderTimestamp, "Open Quality", "DataQuality", executePrimaryAction),
+            "settings" => new(normalized, WorkspaceAttentionSeverity.Healthy, "Settings and capability gates are available for operator configuration review.", PlaceholderTimestamp, "Open Settings", "Settings", executePrimaryAction),
+            _ => new(normalized, WorkspaceAttentionSeverity.Informational, "Workspace attention posture is available.", PlaceholderTimestamp, "Review", workspaceId, executePrimaryAction)
+        };
+    }
+}
+
+public static class WorkspaceAttentionSeverity
+{
+    public const string Healthy = "Healthy";
+    public const string Warning = "Warning";
+    public const string Error = "Error";
+    public const string Informational = "Informational";
+}
+
+internal sealed class WorkspaceAttentionRibbonCommand : ICommand
+{
+    private readonly Action _execute;
+    private readonly Func<bool> _canExecute;
+
+    public WorkspaceAttentionRibbonCommand(Action execute, Func<bool> canExecute)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
+
+    public event EventHandler? CanExecuteChanged;
+
+    public bool CanExecute(object? parameter) => _canExecute();
+
+    public void Execute(object? parameter) => _execute();
+
+    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
 
 public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBase

@@ -2,6 +2,9 @@ using System.Reflection;
 using System.Text.Json;
 using System.Windows.Media;
 using FluentAssertions;
+using Meridian.Contracts.Api.Quality;
+using Meridian.Ui.Services.DataQuality;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -179,8 +182,115 @@ public sealed class DataQualityViewModelCharacterizationTests
         viewModel.SymbolEmptyStateDetail.Should().Be("Add symbols from the workspace before running quality checks.");
     }
 
-    private static DataQualityViewModel CreateSubject() =>
-        new(StatusService.Instance, LoggingService.Instance, NotificationService.Instance);
+    [Fact]
+    public async Task RefreshAndRepairGap_UsesInjectedCompositeServicesAndRetainsExactRemediationIdentity()
+    {
+        var apiClient = Substitute.For<IDataQualityApiClient>();
+        var presentationService = Substitute.For<IDataQualityPresentationService>();
+        var observedAt = new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
+        var snapshot = new DataQualityPresentationSnapshot
+        {
+            IsAvailable = true,
+            IsPartial = true,
+            DashboardVersion = "quality-v42",
+            OverallScore = 81.25,
+            OverallScoreText = "81.3",
+            OverallGradeText = "B",
+            StatusText = "Partial evidence",
+            Symbols =
+            [
+                new DataQualitySymbolPresentation
+                {
+                    Symbol = "AAPL",
+                    Score = 81.25,
+                    ScoreFormatted = "81.3%",
+                    Grade = "B",
+                    Status = "Warning",
+                    Issues = "1 open gap",
+                    LastUpdate = observedAt,
+                    LastUpdateFormatted = "Now",
+                    Components =
+                    [
+                        new QualityComponentResponse("StoredCompleteness", "Stored completeness", 0.4, 98.5, "Available", observedAt, 0, "Complete"),
+                        new QualityComponentResponse("StreamingFreshness", "Streaming freshness", 0.35, null, "Unavailable", null, 0, "Feed offline"),
+                        new QualityComponentResponse("AdapterGapIntegrity", "Adapter gap integrity", 0.25, 62.0, "Partial", observedAt, 1, "One gap")
+                    ],
+                    GapCount = 1
+                }
+            ],
+            Gaps =
+            [
+                new DataQualityGapPresentation
+                {
+                    GapId = "gap-stable-17",
+                    Symbol = "AAPL",
+                    Provider = "polygon",
+                    Description = "Missing minute bars",
+                    Duration = "15m",
+                    DashboardVersion = "quality-v42",
+                    CanRepair = true
+                }
+            ]
+        };
+        presentationService
+            .GetSnapshotAsync("7d", Arg.Any<CancellationToken>())
+            .Returns(snapshot);
+        apiClient
+            .RepairGapAsync(
+                "AAPL",
+                Arg.Is<QualityGapRemediationRequest>(request =>
+                    request.GapId == "gap-stable-17" && request.DashboardVersion == "quality-v42"),
+                Arg.Any<CancellationToken>())
+            .Returns(new QualityGapRemediationResponse(
+                "gap-stable-17",
+                "AAPL",
+                "Completed",
+                "polygon",
+                new DateOnly(2026, 7, 14),
+                new DateOnly(2026, 7, 15),
+                "repair-17",
+                "Repair queued"));
+
+        using var viewModel = new DataQualityViewModel(
+            StatusService.Instance,
+            LoggingService.Instance,
+            NotificationService.Instance,
+            apiClient,
+            presentationService);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.StatusText.Should().Be("Partial evidence");
+        viewModel.SymbolQuality.Should().ContainSingle();
+        viewModel.SymbolQuality[0].StoredCompletenessText.Should().Be("98.5");
+        viewModel.SymbolQuality[0].StreamingFreshnessText.Should().Be("--");
+        viewModel.SymbolQuality[0].AdapterIntegrityText.Should().Be("62.0");
+        viewModel.Gaps.Should().ContainSingle(gap =>
+            gap.GapId == "gap-stable-17" && gap.DashboardVersion == "quality-v42");
+
+        (await viewModel.RepairGapAsync("gap-stable-17")).Should().BeTrue();
+        viewModel.Gaps.Should().BeEmpty();
+        await apiClient.Received(1).RepairGapAsync(
+            "AAPL",
+            Arg.Is<QualityGapRemediationRequest>(request =>
+                request.GapId == "gap-stable-17" && request.DashboardVersion == "quality-v42"),
+            Arg.Any<CancellationToken>());
+    }
+
+    private static DataQualityViewModel CreateSubject()
+    {
+        var apiClient = Substitute.For<IDataQualityApiClient>();
+        var presentationService = Substitute.For<IDataQualityPresentationService>();
+        presentationService
+            .GetSnapshotAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new DataQualityPresentationSnapshot());
+        return new DataQualityViewModel(
+            StatusService.Instance,
+            LoggingService.Instance,
+            NotificationService.Instance,
+            apiClient,
+            presentationService);
+    }
 
     private static T InvokePrivate<T>(object instance, string methodName, params object[] args)
     {

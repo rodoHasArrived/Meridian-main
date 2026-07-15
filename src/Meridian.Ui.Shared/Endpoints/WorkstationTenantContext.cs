@@ -155,6 +155,39 @@ public static class WorkstationTenantScopeEndpointFilters
 }
 
 /// <summary>
+/// Unconditional isolation gate for accounting automation mutations whose durable identity is
+/// tenant plus company. Unlike the broader rollout-controlled fund-write gate, this filter never
+/// permits or merely logs an incomplete scope.
+/// </summary>
+public static class WorkstationTenantCompanyScopeEndpointFilters
+{
+    private const string MissingScopeMessage =
+        "A tenant- and company-scoped workstation request context is required for accounting automation mutations.";
+
+    public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(RequireTenantAndCompanyScopeAsync);
+        return builder;
+    }
+
+    private static ValueTask<object?> RequireTenantAndCompanyScopeAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context.HttpContext);
+        if (!string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
+            !string.IsNullOrWhiteSpace(tenantContext.CompanyId))
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(Results.Problem(
+            MissingScopeMessage,
+            statusCode: StatusCodes.Status403Forbidden));
+    }
+}
+
+/// <summary>
 /// SEC-005 slice 4c-iii deployment/startup switch for the fund-scoped write tenant gate — read once at
 /// startup from the environment during DI registration, so changing it requires a restart. Off by default: a
 /// tenantless authenticated session (the legacy <c>MDC_USERNAME</c> admin) can still create/evaluate

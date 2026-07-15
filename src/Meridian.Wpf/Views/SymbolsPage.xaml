@@ -287,6 +287,9 @@
                                 <MenuItem Header="Backfill Data" Command="{Binding StartBackfillCommand}"/>
                                 <MenuItem Header="Chart" Command="{Binding NavigateToChartCommand}"/>
                                 <Separator/>
+                                <MenuItem Header="View in Security Master" Command="{Binding ViewInSecurityMasterCommand}"/>
+                                <MenuItem Header="Add to Security Master" Command="{Binding AddToSecurityMasterCommand}"/>
+                                <Separator/>
                                 <MenuItem Header="Export Data..." Command="{Binding ExportSymbolDataCommand}"/>
                             </ContextMenu>
                         </ListView.ContextMenu>

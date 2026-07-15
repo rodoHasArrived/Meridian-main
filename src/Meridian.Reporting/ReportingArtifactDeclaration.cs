@@ -142,7 +142,7 @@ public static class ReportingArtifactDeclaration
                 gridId));
         }
 
-        var built = artifacts.MoveToImmutable();
+        var built = artifacts.ToImmutable();
         if (built.Select(static artifact => artifact.ArtifactId)
             .Distinct(StringComparer.Ordinal)
             .Count() != built.Length)

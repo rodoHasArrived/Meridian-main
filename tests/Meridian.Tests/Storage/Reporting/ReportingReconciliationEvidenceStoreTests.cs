@@ -57,6 +57,7 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
         const string tenantId = "tenant-close";
         const string companyId = "company-close";
         const string fundId = "fund-close";
+        var fundAccountId = Guid.NewGuid();
         var bookId = Guid.NewGuid();
         var periodId = Guid.NewGuid();
         var completedAt = new DateTimeOffset(2026, 7, 1, 1, 0, 0, TimeSpan.Zero);
@@ -93,6 +94,16 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
             LedgerPeriodSignoffStatusDto.SignedOff,
             completedAt);
         var ledgerBookService = Substitute.For<ILedgerBookService>();
+        ledgerBookService.GetBookAsync(bookId, Arg.Any<CancellationToken>())
+            .Returns(new LedgerBookDto(
+                bookId,
+                fundId,
+                fundAccountId,
+                FundStructureNodeKindDto.Account,
+                "Fund close primary ledger",
+                "USD",
+                completedAt,
+                completedAt));
         var periodReadCount = 0;
         ledgerBookService.ListPeriodsAsync(
                 Arg.Any<LedgerPeriodQuery>(),
@@ -166,7 +177,7 @@ public sealed class ReportingReconciliationEvidenceStoreTests :
 
         var closeContext = new AccountingClosePostingContext(
                 Guid.NewGuid(),
-                fundId,
+                fundAccountId,
                 bookId,
                 periodId.ToString("D"),
                 "USD");

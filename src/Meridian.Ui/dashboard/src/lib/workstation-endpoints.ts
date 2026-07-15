@@ -60,6 +60,9 @@ export const WORKSTATION_API_ENDPOINTS = {
   manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
   manualJournalEntryEvidence: UI_API_ROUTES.LedgerManualJournalEntryEvidence,
   manualJournalEntryLifecycleAction: UI_API_ROUTES.LedgerManualJournalEntryLifecycleAction,
+  dailyValuationSchedules: UI_API_ROUTES.LedgerJournalAutomationDailyMarkToMarketSchedules,
+  dailyValuationRunDue: UI_API_ROUTES.LedgerJournalAutomationDailyMarkToMarketRunDue,
+  dailyValuationBatchLifecycle: UI_API_ROUTES.LedgerJournalAutomationDailyMarkToMarketBatchLifecycle,
   accountingReportPackage: UI_API_ROUTES.LedgerReportsAccountingPackage,
   accountingReportPackages: UI_API_ROUTES.LedgerReportsAccountingPackages,
   accountingReportPackageExport: UI_API_ROUTES.LedgerReportsAccountingPackageExport,
@@ -386,6 +389,7 @@ export const BACKFILL_API_ENDPOINTS = {
   checkpoints: UI_API_ROUTES.BackfillCheckpoints,
   checkpointsResumable: UI_API_ROUTES.BackfillCheckpointsResumable,
   checkpointsValidation: UI_API_ROUTES.BackfillCheckpointsValidation,
+  executions: UI_API_ROUTES.BackfillExecutions,
   progress: UI_API_ROUTES.BackfillProgress,
   run: UI_API_ROUTES.BackfillRun,
   runPreview: UI_API_ROUTES.BackfillRunPreview

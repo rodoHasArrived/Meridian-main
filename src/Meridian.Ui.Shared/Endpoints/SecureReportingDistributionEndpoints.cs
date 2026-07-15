@@ -5,6 +5,7 @@ using Meridian.Reporting;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -104,7 +105,7 @@ public static class SecureReportingDistributionEndpoints
 
         group.MapPost("/deliveries", async (
                 SecureReportingDeliveryQueueCommand command,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -116,15 +117,15 @@ public static class SecureReportingDistributionEndpoints
             }).ConfigureAwait(false))
             .RequirePermission(UserPermission.DeliverReporting);
 
-        group.MapGet("/deliveries/{jobId}", async (
-                string jobId,
-                ReportingSecureDistributionApplicationService service,
+        group.MapGet("/deliveries/delivery_{jobToken:length(32):regex(^[a-f0-9]+$)}", async (
+                string jobToken,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
             {
                 var job = await service
-                    .GetDeliveryAsync(jobId, BuildAuthority(context), ct)
+                    .GetDeliveryAsync($"delivery_{jobToken}", BuildAuthority(context), ct)
                     .ConfigureAwait(false);
                 return Results.Ok(Project(job));
             }).ConfigureAwait(false))
@@ -132,7 +133,7 @@ public static class SecureReportingDistributionEndpoints
 
         group.MapGet("/packages/{runId}/deliveries", async (
                 string runId,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -145,14 +146,14 @@ public static class SecureReportingDistributionEndpoints
             .RequirePermission(UserPermission.ViewReporting);
 
         group.MapGet("/transports", (
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context) =>
             Results.Ok(service.GetDistributionCapabilities(BuildAuthority(context))))
             .RequirePermission(UserPermission.ViewReporting);
 
         group.MapPost("/access-grants", async (
                 SecureReportingGrantIssueCommand command,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -175,7 +176,7 @@ public static class SecureReportingDistributionEndpoints
 
         group.MapGet("/access-grants/{grantId}", async (
                 string grantId,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -189,7 +190,7 @@ public static class SecureReportingDistributionEndpoints
 
         group.MapGet("/packages/{runId}/access-grants", async (
                 string runId,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -204,7 +205,7 @@ public static class SecureReportingDistributionEndpoints
         group.MapPost("/access-grants/{grantId}/revoke", async (
                 string grantId,
                 SecureReportingGrantRevocationRequest request,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -221,7 +222,7 @@ public static class SecureReportingDistributionEndpoints
         group.MapGet("/packages/{runId}/artifacts/{artifactId}", async (
                 string runId,
                 string artifactId,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -240,7 +241,7 @@ public static class SecureReportingDistributionEndpoints
 
         app.MapGet("/portal/reporting/secure/packages/{runId}", async (
                 string runId,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -261,7 +262,7 @@ public static class SecureReportingDistributionEndpoints
                 string transportId,
                 string jobId,
                 SecureReportingDeliveryReceiptCommand command,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>
@@ -288,7 +289,7 @@ public static class SecureReportingDistributionEndpoints
         app.MapPost("/portal/reporting/access-grants/{grantId}/exchange", async (
                 string grantId,
                 SecureReportingGrantExchangeCommand command,
-                ReportingSecureDistributionApplicationService service,
+                [FromServices] ReportingSecureDistributionApplicationService service,
                 HttpContext context,
                 CancellationToken ct) =>
             await ExecuteAsync(async () =>

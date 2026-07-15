@@ -25,6 +25,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
     private SymbolRegistry _registry;
     private readonly ConcurrentDictionary<string, string> _aliasCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, SymbolRegistryEntry> _symbolCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<Guid, string> _securityIdCache = new();
 
     public SymbolRegistryService(string storagePath)
     {
@@ -87,15 +88,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
             entry.Canonical = entry.Canonical.Trim().ToUpperInvariant();
             NormalizeEntry(entry);
 
-            if (_registry.Symbols.TryGetValue(entry.Canonical, out var existing))
-            {
-                MergeEntry(existing, entry);
-                entry = existing;
-            }
-            else
-            {
-                _registry.Symbols[entry.Canonical] = entry;
-            }
+            entry = RegisterEntryLocked(entry, merge: true);
 
             entry.LastUpdatedAt = DateTime.UtcNow;
             _registry.LastUpdatedAt = DateTime.UtcNow;
@@ -380,6 +373,44 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
             .OrderBy(s => s.Canonical);
     }
 
+    public async Task<string?> GetMigrationMarkerAsync(string migrationId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(migrationId);
+
+        await _registryLock.WaitAsync(ct);
+        try
+        {
+            return _registry.MigrationMarkers.TryGetValue(migrationId.Trim(), out var fingerprint)
+                ? fingerprint
+                : null;
+        }
+        finally
+        {
+            _registryLock.Release();
+        }
+    }
+
+    public async Task SetMigrationMarkerAsync(
+        string migrationId,
+        string fingerprint,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(migrationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(fingerprint);
+
+        await _registryLock.WaitAsync(ct);
+        try
+        {
+            _registry.MigrationMarkers[migrationId.Trim()] = fingerprint.Trim();
+            _registry.LastUpdatedAt = DateTime.UtcNow;
+            await SaveRegistryAsync(ct);
+        }
+        finally
+        {
+            _registryLock.Release();
+        }
+    }
+
     public async Task SaveRegistryAsync(CancellationToken ct = default)
     {
         var json = JsonSerializer.Serialize(_registry, MarketDataJsonContext.Default.SymbolRegistry);
@@ -401,14 +432,7 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
 
                 symbol.Canonical = symbol.Canonical.Trim().ToUpperInvariant();
                 NormalizeEntry(symbol);
-                if (merge && _registry.Symbols.TryGetValue(symbol.Canonical, out var existing))
-                {
-                    MergeEntry(existing, symbol);
-                }
-                else
-                {
-                    _registry.Symbols[symbol.Canonical] = symbol;
-                }
+                RegisterEntryLocked(symbol, merge);
 
                 imported++;
             }
@@ -430,8 +454,10 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
     {
         _symbolCache.Clear();
         _aliasCache.Clear();
+        _securityIdCache.Clear();
 
         var symbols = new Dictionary<string, SymbolRegistryEntry>(StringComparer.OrdinalIgnoreCase);
+        var entriesBySecurityId = new Dictionary<Guid, SymbolRegistryEntry>();
         foreach (var entry in _registry.Symbols.Values)
         {
             if (string.IsNullOrWhiteSpace(entry.Canonical))
@@ -439,7 +465,23 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
 
             entry.Canonical = entry.Canonical.Trim().ToUpperInvariant();
             NormalizeEntry(entry);
+
+            if (entry.SecurityId is Guid securityId &&
+                entriesBySecurityId.TryGetValue(securityId, out var identityEntry))
+            {
+                AddCanonicalTickerAlias(identityEntry, entry.Canonical);
+                MergeEntry(identityEntry, entry);
+                _log.Warning(
+                    "Collapsed duplicate canonical symbol {DuplicateCanonical} into {RetainedCanonical} for SecurityId {SecurityId}",
+                    entry.Canonical,
+                    identityEntry.Canonical,
+                    securityId);
+                continue;
+            }
+
             symbols[entry.Canonical] = entry;
+            if (entry.SecurityId is Guid retainedSecurityId)
+                entriesBySecurityId[retainedSecurityId] = entry;
         }
         _registry.Symbols = symbols;
         _registry.MigrationMarkers = new Dictionary<string, string>(
@@ -462,6 +504,8 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
         foreach (var (canonical, entry) in _registry.Symbols)
         {
             _symbolCache[canonical] = entry;
+            if (entry.SecurityId is Guid securityId)
+                _securityIdCache[securityId] = canonical;
 
             foreach (var alias in entry.Aliases)
             {
@@ -515,6 +559,88 @@ public sealed class SymbolRegistryService : ISymbolRegistryService
             if (mappings.Count > 0)
                 _registry.ProviderMappings[provider] = mappings;
         }
+    }
+
+    private SymbolRegistryEntry RegisterEntryLocked(SymbolRegistryEntry incoming, bool merge)
+    {
+        _registry.Symbols.TryGetValue(incoming.Canonical, out var canonicalEntry);
+
+        if (canonicalEntry?.SecurityId is Guid retainedSecurityId && incoming.SecurityId is null)
+            incoming.SecurityId = retainedSecurityId;
+
+        if (canonicalEntry?.SecurityId is Guid existingSecurityId &&
+            incoming.SecurityId is Guid incomingSecurityId &&
+            existingSecurityId != incomingSecurityId)
+        {
+            throw new InvalidOperationException(
+                $"Canonical symbol '{incoming.Canonical}' is already assigned to SecurityId " +
+                $"'{existingSecurityId}' and cannot be reassigned to '{incomingSecurityId}'.");
+        }
+
+        var identityEntry = incoming.SecurityId is Guid securityId
+            ? FindBySecurityIdLocked(securityId)
+            : null;
+
+        if (identityEntry is not null && !ReferenceEquals(identityEntry, canonicalEntry))
+        {
+            if (canonicalEntry is not null)
+            {
+                throw new InvalidOperationException(
+                    $"Canonical symbol '{incoming.Canonical}' is already registered to a different instrument; " +
+                    $"SecurityId '{incoming.SecurityId}' is retained under '{identityEntry.Canonical}'.");
+            }
+
+            AddCanonicalTickerAlias(identityEntry, incoming.Canonical);
+            MergeEntry(identityEntry, incoming);
+            return identityEntry;
+        }
+
+        if (canonicalEntry is not null)
+        {
+            if (merge)
+            {
+                MergeEntry(canonicalEntry, incoming);
+                return canonicalEntry;
+            }
+
+            _registry.Symbols[incoming.Canonical] = incoming;
+            return incoming;
+        }
+
+        _registry.Symbols[incoming.Canonical] = incoming;
+        return incoming;
+    }
+
+    private SymbolRegistryEntry? FindBySecurityIdLocked(Guid securityId)
+    {
+        if (_securityIdCache.TryGetValue(securityId, out var canonical) &&
+            _registry.Symbols.TryGetValue(canonical, out var cachedEntry) &&
+            cachedEntry.SecurityId == securityId)
+        {
+            return cachedEntry;
+        }
+
+        return _registry.Symbols.Values.FirstOrDefault(entry => entry.SecurityId == securityId);
+    }
+
+    private static void AddCanonicalTickerAlias(SymbolRegistryEntry entry, string canonicalTicker)
+    {
+        if (string.IsNullOrWhiteSpace(canonicalTicker) ||
+            canonicalTicker.Equals(entry.Canonical, StringComparison.OrdinalIgnoreCase) ||
+            entry.Aliases.Any(alias =>
+                string.IsNullOrWhiteSpace(alias.Provider) &&
+                alias.Alias.Equals(canonicalTicker, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        entry.Aliases.Add(new SymbolAlias
+        {
+            Alias = canonicalTicker.Trim().ToUpperInvariant(),
+            Source = SymbolMappingSources.SecurityMaster,
+            Type = "ticker",
+            IsActive = true
+        });
     }
 
     private static void AddAliasCandidate(
