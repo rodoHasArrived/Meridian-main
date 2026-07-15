@@ -594,8 +594,16 @@ public static partial class WorkstationEndpoints
         }
 
         var issues = new List<DataUploadValidationIssueDto>();
+        var parentOf = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var rowOf = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var (displayRowNumber, values) in dataRows)
         {
+            var entityId = entityIdColumn < values.Count ? values[entityIdColumn].Trim() : string.Empty;
+            if (entityId.Length > 0)
+            {
+                rowOf.TryAdd(entityId, displayRowNumber);
+            }
+
             var parent = parentColumn < values.Count ? values[parentColumn].Trim() : string.Empty;
             if (parent.Length == 0)
             {
@@ -603,7 +611,6 @@ public static partial class WorkstationEndpoints
             }
 
             var cellReference = $"{entitySheet.Name}!{WorkbookColumnLetter(parentColumn)}{displayRowNumber}";
-            var entityId = entityIdColumn < values.Count ? values[entityIdColumn].Trim() : string.Empty;
             if (string.Equals(parent, entityId, StringComparison.OrdinalIgnoreCase))
             {
                 issues.Add(new DataUploadValidationIssueDto(
@@ -625,10 +632,83 @@ public static partial class WorkstationEndpoints
                     RowNumber: displayRowNumber,
                     SheetName: entitySheet.Name,
                     CellReference: cellReference));
+                continue;
+            }
+
+            // Valid-looking edge to an existing entity: record it so multi-row cycles (e.g. A->B->A)
+            // can be detected below. Self-references and dangling parents are already reported above.
+            if (entityId.Length > 0)
+            {
+                parentOf.TryAdd(entityId, parent);
             }
         }
 
+        foreach (var cyclicEntityId in DetectCyclicEntities(parentOf))
+        {
+            if (!rowOf.TryGetValue(cyclicEntityId, out var cyclicRowNumber))
+            {
+                continue;
+            }
+
+            issues.Add(new DataUploadValidationIssueDto(
+                "Error",
+                "parent_entity_id",
+                $"entity_id '{cyclicEntityId}' is part of a circular parent_entity_id hierarchy and cannot be committed.",
+                RowNumber: cyclicRowNumber,
+                SheetName: entitySheet.Name,
+                CellReference: $"{entitySheet.Name}!{WorkbookColumnLetter(parentColumn)}{cyclicRowNumber}"));
+        }
+
         return issues;
+    }
+
+    /// <summary>
+    /// Detects entity ids that participate in a parent_entity_id cycle. The parent map is a
+    /// functional graph (each entity has at most one parent), so each chain is followed once and
+    /// any node reached while still on the current walk marks the enclosing cycle.
+    /// </summary>
+    private static HashSet<string> DetectCyclicEntities(IReadOnlyDictionary<string, string> parentOf)
+    {
+        const int OnStack = 1;
+        const int Settled = 2;
+        var cyclic = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var state = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var start in parentOf.Keys)
+        {
+            if (state.TryGetValue(start, out var startState) && startState == Settled)
+            {
+                continue;
+            }
+
+            var walk = new List<string>();
+            string? current = start;
+            while (current is not null
+                && (!state.TryGetValue(current, out var currentState) || currentState == 0))
+            {
+                state[current] = OnStack;
+                walk.Add(current);
+                current = parentOf.TryGetValue(current, out var parent) ? parent : null;
+            }
+
+            if (current is not null
+                && state.TryGetValue(current, out var reachedState)
+                && reachedState == OnStack)
+            {
+                var cycleStart = walk.FindIndex(node => string.Equals(node, current, StringComparison.OrdinalIgnoreCase));
+                for (var index = cycleStart; index >= 0 && index < walk.Count; index++)
+                {
+                    cyclic.Add(walk[index]);
+                }
+            }
+
+            foreach (var node in walk)
+            {
+                state[node] = Settled;
+            }
+        }
+
+        return cyclic;
     }
 
     private static IReadOnlyDictionary<string, DataUploadTemplateDto> ResolveWorkbookSheetTemplateMap(
