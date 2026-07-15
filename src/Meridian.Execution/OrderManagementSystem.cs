@@ -97,6 +97,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
                 request.Symbol);
         }
 
+        // A duplicate client order id must never reach the state table or the gateway: every
+        // downstream write in this method (including gate rejections) keys on orderId, so a
+        // replayed or colliding id would overwrite the tracked state (fills, status history)
+        // of the order already working under that id.
+        if (request.ClientOrderId is not null
+            && _orders.TryGetValue(orderId, out var existingOrder)
+            && !IsTerminalStatus(existingOrder.Status))
+        {
+            return await RejectDuplicateClientOrderIdAsync(
+                orderId,
+                safeRequest,
+                actor,
+                brokerName,
+                runId,
+                correlationId,
+                ct).ConfigureAwait(false);
+        }
+
         var placementGate = BrokerageOrderPlacementGate.Evaluate(
             _brokerageConfiguration,
             _gateway.GatewayId,
@@ -232,7 +250,20 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             StrategyId = safeRequest.StrategyId
         };
 
-        _orders[orderId] = orderState;
+        if (!TryRegisterOrder(orderId, orderState))
+        {
+            // Lost a race with a concurrent submission that claimed the same client order id
+            // after the guard above ran; the winner's state must survive untouched.
+            return await RejectDuplicateClientOrderIdAsync(
+                orderId,
+                safeRequest,
+                actor,
+                brokerName,
+                runId,
+                correlationId,
+                ct).ConfigureAwait(false);
+        }
+
         TrimRetainedOrdersIfNeeded();
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
@@ -509,6 +540,73 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         };
     }
 
+    /// <summary>
+    /// Terminal statuses whose order ids may be reclaimed by a later submission. Excludes
+    /// <see cref="OrderStatus.PendingCancel"/>: an order awaiting cancel confirmation is still
+    /// working at the broker and its id must not be reused.
+    /// </summary>
+    private static bool IsTerminalStatus(OrderStatus status)
+        => status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
+
+    /// <summary>
+    /// Atomically claims <paramref name="orderId"/> in the order table. A terminal entry may be
+    /// reclaimed (retention trimming already makes terminal ids reusable once evicted, so
+    /// reuse-after-terminal keeps the same semantics); an active entry may not.
+    /// </summary>
+    private bool TryRegisterOrder(string orderId, OrderState orderState)
+    {
+        while (!_orders.TryAdd(orderId, orderState))
+        {
+            if (!_orders.TryGetValue(orderId, out var existing))
+            {
+                continue; // Entry was trimmed between TryAdd and TryGetValue; retry.
+            }
+
+            if (!IsTerminalStatus(existing.Status))
+            {
+                return false;
+            }
+
+            if (_orders.TryUpdate(orderId, orderState, existing))
+            {
+                break;
+            }
+        }
+
+        return true;
+    }
+
+    private async Task<OrderResult> RejectDuplicateClientOrderIdAsync(
+        string orderId,
+        OrderRequest request,
+        string? actor,
+        string brokerName,
+        string? runId,
+        string? correlationId,
+        CancellationToken ct)
+    {
+        var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
+
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            message,
+            ct,
+            rejectionSource: "duplicate client order id guard",
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
+
+        return new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = message
+        };
+    }
+
     private static OrderState CreateRejectedState(
         string orderId,
         OrderRequest request,
@@ -778,8 +876,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         IReadOnlyDictionary<string, string>? metadata = null)
     {
         var rejectedState = CreateRejectedState(orderId, request, message);
-        _orders[orderId] = rejectedState;
-        TrimRetainedOrdersIfNeeded();
+        // TryAdd, not the indexer: gate rejections run before the order id is registered, so an
+        // existing entry under this id belongs to a different order (e.g. a terminal order whose
+        // id a rejected submission tried to reuse) and must survive. The rejection is still
+        // audit-trailed and returned to the caller.
+        if (_orders.TryAdd(orderId, rejectedState))
+        {
+            TrimRetainedOrdersIfNeeded();
+        }
+
         await RecordSessionOrderUpdateAsync(sessionId, rejectedState, ct).ConfigureAwait(false);
         await RecordOrderRejectionAsync(
             orderId,
