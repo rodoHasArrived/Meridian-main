@@ -45,7 +45,7 @@ export const primaryOperatorWorkflowStepDefinitions: PrimaryOperatorWorkflowStep
     id: "validate",
     label: "Validate",
     description: "Check data quality, provider health, and backfill evidence before downstream use.",
-    href: WORKSTATION_ROUTE_CATALOG.dataOperations
+    href: WORKSTATION_ROUTE_CATALOG.dataBackfills
   },
   {
     id: "reconcile",
@@ -345,7 +345,8 @@ export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryO
     return "reconcile";
   }
 
-  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.dataOperations)
+  if (route.startsWith(WORKSTATION_ROUTE_CATALOG.dataBackfills)
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataOperations)
     || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataQuotes)
     || route.startsWith(WORKSTATION_ROUTE_CATALOG.dataAlerts)) {
     return "validate";

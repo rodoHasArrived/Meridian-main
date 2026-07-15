@@ -491,7 +491,7 @@ describe("App", () => {
     );
     expect(screen.getByRole("link", { name: "Validate, current primary operator workflow step, Current" })).toHaveAttribute(
       "href",
-      "/data/operations?symbol=MSFT"
+      "/data/backfills?symbol=MSFT"
     );
     expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(
       "href",
