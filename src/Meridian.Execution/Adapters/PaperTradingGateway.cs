@@ -115,7 +115,14 @@ public sealed class PaperTradingGateway : IOrderGateway
         {
             ObjectDisposedException.ThrowIf(IsDisposed, this);
             var trackedRequest = request with { ClientOrderId = orderId };
-            _workingOrders[orderId] = trackedRequest;
+            // Reject a duplicate id rather than overwriting the working entry: two fill tasks would
+            // share one dictionary key, and once the first removes it the second would skip its
+            // terminal update, leaving an accepted order with no fill or cancel event.
+            if (!_workingOrders.TryAdd(orderId, trackedRequest))
+            {
+                throw new UnsupportedOrderRequestException(
+                    $"An order with client order id '{orderId}' is already working in the paper gateway.");
+            }
             TrackFillSimulationLocked(orderId, trackedRequest);
         }
 
