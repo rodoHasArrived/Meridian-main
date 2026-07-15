@@ -417,14 +417,9 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
     return `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}${suffix}${search}${hash}`;
   }
 
-  if (firstSegment === "data" && pathSegments(pathname)[1] === "backfills") {
-    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataBackfills.length);
-    return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
-  }
-
   if (firstSegment === "data-operations" && pathSegments(pathname)[1] === "backfills") {
     const suffix = pathname.slice("/data-operations/backfills".length);
-    return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
+    return `${WORKSTATION_ROUTE_CATALOG.dataBackfills}${suffix}${search}${hash}`;
   }
 
   if (firstSegment === "overview") {

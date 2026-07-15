@@ -96,11 +96,11 @@ describe("workspace metadata", () => {
 
   it("preserves legacy suffix, query, and hash when building redirects", () => {
     expect(legacyWorkspaceRedirect("/data-operations/backfills", "?provider=alpaca", "#queue")).toBe(
-      "/data/operations?provider=alpaca#queue"
+      "/data/backfills?provider=alpaca#queue"
     );
-    expect(legacyWorkspaceRedirect("/data/backfills", "?provider=alpaca", "#queue")).toBe(
-      "/data/operations?provider=alpaca#queue"
-    );
+    // /data/backfills is now the canonical backfill route, so it is no longer
+    // rewritten to /data/operations by the legacy redirect.
+    expect(legacyWorkspaceRedirect("/data/backfills", "?provider=alpaca", "#queue")).toBeNull();
     expect(legacyWorkspaceRedirect("/data/security-master/identity", "?query=GS", "#conflicts")).toBe(
       "/accounting/security-master/identity?query=GS#conflicts"
     );
