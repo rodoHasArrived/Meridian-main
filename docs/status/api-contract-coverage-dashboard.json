@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 99.7,
-  "endpoint_coverage_percent": 99.7,
-  "contract_coverage_percent": 99.7,
+  "score_percent": 100.0,
+  "endpoint_coverage_percent": 100.0,
+  "contract_coverage_percent": 100.0,
   "summary": {
     "endpoint_count": 610,
-    "documented_endpoint_count": 608,
-    "undocumented_endpoint_count": 2,
+    "documented_endpoint_count": 610,
+    "undocumented_endpoint_count": 0,
     "workstation_contract_count": 872,
-    "documented_workstation_contract_count": 869,
-    "undocumented_workstation_contract_count": 3
+    "documented_workstation_contract_count": 872,
+    "undocumented_workstation_contract_count": 0
   },
   "endpoints": [
     {
@@ -2070,7 +2070,7 @@
       "method": "POST",
       "path": "/api/ledger/close-management/period-reopen",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1464",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
@@ -2208,7 +2208,7 @@
       "method": "POST",
       "path": "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:378",
-      "documented": false
+      "documented": true
     },
     {
       "method": "POST",
@@ -3704,7 +3704,7 @@
     {
       "name": "AutomatedJournalCapitalAccountReconciliationDto",
       "source": "src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:25",
-      "documented": false
+      "documented": true
     },
     {
       "name": "AutomatedJournalScheduleStatusDto",
@@ -4074,12 +4074,12 @@
     {
       "name": "DailyValuationBatchLifecycleRequestDto",
       "source": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:54",
-      "documented": false
+      "documented": true
     },
     {
       "name": "DailyValuationBatchLifecycleResultDto",
       "source": "src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:67",
-      "documented": false
+      "documented": true
     },
     {
       "name": "IngestionOperationsSnapshotDto",
