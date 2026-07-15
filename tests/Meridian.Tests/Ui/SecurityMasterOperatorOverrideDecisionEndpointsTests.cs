@@ -137,12 +137,12 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
 
         public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
             Guid securityId,
-            OperatorOverrideDecisionRequest request,
+            OperatorOverrideDecision decision,
             CancellationToken ct = default)
         {
-            if (request.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
+            if (decision.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
             {
-                throw new ArgumentOutOfRangeException(nameof(request), request.Decision, "Approval decision must be Approved or Rejected.");
+                throw new ArgumentOutOfRangeException(nameof(decision), decision.Decision, "Approval decision must be Approved or Rejected.");
             }
 
             if (!_overrides.TryGetValue(securityId, out var existing))
@@ -153,8 +153,8 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
             var reviewedAt = DateTimeOffset.UtcNow;
             var updated = existing with
             {
-                ApprovalStatus = request.Decision,
-                ReviewedBy = request.Reviewer,
+                ApprovalStatus = decision.Decision,
+                ReviewedBy = decision.Reviewer,
                 ReviewedAt = reviewedAt
             };
             _overrides[securityId] = updated;

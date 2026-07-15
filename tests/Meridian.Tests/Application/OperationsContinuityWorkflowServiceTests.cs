@@ -3582,7 +3582,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
             => throw new NotSupportedException();
 
         public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
-            Guid securityId, OperatorOverrideDecisionRequest request, CancellationToken ct = default)
+            Guid securityId, OperatorOverrideDecision decision, CancellationToken ct = default)
             => throw new NotSupportedException();
     }
 

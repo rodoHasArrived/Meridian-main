@@ -939,13 +939,13 @@ public static class SecurityMasterEndpoints
             [FromServices] IOperatorOverridesStore store,
             CancellationToken ct) =>
         {
-            // The reviewer identity is server-derived from the authenticated principal; overwrite any
-            // caller-supplied value so a client cannot spoof who approved the overlay.
-            var reviewer = ResolveActor(context);
+            // The reviewer identity is server-derived from the authenticated principal, never taken
+            // from the request body, so a client cannot attribute a decision to someone else.
+            var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
             try
             {
                 var updated = await store
-                    .RecordApprovalDecisionAsync(securityId, request with { Reviewer = reviewer }, ct)
+                    .RecordApprovalDecisionAsync(securityId, decision, ct)
                     .ConfigureAwait(false);
                 return Results.Json(updated, jsonOptions);
             }

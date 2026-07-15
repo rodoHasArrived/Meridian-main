@@ -750,7 +750,7 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
 
         public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
             Guid securityId,
-            OperatorOverrideDecisionRequest request,
+            OperatorOverrideDecision decision,
             CancellationToken ct = default)
         {
             ArgumentNullException.ThrowIfNull(request);
@@ -777,8 +777,8 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             var reviewedAt = DateTimeOffset.UtcNow;
             var updated = existing with
             {
-                ApprovalStatus = request.Decision,
-                ReviewedBy = request.Reviewer,
+                ApprovalStatus = decision.Decision,
+                ReviewedBy = decision.Reviewer,
                 ReviewedAt = reviewedAt
             };
             _overrides[securityId] = updated;

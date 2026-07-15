@@ -72,7 +72,7 @@ public sealed class PostgresOperatorOverridesStoreTests
         await store.PatchAsync(securityId, Patch("rating", "AA", "initial"), "operator-1");
         await store.RecordApprovalDecisionAsync(
             securityId,
-            new OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1", "signed off"));
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1", "signed off"));
 
         // A value change after approval must invalidate the sign-off and re-open review.
         await store.PatchAsync(securityId, Patch("rating", "BBB", "revised"), "operator-1");
@@ -98,7 +98,7 @@ public sealed class PostgresOperatorOverridesStoreTests
 
         var result = await store.RecordApprovalDecisionAsync(
             securityId,
-            new OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1", "looks correct"));
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1", "looks correct"));
 
         result.ApprovalStatus.Should().Be(SecurityOverrideApprovalStatusDto.Approved);
         result.ReviewedBy.Should().Be("reviewer-1");
@@ -126,7 +126,7 @@ public sealed class PostgresOperatorOverridesStoreTests
 
         var result = await store.RecordApprovalDecisionAsync(
             securityId,
-            new OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto.Rejected, "reviewer-2", "insufficient evidence"));
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Rejected, "reviewer-2", "insufficient evidence"));
 
         result.ApprovalStatus.Should().Be(SecurityOverrideApprovalStatusDto.Rejected);
         result.ReviewedBy.Should().Be("reviewer-2");
@@ -144,7 +144,7 @@ public sealed class PostgresOperatorOverridesStoreTests
 
         var act = async () => await store.RecordApprovalDecisionAsync(
             Guid.NewGuid(),
-            new OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1"));
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1"));
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
@@ -158,12 +158,12 @@ public sealed class PostgresOperatorOverridesStoreTests
         await store.PatchAsync(securityId, Patch("rating", "AA", "correction"), "operator-1");
         await store.RecordApprovalDecisionAsync(
             securityId,
-            new OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1"));
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Approved, "reviewer-1"));
 
         // A second decision on an already-decided (non-Pending) overlay is rejected.
         var act = async () => await store.RecordApprovalDecisionAsync(
             securityId,
-            new OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto.Rejected, "reviewer-2"));
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Rejected, "reviewer-2"));
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
@@ -179,7 +179,7 @@ public sealed class PostgresOperatorOverridesStoreTests
         // A decision must be Approved or Rejected — Pending / NotRequested are not decisions.
         var act = async () => await store.RecordApprovalDecisionAsync(
             securityId,
-            new OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto.Pending, "reviewer-1"));
+            new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Pending, "reviewer-1"));
 
         await act.Should().ThrowAsync<ArgumentException>();
     }
