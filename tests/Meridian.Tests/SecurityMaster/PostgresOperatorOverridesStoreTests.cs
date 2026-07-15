@@ -181,7 +181,7 @@ public sealed class PostgresOperatorOverridesStoreTests
             securityId,
             new OperatorOverrideDecision(SecurityOverrideApprovalStatusDto.Pending, "reviewer-1"));
 
-        await act.Should().ThrowAsync<ArgumentException>();
+        await act.Should().ThrowAsync<ArgumentOutOfRangeException>();
     }
 
     [SecurityMasterDatabaseFact]
