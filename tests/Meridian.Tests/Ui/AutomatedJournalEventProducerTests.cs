@@ -239,7 +239,9 @@ public sealed class AutomatedJournalEventProducerTests
             AsOf));
 
         production.Events.Should().BeEmpty();
-        production.Skipped.Should().ContainSingle().Which.Reason.Should().Contain("currency", StringComparison.OrdinalIgnoreCase);
+        production.Skipped.Should().ContainSingle().Which.Reason
+            .Contains("currency", StringComparison.OrdinalIgnoreCase)
+            .Should().BeTrue();
     }
 
     [Fact]
