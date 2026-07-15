@@ -62,7 +62,7 @@ public sealed class ReportingArtifactVaultServiceTests
         blobStore.ReadCalls.Should().Be(0);
         audit.Events[^1].Action.Should().Be(ReportingArtifactAuditAction.AccessDenied);
         audit.Events[^1].ActorTenantId.Should().Be("tenant-b");
-        audit.Events[^1].TargetTenantId.Should().Be("tenant-a");
+        audit.Events[^1].TargetTenantId.Should().Be("tenant-b");
     }
 
     [Fact]
@@ -311,13 +311,15 @@ public sealed class ReportingArtifactVaultServiceTests
         }
 
         public ValueTask<ReportingRetainedArtifactRecord?> GetArtifactAsync(
+            string tenantId,
             string packageId,
             string artifactId,
             CancellationToken cancellationToken = default)
         {
             var result = _packages.TryGetValue(packageId, out var package)
                 ? package.Artifacts.FirstOrDefault(item =>
-                    string.Equals(item.ArtifactId, artifactId, StringComparison.Ordinal))
+                    string.Equals(item.Scope.TenantId, tenantId, StringComparison.Ordinal)
+                    && string.Equals(item.ArtifactId, artifactId, StringComparison.Ordinal))
                 : null;
             return ValueTask.FromResult(result);
         }
