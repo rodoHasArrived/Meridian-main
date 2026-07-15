@@ -436,13 +436,37 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
 
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
+        if (report.OrderStatus is OrderStatus.Rejected)
+        {
+            // Do not apply a rejected modify to order state: ApplyReport would let the terminal
+            // Rejected overwrite a completed Filled/Cancelled order, and returning Success would
+            // misreport that overwrite as a successful modify. Mirror the cancel path and fail.
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderModifyRejected",
+                outcome: report.OrderStatus.ToString(),
+                orderId: orderId,
+                state: state,
+                report: report,
+                message: report.RejectReason ?? "Modify request rejected",
+                metadata: BuildOrderModificationAuditMetadata(modification, state, report),
+                ct: ct).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = state,
+                ErrorMessage = report.RejectReason ?? "Modify request rejected"
+            };
+        }
+
         var updated = _orders.AddOrUpdate(
             orderId,
             _ => ApplyReport(state, report),
             (_, existing) => ApplyReport(existing, report));
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
-            action: report.OrderStatus is OrderStatus.Rejected ? "OrderModifyRejected" : "OrderModified",
+            action: "OrderModified",
             outcome: updated.Status.ToString(),
             orderId: orderId,
             state: updated,
