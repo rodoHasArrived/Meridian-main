@@ -314,6 +314,6 @@ public static class SecureReportingDistributionEndpoints
         response.Headers.CacheControl = "no-store, private";
         response.Headers.Pragma = "no-cache";
         response.Headers.Expires = "0";
-        response.Headers.ReferrerPolicy = "no-referrer";
+        response.Headers["Referrer-Policy"] = "no-referrer";
     }
 }

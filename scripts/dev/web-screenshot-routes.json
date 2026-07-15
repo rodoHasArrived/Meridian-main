@@ -1037,6 +1037,41 @@
       ]
     },
     {
+      "id": "W06J",
+      "name": "web-data-ingestion-operations",
+      "path": "/data/operations",
+      "docLabel": "Data \u2014 Ingestion Operations",
+      "waitForText": "Ingestion Operations Center",
+      "requiredApiRoutes": [
+        "/api/workstation/data",
+        "/api/workstation/data/ingestion-operations"
+      ],
+      "waitForTexts": [
+        "Ingestion Operations Center",
+        "Action rationale",
+        "Resumable"
+      ],
+      "waitForAbsentTexts": [
+        "Loading ingestion operations\u2026"
+      ]
+    },
+    {
+      "id": "W06K",
+      "name": "web-data-storage-assurance",
+      "path": "/data/assurance",
+      "docLabel": "Data \u2014 Storage Assurance",
+      "waitForText": "Storage & Data Assurance",
+      "requiredApiRoutes": [
+        "/api/workstation/data",
+        "/api/workstation/data/storage-assurance"
+      ],
+      "waitForTexts": [
+        "Storage & Data Assurance",
+        "Assurance signals",
+        "Guarded maintenance"
+      ]
+    },
+    {
       "id": "W07",
       "name": "web-settings-workspace",
       "path": "/settings",

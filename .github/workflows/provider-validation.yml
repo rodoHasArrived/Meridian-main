@@ -42,7 +42,7 @@ env:
 
 jobs:
   run-validation:
-    name: Wave 1 Provider Validation + DK1 Evidence Bundle
+    name: Wave 1 Provider Validation + DK1 Review Packet
     runs-on: windows-latest
     timeout-minutes: 90
 
@@ -66,7 +66,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Run provider validation evidence bundle
+      - name: Prepare provider validation review packet
         shell: pwsh
         env:
           DATE_STAMP: ${{ inputs.date_stamp }}
@@ -87,6 +87,7 @@ jobs:
           if ($env:BASELINE_KERNEL_VERSION -ne '' -and $env:BASELINE_KERNEL_VERSION -ne 'default') {
             $bundleArgs += '-BaselineKernelVersion', $env:BASELINE_KERNEL_VERSION
           }
+          $bundleArgs += '-PrepareOperatorSignoff'
           & scripts/dev/run-provider-validation-evidence-bundle.ps1 @bundleArgs
 
       - name: Upload provider validation artifacts
