@@ -499,7 +499,10 @@ public static partial class WorkstationEndpoints
                 : Results.Ok(payload);
         })
         .WithName("GetWorkstationReporting")
+        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.AdminMaintenance)
         .Produces<WorkstationAccountingPayload>(200)
+        .Produces(401)
+        .Produces(403)
         .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReportingStructuredExport), (
@@ -555,10 +558,13 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("GetWorkstationStructuredReportingExport")
+        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.AdminMaintenance)
         .Produces<StructuredReportingExportPayloadDto>(200)
         .Produces(200, contentType: "application/json")
         .Produces(200, contentType: "text/csv")
         .Produces(200, contentType: WorkstationStructuredXlsxContentType)
+        .Produces(401)
+        .Produces(403)
         .Produces(400)
         .Produces(404);
 
@@ -3905,11 +3911,14 @@ public static partial class WorkstationEndpoints
         var actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
             ? resolvedActor
             : null;
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         return new ReportAccessQueryContext(
             ActorPrincipalId: actor,
             GroupPrincipalIds: EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
             CompanyId: EndpointAuthorization.ResolveCompanyId(context),
-            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
+            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance),
+            TenantId: tenant.TenantId,
+            RequireBoundScope: true);
     }
 
     private static WorkstationAccountingControlCenterPayload BuildAccountingControlCenterPayload(

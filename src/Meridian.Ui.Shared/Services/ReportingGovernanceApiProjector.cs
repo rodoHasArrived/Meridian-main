@@ -6,7 +6,7 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>Projects domain governance records into version-stable workstation API contracts.</summary>
 public static class ReportingGovernanceApiProjector
 {
-    public static GovernedReportingRunDto Project(GovernedReportingRun run)
+    public static GovernedReportingRunDto ProjectRun(GovernedReportingRun run)
     {
         ArgumentNullException.ThrowIfNull(run);
 
@@ -52,7 +52,7 @@ public static class ReportingGovernanceApiProjector
             Safe(run.AuditTrail).Select(Project).ToArray());
     }
 
-    public static ReportingGovernanceRestatementDto Project(ReportingRestatementRequest request)
+    public static ReportingGovernanceRestatementDto ProjectRestatement(ReportingRestatementRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -80,13 +80,13 @@ public static class ReportingGovernanceApiProjector
             Safe(request.AuditTrail).Select(Project).ToArray());
     }
 
-    public static ReportingGovernanceRestatementApprovalDto Project(
+    public static ReportingGovernanceRestatementApprovalDto ProjectRestatementApproval(
         ReportingRestatementApprovalResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
         return new ReportingGovernanceRestatementApprovalDto(
-            Project(result.Request),
-            Project(result.DraftRun));
+            ProjectRestatement(result.Request),
+            ProjectRun(result.DraftRun));
     }
 
     private static ReportingGovernanceAuthorityDto Project(ReportingAuthorityScope authority) =>

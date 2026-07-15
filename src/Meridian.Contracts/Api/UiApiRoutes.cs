@@ -889,6 +889,13 @@ public static class UiApiRoutes
     public const string ReportingStructuredExport = "/api/fund-structure/reporting/structured-exports/{exportId}";
     public const string ReportingRuns = "/api/fund-structure/reporting/runs";
     public const string ReportingRunReadiness = "/api/fund-structure/reporting/runs/readiness";
+    public const string ReportingGovernedRun = "/api/fund-structure/reporting/runs/{runId}";
+    public const string ReportingGovernedRunValidate = "/api/fund-structure/reporting/runs/{runId}/validate";
+    public const string ReportingGovernedRunSubmit = "/api/fund-structure/reporting/runs/{runId}/submit";
+    public const string ReportingGovernedRunApprove = "/api/fund-structure/reporting/runs/{runId}/approve";
+    public const string ReportingGovernedRunRelease = "/api/fund-structure/reporting/runs/{runId}/release";
+    public const string ReportingGovernedRunRestatementRequests = "/api/fund-structure/reporting/runs/{runId}/restatement-requests";
+    public const string ReportingGovernedRestatementApprove = "/api/fund-structure/reporting/runs/restatement-requests/{requestId}/approve";
     public const string ReportingRunAuditTrail = "/api/fund-structure/reporting/runs/{runId}/audit";
     public const string ReportingRunStream = "/api/fund-structure/reporting/runs/{runId}/stream";
     public const string ReportingRunReportWriterGrid = "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}";
