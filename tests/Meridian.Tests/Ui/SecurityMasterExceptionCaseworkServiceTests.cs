@@ -753,15 +753,15 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             OperatorOverrideDecision decision,
             CancellationToken ct = default)
         {
-            ArgumentNullException.ThrowIfNull(request);
-            if (string.IsNullOrWhiteSpace(request.Reviewer))
+            ArgumentNullException.ThrowIfNull(decision);
+            if (string.IsNullOrWhiteSpace(decision.Reviewer))
             {
-                throw new ArgumentException("reviewer must be provided.", nameof(request));
+                throw new ArgumentException("reviewer must be provided.", nameof(decision));
             }
 
-            if (request.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
+            if (decision.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
             {
-                throw new ArgumentOutOfRangeException(nameof(request), request.Decision, "Approval decision must be Approved or Rejected.");
+                throw new ArgumentOutOfRangeException(nameof(decision), decision.Decision, "Approval decision must be Approved or Rejected.");
             }
 
             if (!_overrides.TryGetValue(securityId, out var existing))
