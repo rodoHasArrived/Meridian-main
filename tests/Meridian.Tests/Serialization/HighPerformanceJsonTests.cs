@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Workstation;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Xunit;
@@ -208,6 +209,34 @@ public class HighPerformanceJsonTests
 
         // Assert
         json.Should().Contain("\n");
+    }
+
+    [Fact]
+    public void SecurityMasterJsonContext_ShouldCoverPassportWorkbenchCommandDtos()
+    {
+        Type[] workbenchDtos =
+        [
+            typeof(SecurityMasterEditOrigin),
+            typeof(SecurityMasterRevisionStateDto),
+            typeof(UpdateSecurityFieldRequest),
+            typeof(ResolveSourceConflictRequest),
+            typeof(SubmitSecurityMasterRevisionRequest),
+            typeof(ApproveSecurityMasterRevisionRequest),
+            typeof(PublishSecurityMasterRevisionRequest),
+            typeof(SecurityMasterEditResultDto),
+            typeof(SecurityMasterConflictResolutionDto),
+            typeof(SecurityMasterPublishResultDto),
+            typeof(RestatementCandidateDto),
+            typeof(SecurityMasterConflictAuthorityDecision),
+            typeof(SecurityMasterRevisionPublishedEvent),
+        ];
+
+        foreach (var dto in workbenchDtos)
+        {
+            SecurityMasterJsonContext.Default.GetTypeInfo(dto)
+                .Should()
+                .NotBeNull($"{dto.Name} must stay in the ADR-014 source-generated Security Master JSON context");
+        }
     }
 
     [Fact]

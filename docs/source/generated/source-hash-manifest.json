@@ -37,8 +37,8 @@
       "id": "SRC-CORE",
       "path": "src/Meridian.Core",
       "readme": "src/Meridian.Core/README.md",
-      "readme_hash": "0a4494c092f443db002a11eeb87923c9a3c495a6109f2b6ac23a4c8eee9b1fa8",
-      "source_hash": "597034c283fe2138d3424dd4ebe839bf40d32b926cb773a3842685301eb73cbd"
+      "readme_hash": "8490a3b69e4f2c583f9b70b059d13bc887d59a026cc13614e20cc96491b6e2ea",
+      "source_hash": "3b577997a5ede60f4284fd73ae9f6ea4a7f84974bf75be67398cc725ed92b695"
     },
     {
       "id": "SRC-DESIGN-AUDIT",
