@@ -750,6 +750,17 @@ function Get-WorkspaceShellMarker {
     }
 }
 
+function Get-WorkspaceShellPageTag {
+    param([string]$WorkspaceId)
+
+    switch ($WorkspaceId) {
+        "trading" { return "TradingShell" }
+        "data-operations" { return "DataShell" }
+        "governance" { return "AccountingShell" }
+        default { return "StrategyShell" }
+    }
+}
+
 function Get-WorkspaceTileNames {
     param([string]$WorkspaceId)
 
@@ -948,11 +959,13 @@ function Invoke-SmokeCase {
     )
 
     Write-Log "Preparing session for $($Case.Name) ($($Case.PageTag))."
+    $seedPageTag = Get-WorkspaceShellPageTag -WorkspaceId $Case.WorkspaceId
+    $seedPageTitle = Get-WorkspaceShellMarker -WorkspaceId $Case.WorkspaceId
     $seededJson = Get-SeededWorkspaceJson `
         -BaseWorkspaceJson $BaseWorkspaceJson `
         -WorkspaceId $Case.WorkspaceId `
-        -PageTag $Case.PageTag `
-        -PageTitle $Case.PageTitle `
+        -PageTag $seedPageTag `
+        -PageTitle $seedPageTitle `
         -FundProfileId $FundProfileId `
         -OperatingContextKey $OperatingContextKey
 

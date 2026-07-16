@@ -96,6 +96,13 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         )
         self.assertIn('PaletteResultName = "Add provider wizard"', self.script)
 
+    def test_seeded_state_starts_on_workspace_home_before_deep_navigation(self) -> None:
+        self.assertIn('function Get-WorkspaceShellPageTag', self.script)
+        self.assertIn('"data-operations" { return "DataShell" }', self.script)
+        self.assertIn('$seedPageTag = Get-WorkspaceShellPageTag -WorkspaceId $Case.WorkspaceId', self.script)
+        self.assertIn('-PageTag $seedPageTag', self.script)
+        self.assertIn('-PageTitle $seedPageTitle', self.script)
+
 
 if __name__ == "__main__":
     unittest.main()
