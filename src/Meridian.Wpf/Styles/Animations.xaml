@@ -286,8 +286,8 @@
     <Storyboard x:Key="FlashHighlightStoryboard">
         <ColorAnimationUsingKeyFrames
             Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)">
-            <LinearColorKeyFrame KeyTime="0:0:0" Value="#333fb950" />
-            <LinearColorKeyFrame KeyTime="0:0:0.3" Value="#333fb950" />
+            <LinearColorKeyFrame KeyTime="0:0:0" Value="{StaticResource FlashHighlightColor}" />
+            <LinearColorKeyFrame KeyTime="0:0:0.3" Value="{StaticResource FlashHighlightColor}" />
             <SplineColorKeyFrame KeyTime="0:0:0.8" Value="Transparent" KeySpline="0.4,0,0.2,1" />
         </ColorAnimationUsingKeyFrames>
     </Storyboard>

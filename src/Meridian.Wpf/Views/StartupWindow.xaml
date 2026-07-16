@@ -50,7 +50,7 @@
                     <TextBlock Text="Desktop workstation startup"
                                Margin="0,8,0,0"
                                FontSize="15"
-                               Foreground="#C9D1D9"
+                               Foreground="{StaticResource StartupSubtitleTextBrush}"
                                TextWrapping="Wrap" />
                 </StackPanel>
 
@@ -74,7 +74,7 @@
                                            FontWeight="SemiBold" />
                                 <TextBlock Text="Dependency injection, routes, and workstation services are prepared before the shell opens."
                                            Margin="0,4,0,0"
-                                           Foreground="#AAB4BF"
+                                           Foreground="{StaticResource StartupBodyTextBrush}"
                                            TextWrapping="Wrap" />
                             </StackPanel>
                         </Grid>
@@ -99,7 +99,7 @@
                                            FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding AuthenticationDetailText}"
                                            Margin="0,4,0,0"
-                                           Foreground="#AAB4BF"
+                                           Foreground="{StaticResource StartupBodyTextBrush}"
                                            TextWrapping="Wrap" />
                             </StackPanel>
                         </Grid>
@@ -123,7 +123,7 @@
                                        FontWeight="SemiBold" />
                             <TextBlock Text="{Binding OperatingModeText}"
                                        Margin="0,4,0,0"
-                                       Foreground="#AAB4BF"
+                                       Foreground="{StaticResource StartupBodyTextBrush}"
                                        TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -131,7 +131,7 @@
 
                 <TextBlock Grid.Row="2"
                            Text="{Binding CredentialSourceText}"
-                           Foreground="#7E8792"
+                           Foreground="{StaticResource StartupFootnoteTextBrush}"
                            FontSize="12"
                            TextWrapping="Wrap" />
             </Grid>
