@@ -1115,11 +1115,11 @@ public sealed class ReportTemplateRegistryService
     private void ReconcileLatestApprovedTemplates()
     {
         foreach (var group in _templates.Values.GroupBy(record => new
-                 {
-                     TenantId = record.TenantId ?? string.Empty,
-                     CompanyId = record.CompanyId ?? string.Empty,
-                     Name = record.Definition.TemplateId.Name.ToLowerInvariant()
-                 }))
+        {
+            TenantId = record.TenantId ?? string.Empty,
+            CompanyId = record.CompanyId ?? string.Empty,
+            Name = record.Definition.TemplateId.Name.ToLowerInvariant()
+        }))
         {
             var latestApprovedVersion = group
                 .Where(static record => record.Status == ReportTemplateLifecycleStatusDto.Approved)

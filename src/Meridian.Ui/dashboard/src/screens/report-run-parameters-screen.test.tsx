@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { useLocation } from "react-router-dom";
@@ -458,7 +458,7 @@ describe("ReportRunParametersScreen", () => {
     const runButton = screen.getByRole("button", { name: "Run Trial Balance Pack" });
     await waitFor(() => expect(runButton).toBeEnabled());
 
-    const latestPreflightRequest = vi.mocked(api.assessReportingRunReadiness).mock.calls.at(-1)?.[0]!;
+    const latestPreflightRequest = vi.mocked(api.assessReportingRunReadiness).mock.calls.at(-1)![0];
     expect(latestPreflightRequest).toEqual(expect.objectContaining({
       templateId: "trial-balance-pack",
       template: { name: "trial-balance-pack", version: 1 },

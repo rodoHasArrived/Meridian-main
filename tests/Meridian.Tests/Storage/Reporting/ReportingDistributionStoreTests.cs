@@ -403,181 +403,181 @@ public sealed class ReportingDistributionStoreTests : IClassFixture<ReportingArt
                      ReportingDeliveryReceiptKind.Rejected
                  })
         {
-        var tenantId = NewTenantId();
-        var lateBounceJob = BuildJob(tenantId, maxAttempts: 3);
-        var lateBounceGrant = BuildGrant(tenantId, new string('c', 64), ["statement.pdf"]) with
-        {
-            RunId = lateBounceJob.ReleaseAuthorization.RunId,
-            PackageId = lateBounceJob.PackageId
-        };
-        (await _grantStore.TryCreateAsync(lateBounceGrant)).Should().BeTrue();
-        (await _deliveryStore.TryCreateAsync(lateBounceJob)).Should().BeTrue();
-        var lateBounceClaim = (await _deliveryStore.ClaimDueAsync(
-            FixedNow,
-            "worker-late-bounce",
-            TimeSpan.FromMinutes(1),
-            1)).Single();
-        var lateBounceBound = lateBounceClaim with
-        {
-            AccessGrantId = lateBounceGrant.GrantId,
-            Version = lateBounceClaim.Version + 1
-        };
-        (await _deliveryStore.TryUpdateAsync(
-            lateBounceJob.JobId,
-            lateBounceClaim.Version,
-            lateBounceBound)).Should().BeTrue();
-        const string lateProviderMessageId = "provider-late-bounce";
-        var published = new ReportingDeliveryReceipt(
-            $"receipt-{Guid.NewGuid():N}",
-            ReportingDeliveryReceiptKind.Published,
-            FixedNow.AddSeconds(1),
-            lateBounceJob.TransportId,
-            lateProviderMessageId,
-            "relay-evidence-late-bounce");
-        var sent = lateBounceBound with
-        {
-            State = ReportingDeliveryState.Sent,
-            AttemptCount = 1,
-            UpdatedAtUtc = FixedNow.AddSeconds(1),
-            NextAttemptAtUtc = null,
-            LeaseOwner = null,
-            LeaseExpiresAtUtc = null,
-            ProviderMessageId = lateProviderMessageId,
-            Receipts = [published],
-            Version = lateBounceBound.Version + 1
-        };
-        (await _deliveryStore.TryUpdateAsync(
-            lateBounceJob.JobId,
-            lateBounceBound.Version,
-            sent)).Should().BeTrue();
-        var deliveredReceipt = new ReportingDeliveryReceipt(
-            $"receipt-{Guid.NewGuid():N}",
-            ReportingDeliveryReceiptKind.Delivered,
-            FixedNow.AddSeconds(2),
-            lateBounceJob.TransportId,
-            lateProviderMessageId,
-            "provider-delivered-evidence");
-        var delivered = sent with
-        {
-            State = ReportingDeliveryState.Delivered,
-            UpdatedAtUtc = FixedNow.AddSeconds(2),
-            Receipts = [published, deliveredReceipt],
-            Version = sent.Version + 1
-        };
-        (await _deliveryStore.TryUpdateAsync(
-            lateBounceJob.JobId,
-            sent.Version,
-            delivered)).Should().BeTrue();
-        var bounceReceipt = new ReportingDeliveryReceipt(
-            $"receipt-{Guid.NewGuid():N}",
-            lateFailureKind,
-            FixedNow.AddSeconds(3),
-            lateBounceJob.TransportId,
-            lateProviderMessageId,
-            "provider-bounced-evidence",
-            "mailbox later rejected the notification");
-        var lateBounced = delivered with
-        {
-            UpdatedAtUtc = FixedNow.AddSeconds(3),
-            LastErrorCode = lateFailureKind.ToString().ToUpperInvariant(),
-            LastError = "mailbox later rejected the notification",
-            Receipts = [published, deliveredReceipt, bounceReceipt],
-            Version = delivered.Version + 1
-        };
-        (await _deliveryStore.TryUpdateAsync(
-            lateBounceJob.JobId,
-            delivered.Version,
-            lateBounced)).Should().BeTrue();
+            var tenantId = NewTenantId();
+            var lateBounceJob = BuildJob(tenantId, maxAttempts: 3);
+            var lateBounceGrant = BuildGrant(tenantId, new string('c', 64), ["statement.pdf"]) with
+            {
+                RunId = lateBounceJob.ReleaseAuthorization.RunId,
+                PackageId = lateBounceJob.PackageId
+            };
+            (await _grantStore.TryCreateAsync(lateBounceGrant)).Should().BeTrue();
+            (await _deliveryStore.TryCreateAsync(lateBounceJob)).Should().BeTrue();
+            var lateBounceClaim = (await _deliveryStore.ClaimDueAsync(
+                FixedNow,
+                "worker-late-bounce",
+                TimeSpan.FromMinutes(1),
+                1)).Single();
+            var lateBounceBound = lateBounceClaim with
+            {
+                AccessGrantId = lateBounceGrant.GrantId,
+                Version = lateBounceClaim.Version + 1
+            };
+            (await _deliveryStore.TryUpdateAsync(
+                lateBounceJob.JobId,
+                lateBounceClaim.Version,
+                lateBounceBound)).Should().BeTrue();
+            const string lateProviderMessageId = "provider-late-bounce";
+            var published = new ReportingDeliveryReceipt(
+                $"receipt-{Guid.NewGuid():N}",
+                ReportingDeliveryReceiptKind.Published,
+                FixedNow.AddSeconds(1),
+                lateBounceJob.TransportId,
+                lateProviderMessageId,
+                "relay-evidence-late-bounce");
+            var sent = lateBounceBound with
+            {
+                State = ReportingDeliveryState.Sent,
+                AttemptCount = 1,
+                UpdatedAtUtc = FixedNow.AddSeconds(1),
+                NextAttemptAtUtc = null,
+                LeaseOwner = null,
+                LeaseExpiresAtUtc = null,
+                ProviderMessageId = lateProviderMessageId,
+                Receipts = [published],
+                Version = lateBounceBound.Version + 1
+            };
+            (await _deliveryStore.TryUpdateAsync(
+                lateBounceJob.JobId,
+                lateBounceBound.Version,
+                sent)).Should().BeTrue();
+            var deliveredReceipt = new ReportingDeliveryReceipt(
+                $"receipt-{Guid.NewGuid():N}",
+                ReportingDeliveryReceiptKind.Delivered,
+                FixedNow.AddSeconds(2),
+                lateBounceJob.TransportId,
+                lateProviderMessageId,
+                "provider-delivered-evidence");
+            var delivered = sent with
+            {
+                State = ReportingDeliveryState.Delivered,
+                UpdatedAtUtc = FixedNow.AddSeconds(2),
+                Receipts = [published, deliveredReceipt],
+                Version = sent.Version + 1
+            };
+            (await _deliveryStore.TryUpdateAsync(
+                lateBounceJob.JobId,
+                sent.Version,
+                delivered)).Should().BeTrue();
+            var bounceReceipt = new ReportingDeliveryReceipt(
+                $"receipt-{Guid.NewGuid():N}",
+                lateFailureKind,
+                FixedNow.AddSeconds(3),
+                lateBounceJob.TransportId,
+                lateProviderMessageId,
+                "provider-bounced-evidence",
+                "mailbox later rejected the notification");
+            var lateBounced = delivered with
+            {
+                UpdatedAtUtc = FixedNow.AddSeconds(3),
+                LastErrorCode = lateFailureKind.ToString().ToUpperInvariant(),
+                LastError = "mailbox later rejected the notification",
+                Receipts = [published, deliveredReceipt, bounceReceipt],
+                Version = delivered.Version + 1
+            };
+            (await _deliveryStore.TryUpdateAsync(
+                lateBounceJob.JobId,
+                delivered.Version,
+                lateBounced)).Should().BeTrue();
 
-        (await _deliveryStore.ListPendingAccessGrantRevocationsAsync(10))
-            .Should().ContainSingle(candidate =>
-                candidate.JobId == lateBounceJob.JobId
-                && candidate.AccessGrantId == lateBounceGrant.GrantId);
-        var revokedLateBounceGrant = lateBounceGrant with
-        {
-            RevokedAtUtc = FixedNow.AddSeconds(4),
-            RevokedBy = "provider-receipt-reconciler",
-            RevocationReason = "late provider bounce",
-            Version = 1
-        };
-        (await _grantStore.TryUpdateAsync(
-            lateBounceGrant.GrantId,
-            0,
-            revokedLateBounceGrant)).Should().BeTrue();
+            (await _deliveryStore.ListPendingAccessGrantRevocationsAsync(10))
+                .Should().ContainSingle(candidate =>
+                    candidate.JobId == lateBounceJob.JobId
+                    && candidate.AccessGrantId == lateBounceGrant.GrantId);
+            var revokedLateBounceGrant = lateBounceGrant with
+            {
+                RevokedAtUtc = FixedNow.AddSeconds(4),
+                RevokedBy = "provider-receipt-reconciler",
+                RevocationReason = "late provider bounce",
+                Version = 1
+            };
+            (await _grantStore.TryUpdateAsync(
+                lateBounceGrant.GrantId,
+                0,
+                revokedLateBounceGrant)).Should().BeTrue();
 
-        var recoveredJob = BuildJob(tenantId, maxAttempts: 3);
-        var recoveredGrant = BuildGrant(tenantId, new string('d', 64), ["statement.pdf"]) with
-        {
-            RunId = recoveredJob.ReleaseAuthorization.RunId,
-            PackageId = recoveredJob.PackageId
-        };
-        (await _grantStore.TryCreateAsync(recoveredGrant)).Should().BeTrue();
-        (await _deliveryStore.TryCreateAsync(recoveredJob)).Should().BeTrue();
-        var recoveredClaim = (await _deliveryStore.ClaimDueAsync(
-            FixedNow,
-            "worker-recovered",
-            TimeSpan.FromMinutes(1),
-            1)).Single();
-        var recoveredBound = recoveredClaim with
-        {
-            AccessGrantId = recoveredGrant.GrantId,
-            Version = recoveredClaim.Version + 1
-        };
-        (await _deliveryStore.TryUpdateAsync(
-            recoveredJob.JobId,
-            recoveredClaim.Version,
-            recoveredBound)).Should().BeTrue();
-        var transientFailure = new ReportingDeliveryReceipt(
-            $"receipt-{Guid.NewGuid():N}",
-            ReportingDeliveryReceiptKind.Failed,
-            FixedNow.AddSeconds(1),
-            recoveredJob.TransportId,
-            ProviderReference: null,
-            EvidenceReference: "relay-evidence-unknown",
-            Detail: "RELAY_OUTCOME_UNKNOWN: provider acceptance was not yet observable");
-        var retry = recoveredBound with
-        {
-            State = ReportingDeliveryState.RetryScheduled,
-            AttemptCount = 1,
-            UpdatedAtUtc = FixedNow.AddSeconds(1),
-            NextAttemptAtUtc = FixedNow.AddMinutes(1),
-            LeaseOwner = null,
-            LeaseExpiresAtUtc = null,
-            LastErrorCode = "RELAY_OUTCOME_UNKNOWN",
-            LastError = "provider acceptance was not yet observable",
-            Receipts = [transientFailure],
-            Version = recoveredBound.Version + 1
-        };
-        (await _deliveryStore.TryUpdateAsync(
-            recoveredJob.JobId,
-            recoveredBound.Version,
-            retry)).Should().BeTrue();
-        var recoveredReceipt = new ReportingDeliveryReceipt(
-            $"receipt-{Guid.NewGuid():N}",
-            ReportingDeliveryReceiptKind.Delivered,
-            FixedNow.AddSeconds(2),
-            recoveredJob.TransportId,
-            "provider-recovered",
-            "provider-recovered-evidence");
-        var recovered = retry with
-        {
-            State = ReportingDeliveryState.Delivered,
-            UpdatedAtUtc = FixedNow.AddSeconds(2),
-            NextAttemptAtUtc = null,
-            LastErrorCode = null,
-            LastError = null,
-            ProviderMessageId = "provider-recovered",
-            Receipts = [transientFailure, recoveredReceipt],
-            Version = retry.Version + 1
-        };
-        (await _deliveryStore.TryUpdateAsync(
-            recoveredJob.JobId,
-            retry.Version,
-            recovered)).Should().BeTrue();
+            var recoveredJob = BuildJob(tenantId, maxAttempts: 3);
+            var recoveredGrant = BuildGrant(tenantId, new string('d', 64), ["statement.pdf"]) with
+            {
+                RunId = recoveredJob.ReleaseAuthorization.RunId,
+                PackageId = recoveredJob.PackageId
+            };
+            (await _grantStore.TryCreateAsync(recoveredGrant)).Should().BeTrue();
+            (await _deliveryStore.TryCreateAsync(recoveredJob)).Should().BeTrue();
+            var recoveredClaim = (await _deliveryStore.ClaimDueAsync(
+                FixedNow,
+                "worker-recovered",
+                TimeSpan.FromMinutes(1),
+                1)).Single();
+            var recoveredBound = recoveredClaim with
+            {
+                AccessGrantId = recoveredGrant.GrantId,
+                Version = recoveredClaim.Version + 1
+            };
+            (await _deliveryStore.TryUpdateAsync(
+                recoveredJob.JobId,
+                recoveredClaim.Version,
+                recoveredBound)).Should().BeTrue();
+            var transientFailure = new ReportingDeliveryReceipt(
+                $"receipt-{Guid.NewGuid():N}",
+                ReportingDeliveryReceiptKind.Failed,
+                FixedNow.AddSeconds(1),
+                recoveredJob.TransportId,
+                ProviderReference: null,
+                EvidenceReference: "relay-evidence-unknown",
+                Detail: "RELAY_OUTCOME_UNKNOWN: provider acceptance was not yet observable");
+            var retry = recoveredBound with
+            {
+                State = ReportingDeliveryState.RetryScheduled,
+                AttemptCount = 1,
+                UpdatedAtUtc = FixedNow.AddSeconds(1),
+                NextAttemptAtUtc = FixedNow.AddMinutes(1),
+                LeaseOwner = null,
+                LeaseExpiresAtUtc = null,
+                LastErrorCode = "RELAY_OUTCOME_UNKNOWN",
+                LastError = "provider acceptance was not yet observable",
+                Receipts = [transientFailure],
+                Version = recoveredBound.Version + 1
+            };
+            (await _deliveryStore.TryUpdateAsync(
+                recoveredJob.JobId,
+                recoveredBound.Version,
+                retry)).Should().BeTrue();
+            var recoveredReceipt = new ReportingDeliveryReceipt(
+                $"receipt-{Guid.NewGuid():N}",
+                ReportingDeliveryReceiptKind.Delivered,
+                FixedNow.AddSeconds(2),
+                recoveredJob.TransportId,
+                "provider-recovered",
+                "provider-recovered-evidence");
+            var recovered = retry with
+            {
+                State = ReportingDeliveryState.Delivered,
+                UpdatedAtUtc = FixedNow.AddSeconds(2),
+                NextAttemptAtUtc = null,
+                LastErrorCode = null,
+                LastError = null,
+                ProviderMessageId = "provider-recovered",
+                Receipts = [transientFailure, recoveredReceipt],
+                Version = retry.Version + 1
+            };
+            (await _deliveryStore.TryUpdateAsync(
+                recoveredJob.JobId,
+                retry.Version,
+                recovered)).Should().BeTrue();
 
-        (await _deliveryStore.ListPendingAccessGrantRevocationsAsync(10)).Should().BeEmpty(
-            "a retained unknown-outcome attempt is diagnostic evidence after later provider success, not revocation evidence");
-        (await _grantStore.GetAsync(recoveredGrant.GrantId))!.RevokedAtUtc.Should().BeNull();
+            (await _deliveryStore.ListPendingAccessGrantRevocationsAsync(10)).Should().BeEmpty(
+                "a retained unknown-outcome attempt is diagnostic evidence after later provider success, not revocation evidence");
+            (await _grantStore.GetAsync(recoveredGrant.GrantId))!.RevokedAtUtc.Should().BeNull();
         }
     }
 

@@ -221,33 +221,33 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
             switch (aggregateKind)
             {
                 case ReportingGovernanceAuditAggregateKind.Run:
-                {
-                    var row = await ReadRunRowAsync(tenantId, aggregateId, cancellationToken).ConfigureAwait(false);
-                    if (row is null || !ScopeMatches(row, authority))
                     {
-                        return null;
+                        var row = await ReadRunRowAsync(tenantId, aggregateId, cancellationToken).ConfigureAwait(false);
+                        if (row is null || !ScopeMatches(row, authority))
+                        {
+                            return null;
+                        }
+                        status = await RequireVerifiedRunStatusAsync(row, cancellationToken).ConfigureAwait(false);
+                        statePayload = row.StatePayload;
+                        break;
                     }
-                    status = await RequireVerifiedRunStatusAsync(row, cancellationToken).ConfigureAwait(false);
-                    statePayload = row.StatePayload;
-                    break;
-                }
                 case ReportingGovernanceAuditAggregateKind.RestatementRequest:
-                {
-                    var row = await ReadRestatementRowAsync(tenantId, aggregateId, cancellationToken).ConfigureAwait(false);
-                    if (row is null
-                        || !await RestatementScopeMatchesAsync(
-                            tenantId,
-                            row.PredecessorRunId,
-                            authority.OrganizationId,
-                            authority.CompanyId,
-                            cancellationToken).ConfigureAwait(false))
                     {
-                        return null;
+                        var row = await ReadRestatementRowAsync(tenantId, aggregateId, cancellationToken).ConfigureAwait(false);
+                        if (row is null
+                            || !await RestatementScopeMatchesAsync(
+                                tenantId,
+                                row.PredecessorRunId,
+                                authority.OrganizationId,
+                                authority.CompanyId,
+                                cancellationToken).ConfigureAwait(false))
+                        {
+                            return null;
+                        }
+                        status = await RequireVerifiedRestatementStatusAsync(row, cancellationToken).ConfigureAwait(false);
+                        statePayload = row.StatePayload;
+                        break;
                     }
-                    status = await RequireVerifiedRestatementStatusAsync(row, cancellationToken).ConfigureAwait(false);
-                    statePayload = row.StatePayload;
-                    break;
-                }
                 default:
                     throw new ArgumentOutOfRangeException(
                         nameof(aggregateKind),

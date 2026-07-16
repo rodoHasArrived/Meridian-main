@@ -498,7 +498,7 @@ public sealed class ReportingArtifactVaultService
             && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
             && (SamePrincipal(access.OwnerPrincipalId, context.ActorId)
                 || context.DelegatedPrincipal is
-                    { Kind: ReportingAccessPrincipalKind.User } delegatedOwner
+                { Kind: ReportingAccessPrincipalKind.User } delegatedOwner
                 && SamePrincipal(access.OwnerPrincipalId, delegatedOwner.PrincipalId)))
         {
             return true;

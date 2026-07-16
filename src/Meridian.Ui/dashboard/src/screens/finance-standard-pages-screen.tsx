@@ -1083,10 +1083,6 @@ function readRecordArray(record: UnknownRecord | null, key: string): UnknownReco
   return Array.isArray(value) ? value.map(asRecord).filter((item): item is UnknownRecord => item !== null) : [];
 }
 
-function readRecord(record: UnknownRecord | null, key: string): UnknownRecord | null {
-  return asRecord(record?.[key]);
-}
-
 function firstRecord(record: UnknownRecord | null, key: string): UnknownRecord | null {
   return readRecordArray(record, key)[0] ?? null;
 }
