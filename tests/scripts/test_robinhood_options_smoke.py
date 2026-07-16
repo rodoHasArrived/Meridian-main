@@ -83,15 +83,17 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('AutomationIds @("CommandPaletteResults")', self.script)
         self.assertIn('-not $candidate.Current.IsOffscreen', self.script)
         self.assertIn('Set-ValuePatternText -Element $paletteInput -Text $PageTag', self.script)
-        self.assertIn('Send-WindowKeys -Process $Process -Keys "{ENTER}"', self.script)
+        self.assertIn('Find-ElementByExactName -Root $results -Name $ResultName', self.script)
+        self.assertIn('Invoke-OrClickElement -Element $paletteResult', self.script)
         self.assertIn(
             '$root = Get-WindowAutomationRoot -Process $process',
             self.script,
         )
         self.assertIn(
-            'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag',
+            'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName',
             self.script,
         )
+        self.assertIn('PaletteResultName = "Add provider wizard"', self.script)
 
 
 if __name__ == "__main__":

@@ -878,7 +878,8 @@ function Invoke-CommandPaletteNavigation {
     param(
         [System.Windows.Automation.AutomationElement]$Root,
         [System.Diagnostics.Process]$Process,
-        [string]$PageTag
+        [string]$PageTag,
+        [string]$ResultName
     )
 
     $paletteButton = Find-ElementByExactName -Root $Root -Name "Search"
@@ -899,17 +900,16 @@ function Invoke-CommandPaletteNavigation {
     }
 
     Set-ValuePatternText -Element $paletteInput -Text $PageTag
-    Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette did not resolve page tag '$PageTag'." -Condition {
+    $paletteResult = Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette did not resolve page tag '$PageTag'." -Condition {
         $results = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteResults")
         if ($null -ne $results -and -not $results.Current.IsOffscreen) {
-            return $results
+            return Find-ElementByExactName -Root $results -Name $ResultName
         }
 
         return $null
-    } | Out-Null
+    }
 
-    Start-Sleep -Milliseconds 300
-    Send-WindowKeys -Process $Process -Keys "{ENTER}"
+    Invoke-OrClickElement -Element $paletteResult
 }
 
 function Invoke-SmokeCase {
@@ -974,7 +974,7 @@ function Invoke-SmokeCase {
             Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and navigating through the command palette."
             $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
             $root = Get-WindowAutomationRoot -Process $process
-            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag
+            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
 
@@ -1124,6 +1124,7 @@ $cases = @(
         WorkspaceId = "data-operations"
         PageTag = "AddProviderWizard"
         PageTitle = "Add Provider Wizard"
+        PaletteResultName = "Add provider wizard"
         ReadyMarkers = @("Add Provider Wizard", "Add Provider Relationship")
         ExpectMarkers = @("Add Provider Relationship", "Robinhood", "Capabilities: Streaming, Symbol Search, Options, Brokerage", "Robinhood Access Token")
         ScreenshotName = "meridian-robinhood-provider-smoke.png"
@@ -1147,6 +1148,7 @@ $cases = @(
         WorkspaceId = "data-operations"
         PageTag = "Options"
         PageTitle = "Options / Derivatives"
+        PaletteResultName = "Options"
         StartupTimeoutSeconds = 45
         ReadyMarkers = @("Options", "Options Chain")
         ExpectMarkers = @("Options Chain", "Options Summary", "Option Chain Lookup", "Tracked Underlyings", "Load Expirations", "Refresh")
@@ -1167,6 +1169,7 @@ $cases = @(
         WorkspaceId = "trading"
         PageTag = "PositionBlotter"
         PageTitle = "Position Blotter"
+        PaletteResultName = "Position Blotter"
         StartupTimeoutSeconds = 60
         ReadyMarkers = @("Position Blotter")
         ExpectMarkers = @("Position Blotter", "Upsize", "Terminate", "Refresh")
