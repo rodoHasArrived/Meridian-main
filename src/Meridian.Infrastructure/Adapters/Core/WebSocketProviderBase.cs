@@ -122,8 +122,8 @@ public abstract class WebSocketProviderBase :
             RequestsInWindow: 0,
             // Capabilities expose these as nullable; this "diagnostics unavailable" snapshot marks
             // StateAvailable: false, so an unset limit collapses to a neutral zero placeholder.
-            MaxRequestsPerWindow: capabilities.MaxRequestsPerWindow ?? 0,
-            Window: capabilities.RateLimitWindow ?? TimeSpan.Zero,
+            MaxRequestsPerWindow: ProviderCapabilities.MaxRequestsPerWindow ?? 0,
+            Window: ProviderCapabilities.RateLimitWindow ?? TimeSpan.Zero,
             IsRateLimited: false,
             ResetAt: null,
             UsageRatio: 0,
