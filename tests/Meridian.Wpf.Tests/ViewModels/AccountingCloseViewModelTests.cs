@@ -148,7 +148,7 @@ public sealed class AccountingCloseViewModelTests
             step.StepId == "period-lock" &&
             step.Status == "Open" &&
             step.Evidence == $"Ledger book {ledgerBookId:D}" &&
-            step.DisabledReason == null &&
+            step.DisabledReason == "Close plan 2026-05 cannot lock until closing entries advance from Draft queued to Posted." &&
             ReferenceEquals(step.Command, viewModel.LockClosePeriodCommand));
     }
 

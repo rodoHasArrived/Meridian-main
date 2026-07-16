@@ -80,7 +80,9 @@ public static class BackfillPresentationService
                     SymbolsText: execution.Symbols.Length == 0
                         ? $"{execution.SymbolsProcessed:N0} symbol(s)"
                         : string.Join(", ", execution.Symbols),
-                    Provider: NormalizeProvider(sla?.Provider ?? defaultProvider),
+                    Provider: NormalizeProvider(string.IsNullOrWhiteSpace(sla?.Provider)
+                        ? defaultProvider
+                        : sla.Provider),
                     RangeText: FormatRange(execution.FromDate, execution.ToDate),
                     SlaTier: sla?.Tier,
                     SlaTierText: FormatTier(sla?.Tier),
