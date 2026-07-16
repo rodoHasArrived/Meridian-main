@@ -84,9 +84,8 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('-not $candidate.Current.IsOffscreen', self.script)
         self.assertIn('Set-ValuePatternText -Element $paletteInput -Text $PageTag', self.script)
         self.assertIn('Find-ElementByExactName -Root $results -Name $ResultName', self.script)
-        self.assertIn('Invoke-OrClickElement -Element $paletteResult', self.script)
-        self.assertIn('Invoke-OrClickElement -Element $paletteInput', self.script)
-        self.assertIn('Send-WindowKeys -Process $Process -Keys "{ENTER}"', self.script)
+        self.assertIn('function Click-ElementAtCenter', self.script)
+        self.assertIn('Click-ElementAtCenter -Element $paletteResult', self.script)
         self.assertIn(
             '$root = Get-WindowAutomationRoot -Process $process',
             self.script,

@@ -560,6 +560,28 @@ function Invoke-OrClickElement {
     throw "Unable to click or invoke the requested UI element."
 }
 
+function Click-ElementAtCenter {
+    param([System.Windows.Automation.AutomationElement]$Element)
+
+    [System.Windows.Point]$clickPoint = New-Object System.Windows.Point -ArgumentList 0, 0
+    if (-not $Element.TryGetClickablePoint([ref]$clickPoint)) {
+        $bounding = $Element.Current.BoundingRectangle
+        if ($bounding.Width -le 1 -or $bounding.Height -le 1) {
+            throw "Unable to find a clickable point for the requested UI element."
+        }
+
+        $clickPoint = [System.Windows.Point]::new(
+            $bounding.Left + ($bounding.Width / 2),
+            $bounding.Top + ($bounding.Height / 2))
+    }
+
+    [MeridianSmokeNative]::SetCursorPos([int]$clickPoint.X, [int]$clickPoint.Y) | Out-Null
+    Start-Sleep -Milliseconds 120
+    [MeridianSmokeNative]::mouse_event([MeridianSmokeNative]::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, [UIntPtr]::Zero)
+    Start-Sleep -Milliseconds 60
+    [MeridianSmokeNative]::mouse_event([MeridianSmokeNative]::MOUSEEVENTF_LEFTUP, 0, 0, 0, [UIntPtr]::Zero)
+}
+
 function Send-WindowKeys {
     param(
         [System.Diagnostics.Process]$Process,
@@ -909,9 +931,7 @@ function Invoke-CommandPaletteNavigation {
         return $null
     }
 
-    Invoke-OrClickElement -Element $paletteResult
-    Invoke-OrClickElement -Element $paletteInput
-    Send-WindowKeys -Process $Process -Keys "{ENTER}"
+    Click-ElementAtCenter -Element $paletteResult
 }
 
 function Invoke-SmokeCase {
