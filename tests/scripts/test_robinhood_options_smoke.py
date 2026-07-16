@@ -112,6 +112,9 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('-PageTag $seedPageTag', self.script)
         self.assertIn('-PageTitle $seedPageTitle', self.script)
 
+    def test_each_case_uses_the_supported_desktop_page_launch_contract(self) -> None:
+        self.assertIn('ArgumentList     = @("--page=$($Case.PageTag)")', self.script)
+
     def test_workspace_activation_skips_reselecting_an_active_shell(self) -> None:
         activation_start = self.script.index('function Try-ActivateWorkspaceShell')
         activation_end = self.script.index('\nfunction ', activation_start + 1)
