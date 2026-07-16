@@ -86,11 +86,14 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 JsonlBatchOptions.Default);
         });
 
-        // ParquetStorageSink - writes events to Parquet files (optional)
+        // ParquetStorageSink - writes events to Parquet files (optional). Shares the same
+        // JsonlStoragePolicy as the JSONL sink so a composite configuration writes both formats
+        // under one directory layout for every naming convention.
         services.AddSingleton<ParquetStorageSink>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            return new ParquetStorageSink(storageOptions);
+            var policy = sp.GetRequiredService<JsonlStoragePolicy>();
+            return new ParquetStorageSink(storageOptions, parquetOptions: null, policy);
         });
 
         // StorageSinkRegistry - discovers storage sink plugins decorated with [StorageSink]

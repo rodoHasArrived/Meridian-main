@@ -42,3 +42,8 @@ public sealed record CompleteFirstRunRequestDto(
     bool UseSampleData);
 
 public sealed record CompleteActivationOutcomeRequestDto(string Key);
+
+public sealed record DesktopLaunchTicketRedemptionDto(
+    string Username,
+    string Page,
+    DateTimeOffset ExpiresAtUtc);

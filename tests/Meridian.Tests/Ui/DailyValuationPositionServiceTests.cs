@@ -1,9 +1,11 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Accounting;
+using Meridian.Application.SecurityMaster.Rebuild;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 
@@ -21,12 +23,14 @@ public sealed class DailyValuationPositionServiceTests
     public async Task ResolveConfiguredAsync_FreshOwnedSnapshot_ResolvesSecurityAndEvidence()
     {
         var store = Substitute.For<IPositionSnapshotStore>();
-        store.GetLatestSnapshotAsync(
+        store.GetSnapshotHistoryAsync(
                 "run-a",
                 "account-a",
                 Arg.Any<PositionSnapshotOwnerScope>(),
+                Arg.Any<DateTimeOffset>(),
+                ValuationAsOf,
                 Arg.Any<CancellationToken>())
-            .Returns(Snapshot("run-a", "account-a", ValuationAsOf.AddMinutes(-15)));
+            .Returns(_ => History(Snapshot("run-a", "account-a", ValuationAsOf.AddMinutes(-15))));
         var service = CreateService(store);
 
         var result = await service.ResolveConfiguredAsync(
@@ -42,18 +46,20 @@ public sealed class DailyValuationPositionServiceTests
 
     [Theory]
     [InlineData(-3, "stale")]
-    [InlineData(1, "dated after")]
+    [InlineData(1, "at or before")]
     public async Task ResolveConfiguredAsync_StaleOrFutureSnapshot_FailsClosed(
         int offsetDays,
         string expectedBlocker)
     {
         var store = Substitute.For<IPositionSnapshotStore>();
-        store.GetLatestSnapshotAsync(
+        store.GetSnapshotHistoryAsync(
                 "run-a",
                 "account-a",
                 Arg.Any<PositionSnapshotOwnerScope>(),
+                Arg.Any<DateTimeOffset>(),
+                ValuationAsOf,
                 Arg.Any<CancellationToken>())
-            .Returns(Snapshot("run-a", "account-a", ValuationAsOf.AddDays(offsetDays)));
+            .Returns(_ => History(Snapshot("run-a", "account-a", ValuationAsOf.AddDays(offsetDays))));
         var service = CreateService(store);
 
         var result = await service.ResolveConfiguredAsync(
@@ -70,15 +76,70 @@ public sealed class DailyValuationPositionServiceTests
     }
 
     [Fact]
-    public async Task ResolveConfiguredAsync_SnapshotStoreReturnsDifferentOwner_FailsClosed()
+    public async Task ResolveConfiguredAsync_NewerPostCutoffSnapshot_DoesNotHideValidAsOfHistory()
     {
         var store = Substitute.For<IPositionSnapshotStore>();
-        store.GetLatestSnapshotAsync(
+        var validAsOf = Snapshot("run-a", "account-a", ValuationAsOf.AddMinutes(-15));
+        var afterCutoff = Snapshot("run-a", "account-a", ValuationAsOf.AddMinutes(5)) with
+        {
+            Positions = [new PositionRecord("AAPL", 99m, 999m, 0m, 0m)]
+        };
+        store.GetSnapshotHistoryAsync(
                 "run-a",
                 "account-a",
                 Arg.Any<PositionSnapshotOwnerScope>(),
+                Arg.Any<DateTimeOffset>(),
+                ValuationAsOf,
                 Arg.Any<CancellationToken>())
-            .Returns(Snapshot("run-a", "account-a", ValuationAsOf) with { TenantId = "tenant-other" });
+            .Returns(_ => History(validAsOf, afterCutoff));
+        var service = CreateService(store);
+
+        var result = await service.ResolveConfiguredAsync(
+            WorkItem() with { PositionSnapshotScopes = [new("run-a", "account-a")] },
+            ValuationAsOf);
+
+        result.IsReady.Should().BeTrue();
+        result.Positions.Should().ContainSingle().Which.Quantity.Should().Be(10m);
+        result.EvidenceLinks.Should().ContainSingle().Which.CapturedAtUtc.Should().Be(validAsOf.AsOf);
+    }
+
+    [Fact]
+    public async Task ResolveConfiguredAsync_CompleteFlatSnapshot_IsReadyWithoutPositions()
+    {
+        var store = Substitute.For<IPositionSnapshotStore>();
+        var flat = Snapshot("run-a", "account-a", ValuationAsOf.AddMinutes(-15)) with { Positions = [] };
+        store.GetSnapshotHistoryAsync(
+                "run-a",
+                "account-a",
+                Arg.Any<PositionSnapshotOwnerScope>(),
+                Arg.Any<DateTimeOffset>(),
+                ValuationAsOf,
+                Arg.Any<CancellationToken>())
+            .Returns(_ => History(flat));
+        var service = CreateService(store);
+
+        var result = await service.ResolveConfiguredAsync(
+            WorkItem() with { PositionSnapshotScopes = [new("run-a", "account-a")] },
+            ValuationAsOf);
+
+        result.IsReady.Should().BeTrue();
+        result.Positions.Should().BeEmpty();
+        result.Blockers.Should().BeEmpty();
+        result.EvidenceLinks.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task ResolveConfiguredAsync_SnapshotStoreReturnsDifferentOwner_FailsClosed()
+    {
+        var store = Substitute.For<IPositionSnapshotStore>();
+        store.GetSnapshotHistoryAsync(
+                "run-a",
+                "account-a",
+                Arg.Any<PositionSnapshotOwnerScope>(),
+                Arg.Any<DateTimeOffset>(),
+                ValuationAsOf,
+                Arg.Any<CancellationToken>())
+            .Returns(_ => History(Snapshot("run-a", "account-a", ValuationAsOf) with { TenantId = "tenant-other" }));
         var service = CreateService(store);
 
         var result = await service.ResolveConfiguredAsync(
@@ -105,10 +166,12 @@ public sealed class DailyValuationPositionServiceTests
 
         result.IsReady.Should().BeFalse();
         result.Blockers.Should().ContainSingle(message => message.Contains("tenant, company, fund profile, ledger book, and entity", StringComparison.Ordinal));
-        await store.DidNotReceiveWithAnyArgs().GetLatestSnapshotAsync(
+        store.DidNotReceiveWithAnyArgs().GetSnapshotHistoryAsync(
             default!,
             default!,
             default!,
+            default,
+            default,
             default);
     }
 
@@ -188,8 +251,10 @@ public sealed class DailyValuationPositionServiceTests
             Aliases = ["AAPL"]
         });
         var securityMaster = Substitute.For<ISecurityMasterQueryService>();
-        securityMaster.GetByIdAsOfAsync(SecurityId, ValuationAsOf, Arg.Any<CancellationToken>())
+        securityMaster.GetRecordedByIdAsOfAsync(SecurityId, ValuationAsOf, Arg.Any<CancellationToken>())
             .Returns((SecurityDetailDto?)null);
+        securityMaster.GetByIdAsOfAsync(SecurityId, ValuationAsOf, Arg.Any<CancellationToken>())
+            .Returns(SecurityDetail(SecurityStatusDto.Active, "USD"));
         securityMaster.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>())
             .Returns(SecurityDetail(SecurityStatusDto.Active, "USD"));
         var service = new DailyValuationPositionService(null, registry, securityMaster);
@@ -202,6 +267,80 @@ public sealed class DailyValuationPositionServiceTests
         result.IsReady.Should().BeFalse();
         result.Blockers.Should().ContainSingle(message => message.Contains("no authoritative as-of record", StringComparison.OrdinalIgnoreCase));
         await securityMaster.DidNotReceive().GetByIdAsync(SecurityId, Arg.Any<CancellationToken>());
+        await securityMaster.DidNotReceive().GetByIdAsOfAsync(SecurityId, ValuationAsOf, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ResolveAdHocAsync_PostCutoffSecurityAlias_CannotAuthorizeValuation()
+    {
+        const string postCutoffAlias = "POSTCUT";
+        var historical = HistoricalProjection(SecurityId);
+        var current = historical with
+        {
+            Version = 2,
+            Aliases =
+            [
+                new SecurityAliasDto(
+                    Guid.NewGuid(),
+                    SecurityId,
+                    "Ticker",
+                    postCutoffAlias,
+                    Provider: null,
+                    SecurityAliasScope.Operations,
+                    Reason: "Added after valuation cutoff",
+                    CreatedBy: "test",
+                    CreatedAt: ValuationAsOf.AddMinutes(1),
+                    ValidFrom: ValuationAsOf.AddMinutes(1),
+                    ValidTo: null,
+                    IsEnabled: true)
+            ]
+        };
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            new SecurityMasterEventEnvelope(
+                GlobalSequence: 1,
+                SecurityId,
+                StreamVersion: 1,
+                EventType: "SecCreated",
+                EventTimestamp: ValuationAsOf.AddDays(-1),
+                Actor: "test",
+                CorrelationId: null,
+                CausationId: null,
+                Payload: JsonSerializer.SerializeToElement(
+                    historical,
+                    Meridian.Core.Serialization.SecurityMasterJsonContext.Default.SecurityProjectionRecord),
+                Metadata: JsonSerializer.SerializeToElement(new { }))
+        });
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(current);
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var securityMaster = new Meridian.Application.SecurityMaster.SecurityMasterQueryService(
+            eventStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, snapshotStore));
+        var registry = Substitute.For<ICanonicalSymbolRegistry>();
+        registry.GetDefinition(postCutoffAlias).Returns(new CanonicalSymbolDefinition
+        {
+            Canonical = postCutoffAlias,
+            DisplayName = "Post-cutoff alias",
+            SecurityId = SecurityId,
+            AssetClass = "Equity",
+            Exchange = "NASDAQ",
+            Currency = "USD",
+            Aliases = [postCutoffAlias]
+        });
+        var service = new DailyValuationPositionService(null, registry, securityMaster);
+
+        var result = await service.ResolveAdHocAsync(
+            [new MarkToMarketPosition(postCutoffAlias, 10m, 150m, "account-a")],
+            "USD",
+            ValuationAsOf);
+
+        result.IsReady.Should().BeFalse();
+        result.Positions.Should().BeEmpty();
+        result.Blockers.Should().ContainSingle(message =>
+            message.Contains("does not match authoritative Security Master record", StringComparison.Ordinal));
     }
 
     private static DailyValuationPositionService CreateService(
@@ -222,7 +361,7 @@ public sealed class DailyValuationPositionServiceTests
         });
         var securityMaster = Substitute.For<ISecurityMasterQueryService>();
         var detail = SecurityDetail(securityStatus, securityCurrency);
-        securityMaster.GetByIdAsOfAsync(SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+        securityMaster.GetRecordedByIdAsOfAsync(SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(detail);
         securityMaster.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(detail);
         return new DailyValuationPositionService(store, registry, securityMaster);
@@ -246,6 +385,16 @@ public sealed class DailyValuationPositionServiceTests
             LedgerBookId: BookId,
             EntityId: "entity-a");
 
+    private static async IAsyncEnumerable<AccountSnapshotRecord> History(
+        params AccountSnapshotRecord[] snapshots)
+    {
+        await Task.Yield();
+        foreach (var snapshot in snapshots)
+        {
+            yield return snapshot;
+        }
+    }
+
     private static SecurityDetailDto SecurityDetail(SecurityStatusDto status, string currency)
         => new(
             SecurityId,
@@ -260,6 +409,46 @@ public sealed class DailyValuationPositionServiceTests
             Version: 1,
             EffectiveFrom: ValuationAsOf.AddYears(-1),
             EffectiveTo: null);
+
+    private static SecurityProjectionRecord HistoricalProjection(Guid securityId)
+        => new(
+            securityId,
+            AssetClass: "Equity",
+            SecurityStatusDto.Active,
+            DisplayName: "Historical Security",
+            Currency: "USD",
+            PrimaryIdentifierKind: "Ticker",
+            PrimaryIdentifierValue: "HIST",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Historical Security",
+                currency = "USD",
+                exchange = "XNYS"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                shareClass = "Common",
+                classification = "Common"
+            }),
+            Provenance: JsonSerializer.SerializeToElement(new
+            {
+                sourceSystem = "test",
+                updatedBy = "codex",
+                asOf = ValuationAsOf.AddDays(-1)
+            }),
+            Version: 1,
+            EffectiveFrom: ValuationAsOf.AddYears(-1),
+            EffectiveTo: null,
+            Identifiers:
+            [
+                new SecurityIdentifierDto(
+                    SecurityIdentifierKind.Ticker,
+                    "HIST",
+                    IsPrimary: true,
+                    ValidFrom: ValuationAsOf.AddYears(-1))
+            ],
+            Aliases: []);
 
     private static DailyValuationScheduleWorkItem WorkItem()
         => new(

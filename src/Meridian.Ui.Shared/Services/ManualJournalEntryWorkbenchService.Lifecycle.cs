@@ -213,6 +213,19 @@ public sealed partial class ManualJournalEntryWorkbenchService
         return request;
     }
 
+    private static JournalEntryLifecycleActionRequestDto RequireAuthoritativeHardClosedPeriod(
+        JournalEntryLifecycleActionRequestDto request,
+        bool serverPeriodIsHardClosed)
+    {
+        if (!serverPeriodIsHardClosed)
+        {
+            throw new InvalidOperationException(
+                "Manual journal close-lock actions require an exact server-owned HardClosed ledger period for the retained ledger book and period.");
+        }
+
+        return request;
+    }
+
     private static bool HasManualJournalLifecycleEvidenceProvenance(
         ManualJournalEntryDraftDto journalEntry,
         IReadOnlyList<string> evidenceLinks)
@@ -479,7 +492,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         ManualJournalEntryDraftDto draft,
         bool allowIncomplete,
         CancellationToken ct,
-        bool periodIsLocked = false)
+        bool periodIsLocked = false,
+        bool allowHardClosedCloseLock = false)
     {
         ArgumentNullException.ThrowIfNull(draft);
         var fundProfileId = NormalizeFundProfileId(draft.FundProfileId);
@@ -525,6 +539,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 draft,
                 draft.LedgerBookId.Value,
                 issues,
+                allowHardClosedCloseLock,
                 ct).ConfigureAwait(false);
         }
 
@@ -692,6 +707,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         ManualJournalEntryDraftDto draft,
         Guid ledgerBookId,
         List<AccountingConfigurationValidationIssueDto> issues,
+        bool allowHardClosedCloseLock,
         CancellationToken ct)
     {
         if (_journalStore is null ||
@@ -713,7 +729,19 @@ public sealed partial class ManualJournalEntryWorkbenchService
             return;
         }
 
-        if (period.LedgerBookId != ledgerBookId)
+        var periodIdMatches = period.PeriodId == periodId;
+        if (!periodIdMatches)
+        {
+            issues.Add(Issue(
+                "manual-je.period-id-mismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Ledger period lookup for '{periodId:D}' returned period '{period.PeriodId:D}'.",
+                "periodId",
+                "Select the exact accounting period retained on the journal entry."));
+        }
+
+        var ledgerBookIdMatches = period.LedgerBookId == ledgerBookId;
+        if (!ledgerBookIdMatches)
         {
             issues.Add(Issue(
                 "manual-je.period-book-mismatch",
@@ -741,7 +769,12 @@ public sealed partial class ManualJournalEntryWorkbenchService
         // Closing entries and their source-linked governed reversals are the mutations accepted
         // after soft close. They must not enter approval/posting while the period is still open,
         // and hard close remains the final mutation boundary.
-        if ((draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry || isGovernedClosingReversal) &&
+        var isAuthorizedHardCloseLock = allowHardClosedCloseLock &&
+                                        periodIdMatches &&
+                                        ledgerBookIdMatches &&
+                                        string.Equals(period.Status, "HardClosed", StringComparison.OrdinalIgnoreCase);
+        if (!isAuthorizedHardCloseLock &&
+            (draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry || isGovernedClosingReversal) &&
             !string.Equals(period.Status, "SoftClosed", StringComparison.OrdinalIgnoreCase))
         {
             issues.Add(Issue(
@@ -751,7 +784,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 "periodId",
                 "Soft-close the period before approving its closing entry, or use governed reopen before a restatement."));
         }
-        else if (draft.EntryType != ManualJournalEntryTypeDto.ClosingEntry &&
+        else if (!isAuthorizedHardCloseLock &&
+                 draft.EntryType != ManualJournalEntryTypeDto.ClosingEntry &&
                  !isGovernedClosingReversal &&
                  !string.Equals(period.Status, "Open", StringComparison.OrdinalIgnoreCase))
         {

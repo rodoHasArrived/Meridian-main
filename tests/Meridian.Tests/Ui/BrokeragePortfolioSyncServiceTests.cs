@@ -10,6 +10,7 @@ using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
@@ -19,6 +20,193 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class BrokeragePortfolioSyncServiceTests
 {
+    [Fact]
+    public async Task RunSyncAsync_SuccessfulPortfolioCapturePublishesProductionAccountingSnapshot()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var capture = Substitute.For<IAccountingPositionSnapshotCaptureService>();
+            capture.CaptureBrokerageSyncAsync(
+                    Arg.Any<FundAccountBrokerageSyncActivityDto>(),
+                    Arg.Any<DateTimeOffset>(),
+                    Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(1));
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true,
+                accountingSnapshotCapture: capture);
+            var fundAccountId = Guid.NewGuid();
+            var accountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            await accountService.CreateAccountAsync(new CreateAccountRequest(
+                fundAccountId,
+                AccountTypeDto.Brokerage,
+                "BRK-SNAPSHOT",
+                "Accounting snapshot brokerage",
+                "USD",
+                DateTimeOffset.UtcNow.AddDays(-10),
+                "tests"));
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-SNAPSHOT", "ops-review"));
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            await capture.Received(1).CaptureBrokerageSyncAsync(
+                Arg.Is<FundAccountBrokerageSyncActivityDto>(projection =>
+                    projection.FundAccountId == fundAccountId &&
+                    projection.Positions.Count == 1 &&
+                    projection.Positions[0].Symbol == "AAPL"),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>());
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task RunSyncAsync_PortfolioFailureDoesNotAppendEmptyAccountingSnapshot()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var capture = Substitute.For<IAccountingPositionSnapshotCaptureService>();
+            var (service, serviceProvider) = CreateService(
+                root,
+                new ThrowingPortfolioAdapter("alpaca", "portfolio unavailable"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true,
+                accountingSnapshotCapture: capture);
+            var fundAccountId = Guid.NewGuid();
+            var accountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            await accountService.CreateAccountAsync(new CreateAccountRequest(
+                fundAccountId,
+                AccountTypeDto.Brokerage,
+                "BRK-NO-SNAPSHOT",
+                "No snapshot brokerage",
+                "USD",
+                DateTimeOffset.UtcNow.AddDays(-10),
+                "tests"));
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-NO-SNAPSHOT", "ops-review"));
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Degraded);
+            await capture.DidNotReceive().CaptureBrokerageSyncAsync(
+                Arg.Any<FundAccountBrokerageSyncActivityDto>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>());
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Theory]
+    [InlineData("provider")]
+    [InlineData("account")]
+    [InlineData("account-currency")]
+    [InlineData("position-currency")]
+    public async Task RunSyncAsync_PortfolioScopeMismatchDegradesAndDoesNotCaptureAccountingHistory(
+        string mismatch)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var capture = Substitute.For<IAccountingPositionSnapshotCaptureService>();
+            var (service, serviceProvider) = CreateService(
+                root,
+                new MismatchedPortfolioAdapter("alpaca", mismatch),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true,
+                accountingSnapshotCapture: capture);
+            var fundAccountId = Guid.NewGuid();
+            var accountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            await accountService.CreateAccountAsync(new CreateAccountRequest(
+                fundAccountId,
+                AccountTypeDto.Brokerage,
+                "BRK-SCOPE-MISMATCH",
+                "Scope mismatch brokerage",
+                "USD",
+                DateTimeOffset.UtcNow.AddDays(-10),
+                "tests"));
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-EXPECTED", "ops-review"));
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Degraded);
+            status.PositionCount.Should().Be(0);
+            status.LastError.Should().Contain("Portfolio snapshot failed");
+            await capture.DidNotReceive().CaptureBrokerageSyncAsync(
+                Arg.Any<FundAccountBrokerageSyncActivityDto>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>());
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task RunSyncAsync_FarFuturePortfolioTimestampDoesNotCaptureOrPoisonAccountingHistory()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var serverSyncedAt = new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
+            var providerRetrievedAt = serverSyncedAt.AddMinutes(5).AddTicks(1);
+            var capture = Substitute.For<IAccountingPositionSnapshotCaptureService>();
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca", providerRetrievedAt),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true,
+                accountingSnapshotCapture: capture,
+                timeProvider: new FixedTimeProvider(serverSyncedAt));
+            var fundAccountId = Guid.NewGuid();
+            var accountService = serviceProvider.GetRequiredService<IFundAccountService>();
+            await accountService.CreateAccountAsync(new CreateAccountRequest(
+                fundAccountId,
+                AccountTypeDto.Brokerage,
+                "BRK-FUTURE-TIMESTAMP",
+                "Future timestamp brokerage",
+                "USD",
+                serverSyncedAt.AddDays(-10),
+                "tests"));
+
+            var status = await service.RunSyncAsync(
+                fundAccountId,
+                new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-FUTURE", "ops-review"));
+
+            status.Health.Should().Be(WorkstationBrokerageSyncHealth.Degraded);
+            status.PositionCount.Should().Be(0);
+            status.LastError.Should().Contain("more than five minutes after server projection sync time");
+            status.LastSuccessfulSyncAt.Should().Be(serverSyncedAt,
+                "retained projection time must come from the server clock, not a rejected provider timestamp");
+            await capture.DidNotReceive().CaptureBrokerageSyncAsync(
+                Arg.Any<FundAccountBrokerageSyncActivityDto>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<CancellationToken>());
+
+            var projection = await service.GetActivityAsync(fundAccountId);
+            projection.Should().NotBeNull();
+            projection!.SyncedAt.Should().Be(serverSyncedAt);
+            projection.Positions.Should().BeEmpty();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
     [Fact]
     public async Task Scenario_MultiAccountAllocation_BrokerageSyncPersistsProjectionCursorRawSnapshotAndCoverage()
     {
@@ -908,13 +1096,23 @@ public sealed class BrokeragePortfolioSyncServiceTests
         IBrokerageActivitySync activityAdapter,
         bool includeSecurityLookup,
         TimeSpan? staleAfter = null,
-        IReadOnlyList<IBrokerageAccountCatalog>? catalogs = null)
+        IReadOnlyList<IBrokerageAccountCatalog>? catalogs = null,
+        IAccountingPositionSnapshotCaptureService? accountingSnapshotCapture = null,
+        TimeProvider? timeProvider = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IFundAccountService, InMemoryFundAccountService>();
         if (includeSecurityLookup)
         {
             services.AddSingleton<ISecurityReferenceLookup>(new StaticSecurityReferenceLookup());
+        }
+        if (accountingSnapshotCapture is not null)
+        {
+            services.AddSingleton(accountingSnapshotCapture);
+        }
+        if (timeProvider is not null)
+        {
+            services.AddSingleton(timeProvider);
         }
         var serviceProvider = services.BuildServiceProvider();
 
@@ -943,7 +1141,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
         }
     }
 
-    private sealed class FixedPortfolioAdapter(string providerId) : IBrokeragePortfolioSync
+    private sealed class FixedPortfolioAdapter(string providerId, DateTimeOffset? retrievedAt = null) : IBrokeragePortfolioSync
     {
         public string ProviderId { get; } = providerId;
 
@@ -971,7 +1169,47 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         750m,
                         "equity",
                         Description: "Apple Inc.",
-                        PositionId: "pos-aapl")
+                        PositionId: "pos-aapl",
+                        Currency: "USD")
+                ],
+                retrievedAt ?? DateTimeOffset.UtcNow));
+        }
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
+    }
+
+    private sealed class MismatchedPortfolioAdapter(string providerId, string mismatch) : IBrokeragePortfolioSync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(
+            string externalAccountId,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var account = new BrokerageExternalAccountDto(
+                mismatch == "provider" ? "different-provider" : ProviderId,
+                mismatch == "account" ? "PA-DIFFERENT" : externalAccountId,
+                "Mismatched account",
+                "active",
+                mismatch == "account-currency" ? "EUR" : "USD",
+                DateTimeOffset.UtcNow);
+            return Task.FromResult(new BrokeragePortfolioSnapshotDto(
+                account,
+                new BrokerageBalanceSnapshotDto(50_000m, 125_000m, 95_000m, "USD"),
+                [
+                    new BrokeragePositionSnapshotDto(
+                        "AAPL",
+                        100m,
+                        180m,
+                        187.50m,
+                        18_750m,
+                        750m,
+                        "equity",
+                        Currency: mismatch == "position-currency" ? "EUR" : "USD")
                 ],
                 DateTimeOffset.UtcNow));
         }
