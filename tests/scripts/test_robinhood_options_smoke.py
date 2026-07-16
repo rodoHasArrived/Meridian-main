@@ -74,7 +74,7 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('ContextEnterInvoked = $false', self.script)
         self.assertIn('Enabled operating context detected. Entering the workstation.', self.script)
 
-    def test_deep_page_navigation_uses_the_primary_shell_command_palette(self) -> None:
+    def test_primary_shell_command_palette_fallback_is_automation_safe(self) -> None:
         self.assertIn('function Invoke-CommandPaletteNavigation', self.script)
         self.assertIn('[MeridianSmokeNative]::SetForegroundWindow($Process.MainWindowHandle)', self.script)
         self.assertIn('function Find-FirstVisibleElementByAutomationIds', self.script)
@@ -97,10 +97,6 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
             '$root = Get-WindowAutomationRoot -Process $process',
             self.script,
         )
-        self.assertIn(
-            'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName',
-            self.script,
-        )
         self.assertIn('PaletteResultName = "Add provider wizard"', self.script)
 
     def test_seeded_state_starts_on_workspace_home_before_deep_navigation(self) -> None:
@@ -110,8 +106,14 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('-PageTag $seedPageTag', self.script)
         self.assertIn('-PageTitle $seedPageTitle', self.script)
 
-    def test_each_case_uses_the_supported_desktop_page_launch_contract(self) -> None:
-        self.assertIn('ArgumentList     = @("--page=$($Case.PageTag)")', self.script)
+    def test_each_case_forwards_the_supported_desktop_page_launch_contract_after_startup(self) -> None:
+        self.assertIn('function Invoke-DesktopPageNavigation', self.script)
+        self.assertIn('ArgumentList     = @("--page=$PageTag")', self.script)
+        self.assertIn('$navigationProcess.WaitForExit(10000)', self.script)
+        self.assertIn(
+            'Invoke-DesktopPageNavigation -ExecutablePath $ExecutablePath -PageTag $Case.PageTag -FixtureMode $FixtureMode',
+            self.script,
+        )
 
     def test_workspace_activation_skips_reselecting_an_active_shell(self) -> None:
         activation_start = self.script.index('function Try-ActivateWorkspaceShell')
