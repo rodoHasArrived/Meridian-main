@@ -76,16 +76,47 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
 
     def test_deep_page_navigation_uses_the_primary_shell_command_palette(self) -> None:
         self.assertIn('function Invoke-CommandPaletteNavigation', self.script)
+        self.assertIn('[MeridianSmokeNative]::SetForegroundWindow($Process.MainWindowHandle)', self.script)
+        self.assertIn('function Find-FirstVisibleElementByAutomationIds', self.script)
+        self.assertIn('function Find-FirstVisibleElementByNames', self.script)
+        self.assertIn('AutomationIds @("ShellCommandPaletteButton")', self.script)
+        self.assertIn('Names @("Search", "Open Command Palette")', self.script)
+        self.assertIn('-not $element.Current.IsOffscreen -and $element.Current.IsEnabled', self.script)
+        self.assertIn('Opening command palette via automation id', self.script)
+        self.assertIn('Invoke-OrClickElement -Element $paletteButton', self.script)
+        self.assertIn('$Root = Get-WindowAutomationRoot -Process $Process', self.script)
         self.assertIn('Send-WindowKeys -Process $Process -Keys "^k"', self.script)
         self.assertIn('AutomationIds @("CommandPaletteInput")', self.script)
         self.assertIn('AutomationIds @("CommandPaletteResults")', self.script)
         self.assertIn('-not $candidate.Current.IsOffscreen', self.script)
         self.assertIn('Set-ValuePatternText -Element $paletteInput -Text $PageTag', self.script)
-        self.assertIn('Send-WindowKeys -Process $Process -Keys "{ENTER}"', self.script)
+        self.assertIn('Find-ElementByExactName -Root $results -Name $ResultName', self.script)
+        self.assertIn('function Click-ElementAtCenter', self.script)
+        self.assertIn('Click-ElementAtCenter -Element $paletteResult', self.script)
         self.assertIn(
-            'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag',
+            '$root = Get-WindowAutomationRoot -Process $process',
             self.script,
         )
+        self.assertIn(
+            'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName',
+            self.script,
+        )
+        self.assertIn('PaletteResultName = "Add provider wizard"', self.script)
+
+    def test_seeded_state_starts_on_workspace_home_before_deep_navigation(self) -> None:
+        self.assertIn('function Get-WorkspaceShellPageTag', self.script)
+        self.assertIn('"data-operations" { return "DataShell" }', self.script)
+        self.assertIn('$seedPageTag = Get-WorkspaceShellPageTag -WorkspaceId $Case.WorkspaceId', self.script)
+        self.assertIn('-PageTag $seedPageTag', self.script)
+        self.assertIn('-PageTitle $seedPageTitle', self.script)
+
+    def test_workspace_activation_skips_reselecting_an_active_shell(self) -> None:
+        activation_start = self.script.index('function Try-ActivateWorkspaceShell')
+        activation_end = self.script.index('\nfunction ', activation_start + 1)
+        activation_function = self.script[activation_start:activation_end]
+        marker_check = activation_function.index('Find-FirstElementByNames -Root $Root -Names @($shellMarker)')
+        tile_lookup = activation_function.index('$tile = Find-FirstElementByNames')
+        self.assertLess(marker_check, tile_lookup)
 
 
 if __name__ == "__main__":
