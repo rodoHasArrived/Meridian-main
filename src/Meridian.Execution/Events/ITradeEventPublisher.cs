@@ -15,3 +15,13 @@ public interface ITradeEventPublisher
     /// <param name="tradeEvent">The trade event to publish.</param>
     void Publish(TradeExecutedEvent tradeEvent);
 }
+
+/// <summary>
+/// A trade-event publisher bound to one exact durable accounting scope.
+/// Consumers use this contract to reject recovery stores from another book or period.
+/// </summary>
+public interface IScopedTradeEventPublisher : ITradeEventPublisher
+{
+    /// <summary>The exact ledger posting scope owned by this publisher.</summary>
+    string PostingScope { get; }
+}

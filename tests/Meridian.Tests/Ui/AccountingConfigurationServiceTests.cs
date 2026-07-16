@@ -4,6 +4,7 @@ using Meridian.Application.Accounting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.Catalog;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -1519,8 +1520,9 @@ public sealed class AccountingConfigurationServiceTests
             "evidence://prices/MSFT/2026-06-30/correction",
             new DateOnly(2026, 6, 30),
             DailyPortfolioPriceConfidence.High));
-        var postedSchedule = (await scheduleSource.GetAsync(configured.ScheduleId)).Should().NotBeNull().Subject!;
-        await scheduleSource.SaveAsync(postedSchedule with
+        var postedSchedule = await scheduleSource.GetAsync(configured.ScheduleId);
+        postedSchedule.Should().NotBeNull();
+        await scheduleSource.SaveAsync(postedSchedule! with
         {
             State = DailyValuationScheduleStateDto.Scheduled,
             NextRunAtUtc = correctionAsOf,
@@ -1547,9 +1549,11 @@ public sealed class AccountingConfigurationServiceTests
         (await draftStore.ListAsync("fund-alpha", ManualJournalLedgerBookId))
             .Should().HaveCount(4)
             .And.OnlyContain(draft => draft.Status == ManualJournalEntryStatusDto.Posted);
-        var finalSchedule = (await scheduleSource.GetAsync(configured.ScheduleId)).Should().NotBeNull().Subject!;
-        finalSchedule.State.Should().Be(DailyValuationScheduleStateDto.Posted);
-        finalSchedule.JournalEntryIds.Should().BeEquivalentTo(correctionPosting.JournalEntryIds);
+        var finalSchedule = await scheduleSource.GetAsync(configured.ScheduleId);
+        finalSchedule.Should().NotBeNull();
+        var retainedFinalSchedule = finalSchedule!;
+        retainedFinalSchedule.State.Should().Be(DailyValuationScheduleStateDto.Posted);
+        retainedFinalSchedule.JournalEntryIds.Should().BeEquivalentTo(correctionPosting.JournalEntryIds);
         journalStore.Appended.Should().HaveCount(4);
         journalStore.Appended.GroupBy(static write => write.Entry.Metadata.Symbol)
             .Should().OnlyContain(group => group.Count() == 2);
@@ -1649,6 +1653,106 @@ public sealed class AccountingConfigurationServiceTests
         status.Blockers.Should().ContainSingle();
         status.NextRunAtUtc.Should().Be(dueAt.AddDays(1));
         (await draftStore.ListAsync("fund-alpha", ManualJournalLedgerBookId)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DailyValuationScheduler_AuthoritativeFlatSnapshot_RecordsNoAdjustment()
+    {
+        var dueAt = new DateTimeOffset(2026, 6, 30, 16, 0, 0, TimeSpan.Zero);
+        var accountId = Guid.NewGuid();
+        var owner = new PositionSnapshotOwnerScope(
+            "tenant-a",
+            "company-a",
+            "fund-alpha",
+            ManualJournalLedgerBookId,
+            "entity-master");
+        var flatSnapshot = new AccountSnapshotRecord(
+            "daily-flat-run",
+            accountId.ToString("D"),
+            "Primary brokerage",
+            "Brokerage",
+            Cash: 125_000m,
+            MarginBalance: 0m,
+            UnrealisedPnl: 0m,
+            RealisedPnl: 0m,
+            Positions: [],
+            AsOf: dueAt.AddMinutes(-5),
+            TenantId: owner.TenantId,
+            CompanyId: owner.CompanyId,
+            FundProfileId: owner.FundProfileId,
+            LedgerBookId: owner.LedgerBookId,
+            EntityId: owner.EntityId);
+        var snapshotStore = Substitute.For<IPositionSnapshotStore>();
+        snapshotStore.GetSnapshotHistoryAsync(
+                flatSnapshot.RunId,
+                flatSnapshot.AccountId,
+                owner,
+                Arg.Any<DateTimeOffset>(),
+                dueAt,
+                Arg.Any<CancellationToken>())
+            .Returns(_ => SnapshotHistory(flatSnapshot));
+        var configuration = CreateService();
+        var draftStore = new InMemoryManualJournalEntryDraftStore();
+        var workbench = new ManualJournalEntryWorkbenchService(
+            draftStore,
+            configuration,
+            new InMemoryAccountingActionAuditStore());
+        var positionService = CreateDailyValuationPositionService(snapshotStore);
+        var markPriceSource = Substitute.For<IMarkPriceSource>();
+        var runner = new AutomatedJournalIntakeRunner(
+            new AutomatedJournalDraftIntakeService(workbench, draftStore, configuration),
+            new FeeScheduleAccrualEventProducer(),
+            dailyMarkToMarketService: new DailyMarkToMarketService(markPriceSource),
+            dailyValuationPositionService: positionService);
+        var source = new InMemoryDailyValuationPortfolioSource();
+        await source.SaveAsync(new DailyValuationScheduleWorkItem(
+            "daily-valuation-flat-scope",
+            "fund-alpha",
+            "USD",
+            "valuation-ops",
+            ManualJournalLedgerBookId,
+            ManualJournalPeriodId,
+            dueAt,
+            Positions: [],
+            "valuation-policy-1",
+            "Daily close",
+            "market-close",
+            "cfo",
+            dueAt.AddMonths(-1),
+            "End-of-day valuation",
+            ClosePeriodId: "2026-06",
+            EntityId: owner.EntityId,
+            TenantId: owner.TenantId,
+            CompanyId: owner.CompanyId,
+            PositionSnapshotScopes: [new DailyValuationPositionSnapshotScope(flatSnapshot.RunId, flatSnapshot.AccountId)]));
+        var scheduler = new DailyValuationScheduledWorker(
+            source,
+            runner,
+            NullLogger<DailyValuationScheduledWorker>.Instance,
+            positionService);
+
+        var batch = await scheduler.RunDueAsync(dueAt);
+        var rerun = await scheduler.RunDueAsync(dueAt);
+        var status = await source.GetStatusAsync(
+            "fund-alpha",
+            ManualJournalLedgerBookId,
+            "2026-06",
+            entityId: owner.EntityId,
+            tenantId: owner.TenantId,
+            companyId: owner.CompanyId);
+
+        batch.Runs.Should().ContainSingle(run =>
+            run.State == DailyValuationScheduleStateDto.NoAdjustment &&
+            run.Summary.Contains("authoritative flat-position snapshot", StringComparison.OrdinalIgnoreCase));
+        rerun.Runs.Should().BeEmpty();
+        status.State.Should().Be(DailyValuationScheduleStateDto.NoAdjustment);
+        status.Blockers.Should().BeEmpty();
+        status.EvidenceLinks.Should().ContainSingle();
+        (await draftStore.ListAsync("fund-alpha", ManualJournalLedgerBookId)).Should().BeEmpty();
+        await markPriceSource.DidNotReceive().GetMarkPriceAsync(
+            Arg.Any<string>(),
+            Arg.Any<DateOnly>(),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -2180,6 +2284,86 @@ public sealed class AccountingConfigurationServiceTests
             saved.Version));
         await submit.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Manual journal entry cannot be submitted while critical validation issues remain.");
+    }
+
+    [Fact]
+    public async Task ManualJournalEntryCloseLock_WithoutJournalStoreRejectsCallerReportedLock()
+    {
+        var fixture = await CreateManualJournalCloseLockAuthorityFixtureAsync(authoritativePeriod: null);
+
+        var act = async () => await fixture.Service.ApplyLifecycleActionAsync(
+            ManualJournalCloseLockRequest(fixture.Posted, periodIsLocked: true));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*exact server-owned HardClosed ledger period*");
+        var retained = await fixture.DraftStore.GetAsync(
+            fixture.Posted.FundProfileId,
+            fixture.Posted.JournalEntryId);
+        retained.Should().NotBeNull();
+        retained!.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        retained.Version.Should().Be(fixture.Posted.Version);
+    }
+
+    [Theory]
+    [InlineData("Open")]
+    [InlineData("SoftClosed")]
+    public async Task ManualJournalEntryCloseLock_NonHardClosedServerPeriodRejectsCallerReportedLock(
+        string periodStatus)
+    {
+        var fixture = await CreateManualJournalCloseLockAuthorityFixtureAsync(
+            ManualJournalAccountingPeriod(periodStatus));
+
+        var act = async () => await fixture.Service.ApplyLifecycleActionAsync(
+            ManualJournalCloseLockRequest(fixture.Posted, periodIsLocked: true));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*exact server-owned HardClosed ledger period*");
+        var retained = await fixture.DraftStore.GetAsync(
+            fixture.Posted.FundProfileId,
+            fixture.Posted.JournalEntryId);
+        retained.Should().NotBeNull();
+        retained!.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        retained.Version.Should().Be(fixture.Posted.Version);
+    }
+
+    [Fact]
+    public async Task ManualJournalEntryCloseLock_ExactHardClosedServerPeriodGrantsWhenCallerReportsUnlocked()
+    {
+        var fixture = await CreateManualJournalCloseLockAuthorityFixtureAsync(
+            ManualJournalAccountingPeriod("HardClosed"));
+
+        var result = await fixture.Service.ApplyLifecycleActionAsync(
+            ManualJournalCloseLockRequest(fixture.Posted, periodIsLocked: false));
+
+        result.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.CloseLocked);
+        result.Transition.Action.Should().Be(JournalEntryLifecycleActionDto.LockAfterClose);
+        result.Transition.FromStatus.Should().Be(ManualJournalEntryStatusDto.Posted);
+        result.Transition.ToStatus.Should().Be(ManualJournalEntryStatusDto.CloseLocked);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ManualJournalEntryCloseLock_HardClosedLookupWithMismatchedScopeRejectsCallerReportedLock(
+        bool mismatchPeriodId)
+    {
+        var authoritativePeriod = ManualJournalAccountingPeriod(
+            "HardClosed",
+            periodId: mismatchPeriodId ? Guid.NewGuid() : ManualJournalPeriodId,
+            ledgerBookId: mismatchPeriodId ? ManualJournalLedgerBookId : Guid.NewGuid());
+        var fixture = await CreateManualJournalCloseLockAuthorityFixtureAsync(authoritativePeriod);
+
+        var act = async () => await fixture.Service.ApplyLifecycleActionAsync(
+            ManualJournalCloseLockRequest(fixture.Posted, periodIsLocked: true));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*exact server-owned HardClosed ledger period*");
+        var retained = await fixture.DraftStore.GetAsync(
+            fixture.Posted.FundProfileId,
+            fixture.Posted.JournalEntryId);
+        retained.Should().NotBeNull();
+        retained!.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        retained.Version.Should().Be(fixture.Posted.Version);
     }
 
     [Fact]
@@ -4945,7 +5129,8 @@ public sealed class AccountingConfigurationServiceTests
     {
         var configuration = CreateService();
         await SeedBalancedConfigurationAsync(configuration);
-        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var journalStore = WritableManualJournalLedgerJournalStore.Default();
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore: journalStore);
         var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
         var submitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,
@@ -5370,6 +5555,7 @@ public sealed class AccountingConfigurationServiceTests
             LedgerBookId: lockApproved.JournalEntry.LedgerBookId));
         var closeLockEvidence =
             $"/api/workstation/evidence/subjects/accounting-close/close-package/ledger-book/{lockPosted.JournalEntry.LedgerBookId:D}/{lockPosted.JournalEntry.PeriodId}";
+        journalStore.SetPeriodStatus("HardClosed");
         var closeLocked = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             lockPosted.JournalEntry.JournalEntryId,
             lockPosted.JournalEntry.FundProfileId,
@@ -5393,7 +5579,7 @@ public sealed class AccountingConfigurationServiceTests
             EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"],
             LedgerBookId: closeLocked.JournalEntry.LedgerBookId));
         await reverseCloseLocked.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*cannot change a close-locked journal entry*late-adjustment or restatement workflows*");
+            .WithMessage("*accounting period is locked after close*");
         var afterCloseLockedReverseAttempt = await service.GetWorkbenchAsync("fund-alpha");
         afterCloseLockedReverseAttempt.Drafts.Should().ContainSingle(item =>
             item.JournalEntryId == lockPosted.JournalEntry.JournalEntryId &&
@@ -7405,6 +7591,86 @@ public sealed class AccountingConfigurationServiceTests
             postingTarget: postingTarget);
     }
 
+    private static async Task<ManualJournalCloseLockAuthorityFixture> CreateManualJournalCloseLockAuthorityFixtureAsync(
+        LedgerAccountingPeriod? authoritativePeriod)
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var draftStore = new InMemoryManualJournalEntryDraftStore();
+        var now = DateTimeOffset.UtcNow;
+        var posted = BalancedManualJournalEntry() with
+        {
+            Status = ManualJournalEntryStatusDto.Posted,
+            Version = 4,
+            ApprovalId = $"approval:{Guid.NewGuid():N}",
+            SubmittedAtUtc = now.AddMinutes(-3),
+            SubmittedBy = "ops-user",
+            ApprovedAtUtc = now.AddMinutes(-2),
+            ApprovedBy = "controller",
+            PostedAtUtc = now.AddMinutes(-1),
+            PostedBy = "controller",
+            UpdatedAtUtc = now.AddMinutes(-1)
+        };
+        await draftStore.SaveAsync(posted);
+
+        ILedgerJournalStore? journalStore = null;
+        if (authoritativePeriod is not null)
+        {
+            journalStore = Substitute.For<ILedgerJournalStore>();
+            journalStore.GetPeriodAsync(ManualJournalPeriodId, Arg.Any<CancellationToken>())
+                .Returns(_ => Task.FromResult<LedgerAccountingPeriod?>(authoritativePeriod));
+        }
+
+        var service = CreateManualJournalEntryWorkbenchService(
+            configuration,
+            journalStore: journalStore,
+            includeDefaultJournalStore: false,
+            draftStore: draftStore);
+        return new ManualJournalCloseLockAuthorityFixture(service, draftStore, posted);
+    }
+
+    private static LedgerAccountingPeriod ManualJournalAccountingPeriod(
+        string status,
+        Guid? periodId = null,
+        Guid? ledgerBookId = null)
+    {
+        var now = DateTimeOffset.UtcNow;
+        return new LedgerAccountingPeriod(
+            periodId ?? ManualJournalPeriodId,
+            ledgerBookId ?? ManualJournalLedgerBookId,
+            2026,
+            6,
+            "2026-06",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30),
+            status,
+            now,
+            string.Equals(status, "Open", StringComparison.OrdinalIgnoreCase) ? null : now,
+            1);
+    }
+
+    private static JournalEntryLifecycleActionRequestDto ManualJournalCloseLockRequest(
+        ManualJournalEntryDraftDto posted,
+        bool periodIsLocked)
+        => new(
+            posted.JournalEntryId,
+            posted.FundProfileId,
+            JournalEntryLifecycleActionDto.LockAfterClose,
+            "controller",
+            posted.Version,
+            Notes: "Lock after retained hard-close approval.",
+            EvidenceLinks:
+            [
+                $"/api/workstation/evidence/subjects/accounting-close/period-lock/ledger-book/{posted.LedgerBookId:D}/period/{posted.PeriodId}/journal-entry/{posted.JournalEntryId:D}"
+            ],
+            LedgerBookId: posted.LedgerBookId,
+            PeriodIsLocked: periodIsLocked);
+
+    private sealed record ManualJournalCloseLockAuthorityFixture(
+        ManualJournalEntryWorkbenchService Service,
+        InMemoryManualJournalEntryDraftStore DraftStore,
+        ManualJournalEntryDraftDto Posted);
+
     private sealed class FailOnceManualJournalEntryDraftStore : IManualJournalEntryDraftStore
     {
         private readonly InMemoryManualJournalEntryDraftStore _inner = new();
@@ -7602,7 +7868,8 @@ public sealed class AccountingConfigurationServiceTests
         }
     }
 
-    private static DailyValuationPositionService CreateDailyValuationPositionService()
+    private static DailyValuationPositionService CreateDailyValuationPositionService(
+        IPositionSnapshotStore? snapshotStore = null)
     {
         var registry = Substitute.For<ICanonicalSymbolRegistry>();
         registry.GetDefinition(Arg.Is<string>(symbol =>
@@ -7630,9 +7897,19 @@ public sealed class AccountingConfigurationServiceTests
                 Aliases = ["MSFT"]
             });
         return new DailyValuationPositionService(
-            snapshotStore: null,
+            snapshotStore,
             registry,
             new DailyValuationSecurityMasterQueryService());
+    }
+
+    private static async IAsyncEnumerable<AccountSnapshotRecord> SnapshotHistory(
+        params AccountSnapshotRecord[] snapshots)
+    {
+        await Task.Yield();
+        foreach (var snapshot in snapshots)
+        {
+            yield return snapshot;
+        }
     }
 
     private sealed class DailyValuationSecurityMasterQueryService
@@ -7649,6 +7926,12 @@ public sealed class AccountingConfigurationServiceTests
                         : null);
 
         public Task<SecurityDetailDto?> GetByIdAsOfAsync(
+            Guid securityId,
+            DateTimeOffset asOfUtc,
+            CancellationToken ct = default)
+            => GetByIdAsync(securityId, ct);
+
+        public Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(
             Guid securityId,
             DateTimeOffset asOfUtc,
             CancellationToken ct = default)
@@ -7739,8 +8022,21 @@ public sealed class AccountingConfigurationServiceTests
     {
         private readonly List<LedgerJournalEntryWrite> _writes = [];
         private readonly List<LedgerJournalEntryRecord> _records = [];
+        private LedgerAccountingPeriod CurrentPeriod { get; set; } = period;
 
         public IReadOnlyList<LedgerJournalEntryWrite> Appended => _writes;
+
+        public void SetPeriodStatus(string status)
+        {
+            CurrentPeriod = CurrentPeriod with
+            {
+                Status = status,
+                ClosedAt = string.Equals(status, "Open", StringComparison.OrdinalIgnoreCase)
+                    ? null
+                    : DateTimeOffset.UtcNow,
+                Version = CurrentPeriod.Version + 1
+            };
+        }
 
         public static WritableManualJournalLedgerJournalStore Default(
             AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Gaap)
@@ -7778,7 +8074,7 @@ public sealed class AccountingConfigurationServiceTests
             _records.Add(new LedgerJournalEntryRecord(
                 entry,
                 book.LedgerBookId,
-                period.PeriodId,
+                CurrentPeriod.PeriodId,
                 CommandId: null,
                 CorrelationId: null,
                 GlobalSequence: _records.Count + 1,
@@ -7790,7 +8086,7 @@ public sealed class AccountingConfigurationServiceTests
 
         public WritableManualJournalLedgerJournalStore RestartFromRetainedRecords()
         {
-            var restarted = new WritableManualJournalLedgerJournalStore(book, period);
+            var restarted = new WritableManualJournalLedgerJournalStore(book, CurrentPeriod);
             restarted._records.AddRange(_records);
             return restarted;
         }
@@ -7799,7 +8095,7 @@ public sealed class AccountingConfigurationServiceTests
         {
             ct.ThrowIfCancellationRequested();
             entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
-            LedgerPeriodPostingGuard.Validate(entry, period);
+            LedgerPeriodPostingGuard.Validate(entry, CurrentPeriod);
             _writes.Add(entry);
             _records.Add(new LedgerJournalEntryRecord(
                 entry.Entry,
@@ -7860,7 +8156,7 @@ public sealed class AccountingConfigurationServiceTests
         public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult<LedgerAccountingPeriod?>(periodId == period.PeriodId ? period : null);
+            return Task.FromResult<LedgerAccountingPeriod?>(periodId == CurrentPeriod.PeriodId ? CurrentPeriod : null);
         }
 
         public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
@@ -7872,19 +8168,23 @@ public sealed class AccountingConfigurationServiceTests
         {
             ct.ThrowIfCancellationRequested();
             var matches =
-                (!ledgerBookId.HasValue || period.LedgerBookId == ledgerBookId.Value) &&
-                (string.IsNullOrWhiteSpace(status) || string.Equals(period.Status, status, StringComparison.Ordinal)) &&
+                (!ledgerBookId.HasValue || CurrentPeriod.LedgerBookId == ledgerBookId.Value) &&
+                (string.IsNullOrWhiteSpace(status) || string.Equals(CurrentPeriod.Status, status, StringComparison.Ordinal)) &&
                 (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)) &&
                 (!fundStructureNodeId.HasValue || book.FundStructureNodeId == fundStructureNodeId.Value);
-            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(matches ? [period] : []);
+            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(matches ? [CurrentPeriod] : []);
         }
 
         public Task<LedgerAccountingPeriod> SavePeriodAsync(
             LedgerAccountingPeriod period,
             long expectedVersion,
             PeriodCloseEventRecord? closeEvent = null,
-            CancellationToken ct = default) =>
-            Task.FromResult(period);
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            CurrentPeriod = period;
+            return Task.FromResult(period);
+        }
 
         public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
         {

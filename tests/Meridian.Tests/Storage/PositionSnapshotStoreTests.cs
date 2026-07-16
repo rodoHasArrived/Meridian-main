@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Domain;
 using Meridian.Storage;
@@ -12,6 +14,7 @@ namespace Meridian.Tests.Storage;
 /// </summary>
 public sealed class PositionSnapshotStoreTests : IDisposable
 {
+    private static readonly JsonSerializerOptions SnapshotJsonOptions = new(JsonSerializerDefaults.Web);
     private readonly string _tempRoot;
     private readonly JsonlPositionSnapshotStore _store;
 
@@ -19,9 +22,7 @@ public sealed class PositionSnapshotStoreTests : IDisposable
     {
         _tempRoot = Path.Combine(Path.GetTempPath(), "meridian_snapshot_tests_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempRoot);
-        _store = new JsonlPositionSnapshotStore(
-            new StorageOptions { RootPath = _tempRoot },
-            NullLogger<JsonlPositionSnapshotStore>.Instance);
+        _store = CreateStore();
     }
 
     public void Dispose()
@@ -80,7 +81,7 @@ public sealed class PositionSnapshotStoreTests : IDisposable
             "acc-owned",
             owner with { TenantId = "tenant-b" });
 
-        owned.Should().Be(snapshot);
+        owned.Should().BeEquivalentTo(snapshot);
         otherTenant.Should().BeNull();
         (await _store.GetLatestSnapshotAsync("run-owned", "acc-owned")).Should().BeNull(
             "owned snapshots must not be exposed through the legacy unscoped lookup");
@@ -114,6 +115,214 @@ public sealed class PositionSnapshotStoreTests : IDisposable
         var latest = await _store.GetLatestSnapshotAsync("run-1", "acc-1");
 
         latest!.Cash.Should().Be(30_000m);
+    }
+
+    [Fact]
+    public async Task GetLatestSnapshot_OutOfOrderAppend_ReturnsGreatestAsOf()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var newest = BuildSnapshotAt("run-order", "acc-1", now, cash: 30_000m);
+        var delayedOlder = BuildSnapshotAt("run-order", "acc-1", now.AddMinutes(-5), cash: 10_000m);
+
+        await _store.SaveSnapshotAsync(newest);
+        await _store.SaveSnapshotAsync(delayedOlder);
+
+        var latest = await _store.GetLatestSnapshotAsync("run-order", "acc-1");
+
+        latest.Should().NotBeNull();
+        latest!.AsOf.Should().Be(newest.AsOf);
+        latest.Cash.Should().Be(newest.Cash);
+    }
+
+    [Fact]
+    public async Task GetLatestSnapshot_OwnedOutOfOrderAppend_ReturnsGreatestAsOf()
+    {
+        var owner = new PositionSnapshotOwnerScope(
+            "tenant-a",
+            "company-a",
+            "fund-a",
+            Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
+            "entity-a");
+        var now = DateTimeOffset.UtcNow;
+        var newest = BuildSnapshotAt("run-owned-order", "acc-1", now, cash: 30_000m) with
+        {
+            TenantId = owner.TenantId,
+            CompanyId = owner.CompanyId,
+            FundProfileId = owner.FundProfileId,
+            LedgerBookId = owner.LedgerBookId,
+            EntityId = owner.EntityId
+        };
+        var delayedOlder = newest with
+        {
+            Cash = 10_000m,
+            AsOf = now.AddMinutes(-5)
+        };
+
+        await _store.SaveSnapshotAsync(newest);
+        await _store.SaveSnapshotAsync(delayedOlder);
+
+        var latest = await _store.GetLatestSnapshotAsync(
+            "run-owned-order",
+            "acc-1",
+            owner);
+
+        latest.Should().NotBeNull();
+        latest!.AsOf.Should().Be(newest.AsOf);
+        latest.Cash.Should().Be(newest.Cash);
+    }
+
+    [Fact]
+    public async Task SaveSnapshot_SameTimestampEquivalentPayload_IsSingleAtomicAppend()
+    {
+        var asOf = new DateTimeOffset(2026, 7, 15, 20, 30, 0, TimeSpan.Zero);
+        var first = BuildSnapshotAt("run-retry", "acc-1", asOf, cash: 30_000m) with
+        {
+            Positions =
+            [
+                new PositionRecord("AAPL", 10m, 150m, 50m, 0m),
+                new PositionRecord("MSFT", 20m, 400m, 75m, 0m)
+            ]
+        };
+        var equivalentRetry = first with
+        {
+            Positions =
+            [
+                new PositionRecord("msft", 20m, 400m, 75m, 0m),
+                new PositionRecord("aapl", 10m, 150m, 50m, 0m)
+            ]
+        };
+
+        var firstOutcome = await _store.SaveSnapshotConditionallyAsync(first);
+        var retryOutcome = await _store.SaveSnapshotConditionallyAsync(equivalentRetry);
+
+        firstOutcome.Should().Be(PositionSnapshotSaveOutcome.Appended);
+        retryOutcome.Should().Be(PositionSnapshotSaveOutcome.EquivalentAlreadyExists);
+        File.ReadLines(GetSnapshotPath("run-retry", "acc-1")).Should().ContainSingle();
+        var latest = await _store.GetLatestSnapshotAsync("run-retry", "acc-1");
+        PositionSnapshotEquivalence.AreEquivalent(latest!, first).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SaveSnapshot_ConcurrentDifferentPayloadsAtSameTimestamp_CommitsExactlyOne()
+    {
+        var firstStore = CreateStore();
+        var secondStore = CreateStore();
+        var asOf = new DateTimeOffset(2026, 7, 15, 20, 30, 0, TimeSpan.Zero);
+        var first = BuildSnapshotAt("run-conflict", "acc-1", asOf, cash: 10_000m);
+        var second = first with { Cash = 20_000m };
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async Task<(PositionSnapshotSaveOutcome? Outcome, Exception? Error)> AttemptAsync(
+            JsonlPositionSnapshotStore store,
+            AccountSnapshotRecord snapshot)
+        {
+            await gate.Task;
+            try
+            {
+                return (await store.SaveSnapshotConditionallyAsync(snapshot), null);
+            }
+            catch (Exception ex)
+            {
+                return (null, ex);
+            }
+        }
+
+        var attempts = new[]
+        {
+            AttemptAsync(firstStore, first),
+            AttemptAsync(secondStore, second)
+        };
+        gate.SetResult();
+        var results = await Task.WhenAll(attempts);
+
+        results.Should().ContainSingle(result => result.Outcome == PositionSnapshotSaveOutcome.Appended);
+        results.Should().ContainSingle(result => result.Error is PositionSnapshotConflictException);
+        File.ReadLines(GetSnapshotPath("run-conflict", "acc-1")).Should().ContainSingle();
+        var latest = await _store.GetLatestSnapshotAsync("run-conflict", "acc-1");
+        latest!.Cash.Should().BeOneOf(10_000m, 20_000m);
+    }
+
+    [Fact]
+    public async Task SaveSnapshot_ConcurrentEquivalentPayloadsAcrossStoreInstances_AppendsOnce()
+    {
+        var firstStore = CreateStore();
+        var secondStore = CreateStore();
+        var asOf = new DateTimeOffset(2026, 7, 15, 20, 30, 0, TimeSpan.Zero);
+        var first = BuildSnapshotAt("run-concurrent-retry", "acc-1", asOf, cash: 10_000m) with
+        {
+            Positions =
+            [
+                new PositionRecord("AAPL", 10m, 150m, 50m, 0m),
+                new PositionRecord("MSFT", 20m, 400m, 75m, 0m)
+            ]
+        };
+        var second = first with
+        {
+            Positions =
+            [
+                new PositionRecord("msft", 20m, 400m, 75m, 0m),
+                new PositionRecord("aapl", 10m, 150m, 50m, 0m)
+            ]
+        };
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        async Task<PositionSnapshotSaveOutcome> AttemptAsync(
+            JsonlPositionSnapshotStore store,
+            AccountSnapshotRecord snapshot)
+        {
+            await gate.Task;
+            return await store.SaveSnapshotConditionallyAsync(snapshot);
+        }
+
+        var attempts = new[]
+        {
+            AttemptAsync(firstStore, first),
+            AttemptAsync(secondStore, second)
+        };
+        gate.SetResult();
+        var outcomes = await Task.WhenAll(attempts);
+
+        outcomes.Should().ContainSingle(outcome => outcome == PositionSnapshotSaveOutcome.Appended);
+        outcomes.Should().ContainSingle(outcome => outcome == PositionSnapshotSaveOutcome.EquivalentAlreadyExists);
+        File.ReadLines(GetSnapshotPath("run-concurrent-retry", "acc-1")).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task GetLatestSnapshot_ConflictingLegacyEqualTimestampRecords_FailsClosed()
+    {
+        var asOf = new DateTimeOffset(2026, 7, 15, 20, 30, 0, TimeSpan.Zero);
+        var first = BuildSnapshotAt("run-legacy-conflict", "acc-1", asOf, cash: 10_000m);
+        var second = first with { Cash = 20_000m };
+        await WriteSnapshotsDirectAsync("run-legacy-conflict", "acc-1", [first, second]);
+
+        var act = () => _store.GetLatestSnapshotAsync("run-legacy-conflict", "acc-1");
+
+        await act.Should().ThrowAsync<PositionSnapshotConflictException>()
+            .WithMessage("*different payload at the same source timestamp*");
+    }
+
+    [Fact]
+    public async Task GetLatestSnapshot_LargeLifecycleHistory_SelectsLatestAndReleasesFileHandle()
+    {
+        const int snapshotCount = 5_000;
+        var firstAsOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var snapshots = Enumerable.Range(0, snapshotCount)
+            .Select(index => BuildSnapshotAt(
+                "run-large-history",
+                "acc-1",
+                firstAsOf.AddMinutes(index),
+                cash: index));
+        await WriteSnapshotsDirectAsync("run-large-history", "acc-1", snapshots);
+
+        var latest = await _store.GetLatestSnapshotAsync("run-large-history", "acc-1");
+
+        latest.Should().NotBeNull();
+        latest!.Cash.Should().Be(snapshotCount - 1);
+        latest.AsOf.Should().Be(firstAsOf.AddMinutes(snapshotCount - 1));
+        var snapshotPath = GetSnapshotPath("run-large-history", "acc-1");
+        var movedPath = snapshotPath + ".moved";
+        File.Move(snapshotPath, movedPath);
+        File.Exists(movedPath).Should().BeTrue("the streaming reader must release its file handle");
     }
 
     // ─── GetSnapshotHistory ───────────────────────────────────────────────────
@@ -209,6 +418,33 @@ public sealed class PositionSnapshotStoreTests : IDisposable
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private JsonlPositionSnapshotStore CreateStore()
+        => new(
+            new StorageOptions { RootPath = _tempRoot },
+            NullLogger<JsonlPositionSnapshotStore>.Instance);
+
+    private string GetSnapshotPath(string runId, string accountId)
+        => Path.Combine(_tempRoot, "portfolios", runId, accountId, "snapshots.jsonl");
+
+    private async Task WriteSnapshotsDirectAsync(
+        string runId,
+        string accountId,
+        IEnumerable<AccountSnapshotRecord> snapshots)
+    {
+        var path = GetSnapshotPath(runId, accountId);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await using var stream = new FileStream(
+            path,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.None,
+            bufferSize: 65_536,
+            FileOptions.Asynchronous);
+        await using var writer = new StreamWriter(stream, new UTF8Encoding(false));
+        foreach (var snapshot in snapshots)
+            await writer.WriteLineAsync(JsonSerializer.Serialize(snapshot, SnapshotJsonOptions));
+    }
 
     private static AccountSnapshotRecord BuildSnapshot(
         string runId,

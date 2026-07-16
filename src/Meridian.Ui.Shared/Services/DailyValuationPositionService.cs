@@ -21,11 +21,11 @@ public sealed record DailyValuationPositionResolution(
     IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks,
     IReadOnlyList<string> Blockers)
 {
-    public bool IsReady => Blockers.Count == 0 && Positions.Count > 0;
+    public bool IsReady => Blockers.Count == 0;
 }
 
 /// <summary>
-/// Resolves current positions from explicitly named durable snapshots, or from an explicitly
+/// Resolves positions as of the valuation cutoff from explicitly named durable snapshots, or from an explicitly
 /// time-stamped static override. Every position must resolve to an active Security Master record
 /// in the valuation base currency before a provider mark can enter an accounting draft.
 /// </summary>
@@ -78,12 +78,28 @@ public sealed class DailyValuationPositionService
             foreach (var scope in workItem.PositionSnapshotScopes)
             {
                 ct.ThrowIfCancellationRequested();
-                var snapshot = await _snapshotStore
-                    .GetLatestSnapshotAsync(scope.RunId, scope.AccountId, ownerScope, ct)
-                    .ConfigureAwait(false);
+                AccountSnapshotRecord? snapshot = null;
+                await foreach (var retained in _snapshotStore
+                                   .GetSnapshotHistoryAsync(
+                                       scope.RunId,
+                                       scope.AccountId,
+                                       ownerScope,
+                                       DateTimeOffset.MinValue,
+                                       valuationAsOfUtc,
+                                       ct)
+                                   .ConfigureAwait(false))
+                {
+                    if (retained.AsOf <= valuationAsOfUtc &&
+                        (snapshot is null || retained.AsOf > snapshot.AsOf))
+                    {
+                        snapshot = retained;
+                    }
+                }
+
                 if (snapshot is null)
                 {
-                    blockers.Add($"No durable position snapshot exists for run '{scope.RunId}' and account '{scope.AccountId}'.");
+                    blockers.Add(
+                        $"No durable position snapshot exists at or before the valuation timestamp for run '{scope.RunId}' and account '{scope.AccountId}'.");
                     continue;
                 }
 
@@ -131,6 +147,14 @@ public sealed class DailyValuationPositionService
             if (blockers.Count > 0)
             {
                 return new DailyValuationPositionResolution([], evidence, blockers);
+            }
+
+            // A complete provider snapshot with no open positions is affirmative accounting
+            // evidence, not missing data. The scheduler records a no-adjustment outcome without
+            // invoking the mark projector, which correctly requires at least one position.
+            if (positions.Count == 0)
+            {
+                return new DailyValuationPositionResolution([], evidence, []);
             }
 
             return await ResolveSecurityMasterAsync(positions, workItem.Currency, valuationAsOfUtc, evidence, ct)
@@ -271,7 +295,7 @@ public sealed class DailyValuationPositionService
             }
 
             var security = await _securityMaster
-                .GetByIdAsOfAsync(securityId, valuationAsOfUtc, ct)
+                .GetRecordedByIdAsOfAsync(securityId, valuationAsOfUtc, ct)
                 .ConfigureAwait(false);
             if (security is null)
             {

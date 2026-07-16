@@ -115,7 +115,6 @@ public abstract class WebSocketProviderBase :
     /// </remarks>
     public virtual ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
     {
-        var capabilities = ProviderCapabilities;
         return new ProviderRateLimitDiagnosticSnapshot(
             ProviderId: ProviderId,
             Surface: ProviderRateLimitSurfaces.Streaming,

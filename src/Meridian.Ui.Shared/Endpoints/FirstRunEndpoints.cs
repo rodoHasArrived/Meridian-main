@@ -24,15 +24,37 @@ public static class FirstRunEndpoints
             { return Results.Ok(await service.CompleteOutcomeAsync(CurrentUser(context), request.Key, ct).ConfigureAwait(false)); }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
         });
-        app.MapPost("/api/workstation/desktop/launch", (HttpContext context, DesktopLaunchRequest request, DesktopWorkstationLaunchService service) =>
-        {
-            var remote = context.Connection.RemoteIpAddress;
-            if (remote is not null && !System.Net.IPAddress.IsLoopback(remote))
-                return Results.NotFound();
-            return service.TryLaunch(request.Page, out var message)
-                ? Results.Ok(new { message })
-                : Results.Json(new { error = message }, statusCode: StatusCodes.Status409Conflict);
-        }).WithTags("Workstation");
+        app.MapPost(
+                "/api/workstation/desktop/launch",
+                (HttpContext context, DesktopLaunchRequest request, DesktopWorkstationLaunchService service) =>
+                {
+                    var remote = context.Connection.RemoteIpAddress;
+                    if (remote is not null && !System.Net.IPAddress.IsLoopback(remote))
+                    {
+                        return Results.NotFound();
+                    }
+
+                    var hostBaseAddress = $"{context.Request.Scheme}://{context.Request.Host}";
+                    return service.TryLaunch(
+                        CurrentUser(context),
+                        hostBaseAddress,
+                        request.Page,
+                        out var message)
+                        ? Results.Ok(new { message })
+                        : Results.Json(
+                            new { error = message },
+                            statusCode: StatusCodes.Status409Conflict);
+                })
+            .WithTags("Workstation");
+
+        app.MapGet(
+                "/api/auth/desktop-launch/{ticket}",
+                (HttpContext context, string ticket, DesktopLaunchTicketService service) =>
+                {
+                    var redemption = service.Redeem(context.Connection.RemoteIpAddress, ticket);
+                    return redemption is null ? Results.NotFound() : Results.Ok(redemption);
+                })
+            .ExcludeFromDescription();
     }
 
     private static string CurrentUser(HttpContext context) =>

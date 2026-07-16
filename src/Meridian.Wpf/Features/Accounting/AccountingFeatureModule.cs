@@ -10,6 +10,7 @@ using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
@@ -121,8 +122,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                         ?? ResolveAccountingDataDirectory(sp)
                 }));
         services.TryAddSingleton<IAutomatedJournalCapitalAccountReconciliationResolver>(sp =>
-            new AccountingReportPackageCapitalAccountReconciliationResolver(
-                () => sp.GetRequiredService<IAccountingReportPackageService>()));
+            new LedgerCapitalAccountReconciliationResolver(
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IFundProfileTenancyRegistry>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             ActivatorUtilities.CreateInstance<ManualJournalEntryWorkbenchService>(sp));

@@ -1,11 +1,11 @@
 {
   "total_files": 586,
-  "total_lines": 101351,
+  "total_lines": 101442,
   "orphaned_count": 244,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 203,
-  "average_lines": 173.0,
+  "average_lines": 173.1,
   "health_score": 78,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2239,7 +2239,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 8887,
+      "line_count": 8927,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2503,7 +2503,7 @@
     },
     {
       "path": "docs/product/data-provider-accounting-brainstorm-2026-07.md",
-      "line_count": 498,
+      "line_count": 510,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4663,7 +4663,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 99,
+      "line_count": 116,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4727,7 +4727,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 172,
+      "line_count": 181,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4783,7 +4783,7 @@
     },
     {
       "path": "src/Meridian.ProviderSdk/README.md",
-      "line_count": 80,
+      "line_count": 87,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4863,7 +4863,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1281,
+      "line_count": 1287,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
