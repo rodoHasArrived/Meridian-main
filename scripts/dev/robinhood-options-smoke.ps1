@@ -425,6 +425,60 @@ function Find-FirstElementByAutomationIds {
     return $null
 }
 
+function Find-FirstVisibleElementByAutomationIds {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [string[]]$AutomationIds
+    )
+
+    foreach ($automationId in $AutomationIds) {
+        $condition = [System.Windows.Automation.PropertyCondition]::new(
+            [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+            $automationId)
+        $elements = $Root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)
+
+        foreach ($element in $elements) {
+            try {
+                if (-not $element.Current.IsOffscreen -and $element.Current.IsEnabled) {
+                    return $element
+                }
+            }
+            catch {
+                continue
+            }
+        }
+    }
+
+    return $null
+}
+
+function Find-FirstVisibleElementByNames {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [string[]]$Names
+    )
+
+    foreach ($name in $Names) {
+        $condition = [System.Windows.Automation.PropertyCondition]::new(
+            [System.Windows.Automation.AutomationElement]::NameProperty,
+            $name)
+        $elements = $Root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)
+
+        foreach ($element in $elements) {
+            try {
+                if (-not $element.Current.IsOffscreen -and $element.Current.IsEnabled) {
+                    return $element
+                }
+            }
+            catch {
+                continue
+            }
+        }
+    }
+
+    return $null
+}
+
 function Find-FirstElementByPartialNames {
     param(
         [System.Windows.Automation.AutomationElement]$Root,
@@ -922,11 +976,17 @@ function Invoke-CommandPaletteNavigation {
     [MeridianSmokeNative]::SetForegroundWindow($Process.MainWindowHandle) | Out-Null
     Start-Sleep -Milliseconds 250
 
-    $paletteButton = Find-ElementByExactName -Root $Root -Name "Search"
-    if ($null -ne $paletteButton -and -not $paletteButton.Current.IsOffscreen) {
+    $paletteButton = Find-FirstVisibleElementByAutomationIds -Root $Root -AutomationIds @("ShellCommandPaletteButton")
+    if ($null -eq $paletteButton) {
+        $paletteButton = Find-FirstVisibleElementByNames -Root $Root -Names @("Search", "Open Command Palette")
+    }
+
+    if ($null -ne $paletteButton) {
+        Write-Log "Opening command palette via automation id '$($paletteButton.Current.AutomationId)' and name '$($paletteButton.Current.Name)'."
         Invoke-OrClickElement -Element $paletteButton
     }
     else {
+        Write-Log "No visible command palette trigger was available. Opening it with Ctrl+K."
         Send-WindowKeys -Process $Process -Keys "^k"
     }
 
