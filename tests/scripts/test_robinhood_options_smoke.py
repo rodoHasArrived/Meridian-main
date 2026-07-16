@@ -83,6 +83,10 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('Set-ValuePatternText -Element $paletteInput -Text $PageTag', self.script)
         self.assertIn('Send-WindowKeys -Process $Process -Keys "{ENTER}"', self.script)
         self.assertIn(
+            '$root = Get-WindowAutomationRoot -Process $process',
+            self.script,
+        )
+        self.assertIn(
             'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag',
             self.script,
         )

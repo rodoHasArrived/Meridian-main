@@ -967,6 +967,7 @@ function Invoke-SmokeCase {
         if ($null -eq $pageReady) {
             Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and navigating through the command palette."
             $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
+            $root = Get-WindowAutomationRoot -Process $process
             Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
