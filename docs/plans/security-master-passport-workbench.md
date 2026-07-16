@@ -558,15 +558,15 @@ handler boundaries; assert event envelopes and governance transitions. xUnit + F
 PR3 browser UI, PR4 WPF parity.
 
 ### Phase 1 — Contracts & policy
-- [ ] Add DTOs to `Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs`.
-- [ ] Register them in the source-generated JSON context (ADR-014).
-- [ ] Add route constants to `UiApiRoutes.cs`.
-- [ ] `ISecurityMasterConflictAuthorityPolicy` + impl + `SecurityMasterWorkbenchOptions`.
+- [x] Add governed-write DTOs to `Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs`.
+- [x] Register them in the source-generated JSON context (ADR-014).
+- [x] Add route constants to `UiApiRoutes.cs`.
+- [x] `ISecurityMasterConflictAuthorityPolicy` + impl + `SecurityMasterWorkbenchOptions`.
 
 ### Phase 2 — Command service
-- [ ] `ISecurityMasterWorkbenchCommandService` + impl over `ISecurityMasterEventStore`.
-- [ ] Wire Submit/Approve through `OperationsContinuityWorkflowService`; confirm/add `SecurityMaster` matrix row.
-- [ ] Map `ConcurrencyException` → 409 in endpoint.
+- [x] `ISecurityMasterWorkbenchCommandService` + implementation over the existing override/revision/write primitives, preserving the D2 amendment that operator edits stage as overlay annotations rather than partial economic events.
+- [x] Wire Submit/Approve through `OperationsContinuityWorkflowService`; confirm/add `SecurityMaster` matrix row.
+- [x] Map concurrency and revision-state conflicts to 409 in endpoint.
 
 ### Phase 3 — Propagation
 - [x] `ISecurityMasterRevisionPublishedHandler` + `SecurityProjectionRebuildHandler` (Order=10,
@@ -599,7 +599,7 @@ PR3 browser UI, PR4 WPF parity.
 - [x] `SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds` resolved at publish time
       (`IAffectedLedgerBookResolver` / `LedgerBookAffectedResolver`: fund-book granularity from the
       impacted fund profile; empty when there is no ledger exposure or no durable ledger backend).
-- [ ] DI registration (ordered handler collection).
+- [x] DI registration (ordered handler collection).
 
 ### Phase 4 — Endpoints + UI
 - [x] New partial `WorkstationEndpoints.SecurityMasterWorkbench.cs` mapping the routes (field,
@@ -673,17 +673,25 @@ PR3 browser UI, PR4 WPF parity.
       open → hydrate → close flow.
 
 ### Phase 5 — Tests
-- [ ] All unit tests above (~22) green; ≥80% on new code.
-- [ ] Integration tests (or explicitly deferred with a tracking note).
+- [x] Focused unit/component tests cover the command service, conflict policy, revision store,
+      published handlers, period-aware resolver, ledger lock reader, report-pack restatement
+      candidate resolver, endpoints, browser editor/drill-in, and WPF editor/view-model parity.
+- [~] Full lifecycle integration remains deferred: endpoint and service tests cover the lifecycle
+      and status-code seams, but a single field→submit→approve→publish closed-period no-mutation
+      integration test is still a follow-up.
 
 ### Phase 6 — Wrap-up
-- [ ] `appsettings.json` `SecurityMasterWorkbench` section defaults.
-- [ ] ADR check: governed write over an event-sourced aggregate + restatement propagation likely
-      warrants an ADR amendment or new ADR ("ADR-017 Reference-data governed edit + restatement propagation").
-- [ ] XML doc comments on all public interfaces.
-- [ ] Update nearest source READMEs + roadmap registry note on W5-MASSET-001 (RISK-AI-DOC-SKIP-001).
-- [ ] PR checklist: no `.Result`/`.Wait()`, structured logging, `CancellationToken` throughout, no
-      client-local readiness rules.
+- [x] Tracked appsettings sample/schema `SecurityMasterWorkbench` section defaults.
+- [~] ADR check completed for this slice: the blueprint carries the current decision record; create
+      a durable ADR when the follow-on durable revision store, soft-closed adjustment poster, or
+      repeated-restatement workflow changes the persistence/ledger contract.
+- [x] XML doc comments on all public interfaces.
+- [x] Update nearest source READMEs + roadmap registry note on W5-MASSET-001 (RISK-AI-DOC-SKIP-001).
+- [~] Pre-PR checklist audit completed for the workbench source files: no `.Result`/`.Wait()`
+      usages found, structured logging is present on the command/resolver/endpoint paths,
+      `CancellationToken`/`AbortSignal` flows through the service and UI clients, and browser
+      readiness remains server/error-state driven. Full PR evidence still requires the committed
+      `scripts/ci.sh`/GitHub Actions run.
 
 ## Open Questions
 

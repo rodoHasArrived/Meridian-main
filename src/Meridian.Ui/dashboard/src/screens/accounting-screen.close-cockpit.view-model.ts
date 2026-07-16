@@ -12,10 +12,7 @@ import {
   reviewLedgerCloseManagementLateAdjustment,
   signOffLedgerCloseManagementTask,
 } from "@/lib/api";
-import {
-  normalizeLocalWorkstationRoute,
-  WORKSTATION_ROUTE_CATALOG,
-} from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   accountingWorkstreamHref,
   buildAccountingTaskMode,
@@ -28,12 +25,13 @@ import {
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
-import { closeCommandCenterTextMatches, humanizeCloseBlockerCode, isCloseChecklistDone, isOpenAccountingBreakStatus } from "./accounting-screen.close-cockpit-presenters";
+import { isOpenAccountingBreakStatus } from "./accounting-screen.close-cockpit-presenters";
 import type {
   AccountingCloseCalendarMilestoneViewModel,
   AccountingCloseDependencyGraphRowViewModel,
   AccountingCloseEvidenceReviewRowViewModel,
   AccountingCloseOperatingCoverageRowViewModel,
+  AccountingClosePostingGateViewModel,
   AccountingClosePlanTaskRowViewModel,
   AccountingCloseReportPackageServices,
   AccountingCloseReportPackageViewModel,
@@ -58,9 +56,6 @@ import type {
   AccountingWorkflowActionViewModel,
   AccountingWorkflowLaunchViewState,
   AccountingWorkflowStepViewModel,
-  CloseCommandCenterActionViewModel,
-  CloseCommandCenterMetricViewModel,
-  CloseCommandCenterStatus,
   CloseCommandCenterViewState,
 } from "./accounting-screen.view-model";
 import type {
@@ -71,31 +66,18 @@ import type {
   CloseCalendarMilestone,
   CloseDependency,
   ClosePeriodPlan,
+  ClosePostingGateState,
   CloseSignOffRequirement,
   CloseTask,
-  FinancialOperationsCommandCenter,
   LateAdjustmentRequest,
+  LedgerDimensionSet,
   LockClosePeriodRequest,
-  MultiAssetCoverageSummary,
   OperationsContinuityWorkflow,
-  OperationsWorkflowBlocker,
   ReportExportArtifact,
   ReportExportArtifactManifest,
   UpsertClosePeriodPlanConfigurationRequest,
-  AccountingSystemImportDetail,
-  AccountingSystemProvider,
-  AccountingSystemReconciliationSummary,
   AccountingCertificationState,
 } from "@/types";
-
-interface CloseCommandCenterRawBlocker {
-  code: string;
-  category: string;
-  severity: string;
-  message: string;
-  gate: OperationsWorkflowBlocker["gate"];
-  routeHint: string | null;
-}
 
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
@@ -132,6 +114,9 @@ export function useAccountingCloseReportPackageViewModel(
   const [lockClosePeriodBusy, setLockClosePeriodBusy] = useState(false);
   const [lockClosePeriodStatusText, setLockClosePeriodStatusText] = useState<string | null>(null);
   const [lockClosePeriodStatusTone, setLockClosePeriodStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+  const [queueClosingEntriesBusy, setQueueClosingEntriesBusy] = useState(false);
+  const [queueClosingEntriesStatusText, setQueueClosingEntriesStatusText] = useState<string | null>(null);
+  const [queueClosingEntriesStatusTone, setQueueClosingEntriesStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
   const [configureClosePlanBusy, setConfigureClosePlanBusy] = useState(false);
   const [configureClosePlanStatusText, setConfigureClosePlanStatusText] = useState<string | null>(null);
   const [configureClosePlanStatusTone, setConfigureClosePlanStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
@@ -303,6 +288,67 @@ export function useAccountingCloseReportPackageViewModel(
     }
   }, [closePlan, closeSignOffDraft, services, workflow]);
 
+  const queueClosingEntries = useCallback(async () => {
+    if (!workflow || !closePlan) {
+      setQueueClosingEntriesStatusText("A close plan is required before queueing closing entries.");
+      setQueueClosingEntriesStatusTone("danger");
+      return;
+    }
+
+    if (closePlan.isPeriodLocked) {
+      setQueueClosingEntriesStatusText("The period is already locked; closing entries cannot be queued.");
+      setQueueClosingEntriesStatusTone("danger");
+      return;
+    }
+
+    if (closePlan.closingEntriesGate?.state !== "Required") {
+      const stateLabel = closePlan.closingEntriesGate
+        ? formatClosePostingGateState(closePlan.closingEntriesGate.state).label
+        : "Not supplied";
+      setQueueClosingEntriesStatusText(`Closing entries can only be queued from Required state; current state is ${stateLabel}.`);
+      setQueueClosingEntriesStatusTone("danger");
+      return;
+    }
+
+    const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
+    setQueueClosingEntriesBusy(true);
+    setQueueClosingEntriesStatusText(null);
+    setQueueClosingEntriesStatusTone("neutral");
+    try {
+      const result = await services.lockClosePeriod(
+        buildClosePeriodLockRequest(workflow, closePlan, selectedBundle, true)
+      );
+      if (result.plan) {
+        setClosePlan(result.plan);
+      }
+
+      const blockingIssueCount = result.issues.filter((issue) => issue.severity === "Critical").length;
+      const preparedState = result.plan?.closingEntriesGate?.state;
+      if (blockingIssueCount > 0) {
+        setQueueClosingEntriesStatusText(`Closing-entry preparation blocked by ${formatCount(blockingIssueCount, "critical issue")}.`);
+        setQueueClosingEntriesStatusTone("danger");
+      } else if (preparedState && preparedState !== "Required" && preparedState !== "Blocked" && preparedState !== "Unavailable") {
+        setQueueClosingEntriesStatusText(
+          `Queued closing entries for ${result.plan?.periodId ?? closePlan.periodId}; state is ${formatClosePostingGateState(preparedState).label}.`
+        );
+        setQueueClosingEntriesStatusTone("success");
+      } else if (result.issues.length > 0) {
+        setQueueClosingEntriesStatusText(result.issues.map((issue) => issue.message).join(" "));
+        setQueueClosingEntriesStatusTone("neutral");
+      } else {
+        setQueueClosingEntriesStatusText("Closing-entry preparation did not advance beyond Required state.");
+        setQueueClosingEntriesStatusTone("danger");
+      }
+
+      await refresh();
+    } catch (error) {
+      setQueueClosingEntriesStatusText(formatAccountingWorkflowError(error, "Closing entries could not be queued."));
+      setQueueClosingEntriesStatusTone("danger");
+    } finally {
+      setQueueClosingEntriesBusy(false);
+    }
+  }, [closePlan, packages, refresh, selectedPackageId, services, workflow]);
+
   const lockClosePeriod = useCallback(async () => {
     if (!workflow || !closePlan) {
       setLockClosePeriodStatusText("A close plan is required before locking the close period.");
@@ -316,12 +362,23 @@ export function useAccountingCloseReportPackageViewModel(
       return;
     }
 
+    if (!isClosePostingGateReadyForHardLock(closePlan.closingEntriesGate ?? null)) {
+      const stateLabel = closePlan.closingEntriesGate
+        ? formatClosePostingGateState(closePlan.closingEntriesGate.state).label
+        : "Not supplied";
+      setLockClosePeriodStatusText(`Closing entries are not ready for period lock; current state is ${stateLabel}.`);
+      setLockClosePeriodStatusTone("danger");
+      return;
+    }
+
     const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
     setLockClosePeriodBusy(true);
     setLockClosePeriodStatusText(null);
     setLockClosePeriodStatusTone("neutral");
     try {
-      const result = await services.lockClosePeriod(buildClosePeriodLockRequest(workflow, closePlan, selectedBundle));
+      const result = await services.lockClosePeriod(
+        buildClosePeriodLockRequest(workflow, closePlan, selectedBundle, false)
+      );
       if (result.plan) {
         setClosePlan(result.plan);
       }
@@ -680,6 +737,9 @@ export function useAccountingCloseReportPackageViewModel(
       lockClosePeriodBusy,
       lockClosePeriodStatusText,
       lockClosePeriodStatusTone,
+      queueClosingEntriesBusy,
+      queueClosingEntriesStatusText,
+      queueClosingEntriesStatusTone,
       configureClosePlanBusy,
       configureClosePlanStatusText,
       configureClosePlanStatusTone,
@@ -703,6 +763,7 @@ export function useAccountingCloseReportPackageViewModel(
       buildReportPackage,
       certifyPackage,
       lockClosePeriod,
+      queueClosingEntries,
       configureClosePlan,
       signOffNextTask,
       updateCloseSetupDraft,
@@ -734,6 +795,10 @@ export function useAccountingCloseReportPackageViewModel(
       lockClosePeriodBusy,
       lockClosePeriodStatusText,
       lockClosePeriodStatusTone,
+      queueClosingEntries,
+      queueClosingEntriesBusy,
+      queueClosingEntriesStatusText,
+      queueClosingEntriesStatusTone,
       configureClosePlan,
       configureClosePlanBusy,
       configureClosePlanStatusText,
@@ -1025,6 +1090,9 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriodBusy,
   lockClosePeriodStatusText,
   lockClosePeriodStatusTone,
+  queueClosingEntriesBusy,
+  queueClosingEntriesStatusText,
+  queueClosingEntriesStatusTone,
   createLateAdjustmentBusy,
   createLateAdjustmentStatusText,
   createLateAdjustmentStatusTone,
@@ -1048,6 +1116,7 @@ function buildAccountingCloseReportPackageViewState({
   buildReportPackage,
   certifyPackage,
   lockClosePeriod,
+  queueClosingEntries,
       configureClosePlan,
       signOffNextTask,
       updateCloseSetupDraft,
@@ -1083,6 +1152,9 @@ function buildAccountingCloseReportPackageViewState({
   lockClosePeriodBusy: boolean;
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
+  queueClosingEntriesBusy: boolean;
+  queueClosingEntriesStatusText: string | null;
+  queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
   createLateAdjustmentBusy: boolean;
   createLateAdjustmentStatusText: string | null;
   createLateAdjustmentStatusTone: "neutral" | "success" | "danger";
@@ -1106,6 +1178,7 @@ function buildAccountingCloseReportPackageViewState({
   buildReportPackage: () => Promise<void>;
   certifyPackage: () => Promise<void>;
   lockClosePeriod: () => Promise<void>;
+  queueClosingEntries: () => Promise<void>;
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
   updateCloseSetupDraft: (patch: Partial<AccountingCloseSetupDraftViewModel>) => void;
@@ -1136,6 +1209,7 @@ function buildAccountingCloseReportPackageViewState({
   const dependencyGraphRows = closePlan ? buildCloseDependencyGraphRows(closePlan) : [];
   const signOffMatrixRows = closePlan ? buildCloseSignOffMatrixRows(closePlan) : [];
   const operatingCoverageRows = closePlan ? buildCloseOperatingCoverageRows(closePlan) : [];
+  const closingEntriesGate = closePlan ? buildClosePostingGateViewModel(closePlan) : null;
   const closeSetupTaskOptions = closePlan ? buildCloseSetupTaskOptions(closePlan, closeSetupDraft.taskId) : [];
   const closeSetupDependencyOptions = closePlan ? buildCloseSetupDependencyOptions(closePlan, closeSetupDraft) : [];
   const closeSetupSignOffRoleOptions = closePlan ? buildCloseSetupSignOffRoleOptions(closePlan, closeSetupDraft) : [];
@@ -1181,7 +1255,7 @@ function buildAccountingCloseReportPackageViewState({
     : "Materiality policy pending";
   const buildDisabledReason = !workflow
     ? "A close workflow must be loaded before building a package."
-    : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
+    : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
       ? "Close/report package refresh is running."
       : null;
   const criticalIssueCount = [...closeValidationIssues, ...packageValidationIssues].filter((issue) => issue.severity === "Critical").length;
@@ -1193,7 +1267,7 @@ function buildAccountingCloseReportPackageViewState({
         ? `Certification requires Ready for review state; current state is ${formatAccountingCertificationState(selectedBundle.certification.state)}.`
         : criticalIssueCount > 0
           ? "Critical validation issues must be cleared before certification."
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
             ? "Close/report package certification is running."
             : null;
   const signOffTarget = closePlan ? resolveCloseTaskSignOffDraftTarget(closePlan, closeSignOffDraft) : null;
@@ -1206,20 +1280,42 @@ function buildAccountingCloseReportPackageViewState({
         ? "The period is locked; close task sign-off is disabled."
         : signOffDraftValidation
           ? signOffDraftValidation
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
             ? "Close/report package action is running."
             : null;
+  const queueClosingEntriesDisabledReason = !workflow
+    ? "A close workflow must be loaded before queueing closing entries."
+    : !closePlan
+      ? "A close plan must be loaded before queueing closing entries."
+      : locked
+        ? "The close period is already locked."
+        : closePlan.closingEntriesGate?.state !== "Required"
+          ? closePlan.closingEntriesGate
+            ? `Closing entries can only be queued from Required state; current state is ${formatClosePostingGateState(closePlan.closingEntriesGate.state).label}.`
+            : "The close plan must supply the typed closing-entry gate before entries can be queued."
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
+            ? "Close/report package action is running."
+            : null;
+  const closingEntriesLockDisabledReason = closePlan && !isClosePostingGateReadyForHardLock(closePlan.closingEntriesGate ?? null)
+    ? closePlan.closingEntriesGate
+      ? closePlan.closingEntriesGate.state === "Required"
+        ? "Queue and post closing entries before locking the period."
+        : `Closing entries must be Posted or Not required before period lock; current state is ${formatClosePostingGateState(closePlan.closingEntriesGate.state).label}.`
+      : "The close plan must supply the typed closing-entry gate before period lock."
+    : null;
   const lockClosePeriodDisabledReason = !workflow
     ? "A close workflow must be loaded before locking the period."
     : !closePlan
       ? "A close plan must be loaded before locking the period."
       : locked
         ? "The close period is already locked."
-        : !selectedBundle
-          ? "A report package must be built before locking the period."
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy
-            ? "Close/report package action is running."
-            : null;
+        : closingEntriesLockDisabledReason
+          ? closingEntriesLockDisabledReason
+          : !selectedBundle
+            ? "A report package must be built before locking the period."
+            : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy
+              ? "Close/report package action is running."
+              : null;
   const configureClosePlanDisabledReason = !workflow
     ? "A close workflow must be loaded before configuring close setup."
     : !closePlan
@@ -1229,7 +1325,7 @@ function buildAccountingCloseReportPackageViewState({
         : validateCloseSetupMaterialityDraft(closeSetupDraft)
           ?? validateCloseSetupTaskSelection(closePlan, closeSetupDraft)
           ?? validateCloseSetupSignOffDraft(closeSetupDraft)
-          ?? (loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || configureClosePlanBusy
+          ?? (loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || configureClosePlanBusy
             ? "Close/report package action is running."
             : null);
   const createLateAdjustmentAmount = Number(lateAdjustmentDraft.amount);
@@ -1245,7 +1341,7 @@ function buildAccountingCloseReportPackageViewState({
             ? "Enter a non-zero late adjustment amount."
             : !lateAdjustmentDraft.reason.trim()
               ? "Enter the late adjustment reason."
-              : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
+              : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
                 ? "Close/report package action is running."
                 : null;
   const reviewLateAdjustmentDisabledReason = !workflow
@@ -1256,7 +1352,7 @@ function buildAccountingCloseReportPackageViewState({
         ? "The period is locked; late-adjustment review is disabled."
         : !lateAdjustments.some((adjustment) => adjustment.reviewDisabledReason === null)
           ? "No submitted late adjustment is ready for review."
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || createLateAdjustmentBusy || reviewLateAdjustmentBusy
             ? "Close/report package action is running."
             : null;
   const reviewCloseEvidenceDisabledReason = !workflow
@@ -1267,7 +1363,7 @@ function buildAccountingCloseReportPackageViewState({
         ? "The period is locked; evidence review changes require a governed reopen workflow."
         : !evidenceReviewRows.some((row) => row.issueCode && !row.reviewDisabledReason)
           ? "No active close blocker is ready for evidence review."
-          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || reviewCloseEvidenceBusy
+          : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || reviewCloseEvidenceBusy
             ? "Close/report package action is running."
             : null;
   const selectedExportArtifact = selectedBundle?.exportArtifacts?.[0] ?? null;
@@ -1275,7 +1371,7 @@ function buildAccountingCloseReportPackageViewState({
     ? "A report package must be selected before export manifest inspection."
     : !selectedExportArtifact
       ? "The selected report package has no retained export artifacts."
-      : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || reviewLateAdjustmentBusy || exportManifestBusy
+      : loading || buildBusy || certifyBusy || signOffBusy || lockClosePeriodBusy || queueClosingEntriesBusy || reviewLateAdjustmentBusy || exportManifestBusy
         ? "Close/report package action is running."
         : null;
   const closeWorkflowSteps = buildAccountingCloseWorkflowSteps({
@@ -1325,6 +1421,9 @@ function buildAccountingCloseReportPackageViewState({
     lockClosePeriodBusy,
     lockClosePeriodStatusText,
     lockClosePeriodStatusTone,
+    queueClosingEntriesBusy,
+    queueClosingEntriesStatusText,
+    queueClosingEntriesStatusTone,
     configureClosePlanBusy,
     configureClosePlanStatusText,
     configureClosePlanStatusTone,
@@ -1349,6 +1448,8 @@ function buildAccountingCloseReportPackageViewState({
     signOffDisabledReason,
     lockClosePeriodButtonLabel: locked ? "Period locked" : "Lock period",
     lockClosePeriodDisabledReason,
+    queueClosingEntriesButtonLabel: "Queue closing entries",
+    queueClosingEntriesDisabledReason,
     configureClosePlanButtonLabel: closePlan ? "Retain close setup" : "Configure close setup",
     configureClosePlanDisabledReason,
     createLateAdjustmentDisabledReason,
@@ -1410,17 +1511,19 @@ function buildAccountingCloseReportPackageViewState({
     signOffMatrixRows,
     evidenceReviewRows,
     operatingCoverageRows,
+    closingEntriesGate,
     lateAdjustments,
     packageRows,
     selectedPackage,
     certificationSafeguards: buildAccountingReportCertificationSafeguards(closePlan, selectedBundle, criticalIssueCount),
     closeWorkflowSteps,
     validationIssues,
-    liveRegionText: `Close report package ${statusLabel}. ${formatCount(openTaskCount, "open task")}. ${formatCount(packageRows.length, "package")}. ${formatCount(closeWorkflowSteps.filter((step) => step.tone === "danger" || step.tone === "warning").length, "workflow step")} needs review.`,
+    liveRegionText: `Close report package ${statusLabel}. ${formatCount(openTaskCount, "open task")}. ${formatCount(packageRows.length, "package")}. ${formatCount(closeWorkflowSteps.filter((step) => step.tone === "danger" || step.tone === "warning").length, "workflow step")} needs review.${closingEntriesGate ? ` Closing entries ${closingEntriesGate.statusLabel}.` : ""}`,
     refresh,
     buildReportPackage,
     certifyPackage,
     lockClosePeriod,
+    queueClosingEntries,
     configureClosePlan,
     signOffNextTask,
     updateCloseSetupDraft,
@@ -2489,6 +2592,116 @@ function buildCloseOperatingCoverageRows(closePlan: ClosePeriodPlan): Accounting
   }));
 }
 
+function buildClosePostingGateViewModel(closePlan: ClosePeriodPlan): AccountingClosePostingGateViewModel | null {
+  const gate = closePlan.closingEntriesGate;
+  if (!gate) {
+    return null;
+  }
+
+  const { label: statusLabel, tone: statusTone } = formatClosePostingGateState(gate.state);
+  const currency = closePlan.materialityPolicy.currency;
+  const closingBatchIds = gate.closingBatchJournalEntryIds ?? [];
+  const reversalDraftIds = gate.reversalDraftJournalEntryIds ?? [];
+  const balances = (gate.balances ?? []).map((balance, index) => ({
+    rowId: `${gate.gateId}:${balance.financialAccountId?.trim() || balance.accountName}:${index}`,
+    accountLabel: balance.symbol?.trim()
+      ? `${balance.accountName} (${balance.symbol.trim()})`
+      : balance.accountName,
+    accountTypeLabel: balance.accountType,
+    balanceLabel: formatCurrencyWithCode(balance.balance, currency, true),
+    scopeLabel: formatClosePostingBalanceScope(balance.dimensions),
+    financialAccountLabel: balance.financialAccountId?.trim() || "No financial-account id"
+  }));
+
+  return {
+    gateId: gate.gateId,
+    label: gate.label,
+    statusLabel,
+    statusTone,
+    isReadyForLock: isClosePostingGateReadyForHardLock(gate),
+    netIncomeRollLabel: formatCurrencyWithCode(gate.netIncomeRoll, currency, true),
+    temporaryAccountBalanceLabel: formatCount(gate.temporaryAccountBalanceCount, "temporary-account balance"),
+    detail: gate.detail,
+    draftLabel: gate.draftJournalEntryId
+      ? `Draft ${gate.draftJournalEntryId}${gate.draftStatus ? ` | ${gate.draftStatus}` : ""}`
+      : "No closing-entry draft queued",
+    idempotencyLabel: gate.idempotencyKey?.trim()
+      ? `Idempotency ${gate.idempotencyKey.trim()}`
+      : "No idempotency key returned",
+    closingBatchLabel: closingBatchIds.length > 0
+      ? `${formatCount(closingBatchIds.length, "closing batch journal entry")}: ${closingBatchIds.join(", ")}`
+      : "No posted closing batch journal entries",
+    reversalDraftLabel: reversalDraftIds.length > 0
+      ? `${formatCount(reversalDraftIds.length, "reversal draft journal entry")}: ${reversalDraftIds.join(", ")}`
+      : "No reversal drafts queued",
+    evidenceLabel: formatCount((gate.evidenceLinks ?? []).length, "evidence link"),
+    balances
+  };
+}
+
+function isClosePostingGateReadyForHardLock(
+  gate: NonNullable<ClosePeriodPlan["closingEntriesGate"]> | null
+): boolean {
+  if (!gate) {
+    return false;
+  }
+
+  return gate.isReadyForLock && (gate.state === "Posted" || gate.state === "NotRequired");
+}
+
+function formatClosePostingGateState(state: ClosePostingGateState): { label: string; tone: AccountingToolingTone } {
+  switch (state) {
+    case "NotRequired":
+      return { label: "Not required", tone: "success" };
+    case "Posted":
+      return { label: "Posted", tone: "success" };
+    case "DraftQueued":
+      return { label: "Draft queued", tone: "warning" };
+    case "Submitted":
+      return { label: "Submitted", tone: "warning" };
+    case "Approved":
+      return { label: "Approved", tone: "warning" };
+    case "ReversalQueued":
+      return { label: "Reversal queued", tone: "warning" };
+    case "Required":
+      return { label: "Required", tone: "danger" };
+    case "Blocked":
+      return { label: "Blocked", tone: "danger" };
+    case "Unavailable":
+    default:
+      return { label: "Unavailable", tone: "danger" };
+  }
+}
+
+function formatClosePostingBalanceScope(dimensions: LedgerDimensionSet | null | undefined): string {
+  const labels = [
+    ["Fund", dimensions?.fundId],
+    ["Entity", dimensions?.entityId],
+    ["Sleeve", dimensions?.sleeveId],
+    ["Strategy", dimensions?.strategyId],
+    ["Investor", dimensions?.investorId],
+    ["Capital account", dimensions?.capitalAccountId],
+    ["Instrument", dimensions?.instrumentId],
+    ["Position", dimensions?.positionId],
+    ["Tax lot", dimensions?.taxLotId],
+    ["Cost center", dimensions?.costCenterId],
+    ["Counterparty", dimensions?.counterpartyId],
+    ["Organization", dimensions?.organizationId],
+    ["Portfolio", dimensions?.portfolioId],
+    ["Book", dimensions?.bookId],
+    ["Account", dimensions?.accountId]
+  ]
+    .filter((entry): entry is [string, string] => Boolean(entry[1]?.trim()))
+    .map(([label, value]) => `${label}: ${value.trim()}`);
+  for (const [key, value] of Object.entries(dimensions?.externalGlDimensions ?? {}).sort(([left], [right]) => left.localeCompare(right))) {
+    if (value?.trim()) {
+      labels.push(`External ${key}: ${value.trim()}`);
+    }
+  }
+
+  return labels.length > 0 ? labels.join(" | ") : "No scoped dimensions returned";
+}
+
 function buildCloseEvidenceReviewRows(
   closePlan: ClosePeriodPlan | null,
   bundle: AccountingReportPackageBundle | null,
@@ -2816,15 +3029,17 @@ function buildClosePlanConfigurationRequest(
 function buildClosePeriodLockRequest(
   workflow: OperationsContinuityWorkflow,
   closePlan: ClosePeriodPlan,
-  selectedBundle: AccountingReportPackageBundle | null
+  selectedBundle: AccountingReportPackageBundle | null,
+  prepareClosingEntriesOnly: boolean
 ): LockClosePeriodRequest {
   const reportPackId = selectedBundle?.financialStatements.packageId
     ?? workflow.reportPackReadiness.reportPackId
     ?? `report-pack-${closePlan.fundProfileId}-${closePlan.periodId}`;
   const evidenceLinks = collectAccountingCloseEvidenceLinks(workflow, closePlan);
+  const actionSegment = prepareClosingEntriesOnly ? "closing-entry-preparation" : "period-lock";
   evidenceLinks.push(
-    `browser://accounting/close/period-lock/${workflow.workflowId}`,
-    `evidence://close-package/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${closePlan.ledgerBookId ?? "primary"}/period-lock`,
+    `browser://accounting/close/${actionSegment}/${workflow.workflowId}`,
+    `evidence://close-package/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${closePlan.ledgerBookId ?? "primary"}/${actionSegment}`,
     `evidence://report-package/${reportPackId}/workflow/${workflow.workflowId}/period/${closePlan.periodId}/book/${closePlan.ledgerBookId ?? "primary"}`
   );
   selectedBundle?.financialStatements.evidenceLinks.forEach((link) => evidenceLinks.push(link));
@@ -2833,19 +3048,24 @@ function buildClosePeriodLockRequest(
 
   return {
     workflowId: workflow.workflowId,
-    expectedWorkflowVersion: workflow.version,
+    expectedWorkflowVersion: closePlan.workflowVersion ?? workflow.version,
     actor: "browser-accounting-controller",
-    rationale: `Lock close period ${closePlan.periodId} after close checklist and report package review.`,
+    rationale: prepareClosingEntriesOnly
+      ? `Prepare closing entries for close period ${closePlan.periodId} before period lock.`
+      : `Lock close period ${closePlan.periodId} after close checklist and report package review.`,
     reportPackId,
     evidenceLinks: Array.from(new Set(evidenceLinks)),
     checklistControlApprovals: buildClosePeriodChecklistApprovals(closePlan),
-    correlationId: `browser-close-period-lock-${workflow.workflowId}`,
+    correlationId: prepareClosingEntriesOnly
+      ? `browser-close-period-closing-entries-${workflow.workflowId}`
+      : `browser-close-period-lock-${workflow.workflowId}`,
     closePackageId: workflow.closePackage?.closePackageId ?? `close-package-${closePlan.periodId}`,
     closePackageManifestId: workflow.closePackage?.retainedManifestId ?? `close-manifest-${closePlan.periodId}`,
     closePackageRetainedManifestRoute: workflow.closePackage?.retainedManifestRoute
       ?? selectedBundle?.exportArtifacts?.[0]?.route
       ?? `/workstation/accounting/close/${closePlan.periodId}`,
-    actionOrigin: "HumanOperator"
+    actionOrigin: "HumanOperator",
+    prepareClosingEntriesOnly
   };
 }
 
@@ -2980,597 +3200,4 @@ function accountingCertificationTone(state: AccountingCertificationState): Accou
   return "default";
 }
 
-export function buildCloseCommandCenterViewState({
-  data,
-  commandCenter,
-  commandCenterLoading,
-  commandCenterError,
-  workflow,
-  workflowLoading,
-  workflowError,
-  accountingSystemProviders,
-  accountingSystemImport,
-  accountingSystemReconciliation,
-  multiAssetCoverage
-}: {
-  data: AccountingWorkspaceResponse;
-  commandCenter?: FinancialOperationsCommandCenter | null;
-  commandCenterLoading?: boolean;
-  commandCenterError?: string | null;
-  workflow: OperationsContinuityWorkflow | null;
-  workflowLoading: boolean;
-  workflowError: string | null;
-  accountingSystemProviders: AccountingSystemProvider[];
-  accountingSystemImport: AccountingSystemImportDetail | null;
-  accountingSystemReconciliation: AccountingSystemReconciliationSummary | null;
-  multiAssetCoverage: MultiAssetCoverageSummary | null | undefined;
-}): CloseCommandCenterViewState {
-  if (commandCenter) {
-    return buildSharedFinancialOperationsCommandCenterViewState(commandCenter, commandCenterLoading ?? workflowLoading, commandCenterError ?? workflowError);
-  }
-
-  const openBreakCount = data.breakQueue.filter((item) => isOpenAccountingBreakStatus(item.status)).length;
-  const workflowOpenBreakCount = workflow?.breakCases.filter((item) => isOpenAccountingBreakStatus(item.status)).length ?? 0;
-  const closeBlockers = workflow ? collectCloseCommandCenterBlockers(workflow) : [];
-  const incompleteEvidenceCategories = workflow?.accountingRecordSummary?.evidenceCategories.filter((category) => !category.isComplete) ?? [];
-  const missingSourceCount = incompleteEvidenceCategories.filter((category) => closeCommandCenterTextMatches(category.key, category.label, "source")).length
-    + (workflow?.closeChecklist.filter((task) => !isCloseChecklistDone(task.status) && !task.evidencePointer).length ?? 0);
-  const missingEvidenceCount = incompleteEvidenceCategories.length
-    + (workflow?.closeReadiness?.blockers.filter((blocker) => blocker.category.toLowerCase().includes("evidence")).length ?? 0);
-  const pendingApprovalCount = workflow?.approvals.filter((approval) => approval.status !== "Approved").length ?? 0;
-  const unapprovedChecklistCount = workflow?.closeChecklist.filter((task) => !isCloseChecklistDone(task.status) && task.requiredApprovalCount > 0).length ?? 0;
-  const unapprovedAdjustmentCount = pendingApprovalCount + unapprovedChecklistCount;
-  const staleValuationCount = countCloseCommandCenterValuationIssues(multiAssetCoverage);
-  const providerWarningCount = countCloseCommandCenterProviderWarnings(accountingSystemProviders, accountingSystemImport, accountingSystemReconciliation);
-  const reportPackReady = workflow?.reportPackReadiness.isReady ?? false;
-  const reportPackLabel = workflow
-    ? reportPackReady
-      ? workflow.reportPackReadiness.reportPackId ?? "Ready"
-      : "Not ready"
-    : "Detail pending";
-  const signOffStatus = resolveCloseCommandCenterSignOffStatus(workflow);
-  const hasCriticalBlocker = closeBlockers.some((blocker) => closeCommandCenterSeverityTone(blocker.severity) === "danger");
-  const hasFailedRequiredGate = workflow?.gates.some((gate) => gate.isRequired && gate.status === "Blocked") ?? false;
-  const isReadyToClose = workflow?.closeReadiness?.isReadyToClose === true || workflow?.status === "ReadyForClose" || workflow?.status === "Closed";
-  const status: CloseCommandCenterStatus = workflowLoading && !workflow
-    ? "loading"
-    : hasCriticalBlocker || hasFailedRequiredGate || workflow?.status === "Blocked"
-      ? "blocked"
-      : isReadyToClose
-        && openBreakCount === 0
-        && workflowOpenBreakCount === 0
-        && missingEvidenceCount === 0
-        && unapprovedAdjustmentCount === 0
-        && staleValuationCount === 0
-        && providerWarningCount === 0
-        && reportPackReady
-        && signOffStatus.tone === "success"
-          ? "ready"
-          : "at-risk";
-  const statusTone = closeCommandCenterStatusTone(status);
-  const readinessLabel = workflow?.closeReadiness?.severity
-    ?? workflow?.status
-    ?? data.controlCenter?.closeReadiness
-    ?? "Close detail pending";
-  const updatedLabel = workflow?.updatedAtUtc ?? accountingSystemReconciliation?.generatedAtUtc ?? multiAssetCoverage?.asOfUtc ?? "Not refreshed";
-
-  const metricRows: CloseCommandCenterMetricViewModel[] = [
-    {
-      id: "period",
-      label: "Period status",
-      value: readinessLabel,
-      detail: workflow ? `${workflow.status} workflow ${workflow.workflowId}` : "Using workspace close status until workflow detail loads.",
-      tone: statusTone,
-      href: workflow ? WORKSTATION_ROUTE_CATALOG.accountingApprovals : null
-    },
-    {
-      id: "breaks",
-      label: "Open breaks",
-      value: String(openBreakCount + workflowOpenBreakCount),
-      detail: `${formatCount(openBreakCount, "queue break")} and ${formatCount(workflowOpenBreakCount, "workflow break")} remain open.`,
-      tone: openBreakCount + workflowOpenBreakCount > 0 ? "warning" : "success",
-      href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
-    },
-    {
-      id: "source-files",
-      label: "Missing source files",
-      value: String(missingSourceCount),
-      detail: missingSourceCount > 0 ? "Required source evidence or checklist evidence pointers are incomplete." : "Required source evidence is retained.",
-      tone: missingSourceCount > 0 ? "warning" : "success",
-      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
-    },
-    {
-      id: "adjustments",
-      label: "Unapproved adjustments",
-      value: String(unapprovedAdjustmentCount),
-      detail: unapprovedAdjustmentCount > 0 ? "Pending approvals or checklist controls remain before sign-off." : "No pending approval controls are surfaced.",
-      tone: unapprovedAdjustmentCount > 0 ? "warning" : "success",
-      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
-    },
-    {
-      id: "valuations",
-      label: "Stale valuations",
-      value: String(staleValuationCount),
-      detail: staleValuationCount > 0 ? "Asset readiness signals include valuation or stale-data review items." : "No stale valuation blockers are surfaced.",
-      tone: staleValuationCount > 0 ? "warning" : "success",
-      href: multiAssetCoverage?.drillThroughRoutes.coverage ?? null
-    },
-    {
-      id: "providers",
-      label: "Provider warnings",
-      value: String(providerWarningCount),
-      detail: providerWarningCount > 0 ? "Provider, external GL, or import reconciliation warnings need review." : "Provider and external GL evidence is clean.",
-      tone: providerWarningCount > 0 ? "warning" : "success",
-      href: WORKSTATION_ROUTE_CATALOG.accountingLedger
-    },
-    {
-      id: "report-pack",
-      label: "Report-pack readiness",
-      value: reportPackLabel,
-      detail: workflow?.reportPackReadiness.blockingReason ?? "Report-pack readiness comes from the selected close workflow.",
-      tone: reportPackReady ? "success" : workflow ? "warning" : "default",
-      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
-    },
-    {
-      id: "signoff",
-      label: "Sign-off status",
-      value: signOffStatus.label,
-      detail: signOffStatus.detail,
-      tone: signOffStatus.tone,
-      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
-    }
-  ];
-
-  const blockerRows = [
-    ...closeBlockers.map((blocker) => ({
-      id: blocker.code,
-      label: blocker.category?.trim() || humanizeCloseBlockerCode(blocker.code),
-      detail: blocker.message,
-      tone: closeCommandCenterSeverityTone(blocker.severity),
-      href: blocker.routeHint ?? closeCommandCenterGateRoute(blocker.gate),
-      statusLabel: blocker.severity,
-      ownerLabel: null,
-      dueLabel: null,
-      evidenceLabel: "Evidence pending",
-      actionLabel: "Resolve blocker before sign-off.",
-      impactLabel: blocker.category
-    })),
-    ...incompleteEvidenceCategories.slice(0, 3).map((category) => ({
-      id: `evidence-${category.key}`,
-      label: category.label,
-      detail: category.requiredEvidence?.length
-        ? `Missing: ${category.requiredEvidence.join(", ")}`
-        : category.status,
-      tone: "warning" as AccountingToolingTone,
-      href: category.routeHint,
-      statusLabel: category.status,
-      ownerLabel: null,
-      dueLabel: null,
-      evidenceLabel: category.requiredEvidence?.length ? formatCount(category.requiredEvidence.length, "required item") : "Evidence pending",
-      actionLabel: "Attach retained evidence before sign-off.",
-      impactLabel: "Retained evidence"
-    })),
-    ...((data.controlCenter?.alerts ?? []).slice(0, 2).map((alert, index) => ({
-      id: `bootstrap-alert-${index}`,
-      label: "Control-center alert",
-      detail: alert.message,
-      tone: alert.tone === "danger" ? "danger" as AccountingToolingTone : "warning" as AccountingToolingTone,
-      href: null,
-      statusLabel: alert.tone === "danger" ? "Blocked" : "Review",
-      ownerLabel: null,
-      dueLabel: null,
-      evidenceLabel: "Control-center alert",
-      actionLabel: "Review alert before close release.",
-      impactLabel: "Control center"
-    })))
-  ].slice(0, 8);
-  return {
-    title: "CFO / Controller close command center",
-    description: "Controller-facing period readiness, close blockers, evidence gaps, provider warnings, report-pack readiness, and sign-off status from shared Accounting read models.",
-    ariaLabel: "CFO and controller close command center",
-    status,
-    statusLabel: status === "ready" ? "Ready" : status === "blocked" ? "Blocked" : status === "loading" ? "Loading" : "At risk",
-    statusTone,
-    periodLabel: workflow?.periodId ?? "Current period",
-    fundAccountLabel: workflow?.fundAccountId ?? multiAssetCoverage?.fundAccountId ?? "All accounts",
-    summary: buildCloseCommandCenterSummary(status, metricRows, workflowError),
-    updatedLabel,
-    updatedAtUtc: workflow?.updatedAtUtc ?? accountingSystemReconciliation?.generatedAtUtc ?? multiAssetCoverage?.asOfUtc ?? null,
-    metricRows,
-    blockerRows,
-    actionRows: [
-      {
-        id: "reconciliation",
-        label: "Review breaks",
-        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
-        ariaLabel: "Open Accounting reconciliation breaks from close command center",
-        tone: openBreakCount + workflowOpenBreakCount > 0 ? "warning" : "success"
-      },
-      {
-        id: "approvals",
-        label: "Open approvals",
-        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
-        ariaLabel: "Open Accounting approvals from close command center",
-        tone: unapprovedAdjustmentCount > 0 || signOffStatus.tone !== "success" ? "warning" : "success"
-      },
-      {
-        id: "reporting",
-        label: "Report evidence",
-        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
-        ariaLabel: "Open Reporting evidence from close command center",
-        tone: reportPackReady ? "success" : "warning"
-      }
-    ],
-    loadingText: workflowLoading ? "Refreshing close workflow detail." : null,
-    errorText: workflowError,
-    liveRegionText: `Close command center ${status}. ${readinessLabel}. ${formatCount(blockerRows.length, "visible blocker")}.`
-  };
-}
-
-function buildSharedFinancialOperationsCommandCenterViewState(
-  commandCenter: FinancialOperationsCommandCenter,
-  loading: boolean,
-  errorText: string | null
-): CloseCommandCenterViewState {
-  const status = mapCommandCenterStatus(commandCenter.status, loading);
-  const statusTone = closeCommandCenterStatusTone(status);
-  const closeSupportDecision = commandCenter.closeSupportDecision ?? null;
-  const closeSupportMetrics: CloseCommandCenterMetricViewModel[] = closeSupportDecision
-    ? [
-      {
-        id: "close-support-period-state",
-        label: "Period state",
-        value: closeSupportDecision.status,
-        detail: closeSupportDecision.periodState,
-        tone: commandCenterMetricTone(closeSupportDecision.status),
-        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
-      },
-      {
-        id: "close-support-exceptions",
-        label: "Unresolved exceptions",
-        value: String(closeSupportDecision.unresolvedExceptionCount),
-        detail: closeSupportDecision.lockReopenPosture,
-        tone: closeSupportDecision.unresolvedExceptionCount > 0 ? "warning" : "success",
-        href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
-      },
-      {
-        id: "close-support-approvals",
-        label: "Pending approvals",
-        value: String(closeSupportDecision.pendingApprovalCount),
-        detail: closeSupportDecision.pendingApprovalCount > 0
-          ? "Shared close-support approvals must clear before completion."
-          : "No pending shared close-support approvals are surfaced.",
-        tone: closeSupportDecision.pendingApprovalCount > 0 ? "warning" : "success",
-        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
-      },
-      {
-        id: "close-support-evidence",
-        label: "Retained evidence gaps",
-        value: String(closeSupportDecision.retainedEvidenceGapCount),
-        detail: closeSupportDecision.navReportDependencyPosture,
-        tone: closeSupportDecision.retainedEvidenceGapCount > 0 ? "warning" : "success",
-        href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
-      }
-    ]
-    : [];
-  const metricRows: CloseCommandCenterMetricViewModel[] = [
-    ...commandCenter.metrics.map((metric) => ({
-      id: metric.metricId,
-      label: metric.label,
-      value: metric.value,
-      detail: metric.detail,
-      tone: commandCenterMetricTone(metric.status),
-      href: localCommandCenterRoute(metric.routeHint, metric.metricId)
-    })),
-    ...closeSupportMetrics
-  ];
-  const decisionBlockerRows = (closeSupportDecision?.decisions ?? [])
-    .filter((decision) => decision.isBlocking)
-    .map((decision) => ({
-      id: decision.decisionId,
-      label: `${decision.category} - ${decision.label}`,
-      detail: `${decision.detail} ${decision.requiredAction}`.trim(),
-      tone: "danger" as AccountingToolingTone,
-      href: localCommandCenterRoute(decision.routeHint, decision.category),
-      statusLabel: decision.status,
-      ownerLabel: null,
-      dueLabel: null,
-      evidenceLabel: formatCount(decision.evidenceLinks.length, "evidence link"),
-      actionLabel: decision.requiredAction,
-      impactLabel: decision.category
-    }));
-  const queueBlockerRows = commandCenter.queueRows.map((row) => {
-    const metadata = [
-      row.severityLabel ? `Severity: ${row.severityLabel}.` : null,
-      row.slaLabel ? `SLA: ${row.slaLabel}.` : null,
-      row.blockerType ? `Blocker: ${row.blockerType}.` : null,
-      row.closeReportImpact ? `Impact: ${row.closeReportImpact}.` : null
-    ].filter(Boolean);
-
-    return {
-      id: row.queueId,
-      label: `${row.kindLabel} - ${row.title}`,
-      detail: [row.detail, row.actionLabel, ...metadata].join(" ").trim(),
-      tone: row.isBlocked ? "danger" as AccountingToolingTone : "warning" as AccountingToolingTone,
-      href: localCommandCenterRoute(row.routeHint, row.sourceKind),
-      statusLabel: row.statusLabel,
-      ownerLabel: row.ownerLabel,
-      dueLabel: row.slaLabel ?? row.dueLabel,
-      evidenceLabel: row.evidenceLabel,
-      actionLabel: row.actionLabel,
-      impactLabel: row.closeReportImpact ?? row.blockerType ?? row.kindLabel
-    };
-  });
-  const blockerRows = [...decisionBlockerRows, ...queueBlockerRows].slice(0, 10);
-  const routedRows = commandCenter.queueRows
-    .filter((row) => localCommandCenterRoute(row.routeHint, row.sourceKind))
-    .slice(0, 3);
-  const routedDecisionRows = (closeSupportDecision?.decisions ?? [])
-    .filter((decision) => localCommandCenterRoute(decision.routeHint, decision.category))
-    .slice(0, 3);
-  const actionRows: CloseCommandCenterActionViewModel[] = routedRows.length > 0
-    ? routedRows.map((row) => ({
-      id: row.queueId,
-      label: row.actionLabel || row.title,
-      href: localCommandCenterRoute(row.routeHint, row.sourceKind) ?? WORKSTATION_ROUTE_CATALOG.accountingApprovals,
-      ariaLabel: `Open ${row.title} from close command center`,
-      tone: row.isBlocked ? "warning" : "success"
-    }))
-    : routedDecisionRows.length > 0
-      ? routedDecisionRows.map((decision) => ({
-        id: decision.decisionId,
-        label: decision.requiredAction || decision.label,
-        href: localCommandCenterRoute(decision.routeHint, decision.category) ?? WORKSTATION_ROUTE_CATALOG.accountingApprovals,
-        ariaLabel: `Open ${decision.label} close-support decision from close command center`,
-        tone: decision.isBlocking ? "warning" : "success"
-      }))
-    : [
-      {
-        id: "financial-operations",
-        label: commandCenter.isReadyToComplete ? "Review close evidence" : "Open operations",
-        href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
-        ariaLabel: "Open Accounting approvals from close command center",
-        tone: commandCenter.isReadyToComplete ? "success" : "warning"
-      }
-    ];
-
-  return {
-    title: "CFO / Controller close command center",
-    description: "Controller-facing period readiness, close blockers, evidence gaps, report-pack readiness, and sign-off status from Meridian Financial Operations review data.",
-    ariaLabel: "CFO and controller close command center",
-    status,
-    statusLabel: status === "ready" ? "Ready" : status === "blocked" ? "Blocked" : status === "loading" ? "Loading" : "At risk",
-    statusTone,
-    periodLabel: commandCenter.periodId ?? "Current period",
-    fundAccountLabel: commandCenter.fundAccountId ?? commandCenter.fundProfileId ?? "All accounts",
-    summary: errorText ? `${closeSupportDecision?.summary ?? commandCenter.summary} ${errorText}` : closeSupportDecision?.summary ?? commandCenter.summary,
-    updatedLabel: commandCenter.generatedAtUtc,
-    updatedAtUtc: commandCenter.generatedAtUtc ?? null,
-    metricRows,
-    blockerRows,
-    actionRows,
-    loadingText: loading ? "Refreshing Financial Operations command center." : null,
-    errorText,
-    liveRegionText: `Close command center ${status}. ${closeSupportDecision?.summary ?? commandCenter.summary} ${formatCount(commandCenter.activeItemCount, "active item")}.`
-  };
-}
-
-function mapCommandCenterStatus(status: string, loading: boolean): CloseCommandCenterStatus {
-  if (loading) {
-    return "loading";
-  }
-
-  const normalized = status.trim().toLowerCase();
-  if (normalized === "ready") {
-    return "ready";
-  }
-
-  if (normalized === "blocked") {
-    return "blocked";
-  }
-
-  return "at-risk";
-}
-
-function commandCenterMetricTone(status: string): AccountingToolingTone {
-  const normalized = status.trim().toLowerCase();
-  if (normalized === "ready") {
-    return "success";
-  }
-
-  if (normalized === "blocked" || normalized === "missing") {
-    return "danger";
-  }
-
-  if (normalized === "review" || normalized === "reviewrequired" || normalized === "atrisk") {
-    return "warning";
-  }
-
-  return "default";
-}
-
-function localCommandCenterRoute(route: string | null | undefined, sourceKind: string): string | null {
-  return normalizeLocalWorkstationRoute(route)
-    ?? commandCenterFallbackRoute(sourceKind);
-}
-
-function commandCenterFallbackRoute(sourceKind: string): string | null {
-  const normalized = sourceKind.trim().toLowerCase();
-  if (normalized.includes("break") || normalized.includes("reconciliation")) {
-    return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
-  }
-
-  if (normalized.includes("approval") || normalized.includes("checklist") || normalized.includes("calendar") || normalized.includes("lock") || normalized.includes("reopen")) {
-    return WORKSTATION_ROUTE_CATALOG.accountingApprovals;
-  }
-
-  if (normalized.includes("nav") || normalized.includes("private-capital")) {
-    return WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts;
-  }
-
-  if (normalized.includes("evidence") || normalized.includes("report")) {
-    return WORKSTATION_ROUTE_CATALOG.reportingEvidence;
-  }
-
-  return null;
-}
-
-function collectCloseCommandCenterBlockers(workflow: OperationsContinuityWorkflow): CloseCommandCenterRawBlocker[] {
-  const workflowBlockers = workflow.blockers.map((blocker) => ({
-    code: blocker.code,
-    category: blocker.gate ?? "Workflow",
-    severity: blocker.severity,
-    message: blocker.message,
-    gate: blocker.gate,
-    routeHint: null
-  }));
-  const gateBlockers = workflow.gates.flatMap((gate) => gate.blockers.map((blocker) => ({
-    code: blocker.code,
-    category: gate.displayName,
-    severity: blocker.severity,
-    message: blocker.message,
-    gate: blocker.gate,
-    routeHint: closeCommandCenterGateRoute(gate.gateKey)
-  })));
-  const readinessBlockers = workflow.closeReadiness?.blockers.map((blocker) => ({
-    code: blocker.code,
-    category: blocker.category,
-    severity: blocker.severity,
-    message: blocker.message,
-    gate: blocker.gate,
-    routeHint: blocker.routeHint
-  })) ?? [];
-
-  const byKey = new Map<string, CloseCommandCenterRawBlocker>();
-  for (const blocker of [...workflowBlockers, ...gateBlockers, ...readinessBlockers]) {
-    byKey.set(`${blocker.code}:${blocker.message}`, blocker);
-  }
-
-  return [...byKey.values()];
-}
-
-function countCloseCommandCenterValuationIssues(coverage: MultiAssetCoverageSummary | null | undefined): number {
-  if (!coverage) {
-    return 0;
-  }
-
-  return coverage.assetClasses.filter((assetClass) => {
-    const blockerMatch = assetClass.blockers.some((blocker) => (
-      closeCommandCenterTextMatches(blocker.code, blocker.message, "valuation")
-      || closeCommandCenterTextMatches(blocker.source, blocker.message, "stale")
-    ));
-    const requirementMatch = assetClass.evidenceRequirements.some((requirement) => (
-      requirement.status !== "Ready"
-      && (closeCommandCenterTextMatches(requirement.label, requirement.category, "valuation")
-        || closeCommandCenterTextMatches(requirement.label, requirement.category, "stale"))
-    ));
-
-    return blockerMatch || requirementMatch;
-  }).length;
-}
-
-function countCloseCommandCenterProviderWarnings(
-  providers: AccountingSystemProvider[],
-  importDetail: AccountingSystemImportDetail | null,
-  reconciliation: AccountingSystemReconciliationSummary | null
-): number {
-  const unavailableProviders = providers.filter((provider) => provider.state !== "Available").length;
-  const importWarnings = importDetail?.summary.warnings.length ?? 0;
-  const reconciliationRows = reconciliation?.rows.filter((row) => row.status !== "Matched").length ?? 0;
-
-  return unavailableProviders + importWarnings + reconciliationRows;
-}
-
-function resolveCloseCommandCenterSignOffStatus(workflow: OperationsContinuityWorkflow | null): {
-  label: string;
-  detail: string;
-  tone: AccountingToolingTone;
-} {
-  if (!workflow) {
-    return {
-      label: "Detail pending",
-      detail: "Load the close workflow before sign-off status can be confirmed.",
-      tone: "default"
-    };
-  }
-
-  if (workflow.closePackage) {
-    return {
-      label: `Signed by ${workflow.closePackage.publishedBy}`,
-      detail: workflow.closePackage.signOffRationale,
-      tone: "success"
-    };
-  }
-
-  const approvedCount = workflow.approvals.filter((approval) => approval.status === "Approved").length;
-  const totalApprovalCount = workflow.approvals.length;
-  if (totalApprovalCount > 0) {
-    return {
-      label: `${approvedCount}/${totalApprovalCount} approved`,
-      detail: approvedCount === totalApprovalCount
-        ? "Approval rows are complete; publish the close package when report evidence is ready."
-        : "Approval rows still need reviewer decisions before close sign-off.",
-      tone: approvedCount === totalApprovalCount ? "success" : "warning"
-    };
-  }
-
-  return {
-    label: workflow.approvalState,
-    detail: "No approval rows are attached to the selected close workflow.",
-    tone: workflow.approvalState === "Approved" ? "success" : "warning"
-  };
-}
-
-function closeCommandCenterSeverityTone(severity: string): AccountingToolingTone {
-  const normalized = severity.trim().toLowerCase();
-  if (normalized === "critical" || normalized === "blocker" || normalized === "danger") {
-    return "danger";
-  }
-
-  if (normalized === "warning" || normalized === "warn" || normalized === "review") {
-    return "warning";
-  }
-
-  return "default";
-}
-
-function closeCommandCenterStatusTone(status: CloseCommandCenterStatus): AccountingToolingTone {
-  if (status === "ready") return "success";
-  if (status === "blocked") return "danger";
-  if (status === "at-risk") return "warning";
-  return "default";
-}
-
-function closeCommandCenterGateRoute(gate: OperationsWorkflowBlocker["gate"]): string | null {
-  if (gate === "Reconciliation") return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
-  if (gate === "Approval") return WORKSTATION_ROUTE_CATALOG.accountingApprovals;
-  if (gate === "LedgerPosting") return WORKSTATION_ROUTE_CATALOG.accountingLedger;
-  if (gate === "SecurityMaster") return WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster;
-  if (gate === "BrokerIngest") return WORKSTATION_ROUTE_CATALOG.accountingLedger;
-  return null;
-}
-
-function buildCloseCommandCenterSummary(
-  status: CloseCommandCenterStatus,
-  metricRows: CloseCommandCenterMetricViewModel[],
-  workflowError: string | null
-): string {
-  if (workflowError) {
-    return `Close workflow detail could not be refreshed: ${workflowError}`;
-  }
-
-  const activeRows = metricRows.filter((row) => row.tone === "warning" || row.tone === "danger");
-  if (status === "ready") {
-    return "The close is ready: breaks, source evidence, approvals, valuations, providers, report pack, and sign-off are clear.";
-  }
-
-  if (status === "blocked") {
-    return `The close is blocked by ${formatCount(activeRows.length, "active control")}; review the blocker list before sign-off.`;
-  }
-
-  if (status === "loading") {
-    return "Refreshing workflow detail before confirming the close state.";
-  }
-
-  return `The close is at risk with ${formatCount(activeRows.length, "watch item")} across the command center.`;
-}
+export { buildCloseCommandCenterViewState } from "./accounting-screen.close-command-center.view-model";

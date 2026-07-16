@@ -256,14 +256,30 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     public bool CanAddToSecurityMaster
     {
         get => _canAddToSecurityMaster;
-        private set => SetProperty(ref _canAddToSecurityMaster, value);
+        private set
+        {
+            // Keep the command's CanExecute in lockstep so command-only consumers
+            // (e.g. the symbol context-menu items) refresh when the async Security
+            // Master lookup flips this flag, not just the panel buttons that also
+            // bind visibility. Null-guarded for the pre-construction set path.
+            if (SetProperty(ref _canAddToSecurityMaster, value))
+            {
+                AddToSecurityMasterCommand?.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     private bool _canViewInSecurityMaster;
     public bool CanViewInSecurityMaster
     {
         get => _canViewInSecurityMaster;
-        private set => SetProperty(ref _canViewInSecurityMaster, value);
+        private set
+        {
+            if (SetProperty(ref _canViewInSecurityMaster, value))
+            {
+                ViewInSecurityMasterCommand?.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     private Guid? _selectedSymbolSecurityId;

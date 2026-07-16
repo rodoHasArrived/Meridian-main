@@ -149,25 +149,26 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         };
     }
 
-    public async Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
+    public async Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
         Guid securityId,
-        OperatorOverrideApprovalDecisionRequest request,
-        string reviewer,
+        OperatorOverrideDecision decision,
         CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
-        if (string.IsNullOrWhiteSpace(reviewer))
+        ArgumentNullException.ThrowIfNull(decision);
+        if (string.IsNullOrWhiteSpace(decision.Reviewer))
         {
-            throw new ArgumentException("reviewer must be provided.", nameof(reviewer));
+            throw new ArgumentException("reviewer must be provided.", nameof(decision));
         }
 
-        if (request.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
+        if (decision.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
         {
             throw new ArgumentOutOfRangeException(
-                nameof(request),
-                request.Decision,
+                nameof(decision),
+                decision.Decision,
                 "Approval decision must be Approved or Rejected.");
         }
+
+        var reviewer = decision.Reviewer.Trim();
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection
@@ -178,19 +179,29 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
         if (existing is null)
         {
             // Nothing to review — a reviewer cannot decide on overrides that were never recorded.
-            return null;
+            throw new InvalidOperationException(
+                $"No operator overrides exist for security '{securityId}'; there is nothing to review.");
+        }
+
+        if (existing.ApprovalStatus != SecurityOverrideApprovalStatusDto.Pending)
+        {
+            // Only a Pending overlay is reviewable; an already-decided overlay must be re-patched
+            // (which resets it to Pending) before another decision can be recorded.
+            throw new InvalidOperationException(
+                $"Operator overrides for security '{securityId}' are '{existing.ApprovalStatus}', not Pending; " +
+                "re-patch the overlay before recording another decision.");
         }
 
         var reviewedAt = DateTimeOffset.UtcNow;
-        var reasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? existing.ReasonCode : request.ReasonCode.Trim();
-        var comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim();
+        var reasonCode = existing.ReasonCode;
+        var comment = string.IsNullOrWhiteSpace(decision.Comment) ? null : decision.Comment.Trim();
         var auditTrail = Append(
             existing.AuditTrail,
             new SecurityOverrideAuditEntryDto(
-                EventType: request.Decision == SecurityOverrideApprovalStatusDto.Approved ? "Approved" : "Rejected",
+                EventType: decision.Decision == SecurityOverrideApprovalStatusDto.Approved ? "Approved" : "Rejected",
                 Actor: reviewer,
                 OccurredAt: reviewedAt,
-                ApprovalStatus: request.Decision,
+                ApprovalStatus: decision.Decision,
                 ReasonCode: reasonCode,
                 Comment: comment,
                 Reviewer: reviewer,
@@ -210,7 +221,7 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
                 where security_id = @security_id;
                 """;
             command.Parameters.AddWithValue("security_id", securityId);
-            command.Parameters.AddWithValue("approval_status", ToDbStatus(request.Decision));
+            command.Parameters.AddWithValue("approval_status", ToDbStatus(decision.Decision));
             command.Parameters.AddWithValue("reason_code", (object?)reasonCode ?? DBNull.Value);
             command.Parameters.AddWithValue("reviewed_by", reviewer);
             command.Parameters.AddWithValue("reviewed_at", reviewedAt.UtcDateTime);
@@ -222,7 +233,7 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore
 
         return existing with
         {
-            ApprovalStatus = request.Decision,
+            ApprovalStatus = decision.Decision,
             ReasonCode = reasonCode,
             ReviewedBy = reviewer,
             ReviewedAt = reviewedAt,

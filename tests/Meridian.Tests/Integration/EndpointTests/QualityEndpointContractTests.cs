@@ -85,6 +85,7 @@ public sealed class QualityEndpointContractTests
         remediation.RequestedGap.Should().NotBeNull();
         remediation.RequestedGap!.GapStart.Should().Be(gap.From);
         remediation.RequestedGap.GapEnd.Should().Be(gap.To);
+        remediation.RequestedProvider.Should().Be("polygon");
 
         var stale = await client.PostAsJsonAsync(
             route,
@@ -108,6 +109,25 @@ public sealed class QualityEndpointContractTests
         payload!.Should().NotBeEmpty();
         payload.Should().AllSatisfy(g => g.Symbol.Should().Be("AAPL"));
         payload.Max(g => g.Duration).Should().BeGreaterThan(TimeSpan.FromMinutes(1));
+    }
+
+    [Fact]
+    public async Task ContextualRemediation_WithoutProviderProvenance_FailsClosed()
+    {
+        var composite = StubCompositeQualityService.Create(provider: null);
+        var remediation = new StubGapRemediationService();
+        var _r = await CreateHostAsync(composite, remediation);
+        await using var host = _r.App;
+        using var client = host.GetTestClient();
+        var gap = composite.Dashboard.OpenGaps.Single();
+        var route = UiApiRoutes.WithParam(UiApiRoutes.QualityGapsBySymbol, "symbol", gap.Symbol);
+
+        var response = await client.PostAsJsonAsync(
+            route,
+            new QualityGapRemediationRequest(gap.GapId, composite.Dashboard.Version));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        remediation.CallCount.Should().Be(0);
     }
 
     [Fact]
@@ -260,7 +280,7 @@ public sealed class QualityEndpointContractTests
             return false;
         }
 
-        public static StubCompositeQualityService Create()
+        public static StubCompositeQualityService Create(string? provider = "polygon")
         {
             var from = new DateTimeOffset(2026, 07, 10, 13, 35, 00, TimeSpan.Zero);
             var to = from.AddMinutes(7);
@@ -274,11 +294,12 @@ public sealed class QualityEndpointContractTests
                 MissedSequenceEnd: 20,
                 EstimatedMissedEvents: 11,
                 Severity: GapSeverity.Significant,
-                PossibleCause: "provider interruption");
+                PossibleCause: "provider interruption",
+                Provider: provider);
             var gapResponse = new QualityCompositeGapResponse(
                 GapId: "111111111111111111111111",
                 Symbol: gap.Symbol,
-                Provider: "polygon",
+                Provider: provider,
                 EventType: gap.EventType,
                 From: gap.GapStart,
                 To: gap.GapEnd,
@@ -331,6 +352,7 @@ public sealed class QualityEndpointContractTests
     {
         public int CallCount { get; private set; }
         public DataGap? RequestedGap { get; private set; }
+        public string? RequestedProvider { get; private set; }
 
         public Task<AutoGapRemediationRequestResult> RequestDataQualityGapAsync(
             DataGap gap,
@@ -339,6 +361,7 @@ public sealed class QualityEndpointContractTests
         {
             CallCount++;
             RequestedGap = gap;
+            RequestedProvider = provider;
             return Task.FromResult(new AutoGapRemediationRequestResult(
                 AutoRemediationOutcome.Completed,
                 provider ?? "stooq",

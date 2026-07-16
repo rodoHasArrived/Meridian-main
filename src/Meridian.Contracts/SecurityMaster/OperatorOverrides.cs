@@ -58,23 +58,13 @@ public sealed record OperatorOverridesPatchRequest(
 }
 
 /// <summary>
-<<<<<<< Updated upstream
-/// Records a reviewer's approval decision for a security's pending operator overrides. The
-/// <see cref="Decision"/> must be either <see cref="SecurityOverrideApprovalStatusDto.Approved"/> or
-/// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>; the acting reviewer is server-derived
-/// from the authenticated principal, not supplied by the caller.
-/// </summary>
-public sealed record OperatorOverrideApprovalDecisionRequest(
-    SecurityOverrideApprovalStatusDto Decision,
-    string? ReasonCode = null,
-=======
-/// A reviewer's decision on a pending operator-override overlay. <see cref="Decision"/> must be
-/// <see cref="SecurityOverrideApprovalStatusDto.Approved"/> or
-/// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>; the reviewer identity and an optional
-/// comment are stamped onto the durable audit trail.
+/// Public API request for a reviewer's decision on a pending operator-override overlay.
+/// <see cref="Decision"/> must be <see cref="SecurityOverrideApprovalStatusDto.Approved"/> or
+/// <see cref="SecurityOverrideApprovalStatusDto.Rejected"/>, with an optional comment recorded on the
+/// durable audit trail. The reviewer identity is intentionally absent: the API layer derives it from
+/// the authenticated principal and maps this request onto the internal store command, so a caller
+/// cannot attribute a decision to someone else.
 /// </summary>
 public sealed record OperatorOverrideDecisionRequest(
     SecurityOverrideApprovalStatusDto Decision,
-    string Reviewer,
->>>>>>> Stashed changes
     string? Comment = null);

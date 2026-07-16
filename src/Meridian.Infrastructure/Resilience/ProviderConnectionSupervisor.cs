@@ -11,7 +11,9 @@ namespace Meridian.Infrastructure.Resilience;
 /// </summary>
 public sealed class ProviderConnectionSupervisor : IAsyncDisposable
 {
+    private static readonly TimeSpan DefaultDisposeTimeout = TimeSpan.FromSeconds(10);
     private readonly object _sync = new();
+    private readonly object _disposeSync = new();
     private readonly SemaphoreSlim _operationGate = new(1, 1);
     private readonly SemaphoreSlim _disconnectGate = new(1, 1);
     private readonly string _providerName;
@@ -34,6 +36,7 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
     private DateTimeOffset? _lastReconnectAttemptAt;
     private string? _lastError;
     private ProviderFailureKind? _lastFailureKind;
+    private Task? _disposeTask;
 
     /// <summary>
     /// Raised whenever lifecycle or failure diagnostics change.
@@ -289,20 +292,29 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
             {
                 try
                 {
-                    await reconnectTask.ConfigureAwait(false);
+                    await reconnectTask.WaitAsync(ct).ConfigureAwait(false);
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested)
                 {
                     // Expected when disconnect cancels the connection lifetime.
                 }
             }
 
-            await _operationGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+            await _operationGate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
                 try
                 {
-                    await disconnectTransaction(ct).ConfigureAwait(false);
+                    var disconnectTask = disconnectTransaction(ct);
+                    try
+                    {
+                        await disconnectTask.WaitAsync(ct).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested && !disconnectTask.IsCompleted)
+                    {
+                        ObserveDeferredDisconnect(disconnectTask);
+                        throw;
+                    }
                 }
                 finally
                 {
@@ -387,22 +399,69 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        bool shouldDisconnect;
+        lock (_disposeSync)
+            return new ValueTask(_disposeTask ??= DisposeWithTimeoutAsync());
+    }
+
+    internal ValueTask DisposeAsync(CancellationToken ct)
+    {
+        lock (_disposeSync)
+            return new ValueTask(_disposeTask ??= DisposeCoreAsync(ct));
+    }
+
+    private async Task DisposeWithTimeoutAsync()
+    {
+        using var shutdownCts = new CancellationTokenSource(DefaultDisposeTimeout);
+        await DisposeCoreAsync(shutdownCts.Token).ConfigureAwait(false);
+    }
+
+    private async Task DisposeCoreAsync(CancellationToken ct)
+    {
         lock (_sync)
-            shouldDisconnect = !_disposed;
+        {
+            if (_disposed)
+                return;
+        }
 
-        if (!shouldDisconnect)
-            return;
+        try
+        {
+            await DisconnectAsync(static _ => Task.CompletedTask, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            _log.Warning(
+                "Timed out waiting for {Provider} connection operations during supervisor disposal; forcing terminal state",
+                _providerName);
+        }
+        finally
+        {
+            CancellationTokenSource? lifetimeCts;
+            ProviderConnectionSupervisorSnapshot snapshot;
+            lock (_sync)
+            {
+                lifetimeCts = _lifetimeCts;
+                _disposed = true;
+                _stopping = true;
+                _reconnectEnabled = false;
+                _isReconnecting = false;
+                _lifecycleState = ProviderConnectionLifecycleState.Disconnected;
+                _lastDisconnectedAt ??= DateTimeOffset.UtcNow;
+                snapshot = CreateSnapshotLocked(DateTimeOffset.UtcNow);
+            }
 
-        await DisconnectAsync(static _ => Task.CompletedTask).ConfigureAwait(false);
+            try
+            {
+                lifetimeCts?.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
 
-        lock (_sync)
-            _disposed = true;
+            Publish(snapshot);
+        }
 
-        _operationGate.Dispose();
-        _disconnectGate.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -628,6 +687,28 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
         }
 
         Publish(snapshot);
+    }
+
+    private void ObserveDeferredDisconnect(Task disconnectTask)
+        => _ = ObserveDeferredDisconnectAsync(disconnectTask);
+
+    private async Task ObserveDeferredDisconnectAsync(Task disconnectTask)
+    {
+        try
+        {
+            await disconnectTask.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // A cooperative transaction may finish cancellation after the caller's bounded wait.
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(
+                ex,
+                "Deferred {Provider} disconnect transaction failed after the caller stopped waiting",
+                _providerName);
+        }
     }
 
     private CancellationToken EnsureLifetimeLocked()

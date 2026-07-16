@@ -11,9 +11,11 @@ class WpfMsixInstallGuidanceTests(unittest.TestCase):
         self.script = INSTALL_SCRIPT_PATH.read_text(encoding="utf-8")
 
     def test_success_summary_points_to_existing_packaging_guide(self) -> None:
-        self.assertIn("docs/operations/msix-packaging.md", self.script)
-        self.assertNotIn("docs/guides/msix-packaging.md", self.script)
-        self.assertTrue((REPO_ROOT / "docs" / "operations" / "msix-packaging.md").exists())
+        guide_path = REPO_ROOT / "docs" / "operators" / "deployment-packaging.md"
+
+        self.assertIn("docs/operators/deployment-packaging.md", self.script)
+        self.assertNotIn("docs/operations/msix-packaging.md", self.script)
+        self.assertTrue(guide_path.exists())
 
     def test_success_summary_mentions_desktop_shortcut_launch(self) -> None:
         self.assertIn("Available in Start Menu and Desktop shortcut", self.script)

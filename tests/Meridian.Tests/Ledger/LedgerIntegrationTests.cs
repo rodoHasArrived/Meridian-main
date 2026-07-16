@@ -941,6 +941,16 @@ public sealed class LedgerIntegrationTests
         ledger.TrialBalanceAsOf(t1)[revenue].Should().Be(100m);
         ledger.TrialBalanceAsOf(t2)[revenue].Should().Be(150m);
 
+        ledger.Journal.Select(entry => entry.Description)
+            .Should().Equal("first sale", "second sale");
+        ledger.GetJournalEntries().Select(entry => entry.Description)
+            .Should().Equal("first sale", "second sale");
+        var running = ledger.GetRunningBalance(cash);
+        running.Select(point => point.Description)
+            .Should().Equal("first sale", "second sale");
+        running.Select(point => point.Balance)
+            .Should().Equal(100m, 150m);
+
         var snapshot = ledger.SnapshotAsOf(t1);
         snapshot.JournalEntryCount.Should().Be(1);
         snapshot.LedgerEntryCount.Should().Be(2);
@@ -989,6 +999,12 @@ public sealed class LedgerIntegrationTests
             t2,
             lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
         var allFundsAtT1 = ledger.TrialBalanceAsOf(t1, lineDimensions: new LedgerLineDimensionSet());
+        var fundASnapshotAtT1 = ledger.SnapshotAsOf(
+            t1,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a"));
+        var fundACoreSnapshotAtT2 = ledger.SnapshotAsOf(
+            t2,
+            lineDimensions: new LedgerLineDimensionSet(FundId: "fund-a", SleeveId: "core"));
 
         fundAAtT1[cash].Should().Be(130m);
         fundAAtT1[revenue].Should().Be(130m);
@@ -996,6 +1012,12 @@ public sealed class LedgerIntegrationTests
         fundACoreAtT2[cash].Should().Be(150m);
         allFundsAtT1[cash].Should().Be(200m,
             "an empty dimension filter retains the existing no-filter semantics");
+        fundASnapshotAtT1.JournalEntryCount.Should().Be(2);
+        fundASnapshotAtT1.LedgerEntryCount.Should().Be(4);
+        fundASnapshotAtT1.Balances[cash].Should().Be(130m);
+        fundACoreSnapshotAtT2.JournalEntryCount.Should().Be(2);
+        fundACoreSnapshotAtT2.LedgerEntryCount.Should().Be(4);
+        fundACoreSnapshotAtT2.Balances[cash].Should().Be(150m);
     }
 
     [Fact]

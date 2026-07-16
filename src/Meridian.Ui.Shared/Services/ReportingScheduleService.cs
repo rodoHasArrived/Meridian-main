@@ -15,6 +15,53 @@ public interface IReportingScheduleStore
     void Save(IReadOnlyList<ReportingScheduleRecordDto> schedules);
 }
 
+internal readonly record struct ReportingScheduleIdentity(
+    string TenantId,
+    string CompanyId,
+    string ScheduleId)
+{
+    public static ReportingScheduleIdentity From(ReportingScheduleRecordDto schedule)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        return Create(schedule.TenantId, schedule.CompanyId, schedule.ScheduleId);
+    }
+
+    public static ReportingScheduleIdentity Create(string? tenantId, string? companyId, string scheduleId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        var tenant = Normalize(tenantId);
+        var company = Normalize(companyId);
+        if ((tenant.Length == 0) != (company.Length == 0))
+        {
+            throw new InvalidDataException(
+                $"Reporting schedule '{scheduleId.Trim()}' has an incomplete tenant/company identity.");
+        }
+
+        return new ReportingScheduleIdentity(tenant, company, scheduleId.Trim());
+    }
+
+    private static string Normalize(string? value) => value?.Trim() ?? string.Empty;
+}
+
+internal sealed class ReportingScheduleIdentityComparer : IEqualityComparer<ReportingScheduleIdentity>
+{
+    public static ReportingScheduleIdentityComparer Instance { get; } = new();
+
+    public bool Equals(ReportingScheduleIdentity x, ReportingScheduleIdentity y) =>
+        StringComparer.OrdinalIgnoreCase.Equals(x.TenantId, y.TenantId)
+        && StringComparer.OrdinalIgnoreCase.Equals(x.CompanyId, y.CompanyId)
+        && StringComparer.OrdinalIgnoreCase.Equals(x.ScheduleId, y.ScheduleId);
+
+    public int GetHashCode(ReportingScheduleIdentity obj)
+    {
+        var hash = new HashCode();
+        hash.Add(obj.TenantId, StringComparer.OrdinalIgnoreCase);
+        hash.Add(obj.CompanyId, StringComparer.OrdinalIgnoreCase);
+        hash.Add(obj.ScheduleId, StringComparer.OrdinalIgnoreCase);
+        return hash.ToHashCode();
+    }
+}
+
 public sealed class FileReportingScheduleStore : IReportingScheduleStore
 {
     private readonly ReportingScheduleStoreOptions _options;
@@ -48,12 +95,17 @@ public sealed class FileReportingScheduleStore : IReportingScheduleStore
             try
             {
                 var json = File.ReadAllText(_options.SnapshotPath);
-                return JsonSerializer.Deserialize<ReportingScheduleSnapshot>(json, _jsonOptions)?.Schedules ?? [];
+                var snapshot = JsonSerializer.Deserialize<ReportingScheduleSnapshot>(json, _jsonOptions)
+                    ?? throw new InvalidDataException("The reporting schedule snapshot has no root object.");
+                var schedules = snapshot.Schedules
+                    ?? throw new InvalidDataException("The reporting schedule snapshot has no schedule collection.");
+                ValidateScheduleIdentities(schedules);
+                return schedules;
             }
             catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
             {
-                _logger.LogWarning(ex, "Unable to load reporting schedule snapshot from {SnapshotPath}.", _options.SnapshotPath);
-                return [];
+                _logger.LogCritical(ex, "Reporting schedule snapshot at {SnapshotPath} is unreadable; execution is blocked.", _options.SnapshotPath);
+                throw new ReportingStateCorruptionException(_options.SnapshotPath, ex);
             }
         }
     }
@@ -63,12 +115,34 @@ public sealed class FileReportingScheduleStore : IReportingScheduleStore
         ArgumentNullException.ThrowIfNull(schedules);
         lock (_gate)
         {
+            ValidateScheduleIdentities(schedules);
             var snapshot = new ReportingScheduleSnapshot(
                 schedules
-                    .OrderBy(static schedule => schedule.DueAtUtc)
+                    .OrderBy(static schedule => schedule.TenantId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static schedule => schedule.CompanyId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static schedule => schedule.DueAtUtc)
                     .ThenBy(static schedule => schedule.ScheduleId, StringComparer.OrdinalIgnoreCase)
                     .ToArray());
             AtomicFileWriter.Write(_options.SnapshotPath, JsonSerializer.Serialize(snapshot, _jsonOptions));
+        }
+    }
+
+    private static void ValidateScheduleIdentities(IReadOnlyList<ReportingScheduleRecordDto> schedules)
+    {
+        var identities = new HashSet<ReportingScheduleIdentity>(ReportingScheduleIdentityComparer.Instance);
+        foreach (var schedule in schedules)
+        {
+            if (schedule is null)
+            {
+                throw new InvalidDataException("The reporting schedule snapshot contains a null schedule.");
+            }
+
+            var identity = ReportingScheduleIdentity.From(schedule);
+            if (!identities.Add(identity))
+            {
+                throw new InvalidDataException(
+                    $"The reporting schedule snapshot contains duplicate identity '{identity.TenantId}/{identity.CompanyId}/{identity.ScheduleId}'.");
+            }
         }
     }
 
@@ -81,8 +155,11 @@ public sealed class ReportingScheduleService
     private readonly ReportPackDeliveryService? _deliveryService;
     private readonly GovernedReportingTemplateCatalog? _governedTemplateCatalog;
     private readonly ReportWriterDatasetSourceService? _datasetSourceService;
+    private readonly ReportingRunReadinessService? _readinessService;
+    private readonly ReportingRunCertificationService? _certificationService;
     private readonly IReportingScheduleStore? _store;
-    private readonly Dictionary<string, ReportingScheduleRecordDto> _schedules = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<ReportingScheduleIdentity, ReportingScheduleRecordDto> _schedules =
+        new(ReportingScheduleIdentityComparer.Instance);
     private readonly object _gate = new();
 
     public ReportingScheduleService(
@@ -90,24 +167,41 @@ public sealed class ReportingScheduleService
         IReportingScheduleStore? store = null,
         ReportPackDeliveryService? deliveryService = null,
         GovernedReportingTemplateCatalog? governedTemplateCatalog = null,
-        ReportWriterDatasetSourceService? datasetSourceService = null)
+        ReportWriterDatasetSourceService? datasetSourceService = null,
+        ReportingRunReadinessService? readinessService = null,
+        ReportingRunCertificationService? certificationService = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         _deliveryService = deliveryService;
         _governedTemplateCatalog = governedTemplateCatalog;
         _datasetSourceService = datasetSourceService;
+        _readinessService = readinessService;
+        _certificationService = certificationService;
         _store = store;
         foreach (var schedule in _store?.Load() ?? [])
         {
-            _schedules[schedule.ScheduleId] = schedule;
+            var identity = ReportingScheduleIdentity.From(schedule);
+            if (!_schedules.TryAdd(identity, schedule))
+            {
+                throw new InvalidDataException(
+                    $"Duplicate reporting schedule identity '{identity.TenantId}/{identity.CompanyId}/{identity.ScheduleId}'.");
+            }
         }
     }
 
     public IReadOnlyList<ReportingScheduleRecordDto> ListSchedules(int limit = 100)
+        => ListSchedules(accessContext: null, limit);
+
+    public IReadOnlyList<ReportingScheduleRecordDto> ListSchedules(
+        ReportAccessQueryContext? accessContext,
+        int limit = 100)
     {
         lock (_gate)
         {
             return _schedules.Values
+                .Where(schedule => IsScheduleInScope(schedule, accessContext))
+                .Where(schedule => accessContext is null
+                    || ReportAccessPolicyEvaluator.Evaluate(schedule.AccessPolicySnapshot, accessContext).IsAccessible)
                 .OrderBy(static schedule => schedule.DueAtUtc)
                 .ThenBy(static schedule => schedule.ScheduleId, StringComparer.OrdinalIgnoreCase)
                 .Take(Math.Clamp(limit, 1, 500))
@@ -136,12 +230,23 @@ public sealed class ReportingScheduleService
         }
 
         EnsureTemplateAccess(request.TemplateId, accessContext);
+        EnsureBoundContext(accessContext);
+        if (accessContext?.RequireBoundScope == true && request.DatasetRows is { Count: > 0 })
+        {
+            throw new InvalidOperationException(
+                "Governed reporting schedules cannot retain caller-supplied rows; select a server-owned dataset source.");
+        }
 
         lock (_gate)
         {
             var now = DateTimeOffset.UtcNow;
             var scheduleId = request.ScheduleId.Trim();
-            var existing = _schedules.GetValueOrDefault(scheduleId);
+            var identity = BuildLookupIdentity(scheduleId, accessContext);
+            var existing = _schedules.GetValueOrDefault(identity);
+            if (existing is not null)
+            {
+                EnsureScheduleInScope(existing, accessContext);
+            }
             var deliveryTargets = request.DeliveryTargets is null
                 ? existing?.DeliveryTargets
                 : NormalizeDeliveryTargets(request.DeliveryTargets);
@@ -176,29 +281,41 @@ public sealed class ReportingScheduleService
                 datasetRows,
                 datasetSourceId,
                 brandingThemeId,
-                brandingThemeOverride);
-            _schedules[record.ScheduleId] = record;
+                brandingThemeOverride,
+                Template: request.Template ?? existing?.Template,
+                RunParameters: request.RunParameters ?? existing?.RunParameters,
+                TenantId: existing?.TenantId ?? EmptyToNull(identity.TenantId),
+                CompanyId: existing?.CompanyId ?? EmptyToNull(identity.CompanyId),
+                AccessPolicySnapshot: CaptureTemplateAccessPolicy(request.TemplateId, accessContext),
+                LastReadiness: existing?.LastReadiness);
+            _schedules[identity] = record;
             PersistSchedules();
             return record;
         }
     }
 
     public ReportingScheduleRecordDto SetState(string scheduleId, ReportingScheduleStateDto state)
+        => SetState(scheduleId, state, accessContext: null);
+
+    public ReportingScheduleRecordDto SetState(
+        string scheduleId,
+        ReportingScheduleStateDto state,
+        ReportAccessQueryContext? accessContext)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
         lock (_gate)
         {
-            if (!_schedules.TryGetValue(scheduleId.Trim(), out var current))
-            {
-                throw new KeyNotFoundException("reporting schedule not found");
-            }
+            var identity = ResolveExistingIdentity(scheduleId, accessContext);
+            var current = _schedules[identity];
+
+            EnsureScheduleInScope(current, accessContext);
 
             var updated = current with
             {
                 State = state,
                 UpdatedAtUtc = DateTimeOffset.UtcNow
             };
-            _schedules[updated.ScheduleId] = updated;
+            _schedules[identity] = updated;
             PersistSchedules();
             return updated;
         }
@@ -220,23 +337,28 @@ public sealed class ReportingScheduleService
         ReportingScheduleRecordDto schedule;
         lock (_gate)
         {
-            if (!_schedules.TryGetValue(scheduleId.Trim(), out schedule!))
-            {
-                throw new KeyNotFoundException("reporting schedule not found");
-            }
+            schedule = _schedules[ResolveExistingIdentity(scheduleId, accessContext)];
         }
 
-        EnsureTemplateAccess(schedule.TemplateId, accessContext);
-        return await RunScheduleAsync(schedule, requestedBy, isDueRun: false, ct).ConfigureAwait(false);
+        EnsureScheduleAccess(schedule, accessContext);
+        EnsureScheduleInScope(schedule, accessContext);
+        return await RunScheduleAsync(schedule, requestedBy, isDueRun: false, accessContext, ct).ConfigureAwait(false);
     }
 
     public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default)
+        => await RunDueAsync(nowUtc, accessContext: null, ct).ConfigureAwait(false);
+
+    public async Task<ReportingDueScheduleRunResultDto> RunDueAsync(
+        DateTimeOffset nowUtc,
+        ReportAccessQueryContext? accessContext,
+        CancellationToken ct = default)
     {
         ReportingScheduleRecordDto[] dueSchedules;
         lock (_gate)
         {
             dueSchedules = _schedules.Values
                 .Where(static schedule => schedule.State == ReportingScheduleStateDto.Active)
+                .Where(schedule => IsScheduleInScope(schedule, accessContext))
                 .Where(schedule => schedule.DueAtUtc <= nowUtc)
                 .OrderBy(static schedule => schedule.DueAtUtc)
                 .ThenBy(static schedule => schedule.ScheduleId, StringComparer.OrdinalIgnoreCase)
@@ -247,7 +369,7 @@ public sealed class ReportingScheduleService
         foreach (var schedule in dueSchedules)
         {
             ct.ThrowIfCancellationRequested();
-            results.Add(await RunScheduleAsync(schedule, requestedBy: null, isDueRun: true, ct).ConfigureAwait(false));
+            results.Add(await RunScheduleAsync(schedule, requestedBy: null, isDueRun: true, accessContext, ct).ConfigureAwait(false));
         }
 
         return new ReportingDueScheduleRunResultDto(nowUtc, results);
@@ -257,6 +379,7 @@ public sealed class ReportingScheduleService
         ReportingScheduleRecordDto schedule,
         string? requestedBy,
         bool isDueRun,
+        ReportAccessQueryContext? accessContext,
         CancellationToken ct)
     {
         if (schedule.State != ReportingScheduleStateDto.Active)
@@ -265,11 +388,53 @@ public sealed class ReportingScheduleService
         }
 
         var actor = string.IsNullOrWhiteSpace(requestedBy) ? schedule.RequestedBy : requestedBy.Trim();
+        var effectiveAccessContext = accessContext ?? new ReportAccessQueryContext(
+            ActorPrincipalId: actor,
+            CompanyId: schedule.CompanyId,
+            TenantId: schedule.TenantId,
+            RequireBoundScope: !string.IsNullOrWhiteSpace(schedule.TenantId));
+        EnsureScheduleInScope(schedule, effectiveAccessContext);
+        EnsureScheduleAccess(schedule, effectiveAccessContext);
+        var runRequest = new ReportingRunRequestDto(
+            schedule.TemplateId,
+            schedule.NextAsOfDate,
+            schedule.MaxRetries,
+            schedule.ScheduleId,
+            actor,
+            schedule.DatasetRows,
+            schedule.DatasetSourceId,
+            RetryReason: isDueRun
+                ? $"scheduled due run for {schedule.CronExpression}"
+                : $"manual schedule run requested by {actor}",
+            AllowRestatement: false,
+            Template: schedule.Template,
+            Parameters: schedule.RunParameters);
+        var readiness = _readinessService is null
+            ? throw new InvalidOperationException("Server reporting readiness is unavailable; scheduled execution is blocked.")
+            : await _readinessService.AssessAsync(runRequest, effectiveAccessContext, ct).ConfigureAwait(false);
+        var isFinal = readiness.ResolvedParameters.Finality == ReportingFinalityDto.Final;
+        if (!readiness.CanGenerateDraft || isFinal && !readiness.CanGenerateFinal)
+        {
+            throw new ReportingRunReadinessBlockedException(readiness);
+        }
+
         var datasetRows = ResolveDatasetRows(schedule);
         var datasetSourceEvidence = ResolveDatasetSourceEvidence(schedule);
-        var accessPolicy = ResolveTemplateAccessPolicy(schedule.TemplateId);
+        var accessPolicy = schedule.AccessPolicySnapshot;
+        var certified = effectiveAccessContext.RequireBoundScope
+            ? (_certificationService ?? throw new InvalidOperationException("Reporting snapshot certification is unavailable; scheduled execution is blocked."))
+                .Certify(
+                    (_governedTemplateCatalog ?? throw new InvalidOperationException("The governed reporting template catalog is unavailable."))
+                        .Get(readiness.ResolvedTemplate),
+                    readiness,
+                    datasetRows,
+                    datasetSourceEvidence.SourceId,
+                    effectiveAccessContext)
+            : null;
         var contract = new ReportingJobContract(
-            schedule.ScheduleId,
+            effectiveAccessContext.RequireBoundScope
+                ? $"{effectiveAccessContext.TenantId}-{effectiveAccessContext.CompanyId}-{schedule.ScheduleId}"
+                : schedule.ScheduleId,
             schedule.TemplateId,
             schedule.NextAsOfDate,
             ReportingRunTrigger.Scheduled,
@@ -286,14 +451,20 @@ public sealed class ReportingScheduleService
             AccessPolicy: accessPolicy,
             RetryReason: isDueRun
                 ? $"scheduled due run for {schedule.CronExpression}"
-                : $"manual schedule run requested by {actor}");
+                : $"manual schedule run requested by {actor}",
+            ResolvedTemplate: readiness.ResolvedTemplate,
+            ResolvedParameters: readiness.ResolvedParameters,
+            Readiness: readiness,
+            OperationalScope: certified?.OperationalScope,
+            ImmutableAccessScope: certified?.AccessScope,
+            CertifiedSnapshot: certified?.Snapshot);
         var manifest = await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false);
         var run = ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId));
-        var advanced = AdvanceSchedule(schedule, manifest);
+        var advanced = AdvanceSchedule(schedule, manifest) with { LastReadiness = readiness };
         var delivery = DeliverScheduledPackages(schedule, manifest, actor);
         lock (_gate)
         {
-            _schedules[advanced.ScheduleId] = advanced;
+            _schedules[ReportingScheduleIdentity.From(advanced)] = advanced;
             PersistSchedules();
         }
 
@@ -309,6 +480,13 @@ public sealed class ReportingScheduleService
         if (targets.Count == 0)
         {
             return ([], []);
+        }
+
+        if (manifest.Status != ReportingRunStatus.Released)
+        {
+            return ([], targets
+                .Select(target => $"Delivery target '{target.DistributionId}' is awaiting governed release of run '{manifest.RunId}'.")
+                .ToArray());
         }
 
         if (_deliveryService is null)
@@ -682,6 +860,18 @@ public sealed class ReportingScheduleService
         }
     }
 
+    private ReportAccessPolicyDto CaptureTemplateAccessPolicy(
+        string templateId,
+        ReportAccessQueryContext? accessContext)
+    {
+        var policy = ReportAccessPolicyEvaluator.Normalize(ResolveTemplateAccessPolicy(templateId));
+        return policy.Mode == ReportAccessModeDto.CompanyWide
+            && string.IsNullOrWhiteSpace(policy.CompanyId)
+            && !string.IsNullOrWhiteSpace(accessContext?.CompanyId)
+                ? policy with { CompanyId = accessContext.CompanyId.Trim() }
+                : policy;
+    }
+
     private static IReadOnlyList<ReportingScheduleDeliveryTargetDto>? NormalizeDeliveryTargets(
         IReadOnlyList<ReportingScheduleDeliveryTargetDto>? targets)
     {
@@ -731,12 +921,115 @@ public sealed class ReportingScheduleService
     private void EnsureTemplateAccess(string templateId, ReportAccessQueryContext? accessContext)
     {
         var accessEvaluation = _governedTemplateCatalog?.EvaluateAccess(templateId, accessContext)
-            ?? ReportAccessPolicyEvaluator.Evaluate(null, accessContext);
+            ?? ReportAccessPolicyEvaluator.Evaluate((ReportAccessPolicyDto?)null, accessContext);
         if (!accessEvaluation.IsAccessible)
         {
             throw new UnauthorizedAccessException(accessEvaluation.Reason);
         }
     }
+
+    private static void EnsureScheduleAccess(
+        ReportingScheduleRecordDto schedule,
+        ReportAccessQueryContext? accessContext)
+    {
+        var evaluation = ReportAccessPolicyEvaluator.Evaluate(schedule.AccessPolicySnapshot, accessContext);
+        if (!evaluation.IsAccessible)
+        {
+            throw new UnauthorizedAccessException(evaluation.Reason);
+        }
+    }
+
+    private static bool IsScheduleInScope(
+        ReportingScheduleRecordDto schedule,
+        ReportAccessQueryContext? accessContext)
+    {
+        if (accessContext is null)
+        {
+            return true;
+        }
+
+        var hasTenant = !string.IsNullOrWhiteSpace(accessContext.TenantId);
+        var hasCompany = !string.IsNullOrWhiteSpace(accessContext.CompanyId);
+        if (accessContext.RequireBoundScope
+            && (string.IsNullOrWhiteSpace(accessContext.ActorPrincipalId) || !hasTenant || !hasCompany))
+        {
+            return false;
+        }
+
+        if (hasTenant && hasCompany)
+        {
+            if (string.IsNullOrWhiteSpace(schedule.TenantId) && string.IsNullOrWhiteSpace(schedule.CompanyId))
+            {
+                return !accessContext.RequireBoundScope;
+            }
+
+            return string.Equals(schedule.TenantId, accessContext.TenantId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(schedule.CompanyId, accessContext.CompanyId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return !accessContext.RequireBoundScope
+            && string.IsNullOrWhiteSpace(schedule.TenantId)
+            && string.IsNullOrWhiteSpace(schedule.CompanyId);
+    }
+
+    private static void EnsureScheduleInScope(
+        ReportingScheduleRecordDto schedule,
+        ReportAccessQueryContext? accessContext)
+    {
+        if (!IsScheduleInScope(schedule, accessContext))
+        {
+            throw new UnauthorizedAccessException("The reporting schedule is outside the current tenant and company scope.");
+        }
+    }
+
+    private static void EnsureBoundContext(ReportAccessQueryContext? accessContext)
+    {
+        if (accessContext is null || !accessContext.RequireBoundScope)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(accessContext.ActorPrincipalId)
+            || string.IsNullOrWhiteSpace(accessContext.TenantId)
+            || string.IsNullOrWhiteSpace(accessContext.CompanyId))
+        {
+            throw new UnauthorizedAccessException("A bound actor, tenant, and company scope is required for reporting schedules.");
+        }
+    }
+
+    private static ReportingScheduleIdentity BuildLookupIdentity(
+        string scheduleId,
+        ReportAccessQueryContext? accessContext)
+    {
+        var hasTenant = !string.IsNullOrWhiteSpace(accessContext?.TenantId);
+        var hasCompany = !string.IsNullOrWhiteSpace(accessContext?.CompanyId);
+        if (hasTenant != hasCompany)
+        {
+            throw new UnauthorizedAccessException(
+                "A reporting schedule lookup requires tenant and company scope together.");
+        }
+
+        return ReportingScheduleIdentity.Create(
+            hasTenant ? accessContext!.TenantId : null,
+            hasCompany ? accessContext!.CompanyId : null,
+            scheduleId);
+    }
+
+    private ReportingScheduleIdentity ResolveExistingIdentity(
+        string scheduleId,
+        ReportAccessQueryContext? accessContext)
+    {
+        EnsureBoundContext(accessContext);
+        var identity = BuildLookupIdentity(scheduleId.Trim(), accessContext);
+        if (_schedules.ContainsKey(identity))
+        {
+            return identity;
+        }
+
+        throw new KeyNotFoundException("reporting schedule not found");
+    }
+
+    private static string? EmptyToNull(string value) => value.Length == 0 ? null : value;
 
     private void PersistSchedules()
     {

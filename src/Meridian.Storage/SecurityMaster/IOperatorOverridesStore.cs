@@ -18,18 +18,6 @@ public interface IOperatorOverridesStore
         CancellationToken ct = default);
 
     /// <summary>
-<<<<<<< Updated upstream
-    /// Records a reviewer's approve/reject decision for a security's pending operator overrides,
-    /// transitioning the persisted approval status and appending to the audit trail. Returns
-    /// <see langword="null"/> when no override record exists for <paramref name="securityId"/> (there
-    /// is nothing to review). Implementations must persist the decision so a subsequent
-    /// <see cref="GetAsync"/> reflects it.
-    /// </summary>
-    Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
-        Guid securityId,
-        OperatorOverrideApprovalDecisionRequest request,
-        string reviewer,
-=======
     /// Records a reviewer's Approved/Rejected decision on the current override overlay, stamping the
     /// reviewer identity and time and appending a durable audit entry. Throws
     /// <see cref="InvalidOperationException"/> when no override row exists or it is not Pending, and
@@ -37,7 +25,16 @@ public interface IOperatorOverridesStore
     /// </summary>
     Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
         Guid securityId,
-        OperatorOverrideDecisionRequest request,
->>>>>>> Stashed changes
+        OperatorOverrideDecision decision,
         CancellationToken ct = default);
 }
+
+/// <summary>
+/// Internal store command for an operator-override approval decision. Unlike the public
+/// <see cref="OperatorOverrideDecisionRequest"/>, it carries the <see cref="Reviewer"/> identity that
+/// the API layer derives from the authenticated principal before calling the store.
+/// </summary>
+public sealed record OperatorOverrideDecision(
+    SecurityOverrideApprovalStatusDto Decision,
+    string Reviewer,
+    string? Comment = null);

@@ -2608,6 +2608,179 @@
         ]
       }
     },
+    "/api/workstation/data/ingestion-operations": {
+      "generatedAt": "2026-07-14T18:00:00Z",
+      "summary": {
+        "total": 5,
+        "queued": 1,
+        "running": 2,
+        "paused": 0,
+        "failed": 1,
+        "completed": 1,
+        "cancelled": 0,
+        "resumable": 3
+      },
+      "providers": ["alpaca", "databento", "polygon"],
+      "jobs": [
+        {
+          "jobId": "ING-4102",
+          "workloadType": "Historical backfill",
+          "state": "Running",
+          "provider": "databento",
+          "symbols": ["AAPL", "MSFT", "NVDA"],
+          "createdAt": "2026-07-14T16:40:00Z",
+          "startedAt": "2026-07-14T16:41:00Z",
+          "completedAt": null,
+          "progressPercent": 62.5,
+          "isResumable": true,
+          "attemptCount": 1,
+          "maxRetries": 3,
+          "nextRetryAt": null,
+          "errorMessage": null,
+          "evidenceRoute": "/data/evidence?subjectId=ING-4102",
+          "actions": [
+            { "action": "pause", "label": "Pause", "enabled": true, "disabledReason": null },
+            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+          ]
+        },
+        {
+          "jobId": "ING-4103",
+          "workloadType": "Intraday import",
+          "state": "Running",
+          "provider": "alpaca",
+          "symbols": ["SPY"],
+          "createdAt": "2026-07-14T17:05:00Z",
+          "startedAt": "2026-07-14T17:06:00Z",
+          "completedAt": null,
+          "progressPercent": 88.0,
+          "isResumable": true,
+          "attemptCount": 1,
+          "maxRetries": 3,
+          "nextRetryAt": null,
+          "errorMessage": null,
+          "evidenceRoute": "/data/evidence?subjectId=ING-4103",
+          "actions": [
+            { "action": "pause", "label": "Pause", "enabled": true, "disabledReason": null }
+          ]
+        },
+        {
+          "jobId": "ING-4098",
+          "workloadType": "Historical backfill",
+          "state": "Failed",
+          "provider": "polygon",
+          "symbols": ["TSLA", "AMD"],
+          "createdAt": "2026-07-14T15:10:00Z",
+          "startedAt": "2026-07-14T15:12:00Z",
+          "completedAt": null,
+          "progressPercent": 34.0,
+          "isResumable": true,
+          "attemptCount": 2,
+          "maxRetries": 3,
+          "nextRetryAt": "2026-07-14T18:20:00Z",
+          "errorMessage": "Provider rate limit exceeded during range 2026-06-01..2026-06-30.",
+          "evidenceRoute": "/data/evidence?subjectId=ING-4098",
+          "actions": [
+            { "action": "retry", "label": "Retry", "enabled": true, "disabledReason": null },
+            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+          ]
+        },
+        {
+          "jobId": "ING-4104",
+          "workloadType": "Corporate actions sync",
+          "state": "Queued",
+          "provider": "databento",
+          "symbols": ["QQQ"],
+          "createdAt": "2026-07-14T17:45:00Z",
+          "startedAt": null,
+          "completedAt": null,
+          "progressPercent": 0.0,
+          "isResumable": false,
+          "attemptCount": 0,
+          "maxRetries": 3,
+          "nextRetryAt": null,
+          "errorMessage": null,
+          "evidenceRoute": null,
+          "actions": [
+            { "action": "cancel", "label": "Cancel", "enabled": true, "disabledReason": null }
+          ]
+        },
+        {
+          "jobId": "ING-4090",
+          "workloadType": "Historical backfill",
+          "state": "Completed",
+          "provider": "alpaca",
+          "symbols": ["IWM"],
+          "createdAt": "2026-07-14T14:00:00Z",
+          "startedAt": "2026-07-14T14:01:00Z",
+          "completedAt": "2026-07-14T14:38:00Z",
+          "progressPercent": 100.0,
+          "isResumable": false,
+          "attemptCount": 1,
+          "maxRetries": 3,
+          "nextRetryAt": null,
+          "errorMessage": null,
+          "evidenceRoute": "/data/evidence?subjectId=ING-4090",
+          "actions": []
+        }
+      ]
+    },
+    "/api/workstation/data/storage-assurance": {
+      "generatedAt": "2026-07-14T18:00:00Z",
+      "health": {
+        "status": "Healthy",
+        "rootLabel": "meridian-data",
+        "totalBytes": 5498631680,
+        "fileCount": 18420,
+        "readable": true,
+        "writable": true,
+        "orphanCount": 3,
+        "temporaryFileCount": 12,
+        "message": null
+      },
+      "quality": {
+        "status": "Available",
+        "filesAnalyzed": 18420,
+        "averageScore": 0.982,
+        "lowQualityFileCount": 24,
+        "recommendations": ["Re-run canonicalization for providers with soft failures."],
+        "message": null
+      },
+      "canonicalization": {
+        "enabled": true,
+        "version": 7,
+        "eventsTotal": 148213,
+        "successTotal": 147880,
+        "softFailTotal": 301,
+        "hardFailTotal": 32,
+        "matchRatePercent": 99.8,
+        "providers": [
+          { "provider": "alpaca", "total": 60112, "success": 60050, "softFail": 55, "hardFail": 7, "matchRatePercent": 99.9 },
+          { "provider": "databento", "total": 71001, "success": 70820, "softFail": 160, "hardFail": 21, "matchRatePercent": 99.7 }
+        ]
+      },
+      "capacity": {
+        "usedBytes": 5498631680,
+        "availableBytes": 21474836480,
+        "usedPercent": 25.6,
+        "estimatedDaysRemaining": 214,
+        "status": "Healthy"
+      },
+      "tiers": [
+        { "tier": "Hot", "fileCount": 5210, "totalBytes": 1610612736 },
+        { "tier": "Warm", "fileCount": 9800, "totalBytes": 2684354560 },
+        { "tier": "Cold", "fileCount": 3410, "totalBytes": 1203664384 }
+      ],
+      "alerts": [
+        {
+          "alertId": "ALERT-118",
+          "severity": "Warning",
+          "subject": "Soft canonicalization failures rising",
+          "message": "Databento soft failures increased 18% over the last 24 hours.",
+          "detectedAt": "2026-07-14T12:30:00Z"
+        }
+      ],
+      "permissions": { "canView": true, "canRunQualityCheck": true, "canMigrate": true, "canDelete": true }
+    },
     "/api/quality/dashboard": {
       "overallScore": 98.7,
       "completenessScore": 99.2,

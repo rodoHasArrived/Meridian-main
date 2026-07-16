@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Core.Logging;
+using Serilog;
 
 namespace Meridian.Storage.Services;
 
@@ -9,6 +11,7 @@ namespace Meridian.Storage.Services;
 /// </summary>
 public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposable
 {
+    private readonly ILogger _log = LoggingSetup.ForContext<MaintenanceScheduler>();
     private readonly OperationalScheduleConfig _config;
     private readonly IFileMaintenanceService _fileMaintenanceService;
     private readonly ITierMigrationService _tierMigrationService;
@@ -295,9 +298,19 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
             {
                 break;
             }
-            catch
+            catch (Exception ex)
             {
-                // Log and continue
+                // A single failed iteration must not tear down the scheduler loop, but it must
+                // be recorded — silently swallowing it hid recurring maintenance failures.
+                _log.Error(ex, "Maintenance scheduler loop iteration failed; continuing after 30s");
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30), ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
     }

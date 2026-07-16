@@ -120,7 +120,8 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
                 "security-steward",
                 DateTimeOffset.UtcNow)
             {
-                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending
+                ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,
+                ReasonCode = "provider-symbol-confirmed"
             };
         }
 
@@ -134,32 +135,30 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
             CancellationToken ct = default)
             => throw new NotSupportedException();
 
-        public Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
+        public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
             Guid securityId,
-            OperatorOverrideApprovalDecisionRequest request,
-            string reviewer,
+            OperatorOverrideDecision decision,
             CancellationToken ct = default)
         {
-            if (request.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
+            if (decision.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
             {
-                throw new ArgumentOutOfRangeException(nameof(request), request.Decision, "Approval decision must be Approved or Rejected.");
+                throw new ArgumentOutOfRangeException(nameof(decision), decision.Decision, "Approval decision must be Approved or Rejected.");
             }
 
             if (!_overrides.TryGetValue(securityId, out var existing))
             {
-                return Task.FromResult<OperatorOverridesDto?>(null);
+                throw new InvalidOperationException($"No operator overrides exist for security '{securityId}'.");
             }
 
             var reviewedAt = DateTimeOffset.UtcNow;
             var updated = existing with
             {
-                ApprovalStatus = request.Decision,
-                ReasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? existing.ReasonCode : request.ReasonCode,
-                ReviewedBy = reviewer,
+                ApprovalStatus = decision.Decision,
+                ReviewedBy = decision.Reviewer,
                 ReviewedAt = reviewedAt
             };
             _overrides[securityId] = updated;
-            return Task.FromResult<OperatorOverridesDto?>(updated);
+            return Task.FromResult(updated);
         }
     }
 }

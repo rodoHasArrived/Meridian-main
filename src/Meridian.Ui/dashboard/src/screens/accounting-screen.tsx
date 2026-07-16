@@ -1,4 +1,4 @@
-import { AlertCircle, BookCheck, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
+import { BookCheck, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
@@ -20,21 +20,26 @@ import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
 import { ReconciliationComparisonPanel, TrialBalanceTable } from "@/components/accounting";
 import {
+  approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
   certifyAccountingSystemExportPackage,
+  configureDailyValuationSchedule,
   createAccountingSystemExportPackage,
   getAccountingSystemExportPackageManifest,
   getAccountingSystemMappingProfiles,
   getAccountingSystemProviders,
   getFinancialOperationsCommandCenter,
+  getPrivateCapitalCloseCockpit,
   getLatestAccountingSystemImport,
   getLatestAccountingSystemReconciliation,
   getFinancialRecordExplorer,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
   listAccountingSystemExportPackages,
+  listDailyValuationSchedules,
   previewAccountingSystemImport,
   rejectOperationsContinuityWorkflow,
+  runDueDailyValuationSchedules,
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -51,6 +56,12 @@ import {
   SecurityOpenLotReadModelPanel,
 } from "@/screens/accounting-screen.security-master-detail-panels";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
+import {
+  OperationalExceptionWorkbenchPanel,
+  ReconciliationQueueSummaryCard,
+  TradingParametersPanel,
+  reconciliationQueueColumns,
+} from "@/screens/accounting-screen.operations-panels";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -88,16 +99,11 @@ import type {
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
-  ReconciliationQueuePanelViewState,
-  ReconciliationQueueRunRowViewModel,
   ReconciliationStatementRunRowViewModel,
-  ReconciliationQueueRunTone,
   ReconciliationBreakDetailViewModel,
   ReconciliationDetailActionsViewModel,
   CloseCommandCenterViewState,
-  OperationalExceptionWorkbenchViewState,
   SecuritySearchResultRowViewModel,
-  TradingParametersViewState,
 } from "@/screens/accounting-screen.view-model";
 import type {
   AccountingSystemImportDetail,
@@ -109,6 +115,7 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  DailyValuationScheduleWorkItem,
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialOperationsCommandCenter,
@@ -117,6 +124,7 @@ import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsTimelineEntry,
+  PrivateCapitalCloseCockpit,
 } from "@/types";
 import {
   approvalBlockedReason,
@@ -163,40 +171,6 @@ function resolveExplorerSecurityId(recordId: string): string | null {
     ? securityId
     : null;
 }
-
-const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
-  muted: "text-muted-foreground",
-  warning: "text-warning",
-  success: "text-success",
-  primary: "text-primary"
-};
-
-const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRowViewModel>[] = [
-  {
-    id: "run",
-    label: "Run",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.strategyName}</span>
-      </span>
-    )
-  },
-  { id: "mode", label: "Mode", render: (row) => <span className="font-mono uppercase text-muted-foreground">{row.modeLabel}</span> },
-  { id: "status", label: "Status", render: (row) => row.runStatusLabel },
-  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
-  { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.openBreakLabel}</span> },
-  {
-    id: "reconciliation",
-    label: "Reconciliation",
-    render: (row) => (
-      <span className={cn("font-mono text-xs uppercase tracking-[0.14em]", reconciliationQueueToneClass[row.reconciliationTone])}>
-        {row.reconciliationStatusLabel}
-      </span>
-    )
-  },
-  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span> }
-];
-
 
 const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStatementRunRowViewModel>[] = [
   { id: "brokerCustodian", label: "Broker/Custodian", render: (row) => <span title={row.unavailableReason ?? undefined}>{row.brokerCustodianLabel}</span> },
@@ -1063,7 +1037,15 @@ function mergeExternalGlExportPackage(
   return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
-function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } {
+interface CloseWorkflowQuery {
+  fundProfileId?: string;
+  fundAccountId?: string;
+  ledgerBookId?: string;
+  periodId?: string;
+  status?: string;
+}
+
+function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
   const params = new URLSearchParams(search);
   return {
     fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
@@ -1072,6 +1054,32 @@ function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fund
     periodId: normalizeOptionalQueryValue(params.get("periodId")),
     status: normalizeOptionalQueryValue(params.get("workflowStatus"))
   };
+}
+
+function selectCurrentDailyValuationSchedule(
+  schedules: DailyValuationScheduleWorkItem[],
+  status: PrivateCapitalCloseCockpit["dailyValuationStatus"] | null | undefined,
+  query: CloseWorkflowQuery
+): DailyValuationScheduleWorkItem | null {
+  const expectedScheduleId = status?.scheduleId?.trim() || null;
+  const expectedFundProfileId = status?.fundProfileId?.trim() || query.fundProfileId || null;
+  const expectedLedgerBookId = status?.ledgerBookId?.trim() || query.ledgerBookId || null;
+  const expectedPeriodId = status?.periodId?.trim() || query.periodId || null;
+  const expectedEntityId = status?.entityId?.trim() || null;
+  const expectedTenantId = status?.tenantId?.trim() || null;
+  const expectedCompanyId = status?.companyId?.trim() || null;
+  const matches = (actual: string | null | undefined, expected: string | null) =>
+    !expected || actual?.trim().localeCompare(expected, undefined, { sensitivity: "accent" }) === 0;
+
+  return schedules.find((schedule) =>
+    matches(schedule.scheduleId, expectedScheduleId) &&
+    matches(schedule.fundProfileId, expectedFundProfileId) &&
+    matches(schedule.ledgerBookId, expectedLedgerBookId) &&
+    matches(schedule.periodId, expectedPeriodId) &&
+    matches(schedule.entityId, expectedEntityId) &&
+    matches(schedule.tenantId, expectedTenantId) &&
+    matches(schedule.companyId, expectedCompanyId)
+  ) ?? null;
 }
 
 function normalizeOptionalQueryValue(value: string | null): string | undefined {
@@ -1693,6 +1701,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [financialOperationsCommandCenter, setFinancialOperationsCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
   const [financialOperationsCommandCenterLoading, setFinancialOperationsCommandCenterLoading] = useState(false);
   const [financialOperationsCommandCenterError, setFinancialOperationsCommandCenterError] = useState<string | null>(null);
+  const [privateCapitalCloseCockpit, setPrivateCapitalCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
+  const [dailyValuationSchedules, setDailyValuationSchedules] = useState<DailyValuationScheduleWorkItem[]>([]);
+  const [activeDailyValuationCommand, setActiveDailyValuationCommand] = useState<NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]> | null>(null);
+  const [dailyValuationBatchStatusText, setDailyValuationBatchStatusText] = useState<string | null>(null);
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
@@ -2105,6 +2117,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     if (!data) {
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
+      setPrivateCapitalCloseCockpit(null);
+      setDailyValuationSchedules([]);
       return;
     }
 
@@ -2113,17 +2127,24 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     setCloseWorkflowError(null);
     setFinancialOperationsCommandCenterError(null);
     try {
-      const [commandCenter, rows] = await Promise.all([
+      const [commandCenter, closeCockpit, rows, schedules] = await Promise.all([
         getFinancialOperationsCommandCenter(closeWorkflowQuery).catch(err => {
           setFinancialOperationsCommandCenterError(formatApprovalError(err, "Financial Operations command center could not be loaded."));
+          return null;
+        }),
+        getPrivateCapitalCloseCockpit(closeWorkflowQuery).catch(err => {
+          setFinancialOperationsCommandCenterError(formatApprovalError(err, "Private-capital close cockpit could not be loaded."));
           return null;
         }),
         getOperationsContinuityWorkflows(closeWorkflowQuery).catch(err => {
           setCloseWorkflowError(formatApprovalError(err, "Close workflow detail could not be loaded."));
           return [];
-        })
+        }),
+        listDailyValuationSchedules().catch(() => [])
       ]);
       setFinancialOperationsCommandCenter(commandCenter);
+      setPrivateCapitalCloseCockpit(closeCockpit);
+      setDailyValuationSchedules(schedules);
       const selected = selectCloseWorkflowSummary(rows, closeWorkflowQuery);
       if (!selected) {
         setCloseWorkflow(null);
@@ -2135,10 +2156,107 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     } catch (error) {
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
+      setPrivateCapitalCloseCockpit(null);
+      setDailyValuationSchedules([]);
       setCloseWorkflowError(formatApprovalError(error, "Close workflow detail could not be loaded."));
     } finally {
       setCloseWorkflowLoading(false);
       setFinancialOperationsCommandCenterLoading(false);
+    }
+  };
+
+  const effectiveDailyValuationStatus = privateCapitalCloseCockpit?.dailyValuationStatus
+    ?? financialOperationsCommandCenter?.privateCapitalCloseCockpit?.dailyValuationStatus
+    ?? null;
+  const currentDailyValuationSchedule = useMemo(
+    () => selectCurrentDailyValuationSchedule(dailyValuationSchedules, effectiveDailyValuationStatus, closeWorkflowQuery),
+    [closeWorkflowQuery, dailyValuationSchedules, effectiveDailyValuationStatus]
+  );
+
+  const runCloseCommand = async (
+    command: NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]>
+  ) => {
+    const status = effectiveDailyValuationStatus;
+    const hasRetainedBatch = Boolean(status?.batchCorrelationId) && (status?.journalEntryIds.length ?? 0) > 0;
+    if (command === "configure-daily-valuation-schedule" && !currentDailyValuationSchedule) {
+      setDailyValuationBatchStatusText("No server-retained daily valuation schedule is loaded for this close scope.");
+      return;
+    }
+    if (command === "configure-daily-valuation-schedule" &&
+        (status?.state === "Running" || status?.state === "DraftReady" ||
+          (status?.state === "Blocked" && hasRetainedBatch))) {
+      setDailyValuationBatchStatusText("Complete or correct the retained daily valuation batch before reconfiguring its schedule.");
+      return;
+    }
+    if (command === "run-due-daily-valuation-schedules" &&
+        (!currentDailyValuationSchedule || !status?.isConfigured || !status.isEnabled || status.state !== "Scheduled")) {
+      setDailyValuationBatchStatusText("The current close scope does not have an enabled Scheduled daily valuation configuration.");
+      return;
+    }
+    if ((command === "approve-daily-valuation-batch" && status?.state !== "DraftReady") ||
+        (command === "retry-daily-valuation-batch" && (status?.state !== "Blocked" || !hasRetainedBatch)) ||
+        ((command === "approve-daily-valuation-batch" || command === "retry-daily-valuation-batch") &&
+          (!status?.scheduleId || !status.fundProfileId || status.journalEntryIds.length === 0))) {
+      setDailyValuationBatchStatusText("No retained daily valuation batch is available for this command.");
+      return;
+    }
+
+    setActiveDailyValuationCommand(command);
+    setDailyValuationBatchStatusText(null);
+    try {
+      if (command === "configure-daily-valuation-schedule") {
+        const configured = await configureDailyValuationSchedule({
+          ...currentDailyValuationSchedule!,
+          actor: "close-cockpit-operator"
+        });
+        setDailyValuationBatchStatusText(
+          `Configured daily valuation schedule ${configured.scheduleId} for ${configured.nextRunAtUtc}.`
+        );
+        await refreshCloseWorkflow();
+        return;
+      }
+
+      if (command === "run-due-daily-valuation-schedules") {
+        const result = await runDueDailyValuationSchedules();
+        const currentRun = result.runs.find((run) => run.scheduleId === currentDailyValuationSchedule!.scheduleId);
+        setDailyValuationBatchStatusText(currentRun
+          ? `Daily valuation schedule ${currentRun.scheduleId} finished in ${currentRun.state}: ${currentRun.summary}`
+          : result.runs.length > 0
+            ? `Ran ${result.runs.length} due daily valuation schedule(s); the current schedule was not due.`
+            : "No daily valuation schedules were due for the current tenant scope.");
+        await refreshCloseWorkflow();
+        return;
+      }
+
+      const isRetry = command === "retry-daily-valuation-batch";
+      const result = await approveAndPostDailyValuationBatch({
+        scheduleId: status!.scheduleId!,
+        fundProfileId: status!.fundProfileId!,
+        actor: "close-cockpit-operator",
+        notes: isRetry
+          ? "Retried the incomplete retained daily valuation batch from the controller close cockpit."
+          : "Approved the complete retained daily valuation batch from the controller close cockpit.",
+        evidenceLinks: status!.evidenceLinks
+          .map((link) => link.route)
+          .filter((route): route is string => Boolean(route)),
+        tenantId: status!.tenantId ?? null,
+        companyId: status!.companyId ?? null
+      });
+      setDailyValuationBatchStatusText(result.isComplete
+        ? `${isRetry ? "Retried and posted" : "Posted"} all ${result.postedJournalEntryIds.length} daily valuation drafts in batch ${result.batchCorrelationId}.`
+        : `Daily valuation batch ${isRetry ? "retry " : ""}remains blocked: ${result.blockers.join(" ")}`);
+      await refreshCloseWorkflow();
+    } catch (error) {
+      const fallback = command === "configure-daily-valuation-schedule"
+        ? "Daily valuation schedule could not be configured."
+        : command === "run-due-daily-valuation-schedules"
+          ? "Due daily valuation schedules could not be run."
+          : command === "retry-daily-valuation-batch"
+            ? "Daily valuation batch correction and retry could not complete."
+            : "Daily valuation batch could not be approved and posted.";
+      setDailyValuationBatchStatusText(formatApprovalError(error, fallback));
+    } finally {
+      setActiveDailyValuationCommand(null);
     }
   };
 
@@ -2153,7 +2271,13 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const closeCommandCenter = useMemo(
     () => data ? buildCloseCommandCenterViewState({
       data,
-      commandCenter: financialOperationsCommandCenter,
+      commandCenter: financialOperationsCommandCenter
+        ? {
+          ...financialOperationsCommandCenter,
+          privateCapitalCloseCockpit: privateCapitalCloseCockpit
+            ?? financialOperationsCommandCenter.privateCapitalCloseCockpit
+        }
+        : null,
       commandCenterLoading: financialOperationsCommandCenterLoading,
       commandCenterError: financialOperationsCommandCenterError,
       workflow: closeWorkflow,
@@ -2162,7 +2286,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       accountingSystemProviders,
       accountingSystemImport,
       accountingSystemReconciliation,
-      multiAssetCoverage
+      multiAssetCoverage,
+      currentDailyValuationSchedule
     }) : null,
     [
       accountingSystemImport,
@@ -2175,7 +2300,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       financialOperationsCommandCenter,
       financialOperationsCommandCenterError,
       financialOperationsCommandCenterLoading,
-      multiAssetCoverage
+      multiAssetCoverage,
+      privateCapitalCloseCockpit,
+      currentDailyValuationSchedule
     ]
   );
   const closeReportPackage = useAccountingCloseReportPackageViewModel(closeWorkflow);
@@ -2283,7 +2410,15 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           <TechnicalDetails label="System details" className="panel-surface">
             <div className="space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
-              {closeCommandCenter ? <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} /> : null}
+              {closeCommandCenter ? (
+                <CloseCommandCenterPanel
+                  view={closeCommandCenter}
+                  onRefresh={() => void refreshCloseWorkflow()}
+                  onCommand={(command) => void runCloseCommand(command)}
+                  activeCommand={activeDailyValuationCommand}
+                  commandStatusText={dailyValuationBatchStatusText}
+                />
+              ) : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
               <AccountingTaskModeLauncher />
             </div>
@@ -2294,7 +2429,13 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       {sectionVisibility.showWorkflowDetails && workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 
       {sectionVisibility.showWorkflowDetails && closeCommandCenter ? (
-        <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} />
+        <CloseCommandCenterPanel
+          view={closeCommandCenter}
+          onRefresh={() => void refreshCloseWorkflow()}
+          onCommand={(command) => void runCloseCommand(command)}
+          activeCommand={activeDailyValuationCommand}
+          commandStatusText={dailyValuationBatchStatusText}
+        />
       ) : null}
 
       {sectionVisibility.showWorkflowDetails ? <AccountingCloseReportPackagePanel view={closeReportPackage} /> : null}
@@ -3979,196 +4120,6 @@ function CorporateActionsPanel({
         )}
       </CardContent>
     </Card>
-  );
-}
-
-function TradingParametersPanel({ view }: { view: TradingParametersViewState }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          Trading parameters
-        </CardTitle>
-        <CardDescription>
-          Lot size, tick size, margin, and circuit-breaker constraints
-          {view.securityId ? <> for <span className="font-mono">{view.securityId}</span></> : null}
-          {view.asOfLabel !== "—" ? <> as of {view.asOfLabel}</> : null}.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && view.fields.length === 0 && (
-          <p className="text-sm text-muted-foreground">No trading parameters available for this security.</p>
-        )}
-        {view.fields.length > 0 && (
-          <dl className="grid gap-2">
-            {view.fields.map((field) => (
-              <div key={field.label} className="grid min-w-0 grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-                <dt className="min-w-0 text-xs text-muted-foreground">{field.label}</dt>
-                <dd className={cn(
-                  "min-w-0 break-words text-right font-mono text-xs",
-                  field.tone === "warning" ? "text-warning" : "text-foreground"
-                )}>
-                  {field.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function ReconciliationQueueSummaryCard({ view }: { view: ReconciliationQueuePanelViewState }) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              {view.overviewTitle}
-            </CardTitle>
-            <CardDescription className="mt-2">{view.overviewDescription}</CardDescription>
-          </div>
-          <Button asChild variant="outline" size="sm" className="w-fit shrink-0">
-            <Link to={view.overviewActionHref} aria-label={view.overviewActionAriaLabel}>
-              {view.overviewActionLabel}
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <DenseDataTable
-          columns={reconciliationQueueColumns}
-          rows={view.rows}
-          getRowId={(row) => row.runId}
-          getRowAriaLabel={(row) => row.ariaLabel}
-          emptyText={view.emptyText}
-          ariaLabel={view.listLabel}
-          caption={view.overviewCaption}
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-
-function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExceptionWorkbenchViewState }) {
-  return (
-    <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Exceptions</p>
-          <h3 id="accounting-exceptions-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link to={view.reconciliationHref}>Reconciliation queue</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link to={view.approvalsHref}>Approval gate</Link>
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {view.metricRows.map((metric) => (
-          <MetricSnapshotCard
-            key={metric.id}
-            id={metric.id}
-            label={metric.label}
-            value={metric.value}
-            delta={metric.detail}
-            tone={metric.tone}
-          />
-        ))}
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <Card className="panel-surface" role="region" aria-label="Unified operational exception queue">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
-              Case queue
-            </CardTitle>
-            <CardDescription>Reconciliation exceptions with owner, SLA, comments, and audit evidence counts.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {view.cases.length > 0 ? (
-              <div role="list" className="space-y-2" aria-label="Operational exception cases">
-                {view.cases.map((item) => (
-                  <div key={item.id} role="listitem" aria-label={item.ariaLabel} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground">{item.title}</div>
-                        <div className="mt-1 break-words text-xs leading-5 text-muted-foreground">{item.subtitle}</div>
-                      </div>
-                      <Badge variant={item.statusTone}>{item.statusLabel}</Badge>
-                    </div>
-                    <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4">
-                      <span>Owner: {item.ownerLabel}</span>
-                      <span>Urgency: {item.slaLabel}</span>
-                      <span>{item.commentLabel}</span>
-                      <span>{item.auditLabel}</span>
-                    </div>
-                    <Button asChild size="sm" variant="ghost" className="mt-3">
-                      <Link to={item.routeHref}>{item.routeLabel}</Link>
-                    </Button>
-                    <TechnicalDetails label="Audit details" className="mt-3 bg-background/45">
-                      <dl className="grid gap-2 text-xs text-muted-foreground">
-                        <AccountingValue label="Case ID" value={item.id} />
-                        <AccountingValue label="Raw category" value={item.rawCategoryLabel} />
-                      </dl>
-                    </TechnicalDetails>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                {view.emptyText}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface" role="region" aria-label="Exception workflow handoffs">
-          <CardHeader>
-            <CardTitle className="text-base">Workflow handoffs</CardTitle>
-            <CardDescription>Resolution work stays connected to approval, audit, and retained evidence paths.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button asChild variant="secondary" className="w-full justify-start">
-              <Link to={view.reconciliationHref}>Open break queue</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.approvalsHref}>Review approval blockers</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.evidenceHref}>Open exception evidence packet</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.auditHref}>Open audit timeline</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
   );
 }
 

@@ -26,6 +26,21 @@ public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
             : Project(governed);
     }
 
+    public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId)
+    {
+        ArgumentNullException.ThrowIfNull(templateId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId.Name);
+        if (templateId.Version <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(templateId), "Template version must be greater than zero.");
+        }
+
+        var governed = FindApproved(templateId);
+        return governed is null
+            ? _fallbackCatalog.Get(templateId)
+            : Project(governed);
+    }
+
     public IReadOnlyList<ReportingTemplateMetadata> ListTemplates()
     {
         var governed = _templateRegistry
@@ -49,9 +64,19 @@ public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
         var governed = FindLatestApproved(templateId.Trim());
-        return governed is null
-            ? ReportAccessPolicyEvaluator.Evaluate(null, accessContext)
-            : ReportAccessPolicyEvaluator.Evaluate(governed.Definition.AccessPolicy, accessContext);
+        return ReportAccessPolicyEvaluator.Evaluate(
+            BindCompanyWideTemplatePolicy(governed?.Definition.AccessPolicy, accessContext),
+            accessContext);
+    }
+
+    public ReportAccessEvaluationDto EvaluateAccess(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext)
+    {
+        ArgumentNullException.ThrowIfNull(templateId);
+        var governed = FindApproved(templateId);
+        var policy = governed?.Definition.AccessPolicy ?? _fallbackCatalog.Get(templateId).AccessPolicy;
+        return ReportAccessPolicyEvaluator.Evaluate(
+            BindCompanyWideTemplatePolicy(policy, accessContext),
+            accessContext);
     }
 
     private ReportTemplateGovernanceRecordDto? FindLatestApproved(string templateId) =>
@@ -62,6 +87,26 @@ public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
                 string.Equals(record.Definition.TemplateId.Name, templateId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(static record => record.Definition.TemplateId.Version)
             .FirstOrDefault();
+
+    private ReportTemplateGovernanceRecordDto? FindApproved(VersionedReportTemplateIdDto templateId) =>
+        _templateRegistry
+            .List(includeSuperseded: true)
+            .FirstOrDefault(record =>
+                record.Status == ReportTemplateLifecycleStatusDto.Approved &&
+                string.Equals(record.Definition.TemplateId.Name, templateId.Name, StringComparison.OrdinalIgnoreCase) &&
+                record.Definition.TemplateId.Version == templateId.Version);
+
+    private static ReportAccessPolicyDto BindCompanyWideTemplatePolicy(
+        ReportAccessPolicyDto? policy,
+        ReportAccessQueryContext? accessContext)
+    {
+        var normalized = ReportAccessPolicyEvaluator.Normalize(policy);
+        return normalized.Mode == ReportAccessModeDto.CompanyWide
+            && string.IsNullOrWhiteSpace(normalized.CompanyId)
+            && !string.IsNullOrWhiteSpace(accessContext?.CompanyId)
+                ? normalized with { CompanyId = accessContext.CompanyId.Trim() }
+                : normalized;
+    }
 
     private static ReportingTemplateMetadata Project(ReportTemplateGovernanceRecordDto record)
     {
@@ -93,6 +138,7 @@ public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
                 .Add("isBuiltIn", record.IsBuiltIn.ToString())
                 .Add("gridCount", (definition.Grids?.Count ?? 0).ToString()),
             definition.Grids,
-            definition.AccessPolicy);
+            definition.AccessPolicy,
+            definition.Parameters);
     }
 }

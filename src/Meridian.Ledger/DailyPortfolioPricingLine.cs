@@ -11,6 +11,9 @@ public sealed record DailyPortfolioPricingLine(
     decimal CostBasis,
     decimal MarketValue,
     decimal UnrealizedGainOrLoss,
+    decimal PriorCarryingValue,
+    bool HasPriorCarryingValue,
+    decimal MarkAdjustment,
     string PriceSource,
     string EvidenceReference,
     string PolicyId,
@@ -18,4 +21,10 @@ public sealed record DailyPortfolioPricingLine(
     string? FinancialAccountId,
     string? InstrumentType,
     FairValueLevel FairValueLevel = FairValueLevel.Unclassified,
-    bool IsStalePriced = false);
+    bool IsStalePriced = false,
+    DateOnly? PriceObservedOn = null,
+    DailyPortfolioPriceConfidence Confidence = DailyPortfolioPriceConfidence.High,
+    Guid? SecurityId = null,
+    string? CarryingValueSource = null,
+    DateTimeOffset? CarryingValueCapturedAtUtc = null,
+    string? CarryingValueEvidenceReference = null);

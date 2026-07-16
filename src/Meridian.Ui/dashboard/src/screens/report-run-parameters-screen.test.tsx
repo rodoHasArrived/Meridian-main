@@ -4,12 +4,18 @@ import { axe } from "jest-axe";
 import * as api from "@/lib/api";
 import { ReportRunParametersScreen } from "@/screens/report-run-parameters-screen";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
-import type { AccountingWorkspaceResponse, ManualJournalEntryWorkbench, ReportingRunResult } from "@/types";
+import type {
+  AccountingWorkspaceResponse,
+  ManualJournalEntryWorkbench,
+  ReportingRunReadiness,
+  ReportingRunResult
+} from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
+    assessReportingRunReadiness: vi.fn(),
     getManualJournalEntryWorkbench: vi.fn(),
     runReportingNow: vi.fn()
   };
@@ -31,6 +37,8 @@ const reportingData: AccountingWorkspaceResponse = {
   },
   reporting: {
     profileCount: 0,
+    fundProfileId: "fund-alpha",
+    selectedFundProfileId: "fund-alpha",
     recommendedProfiles: [],
     profiles: [],
     summary: "No reporting profiles.",
@@ -66,6 +74,49 @@ const emptyWorkbench: ManualJournalEntryWorkbench = {
   auditTrail: []
 };
 
+const readyReadiness: ReportingRunReadiness = {
+  evaluationId: "report-readiness-ready",
+  evaluatedAtUtc: "2026-06-30T20:00:00Z",
+  resolvedTemplate: { name: "trial-balance-pack", version: 1 },
+  resolvedParameters: {
+    scope: {
+      fundProfileId: "fund-alpha",
+      entityScopeKind: "AllEntities",
+      entityId: null,
+      portfolioId: null,
+      investorId: null,
+      dimensions: null
+    },
+    periodId: "2026-06",
+    asOfDate: "2026-06-30",
+    ledgerBook: { ledgerBookId: null, ledgerBookCode: "Primary GL" },
+    accountingBasis: "Gaap",
+    presentationCurrency: "USD",
+    consolidationLevel: "Fund",
+    outputFormat: "Pdf",
+    finality: "Draft",
+    includeSupportingSchedules: true,
+    includeEvidenceAppendix: true,
+    templateParameters: {}
+  },
+  status: "Ready",
+  canGenerateDraft: true,
+  canGenerateFinal: true,
+  checks: [{
+    checkId: "run-scope",
+    label: "Fund, entity, period, and ledger scope",
+    status: "Ready",
+    summary: "The requested report scope is complete and internally consistent.",
+    issueCount: 0,
+    blocksDraft: false,
+    blocksFinal: false,
+    route: null,
+    evidenceReferences: ["fund:fund-alpha", "period:2026-06"]
+  }],
+  blockingReasons: [],
+  evidenceHash: "a".repeat(64)
+};
+
 async function renderScreen(initialEntry: string) {
   const result = renderWithRouter(
     <ReportRunParametersScreen data={reportingData} accounting={accountingData} />,
@@ -78,6 +129,7 @@ async function renderScreen(initialEntry: string) {
 describe("ReportRunParametersScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(api.assessReportingRunReadiness).mockResolvedValue(readyReadiness);
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValue(emptyWorkbench);
   });
 
@@ -219,6 +271,7 @@ describe("ReportRunParametersScreen", () => {
 
     await user.selectOptions(screen.getByLabelText("Report run template"), "holdings-pack:2.0");
     expect(screen.getByLabelText("Report run template")).toHaveValue("holdings-pack:2.0");
+    await waitFor(() => expect(screen.getByRole("button", { name: "Run Holdings Pack" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Run Holdings Pack" }));
 
     await waitFor(() => expect(api.runReportingNow).toHaveBeenCalledWith(
@@ -278,16 +331,16 @@ describe("ReportRunParametersScreen", () => {
     await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
 
     expect(screen.getByRole("heading", { name: "Report Parameters" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("All entities");
-    expect(screen.getByLabelText("Ledger book")).toHaveValue("Primary GL");
-    expect(screen.getByLabelText("Accounting basis")).toHaveValue("GAAP");
-    expect(screen.getByLabelText("Output format")).toHaveValue("PDF");
+    expect(screen.getByLabelText("Fund profile")).toHaveValue("fund-alpha");
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("AllEntities");
+    expect(screen.getByLabelText("Ledger book code")).toHaveValue("Primary GL");
+    expect(screen.getByLabelText("Accounting basis")).toHaveValue("Gaap");
+    expect(screen.getByLabelText("Output format")).toHaveValue("Pdf");
     expect(screen.getByLabelText("Include supporting schedules")).toBeChecked();
     expect(screen.getByLabelText("Include evidence appendix")).toBeChecked();
     expect(screen.getByRole("heading", { name: "Can this report run?" })).toBeInTheDocument();
-    expect(await screen.findByText("Warnings present")).toBeInTheDocument();
-    expect(screen.getByText("Open reconciliation breaks")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Review breaks" })).toHaveAttribute("href", "/accounting/reconciliation");
+    expect(await screen.findByText("Draft ready")).toBeInTheDocument();
+    expect(screen.getByText("Fund, entity, period, and ledger scope")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Report run form" })).toHaveTextContent("Trial Balance Pack");
   });
 
@@ -312,6 +365,7 @@ describe("ReportRunParametersScreen", () => {
 
     await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
 
+    await waitFor(() => expect(screen.getByRole("button", { name: "Run Trial Balance Pack" })).toBeEnabled());
     await user.click(await screen.findByRole("button", { name: "Run Trial Balance Pack" }));
 
     expect(await screen.findByText("Trial Balance Pack run created.")).toBeInTheDocument();
@@ -322,7 +376,128 @@ describe("ReportRunParametersScreen", () => {
     expect(runReference).not.toHaveAttribute("open");
     expect(within(runReference as HTMLElement).getByText("run-42")).toBeInTheDocument();
     expect(api.runReportingNow).toHaveBeenCalledWith(
-      expect.objectContaining({ templateId: "trial-balance-pack" })
+      expect.objectContaining({
+        templateId: "trial-balance-pack",
+        template: { name: "trial-balance-pack", version: 1 },
+        parameters: expect.objectContaining({ scope: expect.objectContaining({ fundProfileId: "fund-alpha" }) })
+      })
     );
+  });
+
+  it("round-trips the operator's exact scope, book, output, evidence, and template version through preflight and run", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.runReportingNow).mockResolvedValue({
+      run: {
+        runId: "run-portfolio-42",
+        templateId: "trial-balance-pack",
+        family: "Financial Statements",
+        status: "Queued",
+        trigger: "Manual",
+        asOfDate: "2026-06-30",
+        attemptCount: 1,
+        sectionCount: 1,
+        lineageLinkedSections: 0,
+        artifacts: [],
+        auditActions: [],
+        failureReason: null
+      }
+    });
+
+    await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
+
+    await user.clear(screen.getByLabelText("Fund profile"));
+    await user.type(screen.getByLabelText("Fund profile"), "fund-institutional");
+    await user.selectOptions(screen.getByLabelText("Entity / fund / portfolio"), "Portfolio");
+    await user.type(screen.getByLabelText("Portfolio ID"), "portfolio-credit");
+    await user.clear(screen.getByLabelText("Accounting period ID"));
+    await user.type(screen.getByLabelText("Accounting period ID"), "2026-Q2");
+    await user.clear(screen.getByLabelText("Ledger book code"));
+    await user.type(screen.getByLabelText("Ledger book code"), "STAT-GL");
+    await user.type(screen.getByLabelText("Ledger book ID (optional)"), "11111111-1111-1111-1111-111111111111");
+    await user.selectOptions(screen.getByLabelText("Accounting basis"), "Statutory");
+    await user.clear(screen.getByLabelText("Presentation currency"));
+    await user.type(screen.getByLabelText("Presentation currency"), "eur");
+    await user.selectOptions(screen.getByLabelText("Consolidation level"), "Portfolio");
+    await user.selectOptions(screen.getByLabelText("Output format"), "Xlsx");
+    await user.click(screen.getByLabelText("Include supporting schedules"));
+    await user.click(screen.getByLabelText("Include evidence appendix"));
+    await user.clear(screen.getByLabelText("Template parameters (JSON)"));
+    // userEvent treats "{" and "[" as key-descriptor openers; double them so the
+    // literal JSON braces are typed verbatim into the field.
+    await user.type(
+      screen.getByLabelText("Template parameters (JSON)"),
+      JSON.stringify({ reportingRegion: "EU" }).replace(/[{[]/g, "$&$&")
+    );
+    await user.clear(screen.getByLabelText("Report run as-of date"));
+    await user.type(screen.getByLabelText("Report run as-of date"), "2026-06-30");
+
+    const runButton = screen.getByRole("button", { name: "Run Trial Balance Pack" });
+    await waitFor(() => expect(runButton).toBeEnabled());
+
+    const latestPreflightRequest = vi.mocked(api.assessReportingRunReadiness).mock.calls.at(-1)?.[0];
+    expect(latestPreflightRequest).toEqual(expect.objectContaining({
+      templateId: "trial-balance-pack",
+      template: { name: "trial-balance-pack", version: 1 },
+      asOfDate: "2026-06-30",
+      parameters: {
+        scope: {
+          fundProfileId: "fund-institutional",
+          entityScopeKind: "Portfolio",
+          entityId: null,
+          portfolioId: "portfolio-credit",
+          investorId: null,
+          dimensions: null
+        },
+        periodId: "2026-Q2",
+        asOfDate: "2026-06-30",
+        ledgerBook: {
+          ledgerBookId: "11111111-1111-1111-1111-111111111111",
+          ledgerBookCode: "STAT-GL"
+        },
+        accountingBasis: "Statutory",
+        presentationCurrency: "EUR",
+        consolidationLevel: "Portfolio",
+        outputFormat: "Xlsx",
+        finality: "Draft",
+        includeSupportingSchedules: false,
+        includeEvidenceAppendix: false,
+        templateParameters: { reportingRegion: "EU" }
+      }
+    }));
+
+    await user.click(runButton);
+    expect(api.runReportingNow).toHaveBeenCalledWith(latestPreflightRequest);
+  });
+
+  it("blocks a final run when the matching server preflight denies final generation", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.assessReportingRunReadiness).mockResolvedValue({
+      ...readyReadiness,
+      status: "Blocked",
+      canGenerateDraft: true,
+      canGenerateFinal: false,
+      checks: [{
+        checkId: "evidence-appendix",
+        label: "Release evidence appendix",
+        status: "Blocked",
+        summary: "Final reporting output must include the supporting evidence appendix.",
+        issueCount: 1,
+        blocksDraft: false,
+        blocksFinal: true,
+        route: "/workstation/reporting/evidence",
+        evidenceReferences: []
+      }],
+      blockingReasons: ["Final reporting output must include the supporting evidence appendix."]
+    });
+
+    await renderScreen("/reporting/run?templateId=trial-balance-pack%3A1.0");
+    await user.selectOptions(screen.getByLabelText("Draft vs final"), "Final");
+
+    expect(await screen.findByText("Final blocked")).toBeInTheDocument();
+    // The same message backs both the check summary and the blocking-reasons list,
+    // so it renders more than once; assert presence without a uniqueness constraint.
+    expect(screen.getAllByText("Final reporting output must include the supporting evidence appendix.").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Run Trial Balance Pack" })).toBeDisabled();
+    expect(api.runReportingNow).not.toHaveBeenCalled();
   });
 });

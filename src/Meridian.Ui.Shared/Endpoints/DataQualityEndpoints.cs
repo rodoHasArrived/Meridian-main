@@ -74,8 +74,8 @@ public static class DataQualityEndpoints
 
         // ==================== DASHBOARD ====================
 
-        app.MapGet(UiApiRoutes.QualityDashboard, async (CancellationToken ct) =>
-            await HandleAsync(async () =>
+        app.MapGet(UiApiRoutes.QualityDashboard, (CancellationToken ct) =>
+            HandleAsync(async () =>
             {
                 var legacy = ToResponse(qualityService.GetDashboard());
                 var composite = compositeService is null
@@ -143,11 +143,11 @@ public static class DataQualityEndpoints
                 return Json(qualityService.GapAnalyzer.AnalyzeGaps(symbol, targetDate));
             }));
 
-        app.MapPost(UiApiRoutes.QualityGapsBySymbol, async (
+        app.MapPost(UiApiRoutes.QualityGapsBySymbol, (
             string symbol,
             QualityGapRemediationRequest request,
             CancellationToken ct) =>
-            await HandleAsync(async () =>
+            HandleAsync(async () =>
             {
                 if (compositeService is null || remediationService is null)
                 {
@@ -166,6 +166,14 @@ public static class DataQualityEndpoints
                     return Results.Conflict(new
                     {
                         message = "The data-quality snapshot changed. Refresh before remediating this gap."
+                    });
+                }
+
+                if (string.IsNullOrWhiteSpace(target.Provider))
+                {
+                    return Results.Conflict(new
+                    {
+                        message = "The originating provider is unavailable. Refresh after provider-attributed quality evidence is available."
                     });
                 }
 

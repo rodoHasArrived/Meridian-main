@@ -48,7 +48,6 @@ import {
   type ReportingRunStatusRow,
   type ReportingScheduleDeliveryPlanRow,
   type ReportingScheduleRow,
-  type ReportingStarterKitPanelViewModel,
   type ReportingTemplateLifecycleActionRow,
   type ReportingTemplateRow,
   type ReportingWriterGridRow,
@@ -63,6 +62,12 @@ import {
   type ReportBrandingDraftState
 } from "@/screens/reporting-screen.branding-access";
 import type { ExportsReportRunDraftState } from "@/screens/reporting-screen.exports-runner";
+import {
+  buildDefaultReportRunParameterDraft,
+  validateAndBuildReportingRunParameters,
+  type ReportRunParameterDraftField,
+  type ReportRunParameterDraftState
+} from "@/screens/report-run-parameters-screen.view-model";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {
   ReportWriterDesignerGrid,
@@ -85,6 +90,7 @@ import {
 } from "@/screens/reporting-screen.schedule-management";
 import { TemplateLifecycleActionIcon } from "@/screens/reporting-screen.template-lifecycle";
 import { ReportingRunAuditDisclosure } from "@/screens/reporting-screen.run-status-modules";
+import { ReportingStarterKitChooser } from "@/screens/reporting-screen.starter-kit";
 import {
   ReportingBackendReference,
   ReportingCommandStatusView,
@@ -103,6 +109,7 @@ import type {
   ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
+  ReportingRunParameters,
   ReportingRunRequest,
   RenderReportTemplateRequest,
   ReportingScheduleUpsertRequest,
@@ -145,103 +152,6 @@ const reportingStatusFromVariant: Record<
   live: "Blocked",
   research: "Info"
 };
-
-function ReportingStarterKitChooser({
-  panel,
-  status,
-  runningStarterKitId,
-  onProvision
-}: {
-  panel: ReportingStarterKitPanelViewModel;
-  status: ReportingCommandStatus | null;
-  runningStarterKitId: string | null;
-  onProvision: (kitId: string, title: string) => void | Promise<void>;
-}) {
-  if (!panel.hasCards) {
-    return null;
-  }
-
-  return (
-    <section
-      role="region"
-      aria-label={panel.title}
-      className="panel-surface space-y-4 px-4 py-4"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="eyebrow-label">Starter desk</div>
-          <h2 className="mt-2 text-lg font-semibold text-foreground">{panel.title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{panel.description}</p>
-        </div>
-        <Badge variant={panel.statusVariant}>{panel.statusLabel}</Badge>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {panel.cards.map((card) => {
-          const busyId = `starter-kit:${card.id}`;
-          return (
-            <Card key={card.id} className="border-border/70 bg-background/45">
-              <CardHeader className="space-y-2">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="outline">{card.defaultPeriodLabel}</Badge>
-                  <Badge variant="outline">{card.seedScheduleSummary}</Badge>
-                </div>
-                <CardTitle className="text-base">{card.title}</CardTitle>
-                <CardDescription>{card.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <dl className="grid gap-2 text-xs sm:grid-cols-2">
-                  <div className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
-                    <dt className="uppercase text-muted-foreground">Templates</dt>
-                    <dd className="mt-1 font-medium text-foreground">{card.templateSummary}</dd>
-                  </div>
-                  <div className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2">
-                    <dt className="uppercase text-muted-foreground">Hub layout</dt>
-                    <dd className="mt-1 break-all font-mono text-foreground">{card.layoutLabel}</dd>
-                  </div>
-                </dl>
-                <div className="flex flex-wrap gap-1.5" aria-label={`${card.title} templates`}>
-                  {card.templateNames.map((name) => (
-                    <Badge key={name} variant="outline">{name}</Badge>
-                  ))}
-                </div>
-                <div className="space-y-1.5" aria-label={`${card.title} draft schedules`}>
-                  {card.seedSchedules.map((schedule) => (
-                    <div key={schedule.id} className="rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-2 text-xs">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge variant="outline">{schedule.cadence}</Badge>
-                        <span className="font-medium text-foreground">{schedule.stateLabel}</span>
-                      </div>
-                      <p className="mt-1 text-muted-foreground">{schedule.description}</p>
-                      <p className="mt-1 font-mono text-xs text-muted-foreground">{schedule.deliveryTargetSummary}</p>
-                    </div>
-                  ))}
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="w-full justify-center"
-                  aria-label={card.actionAriaLabel}
-                  busy={runningStarterKitId === busyId}
-                  busyLabel="Provisioning"
-                  disabled={Boolean(runningStarterKitId)}
-                  onClick={() => void onProvision(card.id, card.title)}
-                >
-                  <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-                  {card.actionLabel}
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {status ? (
-        <ReportingCommandStatusView status={status} />
-      ) : null}
-    </section>
-  );
-}
 
 const livePortfolioAutoRefreshIntervalMs = 60_000;
 const LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS = 2 * livePortfolioAutoRefreshIntervalMs;
@@ -738,8 +648,31 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       if (field === "cronExpression" || field === "nextAsOfDate") {
         next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc);
       }
+      if (field === "nextAsOfDate") {
+        next.runParameters = {
+          ...next.runParameters,
+          periodId: value.slice(0, 7)
+        };
+      }
+      if (field === "templateId") {
+        const selectedTemplate = vm.templateRows.find((template) => template.id === value && template.canRunOnDemand);
+        if (selectedTemplate) {
+          next.templateId = selectedTemplate.templateName;
+          next.templateVersion = selectedTemplate.versionNumber;
+        }
+      }
       return next;
     });
+  }
+
+  function updateScheduleRunParameters(field: ReportRunParameterDraftField, value: string | boolean) {
+    setScheduleDraft((current) => ({
+      ...current,
+      runParameters: {
+        ...current.runParameters,
+        [field]: value
+      } as ReportRunParameterDraftState
+    }));
   }
 
   function toggleScheduleDraftFormat(format: ReportingScheduleArtifactFormat, isSelected: boolean) {
@@ -778,7 +711,20 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       return;
     }
 
-    const request = buildReportingScheduleUpsertRequest(scheduleDraft, brandingDraft);
+    let request: ReportingScheduleUpsertRequest;
+    try {
+      request = buildReportingScheduleUpsertRequest(scheduleDraft, brandingDraft, vm.templateRows);
+    } catch (error) {
+      const display = describeApiError(error, "The reporting schedule parameters are incomplete.");
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Save reporting schedule",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+      return;
+    }
     const targets = request.deliveryTargets ?? [];
     if (targets.some((target) => (target.formats ?? []).length === 0)) {
       setScheduleActionStatus({
@@ -2116,6 +2062,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           status={scheduleActionStatus}
           runningScheduleActionId={runningScheduleActionId}
           onDraftChange={updateScheduleDraft}
+          onRunParameterChange={updateScheduleRunParameters}
           onToggleFormat={toggleScheduleDraftFormat}
           onStageTarget={stageScheduleDraftDeliveryTarget}
           onRemoveTarget={removeScheduleDraftDeliveryTarget}
@@ -2934,7 +2881,8 @@ function buildStructuredExportDownloadHref(
 
 export function buildExportsReportRunRequest(
   template: ReportingTemplateRow | null,
-  draft: ExportsReportRunDraftState
+  draft: ExportsReportRunDraftState,
+  parameters?: ReportingRunParameters | null
 ): ReportingRunRequest {
   // Authorized restatement targets a specific released run's series: reuse its job id and as-of
   // date so the regenerated run versions into the same series (-v2) and trips the governed guard.
@@ -2960,10 +2908,15 @@ export function buildExportsReportRunRequest(
 
   return {
     templateId: template.templateName,
+    template: {
+      name: template.templateName,
+      version: template.versionNumber
+    },
     asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
     maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
-    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null
+    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null,
+    parameters: parameters ?? null
   };
 }
 
@@ -3011,6 +2964,10 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
   const scheduleId = normalizeIdentifierToken(schedule?.scheduleId, `sched-${templateId}`);
   const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, new Date().toISOString().slice(0, 10));
   const dueAtUtc = normalizeDraftText(schedule?.dueAtUtc, `${nextAsOfDate}T20:00:00Z`);
+  const retainedTemplate = schedule?.template
+    ?? (template
+      ? { name: template.templateId, version: parseReportTemplateVersion(template.version) ?? 1 }
+      : { name: templateId, version: 1 });
 
   return {
     scheduleId,
@@ -3026,7 +2983,13 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     deliveryMode: normalizeReportingScheduleDeliveryMode(firstTarget?.deliveryMode),
     deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
     formats: buildScheduleFormatSelection(firstTarget?.formats),
-    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget)
+    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget),
+    templateVersion: retainedTemplate.version,
+    runParameters: buildDefaultReportRunParameterDraft({
+      fundProfileId: reporting?.selectedFundProfileId ?? reporting?.fundProfileId,
+      asOfDate: nextAsOfDate,
+      parameters: schedule?.runParameters
+    })
   };
 }
 
@@ -3100,13 +3063,29 @@ export function resolveReportingScheduleDueAtUtc(
 
 function buildReportingScheduleUpsertRequest(
   draft: ReportingScheduleDraftState,
-  brandingDraft: ReportBrandingDraftState
+  brandingDraft: ReportBrandingDraftState,
+  templates: ReportingTemplateRow[]
 ): ReportingScheduleUpsertRequest {
   const scheduleId = normalizeIdentifierToken(draft.scheduleId, "sched-reporting-pack");
   const templateId = normalizeIdentifierToken(draft.templateId, "investor-monthly-statement");
   const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, new Date().toISOString().slice(0, 10));
   const deliveryNote = normalizeDraftText(draft.deliveryNote, "");
   const brandingThemeOverride = buildReportBrandingOverride(brandingDraft);
+  const parameterValidation = validateAndBuildReportingRunParameters(draft.runParameters, nextAsOfDate);
+  if (!parameterValidation.parameters) {
+    throw new Error(parameterValidation.issues.join(" "));
+  }
+  const exactTemplate = templates.find((template) =>
+    template.templateName === templateId && template.versionNumber === draft.templateVersion)
+    ?? templates
+      .filter((template) => template.templateName === templateId && template.canRunOnDemand)
+      .reduce<ReportingTemplateRow | null>(
+        (latest, template) => !latest || template.versionNumber > latest.versionNumber ? template : latest,
+        null
+      );
+  if (!exactTemplate) {
+    throw new Error("Select an approved reporting template version before saving the schedule.");
+  }
 
   return {
     scheduleId,
@@ -3121,7 +3100,12 @@ function buildReportingScheduleUpsertRequest(
     deliveryTargets: buildReportingScheduleDeliveryTargets(draft, deliveryNote),
     datasetSourceId: normalizeOptionalDatasetSourceId(draft.datasetSourceId),
     brandingThemeId: brandingThemeOverride.themeId,
-    brandingThemeOverride
+    brandingThemeOverride,
+    template: {
+      name: exactTemplate.templateName,
+      version: exactTemplate.versionNumber
+    },
+    runParameters: parameterValidation.parameters
   };
 }
 

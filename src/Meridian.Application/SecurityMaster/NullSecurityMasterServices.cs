@@ -44,6 +44,12 @@ public sealed class NullSecurityMasterQueryService
     public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
         => Task.FromResult<SecurityDetailDto?>(null);
 
+    public Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+        => Task.FromResult<SecurityDetailDto?>(null);
+
     public Task<SecurityDetailDto?> GetByIdentifierAsync(
         SecurityIdentifierKind identifierKind,
         string identifierValue,
@@ -261,20 +267,11 @@ internal sealed class NullOperatorOverridesStore : IOperatorOverridesStore
             "Security Master is not configured. " +
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
 
-<<<<<<< Updated upstream
-    public Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
-        Guid securityId,
-        OperatorOverrideApprovalDecisionRequest request,
-        string reviewer,
-        CancellationToken ct = default)
-        => Task.FromException<OperatorOverridesDto?>(new InvalidOperationException(
-=======
     public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
         Guid securityId,
-        OperatorOverrideDecisionRequest request,
+        OperatorOverrideDecision decision,
         CancellationToken ct = default)
         => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
->>>>>>> Stashed changes
             "Security Master is not configured. " +
             "Set the MERIDIAN_SECURITY_MASTER_CONNECTION_STRING environment variable to enable operator overrides."));
 }

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
@@ -8,7 +9,7 @@ using Meridian.Storage.Export;
 
 namespace Meridian.Ui.Shared.Services;
 
-public sealed class ReportPackRunReadService
+public sealed partial class ReportPackRunReadService
 {
     private const int DefaultRecentRunLimit = 12;
     private const int StructuredReportingExportSchemaVersion = 1;
@@ -184,7 +185,7 @@ public sealed class ReportPackRunReadService
         var allSchedules = _scheduleService?.ListSchedules(100) ?? [];
         var totalTemplateCount = CountTemplates();
         var starterKits = _starterKitService?.ListKits() ?? [];
-        var starterKitState = _starterKitService?.GetState();
+        var starterKitState = _starterKitService?.GetState(accessContext);
         var templates = ApplyStarterKitTemplateFilter(BuildTemplates(accessContext), starterKitState);
         var familyByTemplate = templates
             .GroupBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
@@ -193,12 +194,18 @@ public sealed class ReportPackRunReadService
             .GroupBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
         var workflowRecords = FilterWorkflowRecords(allWorkflowRecords, accessContext);
-        var runs = BuildRecentRuns(Math.Clamp(recentRunLimit, 1, 200), familyByTemplate, templatesById, workflowRecords);
+        var runs = BuildRecentRuns(
+            Math.Clamp(recentRunLimit, 1, 200),
+            familyByTemplate,
+            templatesById,
+            workflowRecords,
+            accessContext);
         var deliveryAttempts = FilterDeliveryAttempts(
             allDeliveryAttempts,
             accessContext,
             templates,
-            workflowRecords);
+            workflowRecords,
+            runs.Select(static run => run.Payload.RunId).ToHashSet(StringComparer.OrdinalIgnoreCase));
         var schedules = FilterSchedules(
             allSchedules,
             accessContext,
@@ -1439,6 +1446,11 @@ public sealed class ReportPackRunReadService
             scopes.Add($"company:{accessContext.CompanyId.Trim()}");
         }
 
+        if (!string.IsNullOrWhiteSpace(accessContext.TenantId))
+        {
+            scopes.Add($"tenant:{accessContext.TenantId.Trim()}");
+        }
+
         if (accessContext.HasGlobalOverride)
         {
             scopes.Add("override:reporting-admin");
@@ -1482,68 +1494,6 @@ public sealed class ReportPackRunReadService
 
         return reasons.ToArray();
     }
-
-    internal static IReadOnlyList<ReportPackWorkflowRecordDto> FilterWorkflowRecords(
-        IReadOnlyList<ReportPackWorkflowRecordDto> records,
-        ReportAccessQueryContext? accessContext)
-    {
-        if (accessContext is null)
-        {
-            return records;
-        }
-
-        return records
-            .Where(record => IsAccessible(record.AccessPolicy, accessContext))
-            .ToArray();
-    }
-
-    private static IReadOnlyList<ReportingScheduleRecordDto> FilterSchedules(
-        IReadOnlyList<ReportingScheduleRecordDto> schedules,
-        ReportAccessQueryContext? accessContext,
-        IReadOnlyList<WorkstationReportingTemplatePayload> visibleTemplates)
-    {
-        if (accessContext is null)
-        {
-            return schedules;
-        }
-
-        var visibleTemplateIds = visibleTemplates
-            .Where(static template => template.IsAccessible)
-            .Select(static template => template.TemplateId)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        return schedules
-            .Where(schedule => visibleTemplateIds.Contains(schedule.TemplateId))
-            .ToArray();
-    }
-
-    private static IReadOnlyList<ReportPackDeliveryAttemptDto> FilterDeliveryAttempts(
-        IReadOnlyList<ReportPackDeliveryAttemptDto> attempts,
-        ReportAccessQueryContext? accessContext,
-        IReadOnlyList<WorkstationReportingTemplatePayload> visibleTemplates,
-        IReadOnlyList<ReportPackWorkflowRecordDto> visibleWorkflowRecords)
-    {
-        if (accessContext is null)
-        {
-            return attempts;
-        }
-
-        var visibleTemplateIds = visibleTemplates
-            .Where(static template => template.IsAccessible)
-            .Select(static template => template.TemplateId)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var visibleReportIds = visibleWorkflowRecords
-            .Select(static record => record.ReportId)
-            .ToHashSet();
-        return attempts
-            .Where(attempt =>
-                visibleReportIds.Contains(attempt.ReportId)
-                || (!string.IsNullOrWhiteSpace(attempt.Package?.ReportingTemplateId)
-                    && visibleTemplateIds.Contains(attempt.Package.ReportingTemplateId)))
-            .ToArray();
-    }
-
-    private static bool IsAccessible(ReportAccessPolicyDto? policy, ReportAccessQueryContext? accessContext) =>
-        accessContext is null || ReportAccessPolicyEvaluator.Evaluate(policy, accessContext).IsAccessible;
 
     private static WorkstationReportingTemplatePayload ProjectCatalogTemplate(
         ReportingTemplateMetadata template,
@@ -1674,9 +1624,17 @@ public sealed class ReportPackRunReadService
         int limit,
         IReadOnlyDictionary<string, string> familyByTemplate,
         IReadOnlyDictionary<string, WorkstationReportingTemplatePayload> templatesById,
-        IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords)
+        IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords,
+        ReportAccessQueryContext? accessContext)
     {
         IReadOnlyList<ReportingRunSnapshot> genericSnapshots = _runStore?.ListRuns(200) ?? [];
+        if (accessContext is not null)
+        {
+            genericSnapshots = genericSnapshots
+                .Where(snapshot => ReportAccessPolicyEvaluator.Evaluate(snapshot.Manifest, accessContext).IsAccessible)
+                .ToArray();
+        }
+
         var genericRuns = ProjectGenericRuns(genericSnapshots, familyByTemplate, templatesById);
         var workflowRuns = workflowRecords
             .Take(limit)
@@ -3060,7 +3018,7 @@ public sealed class ReportPackRunReadService
                     id: $"{record.ReportId:D}:publication:{link.EvidenceId}",
                     kind: "publication-evidence",
                     label: string.IsNullOrWhiteSpace(link.Label) ? link.EvidenceId : link.Label,
-                    href: link.Route!,
+                    href: SanitizeDeliveryHref(link.Route!),
                     method: "GET",
                     isBrowserNavigable: IsHttpRoute(link.Route),
                     source: string.IsNullOrWhiteSpace(link.Source) ? "publication" : link.Source!);
@@ -3094,7 +3052,7 @@ public sealed class ReportPackRunReadService
                     id: $"{record.ReportId:D}:restatement:{link.EvidenceId}",
                     kind: "restatement-evidence",
                     label: string.IsNullOrWhiteSpace(link.Label) ? link.EvidenceId : link.Label,
-                    href: link.Route!,
+                    href: SanitizeDeliveryHref(link.Route!),
                     method: "GET",
                     isBrowserNavigable: IsHttpRoute(link.Route),
                     source: string.IsNullOrWhiteSpace(link.Source) ? "restatement" : link.Source!);

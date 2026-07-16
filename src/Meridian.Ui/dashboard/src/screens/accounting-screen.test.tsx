@@ -19,10 +19,12 @@ import type {
   ExternalGlExportPackageManifest,
   ExternalGlMappingProfile,
   ClosePeriodPlan,
+  DailyValuationScheduleWorkItem,
   LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  PrivateCapitalCloseCockpit,
   CapitalAccountWorkbench,
   GeneratedPostingLine,
   PostingRuleJournalCandidateResult,
@@ -220,6 +222,7 @@ vi.mock("@/lib/api", async () => {
     applyManualJournalEntryLifecycleAction: vi.fn(),
     getLedgerCloseManagementPeriodPlan: vi.fn(),
     configureLedgerCloseManagementPeriodPlan: vi.fn(),
+    lockLedgerCloseManagementPeriod: vi.fn(),
     createLedgerCloseManagementLateAdjustment: vi.fn(),
     reviewLedgerCloseManagementLateAdjustment: vi.fn(),
     signOffLedgerCloseManagementTask: vi.fn(),
@@ -270,6 +273,11 @@ vi.mock("@/lib/api", async () => {
     }),
     getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflow: vi.fn(),
+    getPrivateCapitalCloseCockpit: vi.fn().mockResolvedValue(null),
+    listDailyValuationSchedules: vi.fn().mockResolvedValue([]),
+    configureDailyValuationSchedule: vi.fn(),
+    runDueDailyValuationSchedules: vi.fn(),
+    approveAndPostDailyValuationBatch: vi.fn(),
     getFinancialOperationsCommandCenter: vi.fn().mockResolvedValue({
       generatedAtUtc: "2026-06-01T12:00:00Z",
       fundProfileId: "fund-alpha",
@@ -2963,6 +2971,7 @@ describe("AccountingScreen", () => {
     const user = userEvent.setup();
     const closePlan: ClosePeriodPlan = {
       closePlanId: "close-plan-workflow-approval-1",
+      workflowVersion: 12,
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-alpha",
       periodId: "2026-05",
@@ -2981,7 +2990,32 @@ describe("AccountingScreen", () => {
         requiresLateAdjustmentApproval: true
       },
       validationIssues: [],
-      closeCalendar: []
+      closeCalendar: [],
+      closingEntriesGate: {
+        gateId: "closing-entries:book-alpha:2026-05",
+        label: "Post closing entries",
+        state: "Required",
+        isReadyForLock: true,
+        netIncomeRoll: 1500,
+        temporaryAccountBalanceCount: 1,
+        detail: "Non-zero temporary-account balances require a closing-entry draft before period lock.",
+        idempotencyKey: "closing-entries:book-alpha:2026-05:v1",
+        balances: [{
+          accountName: "Advisory fee revenue",
+          accountType: "Revenue",
+          balance: 1500,
+          symbol: "ADV-FEE",
+          financialAccountId: "financial-account-revenue",
+          dimensions: {
+            fundId: "fund-alpha",
+            entityId: "entity-alpha",
+            sleeveId: "sleeve-credit"
+          }
+        }],
+        evidenceLinks: ["evidence/closing-entry-preview"],
+        closingBatchJournalEntryIds: [],
+        reversalDraftJournalEntryIds: []
+      }
     };
     const lateAdjustmentPlan: ClosePeriodPlan = {
       ...closePlan,
@@ -3002,8 +3036,8 @@ describe("AccountingScreen", () => {
     };
     vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([approvalWorkflowSummary]);
     vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
-    vi.mocked(api.getLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
-    vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValueOnce([]);
+    vi.mocked(api.getLedgerCloseManagementPeriodPlan).mockResolvedValue(closePlan);
+    vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValue([]);
     vi.mocked(api.configureLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
     vi.mocked(api.createLedgerCloseManagementLateAdjustment).mockResolvedValueOnce(lateAdjustmentPlan);
 
@@ -3011,6 +3045,17 @@ describe("AccountingScreen", () => {
 
     const cockpit = await screen.findByRole("region", { name: "Accounting close and report package certification cockpit" });
     expect(await within(cockpit).findByText("$1,000 USD or 1% review by Controller")).toBeInTheDocument();
+    const closingEntriesGate = within(cockpit).getByRole("region", { name: "Post closing entries gate" });
+    expect(within(closingEntriesGate).getByText("Required")).toBeInTheDocument();
+    const netIncomeRoll = within(closingEntriesGate).getByText("Net-income roll").parentElement;
+    expect(netIncomeRoll).not.toBeNull();
+    expect(within(netIncomeRoll!).getByText("+$1,500.00 USD")).toBeInTheDocument();
+    expect(within(closingEntriesGate).getByText("Posting required before lock")).toBeInTheDocument();
+    const scopedBalances = within(closingEntriesGate).getByRole("table", { name: "Scoped temporary-account balances" });
+    expect(within(scopedBalances).getByText("Advisory fee revenue (ADV-FEE)")).toBeInTheDocument();
+    expect(within(scopedBalances).getByText("Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit")).toBeInTheDocument();
+    expect(within(closingEntriesGate).getByRole("button", { name: "Queue closing entries" })).toBeEnabled();
+    expect(within(cockpit).getByRole("button", { name: "Lock period" })).toBeDisabled();
     await waitFor(() => expect(screen.getByRole("button", { name: "Retain close setup" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Retain close setup" }));
     expect(await within(cockpit).findByText("Retained close-plan setup for 2026-05.")).toBeInTheDocument();
@@ -3048,6 +3093,238 @@ describe("AccountingScreen", () => {
         "browser://accounting/close/materiality-review/workflow-approval-1"
       ])
     }));
+  });
+
+  it("runs retained daily valuation schedule, posting, and blocked-retry commands through typed endpoints", async () => {
+    vi.clearAllMocks();
+    const user = userEvent.setup();
+    const ledgerBookId = "11111111-1111-1111-1111-111111111111";
+    const periodId = "22222222-2222-2222-2222-222222222222";
+    const journalEntryIds = [
+      "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+      "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+    ];
+    const evidenceLink = {
+      evidenceId: "daily-valuation-schedule-evidence",
+      label: "Daily valuation schedule evidence",
+      route: `/api/workstation/evidence/subjects/accounting-record/daily-valuation/ledger-book/${ledgerBookId}/${periodId}`,
+      source: "daily-valuation-scheduler",
+      capturedAtUtc: "2026-06-01T01:00:00Z"
+    };
+    let currentSchedule: DailyValuationScheduleWorkItem = {
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      currency: "USD",
+      actor: "valuation-scheduler",
+      ledgerBookId,
+      periodId,
+      nextRunAtUtc: "2026-06-02T01:00:00Z",
+      positions: [],
+      policyId: "daily-close-policy",
+      policyName: "Approved daily close marks",
+      valuationMethod: "ClosingPrice",
+      policyApprovedBy: "controller",
+      policyApprovedAtUtc: "2026-05-01T00:00:00Z",
+      reason: "Retained daily close valuation schedule.",
+      isEnabled: true,
+      entityId: "entity-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      state: "Scheduled",
+      evidenceLinks: [evidenceLink],
+      blockers: [],
+      journalEntryIds: []
+    };
+    const buildCockpit = (
+      state: NonNullable<PrivateCapitalCloseCockpit["dailyValuationStatus"]>
+    ): PrivateCapitalCloseCockpit => ({
+      fundProfileId: "fund-alpha",
+      ledgerBookId,
+      fundAccountId: "fund-account-alpha",
+      periodId,
+      entityId: "entity-alpha",
+      projectedAtUtc: "2026-06-01T05:00:00Z",
+      cockpitRoute: "/accounting",
+      overallStatus: state.state === "Posted" ? "Ready" : state.state === "Blocked" ? "Blocked" : "ReviewRequired",
+      isReadyToClose: state.state === "Posted",
+      readinessScore: state.state === "Posted" ? 100 : 75,
+      workflowCount: 1,
+      fundEventCount: 0,
+      capitalAccountCount: 0,
+      reportOutputCount: 0,
+      deliveredReportOutputCount: 0,
+      readyLaneCount: state.state === "Posted" ? 1 : 0,
+      blockedLaneCount: state.state === "Blocked" ? 1 : 0,
+      lanes: [],
+      workflows: [],
+      blockers: [],
+      nextActions: [],
+      liveCapabilities: [],
+      plannedCapabilities: [],
+      dailyValuationStatus: state
+    });
+    const scheduledStatus: NonNullable<PrivateCapitalCloseCockpit["dailyValuationStatus"]> = {
+      scheduleId: currentSchedule.scheduleId,
+      fundProfileId: currentSchedule.fundProfileId,
+      ledgerBookId,
+      periodId,
+      isConfigured: true,
+      isEnabled: true,
+      nextRunAtUtc: currentSchedule.nextRunAtUtc,
+      lastRunAtUtc: null,
+      state: "Scheduled",
+      summary: "Daily valuation is scheduled.",
+      journalEntryId: null,
+      evidenceLinks: [evidenceLink],
+      blockers: [],
+      journalEntryIds: [],
+      batchCorrelationId: null,
+      entityId: "entity-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha"
+    };
+    const draftReadyStatus = {
+      ...scheduledStatus,
+      state: "DraftReady" as const,
+      summary: "Two retained valuation drafts are ready.",
+      journalEntryId: journalEntryIds[0],
+      journalEntryIds,
+      batchCorrelationId: "daily-valuation:fund-alpha:2026-06-02"
+    };
+    const blockedStatus = {
+      ...draftReadyStatus,
+      state: "Blocked" as const,
+      summary: "One of two retained valuation drafts posted before correction was required.",
+      blockers: ["Draft correction is required before retry."]
+    };
+    const postedStatus = {
+      ...blockedStatus,
+      state: "Posted" as const,
+      summary: "Both retained valuation drafts posted.",
+      blockers: []
+    };
+    let currentCockpit = buildCockpit(scheduledStatus);
+
+    vi.mocked(api.getPrivateCapitalCloseCockpit).mockImplementation(async () => currentCockpit);
+    vi.mocked(api.listDailyValuationSchedules).mockImplementation(async () => [currentSchedule]);
+    vi.mocked(api.configureDailyValuationSchedule).mockImplementation(async (request) => {
+      currentSchedule = { ...request, state: "Scheduled" };
+      return currentSchedule;
+    });
+    vi.mocked(api.runDueDailyValuationSchedules).mockImplementation(async () => {
+      currentSchedule = {
+        ...currentSchedule,
+        state: "DraftReady",
+        journalEntryId: journalEntryIds[0],
+        journalEntryIds,
+        batchCorrelationId: draftReadyStatus.batchCorrelationId
+      };
+      currentCockpit = buildCockpit(draftReadyStatus);
+      return {
+        evaluatedAtUtc: "2026-06-02T01:00:00Z",
+        runs: [{
+          scheduleId: currentSchedule.scheduleId,
+          scheduledForUtc: "2026-06-02T01:00:00Z",
+          state: "DraftReady",
+          summary: "Two retained valuation drafts are ready.",
+          journalEntryId: journalEntryIds[0],
+          blockers: [],
+          journalEntryIds,
+          batchCorrelationId: draftReadyStatus.batchCorrelationId
+        }]
+      };
+    });
+    vi.mocked(api.approveAndPostDailyValuationBatch)
+      .mockImplementationOnce(async () => {
+        currentSchedule = { ...currentSchedule, state: "Blocked", blockers: blockedStatus.blockers };
+        currentCockpit = buildCockpit(blockedStatus);
+        return {
+          scheduleId: currentSchedule.scheduleId,
+          batchCorrelationId: draftReadyStatus.batchCorrelationId!,
+          isComplete: false,
+          journalEntryIds,
+          postedJournalEntryIds: [journalEntryIds[0]],
+          blockers: blockedStatus.blockers
+        };
+      })
+      .mockImplementationOnce(async () => {
+        currentSchedule = { ...currentSchedule, state: "Posted", blockers: [] };
+        currentCockpit = buildCockpit(postedStatus);
+        return {
+          scheduleId: currentSchedule.scheduleId,
+          batchCorrelationId: draftReadyStatus.batchCorrelationId!,
+          isComplete: true,
+          journalEntryIds,
+          postedJournalEntryIds: journalEntryIds,
+          blockers: []
+        };
+      });
+
+    await renderAccountingScreen(
+      data,
+      `/accounting?fundProfileId=fund-alpha&ledgerBookId=${ledgerBookId}&periodId=${periodId}`
+    );
+
+    const commandCenter = await screen.findByRole("region", { name: "CFO and controller close command center" });
+    const configureButton = await within(commandCenter).findByRole("button", {
+      name: "Configure the server-retained daily valuation schedule for the current close scope"
+    });
+    const runDueButton = within(commandCenter).getByRole("button", {
+      name: "Run due daily valuation schedules for the current tenant scope"
+    });
+    expect(configureButton).toBeEnabled();
+    expect(runDueButton).toBeEnabled();
+
+    await user.click(configureButton);
+
+    expect(await within(commandCenter).findByText(`Configured daily valuation schedule daily-fund-alpha for ${currentSchedule.nextRunAtUtc}.`)).toBeInTheDocument();
+    expect(api.configureDailyValuationSchedule).toHaveBeenCalledWith(expect.objectContaining({
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      ledgerBookId,
+      periodId,
+      entityId: "entity-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      policyId: "daily-close-policy",
+      actor: "close-cockpit-operator"
+    }));
+
+    await user.click(within(commandCenter).getByRole("button", {
+      name: "Run due daily valuation schedules for the current tenant scope"
+    }));
+
+    expect(api.runDueDailyValuationSchedules).toHaveBeenCalledWith();
+    expect(await within(commandCenter).findByText(/finished in DraftReady/)).toBeInTheDocument();
+    const approveButton = await within(commandCenter).findByRole("button", {
+      name: "Approve and post the complete retained daily valuation batch"
+    });
+    await user.click(approveButton);
+
+    expect(await within(commandCenter).findByText(/batch remains blocked: Draft correction is required before retry/)).toBeInTheDocument();
+    expect(api.approveAndPostDailyValuationBatch).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      notes: "Approved the complete retained daily valuation batch from the controller close cockpit.",
+      evidenceLinks: [evidenceLink.route]
+    }));
+    const retryButton = await within(commandCenter).findByRole("button", {
+      name: "Correct and retry the incomplete retained daily valuation batch"
+    });
+    await user.click(retryButton);
+
+    expect(await within(commandCenter).findByText(/Retried and posted all 2 daily valuation drafts/)).toBeInTheDocument();
+    expect(api.approveAndPostDailyValuationBatch).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      notes: "Retried the incomplete retained daily valuation batch from the controller close cockpit."
+    }));
+    expect(api.getPrivateCapitalCloseCockpit).toHaveBeenCalledTimes(5);
+    expect(api.listDailyValuationSchedules).toHaveBeenCalledTimes(5);
   });
 
   it("scopes the close command center workflow lookup to route fund and period", async () => {

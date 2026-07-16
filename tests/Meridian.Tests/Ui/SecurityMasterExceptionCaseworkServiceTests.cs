@@ -748,27 +748,41 @@ public sealed class SecurityMasterExceptionCaseworkServiceTests
             return Task.FromResult(updated);
         }
 
-        public Task<OperatorOverridesDto?> RecordApprovalDecisionAsync(
+        public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
             Guid securityId,
-            OperatorOverrideApprovalDecisionRequest request,
-            string reviewer,
+            OperatorOverrideDecision decision,
             CancellationToken ct = default)
         {
+            ArgumentNullException.ThrowIfNull(decision);
+            if (string.IsNullOrWhiteSpace(decision.Reviewer))
+            {
+                throw new ArgumentException("reviewer must be provided.", nameof(decision));
+            }
+
+            if (decision.Decision is not (SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected))
+            {
+                throw new ArgumentOutOfRangeException(nameof(decision), decision.Decision, "Approval decision must be Approved or Rejected.");
+            }
+
             if (!_overrides.TryGetValue(securityId, out var existing))
             {
-                return Task.FromResult<OperatorOverridesDto?>(null);
+                throw new InvalidOperationException($"No operator overrides exist for security '{securityId}'.");
+            }
+
+            if (existing.ApprovalStatus != SecurityOverrideApprovalStatusDto.Pending)
+            {
+                throw new InvalidOperationException($"Operator overrides for security '{securityId}' are '{existing.ApprovalStatus}', not Pending.");
             }
 
             var reviewedAt = DateTimeOffset.UtcNow;
             var updated = existing with
             {
-                ApprovalStatus = request.Decision,
-                ReasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? existing.ReasonCode : request.ReasonCode,
-                ReviewedBy = reviewer,
+                ApprovalStatus = decision.Decision,
+                ReviewedBy = decision.Reviewer,
                 ReviewedAt = reviewedAt
             };
             _overrides[securityId] = updated;
-            return Task.FromResult<OperatorOverridesDto?>(updated);
+            return Task.FromResult(updated);
         }
     }
 

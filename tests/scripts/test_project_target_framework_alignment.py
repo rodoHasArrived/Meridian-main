@@ -11,6 +11,7 @@ CI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "ci.yml"
 MAINTENANCE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "maintenance.yml"
 CODEQL_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "codeql.yml"
 PRODUCTION_DOCKERFILE = REPO_ROOT / "deploy" / "docker" / "Dockerfile"
+DEVCONTAINER_DOCKERFILE = REPO_ROOT / ".devcontainer" / "Dockerfile"
 SKIPPED_PROJECT_DIRS = {".git", ".vs", "artifacts", "bin", "dist", "node_modules", "obj", "publish", "TestResults"}
 
 
@@ -105,6 +106,12 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
         self.assertIn("mcr.microsoft.com/dotnet/aspnet:10.0-alpine", dockerfile)
         self.assertNotIn("mcr.microsoft.com/dotnet/sdk:9", dockerfile)
         self.assertNotIn("mcr.microsoft.com/dotnet/aspnet:9", dockerfile)
+
+    def test_devcontainer_uses_current_sdk_family(self) -> None:
+        dockerfile = DEVCONTAINER_DOCKERFILE.read_text(encoding="utf-8")
+
+        self.assertIn("mcr.microsoft.com/devcontainers/dotnet:10.0", dockerfile)
+        self.assertNotIn("mcr.microsoft.com/devcontainers/dotnet:9.0", dockerfile)
 
 
 if __name__ == "__main__":

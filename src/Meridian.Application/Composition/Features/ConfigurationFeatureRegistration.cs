@@ -1,4 +1,5 @@
 using Meridian.Core.Config;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,7 +24,8 @@ internal sealed class ConfigurationFeatureRegistration : IServiceFeatureRegistra
         }
 
         // ConfigurationService - consolidated configuration operations
-        services.AddSingleton<ConfigurationService>();
+        services.AddSingleton(sp => new ConfigurationService(
+            providerSelectorAccessor: () => sp.GetService<IBestOfBreedProviderSelector>()));
 
         // Configuration utilities
         services.AddSingleton<ConfigTemplateGenerator>();

@@ -66,6 +66,9 @@ lookup paths, and evidence trails those layers rely on.
   cash-reconciliation audit packages. `FundStructure` owns the local JSON and in-memory
   fund-structure state stores, while PostgreSQL fund-structure service persistence stays in the
   storage-backed rows and migrations.
+- `Reporting/` - tenant-bound PostgreSQL storage for immutable report bytes, governed report
+  revisions, restatement requests, append-only lifecycle audit chains, access grants, and delivery
+  state. Reporting migrations share a schema-scoped advisory lock and checksummed migration ledger.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
   tiering, and scheduled cleanup.
 
@@ -298,6 +301,14 @@ configuration scope, and chart/template/rule/test-case child rows use the same c
 Audit reads filter by retained `tenant_id` and `company_id` when shared endpoints supply
 authenticated tenant/company context, keeping Postgres-backed Rules Studio audit history isolated
 across tenant/company boundaries.
+
+Governed reporting persistence stores each series revision under its immutable tenant and scope
+identity while lifecycle state advances through compare-and-swap aggregate versions. State payloads
+retain a SHA-256 checksum and are hydrated only when their indexed identity, tenant, lifecycle
+state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction;
+database triggers require contiguous versions and the retained previous hash, and reject later
+updates or deletes. Restatement approval updates the request and creates the next report revision in
+one transaction, so a failed revision insert cannot leave an approved request without its draft.
 
 ## Glossary
 

@@ -37,6 +37,10 @@ public sealed record BrokeragePortfolioSyncOptions(
 /// </summary>
 public sealed class BrokeragePortfolioSyncService
 {
+    // Keep the accounting-boundary tolerance aligned with ProviderDataQualityValidator:
+    // small provider clock drift is accepted, but timestamps beyond five minutes fail closed.
+    private static readonly TimeSpan MaximumProviderFutureSkew = TimeSpan.FromMinutes(5);
+
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
@@ -48,6 +52,7 @@ public sealed class BrokeragePortfolioSyncService
     private readonly IReadOnlyDictionary<string, IBrokeragePortfolioSync> _portfolioAdapters;
     private readonly IReadOnlyDictionary<string, IBrokerageActivitySync> _activityAdapters;
     private readonly IServiceProvider _services;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<BrokeragePortfolioSyncService> _logger;
 
     public BrokeragePortfolioSyncService(
@@ -69,6 +74,7 @@ public sealed class BrokeragePortfolioSyncService
             .GroupBy(static adapter => adapter.ProviderId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
         _services = services ?? throw new ArgumentNullException(nameof(services));
+        _timeProvider = services.GetService<TimeProvider>() ?? TimeProvider.System;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -149,7 +155,7 @@ public sealed class BrokeragePortfolioSyncService
         ct.ThrowIfCancellationRequested();
         request ??= new WorkstationBrokerageSyncRunRequestDto();
 
-        var attemptedAt = DateTimeOffset.UtcNow;
+        var attemptedAt = _timeProvider.GetUtcNow();
         var link = await ResolveLinkAsync(fundAccountId, request, ct).ConfigureAwait(false);
         if (link is null)
         {
@@ -213,7 +219,11 @@ public sealed class BrokeragePortfolioSyncService
         {
             try
             {
-                portfolio = await portfolioAdapter.GetPortfolioSnapshotAsync(link.ExternalAccountId, ct).ConfigureAwait(false);
+                var receivedPortfolio = await portfolioAdapter
+                    .GetPortfolioSnapshotAsync(link.ExternalAccountId, ct)
+                    .ConfigureAwait(false);
+                ValidatePortfolioSnapshot(link, receivedPortfolio, _timeProvider.GetUtcNow());
+                portfolio = receivedPortfolio;
             }
             catch (OperationCanceledException)
             {
@@ -273,6 +283,42 @@ public sealed class BrokeragePortfolioSyncService
             ct).ConfigureAwait(false);
 
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
+
+        if (portfolio is not null &&
+            _services.GetService<IAccountingPositionSnapshotCaptureService>() is { } accountingSnapshotCapture)
+        {
+            try
+            {
+                await accountingSnapshotCapture
+                    .CaptureBrokerageSyncAsync(projection, portfolio.RetrievedAt, ct)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                const string captureWarning =
+                    "Accounting position-history capture failed; valuation and dividend schedules will remain blocked until a later successful sync.";
+                _logger.LogWarning(
+                    ex,
+                    "Accounting position-history capture failed for {ProviderId}/{AccountId}",
+                    link.ProviderId,
+                    link.ExternalAccountId);
+                projection = projection with
+                {
+                    Status = projection.Status with
+                    {
+                        Health = WorkstationBrokerageSyncHealth.Degraded,
+                        LastError = captureWarning,
+                        Warnings = projection.Status.Warnings.Append(captureWarning).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+                    }
+                };
+                await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
+            }
+        }
+
         await RecordSharedSyncHistoryAsync(
             fundAccountId,
             link,
@@ -329,7 +375,7 @@ public sealed class BrokeragePortfolioSyncService
             DisplayName: string.IsNullOrWhiteSpace(request.DisplayName)
                 ? account.DisplayName ?? $"{providerId}:{externalAccountId}"
                 : request.DisplayName.Trim(),
-            LinkedAt: DateTimeOffset.UtcNow,
+            LinkedAt: _timeProvider.GetUtcNow(),
             LinkedBy: request.LinkedBy,
             AccountKind: request.AccountKind);
 
@@ -501,7 +547,7 @@ public sealed class BrokeragePortfolioSyncService
 
         return new BrokerageHouseholdPortfolioDto(
             ProviderId: providerFilter ?? "all",
-            AsOf: DateTimeOffset.UtcNow,
+            AsOf: _timeProvider.GetUtcNow(),
             TotalCash: accounts.Sum(static account => account.Cash),
             TotalEquity: accounts.Sum(static account => account.Equity),
             TotalBuyingPower: accounts.Sum(static account => account.BuyingPower),
@@ -1034,7 +1080,7 @@ public sealed class BrokeragePortfolioSyncService
             return status;
         }
 
-        var age = DateTimeOffset.UtcNow - status.LastSuccessfulSyncAt.Value;
+        var age = _timeProvider.GetUtcNow() - status.LastSuccessfulSyncAt.Value;
         if (age <= _options.StaleAfter)
         {
             return status;
@@ -1069,7 +1115,7 @@ public sealed class BrokeragePortfolioSyncService
                 ProviderId: requestProviderId,
                 ExternalAccountId: requestExternalAccountId,
                 DisplayName: requestedAccount?.DisplayName ?? $"{requestProviderId}:{requestExternalAccountId}",
-                LinkedAt: DateTimeOffset.UtcNow,
+                LinkedAt: _timeProvider.GetUtcNow(),
                 LinkedBy: request?.RequestedBy,
                 AccountKind: request?.AccountKind ?? BrokerageAccountKindDto.Unknown);
         }
@@ -1102,7 +1148,7 @@ public sealed class BrokeragePortfolioSyncService
             ProviderId: providerId,
             ExternalAccountId: externalAccountId,
             DisplayName: account.DisplayName ?? $"{providerId}:{externalAccountId}",
-            LinkedAt: DateTimeOffset.UtcNow,
+            LinkedAt: _timeProvider.GetUtcNow(),
             LinkedBy: request?.RequestedBy,
             AccountKind: request?.AccountKind ?? BrokerageAccountKindDto.Unknown);
     }
@@ -1252,6 +1298,84 @@ public sealed class BrokeragePortfolioSyncService
 
     private static string? NormalizeExternalAccountId(string? externalAccountId)
         => string.IsNullOrWhiteSpace(externalAccountId) ? null : externalAccountId.Trim();
+
+    private static void ValidatePortfolioSnapshot(
+        WorkstationBrokerageAccountLinkDto link,
+        BrokeragePortfolioSnapshotDto snapshot,
+        DateTimeOffset projectionSyncedAt)
+    {
+        if (snapshot is null)
+        {
+            throw new InvalidOperationException("Portfolio adapter returned no snapshot.");
+        }
+
+        if (snapshot.Account is null)
+        {
+            throw new InvalidOperationException("Portfolio snapshot does not identify its brokerage account.");
+        }
+
+        if (snapshot.RetrievedAt == default)
+        {
+            throw new InvalidOperationException("Portfolio snapshot retrieved timestamp is required for accounting capture.");
+        }
+
+        if (snapshot.RetrievedAt > projectionSyncedAt.Add(MaximumProviderFutureSkew))
+        {
+            throw new InvalidOperationException(
+                $"Portfolio snapshot retrieved timestamp '{snapshot.RetrievedAt:O}' is more than five minutes after server projection sync time '{projectionSyncedAt:O}'. Inspect the provider clock, timezone, or timestamp-unit mapping.");
+        }
+
+        if (!string.Equals(
+                snapshot.Account.ProviderId?.Trim(),
+                link.ProviderId.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Portfolio snapshot provider '{snapshot.Account.ProviderId}' does not match requested provider '{link.ProviderId}'.");
+        }
+
+        if (!string.Equals(
+                snapshot.Account.AccountId?.Trim(),
+                link.ExternalAccountId.Trim(),
+                StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Portfolio snapshot account '{snapshot.Account.AccountId}' does not match requested account '{link.ExternalAccountId}'.");
+        }
+
+        if (snapshot.Balance is null)
+        {
+            throw new InvalidOperationException("Portfolio snapshot does not include a balance.");
+        }
+
+        var accountCurrency = snapshot.Account.Currency?.Trim();
+        var balanceCurrency = snapshot.Balance.Currency?.Trim();
+        if (string.IsNullOrWhiteSpace(accountCurrency) || string.IsNullOrWhiteSpace(balanceCurrency))
+        {
+            throw new InvalidOperationException(
+                "Portfolio snapshot account and balance currencies are required for accounting capture.");
+        }
+
+        if (!string.Equals(accountCurrency, balanceCurrency, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Portfolio snapshot account currency '{accountCurrency}' does not match balance currency '{balanceCurrency}'.");
+        }
+
+        if (snapshot.Positions is null)
+        {
+            throw new InvalidOperationException("Portfolio snapshot position collection is missing.");
+        }
+
+        var mismatchedPosition = snapshot.Positions.FirstOrDefault(position =>
+            !string.IsNullOrWhiteSpace(position.Currency) &&
+            !string.Equals(position.Currency.Trim(), balanceCurrency, StringComparison.OrdinalIgnoreCase));
+        if (mismatchedPosition is not null)
+        {
+            throw new InvalidOperationException(
+                $"Portfolio snapshot position '{mismatchedPosition.Symbol}' currency '{mismatchedPosition.Currency}' does not match balance currency '{balanceCurrency}'.");
+        }
+    }
 
     private string BuildProjectionPath(Guid fundAccountId)
         => Path.Combine(_options.RootDirectory, "projections", fundAccountId.ToString("N"), "current.json");

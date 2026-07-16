@@ -4,8 +4,10 @@ using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using Meridian.Core.Logging;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
+using Serilog;
 
 namespace Meridian.Storage.Replay;
 
@@ -79,12 +81,14 @@ public sealed class MemoryMappedJsonlReader
 {
     private readonly string _root;
     private readonly MemoryMappedReaderOptions _options;
+    private readonly ILogger _log = LoggingSetup.ForContext<MemoryMappedJsonlReader>();
 
     // Metrics
     private long _filesRead;
     private long _bytesRead;
     private long _eventsRead;
     private long _memoryMappedFilesUsed;
+    private long _corruptedLines;
 
     /// <summary>
     /// Total files read.
@@ -105,6 +109,11 @@ public sealed class MemoryMappedJsonlReader
     /// Number of files read using memory mapping.
     /// </summary>
     public long MemoryMappedFilesUsed => Interlocked.Read(ref _memoryMappedFilesUsed);
+
+    /// <summary>
+    /// Number of JSONL lines that failed to deserialize and were skipped during replay.
+    /// </summary>
+    public long CorruptedLines => Interlocked.Read(ref _corruptedLines);
 
     /// <summary>
     /// Creates a new MemoryMappedJsonlReader with default options.
@@ -376,9 +385,11 @@ public sealed class MemoryMappedJsonlReader
                 {
                     results[i] = JsonSerializer.Deserialize<MarketEvent>(lines[i], MarketDataJsonContext.HighPerformanceOptions);
                 }
-                catch
+                catch (Exception ex)
                 {
                     results[i] = null;
+                    Interlocked.Increment(ref _corruptedLines);
+                    _log.Warning(ex, "Skipping corrupt JSONL line during memory-mapped replay (line index {LineIndex})", i);
                 }
             });
 
@@ -401,9 +412,11 @@ public sealed class MemoryMappedJsonlReader
                 {
                     evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Skip invalid lines
+                    // Skip invalid lines, but record and log the drop rather than hiding it.
+                    Interlocked.Increment(ref _corruptedLines);
+                    _log.Warning(ex, "Skipping corrupt JSONL line during memory-mapped replay");
                 }
 
                 if (evt != null)

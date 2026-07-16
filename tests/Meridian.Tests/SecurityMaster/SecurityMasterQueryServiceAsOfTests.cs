@@ -71,6 +71,52 @@ public sealed class SecurityMasterQueryServiceAsOfTests
     }
 
     [Fact]
+    public async Task GetRecordedByIdAsOfAsync_DoesNotFallBackToProjectionOnlyCurrentState()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityMasterEventEnvelope>());
+        var service = CreateService(eventStore, MakeProjection(securityId, "Projection Only Corp"));
+
+        var detail = await service.GetRecordedByIdAsOfAsync(securityId, T0);
+
+        detail.Should().BeNull("strict accounting as-of reads require retained historical events");
+    }
+
+    [Fact]
+    public async Task GetRecordedByIdAsOfAsync_AttachesOnlyAliasesRecordedAndEffectiveAtCutoff()
+    {
+        var securityId = Guid.NewGuid();
+        var cutoff = T0.AddDays(2);
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeEnvelope(securityId, version: 1, timestamp: T0, displayName: "Acme Corp")
+        });
+        var current = MakeProjection(securityId, "Acme Corporation") with
+        {
+            Aliases =
+            [
+                MakeAlias(securityId, "ACTIVE", T0, T0, null, isEnabled: true),
+                MakeAlias(securityId, "DISABLED", T0, T0, null, isEnabled: false),
+                MakeAlias(securityId, "RECORDED-LATE", cutoff.AddMinutes(1), T0, null, isEnabled: true),
+                MakeAlias(securityId, "VALID-LATE", T0, cutoff.AddMinutes(1), null, isEnabled: true),
+                MakeAlias(securityId, "EXPIRED", T0, T0, cutoff, isEnabled: true)
+            ]
+        };
+        var service = CreateService(eventStore, current);
+
+        var detail = await service.GetRecordedByIdAsOfAsync(securityId, cutoff);
+
+        detail.Should().NotBeNull();
+        detail!.Aliases.Select(static alias => alias.AliasValue)
+            .Should().Equal("ACTIVE", "DISABLED");
+        detail.Aliases.Single(static alias => alias.AliasValue == "DISABLED")
+            .IsEnabled.Should().BeFalse("historical filtering must preserve alias enabled semantics");
+    }
+
+    [Fact]
     public async Task GetByIdentifierAsync_WithAsOf_ReturnsAsOfTerms_NotCurrentProjection()
     {
         // Acceptance criterion for point-in-time reads: an identifier lookup with an explicit
@@ -101,6 +147,97 @@ public sealed class SecurityMasterQueryServiceAsOfTests
         historical!.DisplayName.Should().Be("Acme Corp");
         currentDetail.Should().NotBeNull();
         currentDetail!.DisplayName.Should().Be("Acme Corporation");
+    }
+
+    [Fact]
+    public async Task GetReportingReferenceByIdentifierAsOfAsync_FreezesDetailAndEconomicDefinitionFromSameEvent()
+    {
+        var securityId = Guid.NewGuid();
+        var current = MakeProjection(securityId, "Acme Corporation", version: 2);
+        var historicalEvent = MakeEnvelope(
+            securityId,
+            version: 1,
+            timestamp: T0,
+            displayName: "Acme Corp");
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            historicalEvent,
+            MakeEnvelope(
+                securityId,
+                version: 2,
+                timestamp: T0.AddDays(5),
+                displayName: "Acme Corporation")
+        });
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                "ACME",
+                null,
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns(current);
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(current);
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var service = new SecurityMasterQueryService(
+            eventStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, snapshotStore));
+
+        var reference = await service.GetReportingReferenceByIdentifierAsOfAsync(
+            SecurityIdentifierKind.Ticker,
+            "ACME",
+            null,
+            T0.AddDays(2));
+
+        reference.Should().NotBeNull();
+        reference!.Detail.DisplayName.Should().Be("Acme Corp");
+        reference.EconomicDefinition.Should().NotBeNull();
+        reference.EconomicDefinition!.DisplayName.Should().Be("Acme Corp");
+        reference.EconomicDefinition.Version.Should().Be(1);
+        reference.ResolutionMode.Should().Be(SecurityMasterReportingResolutionMode.HistoricalEvent);
+        reference.EventGlobalSequence.Should().Be(historicalEvent.GlobalSequence);
+        reference.EventStreamVersion.Should().Be(1);
+        reference.EventTimestamp.Should().Be(T0);
+    }
+
+    [Fact]
+    public async Task GetReportingReferenceByIdentifierAsOfAsync_LabelsProjectionOnlyFallbackAsNonHistorical()
+    {
+        var securityId = Guid.NewGuid();
+        var current = MakeProjection(securityId, "Projection Only Corp");
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityMasterEventEnvelope>());
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                "ACME",
+                null,
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns(current);
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(current);
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var service = new SecurityMasterQueryService(
+            eventStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, snapshotStore));
+
+        var reference = await service.GetReportingReferenceByIdentifierAsOfAsync(
+            SecurityIdentifierKind.Ticker,
+            "ACME",
+            null,
+            T0);
+
+        reference.Should().NotBeNull();
+        reference!.Detail.DisplayName.Should().Be("Projection Only Corp");
+        reference.EconomicDefinition.Should().NotBeNull();
+        reference.ResolutionMode.Should().Be(
+            SecurityMasterReportingResolutionMode.CurrentProjectionFallback);
+        reference.EventGlobalSequence.Should().BeNull();
     }
 
     [Fact]
@@ -206,4 +343,25 @@ public sealed class SecurityMasterQueryServiceAsOfTests
                 new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "ACME", true, T0.AddDays(-10), null, null)
             },
             Aliases: Array.Empty<SecurityAliasDto>());
+
+    private static SecurityAliasDto MakeAlias(
+        Guid securityId,
+        string value,
+        DateTimeOffset createdAt,
+        DateTimeOffset validFrom,
+        DateTimeOffset? validTo,
+        bool isEnabled)
+        => new(
+            Guid.NewGuid(),
+            securityId,
+            "Ticker",
+            value,
+            Provider: null,
+            SecurityAliasScope.Operations,
+            Reason: "test",
+            CreatedBy: "test",
+            createdAt,
+            validFrom,
+            validTo,
+            isEnabled);
 }

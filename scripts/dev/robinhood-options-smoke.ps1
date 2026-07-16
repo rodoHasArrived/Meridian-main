@@ -330,7 +330,7 @@ function Invoke-DesktopBuild {
 
     Write-Log "Building desktop project $ProjectPath ($Configuration, $Framework)."
     & dotnet restore $ProjectPath --verbosity minimal @(
-        Get-MeridianBuildArguments -IsolationKey $BuildIsolationKey -TargetFramework $Framework -EnableFullWpfBuild
+        Get-MeridianBuildArguments -IsolationKey $BuildIsolationKey -EnableFullWpfBuild
     )
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet restore failed for $ProjectPath"
@@ -668,30 +668,6 @@ function Save-OperatingContextState {
     Save-JsonHashtable -Path $Path -Value $state
 }
 
-function Invoke-ForwardedLaunch {
-    param(
-        [string]$ExecutablePath,
-        [string[]]$Arguments
-    )
-
-    $process = Start-Process `
-        -FilePath $ExecutablePath `
-        -ArgumentList $Arguments `
-        -WorkingDirectory (Split-Path -Parent $ExecutablePath) `
-        -PassThru `
-        -WindowStyle Hidden
-
-    $null = $process.WaitForExit(10000)
-    if (-not $process.HasExited) {
-        Write-Log "Secondary launcher stayed open longer than expected for args: $($Arguments -join ' ')"
-        return
-    }
-
-    if ($process.ExitCode -ne 0) {
-        Write-Log "Secondary launcher returned exit code $($process.ExitCode) for args: $($Arguments -join ' ')"
-    }
-}
-
 function Invoke-EnterWorkstation {
     param(
         [System.Windows.Automation.AutomationElement]$Root,
@@ -713,7 +689,27 @@ function Invoke-EnterWorkstation {
         $enterButton = $null
     }
 
-    if ($null -ne $enterButton) {
+    if ($null -eq $enterButton -or -not $enterButton.Current.IsEnabled) {
+        $seedButton = Find-FirstElementByNames -Root $Root -Names @("Seed Sample Contexts", "Seed Sample Profiles")
+        if ($null -ne $seedButton -and $seedButton.Current.IsEnabled) {
+            Write-Log "No selectable operating context is available. Seeding sample contexts."
+            Invoke-OrClickElement -Element $seedButton
+            $enterButton = Wait-Until -TimeoutSeconds 12 -FailureMessage "Enter workstation control did not become enabled after seeding sample contexts." -Condition {
+                $candidate = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("EnterWorkstationButton")
+                if ($null -eq $candidate) {
+                    $candidate = Find-FirstElementByNames -Root $Root -Names @("Enter Workstation", "Enter Fund")
+                }
+
+                if ($null -ne $candidate -and $candidate.Current.IsEnabled) {
+                    return $candidate
+                }
+
+                return $null
+            }
+        }
+    }
+
+    if ($null -ne $enterButton -and $enterButton.Current.IsEnabled) {
         Invoke-OrClickElement -Element $enterButton
         return
     }
@@ -750,23 +746,81 @@ function Wait-ForShellReady {
         [int]$TimeoutSeconds = 45
     )
 
-    $selectionMarkers = @("Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
+    $selectionMarkers = @("Operating Context", "Operating Context Selection", "Fund Profile Selection", "Choose Fund Profile")
     $shellMarkers = @("Strategy Workspace", "Trading Workspace", "Data Workspace", "Accounting Workspace")
     $initialMarkers = $selectionMarkers + $shellMarkers + $PageMarkers
+    $startupState = @{
+        ContinuationInvoked = $false
+        ContextSeedInvoked = $false
+        ContextEnterInvoked = $false
+        Root = $Root
+    }
 
     $state = Wait-Until -TimeoutSeconds $TimeoutSeconds -FailureMessage "Timed out waiting for Meridian startup." -Condition {
-        $failure = Find-FirstElementByPartialNames -Root $Root -Patterns @("Unable to open", "Object reference not set to an instance")
+        if ($startupState.ContinuationInvoked) {
+            try {
+                $Process.Refresh()
+                if ($Process.MainWindowHandle -ne 0) {
+                    $currentRoot = [System.Windows.Automation.AutomationElement]::FromHandle($Process.MainWindowHandle)
+                    if ($null -ne $currentRoot) {
+                        $startupState.Root = $currentRoot
+                    }
+                }
+            }
+            catch {
+                return $null
+            }
+        }
+
+        $activeRoot = $startupState.Root
+        $failure = Find-FirstElementByPartialNames -Root $activeRoot -Patterns @("Unable to open", "Object reference not set to an instance")
         if ($null -ne $failure) {
             throw "Desktop surfaced a page-load error during startup: $($failure.Current.Name)"
         }
 
-        $match = Find-FirstElementByNames -Root $Root -Names $initialMarkers
+        if (-not $startupState.ContinuationInvoked) {
+            $continueWithoutCredentials = Find-ElementByExactName -Root $activeRoot -Name "Continue without credentials"
+            if ($null -ne $continueWithoutCredentials) {
+                Write-Log "Optional development authentication detected. Continuing without credentials."
+                Invoke-OrClickElement -Element $continueWithoutCredentials
+                $startupState.ContinuationInvoked = $true
+                return $null
+            }
+        }
+
+        if (-not $startupState.ContextEnterInvoked) {
+            $enterWorkstation = Find-FirstElementByAutomationIds -Root $activeRoot -AutomationIds @("EnterWorkstationButton")
+            if ($null -eq $enterWorkstation) {
+                $enterWorkstation = Find-FirstElementByNames -Root $activeRoot -Names @("Enter Workstation", "Enter Fund")
+            }
+
+            if ($null -ne $enterWorkstation -and $enterWorkstation.Current.IsEnabled) {
+                Write-Log "Enabled operating context detected. Entering the workstation."
+                Invoke-OrClickElement -Element $enterWorkstation
+                $startupState.ContextEnterInvoked = $true
+                return $null
+            }
+        }
+
+        if (-not $startupState.ContextSeedInvoked -and -not $startupState.ContextEnterInvoked) {
+            $seedContexts = Find-FirstElementByNames -Root $activeRoot -Names @("Seed Sample Contexts", "Seed Sample Profiles")
+            if ($null -ne $seedContexts -and $seedContexts.Current.IsEnabled) {
+                Write-Log "Empty operating context detected. Seeding sample contexts."
+                Invoke-OrClickElement -Element $seedContexts
+                $startupState.ContextSeedInvoked = $true
+                return $null
+            }
+        }
+
+        $match = Find-FirstElementByNames -Root $activeRoot -Names $initialMarkers
         if ($null -ne $match) {
             return $match
         }
 
         return $null
     }
+
+    $Root = $startupState.Root
 
     if ($state.Current.Name -in $selectionMarkers) {
         Write-Log "Operating context selection detected. Entering the preselected workstation context."
@@ -781,6 +835,8 @@ function Wait-ForShellReady {
             return Find-FirstElementByNames -Root $Root -Names ($shellMarkers + $PageMarkers)
         } | Out-Null
     }
+
+    return $Root
 }
 
 function Wait-ForCasePage {
@@ -818,6 +874,38 @@ function Try-ActivateWorkspaceShell {
     return $true
 }
 
+function Invoke-CommandPaletteNavigation {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [System.Diagnostics.Process]$Process,
+        [string]$PageTag
+    )
+
+    Send-WindowKeys -Process $Process -Keys "^k"
+
+    $paletteInput = Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette input did not become available." -Condition {
+        $candidate = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteInput")
+        if ($null -ne $candidate -and -not $candidate.Current.IsOffscreen) {
+            return $candidate
+        }
+
+        return $null
+    }
+
+    Set-ValuePatternText -Element $paletteInput -Text $PageTag
+    Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette did not resolve page tag '$PageTag'." -Condition {
+        $results = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteResults")
+        if ($null -ne $results -and -not $results.Current.IsOffscreen) {
+            return $results
+        }
+
+        return $null
+    } | Out-Null
+
+    Start-Sleep -Milliseconds 300
+    Send-WindowKeys -Process $Process -Keys "{ENTER}"
+}
+
 function Invoke-SmokeCase {
     param(
         [string]$BaseWorkspaceJson,
@@ -853,7 +941,11 @@ function Invoke-SmokeCase {
     }
 
     if ($FixtureMode) {
-        $startProcessArgs["Environment"] = @{ MDC_FIXTURE_MODE = "1" }
+        $startProcessArgs["Environment"] = @{
+            MDC_FIXTURE_MODE       = "1"
+            DOTNET_ENVIRONMENT     = "Development"
+            ASPNETCORE_ENVIRONMENT = "Development"
+        }
     }
 
     $process = Start-Process @startProcessArgs
@@ -862,7 +954,7 @@ function Invoke-SmokeCase {
     try {
         $root = Get-WindowAutomationRoot -Process $process
         $startupTimeoutSeconds = if ($Case.ContainsKey("StartupTimeoutSeconds")) { [int]$Case.StartupTimeoutSeconds } else { 45 }
-        Wait-ForShellReady -Root $root -Process $process -PageMarkers $Case.ReadyMarkers -TimeoutSeconds $startupTimeoutSeconds
+        $root = Wait-ForShellReady -Root $root -Process $process -PageMarkers $Case.ReadyMarkers -TimeoutSeconds $startupTimeoutSeconds
 
         $pageReady = $null
         try {
@@ -873,10 +965,9 @@ function Invoke-SmokeCase {
         }
 
         if ($null -eq $pageReady) {
-            Write-Log "$($Case.Name) was not visible immediately after startup. Activating workspace shell and forwarding page navigation."
+            Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and navigating through the command palette."
             $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
-            Invoke-ForwardedLaunch -ExecutablePath $ExecutablePath -Arguments @("--page=$($Case.PageTag)")
-            Start-Sleep -Milliseconds 1200
+            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
 

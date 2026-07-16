@@ -180,7 +180,7 @@ public sealed class BrokerageConnectionEndpointsTests
         try
         {
             await using var server = new UiServer(configPath, GetFreeTcpPort());
-            await server.StartAsync();
+            await server.StartAsync().WaitAsync(TimeSpan.FromSeconds(30));
             var app = GetServerApp(server);
 
             var routes = app.Services.GetServices<EndpointDataSource>()

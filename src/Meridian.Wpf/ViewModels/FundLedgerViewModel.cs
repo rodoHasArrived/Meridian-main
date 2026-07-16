@@ -88,6 +88,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private GovernanceLifecycleProjectionDto? _accountingLifecycle;
     private PrivateCapitalCloseCockpitDto? _privateCapitalCloseCockpit;
     private FinancialOperationsCommandCenterDto? _financialOperationsCommandCenter;
+    private PrivateCapitalCloseScope? _privateCapitalCloseScope;
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -950,7 +951,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var accountingWorkspaceTask = _fundOperationsWorkspaceReadService.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
             FundProfileId: activeFund.FundProfileId,
             Currency: activeFund.BaseCurrency), ct);
-        var privateCapitalCloseTask = LoadPrivateCapitalCloseCockpitAsync(activeFund, ct);
+        var privateCapitalCloseTask = LoadPrivateCapitalCloseCockpitAsync(activeFund, context, ct);
         var financialOperationsCommandCenterTask = LoadFinancialOperationsCommandCenterAsync(activeFund, ct);
 
         await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, accountingWorkspaceTask, privateCapitalCloseTask, financialOperationsCommandCenterTask);
@@ -1017,20 +1018,6 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             UpdateReportPackWorkbenchPresentation();
             ApplyPrivateCapitalCloseCockpit(privateCapitalCloseCockpit);
         }
-    }
-
-    private async Task<PrivateCapitalCloseCockpitDto?> LoadPrivateCapitalCloseCockpitAsync(
-        FundProfileDetail activeFund,
-        CancellationToken ct)
-    {
-        if (_privateCapitalCloseCockpitService is null)
-        {
-            return null;
-        }
-
-        return await _privateCapitalCloseCockpitService
-            .GetCockpitAsync(fundProfileId: activeFund.FundProfileId, ct: ct)
-            .ConfigureAwait(false);
     }
 
     private async Task<FinancialOperationsCommandCenterDto?> LoadFinancialOperationsCommandCenterAsync(

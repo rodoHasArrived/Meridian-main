@@ -16,6 +16,8 @@ using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Catalog;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
@@ -34,11 +36,13 @@ using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
 using Meridian.Instruments.AssetOperations;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.Reporting;
 using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Promotions;
@@ -334,6 +338,43 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
+        var reportingConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING")
+            ?? Environment.GetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING");
+        if (!string.IsNullOrWhiteSpace(reportingConnectionString))
+        {
+            services.TryAddSingleton(new ReportingArtifactStoreOptions
+            {
+                ConnectionString = reportingConnectionString,
+                Schema = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_SCHEMA") ?? "reporting"
+            });
+            services.TryAddSingleton<ReportingMigrationRunner>();
+            services.TryAddSingleton<IReportingArtifactStore>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingArtifactStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<IReportingGovernanceRepository>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingGovernanceRepository(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<ReportingGovernanceService>();
+            services.TryAddSingleton<IReportingAccessGrantStore>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingAccessGrantStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+            services.TryAddSingleton<ReportingAccessGrantService>();
+            services.TryAddSingleton<IReportingDeliveryStore>(sp =>
+            {
+                sp.GetRequiredService<ReportingMigrationRunner>()
+                    .EnsureMigratedAsync(CancellationToken.None).GetAwaiter().GetResult();
+                return new PostgresReportingDeliveryStore(sp.GetRequiredService<ReportingArtifactStoreOptions>());
+            });
+        }
         services.TryAddSingleton<ReportingRunStoreOptions>(sp =>
             new ReportingRunStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "runs")));
         services.TryAddSingleton<IReportingRunStore>(sp =>
@@ -396,6 +437,9 @@ public static class WorkstationServiceCollectionExtensions
             new FileReportingStarterKitStore(
                 sp.GetRequiredService<ReportingStarterKitStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportingStarterKitStore>>()));
+        services.TryAddSingleton<IReportingRunReadinessDependencyEvaluator, ReportingRunReadinessDependencyEvaluator>();
+        services.TryAddSingleton<ReportingRunReadinessService>();
+        services.TryAddSingleton<ReportingRunCertificationService>();
         services.TryAddSingleton<ReportingRunCommandService>();
         services.TryAddSingleton(sp =>
             new ReportingScheduleService(
@@ -403,7 +447,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IReportingScheduleStore>(),
                 sp.GetService<ReportPackDeliveryService>(),
                 sp.GetService<GovernedReportingTemplateCatalog>(),
-                sp.GetService<ReportWriterDatasetSourceService>()));
+                sp.GetService<ReportWriterDatasetSourceService>(),
+                sp.GetRequiredService<ReportingRunReadinessService>(),
+                sp.GetRequiredService<ReportingRunCertificationService>()));
         services.TryAddSingleton<ReportingStarterKitService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
@@ -444,6 +490,10 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
         services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
+        services.TryAddSingleton<IAutomatedJournalCapitalAccountReconciliationResolver>(sp =>
+            new LedgerCapitalAccountReconciliationResolver(
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IFundProfileTenancyRegistry>()));
 
         services.TryAddSingleton<IReconciliationRunRepository>(sp =>
             new FileReconciliationRunRepository(
@@ -490,6 +540,11 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<FileDailyValuationPortfolioSource>());
         services.TryAddSingleton<IDailyValuationScheduleStatusSource>(sp =>
             sp.GetRequiredService<FileDailyValuationPortfolioSource>());
+        services.TryAddSingleton(sp =>
+            new DailyValuationPositionService(
+                sp.GetService<IPositionSnapshotStore>(),
+                sp.GetService<ICanonicalSymbolRegistry>(),
+                sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<FileAutomatedJournalScheduleStore>(sp =>
             new FileAutomatedJournalScheduleStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "monthly-automated-journal-schedules.json")));
@@ -497,6 +552,17 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
         services.TryAddSingleton<IAutomatedJournalScheduleStatusSource>(sp =>
             sp.GetRequiredService<FileAutomatedJournalScheduleStore>());
+        services.TryAddSingleton<IAccountingPositionSnapshotCaptureService>(sp =>
+            new AccountingPositionSnapshotCaptureService(
+                sp.GetService<IPositionSnapshotStore>(),
+                sp.GetService<IDailyValuationPortfolioSource>(),
+                sp.GetService<IAutomatedJournalScheduleStore>(),
+                sp.GetService<IAccountQueryService>(),
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IFundProfileTenancyRegistry>()));
+        services.TryAddSingleton<IAutomatedJournalDividendPositionResolver>(sp =>
+            new PositionSnapshotAutomatedJournalDividendPositionResolver(
+                sp.GetService<IPositionSnapshotStore>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             new ManualJournalEntryWorkbenchService(
@@ -510,6 +576,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IGovernedLedgerPostingTarget>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
+        services.TryAddSingleton<DailyValuationBatchLifecycleService>();
+        services.TryAddSingleton(AutomatedJournalEvidencePolicy.Default);
         services.TryAddSingleton(sp =>
             new AutomatedJournalDraftIntakeService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
@@ -519,14 +587,22 @@ public static class WorkstationServiceCollectionExtensions
         {
             var securityMaster = sp.GetService<ContractSecurityMasterQueryService>();
             var providerRegistry = sp.GetService<ProviderRegistry>();
+            var journalStore = sp.GetService<ILedgerJournalStore>();
+            var positionService = sp.GetRequiredService<DailyValuationPositionService>();
             return new AutomatedJournalIntakeRunner(
                 sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
                 new FeeScheduleAccrualEventProducer(),
                 securityMaster is null ? null : new CorporateActionDividendEventProducer(securityMaster),
                 sp.GetService<Meridian.Contracts.Ledger.ILedgerBookService>(),
-                providerRegistry is null
+                providerRegistry is null || journalStore is null
                     ? null
-                    : new DailyMarkToMarketService(new RegisteredHistoricalCloseMarkPriceSource(providerRegistry)));
+                    : new DailyMarkToMarketService(
+                        new RegisteredHistoricalCloseMarkPriceSource(providerRegistry),
+                        new LedgerMarkToMarketCarryingValueSource(journalStore)),
+                positionService,
+                sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
+                sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
+                sp.GetRequiredService<TimeProvider>());
         });
         // The durable ledger book service is only registered when a persistence-backed ledger is
         // configured (see StorageFeatureRegistration). Resolve it optionally so the workstation graph

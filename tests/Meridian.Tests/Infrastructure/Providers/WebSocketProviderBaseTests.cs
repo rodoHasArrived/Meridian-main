@@ -1,8 +1,13 @@
 using FluentAssertions;
+using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
+using Meridian.ProviderSdk;
+using Meridian.Ui.Shared.Endpoints;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
@@ -101,6 +106,55 @@ public sealed class WebSocketProviderBaseTests
         var id = provider.SubscribeTrades(cfg);
 
         id.Should().BeGreaterThanOrEqualTo(5000, "subscription IDs should start from the configured range");
+    }
+
+    [Fact]
+    public async Task RateLimitDiagnostics_ExposeStreamingSurfaceAsExplicitlyUnavailable()
+    {
+        await using var provider = new StubProvider();
+
+        var source = provider.Should().BeAssignableTo<IProviderRateLimitDiagnosticsSource>().Subject;
+        var snapshot = source.GetRateLimitDiagnosticsSnapshot();
+
+        snapshot.ProviderId.Should().Be("stub");
+        snapshot.Surface.Should().Be(ProviderRateLimitSurfaces.Streaming);
+        snapshot.StateAvailable.Should().BeFalse();
+        snapshot.IsRateLimited.Should().BeFalse();
+        snapshot.MaxRequestsPerWindow.Should().Be(0);
+        snapshot.Window.Should().Be(TimeSpan.Zero);
+        snapshot.Reason.Should().Be("runtime-diagnostics-unavailable");
+    }
+
+    [Fact]
+    public void AlpacaAndPolygon_InheritStreamingRateLimitDiagnosticsContract()
+    {
+        typeof(IProviderRateLimitDiagnosticsSource).IsAssignableFrom(typeof(AlpacaMarketDataClient))
+            .Should().BeTrue();
+        typeof(IProviderRateLimitDiagnosticsSource).IsAssignableFrom(typeof(PolygonMarketDataClient))
+            .Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RateLimitEndpoint_IncludesUnavailableWebSocketStreamingSurfaceWithoutCounters()
+    {
+        await using var provider = new StubProvider();
+        await using var registry = new ProviderRegistry();
+        registry.Register(provider);
+        var observedAt = new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero);
+
+        var response = ProviderExtendedEndpoints.CreateRateLimitsResponse(
+            registry,
+            Array.Empty<IDataSource>(),
+            observedAt);
+
+        var row = response.Providers.Should().ContainSingle(item =>
+            item.Provider == "stub" && item.Surface == ProviderRateLimitSurfaces.Streaming).Subject;
+        row.StateAvailable.Should().BeFalse();
+        row.RequestsInWindow.Should().BeNull();
+        row.RemainingRequests.Should().BeNull();
+        row.UsageRatio.Should().BeNull();
+        row.IsRateLimited.Should().BeFalse();
+        row.Reason.Should().Be("runtime-diagnostics-unavailable");
     }
 
     // -----------------------------------------------------------------------

@@ -6,6 +6,7 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Shared;
+using Meridian.ProviderSdk;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -31,7 +32,10 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </remarks>
 [ImplementsAdr("ADR-001", "Unified WebSocket provider base class for streaming data providers")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
-public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnectionDiagnosticsSource
+public abstract class WebSocketProviderBase :
+    IMarketDataClient,
+    IProviderConnectionDiagnosticsSource,
+    IProviderRateLimitDiagnosticsSource
 {
     private readonly WebSocketConnectionManager _connectionManager;
     private Uri? _wsUri;
@@ -100,6 +104,29 @@ public abstract class WebSocketProviderBase : IMarketDataClient, IProviderConnec
             RecoveringSubscriptions = subscriptions.RecoveringSubscriptions,
             LastSubscriptionMessageAt = GetLastSubscriptionMessageAt(subscriptions)
         };
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// The shared WebSocket transport does not receive coherent request-window counters from
+    /// Alpaca, Polygon, or other derived feeds. Expose that absence explicitly so operator
+    /// endpoints include the streaming surface without presenting configured capacity as live
+    /// runtime evidence. A derived provider may override this method when it owns a real tracker.
+    /// </remarks>
+    public virtual ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
+    {
+        return new ProviderRateLimitDiagnosticSnapshot(
+            ProviderId: ProviderId,
+            Surface: ProviderRateLimitSurfaces.Streaming,
+            ObservedAt: DateTimeOffset.UtcNow,
+            RequestsInWindow: 0,
+            MaxRequestsPerWindow: 0,
+            Window: TimeSpan.Zero,
+            IsRateLimited: false,
+            ResetAt: null,
+            UsageRatio: 0,
+            Reason: "runtime-diagnostics-unavailable",
+            StateAvailable: false);
     }
 
     /// <inheritdoc/>

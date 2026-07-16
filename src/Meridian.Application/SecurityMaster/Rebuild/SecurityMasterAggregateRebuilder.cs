@@ -81,6 +81,37 @@ public sealed class SecurityMasterAggregateRebuilder
             : SecurityEconomicDefinitionAdapter.ToProjection(rebuilt, projectionWithAliases?.Aliases);
     }
 
+    /// <summary>
+    /// Rebuilds only from retained event history and returns <c>null</c> when no event was
+    /// recorded at or before <paramref name="asOfUtc"/>. Accounting as-of workflows use this
+    /// strict variant so a projection-only current definition cannot masquerade as history.
+    /// Aliases are retained only when they were both recorded and effective at the cutoff;
+    /// their enabled state is preserved for downstream resolution policy.
+    /// </summary>
+    public async Task<SecurityProjectionRecord?> RebuildRecordedAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        SecurityProjectionRecord? projectionWithAliases,
+        CancellationToken ct = default)
+    {
+        var events = await _eventStore.LoadAsync(securityId, ct).ConfigureAwait(false);
+        SecurityEconomicDefinitionRecord? rebuilt = null;
+        foreach (var @event in events.Where(e => e.EventTimestamp <= asOfUtc))
+        {
+            rebuilt = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
+        }
+
+        var aliasesAsOf = projectionWithAliases?.Aliases
+            .Where(alias => alias.CreatedAt <= asOfUtc
+                            && alias.ValidFrom <= asOfUtc
+                            && (!alias.ValidTo.HasValue || alias.ValidTo.Value > asOfUtc))
+            .ToArray();
+
+        return rebuilt is null
+            ? null
+            : SecurityEconomicDefinitionAdapter.ToProjection(rebuilt, aliasesAsOf);
+    }
+
     public async Task<SecurityProjectionRecord?> RebuildAsync(
         Guid securityId,
         SecurityProjectionRecord? projectionWithAliases,

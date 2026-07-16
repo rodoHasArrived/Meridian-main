@@ -15,6 +15,7 @@ using Meridian.Contracts.Configuration;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
+using Meridian.Execution.Events;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -188,6 +189,11 @@ public sealed class UiServer : IAsyncDisposable
                 options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()));
         builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
         builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
+        // Production IPositionTracker projection over the live portfolio state. Gives the
+        // safety-critical risk rules (PositionLimitRule, DrawdownCircuitBreaker) a real backing
+        // instead of leaving IPositionTracker without any non-test implementation.
+        builder.Services.AddSingleton<IPositionTracker>(sp =>
+            new PortfolioStatePositionTracker(sp.GetRequiredService<IPortfolioState>()));
         builder.Services.AddSingleton<IOrderManager>(sp =>
         {
             var gateway = sp.GetRequiredService<IExecutionGateway>();
@@ -202,7 +208,8 @@ public sealed class UiServer : IAsyncDisposable
                 auditTrail: sp.GetService<ExecutionAuditTrailService>(),
                 portfolioState: portfolio,
                 sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
-                options: sp.GetRequiredService<OrderManagementSystemOptions>());
+                options: sp.GetRequiredService<OrderManagementSystemOptions>(),
+                tradeEventPublisher: sp.GetService<ITradeEventPublisher>());
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(

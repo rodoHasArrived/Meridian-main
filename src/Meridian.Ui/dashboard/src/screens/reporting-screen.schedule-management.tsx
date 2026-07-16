@@ -22,6 +22,10 @@ import type {
   ReportingScheduleRow,
   ReportingTemplateRow
 } from "@/screens/reporting-screen.view-model";
+import type {
+  ReportRunParameterDraftField,
+  ReportRunParameterDraftState
+} from "@/screens/report-run-parameters-screen.view-model";
 
 export type ReportingScheduleArtifactFormat = Extract<GovernanceReportArtifactFormat, "Pdf" | "Xlsx" | "Csv">;
 
@@ -54,6 +58,8 @@ export interface ReportingScheduleDraftState {
   formats: Record<ReportingScheduleArtifactFormat, boolean>;
   deliveryTargets: ReportingScheduleDraftTarget[];
   datasetSourceId: string;
+  templateVersion: number;
+  runParameters: ReportRunParameterDraftState;
 }
 
 export interface ReportingScheduleDraftTarget {
@@ -73,19 +79,9 @@ const reportingScheduleCadences = [
 ] as const;
 
 export function buildReportingScheduleTemplateOptions(templates: readonly ReportingTemplateRow[]): ReportingTemplateRow[] {
-  const latestRunnableByTemplate = new Map<string, ReportingTemplateRow>();
-  for (const template of templates) {
-    if (!template.canRunOnDemand) {
-      continue;
-    }
-
-    const current = latestRunnableByTemplate.get(template.templateName);
-    if (!current || template.versionNumber > current.versionNumber) {
-      latestRunnableByTemplate.set(template.templateName, template);
-    }
-  }
-
-  return [...latestRunnableByTemplate.values()].sort((left, right) => left.name.localeCompare(right.name));
+  return [...templates]
+    .filter((template) => template.canRunOnDemand)
+    .sort((left, right) => left.name.localeCompare(right.name) || right.versionNumber - left.versionNumber);
 }
 
 function buildScheduleTimingGuidance(cronExpression: string): string {
@@ -118,6 +114,7 @@ interface ReportingScheduleManagementPanelProps {
   status: ReportingCommandStatus | null;
   runningScheduleActionId: string | null;
   onDraftChange: (field: ReportingScheduleDraftField, value: string) => void;
+  onRunParameterChange: (field: ReportRunParameterDraftField, value: string | boolean) => void;
   onToggleFormat: (format: ReportingScheduleArtifactFormat, isSelected: boolean) => void;
   onStageTarget: () => void;
   onRemoveTarget: (distributionId: string) => void;
@@ -136,6 +133,7 @@ export function ReportingScheduleManagementPanel({
   status,
   runningScheduleActionId,
   onDraftChange,
+  onRunParameterChange,
   onToggleFormat,
   onStageTarget,
   onRemoveTarget,
@@ -145,6 +143,10 @@ export function ReportingScheduleManagementPanel({
   onSchedulePlanRun
 }: ReportingScheduleManagementPanelProps) {
   const scheduleTemplateOptions = buildReportingScheduleTemplateOptions(templates);
+  const selectedScheduleTemplate = scheduleTemplateOptions.find((template) =>
+    template.templateName === scheduleDraft.templateId && template.versionNumber === scheduleDraft.templateVersion) ?? null;
+  const selectedScheduleTemplateRowId = selectedScheduleTemplate?.id
+    ?? `${scheduleDraft.templateId}:${scheduleDraft.templateVersion}`;
 
   return (
     <Card className="panel-surface">
@@ -168,15 +170,15 @@ export function ReportingScheduleManagementPanel({
             <label className="min-w-0 space-y-1 sm:col-span-2">
               <span className="text-xs font-medium text-muted-foreground">Report template</span>
               <Select
-                value={scheduleDraft.templateId}
+                value={selectedScheduleTemplateRowId}
                 onChange={(event) => onDraftChange("templateId", event.target.value)}
                 aria-label="Reporting schedule template ID"
               >
-                {scheduleTemplateOptions.some((template) => template.templateName === scheduleDraft.templateId) ? null : (
-                  <option value={scheduleDraft.templateId} disabled>Current scheduled template (review required)</option>
+                {selectedScheduleTemplate ? null : (
+                  <option value={selectedScheduleTemplateRowId} disabled>Current scheduled template version (review required)</option>
                 )}
                 {scheduleTemplateOptions.map((template) => (
-                  <option key={template.id} value={template.templateName}>{template.name} · v{template.version}</option>
+                  <option key={template.id} value={template.id}>{template.name} · v{template.version}</option>
                 ))}
               </Select>
             </label>
@@ -241,7 +243,7 @@ export function ReportingScheduleManagementPanel({
           </div>
           <TechnicalDetails
             label="Advanced schedule controls"
-            description="System identifiers, exact timing, retry policy, and retained dataset selection."
+            description="System identifiers, exact timing, retry policy, retained dataset selection, and the immutable run scope."
             className="mt-3"
           >
             <div className="grid gap-2 md:grid-cols-3">
@@ -273,6 +275,109 @@ export function ReportingScheduleManagementPanel({
                     <option key={source.sourceId} value={source.sourceId}>{source.label} ({source.rowCount})</option>
                   ))}
                 </Select>
+              </label>
+            </div>
+            <div className="mt-4 border-t border-border/70 pt-4">
+              <h5 className="text-xs font-semibold text-foreground">Run scope and output</h5>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                These parameters are retained with every scheduled run and revalidated by the server before execution.
+              </p>
+              <div className="mt-3 grid gap-2 md:grid-cols-3">
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Fund profile</span>
+                  <Input value={scheduleDraft.runParameters.fundProfileId} onChange={(event) => onRunParameterChange("fundProfileId", event.target.value)} aria-label="Reporting schedule fund profile" required />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Entity scope</span>
+                  <Select value={scheduleDraft.runParameters.entityScopeKind} onChange={(event) => onRunParameterChange("entityScopeKind", event.target.value)} aria-label="Reporting schedule entity scope">
+                    <option value="AllEntities">All entities</option>
+                    <option value="Entity">Entity</option>
+                    <option value="Portfolio">Portfolio</option>
+                    <option value="Investor">Investor</option>
+                  </Select>
+                </label>
+                {scheduleDraft.runParameters.entityScopeKind === "Entity" ? (
+                  <label className="space-y-1">
+                    <span className="text-xs font-medium text-muted-foreground">Entity ID</span>
+                    <Input value={scheduleDraft.runParameters.entityId} onChange={(event) => onRunParameterChange("entityId", event.target.value)} aria-label="Reporting schedule entity ID" required />
+                  </label>
+                ) : null}
+                {scheduleDraft.runParameters.entityScopeKind === "Portfolio" ? (
+                  <label className="space-y-1">
+                    <span className="text-xs font-medium text-muted-foreground">Portfolio ID</span>
+                    <Input value={scheduleDraft.runParameters.portfolioId} onChange={(event) => onRunParameterChange("portfolioId", event.target.value)} aria-label="Reporting schedule portfolio ID" required />
+                  </label>
+                ) : null}
+                {scheduleDraft.runParameters.entityScopeKind === "Investor" ? (
+                  <label className="space-y-1">
+                    <span className="text-xs font-medium text-muted-foreground">Investor ID</span>
+                    <Input value={scheduleDraft.runParameters.investorId} onChange={(event) => onRunParameterChange("investorId", event.target.value)} aria-label="Reporting schedule investor ID" required />
+                  </label>
+                ) : null}
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Accounting period ID</span>
+                  <Input value={scheduleDraft.runParameters.periodId} onChange={(event) => onRunParameterChange("periodId", event.target.value)} aria-label="Reporting schedule accounting period ID" required />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Ledger book code</span>
+                  <Input value={scheduleDraft.runParameters.ledgerBookCode} onChange={(event) => onRunParameterChange("ledgerBookCode", event.target.value)} aria-label="Reporting schedule ledger book code" />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Ledger book ID</span>
+                  <Input value={scheduleDraft.runParameters.ledgerBookId} onChange={(event) => onRunParameterChange("ledgerBookId", event.target.value)} aria-label="Reporting schedule ledger book ID" />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Accounting basis</span>
+                  <Select value={scheduleDraft.runParameters.accountingBasis} onChange={(event) => onRunParameterChange("accountingBasis", event.target.value)} aria-label="Reporting schedule accounting basis">
+                    <option value="Gaap">GAAP</option>
+                    <option value="Tax">Tax</option>
+                    <option value="Management">Management</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Statutory">Statutory</option>
+                  </Select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Presentation currency</span>
+                  <Input value={scheduleDraft.runParameters.presentationCurrency} onChange={(event) => onRunParameterChange("presentationCurrency", event.target.value)} aria-label="Reporting schedule presentation currency" maxLength={3} required />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Consolidation level</span>
+                  <Select value={scheduleDraft.runParameters.consolidationLevel} onChange={(event) => onRunParameterChange("consolidationLevel", event.target.value)} aria-label="Reporting schedule consolidation level">
+                    <option value="Fund">Fund</option>
+                    <option value="Entity">Entity</option>
+                    <option value="Portfolio">Portfolio</option>
+                    <option value="Investor">Investor</option>
+                  </Select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Output format</span>
+                  <Select value={scheduleDraft.runParameters.outputFormat} onChange={(event) => onRunParameterChange("outputFormat", event.target.value)} aria-label="Reporting schedule output format">
+                    <option value="Pdf">PDF</option>
+                    <option value="Xlsx">XLSX</option>
+                    <option value="Csv">CSV</option>
+                    <option value="EvidenceVault">Evidence Vault</option>
+                  </Select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground">Finality</span>
+                  <Select value={scheduleDraft.runParameters.finality} onChange={(event) => onRunParameterChange("finality", event.target.value)} aria-label="Reporting schedule finality">
+                    <option value="Draft">Draft</option>
+                    <option value="Final">Final</option>
+                  </Select>
+                </label>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-4">
+                <Checkbox label="Schedule supporting schedules" checked={scheduleDraft.runParameters.includeSupportingSchedules} onCheckedChange={(checked) => onRunParameterChange("includeSupportingSchedules", checked)} />
+                <Checkbox label="Schedule evidence appendix" checked={scheduleDraft.runParameters.includeEvidenceAppendix} onCheckedChange={(checked) => onRunParameterChange("includeEvidenceAppendix", checked)} />
+              </div>
+              <label className="mt-3 block space-y-1">
+                <span className="text-xs font-medium text-muted-foreground">Template parameters (JSON)</span>
+                <textarea
+                  className="min-h-20 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={scheduleDraft.runParameters.templateParametersJson}
+                  onChange={(event) => onRunParameterChange("templateParametersJson", event.target.value)}
+                  aria-label="Reporting schedule template parameters (JSON)"
+                />
               </label>
             </div>
           </TechnicalDetails>
