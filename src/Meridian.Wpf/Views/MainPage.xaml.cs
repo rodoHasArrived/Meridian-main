@@ -95,4 +95,11 @@ public partial class MainPage : Page
 
         return _shellReadyTcs.Task;
     }
+
+    public bool NavigateToLaunchPage(string pageTag)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pageTag);
+        _navigationService.Initialize(ContentFrame);
+        return _navigationService.NavigateTo(pageTag);
+    }
 }

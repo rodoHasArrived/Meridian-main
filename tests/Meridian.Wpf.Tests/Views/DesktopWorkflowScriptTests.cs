@@ -271,6 +271,19 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void MainWindow_ShouldRebindLaunchNavigationToTheMainContentFrame()
+    {
+        var mainWindow = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\MainWindow.xaml.cs"));
+        var mainPage = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\MainPage.xaml.cs"));
+
+        mainWindow.Should().Contain("request.HasPageNavigation && RootFrame.Content is MainPage mainPage");
+        mainWindow.Should().Contain("mainPage.NavigateToLaunchPage(request.PageTag!)");
+        mainPage.Should().Contain("public bool NavigateToLaunchPage(string pageTag)");
+        mainPage.Should().Contain("_navigationService.Initialize(ContentFrame)");
+        mainPage.Should().Contain("return _navigationService.NavigateTo(pageTag)");
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldPruneWorkflowArtifactsBeforeCreatingRunDirectory()
     {
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
