@@ -924,7 +924,7 @@ function Invoke-CommandPaletteNavigation {
 
     $paletteButton = Find-ElementByExactName -Root $Root -Name "Search"
     if ($null -ne $paletteButton -and -not $paletteButton.Current.IsOffscreen) {
-        Click-ElementAtCenter -Element $paletteButton
+        Invoke-OrClickElement -Element $paletteButton
     }
     else {
         Send-WindowKeys -Process $Process -Keys "^k"
