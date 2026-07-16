@@ -79,6 +79,7 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('[MeridianSmokeNative]::SetForegroundWindow($Process.MainWindowHandle)', self.script)
         self.assertIn('Find-ElementByExactName -Root $Root -Name "Search"', self.script)
         self.assertIn('Invoke-OrClickElement -Element $paletteButton', self.script)
+        self.assertIn('$Root = Get-WindowAutomationRoot -Process $Process', self.script)
         self.assertIn('Send-WindowKeys -Process $Process -Keys "^k"', self.script)
         self.assertIn('AutomationIds @("CommandPaletteInput")', self.script)
         self.assertIn('AutomationIds @("CommandPaletteResults")', self.script)

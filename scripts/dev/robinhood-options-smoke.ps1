@@ -930,6 +930,7 @@ function Invoke-CommandPaletteNavigation {
         Send-WindowKeys -Process $Process -Keys "^k"
     }
 
+    $Root = Get-WindowAutomationRoot -Process $Process
     $paletteInput = Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette input did not become available." -Condition {
         $candidate = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteInput")
         if ($null -ne $candidate -and -not $candidate.Current.IsOffscreen) {
@@ -1017,6 +1018,7 @@ function Invoke-SmokeCase {
             $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
             $root = Get-WindowAutomationRoot -Process $process
             Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName
+            $root = Get-WindowAutomationRoot -Process $process
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
 
