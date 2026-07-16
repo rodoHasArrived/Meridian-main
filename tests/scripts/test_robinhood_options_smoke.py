@@ -116,6 +116,7 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('Relaunching with the supported page route.', self.script)
         self.assertIn('$process.WaitForExit(5000)', self.script)
         self.assertIn('$process = Start-Process @startProcessArgs', self.script)
+        self.assertIn('ReadyMarkers = @("Choose a Provider", "Add Provider Relationship")', self.script)
 
     def test_failure_snapshot_includes_element_layout_diagnostics(self) -> None:
         self.assertIn('$element.Current.AutomationId', self.script)
