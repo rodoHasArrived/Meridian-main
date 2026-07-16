@@ -22,25 +22,24 @@
 
 ## Status Update (2026-07-15)
 
-The `codex/data-provider-accounting-completion` branch completed the first implementation pass for
-ideas #1–#6 and #8–#10 by 2026-07-15. The narratives below are preserved as the point-in-time
-analysis of 2026-07-05, with dated update notes where the premise has changed. Independent
-correctness, durability, and tenant-isolation audits then tightened the completion criteria. The
-status table distinguishes source-complete work from final focused and aggregate validation; idea
-#7 remains open after its audit found additional server-owned evidence and scope work.
+The implementation pass for ideas #1–#10 is present as of 2026-07-15. The narratives below remain
+the point-in-time analysis from 2026-07-05; dated notes record how each premise changed. Independent
+correctness, durability, isolation, provenance, performance, and shutdown audits then tightened the
+completion criteria. Ideas #1–#5, #8, and #9 are source-complete. Narrow hardening work remains in
+#6, #7, and #10 before the document can claim full local or GitHub-hosted validation.
 
-| # | Idea | Status | What remains |
+| # | Idea | Status | Completion evidence / remaining validation |
 |---|------|--------|--------------|
-| 1 | Streaming unification + honest status | Implementation complete; validation pending | Provider diagnostics now live at the ProviderSdk contract boundary; NYSE, Robinhood polling, live IB, and direct IB simulation paths report supervised state honestly. Subscription replay, bounded heartbeat teardown, explicit caller cancellation, and `unknown`/`unavailable` endpoint behavior have focused tests. `Meridian.ProviderSdk` builds with zero errors; the Infrastructure variants and focused tests still need the serialized validation pass. |
-| 2 | Canonical symbol spine | Implementation complete; validation pending | `SecurityId`-aware provider aliases, comparison/canonical modes, production backfill resolver composition, and atomic persisted migration markers are implemented. Tests cover worker translation, inline/external migration inputs, restart no-op, changed fingerprints, malformed data, cancellation, and reload. Focused builds/tests and aggregate CI remain. |
-| 3 | Unified data quality + browser dashboard | Implementation complete; validation pending | Shared stored/streaming/adapter scoring, stable gap identity, exact remediation requests, WPF dependency injection, and a rendered browser Data Quality region are implemented. The browser shows partial/unavailable evidence and accessible disabled-action reasons. Focused browser/.NET/WPF execution and aggregate CI remain. |
-| 4 | Backfill feedback loop | Implementation complete; validation pending | Typed progress and retained execution/SLA history flow through shared contracts to browser and WPF. Completed backfills refresh history after final progress with stale-response protection, and the shared API client reads the typed history envelope. Focused browser/.NET/WPF execution and aggregate CI remain. |
-| 5 | Failure & rate-limit hardening | Implementation complete; validation pending | Provider catalog failures remain immutable/sanitized; recursive aggregate classification preserves provider attribution and `Retry-After`. Alpha Vantage symbol and corporate-action paths map HTTP 429 and quota payloads to typed rate-limit failures without message-text heuristics. Focused tests and aggregate CI remain. |
-| 6 | Mark-to-market wiring | Implementation complete; validation pending | Daily delta carrying values, per-security lineage, fresh tenant-owned position snapshots, Security Master/currency gates, all-member batch lifecycle, isolated same-day corrections, current-run status precedence, and browser configure/run/approve/retry actions are implemented. A two-security correction/restart scenario was added; its focused execution and aggregate CI remain. Legacy unowned snapshots now fail closed and require ownership backfill. |
-| 7 | Automated journal drafts | In progress (completion audit) | Recurring schedules, durable restart/CAS/rearm behavior, exact corporate-action currency, immutable draft identity, and evidence policy are present. The latest audit still requires four corrections before completion: prevent rearmed work from inheriting stale posted readiness; resolve capital-account reconciliation from a server-owned source rather than client assertions; send exact tenant/company/fund/book/entity WPF scope; and evaluate delayed-run evidence at the actual execution/review time. |
-| 8 | Closing entries + retained-earnings roll | Implementation complete; validation pending | Prepare-only queueing and hard lock are distinct in browser/WPF and server contracts. The backend now performs JIT readiness/version checks, atomic correction-pair persistence, durable reopen intent and exact retry convergence, source-linked SoftClosed reversal, strict tenant/company ownership, and a transactional Postgres temporary-balance guard plus period CAS/close event. Focused tests and aggregate CI remain. |
-| 9 | One ledger spine | Implementation complete; validation pending | In-memory as-of indexes now preserve chronological out-of-order/dimensional reads. Durable posting detects global journal/command collisions, aggregate-scoped source/idempotency collisions, validates book context, and compares a canonical full-command fingerprint before treating crash retries as equivalent. `Meridian.Ledger` builds with zero errors; focused Storage/Ledger tests and aggregate CI remain. |
-| 10 | Fill-to-ledger durability | Implementation complete; validation pending | Accepted fills are synchronously retained in an execution-owned WAL, acknowledged only after idempotent ledger posting, and replayed after restart. Forced shutdown and per-fill failures retain pending work; OMS fill side effects are resumable, use bounded `WriteAsync`, and expose explicit caller-scoped composition without inventing a global ledger. Focused Execution tests and aggregate CI remain. |
+| 1 | Streaming unification + honest status | Implementation complete (2026-07-15); validation in progress | Provider diagnostics now live at the ProviderSdk contract boundary; NYSE, Robinhood polling, live IB, and direct IB simulation paths report supervised state honestly. Subscription replay, bounded heartbeat teardown, explicit caller cancellation, and `unknown`/`unavailable` endpoint behavior have focused tests. Focused execution and aggregate CI remain. |
+| 2 | Canonical symbol spine | Implementation complete (2026-07-15); validation in progress | `SecurityId` is the durable registry identity across normalized and provider-scoped aliases. Comparison/canonical modes, production backfill resolution, atomic migration fingerprints, ownership-preserving backfill, restart no-op, malformed-input rejection, and reload coverage are present. Focused execution and aggregate CI remain. |
+| 3 | Unified data quality + browser dashboard | Implementation complete (2026-07-15); validation in progress | Shared stored/streaming/adapter scoring, stable gap identity, exact remediation scope, WPF composition, and the browser Data Quality region are implemented. Partial and unavailable evidence remains explicit, including accessible disabled-action reasons. Focused browser/.NET/WPF execution and aggregate CI remain. |
+| 4 | Backfill feedback loop | Implementation complete (2026-07-15); validation in progress | Typed progress and bounded retained execution/SLA history flow through shared contracts to browser and WPF. Completed backfills refresh final history with stale-response protection. Focused browser/.NET/WPF execution and aggregate CI remain. |
+| 5 | Failure & rate-limit hardening | Implementation complete (2026-07-15); validation in progress | Provider catalog failures remain immutable and sanitized; recursive classification preserves provider attribution and `Retry-After`. NYSE and Alpha Vantage symbol/corporate-action paths map HTTP 429 and quota payloads to typed failures, while historical and streaming rate state share the lock-guarded clock model. Focused execution and aggregate CI remain. |
+| 6 | Mark-to-market wiring | Hardening in progress (completion audit) | Daily deltas, per-security lineage, all-member lifecycle, same-day corrections, exact-owner position history at or before cutoff, strict recorded-as-of Security Master reads, authoritative flat-book `NoAdjustment`, and production brokerage-sync capture are present. The final audit is closing atomic conditional snapshot append/read consistency, bounded provider clock skew, historical alias validity, and lifetime lookup cost before focused and aggregate validation. |
+| 7 | Automated journal drafts | Hardening in progress (completion audit) | Recurring schedules, durable restart/CAS/rearm behavior, exact corporate-action currency, immutable draft identity, actual-execution-time evidence gates, exact WPF scope, and server-owned ledger capital-account reconciliation are present. The final audit is requiring durable governed approval/certification provenance before reconciliation can report reviewed, high-confidence fee-basis readiness. |
+| 8 | Closing entries + retained-earnings roll | Implementation complete (2026-07-15); validation in progress | Prepare, approve, post, hard close, and governed reopen are distinct durable transitions. JIT readiness/version checks, atomic correction pairs, exact reopen convergence, source-linked reversals, strict ownership, transactional Postgres close guards, exact server-owned `HardClosed` authority, automatic `CloseLocked` transition, and retry reconciliation are present. Focused execution and aggregate CI remain. |
+| 9 | One ledger spine | Implementation complete (2026-07-15); validation in progress | Chronological as-of indexes preserve out-of-order and dimensional reads. Durable posting rejects global journal/command collisions and aggregate-scoped source/idempotency collisions, validates exact book context, and compares a canonical full-command fingerprint before treating crash retries as equivalent. Focused execution and aggregate CI remain. |
+| 10 | Fill-to-ledger durability | Hardening in progress (completion audit) | Accepted fills enter an execution-owned, scope-partitioned WAL before acknowledgement, remain pending until idempotent posting succeeds, and replay after restart. Exact-scope fallback and coordinated report/recovery-pump shutdown are present; the final audit is adding a race-free drain for order submissions already admitted when shutdown begins. |
 
 ## The Two Headline Findings
 
@@ -65,6 +64,12 @@ mark-to-market adjustments, and NAV is effectively NAV-at-cost.
 > remaining structural fractures are provider-side symbol-registry convergence, quality-model
 > unification, streaming-side rate-limit tracking, and reconnect/heartbeat/resubscribe
 > consolidation.
+
+> **Completion update (2026-07-15):** the provider fractures in #1–#5 are now closed through
+> contract-level diagnostics and supervision, `SecurityId`-backed aliases, the shared quality
+> contract, typed progress/history, and typed rate-limit state. The governed accounting and ledger
+> foundations in #8 and #9 are also source-complete. The original headline remains the 2026-07-05
+> discovery baseline; the status table records the narrower #6, #7, and #10 hardening still open.
 
 ---
 
@@ -128,6 +133,11 @@ big-bang migration.
 > and both the default and IBAPI smoke-stub Infrastructure builds. Added NYSE/IB replay/rate and
 > endpoint-honesty tests were not executed because of shared contention; aggregate CI has not run.
 
+> **Completion-audit closure (2026-07-15):** contract-level diagnostics now cover NYSE,
+> Robinhood polling, live IB, and direct IB simulation. Subscription replay, bounded heartbeat
+> teardown, explicit caller cancellation, and honest `unknown`/`unavailable` endpoint projection
+> close the remaining audit cases without forcing unlike transports through one inheritance model.
+
 ### 2. Canonical Symbol-Resolution Spine
 
 Symbol identity currently lives in three places that don't talk to each other: per-provider static
@@ -167,6 +177,12 @@ comparison mode first (log where old and new resolution disagree, act on the rep
 > generated-route, and schema checks passed. Added .NET endpoint/collision tests await a serialized
 > rerun; aggregate CI has not run.
 
+> **Completion-audit closure (2026-07-15):** `SecurityId` is now the durable registry key across
+> normalized and provider-scoped aliases, and production backfill and cross-validation use
+> provider-aware resolution. Compare/canonical modes, atomic migration fingerprints,
+> ownership-preserving backfill, restart no-op, malformed-input rejection, and reload coverage
+> close the identity migration lane.
+
 ### 3. Unified Data-Quality Model + Browser Data Quality Dashboard
 
 There are three overlapping data-quality code paths: the streaming monitor
@@ -202,6 +218,11 @@ pure additive value), then converge the three scoring paths behind the read-mode
 > stable gaps, and contextual remediation from the shared contract. Focused browser quality tests
 > passed 18/18, and the Application, Ui.Shared, and Ui.Services builds passed. Aggregate CI has not
 > run.
+
+> **Completion-audit closure (2026-07-15):** stored completeness, streaming freshness, and adapter
+> gaps now feed one shared quality contract. Stable gap identity lets the server resolve exact
+> remediation scope, while browser and WPF preserve partial or unavailable evidence and explain
+> disabled actions instead of inventing readiness.
 
 ### 4. Backfill Feedback Loop: Live Progress and Typed SLA Metadata
 
@@ -240,6 +261,11 @@ parser as fallback for old records.
 > durable-history/.NET/WPF filters were not executed because of shared MSBuild contention; aggregate
 > CI has not run.
 
+> **Completion-audit closure (2026-07-15):** bounded typed progress, retained execution/SLA
+> history, final-history refresh, and stale-response protection now flow through the same shared
+> contracts to browser and WPF. No string-parsed SLA state or UI-specific history fork remains in
+> the delivered path.
+
 ### 5. Provider Failure & Rate-Limit Hardening
 
 Three small findings that share a theme — failures that vanish. `DataSourceRegistry.cs` swallows
@@ -277,6 +303,12 @@ string-matching removal needs one pass over every adapter's error mapping to con
 > missing runtime state; all explicitly state that rate-limit history is not retained. Focused
 > ProviderSdk/Infrastructure builds and 24 browser tests passed. Added .NET/WPF filters await a
 > serialized rerun after shared build contention; aggregate CI has not run.
+
+> **Completion-audit closure (2026-07-15):** recursive failure classification preserves provider
+> attribution and `Retry-After`, and NYSE plus Alpha Vantage symbol and corporate-action paths
+> translate HTTP 429 and quota payloads into typed rate-limit failures. Catalog failures remain
+> immutable and sanitized, and streaming/historical rate state shares the lock-guarded,
+> `TimeProvider`-based model.
 
 ---
 
@@ -338,6 +370,15 @@ idea 9.
 > cockpit-precedence work now in progress; this section must not be read as complete until those
 > paths pass their focused end-to-end tests.
 
+> **Hardening update (2026-07-15):** daily carrying-value deltas, per-security lineage, all-member
+> batch lifecycle, isolated same-day corrections, current-run cockpit precedence, latest exact-owner
+> snapshots at or before cutoff, authoritative flat-book `NoAdjustment`, and strict recorded-as-of
+> Security Master reads are implemented. Successful brokerage syncs capture exact
+> tenant/company/fund/book/entity/currency history after ownership/history preflight. The final
+> audit is moving same-timestamp conflict enforcement into an atomic store operation, bounding
+> provider clock skew, filtering aliases by historical validity, and removing full-file latest-read
+> memory growth before this section is marked complete.
+
 ### 7. Automated Journal Drafts in the Close Cockpit
 
 `AutomatedJournalDraftProjector` + `AutomatedJournalApproval` model exactly the postings the live
@@ -366,6 +407,15 @@ private-capital subledger before its numbers appear in a draft. Corporate-action
 depend on corporate-action data quality; grade each draft with its evidence confidence and let
 low-confidence drafts land as *needs investigation* rather than *ready to approve*.
 
+> **Hardening update (2026-07-15):** recurring fee and corporate-action schedules now create
+> governed workbench drafts with durable CAS/restart behavior, immutable identity, exact currency,
+> and evidence gates evaluated at actual execution or review time. Rearming clears stale readiness.
+> `LedgerCapitalAccountReconciliationResolver` derives NAV, capital balances, and independent
+> NAV/capital-account high-water marks from exact server-owned
+> tenant/company/fund/book/entity/currency/period journal scope, and browser/WPF submit that exact
+> scope. The completion audit is adding a durable approval/certification provenance gate so
+> commandless or arbitrary evidence cannot self-certify a high-confidence fee basis.
+
 ### 8. Period-Close Closing Entries + Retained-Earnings Roll
 
 The F# `PeriodManagement.fs` state machine (Open → SoftClosed → HardClosed, prior-period ordering
@@ -392,6 +442,14 @@ just per account), and the interaction between closing entries and late adjustme
 late adjustments to a closed period must trigger a delta re-roll, which the existing
 late-adjustment review workflow can host. Get the F#-validated period ordering to also assert
 "cannot hard-close with unclosed income-statement balances."
+
+> **Completion-audit closure (2026-07-15):** closing-entry preparation, approval, posting, hard
+> close, and governed reopen are distinct durable transitions. JIT version/readiness checks, atomic
+> correction pairs, exact reopen receipts, source-linked reversals, tenant/company ownership, and
+> the transactional Postgres temporary-balance/period-CAS guard close the original roll-forward
+> gap. After hard close, the bridge moves the exact posted closing batch to `CloseLocked`; only an
+> exact server-owned `HardClosed` period can grant that transition, caller flags cannot, retries
+> converge, and only governed reopen recovery can release and reverse it.
 
 ### 9. One Ledger Spine: Unify the Projector Library with `ILedgerJournalStore`
 
@@ -432,6 +490,12 @@ idea 6 proves the draft-mapping seam on one projector.
 > `LedgerJournalStoreHydrationTests`, `LedgerIntegrationTests.Ledger_AsOfBalanceSnapshots_HandleOutOfOrderPostings`,
 > and `LedgerIntegrationTests.LedgerAccountTypeOrdinals_MatchFSharpPostingKernelContract`.
 
+> **Completion-audit closure (2026-07-15):** chronological as-of indexes preserve out-of-order
+> and dimensional reads. Durable posting rejects global journal/command collisions and
+> aggregate-scoped source/idempotency collisions, validates exact book context, and compares a
+> canonical full-command fingerprint before treating a crash retry as equivalent. The ledger spine
+> is implementation-complete and remains a regression surface rather than future sequencing work.
+
 ### 10. Fill-to-Ledger Durability Fix in `LedgerPostingConsumer`
 
 Small, sharp, and arguably a bug: `LedgerPostingConsumer`
@@ -464,25 +528,31 @@ append is cheap insurance.
 > available as a future hardening option if the synchronous block ever becomes a problem at the
 > gateway.
 
+> **Hardening update (2026-07-15):** the WAL option described as future work above is now
+> implemented. Accepted fills enter an execution-owned, scope-partitioned WAL and pending snapshot
+> before acknowledgement, remain pending until idempotent posting succeeds, replay after restart,
+> and retain per-fill failure/compaction state. Recovery fallback requires an exact-scope
+> `IScopedTradeEventPublisher`; coordinated disposal rejects new orders and awaits report and
+> retained-handoff pumps. The completion audit is adding an admitted-operation drain so a broker
+> submission already in flight cannot resume after accounting dependencies are released.
+
 ---
 
 ## Synthesis
 
-**Highest-leverage single item: #6, mark-to-market wiring.** It converts the platform's largest
-dormant asset (the tested projector library) into operator-visible value, fixes a genuine NAV
-correctness problem, and — uniquely in this set — connects the two subsystems this brainstorm was
-asked about: the data-provider chain becomes the pricing source for the books. It also
-force-designs the projector-to-governed-drafts mapping seam that #7 and #9 reuse.
+**Highest-leverage delivered foundation: #6, mark-to-market wiring.** It converted the tested
+projector library into governed operator value, connected provider marks to the books, and
+established the mapping seam reused by automated journals and the ledger spine. Its final work is
+hardening the production snapshot boundary, not inventing another valuation path.
 
-**Platform bets:** #9 (one ledger spine) is now the closed accounting-side foundation; #2
-(canonical symbol spine) remains the provider-side platform bet. Both follow the same pattern:
-three-way fragmentation converging on an authority that already exists in the repo
-(`ILedgerJournalStore`, `CanonicalSymbolRegistry`).
+**Completed platform foundations:** #2 and #9 closed the provider identity and accounting
+storage/projection fractures around `CanonicalSymbolRegistry` and `ILedgerJournalStore`. #1, #3,
+#4, and #5 make provider state, progress, quality, and failure evidence visible and typed; #8 makes
+close behavior governed and recoverable.
 
-**Remaining quick wins to run in parallel lanes now:** #5 provider-catalog surfacing and
-streaming-side rate-limit tracking, plus #1 reconnect/heartbeat/resubscribe consolidation one
-provider at a time. The structural #2 symbol-registry convergence remains the highest-leverage
-provider cleanup once those visible failure modes are closed.
+**Current completion state:** #1–#5, #8, and #9 are implementation-complete. #6, #7, and #10 have
+their full product paths in place and are closing the narrow audit findings recorded above before
+they move from hardening to validated regression surfaces.
 
 **Cross-cutting theme: silent failure is the common enemy.** Swallowed module registrations,
 string-matched rate limits, dropped fills under backpressure, "enabled" rendered as "connected,"
@@ -490,16 +560,15 @@ marks that never post, periods that "close" without closing entries — every id
 silent gap with either correct behavior or a visible, typed signal. That is the code-level
 expression of Meridian's evidence-led identity.
 
-**Sequencing recommendation:**
+**Completion record:**
 
-1. **Now (parallel S lanes):** #5 provider-catalog surfacing and streaming-side rate-limit
-   tracking · #1 streaming unification one provider per PR.
-2. **Next:** #2 structural symbol-registry convergence, retiring the remaining static
-   `NormalizeSymbol`, `ISymbolResolver`, and UI `SymbolMappingService` forks.
-3. **Then:** #3 quality unification and contextual gap actions, with the existing browser
-   `DataQualityRegion` as the visible landing surface.
-4. **Closed foundation:** #4 and #6-#10 are implemented; treat them as proof points and regression
-   surfaces, not future sequencing blockers.
+1. **Provider supervision and identity:** #1, #2, and #5 — complete.
+2. **Data trust and operator feedback:** #3 and #4 — complete.
+3. **Governed accounting lifecycle:** #6 and #7 — hardening; #8 and #9 — complete.
+4. **Durable execution handoff:** #10 — hardening the shutdown admission boundary.
+
+Remaining work is the focused, aggregate, and GitHub-hosted proof plus the explicit hardening cases
+above; none of the original suggestions lacks an implementation path.
 
 **Competitive signals:** the fund-ops incumbents (Enfusion/Clearwater, Arcesium, SS&C) sell
 mark-to-market books, automated accrual capture, and hard period-close discipline as the baseline

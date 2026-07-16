@@ -5,6 +5,7 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
@@ -366,7 +367,10 @@ public sealed class AutomatedJournalEventProducerTests
         });
 
         lowConfidence.Readiness.Should().Be(AutomatedJournalIntakeReadiness.NeedsInvestigation);
-        lowConfidence.ReadinessBlockers.Should().Contain(item => item.Contains("90%", StringComparison.Ordinal));
+        lowConfidence.ReadinessBlockers.Should().Contain(item =>
+            item.Contains("server-governed", StringComparison.OrdinalIgnoreCase) &&
+            item.Contains("90", StringComparison.Ordinal) &&
+            item.Contains("threshold", StringComparison.OrdinalIgnoreCase));
         looseTolerance.Readiness.Should().Be(AutomatedJournalIntakeReadiness.NeedsInvestigation);
         looseTolerance.ReadinessBlockers.Should().Contain(item =>
             item.Contains("server-governed tolerance 0.01", StringComparison.OrdinalIgnoreCase));
@@ -865,6 +869,156 @@ public sealed class AutomatedJournalEventProducerTests
     }
 
     [Fact]
+    public async Task ClosePostingBridge_FinalizeHardClose_CloseLocksPostedClosingBatchAndRetryConverges()
+    {
+        var journalPeriod = new LedgerAccountingPeriod(
+            ClosedPeriodId,
+            BookId,
+            2026,
+            6,
+            "2026-06",
+            new DateOnly(2026, 6, 1),
+            PeriodEndDate,
+            "SoftClosed",
+            new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            null,
+            1);
+        var journalBook = new LedgerBookRecord(
+            BookId,
+            "fund-alpha",
+            FundAccountId,
+            FundStructureNodeKindDto.Account,
+            "Fund Alpha primary ledger",
+            "USD",
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow);
+        var journalStore = Substitute.For<ILedgerJournalStore>();
+        journalStore.GetLedgerBookAsync(BookId, Arg.Any<CancellationToken>())
+            .Returns(journalBook);
+        journalStore.ListLedgerBooksAsync(
+                Arg.Any<string?>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<FundStructureNodeKindDto?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new[] { journalBook });
+        journalStore.GetPeriodAsync(ClosedPeriodId, Arg.Any<CancellationToken>())
+            .Returns(_ => journalPeriod);
+        journalStore.ListPeriodsAsync(
+                Arg.Any<Guid?>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => new[] { journalPeriod });
+        journalStore.GetByPeriodAsync(ClosedPeriodId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<LedgerJournalEntryRecord>());
+        var fixture = CreateIntakeFixture(journalStore);
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var currentPeriod = (await bookService.ListPeriodsAsync(
+            new LedgerPeriodQuery(LedgerBookId: BookId))).Single();
+        var currentSummary = (await bookService.GetPeriodSummaryAsync(ClosedPeriodId))!;
+        bookService.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(_ => new[] { currentPeriod });
+        bookService.GetPeriodSummaryAsync(ClosedPeriodId, Arg.Any<CancellationToken>())
+            .Returns(_ => currentSummary);
+        bookService.ClosePeriodAsync(
+                ClosedPeriodId,
+                Arg.Any<CloseLedgerPeriodRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                currentPeriod = currentPeriod with
+                {
+                    Status = LedgerPeriodStatusDto.HardClosed,
+                    ClosedAt = AsOf,
+                    Version = currentPeriod.Version + 1
+                };
+                journalPeriod = journalPeriod with
+                {
+                    Status = "HardClosed",
+                    ClosedAt = AsOf,
+                    Version = journalPeriod.Version + 1
+                };
+                return new LedgerPeriodCloseResultDto(currentPeriod, currentSummary, null!);
+            });
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            ledgerBookService: bookService);
+        var intake = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha",
+            "USD",
+            "close-preparer",
+            ClosedPeriodId,
+            BookId,
+            EntityId: "entity-alpha"));
+        var created = intake.Intake.Created.Should().ContainSingle().Subject;
+        var posted = created with
+        {
+            Status = ManualJournalEntryStatusDto.Posted,
+            PostedAtUtc = AsOf,
+            PostedBy = "posting-controller",
+            UpdatedAtUtc = AsOf,
+            Version = created.Version + 1,
+            EvidenceLinks = [$"evidence://period/{ClosedPeriodId:D}/book/{BookId:D}/approval/close"]
+        };
+        await fixture.DraftStore.SaveAsync(posted);
+        var zeroBalance = TrialBalanceLine("Cash", "Asset", 500m, 0m, 500m);
+        currentSummary = currentSummary with
+        {
+            TrialBalance = [zeroBalance],
+            TotalDebits = zeroBalance.DebitTotal,
+            TotalCredits = zeroBalance.CreditTotal,
+            NetIncome = 0m
+        };
+        var bridge = new AccountingClosePostingWorkbenchBridge(
+            runner,
+            fixture.Workbench,
+            (IManualJournalEntryLifecycleService)fixture.Workbench,
+            bookService);
+        var context = new AccountingClosePostingContext(
+            Guid.NewGuid(),
+            FundAccountId,
+            BookId,
+            ClosedPeriodId.ToString("D"),
+            "USD");
+        var command = new AccountingClosePostingCommand(
+            "fund-controller",
+            "Finalize the retained close package and lock its posted closing batch.",
+            [$"evidence://period/{ClosedPeriodId:D}/book/{BookId:D}/approval/close"],
+            OperationsActionOriginDto.HumanOperator,
+            Role: "Fund Controller",
+            CorrelationId: "hard-close-2026-06");
+
+        var closed = await bridge.FinalizeHardCloseAsync(context, command);
+        var retry = await bridge.FinalizeHardCloseAsync(context, command);
+
+        closed.Status.Should().Be(LedgerPeriodStatusDto.HardClosed);
+        retry.Should().Be(closed);
+        await bookService.Received(1).ClosePeriodAsync(
+            ClosedPeriodId,
+            Arg.Is<CloseLedgerPeriodRequest>(request =>
+                request.CloseKind == LedgerPeriodCloseKindDto.HardClose &&
+                request.ClosedBy == "fund-controller"),
+            Arg.Any<CancellationToken>());
+        var retained = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        var closeLocked = retained.Drafts.Should().ContainSingle(draft =>
+            draft.JournalEntryId == posted.JournalEntryId).Subject;
+        closeLocked.Status.Should().Be(ManualJournalEntryStatusDto.CloseLocked);
+        closeLocked.CloseLockedBy.Should().Be("fund-controller");
+        closeLocked.ClosedLockedAtUtc.Should().NotBeNull();
+        closeLocked.LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.LockAfterClose &&
+            transition.FromStatus == ManualJournalEntryStatusDto.Posted &&
+            transition.ToStatus == ManualJournalEntryStatusDto.CloseLocked &&
+            transition.CorrelationId == "hard-close-2026-06" &&
+            transition.EvidenceLinks.Any(link =>
+                link.Contains("accounting-close/period-lock", StringComparison.OrdinalIgnoreCase) &&
+                link.Contains(posted.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
     public async Task ClosePostingBridge_CloseLockedReopenRetry_ReleasesThroughReceiptAndRejectsDifferentCorrelation()
     {
         var journalPeriod = new LedgerAccountingPeriod(
@@ -914,8 +1068,13 @@ public sealed class AutomatedJournalEventProducerTests
             TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
         var runner = new AutomatedJournalIntakeRunner(
             fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+        const string approvalReference = "reopen-approval-42";
+        var evidence =
+            $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{BookId:D}/{ClosedPeriodId:D}/{approvalReference}";
+        var supportEvidence =
+            $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{BookId:D}/{ClosedPeriodId:D}/support-package";
         var intake = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
-            "fund-alpha", "USD", "close-preparer", ClosedPeriodId, BookId));
+            "fund-alpha", "USD", "close-preparer", ClosedPeriodId, BookId, EntityId: "entity-alpha"));
         var created = intake.Intake.Created.Should().ContainSingle().Subject;
         var postedClosingBatch = created with
         {
@@ -925,7 +1084,8 @@ public sealed class AutomatedJournalEventProducerTests
             PostedAtUtc = AsOf,
             PostedBy = "fund-controller",
             ClosedLockedAtUtc = AsOf,
-            CloseLockedBy = "close-controller"
+            CloseLockedBy = "close-controller",
+            EvidenceLinks = [evidence, supportEvidence]
         };
         await fixture.DraftStore.SaveAsync(postedClosingBatch);
 
@@ -978,11 +1138,6 @@ public sealed class AutomatedJournalEventProducerTests
             bookService);
         var context = new AccountingClosePostingContext(
             Guid.NewGuid(), FundAccountId, BookId, ClosedPeriodId.ToString("D"), "USD");
-        const string approvalReference = "reopen-approval-42";
-        var evidence =
-            $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{BookId:D}/{ClosedPeriodId:D}/{approvalReference}";
-        var supportEvidence =
-            $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{BookId:D}/{ClosedPeriodId:D}/support-package";
         var command = new AccountingClosePostingCommand(
             "fund-controller",
             "Reopen the period for a governed restatement.",
@@ -1254,6 +1409,9 @@ public sealed class AutomatedJournalEventProducerTests
             => Task.FromResult(Detail(securityId));
 
         public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => Task.FromResult(Detail(securityId));
+
+        public Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
             => Task.FromResult(Detail(securityId));
 
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)

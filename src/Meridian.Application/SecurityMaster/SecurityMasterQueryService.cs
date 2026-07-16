@@ -32,6 +32,18 @@ public sealed class SecurityMasterQueryService :
         return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
     }
 
+    public async Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+    {
+        var current = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        var asOfProjection = await _rebuilder
+            .RebuildRecordedAsOfAsync(securityId, asOfUtc, current, ct)
+            .ConfigureAwait(false);
+        return asOfProjection is null ? null : SecurityMasterMapping.ToDetail(asOfProjection);
+    }
+
     public async Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
     {
         var asOf = asOfUtc ?? DateTimeOffset.UtcNow;

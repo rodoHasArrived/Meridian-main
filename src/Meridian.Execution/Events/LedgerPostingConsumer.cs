@@ -23,7 +23,7 @@ namespace Meridian.Execution.Events;
 /// The channel is bounded (capacity configurable via constructor) and applies backpressure
 /// when full so trade-fill events are never silently discarded.
 /// </remarks>
-public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposable
+public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDisposable
 {
     private static readonly TimeSpan DefaultDrainTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan DefaultCancellationTimeout = TimeSpan.FromSeconds(1);
@@ -50,6 +50,9 @@ public sealed class LedgerPostingConsumer : ITradeEventPublisher, IAsyncDisposab
     private int _cancellationSourceDisposed;
 
     internal Task ProcessingCompletion => _processingTask;
+
+    /// <inheritdoc />
+    public string PostingScope => _postingScope;
 
     /// <summary>
     /// Initialises a new <see cref="LedgerPostingConsumer"/> bound to one durable accounting scope.

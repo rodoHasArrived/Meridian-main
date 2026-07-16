@@ -10,6 +10,7 @@ using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Execution.Enhancements;
@@ -654,6 +655,85 @@ public sealed class EventDrivenDecouplingTests
     }
 
     [Fact]
+    public async Task AddTradeFillLedgerPosting_FallbackScopeMismatch_FailsFast()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddTradeFillLedgerPosting(
+                TestPostingContext,
+                _ => new InMemoryTradeFillLedgerPostingTarget(),
+                _ => new InMemoryTradeFillPostingStore(TestPostingScope),
+                _ => new AtomicTradeFillHandoffFailureStore(
+                    new TradeFillHandoffFailureStoreOptions(root, "different-book/different-period")));
+            await using var provider = services.BuildServiceProvider();
+
+            var resolve = () => provider.GetRequiredService<ITradeFillHandoffFailureStore>();
+
+            resolve.Should().Throw<InvalidOperationException>()
+                .WithMessage("*different-book/different-period*does not match*test-ledger/open-period*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task OrderManagementSystem_UnscopedPublisherWithFallbackStore_FailsFast()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            await using var failureStore = new AtomicTradeFillHandoffFailureStore(
+                new TradeFillHandoffFailureStoreOptions(root, TestPostingScope));
+
+            var create = () => new OrderManagementSystem(
+                new ImmediateFillGateway(),
+                NullLogger<OrderManagementSystem>.Instance,
+                tradeEventPublisher: new UnscopedTradeEventPublisher(),
+                tradeFillHandoffFailureStore: failureStore);
+
+            create.Should().Throw<ArgumentException>()
+                .WithParameterName("tradeEventPublisher")
+                .WithMessage("*requires a scope-bound accounting publisher*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task OrderManagementSystem_PublisherAndFallbackScopeMismatch_FailsFast()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            await using var failureStore = new AtomicTradeFillHandoffFailureStore(
+                new TradeFillHandoffFailureStoreOptions(root, TestPostingScope));
+
+            var create = () => new OrderManagementSystem(
+                new ImmediateFillGateway(),
+                NullLogger<OrderManagementSystem>.Instance,
+                tradeEventPublisher: new ScopedTradeEventPublisher("different-book/different-period"),
+                tradeFillHandoffFailureStore: failureStore);
+
+            create.Should().Throw<ArgumentException>()
+                .WithParameterName("tradeFillHandoffFailureStore")
+                .WithMessage("*different-book/different-period*does not match*test-ledger/open-period*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task WalTradeFillPostingStore_CompactsCompletedHistoryAndRecoversPendingSnapshot()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
@@ -1155,6 +1235,22 @@ public sealed class EventDrivenDecouplingTests
         {
             await Task.CompletedTask;
             yield break;
+        }
+    }
+
+    private sealed class UnscopedTradeEventPublisher : ITradeEventPublisher
+    {
+        public void Publish(TradeExecutedEvent tradeEvent)
+        {
+        }
+    }
+
+    private sealed class ScopedTradeEventPublisher(string postingScope) : IScopedTradeEventPublisher
+    {
+        public string PostingScope { get; } = postingScope;
+
+        public void Publish(TradeExecutedEvent tradeEvent)
+        {
         }
     }
 

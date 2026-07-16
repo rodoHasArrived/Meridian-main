@@ -479,9 +479,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
+        var serverPeriodIsHardClosed = await ResolveAuthoritativeHardClosedPeriodAsync(draft, ct)
+            .ConfigureAwait(false);
         var idempotent = await TryBuildIdempotentLifecycleResultAsync(fundProfileId, draft, request, ct).ConfigureAwait(false);
         if (idempotent is not null)
         {
+            if (request.Action == JournalEntryLifecycleActionDto.LockAfterClose)
+            {
+                RequireAuthoritativeHardClosedPeriod(request, serverPeriodIsHardClosed);
+            }
+
             return idempotent;
         }
 
@@ -490,7 +497,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
         }
 
-        if (request.PeriodIsLocked &&
+        // The caller flag is deny-side only. It can conservatively block mutations, but the
+        // server-owned ledger period is the sole authority that can grant LockAfterClose.
+        var periodIsLocked = request.PeriodIsLocked || serverPeriodIsHardClosed;
+        if (periodIsLocked &&
             request.Action is not (JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.LockAfterClose))
         {
             throw new InvalidOperationException("Manual journal entry lifecycle action is blocked because the accounting period is locked after close.");
@@ -500,7 +510,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             draft,
             allowIncomplete: false,
             ct,
-            periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
+            periodIsLocked: periodIsLocked && request.Action != JournalEntryLifecycleActionDto.LockAfterClose,
+            allowHardClosedCloseLock: request.Action == JournalEntryLifecycleActionDto.LockAfterClose &&
+                                      serverPeriodIsHardClosed).ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
         return request.Action switch
         {
@@ -540,7 +552,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ct).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.LockAfterClose => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Posted, request.Action),
-                RequireCloseLockLifecycleEvidence(RequirePostingLifecycleNotes(request), validated),
+                RequireAuthoritativeHardClosedPeriod(
+                    RequireCloseLockLifecycleEvidence(RequirePostingLifecycleNotes(request), validated),
+                    serverPeriodIsHardClosed),
                 ManualJournalEntryStatusDto.CloseLocked,
                 "manual-je.lock-after-close",
                 now,
@@ -562,6 +576,25 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ct).ConfigureAwait(false),
             _ => throw new ArgumentOutOfRangeException(nameof(request), "Unsupported journal entry lifecycle action.")
         };
+    }
+
+    private async Task<bool> ResolveAuthoritativeHardClosedPeriodAsync(
+        ManualJournalEntryDraftDto draft,
+        CancellationToken ct)
+    {
+        if (_journalStore is null ||
+            draft.LedgerBookId is not { } ledgerBookId ||
+            string.IsNullOrWhiteSpace(draft.PeriodId) ||
+            !Guid.TryParse(draft.PeriodId, out var periodId))
+        {
+            return false;
+        }
+
+        var period = await _journalStore.GetPeriodAsync(periodId, ct).ConfigureAwait(false);
+        return period is not null &&
+               period.PeriodId == periodId &&
+               period.LedgerBookId == ledgerBookId &&
+               string.Equals(period.Status, "HardClosed", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<JournalEntryLifecycleActionResultDto> ApplySubmitLifecycleActionAsync(
