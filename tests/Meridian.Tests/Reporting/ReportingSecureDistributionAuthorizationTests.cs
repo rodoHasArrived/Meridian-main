@@ -133,7 +133,8 @@ public sealed class ReportingSecureDistributionAuthorizationTests
             "tenant-a",
             "company-a",
             ["owner-a"],
-            isAdmin: false) with { CanDeliver = false };
+            isAdmin: false) with
+        { CanDeliver = false };
         var viewOnly = fixture.Application.GetDistributionCapabilities(viewOnlyAuthority);
         viewOnly.CanQueueDelivery.Should().BeFalse();
         viewOnly.CanIssueAccessGrant.Should().BeFalse();

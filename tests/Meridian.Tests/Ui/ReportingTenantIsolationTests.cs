@@ -1436,7 +1436,8 @@ public sealed class ReportingTenantIsolationTests
 
         public List<(
             SecureReportingDeliveryQueueCommand Command,
-            ReportingDistributionAuthority Authority)> Attempts { get; } = [];
+            ReportingDistributionAuthority Authority)> Attempts
+        { get; } = [];
 
         public Dictionary<string, string> Jobs { get; } = new(StringComparer.Ordinal);
 
