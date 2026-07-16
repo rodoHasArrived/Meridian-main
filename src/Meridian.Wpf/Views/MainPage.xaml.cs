@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -36,14 +37,32 @@ public partial class MainPage : Page
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         _navigationService.Initialize(ContentFrame);
+        _viewModel.PropertyChanged += OnViewModelPropertyChanged;
 
         _viewModel.ActivateShell();
+        UpdateContentSurfaceVisibility();
         _shellReadyTcs.TrySetResult();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         _viewModel.Dispose();
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (string.Equals(e.PropertyName, nameof(MainPageViewModel.IsWorkflowPageActive), StringComparison.Ordinal))
+        {
+            UpdateContentSurfaceVisibility();
+        }
+    }
+
+    private void UpdateContentSurfaceVisibility()
+    {
+        var workflowIsActive = _viewModel.IsWorkflowPageActive;
+        ContentFrame.Visibility = workflowIsActive ? Visibility.Visible : Visibility.Collapsed;
+        WorkspaceHomeSurface.Visibility = workflowIsActive ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void OnOpenCommandPaletteClick(object sender, RoutedEventArgs e)

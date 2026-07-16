@@ -97,7 +97,7 @@
 
                         <Grid>
                             <Frame x:Name="ContentFrame"
-                                   Visibility="{Binding IsWorkflowPageActive, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   Visibility="Collapsed"
                                    NavigationUIVisibility="Hidden"
                                    Background="Transparent"
                                    AutomationProperties.AutomationId="ContentFrame"
@@ -105,7 +105,7 @@
                                    Navigated="OnContentFrameNavigated" />
 
                             <Grid x:Name="WorkspaceHomeSurface"
-                                  Visibility="{Binding IsWorkspaceHomePageActive, Converter={StaticResource BoolToVisibilityConverter}}">
+                                  Visibility="Visible">
                                 <views:SplitPaneHostControl x:Name="SplitPaneHost"
                                                            Layout="{Binding SplitPane.SelectedLayout}"
                                                            Loaded="OnSplitPaneHostLoaded" />
