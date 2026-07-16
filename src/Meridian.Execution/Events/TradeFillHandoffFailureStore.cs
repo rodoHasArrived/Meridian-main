@@ -32,6 +32,9 @@ public sealed record RetainedTradeFillHandoffFailure(
 /// </summary>
 public interface ITradeFillHandoffFailureStore : IAsyncDisposable
 {
+    /// <summary>The exact ledger posting scope whose rejected fills are retained.</summary>
+    string PostingScope { get; }
+
     Task RetainAsync(
         TradeExecutedEvent tradeEvent,
         string failure,
@@ -69,6 +72,8 @@ public sealed class AtomicTradeFillHandoffFailureStore : ITradeFillHandoffFailur
             PostingScope = options.PostingScope.Trim()
         };
     }
+
+    public string PostingScope => _options.PostingScope;
 
     public async Task RetainAsync(
         TradeExecutedEvent tradeEvent,

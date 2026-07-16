@@ -212,7 +212,6 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
         {
             BatchSize = 200,
             Enabled = true,
-            ParallelSerializationThreshold = 50,
             FlushInterval = TimeSpan.FromMinutes(5)
         };
         var options = new StorageOptions { RootPath = TestDataRoot };

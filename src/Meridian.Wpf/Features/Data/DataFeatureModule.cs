@@ -92,7 +92,9 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddTransient<DataQualityViewModel>();
         services.AddTransient<CollectionSessionViewModel>();
         services.AddSingleton<SymbolMappingService>(sp =>
-            new SymbolMappingService(sp.GetRequiredService<ICanonicalSymbolRegistry>()));
+            sp.GetService<ICanonicalSymbolRegistry>() is { } registry
+                ? new SymbolMappingService(registry)
+                : SymbolMappingService.Instance);
         services.AddSingleton<ISymbolMappingClient, SymbolMappingServiceClient>();
         services.AddTransient<SymbolMappingViewModel>();
         services.AddTransient<SymbolMappingPage>();

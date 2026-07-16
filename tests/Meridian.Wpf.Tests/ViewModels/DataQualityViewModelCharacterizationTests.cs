@@ -130,7 +130,15 @@ public sealed class DataQualityViewModelCharacterizationTests
             Status = "Healthy",
             Issues = "None",
             LastUpdate = DateTimeOffset.UtcNow,
-            LastUpdateFormatted = "Now"
+            LastUpdateFormatted = "Now",
+            Presentation = new DataQualitySymbolPresentation
+            {
+                Symbol = "SPY",
+                Score = 98.1,
+                ScoreFormatted = "98.1%",
+                Grade = "A",
+                Status = "Healthy"
+            }
         };
 
         viewModel.SelectedSymbolQuality = symbol;
@@ -280,10 +288,7 @@ public sealed class DataQualityViewModelCharacterizationTests
     private static DataQualityViewModel CreateSubject()
     {
         var apiClient = Substitute.For<IDataQualityApiClient>();
-        var presentationService = Substitute.For<IDataQualityPresentationService>();
-        presentationService
-            .GetSnapshotAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new DataQualityPresentationSnapshot());
+        var presentationService = new DataQualityPresentationService(apiClient);
         return new DataQualityViewModel(
             StatusService.Instance,
             LoggingService.Instance,

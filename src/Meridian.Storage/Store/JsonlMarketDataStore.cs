@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Meridian.Core.Logging;
@@ -6,13 +5,15 @@ using Meridian.Core.Serialization;
 using Meridian.Contracts.Store;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Replay;
 using Serilog;
 
 namespace Meridian.Storage.Store;
 
 /// <summary>
-/// <see cref="IMarketDataStore"/> implementation backed by JSONL (optionally gzip-compressed) files.
-/// Enumerates all <c>*.jsonl</c> and <c>*.jsonl.gz</c> files under the configured root,
+/// <see cref="IMarketDataStore"/> implementation backed by JSONL (optionally compressed) files.
+/// Enumerates all <c>*.jsonl</c> files under the configured root — including any compression suffix
+/// the storage policy can emit (<c>.gz</c>/<c>.gzip</c>/<c>.zst</c>/<c>.lz4</c>/<c>.br</c>) —
 /// deserialises each line, and applies the <see cref="MarketDataQuery"/> predicate in-process.
 /// </summary>
 public sealed class JsonlMarketDataStore : IMarketDataStore
@@ -74,9 +75,9 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
         [EnumeratorCancellation] CancellationToken ct)
     {
         await using var fs = File.OpenRead(file);
-        Stream stream = fs;
-        if (file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
-            stream = new GZipStream(fs, CompressionMode.Decompress);
+        // Shared codec detection (magic bytes, extension fallback) so this store decodes every
+        // compression suffix the storage policy can emit (.gz/.gzip/.zst/.lz4/.br), not only .gz.
+        Stream stream = CompressedJsonlStream.Decompress(fs, file);
 
         using var reader = new StreamReader(stream);
         while (!reader.EndOfStream)

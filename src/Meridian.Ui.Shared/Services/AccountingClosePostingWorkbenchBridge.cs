@@ -126,10 +126,16 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         ValidateContext(context);
         ValidateHumanCommand(command, requireController: false);
         var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
-        var ledgerBookService = _ledgerBookService!;
         var period = scope.Period;
         if (period.Status == LedgerPeriodStatusDto.HardClosed)
         {
+            await LockPostedClosingBatchesAfterHardCloseAsync(
+                    context,
+                    scope.FundProfileId,
+                    period,
+                    command,
+                    ct)
+                .ConfigureAwait(false);
             await RetainHardCloseReportingEvidenceAsync(
                     context,
                     scope.FundProfileId,
@@ -163,6 +169,13 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                     command.Reason,
                     RequiredSignoffRole: command.Role ?? "Fund Controller",
                     ActionOrigin: command.ActionOrigin),
+                ct)
+            .ConfigureAwait(false);
+        await LockPostedClosingBatchesAfterHardCloseAsync(
+                context,
+                scope.FundProfileId,
+                closed.Period,
+                command,
                 ct)
             .ConfigureAwait(false);
         await RetainHardCloseReportingEvidenceAsync(
@@ -313,6 +326,85 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         AccountingBasisKindDto.Statutory => ReportingAccountingBasisDto.Statutory,
         _ => ReportingAccountingBasisDto.Management
     };
+
+    private async Task LockPostedClosingBatchesAfterHardCloseAsync(
+        AccountingClosePostingContext context,
+        string fundProfileId,
+        LedgerPeriodDto period,
+        AccountingClosePostingCommand command,
+        CancellationToken ct)
+    {
+        if (period.Status != LedgerPeriodStatusDto.HardClosed)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{period.Label}' did not reach hard-closed status; retained closing batches were not close-locked.");
+        }
+
+        var workbench = await _workbench
+            .GetWorkbenchAsync(
+                fundProfileId,
+                context.LedgerBookId,
+                ct,
+                context.TenantId,
+                context.CompanyId)
+            .ConfigureAwait(false);
+        var postedClosingBatches = workbench.Drafts
+            .Where(draft =>
+                draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry &&
+                draft.Status == ManualJournalEntryStatusDto.Posted &&
+                draft.LedgerBookId == context.LedgerBookId &&
+                string.Equals(draft.PeriodId, period.PeriodId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static draft => draft.PostedAtUtc)
+            .ThenBy(static draft => draft.JournalEntryId)
+            .ToArray();
+
+        foreach (var draft in postedClosingBatches)
+        {
+            var evidenceLinks = command.EvidenceLinks
+                .Append(BuildCloseLockEvidence(draft, period.PeriodId, context.LedgerBookId))
+                .Where(static link => !string.IsNullOrWhiteSpace(link))
+                .Select(static link => link.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            await _lifecycle.ApplyLifecycleActionAsync(
+                    new JournalEntryLifecycleActionRequestDto(
+                        draft.JournalEntryId,
+                        draft.FundProfileId,
+                        JournalEntryLifecycleActionDto.LockAfterClose,
+                        command.Actor,
+                        draft.Version,
+                        Notes: command.Reason,
+                        CorrelationId: command.CorrelationId ??
+                                       $"period-hard-close:{context.WorkflowId:N}:{period.PeriodId:N}",
+                        EvidenceLinks: evidenceLinks,
+                        ActionOrigin: command.ActionOrigin,
+                        LedgerBookId: context.LedgerBookId,
+                        TenantId: draft.TenantId,
+                        CompanyId: draft.CompanyId),
+                    ct)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private static string BuildCloseLockEvidence(
+        ManualJournalEntryDraftDto draft,
+        Guid periodId,
+        Guid ledgerBookId)
+    {
+        var scope = new List<string>(2);
+        if (!string.IsNullOrWhiteSpace(draft.TenantId))
+        {
+            scope.Add($"tenantId={draft.TenantId.Trim()}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(draft.CompanyId))
+        {
+            scope.Add($"companyId={draft.CompanyId.Trim()}");
+        }
+
+        var query = scope.Count == 0 ? string.Empty : $"?{string.Join("&", scope)}";
+        return $"/api/workstation/evidence/subjects/accounting-close/period-lock/ledger-book/{ledgerBookId:D}/period/{periodId:D}/journal-entry/{draft.JournalEntryId:D}{query}";
+    }
 
     public async Task<ClosePostingGateDto> ReopenAndQueueClosingReversalsAsync(
         AccountingClosePostingContext context,
