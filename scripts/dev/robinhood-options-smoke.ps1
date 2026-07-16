@@ -548,8 +548,29 @@ function Write-UiSnapshot {
         [string]$Path
     )
 
-    $names = Get-ElementNameSnapshot -Root $Root
-    Write-Utf8File -Path $Path -Content ($names -join [Environment]::NewLine)
+    $lines = New-Object System.Collections.Generic.List[string]
+    $allElements = $Root.FindAll(
+        [System.Windows.Automation.TreeScope]::Descendants,
+        [System.Windows.Automation.Condition]::TrueCondition)
+
+    foreach ($element in $allElements) {
+        try {
+            $name = $element.Current.Name
+            $automationId = $element.Current.AutomationId
+            if ([string]::IsNullOrWhiteSpace($name) -and [string]::IsNullOrWhiteSpace($automationId)) {
+                continue
+            }
+
+            $controlType = $element.Current.ControlType.ProgrammaticName
+            $bounds = $element.Current.BoundingRectangle
+            $lines.Add(
+                "$controlType | id=$automationId | name=$name | offscreen=$($element.Current.IsOffscreen) | enabled=$($element.Current.IsEnabled) | bounds=$([int]$bounds.Left),$([int]$bounds.Top),$([int]$bounds.Width),$([int]$bounds.Height)")
+        }
+        catch {
+        }
+    }
+
+    Write-Utf8File -Path $Path -Content ($lines -join [Environment]::NewLine)
 }
 
 function Wait-ForElementByNames {

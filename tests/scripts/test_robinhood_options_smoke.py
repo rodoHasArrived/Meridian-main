@@ -117,6 +117,12 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('$process.WaitForExit(5000)', self.script)
         self.assertIn('$process = Start-Process @startProcessArgs', self.script)
 
+    def test_failure_snapshot_includes_element_layout_diagnostics(self) -> None:
+        self.assertIn('$element.Current.AutomationId', self.script)
+        self.assertIn('$element.Current.ControlType.ProgrammaticName', self.script)
+        self.assertIn('$element.Current.BoundingRectangle', self.script)
+        self.assertIn('$element.Current.IsOffscreen', self.script)
+
     def test_workspace_activation_skips_reselecting_an_active_shell(self) -> None:
         activation_start = self.script.index('function Try-ActivateWorkspaceShell')
         activation_end = self.script.index('\nfunction ', activation_start + 1)
