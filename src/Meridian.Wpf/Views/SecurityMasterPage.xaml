@@ -69,17 +69,17 @@
                             </Border.InputBindings>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⚠ "
-                                           Foreground="#333"
+                                           Foreground="{StaticResource BadgeDarkTextBrush}"
                                            FontWeight="Bold"
                                            FontSize="12"
                                            VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding OpenConflictCount}"
-                                           Foreground="#333"
+                                           Foreground="{StaticResource BadgeDarkTextBrush}"
                                            FontWeight="Bold"
                                            FontSize="12"
                                            VerticalAlignment="Center" />
                                 <TextBlock Text=" conflicts"
-                                           Foreground="#333"
+                                           Foreground="{StaticResource BadgeDarkTextBrush}"
                                            FontSize="12"
                                            VerticalAlignment="Center" />
                             </StackPanel>

@@ -24,7 +24,7 @@
 
             <!-- Recovery banner -->
             <Border Margin="0,8,0,0" Padding="10,8" BorderThickness="1"
-                    BorderBrush="#C0392B"
+                    BorderBrush="{StaticResource RecoveryBannerBorderBrush}"
                     Visibility="{Binding HasBanner, Converter={StaticResource BooleanToVisibility}}"
                     AutomationProperties.Name="Passport edit banner">
                 <TextBlock Text="{Binding BannerText}" TextWrapping="Wrap" />

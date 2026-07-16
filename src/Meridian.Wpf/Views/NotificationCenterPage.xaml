@@ -118,7 +118,7 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="24,0,0,0">
                         <Border x:Name="CriticalBadge"
-                                Background="#F44336"
+                                Background="{StaticResource SeverityCriticalBrush}"
                                 CornerRadius="999"
                                 Padding="10,3"
                                 Margin="0,0,8,0"
@@ -127,7 +127,7 @@
                             <TextBlock x:Name="CriticalCountText" Text="{Binding CriticalAlertCountText}" FontSize="11" Foreground="White" FontWeight="SemiBold" />
                         </Border>
                         <Border x:Name="ErrorBadge"
-                                Background="#FF5722"
+                                Background="{StaticResource SeverityErrorBrush}"
                                 CornerRadius="999"
                                 Padding="10,3"
                                 Margin="0,0,8,0"
@@ -136,13 +136,13 @@
                             <TextBlock x:Name="ErrorCountText" Text="{Binding ErrorAlertCountText}" FontSize="11" Foreground="White" FontWeight="SemiBold" />
                         </Border>
                         <Border x:Name="WarningBadge"
-                                Background="#FFC107"
+                                Background="{StaticResource SeverityWarningBrush}"
                                 CornerRadius="999"
                                 Padding="10,3"
                                 Margin="0,0,8,0"
                                 Visibility="{Binding IsWarningAlertBadgeVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                                 AutomationProperties.Name="{Binding WarningAlertCountText}">
-                            <TextBlock x:Name="WarningCountText" Text="{Binding WarningAlertCountText}" FontSize="11" Foreground="#333" FontWeight="SemiBold" />
+                            <TextBlock x:Name="WarningCountText" Text="{Binding WarningAlertCountText}" FontSize="11" Foreground="{StaticResource BadgeDarkTextBrush}" FontWeight="SemiBold" />
                         </Border>
                         <TextBlock x:Name="SnoozedCountText"
                                    Text="{Binding SnoozedAlertCountText}"
@@ -234,7 +234,7 @@
                     <StackPanel x:Name="PlaybookStepsPanel" Margin="0,0,0,16" />
 
                     <!-- What happens if ignored -->
-                    <Border Background="#2D1B1B" CornerRadius="6" Padding="12,8" Margin="0,0,0,4">
+                    <Border Background="{StaticResource NotificationDangerSurfaceBrush}" CornerRadius="6" Padding="12,8" Margin="0,0,0,4">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE7BA;"
                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
