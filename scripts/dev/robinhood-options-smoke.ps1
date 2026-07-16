@@ -910,6 +910,8 @@ function Invoke-CommandPaletteNavigation {
     }
 
     Invoke-OrClickElement -Element $paletteResult
+    Invoke-OrClickElement -Element $paletteInput
+    Send-WindowKeys -Process $Process -Keys "{ENTER}"
 }
 
 function Invoke-SmokeCase {
