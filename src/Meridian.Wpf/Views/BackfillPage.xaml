@@ -460,7 +460,7 @@
                         </Grid>
 
                         <ProgressBar x:Name="OverallProgressBar" Minimum="0" Maximum="100"
-                                     Value="{Binding OverallProgressPercent}" Height="8"
+                                     Value="{Binding OverallProgressPercent, Mode=OneWay}" Height="8"
                                      Background="{StaticResource ConsoleBackgroundMediumBrush}"
                                      Foreground="{StaticResource SuccessColorBrush}"
                                      Margin="0,0,0,16" />

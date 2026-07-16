@@ -1492,19 +1492,19 @@ describe("accounting-screen close-cockpit view model", () => {
   });
 
   it.each([
-    { state: "Required", isReadyForLock: true },
-    { state: "DraftQueued", isReadyForLock: true },
-    { state: "Submitted", isReadyForLock: true },
-    { state: "Approved", isReadyForLock: true },
-    { state: "ReversalQueued", isReadyForLock: true },
-    { state: "Blocked", isReadyForLock: true },
-    { state: "Unavailable", isReadyForLock: true },
-    { state: "Unexpected", isReadyForLock: true },
-    { state: "Posted", isReadyForLock: false },
-    { state: "NotRequired", isReadyForLock: false }
+    { state: "Required", isReadyForLock: true, statusLabel: "Required" },
+    { state: "DraftQueued", isReadyForLock: true, statusLabel: "Draft queued" },
+    { state: "Submitted", isReadyForLock: true, statusLabel: "Submitted" },
+    { state: "Approved", isReadyForLock: true, statusLabel: "Approved" },
+    { state: "ReversalQueued", isReadyForLock: true, statusLabel: "Reversal queued" },
+    { state: "Blocked", isReadyForLock: true, statusLabel: "Blocked" },
+    { state: "Unavailable", isReadyForLock: true, statusLabel: "Unavailable" },
+    { state: "Unexpected", isReadyForLock: true, statusLabel: "Unavailable" },
+    { state: "Posted", isReadyForLock: false, statusLabel: "Posted" },
+    { state: "NotRequired", isReadyForLock: false, statusLabel: "Not required" }
   ])(
     "keeps hard period lock disabled for gate state $state with readiness $isReadyForLock",
-    async ({ state, isReadyForLock }) => {
+    async ({ state, isReadyForLock, statusLabel }) => {
       const intermediateClosePlan: ClosePeriodPlan = {
         ...closePeriodPlan,
         closingEntriesGate: {
@@ -1532,7 +1532,11 @@ describe("accounting-screen close-cockpit view model", () => {
 
       await waitFor(() => expect(result.current.closingEntriesGate).not.toBeNull());
       expect(result.current.closingEntriesGate?.isReadyForLock).toBe(false);
-      expect(result.current.lockClosePeriodDisabledReason).toBe("Queue and post closing entries before locking the period.");
+      expect(result.current.lockClosePeriodDisabledReason).toBe(
+        state === "Required"
+          ? "Queue and post closing entries before locking the period."
+          : `Closing entries must be Posted or Not required before period lock; current state is ${statusLabel}.`
+      );
 
       await act(async () => {
         await result.current.lockClosePeriod();
