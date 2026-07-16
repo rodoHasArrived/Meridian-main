@@ -149,6 +149,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<InitialAccountBootstrapService>();
         services.TryAddSingleton<FirstRunExperienceService>();
         services.TryAddSingleton<DesktopWorkstationLaunchService>();
+        services.TryAddSingleton<DesktopLaunchTicketService>();
         services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
         services.TryAddSingleton<IngestionOperationsService>();
