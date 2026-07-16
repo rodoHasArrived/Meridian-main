@@ -76,6 +76,8 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
 
     def test_deep_page_navigation_uses_the_primary_shell_command_palette(self) -> None:
         self.assertIn('function Invoke-CommandPaletteNavigation', self.script)
+        self.assertIn('Find-ElementByExactName -Root $Root -Name "Search"', self.script)
+        self.assertIn('Invoke-OrClickElement -Element $paletteButton', self.script)
         self.assertIn('Send-WindowKeys -Process $Process -Keys "^k"', self.script)
         self.assertIn('AutomationIds @("CommandPaletteInput")', self.script)
         self.assertIn('AutomationIds @("CommandPaletteResults")', self.script)

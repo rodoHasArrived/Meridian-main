@@ -881,7 +881,13 @@ function Invoke-CommandPaletteNavigation {
         [string]$PageTag
     )
 
-    Send-WindowKeys -Process $Process -Keys "^k"
+    $paletteButton = Find-ElementByExactName -Root $Root -Name "Search"
+    if ($null -ne $paletteButton -and -not $paletteButton.Current.IsOffscreen) {
+        Invoke-OrClickElement -Element $paletteButton
+    }
+    else {
+        Send-WindowKeys -Process $Process -Keys "^k"
+    }
 
     $paletteInput = Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette input did not become available." -Condition {
         $candidate = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteInput")
