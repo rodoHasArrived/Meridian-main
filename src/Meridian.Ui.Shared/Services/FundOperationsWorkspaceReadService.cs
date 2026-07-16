@@ -2786,8 +2786,10 @@ public sealed class FundOperationsWorkspaceReadService
             : null;
         var dailyWorkPayload = scopedReportingPayload ?? _reportPackRunReadService?.BuildPayload();
         var deliveryAttempts = scopedReportingPayload?.DeliveryAttempts
-            ?? _reportPackDeliveryService?.ListAttempts(500)
-            ?? [];
+            ?? ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(
+                _reportPackDeliveryService?.ListAttempts(500) ?? [],
+                accessContext,
+                workflowRecords);
         var schedules = scopedReportingPayload?.Schedules
             ?? _reportingScheduleService?.ListSchedules(100)
             ?? [];
@@ -2796,7 +2798,10 @@ public sealed class FundOperationsWorkspaceReadService
         var distributions = scopedReportingPayload?.ReportPackDistributions
             ?? ReportPackRunReadService.BuildDistributionRecords(workflowRecords, deliveryAttempts);
         var reportLineProvenanceExplorer = scopedReportingPayload?.ReportLineProvenanceExplorer
-            ?? FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(workflowRecords, deliveryAttempts);
+            ?? FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(
+                workflowRecords,
+                deliveryAttempts,
+                accessContext: accessContext);
         var portfolioCuts = BuildPortfolioReportingCuts(accounts, cashFinancing, nav, runSources, asOf);
         var livePortfolioViews = BuildPortfolioReportingLiveViews(accounts.Count, portfolioCuts, runSources, asOf);
         var pnlSlices = BuildPortfolioReportingPnlSlices(runSources, cashFinancing.Currency, asOf);
@@ -4503,9 +4508,7 @@ public sealed class FundOperationsWorkspaceReadService
             return records;
         }
 
-        return records
-            .Where(record => ReportAccessPolicyEvaluator.Evaluate(record.AccessPolicy, accessContext).IsAccessible)
-            .ToArray();
+        return ReportPackRunReadService.FilterWorkflowRecords(records, accessContext);
     }
 
     private static string ResolveDisplayName(

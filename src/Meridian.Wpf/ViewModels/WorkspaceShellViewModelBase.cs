@@ -5,6 +5,7 @@ using System.Windows.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Features.Reporting;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Commands;
@@ -325,15 +326,23 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
 
     public ReportingWorkspaceShellViewModel(
         FundContextService? fundContextService = null,
-        FundOperationsWorkspaceReadService? workspaceReadService = null)
+        FundOperationsWorkspaceReadService? workspaceReadService = null,
+        ReportingGovernanceWorkbenchViewModel? governance = null)
         : base(ShellNavigationCatalog.GetWorkspaceShell("reporting")!)
     {
         _fundContextService = fundContextService;
         _workspaceReadService = workspaceReadService;
+        Governance = governance;
         CommandGroup = ReportingWorkspaceShellPresentationService.BuildCommandGroup(hasFund: false);
     }
 
     public event EventHandler? RefreshRequested;
+
+    /// <summary>
+    /// Canonical reporting lifecycle workbench. It remains a thin client projection over the
+    /// shared reporting API and is optional only for compatibility with isolated shell tests.
+    /// </summary>
+    public ReportingGovernanceWorkbenchViewModel? Governance { get; }
 
     public IReadOnlyList<WorkspaceQueueItem> CockpitDecisionItems
     {
@@ -389,7 +398,15 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
 
     public async Task RefreshAsync(CancellationToken cancellationToken = default)
     {
-        if (_fundContextService?.CurrentFundProfile is not { } profile || _workspaceReadService is null)
+        if (_fundContextService?.CurrentFundProfile is not { } profile)
+        {
+            Governance?.SetFundContext(null, null);
+            ApplyReporting(null);
+            return;
+        }
+
+        Governance?.SetFundContext(profile.FundProfileId, profile.BaseCurrency);
+        if (_workspaceReadService is null)
         {
             ApplyReporting(null);
             return;
@@ -422,6 +439,7 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
 
     private void ApplyReporting(FundReportingSummaryDto? reporting)
     {
+        Governance?.ApplyScheduleRecords(reporting?.Schedules);
         CockpitDecisionItems = ReportingWorkspaceShellPresentationService.BuildDecisionItems(reporting);
         CommandGroup = ReportingWorkspaceShellPresentationService.BuildCommandGroup(reporting is not null);
 

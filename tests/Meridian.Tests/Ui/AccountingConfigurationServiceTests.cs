@@ -1434,6 +1434,7 @@ public sealed class AccountingConfigurationServiceTests
                     160m,
                     "trusted-close",
                     "evidence://prices/AAPL/2026-06-30",
+                    FairValueLevel.Level1,
                     PriceAsOf: new DateOnly(2026, 6, 30)))));
         var scheduleSource = new InMemoryDailyValuationPortfolioSource();
         var configured = await scheduleSource.SaveAsync(new DailyValuationScheduleWorkItem(

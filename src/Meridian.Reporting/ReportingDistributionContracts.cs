@@ -1,5 +1,15 @@
 namespace Meridian.Reporting;
 
+/// <summary>Shared durable boundaries for secure reporting distribution identifiers.</summary>
+public static class ReportingDistributionValueLimits
+{
+    /// <summary>
+    /// Maximum provider-owned message identifier length accepted from a relay, retained by a
+    /// delivery job, or echoed by an authenticated provider receipt.
+    /// </summary>
+    public const int ProviderMessageIdLength = 256;
+}
+
 public enum ReportingAccessGrantValidationStatus
 {
     Valid = 0,
@@ -20,6 +30,7 @@ public sealed record ReportingAccessGrantRecord(
     string TokenHashSha256,
     string TenantId,
     string Audience,
+    string RunId,
     string PackageId,
     bool AllowPackageRead,
     IReadOnlyList<string> ArtifactIds,
@@ -31,16 +42,19 @@ public sealed record ReportingAccessGrantRecord(
     DateTimeOffset? RevokedAtUtc = null,
     string? RevokedBy = null,
     string? RevocationReason = null,
-    long Version = 0);
+    long Version = 0,
+    ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
 
 public sealed record ReportingAccessGrantIssueRequest(
     string TenantId,
     string Audience,
+    string RunId,
     string PackageId,
     DateTimeOffset ExpiresAtUtc,
     bool AllowPackageRead = true,
     IReadOnlyList<string>? ArtifactIds = null,
-    int MaxUses = 1);
+    int MaxUses = 1,
+    ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
 
 /// <summary>
 /// Contains the one-time plaintext bearer returned at issuance. Only the corresponding
@@ -56,9 +70,11 @@ public sealed record ReportingAccessGrantValidationRequest(
     string Token,
     string TenantId,
     string Audience,
+    string RunId,
     string PackageId,
     string? ArtifactId = null,
-    bool ConsumeUse = true);
+    bool ConsumeUse = true,
+    ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
 
 public sealed record ReportingAccessGrantValidationResult(
     ReportingAccessGrantValidationStatus Status,
@@ -70,6 +86,12 @@ public sealed record ReportingAccessGrantValidationResult(
 public interface IReportingAccessGrantStore
 {
     Task<ReportingAccessGrantRecord?> GetAsync(string grantId, CancellationToken ct = default);
+
+    /// <summary>Lists durable grant metadata through the complete tenant/package key.</summary>
+    Task<IReadOnlyList<ReportingAccessGrantRecord>> ListByPackageAsync(
+        string tenantId,
+        string packageId,
+        CancellationToken ct = default);
 
     Task<bool> TryCreateAsync(ReportingAccessGrantRecord grant, CancellationToken ct = default);
 
@@ -100,7 +122,9 @@ public enum ReportingDeliveryReceiptKind
     Accessed = 4,
     Downloaded = 5,
     Bounced = 6,
-    Rejected = 7
+    Rejected = 7,
+    /// <summary>A durable dispatcher-attempt failure, including release-gate rejection.</summary>
+    Failed = 8
 }
 
 public enum ReportingDeliveryTransportOutcome
@@ -135,6 +159,7 @@ public sealed record ReportingDeliveryReleaseAuthorization(
     ReportingReleaseState State,
     string TenantId,
     string PackageId,
+    string RunId,
     string ReleaseVersion,
     string ArtifactManifestHashSha256,
     IReadOnlyList<ReportingReleasedArtifactReference> Artifacts,
@@ -170,7 +195,8 @@ public sealed record ReportingDeliveryAccessPolicy(
     TimeSpan Lifetime,
     bool AllowPackageRead = true,
     IReadOnlyList<string>? ArtifactIds = null,
-    int MaxUses = 1);
+    int MaxUses = 1,
+    ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
 
 /// <summary>
 /// Durable, non-secret delivery content. Recipient access bearers are issued by a transport at
@@ -183,7 +209,8 @@ public sealed record ReportingDeliveryPayload(
     string Subject,
     string Body,
     string PortalUri,
-    ReportingDeliveryAccessPolicy? ExternalAccess = null);
+    ReportingDeliveryAccessPolicy? ExternalAccess = null,
+    ReportingAccessPrincipalKind RecipientKind = ReportingAccessPrincipalKind.User);
 
 public sealed record ReportingDeliveryQueueRequest(
     string TenantId,
@@ -268,6 +295,16 @@ public interface IReportingDeliveryTransport
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Optional two-phase transport contract for a deterministic recipient credential. The dispatcher
+/// durably binds the returned non-secret grant id to its leased job before the transport can expose
+/// the corresponding link to a provider.
+/// </summary>
+public interface IReportingDeliveryAttemptBindingProvider
+{
+    string ResolveAccessGrantId(ReportingDeliveryTransportRequest request);
+}
+
 public interface IReportingDeliveryStore
 {
     Task<ReportingDeliveryJobRecord?> GetAsync(string jobId, CancellationToken ct = default);
@@ -275,6 +312,27 @@ public interface IReportingDeliveryStore
     Task<ReportingDeliveryJobRecord?> GetByIdempotencyKeyAsync(
         string idempotencyKey,
         CancellationToken ct = default);
+
+    Task<ReportingDeliveryJobRecord?> GetByAccessGrantIdAsync(
+        string accessGrantId,
+        CancellationToken ct = default);
+
+    /// <summary>Lists durable receipt-bearing jobs through the complete tenant/package key.</summary>
+    Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByPackageAsync(
+        string tenantId,
+        string packageId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Lists durable failed-provider outcomes whose linked grant still requires revocation. Stores
+    /// that share persistence with grants should filter already-revoked grants so reconciliation
+    /// cannot starve behind completed rows.
+    /// </summary>
+    Task<IReadOnlyList<ReportingDeliveryGrantRevocationCandidate>>
+        ListPendingAccessGrantRevocationsAsync(
+            int take,
+            CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<ReportingDeliveryGrantRevocationCandidate>>([]);
 
     Task<bool> TryCreateAsync(ReportingDeliveryJobRecord job, CancellationToken ct = default);
 
@@ -296,6 +354,11 @@ public interface IReportingDeliveryStore
         CancellationToken ct = default);
 }
 
+public sealed record ReportingDeliveryGrantRevocationCandidate(
+    string JobId,
+    string TenantId,
+    string AccessGrantId);
+
 public sealed record ReportingDeliveryDispatcherOptions(
     TimeSpan LeaseDuration,
     TimeSpan BaseRetryDelay,
@@ -315,7 +378,9 @@ public sealed record ReportingHttpRelayMessage(
     string Subject,
     string Body,
     string RecipientAccessUri,
-    string IdempotencyKey);
+    string IdempotencyKey,
+    string DeliveryJobId,
+    string ReceiptCallbackPath);
 
 public sealed record ReportingHttpRelayResult(
     bool IsSuccess,

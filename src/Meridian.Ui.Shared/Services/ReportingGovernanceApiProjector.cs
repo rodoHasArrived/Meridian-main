@@ -1,14 +1,24 @@
+using System.Collections.Immutable;
 using Meridian.Contracts.Reporting;
+using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Reporting;
+using Meridian.Storage.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>Projects domain governance records into version-stable workstation API contracts.</summary>
 public static class ReportingGovernanceApiProjector
 {
-    public static GovernedReportingRunDto ProjectRun(GovernedReportingRun run)
+    public static GovernedReportingRunDto ProjectRun(GovernedReportingRun run) =>
+        ProjectRun(run, caller: null);
+
+    public static GovernedReportingRunDto ProjectRun(
+        GovernedReportingRun run,
+        ReportingGovernanceCallerContext? caller)
     {
         ArgumentNullException.ThrowIfNull(run);
+        var normalizedParameters = DeserializeParameters(run);
 
         return new GovernedReportingRunDto(
             run.RunId,
@@ -28,13 +38,23 @@ public static class ReportingGovernanceApiProjector
                 run.Access.PolicyVersion,
                 run.Access.Mode.ToString(),
                 run.Access.OwnerPrincipalId,
-                Safe(run.Access.PrincipalIds),
+                run.Access.AllowOwnerAccess,
+                Safe(run.Access.Principals)
+                    .Select(static principal => new ReportingGovernanceAccessPrincipalDto(
+                        principal.Kind.ToString(),
+                        principal.PrincipalId))
+                    .ToArray(),
                 run.Access.PolicyHash),
             new ReportingGovernanceCertifiedSnapshotDto(
                 run.Snapshot.SnapshotId,
                 run.Snapshot.SnapshotHash,
                 run.Snapshot.ReconciliationCheckpointId,
-                run.Snapshot.CapturedAtUtc),
+                run.Snapshot.CapturedAtUtc,
+                run.Snapshot.SourceCheckpointId,
+                run.Snapshot.SourceCheckpointHash,
+                run.Snapshot.ReconciliationCheckpointHash,
+                run.Snapshot.ParametersCanonicalJson,
+                run.Snapshot.ParametersHash),
             Project(run.CreationAuthority),
             run.CreatedAtUtc,
             run.RestatementOfRunId,
@@ -49,10 +69,17 @@ public static class ReportingGovernanceApiProjector
                     run.Approval.ApprovedAtUtc,
                     run.Approval.DecisionNote),
             run.Release is null ? null : Project(run.Release),
-            Safe(run.AuditTrail).Select(Project).ToArray());
+            Safe(run.AuditTrail).Select(Project).ToArray(),
+            normalizedParameters,
+            caller is null ? [] : ProjectRunActions(run, caller, normalizedParameters));
     }
 
-    public static ReportingGovernanceRestatementDto ProjectRestatement(ReportingRestatementRequest request)
+    public static ReportingGovernanceRestatementDto ProjectRestatement(ReportingRestatementRequest request) =>
+        ProjectRestatement(request, caller: null);
+
+    public static ReportingGovernanceRestatementDto ProjectRestatement(
+        ReportingRestatementRequest request,
+        ReportingGovernanceCallerContext? caller)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -77,16 +104,218 @@ public static class ReportingGovernanceApiProjector
             request.ApprovedBy is null ? null : Project(request.ApprovedBy),
             request.ApprovedAtUtc,
             request.DraftRunId,
-            Safe(request.AuditTrail).Select(Project).ToArray());
+            Safe(request.AuditTrail).Select(Project).ToArray(),
+            caller is null ? [] : ProjectRestatementActions(request, caller));
     }
 
     public static ReportingGovernanceRestatementApprovalDto ProjectRestatementApproval(
-        ReportingRestatementApprovalResult result)
+        ReportingRestatementApprovalResult result) =>
+        ProjectRestatementApproval(result, caller: null);
+
+    public static ReportingGovernanceRestatementApprovalDto ProjectRestatementApproval(
+        ReportingRestatementApprovalResult result,
+        ReportingGovernanceCallerContext? caller)
     {
         ArgumentNullException.ThrowIfNull(result);
         return new ReportingGovernanceRestatementApprovalDto(
-            ProjectRestatement(result.Request),
-            ProjectRun(result.DraftRun));
+            ProjectRestatement(result.Request, caller),
+            ProjectRun(result.DraftRun, caller));
+    }
+
+    public static ReportingGovernanceSeriesHistoryDto ProjectSeriesHistory(
+        ReportingGovernanceSeriesHistory history,
+        ReportingGovernanceCallerContext caller)
+    {
+        ArgumentNullException.ThrowIfNull(history);
+        ArgumentNullException.ThrowIfNull(caller);
+        return new ReportingGovernanceSeriesHistoryDto(
+            history.SeriesId,
+            history.Runs.Select(run => ProjectRun(run, caller)).ToArray(),
+            history.RestatementRequests.Select(request => ProjectRestatement(request, caller)).ToArray());
+    }
+
+    public static IReadOnlyList<ReportingGovernanceRestatementDto> ProjectRestatements(
+        IReadOnlyList<ReportingRestatementRequest> requests,
+        ReportingGovernanceCallerContext caller)
+    {
+        ArgumentNullException.ThrowIfNull(requests);
+        ArgumentNullException.ThrowIfNull(caller);
+        return requests.Select(request => ProjectRestatement(request, caller)).ToArray();
+    }
+
+    private static ReportingRunParametersDto? DeserializeParameters(GovernedReportingRun run)
+    {
+        if (string.IsNullOrWhiteSpace(run.Snapshot.ParametersCanonicalJson))
+        {
+            return null;
+        }
+
+        try
+        {
+            return ReportingRunCertificationService.DeserializeParameters(
+                run.Snapshot.ParametersCanonicalJson);
+        }
+        catch (Exception exception)
+        {
+            throw new ReportingGovernancePersistenceException(
+                $"Governed reporting run '{run.RunId}' contains malformed immutable normalized parameters.",
+                exception);
+        }
+    }
+
+    private static IReadOnlyList<ReportingGovernanceActionAvailabilityDto> ProjectRunActions(
+        GovernedReportingRun run,
+        ReportingGovernanceCallerContext caller,
+        ReportingRunParametersDto? normalizedParameters)
+    {
+        var accessBlocker = ResolveAccessBlocker(run, caller);
+        return
+        [
+            Availability(
+                "ValidateRun",
+                run.Version,
+                accessBlocker
+                ?? RequirePermission(caller, UserPermission.ManageReporting, "ManageReporting")
+                ?? (run.ExecutionState != GovernedReportingExecutionState.Succeeded
+                    ? "Run execution must be Succeeded before validation."
+                    : run.GovernanceState != GovernedReportingState.Draft
+                        ? "Only a Draft run can be validated."
+                        : null)),
+            Availability(
+                "SubmitRun",
+                run.Version,
+                accessBlocker
+                ?? RequirePermission(caller, UserPermission.ManageReporting, "ManageReporting")
+                ?? (run.GovernanceState != GovernedReportingState.Validated
+                    ? "Only a Validated run can be submitted."
+                    : null)),
+            Availability(
+                "ApproveRun",
+                run.Version,
+                accessBlocker
+                ?? RequirePermission(caller, UserPermission.ApproveReporting, "ApproveReporting")
+                ?? RequireHuman(caller)
+                ?? (run.GovernanceState != GovernedReportingState.InReview
+                    ? "Only an InReview run can be approved."
+                    : string.Equals(run.CreationAuthority.ActorId, caller.ActorId.Trim(), StringComparison.Ordinal)
+                        ? "The run creator cannot approve the same run."
+                        : run.Access.Mode == ReportingGovernanceAccessMode.Private
+                          && string.Equals(run.Access.OwnerPrincipalId, caller.ActorId.Trim(), StringComparison.Ordinal)
+                            ? "The private report owner cannot approve the same run."
+                            : null)),
+            Availability(
+                "ReleaseRun",
+                run.Version,
+                accessBlocker
+                ?? RequirePermission(caller, UserPermission.DeliverReporting, "DeliverReporting")
+                ?? RequireHuman(caller)
+                ?? (run.ExecutionState != GovernedReportingExecutionState.Succeeded
+                    || run.GovernanceState != GovernedReportingState.Approved
+                    || run.Approval is null
+                        ? "Only a successfully executed and Approved run can be released."
+                        : string.Equals(run.Approval.Authority.ActorId, caller.ActorId.Trim(), StringComparison.Ordinal)
+                            ? "The run approver cannot release the same run."
+                            : normalizedParameters is null
+                              || normalizedParameters.Finality != ReportingFinalityDto.Final
+                              || !normalizedParameters.IncludeEvidenceAppendix
+                                ? "Release requires a Final-certified run with the immutable evidence appendix; Draft-certified bytes cannot be released."
+                                : null)),
+            Availability(
+                "RequestRestatement",
+                run.Version,
+                accessBlocker
+                ?? RequirePermission(caller, UserPermission.ManageReporting, "ManageReporting")
+                ?? (run.GovernanceState != GovernedReportingState.Released || run.Release is null
+                    ? "Only a Released run can be restated."
+                    : null))
+        ];
+    }
+
+    private static IReadOnlyList<ReportingGovernanceActionAvailabilityDto> ProjectRestatementActions(
+        ReportingRestatementRequest request,
+        ReportingGovernanceCallerContext caller)
+    {
+        var scopeBlocker = !string.Equals(request.RequestedBy.TenantId, caller.TenantId.Trim(), StringComparison.Ordinal)
+            || !string.Equals(request.RequestedBy.CompanyId, caller.CompanyId?.Trim(), StringComparison.Ordinal)
+                ? "The restatement request is outside the caller tenant/company scope."
+                : null;
+        return
+        [
+            Availability(
+                "ApproveRestatement",
+                request.Version,
+                scopeBlocker
+                ?? RequirePermission(caller, UserPermission.ApproveReporting, "ApproveReporting")
+                ?? RequireHuman(caller)
+                ?? (request.State != ReportingRestatementRequestState.PendingApproval
+                    ? "Only a PendingApproval restatement request can be approved."
+                    : string.Equals(request.RequestedBy.ActorId, caller.ActorId.Trim(), StringComparison.Ordinal)
+                        ? "The restatement requester cannot approve the same request."
+                        : null))
+        ];
+    }
+
+    private static ReportingGovernanceActionAvailabilityDto Availability(
+        string action,
+        long expectedVersion,
+        string? blocker) =>
+        new(action, blocker is null, blocker, expectedVersion);
+
+    private static string? RequirePermission(
+        ReportingGovernanceCallerContext caller,
+        UserPermission permission,
+        string label) =>
+        caller.Permissions.HasFlag(UserPermission.AdminMaintenance)
+        || caller.Permissions.HasFlag(permission)
+            ? null
+            : $"The caller requires {label} permission.";
+
+    private static string? RequireHuman(ReportingGovernanceCallerContext caller) =>
+        caller.Origin == ReportingCommandOrigin.HumanOperator
+            ? null
+            : "This action requires a human operator.";
+
+    private static string? ResolveAccessBlocker(
+        GovernedReportingRun run,
+        ReportingGovernanceCallerContext caller)
+    {
+        if (!string.Equals(run.Scope.TenantId, caller.TenantId.Trim(), StringComparison.Ordinal)
+            || !string.Equals(run.Scope.CompanyId, caller.CompanyId?.Trim(), StringComparison.Ordinal))
+        {
+            return "The run is outside the caller tenant/company scope.";
+        }
+
+        var actor = caller.ActorId.Trim();
+        bool Matches(ReportingAccessPrincipalScope principal) =>
+            principal.Kind switch
+            {
+                ReportingAccessPrincipalKind.User =>
+                    string.Equals(principal.PrincipalId, actor, StringComparison.OrdinalIgnoreCase),
+                ReportingAccessPrincipalKind.Group =>
+                    !caller.PrincipalIds.IsDefaultOrEmpty
+                    && caller.PrincipalIds.Any(group =>
+                        string.Equals(group?.Trim(), principal.PrincipalId, StringComparison.OrdinalIgnoreCase)),
+                ReportingAccessPrincipalKind.Company =>
+                    string.Equals(caller.CompanyId?.Trim(), principal.PrincipalId, StringComparison.OrdinalIgnoreCase),
+                _ => false
+            };
+        var allowed = run.Access.Mode switch
+        {
+            ReportingGovernanceAccessMode.CompanyWide => true,
+            ReportingGovernanceAccessMode.Private =>
+                (run.Access.AllowOwnerAccess
+                    && string.Equals(run.Access.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase))
+                || Safe(run.Access.Principals).Any(principal =>
+                    principal.Kind == ReportingAccessPrincipalKind.User
+                    && Matches(principal)),
+            ReportingGovernanceAccessMode.Restricted =>
+                (run.Access.AllowOwnerAccess
+                    && !string.IsNullOrWhiteSpace(run.Access.OwnerPrincipalId)
+                    && string.Equals(run.Access.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase))
+                || Safe(run.Access.Principals).Any(Matches),
+            _ => false
+        };
+        return allowed ? null : "The caller is not included in the immutable reporting access scope.";
     }
 
     private static ReportingGovernanceAuthorityDto Project(ReportingAuthorityScope authority) =>

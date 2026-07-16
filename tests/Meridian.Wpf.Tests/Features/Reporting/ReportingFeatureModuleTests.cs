@@ -46,12 +46,14 @@ public sealed class ReportingFeatureModuleTests
     }
 
     [Fact]
-    public void Register_AddsReportingShellStateViewModelAndPageAsTransient()
+    public void Register_AddsCanonicalReportingClientWorkbenchShellStateViewModelAndPage()
     {
         var services = new ServiceCollection();
 
         new ReportingFeatureModule().Register(services);
 
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IReportingGovernanceApiClient>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingGovernanceWorkbenchViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellStateProvider>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ReportingWorkspaceShellPage>(services, ServiceLifetime.Transient);

@@ -754,6 +754,68 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task GetWorkspaceAsync_DirectDeliveryFallbackWithoutAccessContext_SuppressesAttempts()
+    {
+        var fixture = await CreateLegacyDeliveryFallbackFixtureAsync("tenant-a", "company-a");
+
+        var workspace = await fixture.Service.GetWorkspaceAsync(fixture.Query);
+
+        workspace.Reporting.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+        JsonSerializer.Serialize(workspace.Reporting)
+            .Contains("token=", StringComparison.OrdinalIgnoreCase)
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_DirectDeliveryFallbackAcrossTenantAndCompany_SuppressesAttempts()
+    {
+        var fixture = await CreateLegacyDeliveryFallbackFixtureAsync("tenant-b", "company-b");
+        var caller = new ReportAccessQueryContext(
+            ActorPrincipalId: "viewer-a",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+
+        var workspace = await fixture.Service.GetWorkspaceAsync(fixture.Query, caller);
+
+        workspace.Reporting.WorkflowRecords.Should().NotBeNull().And.BeEmpty();
+        workspace.Reporting.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_DirectDeliveryFallbackWithExactScope_RetainsOnlySecretFreeMetadata()
+    {
+        var fixture = await CreateLegacyDeliveryFallbackFixtureAsync("tenant-a", "company-a");
+        var caller = new ReportAccessQueryContext(
+            ActorPrincipalId: "viewer-a",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+
+        var workspace = await fixture.Service.GetWorkspaceAsync(fixture.Query, caller);
+
+        var attempt = workspace.Reporting.DeliveryAttempts.Should().ContainSingle().Subject;
+        attempt.DeliveryReference.Should().Be("/delivery/history");
+        attempt.Package.Should().NotBeNull();
+        attempt.Package!.SecureLink.Should().BeEmpty();
+        attempt.Package.PortalRoute.Should().BeEmpty();
+        attempt.Package.Artifacts.Should().ContainSingle().Which.DownloadRoute.Should().BeNull();
+        attempt.Package.AccessLinks.Should().ContainSingle(link =>
+            link.Kind == "manifest" &&
+            !link.RequiresToken &&
+            link.Href == "/api/workstation/evidence/subjects/report-pack/current/packet");
+        attempt.Package.Notifications.Should().BeEmpty();
+        attempt.Package.AccessExpiresAtUtc.Should().BeNull();
+        attempt.Package.DeliveryAccessSummary.Should().Be(ReportingDeliveryReadModelSecurity.RetiredAccessSummary);
+
+        var json = JsonSerializer.Serialize(workspace.Reporting);
+        json.Contains("token=", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        json.Contains("access_token=", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        json.Contains("/portal/reporting/packages/", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+        json.Contains("/reporting/runs/legacy-run/packages/", StringComparison.OrdinalIgnoreCase).Should().BeFalse();
+    }
+
+    [Fact]
     public void ProjectReconciliationSnapshot_MapsConsolidatedAndPerDimensionSnapshots()
     {
         var asOf = new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero);
@@ -1959,4 +2021,143 @@ public sealed class FundOperationsWorkspaceReadServiceTests
 
     private static Guid TranslateFundProfileId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId)));
+
+    private static async Task<LegacyDeliveryFallbackFixture> CreateLegacyDeliveryFallbackFixtureAsync(
+        string recordTenantId,
+        string recordCompanyId)
+    {
+        var fundProfileId = $"fund-delivery-{Guid.NewGuid():N}";
+        var accountService = new InMemoryFundAccountService();
+        var account = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Custody,
+            AccountCode: "CUST-DELIVERY",
+            DisplayName: "Delivery custody",
+            BaseCurrency: "USD",
+            EffectiveFrom: new DateTimeOffset(2026, 5, 1, 0, 0, 0, TimeSpan.Zero),
+            CreatedBy: "test",
+            FundId: TranslateFundProfileId(fundProfileId),
+            LedgerReference: "DELIVERY-TB"));
+        var workflow = new ReportPackWorkflowService();
+        var recordAccess = new ReportAccessQueryContext(
+            ActorPrincipalId: "owner-a",
+            CompanyId: recordCompanyId,
+            TenantId: recordTenantId,
+            RequireBoundScope: true);
+        var record = workflow.Create(
+            fundProfileId,
+            account.AccountId.ToString("D"),
+            "2026-05",
+            new VersionedReportTemplateIdDto("monthly-board-pack", 1),
+            "owner-a",
+            accessPolicy: new ReportAccessPolicyDto(
+                ReportAccessModeDto.CompanyWide,
+                CompanyId: recordCompanyId),
+            accessContext: recordAccess);
+        var attempt = BuildCredentialBearingDeliveryAttempt(record.ReportId);
+        var deliveryStore = new InMemoryDeliveryRecordStore([attempt]);
+        var deliveryService = new ReportPackDeliveryService(workflow, deliveryStore);
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(
+            accountService,
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            reportPackWorkflowService: workflow,
+            reportPackDeliveryService: deliveryService,
+            reportPackRunReadService: null);
+
+        return new LegacyDeliveryFallbackFixture(
+            service,
+            new FundOperationsWorkspaceQuery(
+                fundProfileId,
+                new DateTimeOffset(2026, 5, 20, 16, 0, 0, TimeSpan.Zero),
+                "USD"));
+    }
+
+    private static ReportPackDeliveryAttemptDto BuildCredentialBearingDeliveryAttempt(Guid reportId)
+    {
+        var createdAt = new DateTimeOffset(2026, 5, 20, 15, 0, 0, TimeSpan.Zero);
+        var package = new ReportPackDeliveryPackageDto(
+            PackageId: "legacy-package",
+            ReportId: reportId,
+            DistributionId: "board-reporting-committee",
+            DeliveryMode: ReportPackDeliveryModeDto.SecurePortal,
+            SecureLink: "/portal/reporting/packages/legacy-package?token=secret-token",
+            PortalRoute: "/reporting/runs/legacy-run/packages/legacy-package",
+            Formats: [GovernanceReportArtifactFormatDto.Pdf],
+            Artifacts:
+            [
+                new ReportPackDeliveryArtifactDto(
+                    GovernanceReportArtifactFormatDto.Pdf,
+                    "board-pack.pdf",
+                    "application/pdf",
+                    "reporting/legacy/board-pack.pdf",
+                    128,
+                    "evidence-artifact",
+                    DownloadRoute: "/api/fund-structure/reporting/packs/legacy/artifacts/board-pack.pdf?access_token=secret")
+            ],
+            CreatedAtUtc: createdAt,
+            RetainedManifestPath: "reporting/legacy/manifest.json",
+            DeliveryAccessSummary: "Open /portal/reporting/packages/legacy-package?token=secret-token",
+            AccessExpiresAtUtc: createdAt.AddDays(14),
+            AccessLinks:
+            [
+                new ReportPackDeliveryAccessLinkDto(
+                    "package",
+                    "Legacy package",
+                    "/portal/reporting/packages/legacy-package?token=secret-token",
+                    RequiresToken: true,
+                    ExpiresAtUtc: createdAt.AddDays(14)),
+                new ReportPackDeliveryAccessLinkDto(
+                    "manifest",
+                    "Evidence packet",
+                    "/api/workstation/evidence/subjects/report-pack/current/packet",
+                    RequiresToken: false)
+            ],
+            Notifications:
+            [
+                new ReportPackDeliveryNotificationDto(
+                    "notification-1",
+                    "email",
+                    "board@example.test",
+                    "Board",
+                    ReportPackDeliveryModeDto.EmailLink,
+                    "Board pack ready",
+                    "Open /portal/reporting/packages/legacy-package?token=secret-token",
+                    "/portal/reporting/packages/legacy-package?token=secret-token",
+                    RequiresToken: true,
+                    CreatedAtUtc: createdAt,
+                    ExpiresAtUtc: createdAt.AddDays(14))
+            ]);
+
+        return new ReportPackDeliveryAttemptDto(
+            AttemptId: Guid.NewGuid(),
+            ReportId: reportId,
+            DistributionId: "board-reporting-committee",
+            Recipient: "Board reporting committee",
+            RecipientRole: "Board",
+            Channel: "Board portal",
+            State: ReportPackDeliveryStateDto.Delivered,
+            AttemptedAtUtc: createdAt,
+            Actor: "owner-a",
+            AttemptNumber: 1,
+            DeliveryReference: "/delivery/history?token=secret-token",
+            Package: package);
+    }
+
+    private sealed record LegacyDeliveryFallbackFixture(
+        FundOperationsWorkspaceReadService Service,
+        FundOperationsWorkspaceQuery Query);
+
+    private sealed class InMemoryDeliveryRecordStore(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)
+        : IReportPackDeliveryRecordStore
+    {
+        public IReadOnlyList<ReportPackDeliveryAttemptDto> Load() => attempts;
+
+        public void Save(IReadOnlyList<ReportPackDeliveryAttemptDto> updatedAttempts)
+        {
+        }
+    }
 }

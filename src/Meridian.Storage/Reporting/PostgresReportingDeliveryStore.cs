@@ -15,6 +15,7 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
     private readonly ReportingArtifactStoreOptions _options;
     private readonly string _jobTable;
     private readonly string _receiptTable;
+    private readonly string _grantTable;
 
     public PostgresReportingDeliveryStore(ReportingArtifactStoreOptions options)
     {
@@ -23,6 +24,7 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
         ReportingDistributionStoreGuard.ValidateIdentifier(_options.Schema, nameof(options.Schema));
         _jobTable = $"\"{_options.Schema}\".\"reporting_delivery_jobs\"";
         _receiptTable = $"\"{_options.Schema}\".\"reporting_delivery_receipts\"";
+        _grantTable = $"\"{_options.Schema}\".\"reporting_access_grants\"";
     }
 
     public Task<ReportingDeliveryJobRecord?> GetAsync(
@@ -42,6 +44,131 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
     {
         ReportingDistributionStoreGuard.ValidateSha256(idempotencyKey, nameof(idempotencyKey));
         return ReadJobAsync("idempotency_key", idempotencyKey, ct);
+    }
+
+    public Task<ReportingDeliveryJobRecord?> GetByAccessGrantIdAsync(
+        string accessGrantId,
+        CancellationToken ct = default)
+    {
+        var normalizedAccessGrantId = ReportingDistributionStoreGuard.NormalizeRequired(
+            accessGrantId,
+            nameof(accessGrantId),
+            256);
+        return ReadJobAsync("access_grant_id", normalizedAccessGrantId, ct);
+    }
+
+    public async Task<IReadOnlyList<ReportingDeliveryJobRecord>> ListByPackageAsync(
+        string tenantId,
+        string packageId,
+        CancellationToken ct = default)
+    {
+        var normalizedTenantId = ReportingDistributionStoreGuard.NormalizeRequired(
+            tenantId,
+            nameof(tenantId),
+            256);
+        var normalizedPackageId = ReportingDistributionStoreGuard.NormalizeRequired(
+            packageId,
+            nameof(packageId),
+            256);
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
+            .ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select {JobSelectList()}
+            from {_jobTable}
+            where tenant_id = @tenant_id
+              and package_id = @package_id
+            order by created_at_utc desc, job_id;
+            """;
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
+        command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, normalizedPackageId);
+        var baseJobs = new List<ReportingDeliveryJobRecord>();
+        await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
+        {
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                baseJobs.Add(ReadBaseJob(reader));
+            }
+        }
+
+        var jobs = new List<ReportingDeliveryJobRecord>(baseJobs.Count);
+        foreach (var baseJob in baseJobs)
+        {
+            var receipts = await ReadReceiptsAsync(connection, transaction, baseJob, ct).ConfigureAwait(false);
+            var complete = baseJob with { Receipts = receipts };
+            ValidateRetainedJob(complete);
+            jobs.Add(complete);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return jobs;
+    }
+
+    public async Task<IReadOnlyList<ReportingDeliveryGrantRevocationCandidate>>
+        ListPendingAccessGrantRevocationsAsync(
+            int take,
+            CancellationToken ct = default)
+    {
+        if (take is < 1 or > 1000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(take));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select job.job_id, job.tenant_id, job.access_grant_id
+            from {_jobTable} as job
+            join {_grantTable} as grant
+              on grant.grant_id = job.access_grant_id
+             and grant.tenant_id = job.tenant_id
+            where grant.revoked_at_utc is null
+              and exists (
+                  select 1
+                  from {_receiptTable} as receipt
+                  where receipt.job_id = job.job_id
+                    and receipt.tenant_id = job.tenant_id
+                    and (receipt.kind in (@bounced_kind, @rejected_kind)
+                        or (job.state = @failed_state
+                            and receipt.kind = @failed_kind
+                            and coalesce(receipt.detail, '') not like 'RELAY_OUTCOME_UNKNOWN:%'
+                            and coalesce(receipt.detail, '') not like 'TRANSPORT_CANCELLED:%')))
+            order by job.updated_at_utc, job.job_id
+            limit @take;
+            """;
+        command.Parameters.AddWithValue(
+            "failed_state",
+            NpgsqlDbType.Integer,
+            (int)ReportingDeliveryState.Failed);
+        command.Parameters.AddWithValue(
+            "bounced_kind",
+            NpgsqlDbType.Integer,
+            (int)ReportingDeliveryReceiptKind.Bounced);
+        command.Parameters.AddWithValue(
+            "rejected_kind",
+            NpgsqlDbType.Integer,
+            (int)ReportingDeliveryReceiptKind.Rejected);
+        command.Parameters.AddWithValue(
+            "failed_kind",
+            NpgsqlDbType.Integer,
+            (int)ReportingDeliveryReceiptKind.Failed);
+        command.Parameters.AddWithValue("take", NpgsqlDbType.Integer, take);
+        var candidates = new List<ReportingDeliveryGrantRevocationCandidate>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            candidates.Add(new ReportingDeliveryGrantRevocationCandidate(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2)));
+        }
+
+        return candidates;
     }
 
     public async Task<bool> TryCreateAsync(
@@ -636,6 +763,11 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
 
         ValidateRelease(job.ReleaseAuthorization, job.TenantId, job.PackageId);
         ValidatePayload(job.Payload);
+        ValidateOptionalIdentifier(
+            job.ProviderMessageId,
+            nameof(job.ProviderMessageId),
+            ReportingDistributionValueLimits.ProviderMessageIdLength);
+        ValidateOptionalIdentifier(job.AccessGrantId, nameof(job.AccessGrantId), 256);
         ReportingDistributionStoreGuard.ValidateStringSet(
             job.Receipts.Select(static receipt => receipt.ReceiptId).ToArray(),
             nameof(job.Receipts),
@@ -660,6 +792,7 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
         ReportingDistributionStoreGuard.NormalizeRequired(release.ReceiptId, nameof(release.ReceiptId), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.NormalizeRequired(release.TenantId, nameof(release.TenantId), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.NormalizeRequired(release.PackageId, nameof(release.PackageId), 256, requireCanonical: true);
+        ReportingDistributionStoreGuard.NormalizeRequired(release.RunId, nameof(release.RunId), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.NormalizeRequired(release.ReleaseVersion, nameof(release.ReleaseVersion), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.ValidateSha256(release.ArtifactManifestHashSha256, nameof(release.ArtifactManifestHashSha256));
         ReportingDistributionStoreGuard.NormalizeRequired(release.ReleasedBy, nameof(release.ReleasedBy), 256, requireCanonical: true);
@@ -711,10 +844,21 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
         ReportingDistributionStoreGuard.NormalizeRequired(payload.Destination, nameof(payload.Destination), 2048, requireCanonical: true);
         ReportingDistributionStoreGuard.NormalizeRequired(payload.Subject, nameof(payload.Subject), 2048, requireCanonical: true);
         ReportingDistributionStoreGuard.NormalizeRequired(payload.Body, nameof(payload.Body), 65536);
+        if (!Enum.IsDefined(payload.RecipientKind))
+        {
+            throw new ArgumentOutOfRangeException(nameof(payload), "Reporting delivery recipient kind is invalid.");
+        }
         RejectTokenBearingText(payload.PortalUri, nameof(payload.PortalUri));
         if (payload.ExternalAccess is { } access)
         {
             ReportingDistributionStoreGuard.NormalizeRequired(access.Audience, nameof(access.Audience), 512, requireCanonical: true);
+            if (!Enum.IsDefined(access.AudienceKind)
+                || access.AudienceKind != payload.RecipientKind)
+            {
+                throw new ArgumentException(
+                    "Reporting delivery recipient and external-access principal kinds must match.",
+                    nameof(payload));
+            }
             RejectTokenBearingText(access.AccessBaseUri, nameof(access.AccessBaseUri));
             if (access.Lifetime <= TimeSpan.Zero || access.MaxUses <= 0)
             {
@@ -744,6 +888,11 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
         {
             throw new ArgumentException("Reporting delivery receipt transport does not match its job.", nameof(receipt));
         }
+
+        ValidateOptionalIdentifier(
+            receipt.ProviderReference,
+            nameof(receipt.ProviderReference),
+            ReportingDistributionValueLimits.ProviderMessageIdLength);
     }
 
     private static void ValidateTransition(
@@ -775,17 +924,124 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
             throw new InvalidOperationException("Reporting delivery attempt count can only advance by one atomically.");
         }
 
-        if (updated.State == ReportingDeliveryState.Dispatching)
+        if (updated.State == ReportingDeliveryState.Dispatching
+            && current.State != ReportingDeliveryState.Dispatching)
         {
             throw new InvalidOperationException("Reporting delivery leases can only be acquired by ClaimDueAsync.");
         }
 
+        if (current.State == ReportingDeliveryState.Dispatching
+            && updated.State == ReportingDeliveryState.Dispatching
+            && (current.AccessGrantId is not null
+                || updated.AccessGrantId is null
+                || current.AttemptCount != updated.AttemptCount
+                || current.ProviderMessageId != updated.ProviderMessageId
+                || current.LastErrorCode != updated.LastErrorCode
+                || current.LastError != updated.LastError
+                || current.NextAttemptAtUtc != updated.NextAttemptAtUtc
+                || current.LeaseOwner != updated.LeaseOwner
+                || current.LeaseExpiresAtUtc != updated.LeaseExpiresAtUtc
+                || !JsonEquals(current.Receipts, updated.Receipts)))
+        {
+            throw new InvalidOperationException(
+                "An active delivery lease may only bind its first deterministic access grant before provider dispatch.");
+        }
+
         if (current.AccessGrantId is not null
-            && updated.AccessGrantId is not null
             && !string.Equals(current.AccessGrantId, updated.AccessGrantId, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("A retained reporting access grant reference cannot be replaced.");
         }
+
+        if (current.ProviderMessageId is not null
+            && !string.Equals(current.ProviderMessageId, updated.ProviderMessageId, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("A retained reporting provider message id cannot be replaced.");
+        }
+
+        if (current.State is ReportingDeliveryState.RetryScheduled or ReportingDeliveryState.Blocked
+            && updated.State != current.State
+            && updated.State != ReportingDeliveryState.Dispatching
+            && !IsProviderOutcomeReceiptResolution(current, updated))
+        {
+            throw new InvalidOperationException(
+                "Only an exact authenticated provider receipt may resolve a retained unknown provider outcome.");
+        }
+
+        if (!IsAllowedStateTransition(current.State, updated.State))
+        {
+            throw new InvalidOperationException(
+                $"Reporting delivery state cannot move from {current.State} to {updated.State}.");
+        }
+    }
+
+    private static bool IsAllowedStateTransition(
+        ReportingDeliveryState current,
+        ReportingDeliveryState updated) =>
+        current switch
+        {
+            ReportingDeliveryState.Queued => updated == ReportingDeliveryState.Dispatching,
+            ReportingDeliveryState.Dispatching => updated is
+                ReportingDeliveryState.Dispatching or
+                ReportingDeliveryState.RetryScheduled or
+                ReportingDeliveryState.Sent or
+                ReportingDeliveryState.Delivered or
+                ReportingDeliveryState.Blocked or
+                ReportingDeliveryState.Failed,
+            ReportingDeliveryState.RetryScheduled => updated is
+                ReportingDeliveryState.Dispatching or
+                ReportingDeliveryState.Sent or
+                ReportingDeliveryState.Delivered or
+                ReportingDeliveryState.Failed,
+            ReportingDeliveryState.Sent => updated is
+                ReportingDeliveryState.Sent or
+                ReportingDeliveryState.Delivered or
+                ReportingDeliveryState.Failed,
+            ReportingDeliveryState.Delivered => updated == ReportingDeliveryState.Delivered,
+            ReportingDeliveryState.Blocked => updated is
+                ReportingDeliveryState.Blocked or
+                ReportingDeliveryState.Sent or
+                ReportingDeliveryState.Delivered or
+                ReportingDeliveryState.Failed,
+            ReportingDeliveryState.Failed => updated == ReportingDeliveryState.Failed,
+            _ => false
+        };
+
+    private static bool IsProviderOutcomeReceiptResolution(
+        ReportingDeliveryJobRecord current,
+        ReportingDeliveryJobRecord updated)
+    {
+        if (current.AccessGrantId is null
+            || current.ProviderMessageId is not null
+            || updated.ProviderMessageId is null
+            || current.AttemptCount != updated.AttemptCount
+            || updated.NextAttemptAtUtc is not null
+            || updated.LeaseOwner is not null
+            || updated.LeaseExpiresAtUtc is not null
+            || !string.Equals(current.AccessGrantId, updated.AccessGrantId, StringComparison.Ordinal)
+            || current.LastErrorCode is not ("RELAY_OUTCOME_UNKNOWN" or "TRANSPORT_CANCELLED")
+            || updated.Receipts.Count != current.Receipts.Count + 1)
+        {
+            return false;
+        }
+
+        var receipt = updated.Receipts[^1];
+        return string.Equals(
+                   receipt.ProviderReference,
+                   updated.ProviderMessageId,
+                   StringComparison.Ordinal)
+               && receipt.Kind switch
+               {
+                   ReportingDeliveryReceiptKind.Delivered or
+                   ReportingDeliveryReceiptKind.Accessed or
+                   ReportingDeliveryReceiptKind.Downloaded =>
+                       updated.State == ReportingDeliveryState.Delivered,
+                   ReportingDeliveryReceiptKind.Bounced or
+                   ReportingDeliveryReceiptKind.Rejected or
+                   ReportingDeliveryReceiptKind.Failed =>
+                       updated.State == ReportingDeliveryState.Failed,
+                   _ => updated.State == ReportingDeliveryState.Sent
+               };
     }
 
     private static IReadOnlyList<ReportingDeliveryReceipt> ValidateReceiptAppend(
@@ -919,6 +1175,30 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
         if (ContainsTokenMarker(value))
         {
             throw new ArgumentException("Reporting delivery retained URIs cannot contain bearer tokens.", parameterName);
+        }
+    }
+
+    private static void ValidateOptionalIdentifier(
+        string? value,
+        string parameterName,
+        int maximumLength)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        ReportingDistributionStoreGuard.NormalizeRequired(
+            value,
+            parameterName,
+            maximumLength,
+            requireCanonical: true);
+        if (ContainsTokenMarker(value)
+            || value.Contains("bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException(
+                "Reporting delivery identifiers cannot contain credential-shaped material.",
+                parameterName);
         }
     }
 

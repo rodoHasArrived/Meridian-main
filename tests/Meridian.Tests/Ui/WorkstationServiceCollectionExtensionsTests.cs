@@ -45,6 +45,25 @@ public sealed class WorkstationServiceCollectionExtensionsTests
     }
 
     [Fact]
+    public void AddWorkstationSharedServices_DoesNotRegisterRetiredQueryTokenDeliveryService()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetService<ReportPackDeliveryService>().Should().BeNull(
+            "legacy delivery generated deterministic query-token links and is no longer production-reachable");
+    }
+
+    [Fact]
     public void AddWorkstationSharedServices_RegistersSharedLiveOrderReadinessGate()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));

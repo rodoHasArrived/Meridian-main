@@ -173,8 +173,13 @@ public sealed class ReportingArtifactVaultServiceTests
             "7",
             ReportingGovernanceAccessMode.Restricted,
             OwnerPrincipalId: null,
-            ImmutableArray.Create("analyst-a", "group-reporting"),
-            new string('a', 64));
+            AllowOwnerAccess: false,
+            Principals:
+            [
+                new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.User, "analyst-a"),
+                new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.Group, "group-reporting")
+            ],
+            PolicyHash: new string('a', 64));
         var snapshot = new ReportingCertifiedSnapshotScope(
             scope.TenantId,
             scope.OrganizationId,

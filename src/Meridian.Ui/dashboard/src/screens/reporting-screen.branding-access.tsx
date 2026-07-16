@@ -1,12 +1,9 @@
-import { Eye, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  ReportingCommandStatusView,
-  type ReportingCommandStatus
-} from "@/screens/reporting-screen.shared-components";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   AccountingWorkspaceResponse,
   ReportBrandingTheme
@@ -40,27 +37,13 @@ export interface ReportBrandingDraftState {
 interface ReportingBrandingAccessPanelProps {
   themes: ReportBrandingTheme[];
   draft: ReportBrandingDraftState;
-  status: ReportingCommandStatus | null;
-  runningBrandingThemeId: string | null;
-  reportingFundProfileId: string | null;
   onDraftChange: (field: ReportBrandingDraftField, value: string) => void;
-  onPreviewTheme: (theme: ReportBrandingTheme) => void | Promise<void>;
-  onGenerateTheme: (theme: ReportBrandingTheme) => void | Promise<void>;
-  onPreviewCustom: () => void | Promise<void>;
-  onGenerateCustom: () => void | Promise<void>;
 }
 
 export function ReportingBrandingAccessPanel({
   themes,
   draft,
-  status,
-  runningBrandingThemeId,
-  reportingFundProfileId,
-  onDraftChange,
-  onPreviewTheme,
-  onGenerateTheme,
-  onPreviewCustom,
-  onGenerateCustom
+  onDraftChange
 }: ReportingBrandingAccessPanelProps) {
   if (themes.length === 0) {
     return null;
@@ -111,34 +94,6 @@ export function ReportingBrandingAccessPanel({
                   {theme.footerText ?? "No footer text"} · {theme.disclaimer ?? "No disclaimer"}
                 </p>
                 <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{theme.logoUri ?? theme.themeId}</p>
-                <div className="mt-3 flex flex-wrap justify-end gap-2">
-                  <Button
-                    aria-label={`Preview ${theme.name} branded report pack`}
-                    busy={runningBrandingThemeId === `${theme.themeId}:preview`}
-                    busyLabel="Previewing"
-                    disabled={!reportingFundProfileId || Boolean(runningBrandingThemeId)}
-                    disabledReason={reportingFundProfileId ? null : "A fund profile is required before previewing a governed report pack."}
-                    onClick={() => void onPreviewTheme(theme)}
-                    size="sm"
-                    variant="secondary"
-                  >
-                    <Eye className="h-4 w-4" aria-hidden="true" />
-                    Preview
-                  </Button>
-                  <Button
-                    aria-label={`Generate ${theme.name} branded report pack`}
-                    busy={runningBrandingThemeId === theme.themeId}
-                    busyLabel="Generating"
-                    disabled={!reportingFundProfileId || Boolean(runningBrandingThemeId)}
-                    disabledReason={reportingFundProfileId ? null : "A fund profile is required before generating a governed report pack."}
-                    onClick={() => void onGenerateTheme(theme)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <FileText className="h-4 w-4" aria-hidden="true" />
-                    Generate
-                  </Button>
-                </div>
               </div>
             ))}
           </div>
@@ -147,7 +102,7 @@ export function ReportingBrandingAccessPanel({
               <div className="min-w-0">
                 <h4 className="text-sm font-semibold text-foreground">Custom styling override</h4>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Generate this report pack with firm-specific colors, logo, footer, and disclaimer metadata.
+                  Stage firm-specific colors, logo, footer, and disclaimer metadata for a schedule or governed run.
                 </p>
               </div>
               <Badge variant="outline">Override</Badge>
@@ -228,42 +183,15 @@ export function ReportingBrandingAccessPanel({
                 />
               </label>
             </div>
-            <div className="mt-3 flex flex-wrap justify-end gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                busy={runningBrandingThemeId === "custom-branding-override:preview"}
-                busyLabel="Previewing"
-                disabled={!reportingFundProfileId || Boolean(runningBrandingThemeId)}
-                disabledReason={reportingFundProfileId ? null : "A fund profile is required before previewing a governed report pack."}
-                onClick={() => void onPreviewCustom()}
-                aria-label="Preview custom branded report pack"
-              >
-                <Eye className="h-4 w-4" aria-hidden="true" />
-                Preview custom
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                busy={runningBrandingThemeId === "custom-branding-override"}
-                busyLabel="Generating"
-                disabled={!reportingFundProfileId || Boolean(runningBrandingThemeId)}
-                disabledReason={reportingFundProfileId ? null : "A fund profile is required before generating a governed report pack."}
-                onClick={() => void onGenerateCustom()}
-                aria-label="Generate custom branded report pack"
-              >
-                <FileText className="h-4 w-4" aria-hidden="true" />
-                Generate custom
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-md border border-primary/25 bg-primary/10 px-3 py-2">
+              <p role="status" className="max-w-3xl text-xs leading-5 text-primary">
+                Pack preview and generation now use the canonical governed-run workflow, where readiness, certified artifacts, and release evidence are server-owned.
+              </p>
+              <Button asChild type="button" size="sm" variant="outline">
+                <Link to={WORKSTATION_ROUTE_CATALOG.reportingRunParameters}>Configure governed run</Link>
               </Button>
             </div>
           </div>
-          {status ? (
-            <div className="mt-3">
-              <ReportingCommandStatusView status={status} />
-            </div>
-          ) : null}
         </CardContent>
       </Card>
     </section>

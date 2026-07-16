@@ -215,7 +215,13 @@ public sealed class ReportingArtifactCatalogAuditStoreTests : IClassFixture<Repo
             "1",
             ReportingGovernanceAccessMode.Restricted,
             NewId("owner"),
-            ImmutableArray.Create(NewId("principal")),
+            AllowOwnerAccess: true,
+            Principals:
+            [
+                new ReportingAccessPrincipalScope(
+                    ReportingAccessPrincipalKind.User,
+                    NewId("principal"))
+            ],
             Hash("policy"));
         var snapshot = new ReportingCertifiedSnapshotScope(
             scope.TenantId,

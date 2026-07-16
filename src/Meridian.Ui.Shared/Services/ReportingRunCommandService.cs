@@ -1,6 +1,7 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Contracts.Api;
 using Meridian.Reporting;
+using Meridian.Storage.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -12,6 +13,7 @@ public sealed class ReportingRunCommandService
     private readonly ReportWriterDatasetSourceService? _datasetSourceService;
     private readonly ReportingRunReadinessService _readinessService;
     private readonly ReportingRunCertificationService _certificationService;
+    private readonly IReportingGovernanceEndpointCoordinator? _governanceCoordinator;
 
     public ReportingRunCommandService(
         IReportingOrchestrationService orchestrationService,
@@ -19,7 +21,8 @@ public sealed class ReportingRunCommandService
         GovernedReportingTemplateCatalog? governedTemplateCatalog = null,
         ReportWriterDatasetSourceService? datasetSourceService = null,
         ReportingRunReadinessService? readinessService = null,
-        ReportingRunCertificationService? certificationService = null)
+        ReportingRunCertificationService? certificationService = null,
+        IReportingGovernanceEndpointCoordinator? governanceCoordinator = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
@@ -29,6 +32,7 @@ public sealed class ReportingRunCommandService
             templateCatalog,
             governedTemplateCatalog);
         _certificationService = certificationService ?? new ReportingRunCertificationService();
+        _governanceCoordinator = governanceCoordinator;
     }
 
     public async Task<ReportingRunResultDto> RunAsync(
@@ -41,6 +45,24 @@ public sealed class ReportingRunCommandService
         ReportingRunRequestDto request,
         string fallbackActor,
         ReportAccessQueryContext? accessContext,
+        CancellationToken cancellationToken = default) =>
+        await RunAsync(
+            request,
+            fallbackActor,
+            accessContext,
+            governanceCaller: null,
+            cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Executes and immediately reconciles a tenant-bound run into the canonical governed Draft.
+    /// The method does not return a successful strict-mode result until exact artifacts have been
+    /// retained and the governance aggregate is Succeeded/Draft.
+    /// </summary>
+    public async Task<ReportingRunResultDto> RunAsync(
+        ReportingRunRequestDto request,
+        string fallbackActor,
+        ReportAccessQueryContext? accessContext,
+        ReportingGovernanceCallerContext? governanceCaller,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -59,41 +81,52 @@ public sealed class ReportingRunCommandService
 
         var requestedAtUtc = DateTimeOffset.UtcNow;
         var templateId = request.TemplateId.Trim();
-        if (accessContext?.RequireBoundScope == true && request.DatasetRows is { Count: > 0 })
+        var governed = accessContext?.RequireBoundScope == true;
+        if (governed && request.DatasetRows is { Count: > 0 })
         {
             throw new InvalidOperationException(
                 "Caller-supplied report rows are not accepted by the governed run endpoint. Select a server-owned dataset source.");
         }
 
+        if (governed)
+        {
+            if (_governanceCoordinator is null || governanceCaller is null)
+            {
+                throw new ReportingGovernancePersistenceException(
+                    "Canonical governance coordination is required before a tenant-bound reporting run can be returned.");
+            }
+            ValidateGovernanceCaller(accessContext!, governanceCaller, fallbackActor);
+        }
+
         var readiness = await _readinessService
             .AssessAsync(request, accessContext, cancellationToken)
             .ConfigureAwait(false);
-        var isFinal = readiness.ResolvedParameters.Finality == ReportingFinalityDto.Final;
-        if (!readiness.CanGenerateDraft || isFinal && !readiness.CanGenerateFinal)
+        var template = ResolveTemplate(request, templateId, accessContext);
+        var certified = governed
+            ? await _certificationService
+                .CertifyAsync(template, readiness, accessContext!, cancellationToken)
+                .ConfigureAwait(false)
+            : null;
+        var effectiveReadiness = certified?.Readiness ?? readiness;
+        var isFinal = effectiveReadiness.ResolvedParameters.Finality == ReportingFinalityDto.Final;
+        if (!effectiveReadiness.CanGenerateDraft || isFinal && !effectiveReadiness.CanGenerateFinal)
         {
-            throw new ReportingRunReadinessBlockedException(readiness);
+            throw new ReportingRunReadinessBlockedException(effectiveReadiness);
         }
 
-        var template = request.Template is null
-            ? _templateCatalog.Get(templateId)
-            : _templateCatalog.Get(request.Template);
-        var asOfDate = readiness.ResolvedParameters.AsOfDate;
+        var asOfDate = effectiveReadiness.ResolvedParameters.AsOfDate;
         var actor = fallbackActor.Trim();
-        var jobId = accessContext?.RequireBoundScope == true
+        var jobId = governed
             ? BuildDefaultJobId($"{accessContext.TenantId}-{templateId}", requestedAtUtc)
             : string.IsNullOrWhiteSpace(request.JobId)
             ? BuildDefaultJobId(templateId, requestedAtUtc)
             : request.JobId.Trim();
-        var datasetRows = ResolveDatasetRows(request, template, accessContext);
-        var datasetSourceEvidence = ResolveDatasetSourceEvidence(request, template);
-        var certified = accessContext is null
-            ? null
-            : _certificationService.Certify(
-                template,
-                readiness,
-                datasetRows,
-                datasetSourceEvidence.SourceId,
-                accessContext);
+        var datasetRows = certified?.DatasetRows ?? ResolveDatasetRows(request, template, accessContext);
+        var datasetSourceEvidence = certified is null
+            ? ResolveDatasetSourceEvidence(request, template)
+            : new DatasetSourceEvidence(
+                certified.AuthoritativeSource.SourceId,
+                "Certified durable ledger journal");
 
         var manifest = await _orchestrationService.ExecuteAsync(
             new ReportingJobContract(
@@ -110,15 +143,64 @@ public sealed class ReportingRunCommandService
                 AccessPolicy: template.AccessPolicy,
                 RetryReason: request.RetryReason,
                 AllowRestatement: false,
-                ResolvedTemplate: readiness.ResolvedTemplate,
-                ResolvedParameters: readiness.ResolvedParameters,
-                Readiness: readiness,
+                ResolvedTemplate: effectiveReadiness.ResolvedTemplate,
+                ResolvedParameters: effectiveReadiness.ResolvedParameters,
+                Readiness: effectiveReadiness,
                 OperationalScope: certified?.OperationalScope,
                 ImmutableAccessScope: certified?.AccessScope,
-                CertifiedSnapshot: certified?.Snapshot),
+                CertifiedSnapshot: certified?.Snapshot,
+                AuthoritativeSource: certified?.AuthoritativeSource),
             cancellationToken).ConfigureAwait(false);
 
+        if (governed)
+        {
+            var governedRun = await _governanceCoordinator!
+                .CreateFromCompletedCertifiedManifestAsync(
+                    manifest.RunId,
+                    governanceCaller!,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (governedRun.ExecutionState != GovernedReportingExecutionState.Succeeded
+                || governedRun.GovernanceState != GovernedReportingState.Draft)
+            {
+                throw new ReportingGovernanceException(
+                    $"Reporting run '{manifest.RunId}' was not durably reconciled to Succeeded/Draft governance state.");
+            }
+        }
+
         return new ReportingRunResultDto(ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId), template));
+    }
+
+    private ReportingTemplateMetadata ResolveTemplate(
+        ReportingRunRequestDto request,
+        string templateId,
+        ReportAccessQueryContext? accessContext)
+    {
+        if (_governedTemplateCatalog is not null && accessContext?.RequireBoundScope == true)
+        {
+            return request.Template is null
+                ? _governedTemplateCatalog.Get(templateId, accessContext)
+                : _governedTemplateCatalog.Get(request.Template, accessContext);
+        }
+
+        return request.Template is null
+            ? _templateCatalog.Get(templateId)
+            : _templateCatalog.Get(request.Template);
+    }
+
+    private static void ValidateGovernanceCaller(
+        ReportAccessQueryContext accessContext,
+        ReportingGovernanceCallerContext caller,
+        string fallbackActor)
+    {
+        if (!string.Equals(caller.ActorId, accessContext.ActorPrincipalId, StringComparison.Ordinal)
+            || !string.Equals(caller.ActorId, fallbackActor.Trim(), StringComparison.Ordinal)
+            || !string.Equals(caller.TenantId, accessContext.TenantId, StringComparison.Ordinal)
+            || !string.Equals(caller.CompanyId, accessContext.CompanyId, StringComparison.Ordinal))
+        {
+            throw new UnauthorizedAccessException(
+                "Reporting access and governance caller contexts must resolve to the same server-owned actor, tenant, and company.");
+        }
     }
 
     private static WorkstationReportingRunPayload ProjectRun(

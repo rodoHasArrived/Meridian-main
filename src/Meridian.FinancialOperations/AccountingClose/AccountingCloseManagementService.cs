@@ -768,6 +768,40 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             var plan = BuildPeriodPlan(workflow);
             if (plan.IsPeriodLocked)
             {
+                if (_postingWorkbench is not null)
+                {
+                    try
+                    {
+                        await _postingWorkbench.FinalizeHardCloseAsync(
+                                RequirePostingContext(workflow, plan, tenantId, companyId),
+                                new AccountingClosePostingCommand(
+                                    resolvedActor,
+                                    RequireText(request.Rationale, "Rationale"),
+                                    NormalizeEvidenceLinks(request.EvidenceLinks),
+                                    request.ActionOrigin,
+                                    Role: "Fund Controller",
+                                    CorrelationId: request.CorrelationId),
+                                ct)
+                            .ConfigureAwait(false);
+                    }
+                    catch (ReportingCloseEvidenceHandoffException ex)
+                    {
+                        plan = await AttachClosingEntriesGateAsync(
+                                plan,
+                                workflow,
+                                ct,
+                                tenantId,
+                                companyId)
+                            .ConfigureAwait(false);
+                        plan = plan with
+                        {
+                            IsPeriodLocked = true,
+                            CloseCalendar = BuildCloseCalendar(plan.Tasks, isPeriodLocked: true)
+                        };
+                        return ReportingEvidenceHandoffPending(plan, ex);
+                    }
+                }
+
                 plan = await AttachClosingEntriesGateAsync(plan, workflow, ct, tenantId, companyId).ConfigureAwait(false);
                 return new ClosePeriodLockResultDto(
                     true,
@@ -883,8 +917,24 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
                             request.ActionOrigin,
                             Role: "Fund Controller",
                             CorrelationId: request.CorrelationId),
-                        ct)
+                    ct)
                     .ConfigureAwait(false);
+            }
+            catch (ReportingCloseEvidenceHandoffException ex)
+            {
+                plan = await AttachClosingEntriesGateAsync(
+                        plan,
+                        workflow,
+                        ct,
+                        tenantId,
+                        companyId)
+                    .ConfigureAwait(false);
+                plan = plan with
+                {
+                    IsPeriodLocked = true,
+                    CloseCalendar = BuildCloseCalendar(plan.Tasks, isPeriodLocked: true)
+                };
+                return ReportingEvidenceHandoffPending(plan, ex);
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or LedgerBookServiceException)
             {
@@ -942,6 +992,20 @@ public sealed partial class AccountingCloseManagementService : IAccountingCloseM
             _writeGate.Release();
         }
     }
+
+    private static ClosePeriodLockResultDto ReportingEvidenceHandoffPending(
+        ClosePeriodPlanDto plan,
+        ReportingCloseEvidenceHandoffException exception) =>
+        new(
+            false,
+            plan,
+            null,
+            [new AccountingConfigurationValidationIssueDto(
+                "CloseReportingEvidenceHandoffPending",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                exception.Message,
+                exception.CompletionCheckpointId,
+                "The ledger hard close is durable. Retry this same close command after restoring the reporting evidence store; do not reopen the period.")]);
 
     public Task<ClosePeriodReopenResultDto?> ReopenClosePeriodAsync(
         ReopenClosePeriodRequestDto request,

@@ -9,4 +9,6 @@ namespace Meridian.Storage.Reporting;
 [JsonSerializable(typeof(GovernedReportingRun))]
 [JsonSerializable(typeof(ReportingRestatementRequest))]
 [JsonSerializable(typeof(ReportingGovernanceAuditEntry))]
+[JsonSerializable(typeof(GovernedReportingRunV1))]
+[JsonSerializable(typeof(ReportingRestatementRequestV1))]
 internal sealed partial class ReportingGovernanceJsonContext : JsonSerializerContext;

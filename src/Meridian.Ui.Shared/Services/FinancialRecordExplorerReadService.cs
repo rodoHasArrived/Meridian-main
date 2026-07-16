@@ -446,27 +446,33 @@ public sealed partial class FinancialRecordExplorerReadService
             "Report lines",
             "Governed report lines with retained source provenance.");
         var savedViews = await LoadSavedViewsAsync(tenantId, ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
-        var deliveryService = _reportPackDeliveryService;
         var explorer = BuildReportLineProvenanceExplorer(
             workflowService.ListRecords(200),
-            deliveryService?.ListAttempts(500),
-            savedViews);
+            deliveryAttempts: [],
+            savedViews: savedViews);
         return ApplyExplorerQuery(explorer, query);
     }
 
     public static FinancialRecordExplorerDto BuildReportLineProvenanceExplorer(
         IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords,
         IReadOnlyList<ReportPackDeliveryAttemptDto>? deliveryAttempts = null,
-        IReadOnlyList<FinancialRecordExplorerSavedViewDto>? savedViews = null)
+        IReadOnlyList<FinancialRecordExplorerSavedViewDto>? savedViews = null,
+        ReportAccessQueryContext? accessContext = null)
     {
         ArgumentNullException.ThrowIfNull(workflowRecords);
 
-        var records = workflowRecords
+        var authorizedRecords = accessContext is null
+            ? workflowRecords
+            : ReportPackRunReadService.FilterWorkflowRecords(workflowRecords, accessContext);
+        var records = authorizedRecords
             .Where(static record => record.LineProvenance is { Count: > 0 })
             .OrderByDescending(static record => record.UpdatedAt)
             .ThenBy(static record => record.ReportId)
             .ToArray();
-        var attempts = deliveryAttempts ?? [];
+        var attempts = ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(
+            deliveryAttempts ?? [],
+            accessContext,
+            records);
         var rows = records
             .SelectMany(record => record.LineProvenance!
                 .Select((line, index) => BuildReportLineProvenanceRow(record, line, attempts, index)))
@@ -2505,9 +2511,9 @@ public sealed partial class FinancialRecordExplorerReadService
         int index)
     {
         var reportHref = UiApiRoutes.WithParam(
-            UiApiRoutes.ReportingPackWorkflowDeliveries,
+            UiApiRoutes.FundReportPackById,
             "reportId",
-            record.ReportId.ToString("D"));
+            record.ReportId.ToString("D", CultureInfo.InvariantCulture));
         var sourceHref = BuildReportLineSourceHref(line);
         var instrumentHref = BuildReportLineInstrumentHref(line);
         var activityHref = BuildReportLineActivityHref(line, sourceHref);
@@ -2524,6 +2530,10 @@ public sealed partial class FinancialRecordExplorerReadService
         var deliveryGraphHref = latestDelivery is null
             ? string.Empty
             : BuildReportLineDeliveryGraphHref(record.ReportId, latestDelivery.AttemptId);
+        // Legacy workflow records do not carry an immutable governed-run identifier. Do not
+        // reinterpret the legacy GUID as a canonical run/package id; the latest retained delivery
+        // evidence remains navigable while canonical distribution history stays unbound.
+        var deliveryHistoryHref = deliveryGraphHref;
         var changedLines = record.Restatement?.ChangedLines
             .Where(changedLine => IsSameLineKey(changedLine.LineKey, line.LineKey))
             .ToArray() ?? [];
@@ -2531,8 +2541,13 @@ public sealed partial class FinancialRecordExplorerReadService
         var recordId = $"report-line:{record.ReportId:N}:{Slugify(line.LineKey)}:{index}";
         var reportLabel = $"{record.Period} - {record.TemplateId.Name} v{record.TemplateId.Version}";
         var deliveryLabel = latestDelivery is null
-            ? "Not delivered"
+            ? "No canonical distribution binding"
             : $"{latestDelivery.State} #{latestDelivery.AttemptNumber}";
+        var deliveryReferenceSummary = latestDelivery is null
+            ? "Create a new certified governed run before distribution."
+            : ReportingDeliveryReadModelSecurity.IsSafeRetainedEvidenceHref(latestDelivery.DeliveryReference)
+                ? latestDelivery.DeliveryReference.Trim()
+                : "Legacy delivery reference retained without navigable credentials.";
         var restatementLabel = changedLines.Length == 0
             ? "No change"
             : $"{changedLines.Length} changed line{Plural(changedLines.Length)}";
@@ -2563,7 +2578,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 new("Journal", EmptyFallback(line.LedgerEntryId, "No journal link"), journalHref, HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
                 new("Approval", EmptyFallback(line.ApprovalId, "No line approval"), approvalHref, HasText(approvalHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
                 new("Evidence and audit links", line.EvidenceId, auditHref, HasText(auditHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
-                new("Delivery history", deliveryLabel, latestDelivery?.DeliveryReference ?? "No retained delivery attempt", latestDelivery is null ? FinancialRecordExplorerTone.Warning : ToneFromDeliveryState(latestDelivery.State)),
+                new("Delivery history", deliveryLabel, deliveryReferenceSummary, latestDelivery is null ? FinancialRecordExplorerTone.Warning : ToneFromDeliveryState(latestDelivery.State)),
                 new("Restatement", restatementLabel, record.Restatement?.ReasonCode ?? "No restatement on this line", changedLines.Length > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default),
                 new("Updated", record.UpdatedAt.ToString("u", CultureInfo.InvariantCulture))
             ],
@@ -2574,14 +2589,13 @@ public sealed partial class FinancialRecordExplorerReadService
                 reconciliationHref,
                 journalHref,
                 approvalHref,
-                reportHref,
+                deliveryHistoryHref,
                 auditHref,
                 deliveryGraphHref,
                 restatementHref,
-                deliveries.Length,
                 changedLines.Length),
-            UsedIn: BuildReportLineUsedIn(record, reportHref, deliveryGraphHref, restatementHref, latestDelivery, changedLines),
-            Impacts: BuildReportLineImpacts(line, sourceHref, instrumentHref, activityHref, reconciliationHref, journalHref, approvalHref, reportHref, auditHref, deliveryGraphHref, restatementHref, changedLines.Length),
+            UsedIn: BuildReportLineUsedIn(record, reportHref, deliveryHistoryHref, deliveryGraphHref, restatementHref, latestDelivery, changedLines),
+            Impacts: BuildReportLineImpacts(line, sourceHref, instrumentHref, activityHref, reconciliationHref, journalHref, approvalHref, deliveryHistoryHref, auditHref, deliveryGraphHref, restatementHref, changedLines.Length),
             FullRecordHref: sourceHref);
 
         return new FinancialRecordExplorerRowDto(
@@ -2602,7 +2616,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 new("reconciliation", BuildReportLineReconciliationLabel(line), LinkHref: reconciliationHref, Tone: HasText(reconciliationHref) ? ToneFromReconciliationOutcome(line.ReconciliationOutcome) : FinancialRecordExplorerTone.Warning),
                 new("journal", EmptyFallback(line.LedgerEntryId, "-"), LinkHref: journalHref, Tone: HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
                 new("approval", EmptyFallback(line.ApprovalId, "-"), LinkHref: approvalHref, Tone: HasText(approvalHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
-                new("delivery", deliveryLabel, LinkHref: reportHref, Tone: latestDelivery is null ? FinancialRecordExplorerTone.Warning : ToneFromDeliveryState(latestDelivery.State)),
+                new("delivery", deliveryLabel, LinkHref: deliveryHistoryHref, Tone: latestDelivery is null ? FinancialRecordExplorerTone.Info : ToneFromDeliveryState(latestDelivery.State)),
                 new("restatement", restatementLabel, LinkHref: restatementHref, Tone: changedLines.Length > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default)
             ],
             detail);
@@ -2659,10 +2673,10 @@ public sealed partial class FinancialRecordExplorerReadService
         =>
         [
             new(
-                "open-report-pack-workflows",
-                "Open report-pack workflows",
-                "Open governed report-pack workflow records.",
-                UiApiRoutes.ReportingPackWorkflows,
+                "open-reporting-runs",
+                "Open governed reporting runs",
+                "Open canonical governed reporting run records.",
+                UiApiRoutes.ReportingRuns,
                 rowCount > 0,
                 rowCount > 0 ? string.Empty : "No report-line provenance is available.",
                 rowCount > 0 ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
@@ -2690,7 +2704,6 @@ public sealed partial class FinancialRecordExplorerReadService
         string auditHref,
         string deliveryGraphHref,
         string restatementHref,
-        int deliveryCount,
         int restatementLineCount)
         =>
         [
@@ -2753,11 +2766,11 @@ public sealed partial class FinancialRecordExplorerReadService
             new(
                 "open-delivery-history",
                 "Open delivery history",
-                "Open retained report-pack delivery history for this line's report.",
+                "Open retained delivery evidence for the latest legacy report-pack attempt.",
                 deliveryHistoryHref,
-                deliveryCount > 0,
-                deliveryCount > 0 ? string.Empty : "No retained delivery attempts exist for this report pack.",
-                deliveryCount > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+                HasText(deliveryHistoryHref),
+                HasText(deliveryHistoryHref) ? string.Empty : "No retained legacy delivery evidence exists; create a certified governed run before distribution.",
+                HasText(deliveryHistoryHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
             new(
                 "open-delivery-evidence-graph",
                 "Open delivery evidence graph",
@@ -2779,6 +2792,7 @@ public sealed partial class FinancialRecordExplorerReadService
     private static IReadOnlyList<FinancialRecordExplorerRelationshipDto> BuildReportLineUsedIn(
         ReportPackWorkflowRecordDto record,
         string reportHref,
+        string deliveryHistoryHref,
         string deliveryGraphHref,
         string restatementHref,
         ReportPackDeliveryAttemptDto? latestDelivery,
@@ -2788,8 +2802,8 @@ public sealed partial class FinancialRecordExplorerReadService
         {
             new(
                 $"report-pack:{record.ReportId:D}",
-                record.Publication is null ? "Report pack workflow" : "Published report pack",
-                $"{record.TemplateId.Name} v{record.TemplateId.Version} for {record.Period} is {record.State}.",
+                record.Publication is null ? "Legacy report pack (read-only)" : "Published report pack (read-only)",
+                $"{record.TemplateId.Name} v{record.TemplateId.Version} for {record.Period} is retained for read-only evidence; lifecycle mutations use canonical governed runs.",
                 reportHref,
                 ToneFromReportPackState(record.State))
         };
@@ -2800,7 +2814,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 $"report-delivery:{latestDelivery.AttemptId:D}",
                 "Delivery history",
                 $"{latestDelivery.Recipient} delivery attempt #{latestDelivery.AttemptNumber} is {latestDelivery.State}.",
-                reportHref,
+                deliveryHistoryHref,
                 ToneFromDeliveryState(latestDelivery.State)));
             relationships.Add(new(
                 $"delivery-graph:{latestDelivery.AttemptId:D}",
@@ -3087,7 +3101,7 @@ public sealed partial class FinancialRecordExplorerReadService
         var route = changedLines
             .SelectMany(static line => line.EvidenceLinks ?? [])
             .Select(static link => link.Route)
-            .FirstOrDefault(HasText);
+            .FirstOrDefault(ReportingDeliveryReadModelSecurity.IsSafeRetainedEvidenceHref);
         if (HasText(route))
         {
             return route!.Trim();
