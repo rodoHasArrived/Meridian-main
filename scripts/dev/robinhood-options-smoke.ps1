@@ -1045,6 +1045,7 @@ function Invoke-SmokeCase {
     Write-Log "Launching desktop app for $($Case.Name)."
     $startProcessArgs = @{
         FilePath         = $ExecutablePath
+        ArgumentList     = @("--page=$($Case.PageTag)")
         PassThru         = $true
         WorkingDirectory = (Split-Path -Parent $ExecutablePath)
     }
