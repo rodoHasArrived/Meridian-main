@@ -103,6 +103,14 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('-PageTag $seedPageTag', self.script)
         self.assertIn('-PageTitle $seedPageTitle', self.script)
 
+    def test_workspace_activation_skips_reselecting_an_active_shell(self) -> None:
+        activation_start = self.script.index('function Try-ActivateWorkspaceShell')
+        activation_end = self.script.index('\nfunction ', activation_start + 1)
+        activation_function = self.script[activation_start:activation_end]
+        marker_check = activation_function.index('Find-FirstElementByNames -Root $Root -Names @($shellMarker)')
+        tile_lookup = activation_function.index('$tile = Find-FirstElementByNames')
+        self.assertLess(marker_check, tile_lookup)
+
 
 if __name__ == "__main__":
     unittest.main()

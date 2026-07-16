@@ -895,6 +895,11 @@ function Try-ActivateWorkspaceShell {
         [string]$WorkspaceId
     )
 
+    $shellMarker = Get-WorkspaceShellMarker -WorkspaceId $WorkspaceId
+    if ($null -ne (Find-FirstElementByNames -Root $Root -Names @($shellMarker))) {
+        return $true
+    }
+
     $tile = Find-FirstElementByNames -Root $Root -Names (Get-WorkspaceTileNames -WorkspaceId $WorkspaceId)
     if ($null -eq $tile) {
         return $false
@@ -902,7 +907,6 @@ function Try-ActivateWorkspaceShell {
 
     Invoke-OrClickElement -Element $tile
 
-    $shellMarker = Get-WorkspaceShellMarker -WorkspaceId $WorkspaceId
     Wait-ForElementByNames -Root $Root -Names @($shellMarker) -TimeoutSeconds 10 -FailureMessage "Timed out waiting for the $WorkspaceId shell after selecting the workspace tile." | Out-Null
     return $true
 }
