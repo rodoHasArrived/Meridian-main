@@ -68,6 +68,10 @@ public sealed class AuditChainService : IAuditChainService
     // silently forking the tamper-evident chain so VerifyChainAsync later reports tampering.
     // ImmutableAuditLogService guards the same race with a lock; this async path needs a
     // SemaphoreSlim because the sequence spans awaits (file hashing and chain I/O).
+    //
+    // This serializes appends within one process only; a single writer per chain log is assumed.
+    // Coordinating separate processes/instances on a shared chainLogPath would need a cross-process
+    // lock held across the tail read and the append — a separate design not handled here.
     private readonly SemaphoreSlim _appendLock = new(1, 1);
 
     public AuditChainService(ILogger? log = null)
