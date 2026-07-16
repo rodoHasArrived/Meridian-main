@@ -168,7 +168,11 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
         builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
-        builder.Services.AddSingleton<Meridian.Audit.Compliance.ImmutableAuditLogService>();
+        // Durable, tamper-evident compliance audit log — persisted so events survive a restart
+        // (an in-memory-only log would silently lose all compliance history).
+        builder.Services.AddSingleton(
+            new Meridian.Audit.Compliance.ImmutableAuditLogService(
+                Path.Combine(resolvedDataRoot, "compliance", "audit", "audit-log.jsonl")));
         builder.Services.AddSingleton<AccessReviewService>();
 
         // Execution layer — paper trading gateway wired for cockpit endpoints
