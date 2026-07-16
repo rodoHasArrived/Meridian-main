@@ -74,6 +74,15 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('ContextEnterInvoked = $false', self.script)
         self.assertIn('Enabled operating context detected. Entering the workstation.', self.script)
 
+    def test_forwarded_page_launch_inherits_fixture_environment(self) -> None:
+        self.assertIn('Invoke-ForwardedLaunch -ExecutablePath $ExecutablePath', self.script)
+        self.assertIn('-FixtureMode $FixtureMode', self.script)
+        forwarded_start = self.script.index('function Invoke-ForwardedLaunch')
+        forwarded_end = self.script.index('\nfunction ', forwarded_start + 1)
+        forwarded_function = self.script[forwarded_start:forwarded_end]
+        self.assertIn('DOTNET_ENVIRONMENT     = "Development"', forwarded_function)
+        self.assertIn('ASPNETCORE_ENVIRONMENT = "Development"', forwarded_function)
+
 
 if __name__ == "__main__":
     unittest.main()

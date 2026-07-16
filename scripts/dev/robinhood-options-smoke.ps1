@@ -671,15 +671,27 @@ function Save-OperatingContextState {
 function Invoke-ForwardedLaunch {
     param(
         [string]$ExecutablePath,
-        [string[]]$Arguments
+        [string[]]$Arguments,
+        [bool]$FixtureMode
     )
 
-    $process = Start-Process `
-        -FilePath $ExecutablePath `
-        -ArgumentList $Arguments `
-        -WorkingDirectory (Split-Path -Parent $ExecutablePath) `
-        -PassThru `
-        -WindowStyle Hidden
+    $startProcessArgs = @{
+        FilePath         = $ExecutablePath
+        ArgumentList     = $Arguments
+        WorkingDirectory = (Split-Path -Parent $ExecutablePath)
+        PassThru         = $true
+        WindowStyle      = "Hidden"
+    }
+
+    if ($FixtureMode) {
+        $startProcessArgs["Environment"] = @{
+            MDC_FIXTURE_MODE       = "1"
+            DOTNET_ENVIRONMENT     = "Development"
+            ASPNETCORE_ENVIRONMENT = "Development"
+        }
+    }
+
+    $process = Start-Process @startProcessArgs
 
     $null = $process.WaitForExit(10000)
     if (-not $process.HasExited) {
@@ -959,7 +971,7 @@ function Invoke-SmokeCase {
         if ($null -eq $pageReady) {
             Write-Log "$($Case.Name) was not visible immediately after startup. Activating workspace shell and forwarding page navigation."
             $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
-            Invoke-ForwardedLaunch -ExecutablePath $ExecutablePath -Arguments @("--page=$($Case.PageTag)")
+            Invoke-ForwardedLaunch -ExecutablePath $ExecutablePath -Arguments @("--page=$($Case.PageTag)") -FixtureMode $FixtureMode
             Start-Sleep -Milliseconds 1200
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
