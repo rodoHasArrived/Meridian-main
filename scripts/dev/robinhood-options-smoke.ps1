@@ -978,7 +978,7 @@ function Invoke-CommandPaletteNavigation {
 
     $paletteButton = Find-FirstVisibleElementByAutomationIds -Root $Root -AutomationIds @("ShellCommandPaletteButton")
     if ($null -eq $paletteButton) {
-        $paletteButton = Find-FirstVisibleElementByNames -Root $Root -Names @("Search", "Open Command Palette")
+        $paletteButton = Find-FirstVisibleElementByNames -Root $Root -Names @("Search")
     }
 
     if ($null -ne $paletteButton) {
@@ -986,7 +986,12 @@ function Invoke-CommandPaletteNavigation {
         Invoke-OrClickElement -Element $paletteButton
     }
     else {
-        Write-Log "No visible command palette trigger was available. Opening it with Ctrl+K."
+        $mainPage = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("MainPage")
+        if ($null -ne $mainPage) {
+            $mainPage.SetFocus()
+        }
+
+        Write-Log "No visible stable command palette trigger was available. Opening it from the focused MainPage with Ctrl+K."
         Send-WindowKeys -Process $Process -Keys "^k"
     }
 
