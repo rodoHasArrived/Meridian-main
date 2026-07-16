@@ -881,33 +881,28 @@ function Invoke-CommandPaletteNavigation {
         [string]$PageTag
     )
 
-    $paletteButton = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("ShellCommandPaletteButton")
-    if ($null -eq $paletteButton) {
-        $paletteButton = Find-FirstElementByNames -Root $Root -Names @("Open Command Palette")
-    }
-
-    if ($null -ne $paletteButton) {
-        Invoke-OrClickElement -Element $paletteButton
-    }
-    else {
-        Send-WindowKeys -Process $Process -Keys "^k"
-    }
+    Send-WindowKeys -Process $Process -Keys "^k"
 
     $paletteInput = Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette input did not become available." -Condition {
-        Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteInput")
+        $candidate = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteInput")
+        if ($null -ne $candidate -and -not $candidate.Current.IsOffscreen) {
+            return $candidate
+        }
+
+        return $null
     }
 
     Set-ValuePatternText -Element $paletteInput -Text $PageTag
     Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette did not resolve page tag '$PageTag'." -Condition {
-        $summary = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteSummaryText")
-        if ($null -ne $summary -and $summary.Current.Name -match "[1-9][0-9]* result") {
-            return $summary
+        $results = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteResults")
+        if ($null -ne $results -and -not $results.Current.IsOffscreen) {
+            return $results
         }
 
         return $null
     } | Out-Null
 
-    Invoke-OrClickElement -Element $paletteInput
+    Start-Sleep -Milliseconds 300
     Send-WindowKeys -Process $Process -Keys "{ENTER}"
 }
 
