@@ -1050,7 +1050,6 @@ function Invoke-SmokeCase {
     Write-Log "Launching desktop app for $($Case.Name)."
     $startProcessArgs = @{
         FilePath         = $ExecutablePath
-        ArgumentList     = @("--page=$($Case.PageTag)")
         PassThru         = $true
         WorkingDirectory = (Split-Path -Parent $ExecutablePath)
     }
@@ -1080,11 +1079,18 @@ function Invoke-SmokeCase {
         }
 
         if ($null -eq $pageReady) {
-            Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and navigating through the command palette."
-            $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
+            Write-Log "$($Case.Name) was not visible immediately after context entry. Relaunching with the supported page route."
+            if (-not $process.HasExited) {
+                $null = $process.CloseMainWindow()
+                if (-not $process.WaitForExit(5000)) {
+                    Stop-Process -Id $process.Id -Force
+                }
+            }
+
+            $startProcessArgs["ArgumentList"] = @("--page=$($Case.PageTag)")
+            $process = Start-Process @startProcessArgs
             $root = Get-WindowAutomationRoot -Process $process
-            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName
-            $root = Get-WindowAutomationRoot -Process $process
+            $root = Wait-ForShellReady -Root $root -Process $process -PageMarkers $Case.ReadyMarkers -TimeoutSeconds $startupTimeoutSeconds
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
 

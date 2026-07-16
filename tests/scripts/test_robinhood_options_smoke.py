@@ -100,7 +100,7 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
             self.script,
         )
         self.assertIn(
-            'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName',
+            '$startProcessArgs["ArgumentList"] = @("--page=$($Case.PageTag)")',
             self.script,
         )
         self.assertIn('PaletteResultName = "Add provider wizard"', self.script)
@@ -112,8 +112,10 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('-PageTag $seedPageTag', self.script)
         self.assertIn('-PageTitle $seedPageTitle', self.script)
 
-    def test_each_case_uses_the_supported_desktop_page_launch_contract(self) -> None:
-        self.assertIn('ArgumentList     = @("--page=$($Case.PageTag)")', self.script)
+    def test_each_case_relaunches_with_the_supported_page_contract_after_context_entry(self) -> None:
+        self.assertIn('Relaunching with the supported page route.', self.script)
+        self.assertIn('$process.WaitForExit(5000)', self.script)
+        self.assertIn('$process = Start-Process @startProcessArgs', self.script)
 
     def test_workspace_activation_skips_reselecting_an_active_shell(self) -> None:
         activation_start = self.script.index('function Try-ActivateWorkspaceShell')

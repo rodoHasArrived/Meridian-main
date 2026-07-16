@@ -49,7 +49,6 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _startupRecoveryTimer;
 
     private Rect? _restoredWindowBounds;
-    private string[]? _pendingShellLaunchArgs;
     private int _startupRecoveryAttempts;
     private bool _globalHotkeysAttached;
 
@@ -174,15 +173,10 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (launchRequest.HasActions && !launchRequest.RequiresShell)
+        if (launchRequest.HasActions)
         {
             await HandleLaunchArgsAsync(launchArgs);
             return;
-        }
-
-        if (launchRequest.RequiresShell)
-        {
-            _pendingShellLaunchArgs = launchArgs.ToArray();
         }
 
         if (RootFrame.Content is not FundProfileSelectionPage)
@@ -654,18 +648,6 @@ public partial class MainWindow : Window
         }
 
         await EnterOperatingContextAsync(e.Context);
-        await HandlePendingShellLaunchArgsAsync();
-    }
-
-    private async Task HandlePendingShellLaunchArgsAsync()
-    {
-        var launchArgs = _pendingShellLaunchArgs;
-        _pendingShellLaunchArgs = null;
-        if (launchArgs is not null)
-        {
-            await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
-            await HandleLaunchArgsAsync(launchArgs);
-        }
     }
 
     private async void OnFundSwitchRequested(object? sender, EventArgs e)
