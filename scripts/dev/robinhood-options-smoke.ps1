@@ -425,6 +425,60 @@ function Find-FirstElementByAutomationIds {
     return $null
 }
 
+function Find-FirstVisibleElementByAutomationIds {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [string[]]$AutomationIds
+    )
+
+    foreach ($automationId in $AutomationIds) {
+        $condition = [System.Windows.Automation.PropertyCondition]::new(
+            [System.Windows.Automation.AutomationElement]::AutomationIdProperty,
+            $automationId)
+        $elements = $Root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)
+
+        foreach ($element in $elements) {
+            try {
+                if (-not $element.Current.IsOffscreen -and $element.Current.IsEnabled) {
+                    return $element
+                }
+            }
+            catch {
+                continue
+            }
+        }
+    }
+
+    return $null
+}
+
+function Find-FirstVisibleElementByNames {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [string[]]$Names
+    )
+
+    foreach ($name in $Names) {
+        $condition = [System.Windows.Automation.PropertyCondition]::new(
+            [System.Windows.Automation.AutomationElement]::NameProperty,
+            $name)
+        $elements = $Root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)
+
+        foreach ($element in $elements) {
+            try {
+                if (-not $element.Current.IsOffscreen -and $element.Current.IsEnabled) {
+                    return $element
+                }
+            }
+            catch {
+                continue
+            }
+        }
+    }
+
+    return $null
+}
+
 function Find-FirstElementByPartialNames {
     param(
         [System.Windows.Automation.AutomationElement]$Root,
@@ -558,6 +612,28 @@ function Invoke-OrClickElement {
     }
 
     throw "Unable to click or invoke the requested UI element."
+}
+
+function Click-ElementAtCenter {
+    param([System.Windows.Automation.AutomationElement]$Element)
+
+    [System.Windows.Point]$clickPoint = New-Object System.Windows.Point -ArgumentList 0, 0
+    if (-not $Element.TryGetClickablePoint([ref]$clickPoint)) {
+        $bounding = $Element.Current.BoundingRectangle
+        if ($bounding.Width -le 1 -or $bounding.Height -le 1) {
+            throw "Unable to find a clickable point for the requested UI element."
+        }
+
+        $clickPoint = [System.Windows.Point]::new(
+            $bounding.Left + ($bounding.Width / 2),
+            $bounding.Top + ($bounding.Height / 2))
+    }
+
+    [MeridianSmokeNative]::SetCursorPos([int]$clickPoint.X, [int]$clickPoint.Y) | Out-Null
+    Start-Sleep -Milliseconds 120
+    [MeridianSmokeNative]::mouse_event([MeridianSmokeNative]::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, [UIntPtr]::Zero)
+    Start-Sleep -Milliseconds 60
+    [MeridianSmokeNative]::mouse_event([MeridianSmokeNative]::MOUSEEVENTF_LEFTUP, 0, 0, 0, [UIntPtr]::Zero)
 }
 
 function Send-WindowKeys {
@@ -728,6 +804,17 @@ function Get-WorkspaceShellMarker {
     }
 }
 
+function Get-WorkspaceShellPageTag {
+    param([string]$WorkspaceId)
+
+    switch ($WorkspaceId) {
+        "trading" { return "TradingShell" }
+        "data-operations" { return "DataShell" }
+        "governance" { return "AccountingShell" }
+        default { return "StrategyShell" }
+    }
+}
+
 function Get-WorkspaceTileNames {
     param([string]$WorkspaceId)
 
@@ -862,6 +949,11 @@ function Try-ActivateWorkspaceShell {
         [string]$WorkspaceId
     )
 
+    $shellMarker = Get-WorkspaceShellMarker -WorkspaceId $WorkspaceId
+    if ($null -ne (Find-FirstElementByNames -Root $Root -Names @($shellMarker))) {
+        return $true
+    }
+
     $tile = Find-FirstElementByNames -Root $Root -Names (Get-WorkspaceTileNames -WorkspaceId $WorkspaceId)
     if ($null -eq $tile) {
         return $false
@@ -869,7 +961,6 @@ function Try-ActivateWorkspaceShell {
 
     Invoke-OrClickElement -Element $tile
 
-    $shellMarker = Get-WorkspaceShellMarker -WorkspaceId $WorkspaceId
     Wait-ForElementByNames -Root $Root -Names @($shellMarker) -TimeoutSeconds 10 -FailureMessage "Timed out waiting for the $WorkspaceId shell after selecting the workspace tile." | Out-Null
     return $true
 }
@@ -878,11 +969,28 @@ function Invoke-CommandPaletteNavigation {
     param(
         [System.Windows.Automation.AutomationElement]$Root,
         [System.Diagnostics.Process]$Process,
-        [string]$PageTag
+        [string]$PageTag,
+        [string]$ResultName
     )
 
-    Send-WindowKeys -Process $Process -Keys "^k"
+    [MeridianSmokeNative]::SetForegroundWindow($Process.MainWindowHandle) | Out-Null
+    Start-Sleep -Milliseconds 250
 
+    $paletteButton = Find-FirstVisibleElementByAutomationIds -Root $Root -AutomationIds @("ShellCommandPaletteButton")
+    if ($null -eq $paletteButton) {
+        $paletteButton = Find-FirstVisibleElementByNames -Root $Root -Names @("Search", "Open Command Palette")
+    }
+
+    if ($null -ne $paletteButton) {
+        Write-Log "Opening command palette via automation id '$($paletteButton.Current.AutomationId)' and name '$($paletteButton.Current.Name)'."
+        Invoke-OrClickElement -Element $paletteButton
+    }
+    else {
+        Write-Log "No visible command palette trigger was available. Opening it with Ctrl+K."
+        Send-WindowKeys -Process $Process -Keys "^k"
+    }
+
+    $Root = Get-WindowAutomationRoot -Process $Process
     $paletteInput = Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette input did not become available." -Condition {
         $candidate = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteInput")
         if ($null -ne $candidate -and -not $candidate.Current.IsOffscreen) {
@@ -893,17 +1001,16 @@ function Invoke-CommandPaletteNavigation {
     }
 
     Set-ValuePatternText -Element $paletteInput -Text $PageTag
-    Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette did not resolve page tag '$PageTag'." -Condition {
+    $paletteResult = Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette did not resolve page tag '$PageTag'." -Condition {
         $results = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteResults")
         if ($null -ne $results -and -not $results.Current.IsOffscreen) {
-            return $results
+            return Find-ElementByExactName -Root $results -Name $ResultName
         }
 
         return $null
-    } | Out-Null
+    }
 
-    Start-Sleep -Milliseconds 300
-    Send-WindowKeys -Process $Process -Keys "{ENTER}"
+    Click-ElementAtCenter -Element $paletteResult
 }
 
 function Invoke-SmokeCase {
@@ -920,11 +1027,13 @@ function Invoke-SmokeCase {
     )
 
     Write-Log "Preparing session for $($Case.Name) ($($Case.PageTag))."
+    $seedPageTag = Get-WorkspaceShellPageTag -WorkspaceId $Case.WorkspaceId
+    $seedPageTitle = Get-WorkspaceShellMarker -WorkspaceId $Case.WorkspaceId
     $seededJson = Get-SeededWorkspaceJson `
         -BaseWorkspaceJson $BaseWorkspaceJson `
         -WorkspaceId $Case.WorkspaceId `
-        -PageTag $Case.PageTag `
-        -PageTitle $Case.PageTitle `
+        -PageTag $seedPageTag `
+        -PageTitle $seedPageTitle `
         -FundProfileId $FundProfileId `
         -OperatingContextKey $OperatingContextKey
 
@@ -967,7 +1076,9 @@ function Invoke-SmokeCase {
         if ($null -eq $pageReady) {
             Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and navigating through the command palette."
             $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
-            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag
+            $root = Get-WindowAutomationRoot -Process $process
+            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName
+            $root = Get-WindowAutomationRoot -Process $process
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
 
@@ -1117,6 +1228,7 @@ $cases = @(
         WorkspaceId = "data-operations"
         PageTag = "AddProviderWizard"
         PageTitle = "Add Provider Wizard"
+        PaletteResultName = "Add provider wizard"
         ReadyMarkers = @("Add Provider Wizard", "Add Provider Relationship")
         ExpectMarkers = @("Add Provider Relationship", "Robinhood", "Capabilities: Streaming, Symbol Search, Options, Brokerage", "Robinhood Access Token")
         ScreenshotName = "meridian-robinhood-provider-smoke.png"
@@ -1140,6 +1252,7 @@ $cases = @(
         WorkspaceId = "data-operations"
         PageTag = "Options"
         PageTitle = "Options / Derivatives"
+        PaletteResultName = "Options"
         StartupTimeoutSeconds = 45
         ReadyMarkers = @("Options", "Options Chain")
         ExpectMarkers = @("Options Chain", "Options Summary", "Option Chain Lookup", "Tracked Underlyings", "Load Expirations", "Refresh")
@@ -1160,6 +1273,7 @@ $cases = @(
         WorkspaceId = "trading"
         PageTag = "PositionBlotter"
         PageTitle = "Position Blotter"
+        PaletteResultName = "Position Blotter"
         StartupTimeoutSeconds = 60
         ReadyMarkers = @("Position Blotter")
         ExpectMarkers = @("Position Blotter", "Upsize", "Terminate", "Refresh")
