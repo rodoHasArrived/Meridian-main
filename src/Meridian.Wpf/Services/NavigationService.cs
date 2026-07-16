@@ -47,6 +47,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
 
     private Frame? _frame;
     private IServiceProvider? _serviceProvider;
+    private WorkspaceChromePresentationMode _presentationMode = WorkspaceChromePresentationMode.Standalone;
     private readonly AsyncLocal<IServiceProvider?> _navigationScopeProvider = new();
 
     /// <summary>
@@ -77,8 +78,12 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     /// Initializes the navigation service with the main frame.
     /// </summary>
     public void Initialize(Frame frame)
+        => Initialize(frame, WorkspaceChromePresentationMode.Standalone);
+
+    public void Initialize(Frame frame, WorkspaceChromePresentationMode presentationMode)
     {
         _frame = frame ?? throw new ArgumentNullException(nameof(frame));
+        _presentationMode = presentationMode;
     }
 
     /// <summary>
@@ -89,6 +94,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         _frame = null;
         _serviceProvider = null;
         _navigationScopeProvider.Value = null;
+        _presentationMode = WorkspaceChromePresentationMode.Standalone;
         ClearHistory();
     }
 
@@ -168,7 +174,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
                 pageTag,
                 pageType,
                 parameter,
-                WorkspaceChromePresentationMode.Standalone,
+                _presentationMode,
                 _navigationScopeProvider.Value);
             var result = _frame.Navigate(content);
             if (!result && _serviceProvider is null)

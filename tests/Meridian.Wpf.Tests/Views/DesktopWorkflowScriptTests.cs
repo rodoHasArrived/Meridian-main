@@ -279,7 +279,7 @@ public sealed class DesktopWorkflowScriptTests
         mainWindow.Should().Contain("request.HasPageNavigation && RootFrame.Content is MainPage mainPage");
         mainWindow.Should().Contain("mainPage.NavigateToLaunchPage(request.PageTag!)");
         mainPage.Should().Contain("public bool NavigateToLaunchPage(string pageTag)");
-        mainPage.Should().Contain("_navigationService.Initialize(ContentFrame)");
+        mainPage.Should().Contain("_navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked)");
         mainPage.Should().Contain("return _navigationService.NavigateTo(pageTag)");
     }
 

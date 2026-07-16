@@ -36,7 +36,7 @@ public partial class MainPage : Page
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        _navigationService.Initialize(ContentFrame);
+        _navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked);
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
 
         _viewModel.ActivateShell();
@@ -99,7 +99,7 @@ public partial class MainPage : Page
     public bool NavigateToLaunchPage(string pageTag)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pageTag);
-        _navigationService.Initialize(ContentFrame);
+        _navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked);
         return _navigationService.NavigateTo(pageTag);
     }
 }

@@ -430,7 +430,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     {
         var navigationService = NavigationService.Instance;
         navigationService.SetServiceProvider(_serviceProvider);
-        navigationService.Initialize(ContentFrame);
+        navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked);
     }
 
     private static void RaiseLifecycleEvent(FrameworkElement element, RoutedEvent routedEvent)
