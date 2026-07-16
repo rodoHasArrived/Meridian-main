@@ -1013,40 +1013,6 @@ function Invoke-CommandPaletteNavigation {
     Click-ElementAtCenter -Element $paletteResult
 }
 
-function Invoke-DesktopPageNavigation {
-    param(
-        [string]$ExecutablePath,
-        [string]$PageTag,
-        [bool]$FixtureMode
-    )
-
-    Write-Log "Forwarding desktop page route '$PageTag' through the supported launch contract."
-    $navigationProcessArgs = @{
-        FilePath         = $ExecutablePath
-        ArgumentList     = @("--page=$PageTag")
-        PassThru         = $true
-        WorkingDirectory = (Split-Path -Parent $ExecutablePath)
-    }
-
-    if ($FixtureMode) {
-        $navigationProcessArgs["Environment"] = @{
-            MDC_FIXTURE_MODE       = "1"
-            DOTNET_ENVIRONMENT     = "Development"
-            ASPNETCORE_ENVIRONMENT = "Development"
-        }
-    }
-
-    $navigationProcess = Start-Process @navigationProcessArgs
-    if (-not $navigationProcess.WaitForExit(10000)) {
-        Stop-Process -Id $navigationProcess.Id -Force -ErrorAction SilentlyContinue
-        throw "Desktop page route '$PageTag' was not forwarded within 10 seconds."
-    }
-
-    if ($navigationProcess.ExitCode -ne 0) {
-        throw "Desktop page route '$PageTag' forwarding exited with code $($navigationProcess.ExitCode)."
-    }
-}
-
 function Invoke-SmokeCase {
     param(
         [string]$BaseWorkspaceJson,
@@ -1108,10 +1074,10 @@ function Invoke-SmokeCase {
         }
 
         if ($null -eq $pageReady) {
-            Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and forwarding the supported page route."
+            Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and navigating through the command palette."
             $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
             $root = Get-WindowAutomationRoot -Process $process
-            Invoke-DesktopPageNavigation -ExecutablePath $ExecutablePath -PageTag $Case.PageTag -FixtureMode $FixtureMode
+            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName
             $root = Get-WindowAutomationRoot -Process $process
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
