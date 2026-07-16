@@ -663,6 +663,7 @@ public partial class MainWindow : Window
         _pendingShellLaunchArgs = null;
         if (launchArgs is not null)
         {
+            await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
             await HandleLaunchArgsAsync(launchArgs);
         }
     }

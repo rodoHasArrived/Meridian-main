@@ -278,6 +278,7 @@ public sealed class DesktopWorkflowScriptTests
         mainWindow.Should().Contain("launchRequest.HasActions && !launchRequest.RequiresShell");
         mainWindow.Should().Contain("_pendingShellLaunchArgs = launchArgs.ToArray()");
         mainWindow.Should().Contain("await HandlePendingShellLaunchArgsAsync()");
+        mainWindow.Should().Contain("DispatcherPriority.ApplicationIdle");
         mainWindow.Should().Contain("await EnterOperatingContextAsync(e.Context)");
         mainWindow.IndexOf("await EnterOperatingContextAsync(e.Context)", StringComparison.Ordinal)
             .Should().BeLessThan(mainWindow.IndexOf("await HandlePendingShellLaunchArgsAsync()", StringComparison.Ordinal));
