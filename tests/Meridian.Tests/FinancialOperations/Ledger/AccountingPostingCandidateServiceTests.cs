@@ -895,6 +895,17 @@ public sealed class AccountingPostingCandidateServiceTests
             BookPositionId = positionId,
             EconomicEvent = economicEvent,
             ProjectionLineage = lineage,
+            BookContext = new AccountingBookContextDto(
+                bookId,
+                "fund-alpha",
+                Guid.NewGuid(),
+                FundStructureNodeKindDto.Fund,
+                "MBS GAAP Book",
+                "USD",
+                AccountingBasisKindDto.Gaap,
+                "gaap-mbs-v1",
+                "v1",
+                periodId),
             RulePackReference = new AccountingRulePackReferenceDto(
                 "gaap-mbs-rules",
                 "v1",

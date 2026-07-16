@@ -80,7 +80,7 @@ public sealed class PositionSnapshotStoreTests : IDisposable
             "acc-owned",
             owner with { TenantId = "tenant-b" });
 
-        owned.Should().Be(snapshot);
+        owned.Should().BeEquivalentTo(snapshot);
         otherTenant.Should().BeNull();
         (await _store.GetLatestSnapshotAsync("run-owned", "acc-owned")).Should().BeNull(
             "owned snapshots must not be exposed through the legacy unscoped lookup");

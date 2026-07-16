@@ -319,6 +319,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             };
         }
 
+        if (safeRequest.FundAccountId is { } fundAccountId)
+            _orderFinancialAccountIds[orderId] = fundAccountId.ToString("D");
+        else
+            _orderFinancialAccountIds.TryRemove(orderId, out _);
+
         TrimRetainedOrdersIfNeeded();
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
