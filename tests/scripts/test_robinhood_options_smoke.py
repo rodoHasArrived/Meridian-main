@@ -74,14 +74,16 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('ContextEnterInvoked = $false', self.script)
         self.assertIn('Enabled operating context detected. Entering the workstation.', self.script)
 
-    def test_forwarded_page_launch_inherits_fixture_environment(self) -> None:
-        self.assertIn('Invoke-ForwardedLaunch -ExecutablePath $ExecutablePath', self.script)
-        self.assertIn('-FixtureMode $FixtureMode', self.script)
-        forwarded_start = self.script.index('function Invoke-ForwardedLaunch')
-        forwarded_end = self.script.index('\nfunction ', forwarded_start + 1)
-        forwarded_function = self.script[forwarded_start:forwarded_end]
-        self.assertIn('DOTNET_ENVIRONMENT     = "Development"', forwarded_function)
-        self.assertIn('ASPNETCORE_ENVIRONMENT = "Development"', forwarded_function)
+    def test_deep_page_navigation_uses_the_primary_shell_command_palette(self) -> None:
+        self.assertIn('function Invoke-CommandPaletteNavigation', self.script)
+        self.assertIn('AutomationIds @("ShellCommandPaletteButton")', self.script)
+        self.assertIn('AutomationIds @("CommandPaletteInput")', self.script)
+        self.assertIn('Set-ValuePatternText -Element $paletteInput -Text $PageTag', self.script)
+        self.assertIn('Send-WindowKeys -Process $Process -Keys "{ENTER}"', self.script)
+        self.assertIn(
+            'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag',
+            self.script,
+        )
 
 
 if __name__ == "__main__":

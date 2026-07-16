@@ -668,42 +668,6 @@ function Save-OperatingContextState {
     Save-JsonHashtable -Path $Path -Value $state
 }
 
-function Invoke-ForwardedLaunch {
-    param(
-        [string]$ExecutablePath,
-        [string[]]$Arguments,
-        [bool]$FixtureMode
-    )
-
-    $startProcessArgs = @{
-        FilePath         = $ExecutablePath
-        ArgumentList     = $Arguments
-        WorkingDirectory = (Split-Path -Parent $ExecutablePath)
-        PassThru         = $true
-        WindowStyle      = "Hidden"
-    }
-
-    if ($FixtureMode) {
-        $startProcessArgs["Environment"] = @{
-            MDC_FIXTURE_MODE       = "1"
-            DOTNET_ENVIRONMENT     = "Development"
-            ASPNETCORE_ENVIRONMENT = "Development"
-        }
-    }
-
-    $process = Start-Process @startProcessArgs
-
-    $null = $process.WaitForExit(10000)
-    if (-not $process.HasExited) {
-        Write-Log "Secondary launcher stayed open longer than expected for args: $($Arguments -join ' ')"
-        return
-    }
-
-    if ($process.ExitCode -ne 0) {
-        Write-Log "Secondary launcher returned exit code $($process.ExitCode) for args: $($Arguments -join ' ')"
-    }
-}
-
 function Invoke-EnterWorkstation {
     param(
         [System.Windows.Automation.AutomationElement]$Root,
@@ -910,6 +874,43 @@ function Try-ActivateWorkspaceShell {
     return $true
 }
 
+function Invoke-CommandPaletteNavigation {
+    param(
+        [System.Windows.Automation.AutomationElement]$Root,
+        [System.Diagnostics.Process]$Process,
+        [string]$PageTag
+    )
+
+    $paletteButton = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("ShellCommandPaletteButton")
+    if ($null -eq $paletteButton) {
+        $paletteButton = Find-FirstElementByNames -Root $Root -Names @("Open Command Palette")
+    }
+
+    if ($null -ne $paletteButton) {
+        Invoke-OrClickElement -Element $paletteButton
+    }
+    else {
+        Send-WindowKeys -Process $Process -Keys "^k"
+    }
+
+    $paletteInput = Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette input did not become available." -Condition {
+        Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteInput")
+    }
+
+    Set-ValuePatternText -Element $paletteInput -Text $PageTag
+    Wait-Until -TimeoutSeconds 8 -FailureMessage "Command palette did not resolve page tag '$PageTag'." -Condition {
+        $summary = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("CommandPaletteSummaryText")
+        if ($null -ne $summary -and $summary.Current.Name -match "[1-9][0-9]* result") {
+            return $summary
+        }
+
+        return $null
+    } | Out-Null
+
+    Invoke-OrClickElement -Element $paletteInput
+    Send-WindowKeys -Process $Process -Keys "{ENTER}"
+}
+
 function Invoke-SmokeCase {
     param(
         [string]$BaseWorkspaceJson,
@@ -969,10 +970,9 @@ function Invoke-SmokeCase {
         }
 
         if ($null -eq $pageReady) {
-            Write-Log "$($Case.Name) was not visible immediately after startup. Activating workspace shell and forwarding page navigation."
+            Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and navigating through the command palette."
             $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
-            Invoke-ForwardedLaunch -ExecutablePath $ExecutablePath -Arguments @("--page=$($Case.PageTag)") -FixtureMode $FixtureMode
-            Start-Sleep -Milliseconds 1200
+            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
 
