@@ -919,6 +919,9 @@ function Invoke-CommandPaletteNavigation {
         [string]$ResultName
     )
 
+    [MeridianSmokeNative]::SetForegroundWindow($Process.MainWindowHandle) | Out-Null
+    Start-Sleep -Milliseconds 250
+
     $paletteButton = Find-ElementByExactName -Root $Root -Name "Search"
     if ($null -ne $paletteButton -and -not $paletteButton.Current.IsOffscreen) {
         Click-ElementAtCenter -Element $paletteButton
