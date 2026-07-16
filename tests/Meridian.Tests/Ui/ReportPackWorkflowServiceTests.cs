@@ -72,7 +72,7 @@ public sealed class ReportPackWorkflowServiceTests
 
 
     [Fact]
-    public async Task Endpoint_CreateSubmitApprovePublish_CompletesW4LifecycleWithoutUnreachableIntermediateState()
+    public async Task Endpoint_CreateSubmitApproveThenLegacyPublish_RemainsApprovedAndDirectsCallerToGovernedRelease()
     {
         await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
         var client = app.GetTestClient();
@@ -122,27 +122,21 @@ public sealed class ReportPackWorkflowServiceTests
                 "#111111",
                 "#FFFFFF"));
         var publishResponse = await client.PostAsJsonAsync($"/api/fund-structure/reporting/packs/{created.ReportId:D}/publish", publishRequest, ServerJsonOptions);
-        publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var published = await publishResponse.Content.ReadFromJsonAsync<ReportPackWorkflowRecordDto>(ServerJsonOptions);
+        publishResponse.StatusCode.Should().Be(HttpStatusCode.Gone);
+        (await publishResponse.Content.ReadAsStringAsync()).Should().Contain("governed reporting-run release endpoint");
+        var retained = app.Services.GetRequiredService<ReportPackWorkflowService>().GetRecord(created.ReportId);
 
-        published.Should().NotBeNull();
-        published!.State.Should().Be(ReportPackWorkflowStateDto.Published);
-        published.Publication.Should().NotBeNull();
-        published.Publication!.SignedOffBy.Should().Be("controller.admin");
-        published.Publication.SignedOffRole.Should().Be(nameof(UserRole.Admin));
-        published.Publication.SignOffReason.Should().Be("Approved by controller.");
-        published.Publication.SignOffContext.Should().Contain("caller supplied signer 'browser-workstation'");
-        published.Publication!.BrandingTheme.Should().NotBeNull();
-        published.Publication.BrandingTheme!.ThemeId.Should().Be("investor-board");
-        published.Publication.BrandingTheme.FirmName.Should().Be("Northstar Capital");
-        published.AuditTrail.Select(entry => entry.ToState).Should().ContainInOrder(
+        retained.Should().NotBeNull();
+        retained!.State.Should().Be(ReportPackWorkflowStateDto.Approved);
+        retained.Publication.Should().BeNull();
+        retained.AuditTrail.Select(entry => entry.ToState).Should().ContainInOrder(
             ReportPackWorkflowStateDto.Draft,
             ReportPackWorkflowStateDto.InReview,
-            ReportPackWorkflowStateDto.Approved,
-            ReportPackWorkflowStateDto.Published);
-        published.AuditTrail.Should().NotContain(entry =>
+            ReportPackWorkflowStateDto.Approved);
+        retained.AuditTrail.Should().NotContain(entry =>
             entry.ToState == ReportPackWorkflowStateDto.Validated ||
-            entry.ToState == ReportPackWorkflowStateDto.PendingApproval);
+            entry.ToState == ReportPackWorkflowStateDto.PendingApproval ||
+            entry.ToState == ReportPackWorkflowStateDto.Published);
     }
 
     [Fact]
@@ -1046,6 +1040,7 @@ public sealed class ReportPackWorkflowServiceTests
         submitted.Should().NotBeNull();
         submitted!.Status.Should().Be(ReportTemplateLifecycleStatusDto.InReview);
 
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "independent.controller");
         var approveResponse = await client.PostAsJsonAsync(
             $"/api/fund-structure/reporting/templates/{draft.Definition.TemplateId.Name}/versions/{draft.Definition.TemplateId.Version}/approve",
             new ReportTemplateDecisionRequestDto("Controller approved fee disclosure", "APP-TPL-2"),
@@ -2506,12 +2501,18 @@ public sealed class ReportPackWorkflowServiceTests
     public void Scenario_NewFundWorkspace_EmergingManagerStarterKitSeedsEditableReportingDesk()
     {
         var templateCatalog = new DefaultReportingTemplateCatalog();
+        var governedCatalog = new GovernedReportingTemplateCatalog(
+            templateCatalog,
+            new ReportTemplateRegistryService());
         var accessContext = BoundAccessContext("fund-controller");
         var orchestration = new ReportingOrchestrationService(
-            templateCatalog,
+            governedCatalog,
             new DeterministicReportingSectionRenderer(),
             () => new DateTimeOffset(2026, 7, 6, 16, 0, 0, TimeSpan.Zero));
-        var schedules = new ReportingScheduleService(orchestration, new InMemoryReportingScheduleStore([]));
+        var schedules = new ReportingScheduleService(
+            orchestration,
+            new InMemoryReportingScheduleStore([]),
+            governedTemplateCatalog: governedCatalog);
         var starterKits = new ReportingStarterKitService(
             new DefaultReportingStarterKitCatalog(),
             templateCatalog,
@@ -2547,7 +2548,7 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
-    public async Task ReportingScheduleService_DeliversConfiguredReportPackTargetsAfterScheduledRun()
+    public async Task ReportingScheduleService_HoldsConfiguredTargetsUntilScheduledRunCompletesGovernedRelease()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         var templateCatalog = new DefaultReportingTemplateCatalog();
@@ -2615,33 +2616,17 @@ public sealed class ReportPackWorkflowServiceTests
         due.Runs.Should().ContainSingle();
         var result = due.Runs.Single();
         result.Run.RunId.Should().Be("sched-board-distribution-20260501");
-        result.DeliveryWarnings.Should().NotBeNull().And.BeEmpty();
-        result.DeliveryAttempts.Should().NotBeNull();
-        var attempts = result.DeliveryAttempts!;
-        attempts.Should().HaveCount(2);
-        attempts.Select(static attempt => attempt.ReportId).Distinct().Should().ContainSingle();
-        var reportingRunReportId = attempts[0].ReportId;
-        reportingRunReportId.Should().NotBeEmpty();
-        reportingRunReportId.Should().NotBe(published.ReportId);
-        attempts.Should().Contain(attempt =>
-            attempt.ReportId == reportingRunReportId &&
-            attempt.DistributionId == "board-reporting-committee" &&
-            attempt.Package != null &&
-            attempt.Package.ReportingRunId == result.Run.RunId &&
-            attempt.Package.DeliveryMode == ReportPackDeliveryModeDto.SecurePortal &&
-            attempt.Package.Artifacts.Count == 3);
-        attempts.Should().Contain(attempt =>
-            attempt.ReportId == reportingRunReportId &&
-            attempt.DistributionId == "investor-relations" &&
-            attempt.Package != null &&
-            attempt.Package.ReportingRunId == result.Run.RunId &&
-            attempt.Package.DeliveryMode == ReportPackDeliveryModeDto.EmailLink &&
-            attempt.Package.Formats.SequenceEqual(new[] { GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Csv }));
-        attempts.Should().OnlyContain(attempt =>
-            attempt.DeliveryReference.StartsWith("schedule:holdings-board-report:", StringComparison.Ordinal));
+        result.Run.Status.Should().Be(ReportingRunStatus.Draft.ToString());
+        result.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+        result.DeliveryWarnings.Should().NotBeNull().And.HaveCount(2);
+        result.DeliveryWarnings.Should().OnlyContain(warning =>
+            warning.Contains(result.Run.RunId, StringComparison.Ordinal) &&
+            warning.Contains("awaiting governed release", StringComparison.Ordinal));
+        result.DeliveryWarnings.Should().Contain(warning => warning.Contains("board-reporting-committee", StringComparison.Ordinal));
+        result.DeliveryWarnings.Should().Contain(warning => warning.Contains("investor-relations", StringComparison.Ordinal));
 
         var reloadedDelivery = new ReportPackDeliveryService(workflow, deliveryStore);
-        reloadedDelivery.GetHistory(reportingRunReportId).Should().HaveCount(2);
+        reloadedDelivery.GetHistory(published.ReportId).Should().BeEmpty();
         var reloadedSchedules = new ReportingScheduleService(
             orchestration,
             scheduleStore,
@@ -2666,27 +2651,24 @@ public sealed class ReportPackWorkflowServiceTests
             GovernanceReportArtifactFormatDto.Pdf,
             GovernanceReportArtifactFormatDto.Xlsx,
             GovernanceReportArtifactFormatDto.Csv);
-        boardPlan.IsReady.Should().BeTrue();
-        boardPlan.ReadinessSummary.Should().Contain("Ready to deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
-        boardPlan.ReadinessBlockers.Should().NotBeNull().And.BeEmpty();
-        boardPlan.LastDeliveryState.Should().Be(ReportPackDeliveryStateDto.Delivered);
-        boardPlan.LastDeliveryAttemptId.Should().NotBeNull();
-        boardPlan.LastDeliverySecureLink.Should().NotBeNullOrWhiteSpace();
-        boardPlan.LastDeliveryAccessLinks.Should().NotBeNull();
-        boardPlan.LastDeliveryAccessLinks!.Should().Contain(link =>
-            link.Kind == "secure-portal" &&
-            link.Href == boardPlan.LastDeliverySecureLink &&
-            link.RequiresToken);
-        boardPlan.LastDeliveryAccessExpiresAtUtc.Should().NotBeNull();
-        boardPlan.LastDeliveryAccessExpiresAtUtc.Should().Be(boardPlan.LastDeliveryAccessLinks![0].ExpiresAtUtc);
-        boardPlan.LastDeliveryAccessSummary.Should().Contain("token-gated portal route");
-        boardPlan.LastDeliveryChannelSummary.Should().Be("SecurePortal delivery to Board reporting committee via Board portal.");
-        boardPlan.LastDeliveryDownloadSummary.Should().Contain("3 artifact(s) retained as Csv/Pdf/Xlsx");
-        boardPlan.LastDeliveryNotificationCount.Should().Be(1);
-        boardPlan.LastDeliveryNotificationSummary.Should().Be("1 notification retained: PortalPublished via SecurePortal.");
-        boardPlan.LastDeliveryArtifactCount.Should().Be(3);
-        boardPlan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
-        boardPlan.LastDeliveryEntitlementScope.Should().Be("CompanyWide");
+        boardPlan.IsReady.Should().BeFalse();
+        boardPlan.ReadinessSummary.Should().Contain("has no successful retained delivery package");
+        boardPlan.ReadinessBlockers.Should().NotBeNull();
+        boardPlan.ReadinessBlockers!.Should().Contain(blocker =>
+            blocker.Contains("has no successful retained delivery package", StringComparison.Ordinal));
+        boardPlan.LastDeliveryState.Should().BeNull();
+        boardPlan.LastDeliveryAttemptId.Should().BeNull();
+        boardPlan.LastDeliverySecureLink.Should().BeNull();
+        boardPlan.LastDeliveryAccessLinks.Should().BeNull();
+        boardPlan.LastDeliveryAccessExpiresAtUtc.Should().BeNull();
+        boardPlan.LastDeliveryAccessSummary.Should().BeNull();
+        boardPlan.LastDeliveryChannelSummary.Should().BeNull();
+        boardPlan.LastDeliveryDownloadSummary.Should().BeNull();
+        boardPlan.LastDeliveryNotificationCount.Should().Be(0);
+        boardPlan.LastDeliveryNotificationSummary.Should().BeNull();
+        boardPlan.LastDeliveryArtifactCount.Should().Be(0);
+        boardPlan.LastDeliveryIntegritySummary.Should().BeNull();
+        boardPlan.LastDeliveryEntitlementScope.Should().BeNull();
         boardPlan.VersionStamp.Should().StartWith("schedule-delivery-plan:sched-board-distribution:board-reporting-committee:");
     }
 
@@ -3004,7 +2986,7 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
-    public async Task ReportingScheduleService_DeliversGeneratedReportWriterRunWhenNoPublishedPackExists()
+    public async Task ReportingScheduleService_HoldsGeneratedReportWriterRunUntilGovernedReleaseThenDeliversIt()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
         var registry = new ReportTemplateRegistryService();
@@ -3103,7 +3085,7 @@ public sealed class ReportPackWorkflowServiceTests
             "Confidential investor reporting pack.",
             IsBuiltIn: false);
 
-        schedules.Upsert(new ReportingScheduleUpsertRequestDto(
+        var scheduled = schedules.Upsert(new ReportingScheduleUpsertRequestDto(
             "sched-custom-writer",
             "scheduled-report-writer-pack",
             "0 8 1 * *",
@@ -3198,7 +3180,15 @@ public sealed class ReportPackWorkflowServiceTests
             totalPnl == "-9").Should().BeTrue();
 
         var gridArtifactService = new ReportWriterGridArtifactService(orchestration);
-        var brandedPdf = gridArtifactService.GetArtifact(result.Run.RunId, "sector-pivot", "pdf", ServerJsonOptions);
+        var artifactAccess = new ReportAccessQueryContext(
+            "report-owner",
+            ["investor-relations"]);
+        var brandedPdf = gridArtifactService.GetArtifact(
+            result.Run.RunId,
+            "sector-pivot",
+            "pdf",
+            ServerJsonOptions,
+            artifactAccess);
         brandedPdf.ContentType.Should().Be("application/pdf");
         var brandedPdfText = System.Text.Encoding.ASCII.GetString(brandedPdf.Content);
         brandedPdfText.Should().Contain("Northstar Capital - Sector Pivot");
@@ -3206,7 +3196,12 @@ public sealed class ReportPackWorkflowServiceTests
         brandedPdfText.Should().Contain("Generated for Northstar Capital investors.");
         brandedPdfText.Should().Contain("Confidential investor reporting pack.");
 
-        var brandedWorkbook = gridArtifactService.GetArtifact(result.Run.RunId, "sector-pivot", "xlsx", ServerJsonOptions);
+        var brandedWorkbook = gridArtifactService.GetArtifact(
+            result.Run.RunId,
+            "sector-pivot",
+            "xlsx",
+            ServerJsonOptions,
+            artifactAccess);
         brandedWorkbook.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         using (var brandedWorkbookArchive = new ZipArchive(new MemoryStream(brandedWorkbook.Content), ZipArchiveMode.Read))
         {
@@ -3223,9 +3218,42 @@ public sealed class ReportPackWorkflowServiceTests
             sharedStringsXml.Should().Contain("Confidential investor reporting pack.");
         }
 
-        result.DeliveryWarnings.Should().NotBeNull().And.BeEmpty();
-        result.DeliveryAttempts.Should().NotBeNull().And.ContainSingle();
-        var attempt = result.DeliveryAttempts!.Single();
+        result.Run.Status.Should().Be(ReportingRunStatus.Draft.ToString());
+        result.DeliveryWarnings.Should().NotBeNull().And.ContainSingle(warning =>
+            warning.Contains("investor-relations", StringComparison.Ordinal) &&
+            warning.Contains(result.Run.RunId, StringComparison.Ordinal) &&
+            warning.Contains("awaiting governed release", StringComparison.Ordinal));
+        result.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+
+        (await orchestration.TransitionApprovalAsync(
+            result.Run.RunId,
+            ReportingRunStatus.InReview,
+            "report-reviewer",
+            "Reviewer",
+            "Generated artifacts reviewed for scheduled distribution.",
+            CancellationToken.None)).Should().BeTrue();
+        (await orchestration.TransitionApprovalAsync(
+            result.Run.RunId,
+            ReportingRunStatus.Approved,
+            "compliance-approver",
+            "ComplianceOfficer",
+            "Generated artifacts approved for scheduled distribution.",
+            CancellationToken.None)).Should().BeTrue();
+        (await orchestration.TransitionApprovalAsync(
+            result.Run.RunId,
+            ReportingRunStatus.Released,
+            "operations-lead",
+            "OperationsLead",
+            "Generated artifacts released for scheduled distribution.",
+            CancellationToken.None)).Should().BeTrue();
+
+        var releasedManifest = runStore.GetManifest(result.Run.RunId);
+        releasedManifest.Should().NotBeNull();
+        releasedManifest!.Status.Should().Be(ReportingRunStatus.Released);
+        var attempt = delivery.DeliverReportingRun(
+            releasedManifest,
+            scheduled.DeliveryTargets!.Should().ContainSingle().Subject,
+            "report-owner");
         attempt.DistributionId.Should().Be("investor-relations");
         attempt.ReportId.Should().NotBeEmpty();
         attempt.ReportId.Should().NotBe(stalePublishedPack.ReportId);
@@ -3364,11 +3392,11 @@ public sealed class ReportPackWorkflowServiceTests
                 grid.ValidationPassedCount == 4));
         var plan = payload.ScheduleDeliveryPlans.Should().ContainSingle().Subject;
         plan.LastDeliveryState.Should().Be(ReportPackDeliveryStateDto.Delivered);
-        plan.LastDeliverySecureLink.Should().Be(attempt.Package.SecureLink);
+        plan.LastDeliverySecureLink.Should().Be(attempt.Package.SecureLink.Split("?token=", 2, StringSplitOptions.None)[0]);
         plan.LastDeliveryAccessLinks.Should().NotBeNull();
         plan.LastDeliveryAccessLinks!.Should().Contain(link =>
             link.Kind == "email-link" &&
-            link.Href == attempt.Package.SecureLink &&
+            link.Href == plan.LastDeliverySecureLink &&
             link.RequiresToken);
         plan.LastDeliveryArtifactCount.Should().Be(3);
         plan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
@@ -3401,7 +3429,7 @@ public sealed class ReportPackWorkflowServiceTests
             grid.ValidationChecks != null &&
             grid.ValidationChecks.Any(check => check.CheckId == "column-dictionary" && check.Status == "Passed"));
         reloadedAttempt.Package.ReportingRunAsOfDate.Should().Be("2026-05-02");
-        reloadedAttempt.Package.ReportingRunStatus.Should().Be(ReportingRunStatus.Draft.ToString());
+        reloadedAttempt.Package.ReportingRunStatus.Should().Be(ReportingRunStatus.Released.ToString());
         reloadedAttempt.Package.ReportingRunTrigger.Should().Be(ReportingRunTrigger.Scheduled.ToString());
         reloadedAttempt.Package.ReportingRunAttemptCount.Should().Be(1);
         reloadedAttempt.Package.ReportingRunSectionCount.Should().Be(result.Run.SectionCount);
@@ -4395,13 +4423,17 @@ public sealed class ReportPackWorkflowServiceTests
             new ReportingRunRequestDto(
                 draft.Definition.TemplateId.Name,
                 new DateOnly(2026, 5, 5),
-                JobId: "adhoc-custom-grid"),
+                JobId: "adhoc-custom-grid",
+                Parameters: DraftRunParameters(
+                    new DateOnly(2026, 5, 5),
+                    new Dictionary<string, string> { ["period"] = "2026-05" })),
             ServerJsonOptions);
 
         runResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var result = await runResponse.Content.ReadFromJsonAsync<ReportingRunResultDto>(ServerJsonOptions);
         result.Should().NotBeNull();
-        result!.Run.RunId.Should().Be("adhoc-custom-grid-20260505");
+        result!.Run.RunId.Should().StartWith("adhoc-tenant-a-ops-control-run-template-")
+            .And.EndWith("-20260505");
         result.Run.TemplateId.Should().Be(draft.Definition.TemplateId.Name);
         result.Run.Family.Should().Be(ReportingTemplateFamily.CustomReport.ToString());
         result.Run.Trigger.Should().Be(ReportingRunTrigger.AdHoc.ToString());
@@ -4453,7 +4485,7 @@ public sealed class ReportPackWorkflowServiceTests
         run.Should().NotBeNull();
         run!.Run.DrilldownLinks.Should().Contain(link =>
             link.Kind == "audit" &&
-            link.Href == "/api/fund-structure/reporting/runs/audit-visible-run-20260505/audit" &&
+            link.Href == $"/api/fund-structure/reporting/runs/{run.Run.RunId}/audit" &&
             link.IsBrowserNavigable);
 
         var auditResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/audit");
@@ -4461,7 +4493,7 @@ public sealed class ReportPackWorkflowServiceTests
         auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var audit = await auditResponse.Content.ReadFromJsonAsync<ReportingRunAuditTrailDto>(ServerJsonOptions);
         audit.Should().NotBeNull();
-        audit!.RunId.Should().Be("audit-visible-run-20260505");
+        audit!.RunId.Should().Be(run.Run.RunId);
         audit.TemplateId.Should().Be(draft.Definition.TemplateId.Name);
         audit.AsOfDate.Should().Be("2026-05-05");
         audit.Status.Should().Be(ReportingRunStatus.Draft.ToString());
@@ -4520,6 +4552,20 @@ public sealed class ReportPackWorkflowServiceTests
     public async Task Endpoint_ReportWriterGridArtifact_ReturnsJsonCsvPdfAndXlsxForRetainedRunGrid()
     {
         await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+        workflow.Create(
+            "fund-alpha",
+            "acct-main",
+            "2026-05",
+            new VersionedReportTemplateIdDto("shadow-nav-pack", 1),
+            "report.author",
+            [
+                SourcePortfolioReportingLine("portfolio.gross-exposure", "evidence-gross", "2500000", "/evidence/gross"),
+                SourcePortfolioReportingLine("portfolio.realized-pnl", "evidence-realized", "42000"),
+                SourcePortfolioReportingLine("portfolio.unrealized-pnl", "evidence-unrealized", "18000")
+            ],
+            accessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.CompanyWide, CompanyId: TestCompanyId),
+            accessContext: BoundAccessContext("report.author"));
         var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
         var draft = registry.CreateDraft(
             new ReportTemplateDraftRequestDto(
@@ -4533,15 +4579,15 @@ public sealed class ReportPackWorkflowServiceTests
                 [
                     new ReportWriterGridDefinitionDto(
                         "sector-pnl",
-                        "Sector P&L",
+                        "Portfolio P&L",
                         ReportWriterGridKindDto.Pivot,
-                        RowFields: ["sector"],
+                        RowFields: ["kind"],
                         Metrics:
                         [
-                            new ReportWriterMetricDefinitionDto("pnl", "pnl"),
-                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue")
+                            new ReportWriterMetricDefinitionDto("totalPnl", "totalPnl"),
+                            new ReportWriterMetricDefinitionDto("grossExposure", "grossExposure")
                         ],
-                        Formulas: [new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue} * 100")])
+                        Formulas: [new ReportWriterFormulaDefinitionDto("returnPct", "{totalPnl} / {grossExposure} * 100")])
                 ]),
             "report.author");
         registry.Submit(draft.Definition.TemplateId, "report.author", "ready");
@@ -4554,21 +4600,8 @@ public sealed class ReportPackWorkflowServiceTests
                 draft.Definition.TemplateId.Name,
                 new DateOnly(2026, 5, 5),
                 JobId: "retained-grid",
-                DatasetRows:
-                [
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["sector"] = "Technology",
-                        ["pnl"] = "250",
-                        ["marketValue"] = "10000"
-                    },
-                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["sector"] = "Credit",
-                        ["pnl"] = "-25",
-                        ["marketValue"] = "5000"
-                    }
-                ]),
+                Parameters: DraftRunParameters(new DateOnly(2026, 5, 5)),
+                DatasetSourceId: "portfolio-reporting-cuts"),
             ServerJsonOptions);
 
         runResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -4588,13 +4621,14 @@ public sealed class ReportPackWorkflowServiceTests
         grid.Should().NotBeNull();
         grid!.GridId.Should().Be("sector-pnl");
         grid.Rows.Should().Contain(row =>
-            row.Values["sector"] == "Technology"
-            && row.Values["pnl"] == "250"
-            && row.Values["returnPct"] == "2.5");
+            row.Values["kind"] == PortfolioReportingCutKindDto.Fund.ToString()
+            && row.Values["totalPnl"] == "60000"
+            && row.Values["grossExposure"] == "2500000"
+            && row.Values["returnPct"] == "2.4");
         grid.DataDictionary.Should().NotBeNull();
         grid.DataDictionary!.Should().Contain(field =>
-            field.Key == "pnl"
-            && field.SourceField == "pnl"
+            field.Key == "totalPnl"
+            && field.SourceField == "totalPnl"
             && field.DataType == "decimal"
             && !field.IsGenerated);
         grid.DataDictionary.Should().Contain(field =>
@@ -4611,14 +4645,14 @@ public sealed class ReportPackWorkflowServiceTests
 
         csvResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         csvResponse.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
-        csvResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("retained-grid-20260505-sector-pnl.csv");
+        csvResponse.Content.Headers.ContentDisposition?.FileName.Should().Be($"{run.Run.RunId}-sector-pnl.csv");
         var csv = await csvResponse.Content.ReadAsStringAsync();
-        csv.Should().StartWith("sector,pnl,marketValue,returnPct");
-        csv.Should().Contain("Technology,250,10000,2.5");
+        csv.Should().StartWith("kind,totalPnl,grossExposure,returnPct");
+        csv.Should().Contain("Fund,60000,2500000,2.4");
 
         xlsAliasResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         xlsAliasResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        xlsAliasResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("retained-grid-20260505-sector-pnl.xlsx");
+        xlsAliasResponse.Content.Headers.ContentDisposition?.FileName.Should().Be($"{run.Run.RunId}-sector-pnl.xlsx");
         var xlsAliasWorkbook = await xlsAliasResponse.Content.ReadAsByteArrayAsync();
         xlsAliasWorkbook.Should().StartWith([0x50, 0x4B]);
         using (var xlsAliasArchive = new ZipArchive(new MemoryStream(xlsAliasWorkbook), ZipArchiveMode.Read))
@@ -4629,7 +4663,7 @@ public sealed class ReportPackWorkflowServiceTests
 
         xlsxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         xlsxResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        xlsxResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("retained-grid-20260505-sector-pnl.xlsx");
+        xlsxResponse.Content.Headers.ContentDisposition?.FileName.Should().Be($"{run.Run.RunId}-sector-pnl.xlsx");
         var workbook = await xlsxResponse.Content.ReadAsByteArrayAsync();
         workbook.Should().StartWith([0x50, 0x4B]);
         workbook.Length.Should().BeGreaterThan(1000);
@@ -4641,11 +4675,11 @@ public sealed class ReportPackWorkflowServiceTests
 
         pdfResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         pdfResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/pdf");
-        pdfResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("retained-grid-20260505-sector-pnl.pdf");
+        pdfResponse.Content.Headers.ContentDisposition?.FileName.Should().Be($"{run.Run.RunId}-sector-pnl.pdf");
         var pdf = await pdfResponse.Content.ReadAsByteArrayAsync();
         pdf.Should().StartWith(System.Text.Encoding.ASCII.GetBytes("%PDF-1.4"));
-        System.Text.Encoding.ASCII.GetString(pdf).Should().Contain("Sector P&L");
-        System.Text.Encoding.ASCII.GetString(pdf).Should().Contain("Technology | 250 | 10000 | 2.5");
+        System.Text.Encoding.ASCII.GetString(pdf).Should().Contain("Portfolio P&L");
+        System.Text.Encoding.ASCII.GetString(pdf).Should().Contain("Fund | 60000 | 2500000 | 2.4");
     }
 
     [Fact]
@@ -4775,7 +4809,10 @@ public sealed class ReportPackWorkflowServiceTests
                 new DateTimeOffset(2026, 5, 5, 8, 0, 0, TimeSpan.Zero),
                 0,
                 "spoofed-requester",
-                "Ops control custom report schedule."),
+                "Ops control custom report schedule.",
+                RunParameters: DraftRunParameters(
+                    new DateOnly(2026, 5, 5),
+                    new Dictionary<string, string> { ["period"] = "2026-05" })),
             ServerJsonOptions);
         var runResponse = await client.PostAsync("/api/fund-structure/reporting/schedules/sched-ops-control-custom/run", null);
 
@@ -4787,7 +4824,7 @@ public sealed class ReportPackWorkflowServiceTests
         runResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await runResponse.Content.ReadFromJsonAsync<ReportingScheduleRunResultDto>(ServerJsonOptions);
         result.Should().NotBeNull();
-        result!.Run.RunId.Should().Be("sched-ops-control-custom-20260505");
+        result!.Run.RunId.Should().Be("tenant-a-company-a-sched-ops-control-custom-20260505");
         result.Run.TemplateId.Should().Be(draft.Definition.TemplateId.Name);
         result.Run.Family.Should().Be(ReportingTemplateFamily.CustomReport.ToString());
         result.Run.Trigger.Should().Be(ReportingRunTrigger.Scheduled.ToString());
@@ -4845,15 +4882,20 @@ public sealed class ReportPackWorkflowServiceTests
         ReportAccessPolicyEvaluator.Evaluate(approved.Definition.AccessPolicy, new ReportAccessQueryContext("owner.user")).IsAccessible.Should().BeTrue();
         ReportAccessPolicyEvaluator.Evaluate(approved.Definition.AccessPolicy, new ReportAccessQueryContext("viewer.user")).IsAccessible.Should().BeFalse();
         var scheduleService = app.Services.GetRequiredService<ReportingScheduleService>();
-        scheduleService.Upsert(new ReportingScheduleUpsertRequestDto(
-            "sched-private-custom",
-            draft.Definition.TemplateId.Name,
-            "0 8 1 * *",
-            new DateOnly(2026, 5, 5),
-            new DateTimeOffset(2026, 5, 5, 8, 0, 0, TimeSpan.Zero),
-            0,
-            "owner.user",
-            "Owner-created private report schedule."));
+        scheduleService.Upsert(
+            new ReportingScheduleUpsertRequestDto(
+                "sched-private-custom",
+                draft.Definition.TemplateId.Name,
+                "0 8 1 * *",
+                new DateOnly(2026, 5, 5),
+                new DateTimeOffset(2026, 5, 5, 8, 0, 0, TimeSpan.Zero),
+                0,
+                "owner.user",
+                "Owner-created private report schedule.",
+                RunParameters: DraftRunParameters(
+                    new DateOnly(2026, 5, 5),
+                    new Dictionary<string, string> { ["period"] = "2026-05" })),
+            BoundAccessContext("owner.user"));
         var client = app.GetTestClient();
 
         var scheduleResponse = await client.PostAsJsonAsync(
@@ -5411,6 +5453,23 @@ public sealed class ReportPackWorkflowServiceTests
         IReadOnlyList<string>? groups = null) =>
         new(actor, groups, companyId, TenantId: TestTenantId, RequireBoundScope: true);
 
+    private static ReportingRunParametersDto DraftRunParameters(
+        DateOnly asOfDate,
+        IReadOnlyDictionary<string, string>? templateParameters = null) =>
+        new(
+            new ReportingRunScopeDto("fund-a"),
+            asOfDate.ToString("yyyy-MM", CultureInfo.InvariantCulture),
+            asOfDate,
+            new ReportingLedgerBookSelectionDto(LedgerBookCode: "gaap-primary"),
+            ReportingAccountingBasisDto.Gaap,
+            "USD",
+            ReportingConsolidationLevelDto.Fund,
+            ReportingOutputFormatDto.Pdf,
+            ReportingFinalityDto.Draft,
+            IncludeSupportingSchedules: true,
+            IncludeEvidenceAppendix: true,
+            TemplateParameters: templateParameters);
+
     private static ReportingRunReadinessService LegacyDraftReadiness(
         IReportingTemplateCatalog catalog,
         GovernedReportingTemplateCatalog? governedCatalog = null) =>
@@ -5551,7 +5610,11 @@ public sealed class ReportPackWorkflowServiceTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = username;
+            var actor = context.Request.Headers.TryGetValue("X-Meridian-Test-User", out var testActor) &&
+                !string.IsNullOrWhiteSpace(testActor.ToString())
+                    ? testActor.ToString().Trim()
+                    : username;
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = role;
             if (!string.IsNullOrWhiteSpace(roleProfileName))
             {

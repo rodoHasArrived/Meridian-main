@@ -366,7 +366,9 @@ public sealed class AutomatedJournalEventProducerTests
         });
 
         lowConfidence.Readiness.Should().Be(AutomatedJournalIntakeReadiness.NeedsInvestigation);
-        lowConfidence.ReadinessBlockers.Should().Contain(item => item.Contains("90%", StringComparison.Ordinal));
+        lowConfidence.ReadinessBlockers.Should().Contain(item =>
+            item.Contains("server-governed 90", StringComparison.Ordinal) &&
+            item.Contains("threshold", StringComparison.Ordinal));
         looseTolerance.Readiness.Should().Be(AutomatedJournalIntakeReadiness.NeedsInvestigation);
         looseTolerance.ReadinessBlockers.Should().Contain(item =>
             item.Contains("server-governed tolerance 0.01", StringComparison.OrdinalIgnoreCase));
@@ -915,7 +917,7 @@ public sealed class AutomatedJournalEventProducerTests
         var runner = new AutomatedJournalIntakeRunner(
             fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
         var intake = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
-            "fund-alpha", "USD", "close-preparer", ClosedPeriodId, BookId));
+            "fund-alpha", "USD", "close-preparer", ClosedPeriodId, BookId, EntityId: "entity-alpha"));
         var created = intake.Intake.Created.Should().ContainSingle().Subject;
         var postedClosingBatch = created with
         {

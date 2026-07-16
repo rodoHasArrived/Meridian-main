@@ -465,7 +465,8 @@ public sealed class AutomatedJournalScheduleTests
             draft.Status == ManualJournalEntryStatusDto.NeedsFix &&
             draft.AutomationEvidenceAssessment != null &&
             draft.AutomationEvidenceAssessment.RequiresInvestigation &&
-            draft.AutomationEvidenceAssessment.Quality == AutomatedJournalEvidenceQualityDto.Low &&
+            draft.AutomationEvidenceAssessment.Quality == AutomatedJournalEvidenceQualityDto.High &&
+            draft.AutomationEvidenceAssessment.ConfidenceScore == 0.85m &&
             draft.ValidationIssues.Any(issue =>
                 issue.Code == "manual-je.automation-investigation-required" &&
                 issue.Severity == AccountingConfigurationValidationSeverityDto.Critical));
