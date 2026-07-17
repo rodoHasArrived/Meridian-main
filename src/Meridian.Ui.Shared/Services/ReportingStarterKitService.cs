@@ -27,13 +27,13 @@ internal sealed class ReportingStarterKitScopeComparer : IEqualityComparer<Repor
     public static ReportingStarterKitScopeComparer Instance { get; } = new();
 
     public bool Equals(ReportingStarterKitScope x, ReportingStarterKitScope y) =>
-        StringComparer.OrdinalIgnoreCase.Equals(x.TenantId, y.TenantId)
-        && StringComparer.OrdinalIgnoreCase.Equals(x.CompanyId, y.CompanyId);
+        StringComparer.Ordinal.Equals(x.TenantId, y.TenantId)
+        && StringComparer.Ordinal.Equals(x.CompanyId, y.CompanyId);
 
     public int GetHashCode(ReportingStarterKitScope obj) =>
         HashCode.Combine(
-            StringComparer.OrdinalIgnoreCase.GetHashCode(obj.TenantId),
-            StringComparer.OrdinalIgnoreCase.GetHashCode(obj.CompanyId));
+            StringComparer.Ordinal.GetHashCode(obj.TenantId),
+            StringComparer.Ordinal.GetHashCode(obj.CompanyId));
 }
 
 public interface IReportingStarterKitStore
@@ -134,7 +134,11 @@ public sealed class FileReportingStarterKitStore : IReportingStarterKitStore
 
             return snapshot;
         }
-        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException
+                                        or JsonException
+                                        or InvalidDataException
+                                        or ArgumentException
+                                        or UnauthorizedAccessException)
         {
             _logger.LogCritical(
                 ex,
@@ -244,7 +248,7 @@ public sealed class ReportingStarterKitService
         }
 
         var scope = ResolveRequiredScope(accessContext);
-        if (!string.Equals(accessContext?.ActorPrincipalId, actor.Trim(), StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(accessContext?.ActorPrincipalId, actor.Trim(), StringComparison.Ordinal))
         {
             throw new UnauthorizedAccessException(
                 "The reporting starter-kit actor must match the authenticated access context.");
@@ -301,7 +305,8 @@ public sealed class ReportingStarterKitService
         ReportAccessQueryContext? accessContext,
         out ReportingStarterKitScope scope)
     {
-        if (string.IsNullOrWhiteSpace(accessContext?.TenantId)
+        if (string.IsNullOrWhiteSpace(accessContext?.ActorPrincipalId)
+            || string.IsNullOrWhiteSpace(accessContext.TenantId)
             || string.IsNullOrWhiteSpace(accessContext.CompanyId))
         {
             scope = default;

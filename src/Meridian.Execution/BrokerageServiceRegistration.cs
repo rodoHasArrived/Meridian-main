@@ -155,7 +155,19 @@ public static class BrokerageServiceRegistration
 
         services.AddSingleton<ITradeFillPostingStore>(postingStoreFactory);
         services.AddSingleton<ITradeFillLedgerPostingTarget>(postingTargetFactory);
-        services.AddSingleton<ITradeFillHandoffFailureStore>(handoffFailureStoreFactory);
+        services.AddSingleton<ITradeFillHandoffFailureStore>(sp =>
+        {
+            var store = handoffFailureStoreFactory(sp)
+                ?? throw new InvalidOperationException("The trade-fill handoff-failure store factory returned null.");
+            if (!string.Equals(store.PostingScope, postingContext.PostingScope, StringComparison.Ordinal))
+            {
+                store.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw new InvalidOperationException(
+                    $"Handoff-failure store scope '{store.PostingScope}' does not match ledger scope '{postingContext.PostingScope}'.");
+            }
+
+            return store;
+        });
         services.AddSingleton<LedgerPostingConsumer>(sp =>
         {
             var securityGate = sp.GetRequiredService<ISecurityValidationGateService>();

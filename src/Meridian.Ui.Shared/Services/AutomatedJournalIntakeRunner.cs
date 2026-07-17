@@ -1,6 +1,7 @@
 using Meridian.Application.Accounting;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
@@ -252,11 +253,9 @@ public sealed class AutomatedJournalIntakeRunner
                 $"Daily mark-to-market intake is blocked: {string.Join(" ", positionResolution.Blockers)}");
         }
 
-        // The scheduled valuation's maximum mark age maps onto the ledger stale-price policy: marks
-        // older than the bound are blocked from the fair-value draft and surfaced for review. The
-        // legacy confidence/coverage gates are not modelled by StalePricePolicy and are not enforced
-        // on this path (request.MinimumConfidence / request.RequireCompleteCoverage are retained on
-        // the work item but inert pending a unified valuation-quality model).
+        // The scheduled valuation's maximum mark age maps onto the ledger stale-price policy, while
+        // MarkPriceQualityPolicy enforces observed-date, minimum-confidence, and complete-coverage
+        // controls before any fair-value draft can be retained.
         var policy = new DailyPortfolioPricingPolicy(
             request.FundProfileId,
             request.PolicyId,

@@ -1,3 +1,9 @@
+import {
+  mapQuantRunResponseToCellResult,
+  quantContextToParameters,
+  quantDataIntervalMinutes,
+} from "./quant-api-mappers";
+
 import type {
   BackfillPreviewResult,
   BackfillExecutionHistoryResponse,
@@ -28,8 +34,6 @@ import type {
   BrokerageConnectionStatus,
   CellExecuteRequest,
   CellExecuteResult,
-  CellExecutionContext,
-  CellOutput,
   BrokerageHouseholdPortfolio,
   ChiefOfStaffDecisionRequest,
   ChiefOfStaffEvidenceExport,
@@ -292,20 +296,11 @@ import type {
   PrivateCapitalFundEventCommandCenter,
   PrivateCapitalFundEventLedgerRecord,
   PrivateCapitalReportOutput,
-  FundReportPackGenerateRequest,
-  FundReportPackPreview,
-  FundReportPackPreviewRequest,
-  FundReportPackSnapshot,
-  ReportPackDeliveryAttempt,
-  ReportPackDeliveryFailureRequest,
-  ReportPackDeliveryHistory,
-  ReportPackDeliveryRequest,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
   ReportTemplateGovernanceRecord,
   RenderReportTemplateRequest,
   RenderReportTemplateResponse,
-  ReportingDueScheduleRunResult,
   ReportingScheduleRecord,
   ReportingScheduleRunResult,
   ReportingStarterKitProvisionResult,
@@ -440,8 +435,6 @@ import {
   STATEMENT_CONNECTOR_API_ENDPOINTS,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
-  reportingPackDeliveriesEndpoint,
-  reportingPackDeliveryFailuresEndpoint,
   reportingTemplateApproveEndpoint,
   reportingTemplateRejectEndpoint,
   reportingTemplateSubmitEndpoint,
@@ -556,6 +549,8 @@ const csrfHeaderName = "X-CSRF-Token";
 
 export interface ApiRequestOptions {
   signal?: AbortSignal;
+  /** Disable development fixtures for authoritative or security-sensitive read paths. */
+  allowDevelopmentFallback?: boolean;
 }
 
 let developmentFixtureUsage = false;
@@ -746,7 +741,9 @@ async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promis
   });
 
   if (!response.ok) {
-    const fixture = await getDevelopmentFallback<T>(path, response.status);
+    const fixture = options.allowDevelopmentFallback === false
+      ? undefined
+      : await getDevelopmentFallback<T>(path, response.status);
     if (fixture !== undefined) {
       markDevelopmentFixtureUsage();
       return fixture;
@@ -2630,14 +2627,6 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
 
 export const { assessReportingRunReadiness, runReportingNow } = createReportingRunsApi(postJson);
 
-export function previewReportPack(request: FundReportPackPreviewRequest, options: ApiRequestOptions = {}) {
-  return postJson<FundReportPackPreview>(FUND_STRUCTURE_API_ENDPOINTS.reportPackPreview, request, options);
-}
-
-export function generateReportPack(request: FundReportPackGenerateRequest, options: ApiRequestOptions = {}) {
-  return postJson<FundReportPackSnapshot>(FUND_STRUCTURE_API_ENDPOINTS.reportPacks, request, options);
-}
-
 export function createReportTemplateDraft(request: ReportTemplateDraftRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportTemplateGovernanceRecord>(
     FUND_STRUCTURE_API_ENDPOINTS.reportingTemplateDrafts,
@@ -2693,26 +2682,6 @@ export function rejectReportTemplateDraft(
   );
 }
 
-export function deliverReportPack(
-  reportId: string,
-  request: ReportPackDeliveryRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ReportPackDeliveryAttempt>(reportingPackDeliveriesEndpoint(reportId), request, options);
-}
-
-export function recordReportPackDeliveryFailure(
-  reportId: string,
-  request: ReportPackDeliveryFailureRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ReportPackDeliveryAttempt>(reportingPackDeliveryFailuresEndpoint(reportId), request, options);
-}
-
-export function getReportPackDeliveryHistory(reportId: string, options: ApiRequestOptions = {}) {
-  return getJson<ReportPackDeliveryHistory>(reportingPackDeliveriesEndpoint(reportId), options);
-}
-
 export function listReportingSchedules(options: ApiRequestOptions = {}) {
   return getJson<ReportingScheduleRecord[]>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, options);
 }
@@ -2735,10 +2704,6 @@ export function resumeReportingSchedule(scheduleId: string, options: ApiRequestO
 
 export function runReportingScheduleNow(scheduleId: string, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRunResult>(reportingScheduleRunNowEndpoint(scheduleId), undefined, options);
-}
-
-export function runDueReportingSchedules(options: ApiRequestOptions = {}) {
-  return postJson<ReportingDueScheduleRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunDue, undefined, options);
 }
 
 export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {
@@ -4059,64 +4024,6 @@ export async function fetchQuantData(request: DataFetchRequest, options: ApiRequ
     bars,
     rowCount: response.totalBars || bars.length
   };
-}
-
-function quantContextToParameters(context: CellExecutionContext): Record<string, string | number | boolean | null> {
-  return {
-    symbol: context.symbol ?? null,
-    from: context.from ?? null,
-    to: context.to ?? null,
-    interval: context.interval ?? null
-  };
-}
-
-function mapQuantRunResponseToCellResult(
-  cellId: string,
-  response: import("@/types").QuantRunResponse
-): CellExecuteResult {
-  const output: CellOutput[] = [];
-
-  for (const line of response.consoleOutput.split(/\r?\n/).map((value) => value.trim()).filter(Boolean)) {
-    output.push({ kind: "console", text: line, tone: "default" });
-  }
-
-  for (const metric of response.metrics) {
-    output.push({ kind: "metric", text: `${metric.label}: ${metric.value}`, tone: "default" });
-  }
-
-  for (const diagnostic of [...response.compilationErrors, ...response.runtimeDiagnostics]) {
-    output.push({
-      kind: "error",
-      text: diagnostic.line > 0
-        ? `${diagnostic.severity}: ${diagnostic.message} (${diagnostic.line}:${diagnostic.column})`
-        : `${diagnostic.severity}: ${diagnostic.message}`,
-      tone: diagnostic.severity.toLowerCase() === "warning" ? "warning" : "danger"
-    });
-  }
-
-  if (response.runtimeError) {
-    output.push({ kind: "error", text: response.runtimeError, tone: "danger" });
-  }
-
-  return {
-    cellId,
-    success: response.success,
-    output,
-    elapsedMs: response.elapsedMs,
-    errorMessage: response.runtimeError ?? response.compilationErrors[0]?.message ?? null
-  };
-}
-
-function quantDataIntervalMinutes(interval: DataFetchRequest["interval"]): number {
-  switch (interval) {
-    case "minute":
-      return 1;
-    case "hourly":
-      return 60;
-    case "daily":
-    default:
-      return 1440;
-  }
 }
 
 export interface FundStructureSetupDraft {

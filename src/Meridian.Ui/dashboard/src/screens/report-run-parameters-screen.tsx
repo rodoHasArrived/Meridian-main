@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/select";
 import { describeApiError } from "@/lib/api-errors";
 import { assessReportingRunReadiness, getManualJournalEntryWorkbench, runReportingNow } from "@/lib/api";
 import { todayIsoDate } from "@/lib/reporting-periods";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
   ExportsReportRunner,
   type ExportsReportRunDraftField,
@@ -88,6 +88,7 @@ const idleReadinessPreflight: ReportingReadinessPreflightState = {
 
 export function ReportRunParametersScreen({ data, accounting }: ReportRunParametersScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const reporting = data?.reporting ?? null;
 
   const templates = useMemo(() => buildTemplateRows(reporting?.templates ?? []), [reporting?.templates]);
@@ -265,6 +266,23 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
   const authoritativeReadinessGate = readinessPreflight.phase === "complete"
     ? buildAuthoritativeReadinessGateViewState(readinessPreflight.readiness, standardDraft.finality)
     : null;
+  const normalizedRunRequest = useMemo<ReportingRunRequest | null>(() => {
+    if (
+      !readinessRequest
+      || !readinessRequestJson
+      || readinessPreflight.phase !== "complete"
+      || readinessPreflight.requestKey !== readinessRequestJson
+    ) {
+      return null;
+    }
+
+    return {
+      ...readinessRequest,
+      asOfDate: readinessPreflight.readiness.resolvedParameters.asOfDate,
+      template: readinessPreflight.readiness.resolvedTemplate,
+      parameters: readinessPreflight.readiness.resolvedParameters
+    };
+  }, [readinessPreflight, readinessRequest, readinessRequestJson]);
   const runBlockedReason = draft.restatementTargetRunId
     ? "Restatements must use the governed restatement-request workflow."
     : parameterValidation.issues[0]
@@ -313,7 +331,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
   };
 
   const onRun = async () => {
-    if (runningTemplateRunId || runBlockedReason || !readinessRequest) {
+    if (runningTemplateRunId || runBlockedReason || !normalizedRunRequest) {
       return;
     }
 
@@ -338,7 +356,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     });
 
     try {
-      const result = await runReportingNow(readinessRequest);
+      const result = await runReportingNow(normalizedRunRequest);
       setStatus({
         id: identity.id,
         label: "Report run",
@@ -351,6 +369,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
           items: [result.run.runId]
         }
       });
+      navigate(workstationRouteWithQuery("reportingRunDetail", { runId: result.run.runId }));
     } catch (error) {
       const description = describeApiError(error, `${identity.name} run failed.`);
       setStatus({
@@ -732,6 +751,19 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
                 onCheckedChange={(checked) => onStandardDraftChange("includeEvidenceAppendix", checked)}
               />
             </div>
+            <FormRow label="Ledger dimensions (JSON)" labelFor="report-ledger-dimensions" className="md:col-span-2">
+              <textarea
+                id="report-ledger-dimensions"
+                className="min-h-36 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                value={standardDraft.dimensionsJson}
+                onChange={(event) => onStandardDraftChange("dimensionsJson", event.target.value)}
+                aria-describedby="report-ledger-dimensions-help"
+                spellCheck={false}
+              />
+              <span id="report-ledger-dimensions-help" className="text-xs text-muted-foreground">
+                Optional canonical LedgerDimensionSet. Scalar values must be strings; externalGlDimensions must be an object of string mappings.
+              </span>
+            </FormRow>
             <FormRow label="Template parameters (JSON)" labelFor="report-template-parameters" className="md:col-span-2">
               <textarea
                 id="report-template-parameters"

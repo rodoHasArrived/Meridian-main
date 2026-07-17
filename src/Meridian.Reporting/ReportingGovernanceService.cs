@@ -97,7 +97,7 @@ public sealed class ReportingGovernanceService
                         toGovernance: GovernedReportingState.Draft,
                         fromRestatement: null,
                         toRestatement: null,
-                        note: $"series={run.SeriesId};revision={run.Revision}",
+                        note: ReportingGovernanceCanonicalValidation.BuildInitialRunAuditNote(run),
                         previousHash: null)
                 ]
             };
@@ -303,10 +303,17 @@ public sealed class ReportingGovernanceService
                     throw InvalidState(run, "approve only an InReview run");
                 }
 
-                if (StringComparer.Ordinal.Equals(run.CreationAuthority.ActorId, authority.ActorId))
+                if (StringComparer.OrdinalIgnoreCase.Equals(run.CreationAuthority.ActorId, authority.ActorId))
                 {
                     throw new ReportingGovernanceAuthorizationException(
                         "The run creator cannot approve the same run.");
+                }
+
+                if (run.Access.Mode == ReportingGovernanceAccessMode.Private
+                    && StringComparer.OrdinalIgnoreCase.Equals(run.Access.OwnerPrincipalId, authority.ActorId))
+                {
+                    throw new ReportingGovernanceAuthorizationException(
+                        "The private report owner cannot approve the same run.");
                 }
 
                 var now = _timeProvider.GetUtcNow();
@@ -349,27 +356,30 @@ public sealed class ReportingGovernanceService
                     throw InvalidState(run, "release only a successfully executed and approved run");
                 }
 
-                if (StringComparer.Ordinal.Equals(run.Approval.Authority.ActorId, authority.ActorId))
+                ReportingGovernanceCanonicalValidation.ValidateFinalReleaseSnapshot(run.Snapshot);
+
+                if (StringComparer.OrdinalIgnoreCase.Equals(run.Approval.Authority.ActorId, authority.ActorId))
                 {
                     throw new ReportingGovernanceAuthorizationException(
                         "The run approver cannot release the same run.");
                 }
 
                 var now = _timeProvider.GetUtcNow();
+                var release = new ReportingReleaseReceipt(
+                    authority,
+                    now,
+                    evidence.ManifestId,
+                    evidence.ManifestHash,
+                    evidence.Artifacts,
+                    evidence.EvidenceIds);
                 return Mutation.ForRun(
                     run with
                     {
                         GovernanceState = GovernedReportingState.Released,
-                        Release = new ReportingReleaseReceipt(
-                            authority,
-                            now,
-                            evidence.ManifestId,
-                            evidence.ManifestHash,
-                            evidence.Artifacts,
-                            evidence.EvidenceIds)
+                        Release = release
                     },
                     ReportingGovernanceAuditAction.RunReleased,
-                    $"manifest={evidence.ManifestId};hash={evidence.ManifestHash}",
+                    ReportingGovernanceCanonicalValidation.BuildReleaseAuditNote(release),
                     occurredAtUtc: now);
             });
     }
@@ -397,7 +407,8 @@ public sealed class ReportingGovernanceService
             EnsureAuthority(
                 authority,
                 predecessor.Scope,
-                ReportingGovernancePermission.RequestRestatement);
+                ReportingGovernancePermission.RequestRestatement,
+                humanRequired: true);
             EnsureAccess(predecessor.Access, authority);
 
             if (predecessor.GovernanceState != GovernedReportingState.Released || predecessor.Release is null)
@@ -422,7 +433,8 @@ public sealed class ReportingGovernanceService
                 ApprovedBy: null,
                 ApprovedAtUtc: null,
                 DraftRunId: null,
-                AuditTrail: []);
+                AuditTrail: [],
+                RequestedChangedLines: command.ChangedLines);
 
             request = request with
             {
@@ -442,7 +454,7 @@ public sealed class ReportingGovernanceService
                         toGovernance: null,
                         fromRestatement: null,
                         toRestatement: ReportingRestatementRequestState.PendingApproval,
-                        command.Reason,
+                        ReportingGovernanceCanonicalValidation.BuildRestatementRequestAuditNote(request),
                         previousHash: null)
                 ]
             };
@@ -489,7 +501,7 @@ public sealed class ReportingGovernanceService
                 humanRequired: true);
             EnsureAccess(predecessor.Access, authority);
 
-            if (StringComparer.Ordinal.Equals(request.RequestedBy.ActorId, authority.ActorId))
+            if (StringComparer.OrdinalIgnoreCase.Equals(request.RequestedBy.ActorId, authority.ActorId))
             {
                 throw new ReportingGovernanceAuthorizationException(
                     "The restatement requester cannot approve the same request.");
@@ -505,7 +517,11 @@ public sealed class ReportingGovernanceService
                     "The released predecessor no longer matches the restatement request.");
             }
 
-            ValidateSnapshot(command.ReplacementSnapshot, predecessor.Scope);
+            ReportingGovernanceCanonicalValidation.ValidateSnapshot(
+                command.ReplacementSnapshot,
+                predecessor.Scope);
+            RequireText(command.ReplacementRunId, nameof(command.ReplacementRunId));
+            ValidateChangedLines(command.ChangedLines);
 
             var revisions = await transaction.ListRunsBySeriesAsync(
                 predecessor.Scope.TenantId,
@@ -520,7 +536,12 @@ public sealed class ReportingGovernanceService
             }
 
             var now = _timeProvider.GetUtcNow();
-            var draftRunId = RequireGeneratedId(_idFactory("report-run"));
+            var draftRunId = command.ReplacementRunId.Trim();
+            if (await transaction.GetRunAsync(authority.TenantId, draftRunId, ct) is not null)
+            {
+                throw new ReportingGovernanceConcurrencyException(
+                    $"Replacement reporting run '{draftRunId}' already exists.");
+            }
             var draftRun = new GovernedReportingRun(
                 draftRunId,
                 predecessor.SeriesId,
@@ -530,7 +551,7 @@ public sealed class ReportingGovernanceService
                 predecessor.Scope,
                 predecessor.Access,
                 command.ReplacementSnapshot,
-                request.RequestedBy,
+                authority,
                 now,
                 predecessor.RunId,
                 GovernedReportingExecutionState.Queued,
@@ -539,7 +560,8 @@ public sealed class ReportingGovernanceService
                 Readiness: null,
                 Approval: null,
                 Release: null,
-                AuditTrail: []);
+                AuditTrail: [],
+                RestatementRequestId: request.RequestId);
 
             draftRun = draftRun with
             {
@@ -559,12 +581,21 @@ public sealed class ReportingGovernanceService
                         toGovernance: GovernedReportingState.Draft,
                         fromRestatement: null,
                         toRestatement: null,
-                        note: $"predecessor={predecessor.RunId};request={request.RequestId}",
+                        note: ReportingGovernanceCanonicalValidation.BuildRestatementDraftAuditNote(draftRun),
                         previousHash: null)
                 ]
             };
 
             var requestVersion = checked(request.Version + 1);
+            var approvedRequest = request with
+            {
+                State = ReportingRestatementRequestState.Approved,
+                Version = requestVersion,
+                ApprovedBy = authority,
+                ApprovedAtUtc = now,
+                DraftRunId = draftRun.RunId,
+                ChangedLines = command.ChangedLines
+            };
             var requestAudit = CreateAuditEntry(
                 ReportingGovernanceAuditAggregateKind.RestatementRequest,
                 request.RequestId,
@@ -579,18 +610,18 @@ public sealed class ReportingGovernanceService
                 toGovernance: null,
                 fromRestatement: request.State,
                 toRestatement: ReportingRestatementRequestState.Approved,
-                note: $"draft={draftRun.RunId}",
+                note: ReportingGovernanceCanonicalValidation.BuildRestatementApprovalAuditNote(approvedRequest),
                 previousHash: LastHash(request.AuditTrail));
 
-            var approvedRequest = request with
+            approvedRequest = approvedRequest with
             {
-                State = ReportingRestatementRequestState.Approved,
-                Version = requestVersion,
-                ApprovedBy = authority,
-                ApprovedAtUtc = now,
-                DraftRunId = draftRun.RunId,
                 AuditTrail = SafeAudit(request.AuditTrail).Add(requestAudit)
             };
+
+            ReportingGovernanceCanonicalValidation.ValidateRestatementBinding(
+                approvedRequest,
+                predecessor,
+                draftRun);
 
             await transaction.ReplaceRestatementRequestAsync(
                 authority.TenantId,
@@ -704,135 +735,17 @@ public sealed class ReportingGovernanceService
 
     private static void ValidateCreationRequest(ReportingRunCreationRequest request)
     {
-        RequireText(request.RunId, nameof(request.RunId));
-        RequireText(request.SeriesId, nameof(request.SeriesId));
-        RequireText(request.TemplateId, nameof(request.TemplateId));
-        RequireText(request.TemplateVersion, nameof(request.TemplateVersion));
-        ValidateScope(request.Scope);
-        ValidateAccess(request.Access);
-        ValidateSnapshot(request.Snapshot, request.Scope);
-    }
-
-    private static void ValidateScope(ReportingOperationalScope scope)
-    {
-        ArgumentNullException.ThrowIfNull(scope);
-        RequireText(scope.TenantId, nameof(scope.TenantId));
-        RequireText(scope.OrganizationId, nameof(scope.OrganizationId));
-        RequireText(scope.BookId, nameof(scope.BookId));
-        RequireText(scope.PeriodId, nameof(scope.PeriodId));
-    }
-
-    private static void ValidateAccess(ReportingAccessScope access)
-    {
-        ArgumentNullException.ThrowIfNull(access);
-        RequireText(access.PolicyId, nameof(access.PolicyId));
-        RequireText(access.PolicyVersion, nameof(access.PolicyVersion));
-        RequireText(access.PolicyHash, nameof(access.PolicyHash));
-
-        if (access.Mode == ReportingGovernanceAccessMode.Private)
-        {
-            RequireText(access.OwnerPrincipalId, nameof(access.OwnerPrincipalId));
-        }
-
-        if (access.Mode == ReportingGovernanceAccessMode.Restricted && access.PrincipalIds.IsDefaultOrEmpty)
-        {
-            throw new ReportingGovernanceException(
-                "Restricted reporting access requires at least one principal.");
-        }
-
-        if (!access.PrincipalIds.IsDefaultOrEmpty &&
-            (access.PrincipalIds.Any(string.IsNullOrWhiteSpace) ||
-             access.PrincipalIds.Distinct(StringComparer.Ordinal).Count() != access.PrincipalIds.Length))
-        {
-            throw new ReportingGovernanceException(
-                "Reporting access principals must be non-empty and unique.");
-        }
-    }
-
-    private static void ValidateSnapshot(
-        ReportingCertifiedSnapshotScope snapshot,
-        ReportingOperationalScope scope)
-    {
-        ArgumentNullException.ThrowIfNull(snapshot);
-        RequireText(snapshot.SnapshotId, nameof(snapshot.SnapshotId));
-        RequireText(snapshot.SnapshotHash, nameof(snapshot.SnapshotHash));
-        RequireText(snapshot.ReconciliationCheckpointId, nameof(snapshot.ReconciliationCheckpointId));
-
-        if (!StringComparer.Ordinal.Equals(snapshot.TenantId, scope.TenantId) ||
-            !StringComparer.Ordinal.Equals(snapshot.OrganizationId, scope.OrganizationId) ||
-            !StringComparer.Ordinal.Equals(snapshot.CompanyId, scope.CompanyId) ||
-            !StringComparer.Ordinal.Equals(snapshot.FundId, scope.FundId) ||
-            !StringComparer.Ordinal.Equals(snapshot.BookId, scope.BookId) ||
-            !StringComparer.Ordinal.Equals(snapshot.PeriodId, scope.PeriodId))
-        {
-            throw new ReportingGovernanceException(
-                "The certified snapshot scope must exactly match the reporting operational scope.");
-        }
+        ReportingGovernanceCanonicalValidation.ValidateCreationRequest(request);
     }
 
     private static void ValidateReadiness(ReportingReadinessReceipt readiness, GovernedReportingRun run)
-    {
-        RequireText(readiness.ReceiptId, nameof(readiness.ReceiptId));
-        RequireText(readiness.ReceiptHash, nameof(readiness.ReceiptHash));
-
-        if (!StringComparer.Ordinal.Equals(readiness.RunId, run.RunId) ||
-            !StringComparer.Ordinal.Equals(readiness.TenantId, run.Scope.TenantId) ||
-            !StringComparer.Ordinal.Equals(readiness.SnapshotId, run.Snapshot.SnapshotId) ||
-            !StringComparer.Ordinal.Equals(readiness.SnapshotHash, run.Snapshot.SnapshotHash))
-        {
-            throw new ReportingGovernanceException(
-                "The readiness receipt is not bound to this run, tenant, and certified snapshot.");
-        }
-
-        if (!readiness.IsReady ||
-            readiness.Checks.Any(check => string.IsNullOrWhiteSpace(check.CheckId)) ||
-            readiness.Checks.Select(static check => check.CheckId).Distinct(StringComparer.Ordinal).Count() != readiness.Checks.Length ||
-            readiness.Checks.Any(static check =>
-                check.EvidenceIds.Any(string.IsNullOrWhiteSpace) ||
-                check.EvidenceIds.Distinct(StringComparer.Ordinal).Count() != check.EvidenceIds.Length))
-        {
-            throw new ReportingGovernanceException(
-                "The readiness receipt must contain unique passing checks with evidence.");
-        }
-    }
+        => ReportingGovernanceCanonicalValidation.ValidateReadiness(readiness, run);
 
     private static void ValidateReleaseEvidence(ReportingReleaseEvidence evidence)
-    {
-        RequireText(evidence.ManifestId, nameof(evidence.ManifestId));
-        RequireText(evidence.ManifestHash, nameof(evidence.ManifestHash));
-        if (evidence.Artifacts.IsDefaultOrEmpty || evidence.EvidenceIds.IsDefaultOrEmpty)
-        {
-            throw new ReportingGovernanceException(
-                "Release requires an artifact manifest and supporting evidence.");
-        }
-
-        if (evidence.Artifacts.Any(static artifact =>
-                string.IsNullOrWhiteSpace(artifact.ArtifactId) ||
-                string.IsNullOrWhiteSpace(artifact.ArtifactHash) ||
-                artifact.ByteLength <= 0) ||
-            evidence.Artifacts.Select(static artifact => artifact.ArtifactId).Distinct(StringComparer.Ordinal).Count() != evidence.Artifacts.Length ||
-            evidence.EvidenceIds.Any(string.IsNullOrWhiteSpace) ||
-            evidence.EvidenceIds.Distinct(StringComparer.Ordinal).Count() != evidence.EvidenceIds.Length)
-        {
-            throw new ReportingGovernanceException(
-                "Release artifacts and evidence must be complete and unique.");
-        }
-    }
+        => ReportingGovernanceCanonicalValidation.ValidateReleaseEvidence(evidence);
 
     private static void ValidateChangedLines(ImmutableArray<ReportingRestatementChangedLine> changedLines)
-    {
-        if (changedLines.IsDefaultOrEmpty ||
-            changedLines.Any(static line =>
-                string.IsNullOrWhiteSpace(line.LineKey) ||
-                StringComparer.Ordinal.Equals(line.PreviousValue, line.CurrentValue) ||
-                line.EvidenceIds.IsDefaultOrEmpty ||
-                line.EvidenceIds.Any(string.IsNullOrWhiteSpace)) ||
-            changedLines.Select(static line => line.LineKey).Distinct(StringComparer.Ordinal).Count() != changedLines.Length)
-        {
-            throw new ReportingGovernanceException(
-                "A restatement requires unique changed lines, different values, and evidence.");
-        }
-    }
+        => ReportingGovernanceCanonicalValidation.ValidateChangedLines(changedLines);
 
     private static void EnsureAuthority(
         ReportingAuthorityScope authority,
@@ -870,10 +783,17 @@ public sealed class ReportingGovernanceService
         {
             ReportingGovernanceAccessMode.CompanyWide => true,
             ReportingGovernanceAccessMode.Private =>
-                StringComparer.Ordinal.Equals(access.OwnerPrincipalId, authority.ActorId),
+                (access.AllowOwnerAccess
+                    && StringComparer.OrdinalIgnoreCase.Equals(access.OwnerPrincipalId, authority.ActorId))
+                || (!access.Principals.IsDefaultOrEmpty
+                    && access.Principals.Any(principal =>
+                        principal.Kind == ReportingAccessPrincipalKind.User
+                        && authority.Matches(principal))),
             ReportingGovernanceAccessMode.Restricted =>
-                (!string.IsNullOrWhiteSpace(access.OwnerPrincipalId) && authority.HasPrincipal(access.OwnerPrincipalId)) ||
-                (!access.PrincipalIds.IsDefaultOrEmpty && access.PrincipalIds.Any(authority.HasPrincipal)),
+                access.AllowOwnerAccess
+                && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
+                && StringComparer.OrdinalIgnoreCase.Equals(access.OwnerPrincipalId, authority.ActorId)
+                || (!access.Principals.IsDefaultOrEmpty && access.Principals.Any(authority.Matches)),
             _ => false
         };
 
@@ -1002,6 +922,7 @@ public static class ReportingGovernanceAuditChain
         Append(canonical, entry.Authority.TenantId);
         Append(canonical, entry.Authority.OrganizationId);
         Append(canonical, entry.Authority.CompanyId);
+        Append(canonical, entry.Authority.Permissions.Length);
         foreach (var permission in entry.Authority.Permissions.OrderBy(static permission => permission))
         {
             Append(canonical, (int)permission);
@@ -1009,6 +930,16 @@ public static class ReportingGovernanceAuditChain
 
         Append(canonical, (int)entry.Authority.Origin);
         Append(canonical, entry.Authority.CorrelationId);
+        Append(canonical, entry.Authority.PrincipalIds.IsDefault
+            ? 0
+            : entry.Authority.PrincipalIds.Length);
+        if (!entry.Authority.PrincipalIds.IsDefaultOrEmpty)
+        {
+            foreach (var principalId in entry.Authority.PrincipalIds.Order(StringComparer.Ordinal))
+            {
+                Append(canonical, principalId);
+            }
+        }
         Append(canonical, (int)entry.PermissionUsed);
         Append(canonical, entry.FromExecutionState is null ? null : (int)entry.FromExecutionState.Value);
         Append(canonical, entry.ToExecutionState is null ? null : (int)entry.ToExecutionState.Value);

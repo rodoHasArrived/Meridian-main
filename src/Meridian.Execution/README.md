@@ -51,6 +51,12 @@ a configured validation gate, resolved Security Master identity, non-blocked val
 metadata that preserves the Security Master ID, fill ID, symbol, posting scope, and gate evidence for
 provenance. `UiServer` intentionally supplies no ledger consumer by default because its paper
 portfolios may own session ledgers and the host has no safe global book/period scope.
+The independent `ITradeFillHandoffFailureStore` must declare the same exact posting scope as the
+ledger consumer; composition fails before startup when the scopes differ, so restart recovery cannot
+route a prior book or period's fill into the current ledger. OMS disposal closes public-operation
+admission and drains operations admitted before shutdown, including an in-flight broker submit and
+its synchronous fill handoff, before cancelling intake and awaiting both report and retained-handoff
+pumps. The publisher or failure store can therefore be disposed only after every OMS access ends.
 The book-owning caller must provide the ledger's persistence/hydration lifecycle and must not attach
 this publisher to a `PaperTradingPortfolio` that already posts the same fills into that ledger.
 For sell accounting, the caller must also attach portfolio state that supplies the fill's realized

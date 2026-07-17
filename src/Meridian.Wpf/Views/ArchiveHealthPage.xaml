@@ -21,7 +21,7 @@
                                    FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
                     </Border>
                     <TextBlock Text="Archive Health" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
-                    <Border x:Name="HealthStatusBadge" Background="#48BB78" CornerRadius="999" Padding="8,4" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <Border x:Name="HealthStatusBadge" Background="{StaticResource SignalPositiveBrush}" CornerRadius="999" Padding="8,4" VerticalAlignment="Center" Margin="12,0,0,0">
                         <TextBlock x:Name="HealthStatusText" Text="Healthy" FontSize="12" Foreground="White" />
                     </Border>
                 </StackPanel>
@@ -107,17 +107,17 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1">
-                                <TextBlock x:Name="VerifiedFilesText" Text="0" Style="{StaticResource MetricValueStyle}" Foreground="#48BB78" />
+                                <TextBlock x:Name="VerifiedFilesText" Text="0" Style="{StaticResource MetricValueStyle}" Foreground="{StaticResource SignalPositiveBrush}" />
                                 <TextBlock Text="Verified" Style="{StaticResource ConsoleTextMutedStyle}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">
-                                <TextBlock x:Name="PendingFilesText" Text="0" Style="{StaticResource MetricValueStyle}" Foreground="#ED8936" />
+                                <TextBlock x:Name="PendingFilesText" Text="0" Style="{StaticResource MetricValueStyle}" Foreground="{StaticResource SignalWarningBrush}" />
                                 <TextBlock Text="Pending" Style="{StaticResource ConsoleTextMutedStyle}" />
                             </StackPanel>
 
                             <StackPanel Grid.Column="3">
-                                <TextBlock x:Name="FailedFilesText" Text="0" Style="{StaticResource MetricValueStyle}" Foreground="#F56565" />
+                                <TextBlock x:Name="FailedFilesText" Text="0" Style="{StaticResource MetricValueStyle}" Foreground="{StaticResource SignalNegativeBrush}" />
                                 <TextBlock Text="Failed" Style="{StaticResource ConsoleTextMutedStyle}" />
                             </StackPanel>
                         </Grid>
@@ -213,9 +213,9 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                             <TextBlock Text="&#xE7BA;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="16" Foreground="#F56565" Margin="0,0,8,0" />
+                                       FontSize="16" Foreground="{StaticResource SignalNegativeBrush}" Margin="0,0,8,0" />
                             <TextBlock Text="Active Issues" Style="{StaticResource CardHeaderStyle}" />
-                            <Border x:Name="IssueCountBadge" Background="#F56565" CornerRadius="999" Padding="8,3"
+                            <Border x:Name="IssueCountBadge" Background="{StaticResource SignalNegativeBrush}" CornerRadius="999" Padding="8,3"
                                     Visibility="Collapsed" Margin="8,0,0,0">
                                 <TextBlock x:Name="IssueCountText" Text="0" FontSize="12" Foreground="White" />
                             </Border>
@@ -252,7 +252,7 @@
 
                         <TextBlock x:Name="NoIssuesText" Text="No issues detected. Archive is healthy!"
                                    Visibility="Visible" Style="{StaticResource ConsoleTextMutedStyle}"
-                                   Foreground="#48BB78" HorizontalAlignment="Center" />
+                                   Foreground="{StaticResource SignalPositiveBrush}" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Border>
 

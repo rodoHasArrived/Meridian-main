@@ -122,6 +122,8 @@ public sealed class WebSocketProviderBaseTests
         snapshot.MaxRequestsPerWindow.Should().Be(0);
         snapshot.Window.Should().Be(TimeSpan.Zero);
         snapshot.IsRateLimited.Should().BeFalse();
+        snapshot.MaxRequestsPerWindow.Should().Be(0);
+        snapshot.Window.Should().Be(TimeSpan.Zero);
         snapshot.Reason.Should().Be("runtime-diagnostics-unavailable");
     }
 

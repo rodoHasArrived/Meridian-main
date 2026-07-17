@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Channels;
@@ -18,7 +19,7 @@ namespace Meridian.Execution;
 /// for backpressure-aware execution event processing.
 /// </summary>
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
-public sealed class OrderManagementSystem : IOrderManager, IDisposable
+public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
@@ -43,7 +44,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<ExecutionReport, FillProcessingProgress> _fillProcessing = new();
     private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
+    private readonly object _disposeSync = new();
+    private Task? _disposeTask;
+    private TaskCompletionSource? _operationsDrained;
     private int _orderSequence;
+    private int _activeOperations;
+    private int _disposeStarted;
 
     private const int MaxTrackedFillReports = 4096;
     private static readonly TimeSpan InitialReportStreamRetryDelay = TimeSpan.FromSeconds(1);
@@ -76,6 +82,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         _brokerageConfiguration = brokerageConfiguration;
         _tradeEventPublisher = tradeEventPublisher;
         _tradeFillHandoffFailureStore = tradeFillHandoffFailureStore;
+        if (tradeFillHandoffFailureStore is not null
+            && tradeEventPublisher is not IScopedTradeEventPublisher)
+        {
+            throw new ArgumentException(
+                "A handoff-failure store requires a scope-bound accounting publisher.",
+                nameof(tradeEventPublisher));
+        }
+        if (tradeEventPublisher is IScopedTradeEventPublisher scopedPublisher
+            && tradeFillHandoffFailureStore is not null
+            && !string.Equals(
+                scopedPublisher.PostingScope,
+                tradeFillHandoffFailureStore.PostingScope,
+                StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                $"Accounting publisher scope '{scopedPublisher.PostingScope}' does not match handoff-failure store scope '{tradeFillHandoffFailureStore.PostingScope}'.",
+                nameof(tradeFillHandoffFailureStore));
+        }
         _options = options ?? new OrderManagementSystemOptions();
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
@@ -102,6 +126,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     public async Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        using var operation = EnterOperation();
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
         var brokerName = _gateway.GatewayId;
@@ -320,9 +345,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         }
 
         if (safeRequest.FundAccountId is { } fundAccountId)
+        {
             _orderFinancialAccountIds[orderId] = fundAccountId.ToString("D");
+        }
         else
+        {
+            // A terminal client-order id may be reused. Do not let the prior order's
+            // accounting scope leak into fills for an unscoped replacement order.
             _orderFinancialAccountIds.TryRemove(orderId, out _);
+        }
 
         TrimRetainedOrdersIfNeeded();
         if (!string.IsNullOrWhiteSpace(sessionId))
@@ -466,6 +497,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// <inheritdoc />
     public async Task<OrderResult> CancelOrderAsync(string orderId, CancellationToken ct = default)
     {
+        using var operation = EnterOperation();
+        return await CancelOrderCoreAsync(orderId, ct).ConfigureAwait(false);
+    }
+
+    private async Task<OrderResult> CancelOrderCoreAsync(string orderId, CancellationToken ct)
+    {
         if (!_orders.TryGetValue(orderId, out var state))
         {
             await RecordOrderLifecycleAuditAsync(
@@ -526,6 +563,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// <inheritdoc />
     public async Task<OrderResult> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
     {
+        using var operation = EnterOperation();
+
         if (!_orders.TryGetValue(orderId, out var state))
         {
             await RecordOrderLifecycleAuditAsync(
@@ -617,6 +656,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// <inheritdoc />
     public async Task CancelAllAsync(CancellationToken ct = default)
     {
+        using var operation = EnterOperation();
+
         var openOrders = GetOpenOrders();
         _logger.LogInformation("Cancelling all {Count} open orders", openOrders.Count);
 
@@ -629,22 +670,75 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             },
             async (order, token) =>
             {
-                await CancelOrderAsync(order.OrderId, token).ConfigureAwait(false);
+                await CancelOrderCoreAsync(order.OrderId, token).ConfigureAwait(false);
             }).ConfigureAwait(false);
     }
 
     public void Dispose()
-    {
-        _reportPumpCts.Cancel();
-        _executionChannel.Writer.TryComplete();
+        => DisposeAsync().AsTask().GetAwaiter().GetResult();
 
-        // Dispose the CTS only after the pump has finished using its token.
-        Task.WhenAll(_reportPumpTask, _handoffRecoveryTask).ContinueWith(
-            static (_, state) => ((CancellationTokenSource)state!).Dispose(),
-            _reportPumpCts,
-            CancellationToken.None,
-            TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default);
+    /// <summary>
+    /// Stops report intake and awaits both the broker-report and retained-handoff pumps before
+    /// returning. Dependency injection can therefore dispose the accounting publisher and
+    /// failure store only after no OMS task can use them.
+    /// </summary>
+    public ValueTask DisposeAsync()
+    {
+        lock (_disposeSync)
+        {
+            Interlocked.Exchange(ref _disposeStarted, 1);
+            if (_disposeTask is not null)
+                return new ValueTask(_disposeTask);
+
+            var operationsDrained = _activeOperations == 0
+                ? Task.CompletedTask
+                : (_operationsDrained ??= new TaskCompletionSource(
+                    TaskCreationOptions.RunContinuationsAsynchronously)).Task;
+            _disposeTask = DisposeCoreAsync(operationsDrained);
+            return new ValueTask(_disposeTask);
+        }
+    }
+
+    private async Task DisposeCoreAsync(Task operationsDrained)
+    {
+        // Do not cancel report intake until every operation admitted before disposal has
+        // completed. In particular, a broker submit may return a fill whose accounting
+        // handoff still needs to reach the primary publisher or durable fallback.
+        await Task.Yield();
+        await operationsDrained.ConfigureAwait(false);
+
+        Exception? shutdownFailure = null;
+        try
+        {
+            await _reportPumpCts.CancelAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            shutdownFailure = ex;
+        }
+
+        try
+        {
+            await Task.WhenAll(_reportPumpTask, _handoffRecoveryTask).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_reportPumpCts.IsCancellationRequested)
+        {
+            // Expected when shutdown interrupts a gateway read or retained-handoff load.
+        }
+        catch (Exception ex)
+        {
+            shutdownFailure = shutdownFailure is null
+                ? ex
+                : new AggregateException(shutdownFailure, ex);
+        }
+        finally
+        {
+            _executionChannel.Writer.TryComplete();
+            _reportPumpCts.Dispose();
+        }
+
+        if (shutdownFailure is not null)
+            ExceptionDispatchInfo.Capture(shutdownFailure).Throw();
     }
 
     /// <summary>
@@ -663,8 +757,42 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     /// </summary>
     public Task<IReadOnlyList<RetainedTradeFillHandoffFailure>> GetAccountingHandoffFailuresAsync(
         CancellationToken ct = default)
-        => _tradeFillHandoffFailureStore?.LoadPendingAsync(ct)
-           ?? Task.FromResult<IReadOnlyList<RetainedTradeFillHandoffFailure>>([]);
+        => GetAccountingHandoffFailuresCoreAsync(ct);
+
+    private async Task<IReadOnlyList<RetainedTradeFillHandoffFailure>> GetAccountingHandoffFailuresCoreAsync(
+        CancellationToken ct)
+    {
+        using var operation = EnterOperation();
+        return _tradeFillHandoffFailureStore is null
+            ? []
+            : await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
+    }
+
+    private OperationLease EnterOperation()
+    {
+        lock (_disposeSync)
+        {
+            if (_disposeStarted != 0)
+                throw new ObjectDisposedException(nameof(OrderManagementSystem));
+
+            checked
+            {
+                _activeOperations++;
+            }
+
+            return new OperationLease(this);
+        }
+    }
+
+    private void ExitOperation()
+    {
+        lock (_disposeSync)
+        {
+            _activeOperations--;
+            if (_activeOperations == 0)
+                _operationsDrained?.TrySetResult();
+        }
+    }
 
     private string GenerateOrderId()
     {
@@ -1419,6 +1547,14 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             _orderSessionIds.TryRemove(removableOrderId, out _);
             _orderFinancialAccountIds.TryRemove(removableOrderId, out _);
         }
+    }
+
+    private sealed class OperationLease(OrderManagementSystem owner) : IDisposable
+    {
+        private OrderManagementSystem? _owner = owner;
+
+        public void Dispose()
+            => Interlocked.Exchange(ref _owner, null)?.ExitOperation();
     }
 
     private sealed class FillProcessingProgress(

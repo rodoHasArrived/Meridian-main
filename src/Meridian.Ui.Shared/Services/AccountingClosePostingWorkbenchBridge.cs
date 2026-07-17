@@ -1,8 +1,13 @@
+using System.Collections.Immutable;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -20,17 +25,23 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
     // ledger (Postgres) is configured. Without it the close-posting gate degrades to Blocked
     // rather than failing composition, matching the workstation's "durable ledger optional" pattern.
     private readonly ILedgerBookService? _ledgerBookService;
+    private readonly ReportingReconciliationEvidenceRetentionService? _reportingEvidenceRetention;
+    private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
 
     public AccountingClosePostingWorkbenchBridge(
         AutomatedJournalIntakeRunner runner,
         IManualJournalEntryWorkbenchService workbench,
         IManualJournalEntryLifecycleService lifecycle,
-        ILedgerBookService? ledgerBookService)
+        ILedgerBookService? ledgerBookService,
+        ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention = null,
+        IFundProfileTenancyRegistry? tenancyRegistry = null)
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _workbench = workbench ?? throw new ArgumentNullException(nameof(workbench));
         _lifecycle = lifecycle ?? throw new ArgumentNullException(nameof(lifecycle));
         _ledgerBookService = ledgerBookService;
+        _reportingEvidenceRetention = reportingEvidenceRetention;
+        _tenancyRegistry = tenancyRegistry;
     }
 
     private const string LedgerUnavailableDetail =
@@ -115,10 +126,22 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
         ValidateContext(context);
         ValidateHumanCommand(command, requireController: false);
         var scope = await ResolveScopeAsync(context, ct).ConfigureAwait(false);
-        var ledgerBookService = _ledgerBookService!;
         var period = scope.Period;
         if (period.Status == LedgerPeriodStatusDto.HardClosed)
         {
+            await LockPostedClosingBatchesAfterHardCloseAsync(
+                    context,
+                    scope.FundProfileId,
+                    period,
+                    command,
+                    ct)
+                .ConfigureAwait(false);
+            await RetainHardCloseReportingEvidenceAsync(
+                    context,
+                    scope.FundProfileId,
+                    period,
+                    ct)
+                .ConfigureAwait(false);
             return period;
         }
 
@@ -148,7 +171,239 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                     ActionOrigin: command.ActionOrigin),
                 ct)
             .ConfigureAwait(false);
+        await LockPostedClosingBatchesAfterHardCloseAsync(
+                context,
+                scope.FundProfileId,
+                closed.Period,
+                command,
+                ct)
+            .ConfigureAwait(false);
+        await RetainHardCloseReportingEvidenceAsync(
+                context,
+                scope.FundProfileId,
+                closed.Period,
+                ct,
+                closed.Summary)
+            .ConfigureAwait(false);
         return closed.Period;
+    }
+
+    private async Task RetainHardCloseReportingEvidenceAsync(
+        AccountingClosePostingContext context,
+        string fundProfileId,
+        LedgerPeriodDto period,
+        CancellationToken ct,
+        LedgerPeriodSummaryDto? summary = null)
+    {
+        if (period.Status != LedgerPeriodStatusDto.HardClosed)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{period.Label}' is not hard-closed and cannot produce final-reporting reconciliation evidence.");
+        }
+
+        var completionId = $"hard-close-{period.PeriodId:N}-v{period.Version.ToString(CultureInfo.InvariantCulture)}";
+        try
+        {
+            var retention = _reportingEvidenceRetention
+                ?? throw new InvalidOperationException(
+                    "The durable reporting reconciliation evidence store is not configured.");
+            var tenancy = _tenancyRegistry
+                ?? throw new InvalidOperationException(
+                    "The authoritative fund tenancy registry is not configured.");
+            var ownership = await tenancy.ResolveAsync(fundProfileId, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException(
+                    $"Fund profile '{fundProfileId}' has no authoritative tenant/company binding.");
+            if (string.IsNullOrWhiteSpace(ownership.TenantId)
+                || string.IsNullOrWhiteSpace(ownership.CompanyId))
+            {
+                throw new InvalidOperationException(
+                    $"Fund profile '{fundProfileId}' has no complete tenant/company binding.");
+            }
+
+            summary ??= await RequireLedgerBookService()
+                .GetPeriodSummaryAsync(period.PeriodId, ct)
+                .ConfigureAwait(false)
+                ?? throw new InvalidOperationException(
+                    $"Hard-closed period '{period.PeriodId:D}' has no retained close summary.");
+            var completedAtUtc = (period.ClosedAt ?? summary.CompletedAt).ToUniversalTime();
+            var evidenceIds = ImmutableArray.Create(
+                $"ledger-period:{period.PeriodId:D}:version:{period.Version.ToString(CultureInfo.InvariantCulture)}:hard-closed",
+                $"trial-balance:{summary.TotalDebits.ToString("G29", CultureInfo.InvariantCulture)}:{summary.TotalCredits.ToString("G29", CultureInfo.InvariantCulture)}",
+                $"reconciliation-breaks:{summary.OpenBreakCount.ToString(CultureInfo.InvariantCulture)}",
+                $"close-signoff:{summary.SignoffStatus}");
+            var completionHash = ComputeHardCloseCompletionHash(
+                context,
+                fundProfileId,
+                period,
+                summary,
+                completedAtUtc,
+                evidenceIds);
+            var parameters = new ReportingRunParametersDto(
+                new ReportingRunScopeDto(fundProfileId),
+                period.PeriodId.ToString("D"),
+                period.EndDate,
+                new ReportingLedgerBookSelectionDto(context.LedgerBookId),
+                MapReportingBasis(period.AccountingBasis),
+                context.Currency.Trim().ToUpperInvariant(),
+                ReportingConsolidationLevelDto.Fund,
+                ReportingOutputFormatDto.EvidenceVault,
+                ReportingFinalityDto.Final,
+                IncludeSupportingSchedules: true,
+                IncludeEvidenceAppendix: true);
+            var access = new ReportAccessQueryContext(
+                ActorPrincipalId: "reporting-close-evidence-retention",
+                GroupPrincipalIds: [],
+                CompanyId: ownership.CompanyId.Trim(),
+                HasGlobalOverride: false,
+                TenantId: ownership.TenantId.Trim(),
+                RequireBoundScope: true);
+            await retention.RetainCompletionAsync(
+                    parameters,
+                    access,
+                    new ReportingReconciliationCompletionEvidence(
+                        completionId,
+                        completionHash,
+                        completedAtUtc,
+                        HasOpenBreaks: summary.OpenBreakCount > 0,
+                        evidenceIds),
+                    ct)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception) when (exception is not ReportingCloseEvidenceHandoffException)
+        {
+            throw new ReportingCloseEvidenceHandoffException(
+                period,
+                completionId,
+                $"Ledger hard close is committed, but final-reporting evidence retention is pending and must be retried idempotently: {exception.Message}",
+                exception);
+        }
+    }
+
+    private static string ComputeHardCloseCompletionHash(
+        AccountingClosePostingContext context,
+        string fundProfileId,
+        LedgerPeriodDto period,
+        LedgerPeriodSummaryDto summary,
+        DateTimeOffset completedAtUtc,
+        ImmutableArray<string> evidenceIds)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("workflowId", context.WorkflowId);
+            writer.WriteString("fundProfileId", fundProfileId.Trim());
+            writer.WriteString("ledgerBookId", period.LedgerBookId);
+            writer.WriteString("periodId", period.PeriodId);
+            writer.WriteNumber("periodVersion", period.Version);
+            writer.WriteString("accountingBasis", period.AccountingBasis.ToString());
+            writer.WriteString("completedAtUtc", completedAtUtc.ToString("O", CultureInfo.InvariantCulture));
+            writer.WriteString("totalDebits", summary.TotalDebits.ToString("G29", CultureInfo.InvariantCulture));
+            writer.WriteString("totalCredits", summary.TotalCredits.ToString("G29", CultureInfo.InvariantCulture));
+            writer.WriteNumber("openBreakCount", summary.OpenBreakCount);
+            writer.WriteString("signoffStatus", summary.SignoffStatus.ToString());
+            writer.WriteStartArray("evidenceIds");
+            foreach (var evidenceId in evidenceIds.OrderBy(static value => value, StringComparer.Ordinal))
+            {
+                writer.WriteStringValue(evidenceId);
+            }
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+
+        return Convert.ToHexString(SHA256.HashData(stream.ToArray())).ToLowerInvariant();
+    }
+
+    private static ReportingAccountingBasisDto MapReportingBasis(AccountingBasisKindDto basis) => basis switch
+    {
+        AccountingBasisKindDto.Gaap => ReportingAccountingBasisDto.Gaap,
+        AccountingBasisKindDto.Tax => ReportingAccountingBasisDto.Tax,
+        AccountingBasisKindDto.Cash => ReportingAccountingBasisDto.Cash,
+        AccountingBasisKindDto.Statutory => ReportingAccountingBasisDto.Statutory,
+        _ => ReportingAccountingBasisDto.Management
+    };
+
+    private async Task LockPostedClosingBatchesAfterHardCloseAsync(
+        AccountingClosePostingContext context,
+        string fundProfileId,
+        LedgerPeriodDto period,
+        AccountingClosePostingCommand command,
+        CancellationToken ct)
+    {
+        if (period.Status != LedgerPeriodStatusDto.HardClosed)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{period.Label}' did not reach hard-closed status; retained closing batches were not close-locked.");
+        }
+
+        var workbench = await _workbench
+            .GetWorkbenchAsync(
+                fundProfileId,
+                context.LedgerBookId,
+                ct,
+                context.TenantId,
+                context.CompanyId)
+            .ConfigureAwait(false);
+        var postedClosingBatches = workbench.Drafts
+            .Where(draft =>
+                draft.EntryType == ManualJournalEntryTypeDto.ClosingEntry &&
+                draft.Status == ManualJournalEntryStatusDto.Posted &&
+                draft.LedgerBookId == context.LedgerBookId &&
+                string.Equals(draft.PeriodId, period.PeriodId.ToString("D"), StringComparison.OrdinalIgnoreCase))
+            .OrderBy(static draft => draft.PostedAtUtc)
+            .ThenBy(static draft => draft.JournalEntryId)
+            .ToArray();
+
+        foreach (var draft in postedClosingBatches)
+        {
+            var evidenceLinks = command.EvidenceLinks
+                .Append(BuildCloseLockEvidence(draft, period.PeriodId, context.LedgerBookId))
+                .Where(static link => !string.IsNullOrWhiteSpace(link))
+                .Select(static link => link.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            await _lifecycle.ApplyLifecycleActionAsync(
+                    new JournalEntryLifecycleActionRequestDto(
+                        draft.JournalEntryId,
+                        draft.FundProfileId,
+                        JournalEntryLifecycleActionDto.LockAfterClose,
+                        command.Actor,
+                        draft.Version,
+                        Notes: command.Reason,
+                        CorrelationId: command.CorrelationId ??
+                                       $"period-hard-close:{context.WorkflowId:N}:{period.PeriodId:N}",
+                        EvidenceLinks: evidenceLinks,
+                        ActionOrigin: command.ActionOrigin,
+                        LedgerBookId: context.LedgerBookId,
+                        TenantId: draft.TenantId,
+                        CompanyId: draft.CompanyId),
+                    ct)
+                .ConfigureAwait(false);
+        }
+    }
+
+    private static string BuildCloseLockEvidence(
+        ManualJournalEntryDraftDto draft,
+        Guid periodId,
+        Guid ledgerBookId)
+    {
+        var scope = new List<string>(2);
+        if (!string.IsNullOrWhiteSpace(draft.TenantId))
+        {
+            scope.Add($"tenantId={draft.TenantId.Trim()}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(draft.CompanyId))
+        {
+            scope.Add($"companyId={draft.CompanyId.Trim()}");
+        }
+
+        var query = scope.Count == 0 ? string.Empty : $"?{string.Join("&", scope)}";
+        return $"/api/workstation/evidence/subjects/accounting-close/period-lock/ledger-book/{ledgerBookId:D}/period/{periodId:D}/journal-entry/{draft.JournalEntryId:D}{query}";
     }
 
     public async Task<ClosePostingGateDto> ReopenAndQueueClosingReversalsAsync(

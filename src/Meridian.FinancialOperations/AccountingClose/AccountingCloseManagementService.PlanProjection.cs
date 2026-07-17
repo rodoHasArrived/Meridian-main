@@ -563,21 +563,4 @@ public sealed partial class AccountingCloseManagementService
             .ToArray();
     }
 
-    private static bool CloseConfigurationVersionMatches(DateTimeOffset actual, DateTimeOffset expected)
-        => actual.ToUniversalTime().Ticks == expected.ToUniversalTime().Ticks;
-
-    private static bool RequiresLateAdjustmentApproval(decimal amount, MaterialityPolicyDto policy)
-        => policy.RequiresLateAdjustmentApproval && Math.Abs(amount) >= policy.AmountThreshold;
-
-    private static bool IsLateAdjustmentDecisionPending(LateAdjustmentRequestDto adjustment)
-        => adjustment.ApprovalState is not ManualJournalEntryStatusDto.Approved
-            and not ManualJournalEntryStatusDto.Rejected;
-
-    private static bool IsLateAdjustmentRequestRetained(LateAdjustmentRequestDto adjustment)
-        => adjustment.ApprovalState is not ManualJournalEntryStatusDto.Rejected;
-
-    private static bool HasRejectedSignOff(string requiredRole, IReadOnlyList<CloseSignOffDto> signOffs)
-        => signOffs.Any(signOff =>
-            signOff.ApprovalState == ManualJournalEntryStatusDto.Rejected &&
-            string.Equals(signOff.Role, requiredRole, StringComparison.OrdinalIgnoreCase));
 }

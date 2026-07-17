@@ -52,6 +52,10 @@ import {
   normalizeApiErrorDisplay
 } from "./accounting-screen.view-model.shared";
 import {
+  areReconciliationBreakQueuesEquivalent,
+  replaceBreakQueueItem,
+} from "./accounting-screen.reconciliation-queue-utils";
+import {
   buildOperationalExceptionWorkbenchState,
   buildReconciliationBreakQueueState,
   buildReconciliationComparisonViewState,

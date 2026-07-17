@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -43,9 +42,9 @@ public sealed class JsonlReplayer
     private static async IAsyncEnumerable<MarketEvent> ReadFileAsync(string file, [EnumeratorCancellation] CancellationToken ct)
     {
         await using var fs = File.OpenRead(file);
-        Stream stream = fs;
-        if (file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".gzip", StringComparison.OrdinalIgnoreCase))
-            stream = new GZipStream(fs, CompressionMode.Decompress);
+        // Shared codec detection (magic bytes, extension fallback) so this reader honors every
+        // compression suffix the storage policy can emit, not just gzip.
+        Stream stream = CompressedJsonlStream.Decompress(fs, file);
 
         using var reader = new StreamReader(stream);
         while (!reader.EndOfStream)

@@ -20,6 +20,8 @@ namespace Meridian.Tests.Execution;
 /// </summary>
 public sealed class OrderManagementSystemReportStreamTests
 {
+    private const string HandoffPostingScope = "book-a/period-open";
+
     [Fact]
     public async Task AsyncFillReport_UpdatesOrderState_AndPublishesFill()
     {
@@ -201,7 +203,7 @@ public sealed class OrderManagementSystemReportStreamTests
     public async Task AsyncFill_WhenPublisherCannotAccept_IsExposedAsDurableHandoffFailureAcrossRestart()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-oms-handoff-tests", Guid.NewGuid().ToString("N"));
-        var options = new TradeFillHandoffFailureStoreOptions(root, "book-a/period-open");
+        var options = new TradeFillHandoffFailureStoreOptions(root, HandoffPostingScope);
         try
         {
             Guid fillId;
@@ -250,6 +252,153 @@ public sealed class OrderManagementSystemReportStreamTests
         }
         finally
         {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_AccountingHandoffDuringShutdown_DurableFallbackSurvivesRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-oms-handoff-tests", Guid.NewGuid().ToString("N"));
+        var options = new TradeFillHandoffFailureStoreOptions(root, HandoffPostingScope);
+        var publisher = new BlockingFailingTradeEventPublisher();
+        try
+        {
+            Guid retainedFillId;
+            await using (var failureStore = new AtomicTradeFillHandoffFailureStore(options))
+            {
+                var gateway = new StreamingGateway
+                {
+                    SubmitAck = BuildReport(
+                        "pending",
+                        OrderStatus.Accepted,
+                        ExecutionReportType.New,
+                        filledQty: 0m,
+                        fillPrice: null)
+                };
+                var oms = new OrderManagementSystem(
+                    gateway,
+                    NullLogger<OrderManagementSystem>.Instance,
+                    tradeEventPublisher: publisher,
+                    tradeFillHandoffFailureStore: failureStore);
+                try
+                {
+                    var result = await oms.PlaceOrderAsync(new OrderRequest
+                    {
+                        Symbol = "AAPL",
+                        Side = OrderSide.Buy,
+                        Type = OrderType.Market,
+                        Quantity = 10m
+                    });
+                    await gateway.PublishAsync(BuildReport(
+                        result.OrderId,
+                        OrderStatus.Filled,
+                        ExecutionReportType.Fill,
+                        filledQty: 10m,
+                        fillPrice: 150m));
+                    await publisher.PublishStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+                    var shutdown = oms.DisposeAsync().AsTask();
+                    shutdown.IsCompleted.Should().BeFalse(
+                        "OMS shutdown must await an in-flight accounting handoff before dependencies can be disposed");
+                    publisher.Release();
+                    await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
+
+                    var retained = await failureStore.LoadPendingAsync();
+                    retained.Should().ContainSingle(
+                        "the failed primary handoff must finish writing its fallback during coordinated shutdown");
+                    retainedFillId = retained[0].TradeEvent.FillId;
+                }
+                finally
+                {
+                    publisher.Release();
+                    await oms.DisposeAsync();
+                }
+            }
+
+            await using var reopened = new AtomicTradeFillHandoffFailureStore(options);
+            var recovered = await reopened.LoadPendingAsync();
+            recovered.Should().ContainSingle(item => item.TradeEvent.FillId == retainedFillId,
+                "the shutdown-time accounting handoff must survive process restart");
+        }
+        finally
+        {
+            publisher.Release();
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_InFlightSubmitDuringShutdown_DurableFallbackSurvivesRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-oms-handoff-tests", Guid.NewGuid().ToString("N"));
+        var options = new TradeFillHandoffFailureStoreOptions(root, HandoffPostingScope);
+        var gateway = new BlockingSubmitFillGateway();
+        try
+        {
+            Guid retainedFillId;
+            await using (var failureStore = new AtomicTradeFillHandoffFailureStore(options))
+            {
+                var oms = new OrderManagementSystem(
+                    gateway,
+                    NullLogger<OrderManagementSystem>.Instance,
+                    tradeEventPublisher: new AlwaysFailTradeEventPublisher(),
+                    tradeFillHandoffFailureStore: failureStore);
+                try
+                {
+                    var placement = oms.PlaceOrderAsync(new OrderRequest
+                    {
+                        Symbol = "AAPL",
+                        Side = OrderSide.Buy,
+                        Type = OrderType.Market,
+                        Quantity = 10m
+                    });
+                    await gateway.SubmitStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+                    var shutdown = oms.DisposeAsync().AsTask();
+                    shutdown.IsCompleted.Should().BeFalse(
+                        "shutdown must wait for a PlaceOrder operation admitted before disposal");
+
+                    Func<Task> placeAfterShutdown = async () =>
+                    {
+                        await oms.PlaceOrderAsync(new OrderRequest
+                        {
+                            Symbol = "MSFT",
+                            Side = OrderSide.Buy,
+                            Type = OrderType.Market,
+                            Quantity = 1m
+                        });
+                    };
+                    await placeAfterShutdown.Should().ThrowAsync<ObjectDisposedException>();
+
+                    gateway.Release();
+                    var result = await placement.WaitAsync(TimeSpan.FromSeconds(5));
+                    result.Success.Should().BeFalse();
+                    result.ErrorMessage.Should().Contain("durably retained for restart replay");
+                    await shutdown.WaitAsync(TimeSpan.FromSeconds(5));
+
+                    var retained = await failureStore.LoadPendingAsync();
+                    retained.Should().ContainSingle(
+                        "the admitted submit-time fill must reach durable fallback before OMS shutdown completes");
+                    retainedFillId = retained[0].TradeEvent.FillId;
+                }
+                finally
+                {
+                    gateway.Release();
+                    await oms.DisposeAsync();
+                }
+            }
+
+            await using var reopened = new AtomicTradeFillHandoffFailureStore(options);
+            var recovered = await reopened.LoadPendingAsync();
+            recovered.Should().ContainSingle(item => item.TradeEvent.FillId == retainedFillId,
+                "the submit-time accounting handoff must survive process restart");
+        }
+        finally
+        {
+            gateway.Release();
             if (Directory.Exists(root))
                 Directory.Delete(root, recursive: true);
         }
@@ -411,6 +560,51 @@ public sealed class OrderManagementSystemReportStreamTests
         public ValueTask PublishAsync(ExecutionReport report) => _reports.Writer.WriteAsync(report);
     }
 
+    private sealed class BlockingSubmitFillGateway : IExecutionGateway, IExecutionGatewayModeProvider
+    {
+        private readonly Channel<ExecutionReport> _reports = Channel.CreateUnbounded<ExecutionReport>();
+        private readonly TaskCompletionSource _release =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource SubmitStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public string GatewayId => "blocking-submit-test";
+        public bool IsConnected => true;
+        public ExecutionMode ExecutionMode => ExecutionMode.Paper;
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+
+        public async Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            SubmitStarted.TrySetResult();
+            await _release.Task.WaitAsync(ct);
+            var orderId = request.ClientOrderId ?? "blocking-submit";
+            return BuildReport(
+                orderId,
+                OrderStatus.Filled,
+                ExecutionReportType.Fill,
+                filledQty: request.Quantity,
+                fillPrice: 150m,
+                symbol: request.Symbol);
+        }
+
+        public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<ExecutionReport> ModifyOrderAsync(
+            string orderId,
+            OrderModification modification,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(CancellationToken ct = default) =>
+            _reports.Reader.ReadAllAsync(ct);
+
+        public void Release() => _release.TrySetResult();
+    }
+
     private class RecordingTradeEventPublisher : ITradeEventPublisher
     {
         public ConcurrentQueue<TradeExecutedEvent> AcceptedEvents { get; } = new();
@@ -433,9 +627,30 @@ public sealed class OrderManagementSystemReportStreamTests
         }
     }
 
-    private sealed class AlwaysFailTradeEventPublisher : ITradeEventPublisher
+    private sealed class AlwaysFailTradeEventPublisher : IScopedTradeEventPublisher
     {
+        public string PostingScope => HandoffPostingScope;
+
         public void Publish(TradeExecutedEvent tradeEvent)
             => throw new IOException("primary accounting persistence unavailable");
+    }
+
+    private sealed class BlockingFailingTradeEventPublisher : IScopedTradeEventPublisher
+    {
+        private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource PublishStarted { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public string PostingScope => HandoffPostingScope;
+
+        public void Publish(TradeExecutedEvent tradeEvent)
+        {
+            PublishStarted.TrySetResult();
+            _release.Task.GetAwaiter().GetResult();
+            throw new IOException("primary accounting persistence unavailable during shutdown");
+        }
+
+        public void Release() => _release.TrySetResult();
     }
 }

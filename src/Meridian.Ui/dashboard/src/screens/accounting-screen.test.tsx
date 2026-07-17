@@ -3067,7 +3067,9 @@ describe("AccountingScreen", () => {
     expect(await within(cockpit).findByText("$1,000 USD or 1% review by Controller")).toBeInTheDocument();
     const closingEntriesGate = within(cockpit).getByRole("region", { name: "Post closing entries gate" });
     expect(within(closingEntriesGate).getByText("Required")).toBeInTheDocument();
-    expect(within(closingEntriesGate).getAllByText("+$1,500.00 USD")).toHaveLength(2);
+    const netIncomeRoll = within(closingEntriesGate).getByText("Net-income roll").parentElement;
+    expect(netIncomeRoll).not.toBeNull();
+    expect(within(netIncomeRoll!).getByText("+$1,500.00 USD")).toBeInTheDocument();
     expect(within(closingEntriesGate).getByText("Posting required before lock")).toBeInTheDocument();
     const scopedBalances = within(closingEntriesGate).getByRole("table", { name: "Scoped temporary-account balances" });
     expect(within(scopedBalances).getByText("Advisory fee revenue (ADV-FEE)")).toBeInTheDocument();

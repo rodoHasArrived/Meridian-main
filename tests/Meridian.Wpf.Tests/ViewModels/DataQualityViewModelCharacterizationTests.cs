@@ -136,6 +136,7 @@ public sealed class DataQualityViewModelCharacterizationTests
                 Symbol = "SPY",
                 Score = 98.1,
                 ScoreFormatted = "98.1%",
+                Grade = "A",
                 Status = "Healthy"
             }
         };

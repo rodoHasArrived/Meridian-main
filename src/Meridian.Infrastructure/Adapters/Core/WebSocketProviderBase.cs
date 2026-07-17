@@ -121,6 +121,8 @@ public abstract class WebSocketProviderBase :
             Surface: ProviderRateLimitSurfaces.Streaming,
             ObservedAt: DateTimeOffset.UtcNow,
             RequestsInWindow: 0,
+            // Capabilities expose these as nullable; this "diagnostics unavailable" snapshot marks
+            // StateAvailable: false, so an unset limit collapses to a neutral zero placeholder.
             MaxRequestsPerWindow: capabilities.MaxRequestsPerWindow.GetValueOrDefault(),
             Window: capabilities.RateLimitWindow.GetValueOrDefault(),
             IsRateLimited: false,

@@ -4,6 +4,7 @@ using Meridian.Contracts.Domain;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage;
 using Meridian.Storage.Services;
@@ -923,6 +924,9 @@ public sealed class AutomatedJournalScheduleTests
             => Task.FromResult(Detail(securityId));
 
         public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => Task.FromResult(Detail(securityId));
+
+        public Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
             => Task.FromResult(Detail(securityId));
 
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)

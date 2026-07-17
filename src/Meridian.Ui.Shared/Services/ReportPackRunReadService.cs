@@ -182,11 +182,15 @@ public sealed partial class ReportPackRunReadService
             .ToArray();
         var allWorkflowRecords = _workflowService?.ListRecords(200) ?? [];
         var allDeliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
-        var allSchedules = _scheduleService?.ListSchedules(100) ?? [];
-        var totalTemplateCount = CountTemplates();
+        var allSchedules = _scheduleService?.ListSchedules(accessContext, 100) ?? [];
         var starterKits = _starterKitService?.ListKits() ?? [];
         var starterKitState = _starterKitService?.GetState(accessContext);
         var templates = ApplyStarterKitTemplateFilter(BuildTemplates(accessContext), starterKitState);
+        // Do not disclose other tenants through aggregate "hidden" counts. In a bound request,
+        // template totals are limited to the records eligible for this authority scope.
+        var totalTemplateCount = accessContext?.RequireBoundScope == true
+            ? templates.Length
+            : CountTemplates();
         var familyByTemplate = templates
             .GroupBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First().Family, StringComparer.OrdinalIgnoreCase);
@@ -200,12 +204,11 @@ public sealed partial class ReportPackRunReadService
             templatesById,
             workflowRecords,
             accessContext);
-        var deliveryAttempts = FilterDeliveryAttempts(
+        var deliveryAttempts = ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(
             allDeliveryAttempts,
             accessContext,
-            templates,
-            workflowRecords,
-            runs.Select(static run => run.Payload.RunId).ToHashSet(StringComparer.OrdinalIgnoreCase));
+            allWorkflowRecords,
+            _runStore?.ListRuns(500));
         var schedules = FilterSchedules(
             allSchedules,
             accessContext,
@@ -216,7 +219,8 @@ public sealed partial class ReportPackRunReadService
         var selectedFundProfileId = ResolveSelectedFundProfileId(workflowRecords);
         var reportLineProvenanceExplorer = FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(
             workflowRecords,
-            deliveryAttempts);
+            deliveryAttempts,
+            accessContext: accessContext);
         var portfolioCuts = BuildPortfolioReportingCuts(workflowRecords);
         var livePortfolioViews = BuildPortfolioReportingLiveViews(portfolioCuts);
         var crossFundConsolidations = BuildCrossFundConsolidations(portfolioCuts);
@@ -233,30 +237,24 @@ public sealed partial class ReportPackRunReadService
             portfolioCuts,
             analyticsRows,
             crossFundConsolidations);
-        var allPortfolioCuts = accessContext is null ? portfolioCuts : BuildPortfolioReportingCuts(allWorkflowRecords);
-        var allAnalyticsRows = accessContext is null ? analyticsRows : BuildPortfolioReportingAnalyticsRows(allPortfolioCuts);
-        var allCrossFundConsolidations = accessContext is null ? crossFundConsolidations : BuildCrossFundConsolidations(allPortfolioCuts);
         var visibleStructuredExportCount = structuredExports.Count;
-        var hiddenStructuredExportCount = accessContext is null
-            ? 0
-            : Math.Max(
-                0,
-                BuildStructuredReportingExports(
-                    ResolveSelectedFundProfileId(allWorkflowRecords),
-                    allWorkflowRecords,
-                    allDeliveryAttempts,
-                    allPortfolioCuts,
-                    allAnalyticsRows,
-                    allCrossFundConsolidations).Count - visibleStructuredExportCount);
+        // Delivery attempts do not carry an independent immutable authority scope. Only attempts
+        // linked to already-authorized packs/runs are countable; a global total would reveal the
+        // existence of other tenants' deliveries.
+        var scopedDeliveryAttemptCount = deliveryAttempts.Count;
+        var scopedWorkflowRecordCount = accessContext?.RequireBoundScope == true
+            ? workflowRecords.Count
+            : allWorkflowRecords.Count;
+        var hiddenStructuredExportCount = 0;
         var accessAudit = BuildAccessAuditSummary(
             accessContext,
             totalTemplateCount,
             templates.Length,
-            allWorkflowRecords.Count,
+            scopedWorkflowRecordCount,
             workflowRecords.Count,
             allSchedules.Count,
             schedules.Count,
-            allDeliveryAttempts.Count,
+            scopedDeliveryAttemptCount,
             deliveryAttempts.Count,
             visibleStructuredExportCount,
             hiddenStructuredExportCount);
@@ -1330,7 +1328,7 @@ public sealed partial class ReportPackRunReadService
         if (_templateRegistry is not null)
         {
             return _templateRegistry
-                .List()
+                .List(accessContext)
                 .Where(record => IsAccessible(record.Definition.AccessPolicy, accessContext))
                 .Select(record => ProjectTemplateRecord(record, accessContext, reportWriterSourceFields))
                 .OrderBy(static template => template.Name, StringComparer.OrdinalIgnoreCase)
@@ -1656,6 +1654,9 @@ public sealed partial class ReportPackRunReadService
             .OrderByDescending(static record => record.UpdatedAt)
             .ThenBy(static record => record.ReportId)
             .ToArray();
+        var safeDeliveryAttempts = (deliveryAttempts ?? [])
+            .Select(ReportingDeliveryReadModelSecurity.SanitizeAttempt)
+            .ToArray();
         var latestActionAt = records.Select(static record => (DateTimeOffset?)record.UpdatedAt).FirstOrDefault();
         var latestPublishedAt = records
             .Where(static record => record.Publication is not null)
@@ -1682,7 +1683,7 @@ public sealed partial class ReportPackRunReadService
                 pendingDeliveryCount,
                 latestActionAt,
                 latestPublishedAt,
-                deliveryAttempts ?? []))
+                safeDeliveryAttempts))
             .ToArray();
     }
 
@@ -1691,7 +1692,9 @@ public sealed partial class ReportPackRunReadService
         IReadOnlyList<ReportPackDeliveryAttemptDto>? deliveryAttempts = null)
     {
         ArgumentNullException.ThrowIfNull(schedules);
-        var attempts = deliveryAttempts ?? [];
+        var attempts = (deliveryAttempts ?? [])
+            .Select(ReportingDeliveryReadModelSecurity.SanitizeAttempt)
+            .ToArray();
         return schedules
             .OrderBy(static schedule => schedule.DueAtUtc)
             .ThenBy(static schedule => schedule.ScheduleId, StringComparer.OrdinalIgnoreCase)
@@ -2545,8 +2548,9 @@ public sealed partial class ReportPackRunReadService
             run.UpdatedAtUtc);
     }
 
-    private static UnifiedReportingRun ProjectWorkflowRun(ReportPackWorkflowRecordDto record)
+    private UnifiedReportingRun ProjectWorkflowRun(ReportPackWorkflowRecordDto record)
     {
+        var canonicalRun = TryResolveCanonicalRunBinding(record);
         var auditActions = record.AuditTrail
             .OrderBy(static audit => audit.At)
             .Select(static audit => audit.Action)
@@ -2573,9 +2577,37 @@ public sealed partial class ReportPackRunReadService
                 AuditActions: auditActions,
                 FailureReason: record.Rejection?.Reason,
                 DrilldownLinks: BuildWorkflowDrilldownLinks(record).ToArray(),
-                NextActions: BuildWorkflowNextActions(record).ToArray(),
+                NextActions: BuildWorkflowNextActions(record, canonicalRun).ToArray(),
                 GeneratedReportWriterGrids: []),
             record.UpdatedAt);
+    }
+
+    private ReportingOutputManifest? TryResolveCanonicalRunBinding(ReportPackWorkflowRecordDto record)
+    {
+        if (_runStore is null
+            || string.IsNullOrWhiteSpace(record.TenantId)
+            || string.IsNullOrWhiteSpace(record.CompanyId)
+            || string.IsNullOrWhiteSpace(record.AccessPolicySnapshotHash))
+        {
+            return null;
+        }
+
+        var manifest = _runStore.GetManifest(record.ReportId.ToString("D", CultureInfo.InvariantCulture));
+        var scope = manifest?.OperationalScope;
+        var access = manifest?.ImmutableAccessScope;
+        if (manifest is null
+            || scope is null
+            || access is null
+            || !string.Equals(scope.TenantId, record.TenantId, StringComparison.Ordinal)
+            || !string.Equals(scope.CompanyId, record.CompanyId, StringComparison.Ordinal)
+            || !string.Equals(scope.FundId, record.FundProfileId, StringComparison.Ordinal)
+            || !string.Equals(scope.PeriodId, record.Period, StringComparison.Ordinal)
+            || !string.Equals(access.PolicyHash, record.AccessPolicySnapshotHash, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return manifest;
     }
 
     private static string ResolveRunSeriesId(ReportingOutputManifest manifest) =>
@@ -2778,9 +2810,8 @@ public sealed partial class ReportPackRunReadService
     private static IEnumerable<string> BuildWorkflowArtifacts(ReportPackWorkflowRecordDto record)
     {
         var reportId = Uri.EscapeDataString(record.ReportId.ToString("D"));
-        yield return $"/api/fund-structure/report-packs/{reportId}/evidence-bundle";
+        yield return $"/api/fund-structure/report-packs/{reportId}";
         yield return $"/api/fund-structure/reporting/packs/history?period={Uri.EscapeDataString(record.Period)}&fundAccountId={Uri.EscapeDataString(record.FundAccountId)}";
-        yield return $"/reporting/report-packs/{reportId}";
         yield return $"fund-account:{record.FundAccountId}";
         yield return $"period:{record.Period}";
 
@@ -2800,13 +2831,14 @@ public sealed partial class ReportPackRunReadService
         if (record.Publication is { } publication)
         {
             yield return $"publication-manifest:{publication.ManifestId}";
-            yield return publication.RetainedManifestPath;
+            yield return ReportingDeliveryReadModelSecurity.SanitizeHref(publication.RetainedManifestPath);
             yield return $"evidence-hash:{publication.EvidenceHash}";
             foreach (var link in publication.EvidenceLinks)
             {
-                if (!string.IsNullOrWhiteSpace(link.Route))
+                var href = ReportingDeliveryReadModelSecurity.SanitizeOptionalHref(link.Route);
+                if (!string.IsNullOrWhiteSpace(href))
                 {
-                    yield return link.Route!;
+                    yield return href;
                 }
             }
         }
@@ -2817,9 +2849,10 @@ public sealed partial class ReportPackRunReadService
             yield return $"prior-report:{restatement.PriorVersionReportId:D}";
             foreach (var link in restatement.EvidenceLinks ?? [])
             {
-                if (!string.IsNullOrWhiteSpace(link.Route))
+                var href = ReportingDeliveryReadModelSecurity.SanitizeOptionalHref(link.Route);
+                if (!string.IsNullOrWhiteSpace(href))
                 {
-                    yield return link.Route!;
+                    yield return href;
                 }
             }
         }
@@ -2861,70 +2894,180 @@ public sealed partial class ReportPackRunReadService
     private static IEnumerable<WorkstationReportingRunNextActionPayload> BuildGenericRunNextActions(
         ReportingOutputManifest manifest)
     {
-        if (manifest.Status == ReportingRunStatus.Draft)
+        if (!HasCertifiedImmutableGovernanceBinding(manifest))
         {
             yield return BuildRunAction(
-                id: $"{manifest.RunId}:submit",
-                kind: "approval-submit",
-                label: "Submit run for review",
-                href: $"reporting-run://{manifest.RunId}/approval/submit",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-        }
-        else if (manifest.Status == ReportingRunStatus.InReview)
-        {
-            yield return BuildRunAction(
-                id: $"{manifest.RunId}:approve",
-                kind: "approval",
-                label: "Approve reporting run",
-                href: $"reporting-run://{manifest.RunId}/approval/approve",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-        }
-        else if (manifest.Status == ReportingRunStatus.Approved)
-        {
-            yield return BuildRunAction(
-                id: $"{manifest.RunId}:release",
-                kind: "publication",
-                label: "Release reporting run",
-                href: $"reporting-run://{manifest.RunId}/publication/release",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-        }
-        else if (manifest.Status == ReportingRunStatus.Released)
-        {
-            yield return BuildRunAction(
-                id: $"{manifest.RunId}:review-release",
-                kind: "publication-review",
-                label: "Review released artifacts",
-                href: $"reporting-run://{manifest.RunId}/manifest",
+                id: $"{manifest.RunId}:migration-required",
+                kind: "migration-required",
+                label: "Create a certified governed run",
+                href: string.Empty,
                 method: "GET",
-                isEnabled: true,
-                disabledReason: null,
+                isEnabled: false,
+                disabledReason: "This orchestration manifest is reference-only and does not retain an exact certified tenant, company, scope, access-policy, and run binding.",
                 isBrowserNavigable: false);
+            yield break;
         }
-        else if (manifest.Status == ReportingRunStatus.Failed)
+
+        // A completed certified manifest carries the immutable inputs required by the canonical
+        // governance coordinator. Lifecycle mutations still remain absent from this projection;
+        // the governed resource exposes the authoritative state and version-specific actions.
+        yield return BuildRunAction(
+            id: $"{manifest.RunId}:open-governed-run",
+            kind: "governed-run",
+            label: "Open governed run",
+            href: BuildGovernedRunRoute(manifest.RunId),
+            method: "GET",
+            isEnabled: true,
+            disabledReason: null,
+            isBrowserNavigable: true);
+    }
+
+    internal static bool HasCertifiedImmutableGovernanceBinding(ReportingOutputManifest manifest)
+    {
+        var scope = manifest.OperationalScope;
+        var access = manifest.ImmutableAccessScope;
+        var snapshot = manifest.CertifiedSnapshot;
+        var source = manifest.AuthoritativeSource;
+        var template = manifest.ResolvedTemplate;
+        var parameters = manifest.ResolvedParameters;
+        var readiness = manifest.Readiness;
+        if (manifest.Status != ReportingRunStatus.Draft
+            || manifest.AttemptCount <= 0
+            || manifest.RunAttemptOrdinal is not > 0
+            || !string.IsNullOrWhiteSpace(manifest.FailureReason)
+            || string.IsNullOrWhiteSpace(manifest.RunId)
+            || string.IsNullOrWhiteSpace(manifest.RunSeriesId)
+            || string.IsNullOrWhiteSpace(manifest.TemplateId)
+            || scope is null
+            || access is null
+            || snapshot is null
+            || source is null
+            || template is null
+            || parameters is null
+            || parameters.Scope is null
+            || parameters.LedgerBook is null
+            || readiness is null
+            || readiness.ResolvedParameters is null
+            || manifest.CertifiedDatasetRows.IsDefault
+            || manifest.CertifiedDatasetRows.Length != source.LedgerLineCount
+            || manifest.Sections.IsDefaultOrEmpty
+            || manifest.Artifacts.IsDefaultOrEmpty)
         {
-            yield return BuildRunAction(
-                id: $"{manifest.RunId}:inspect-failure",
-                kind: "failure-review",
-                label: "Inspect failed run",
-                href: BuildRunAuditRoute(manifest.RunId),
-                method: "GET",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: true);
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(scope.TenantId)
+            || string.IsNullOrWhiteSpace(scope.OrganizationId)
+            || string.IsNullOrWhiteSpace(scope.CompanyId)
+            || string.IsNullOrWhiteSpace(scope.FundId)
+            || string.IsNullOrWhiteSpace(scope.BookId)
+            || string.IsNullOrWhiteSpace(scope.PeriodId)
+            || string.IsNullOrWhiteSpace(access.PolicyId)
+            || string.IsNullOrWhiteSpace(access.PolicyVersion)
+            || access.Principals.IsDefault
+            || !IsSha256Hash(access.PolicyHash)
+            || string.IsNullOrWhiteSpace(snapshot.SnapshotId)
+            || !IsSha256Hash(snapshot.SnapshotHash)
+            || string.IsNullOrWhiteSpace(snapshot.ReconciliationCheckpointId)
+            || string.IsNullOrWhiteSpace(snapshot.SourceCheckpointId)
+            || !IsSha256Hash(snapshot.SourceCheckpointHash)
+            || string.IsNullOrWhiteSpace(source.SourceKind)
+            || string.IsNullOrWhiteSpace(source.SourceId)
+            || string.IsNullOrWhiteSpace(source.CheckpointId)
+            || !IsSha256Hash(source.CheckpointHash)
+            || source.EvidenceIds.IsDefaultOrEmpty
+            || source.LedgerLineCount < 0
+            || template.Version <= 0
+            || !string.Equals(manifest.TemplateId.Trim(), template.Name.Trim(), StringComparison.Ordinal)
+            || !string.Equals(scope.TenantId, snapshot.TenantId, StringComparison.Ordinal)
+            || !string.Equals(scope.OrganizationId, snapshot.OrganizationId, StringComparison.Ordinal)
+            || !string.Equals(scope.CompanyId, snapshot.CompanyId, StringComparison.Ordinal)
+            || !string.Equals(scope.FundId, snapshot.FundId, StringComparison.Ordinal)
+            || !string.Equals(scope.BookId, snapshot.BookId, StringComparison.Ordinal)
+            || !string.Equals(scope.PeriodId, snapshot.PeriodId, StringComparison.Ordinal)
+            || !string.Equals(scope.TenantId, source.TenantId, StringComparison.Ordinal)
+            || !string.Equals(scope.OrganizationId, source.OrganizationId, StringComparison.Ordinal)
+            || !string.Equals(scope.CompanyId, source.CompanyId, StringComparison.Ordinal)
+            || !string.Equals(scope.FundId, source.FundId, StringComparison.Ordinal)
+            || !string.Equals(scope.BookId, source.LedgerBookId, StringComparison.Ordinal)
+            || !string.Equals(scope.PeriodId, source.AccountingPeriodId, StringComparison.Ordinal)
+            || !string.Equals(snapshot.SourceCheckpointId, source.CheckpointId, StringComparison.Ordinal)
+            || !string.Equals(snapshot.SourceCheckpointHash, source.CheckpointHash, StringComparison.OrdinalIgnoreCase)
+            || manifest.AsOfDate != source.AsOfDate
+            || parameters.AsOfDate != manifest.AsOfDate
+            || !string.Equals(parameters.PeriodId, scope.PeriodId, StringComparison.Ordinal)
+            || !string.Equals(parameters.Scope.FundProfileId, scope.FundId, StringComparison.Ordinal)
+            || !string.Equals(ResolveBoundLedgerBookId(parameters), scope.BookId, StringComparison.Ordinal)
+            || !string.Equals(parameters.AccountingBasis.ToString(), source.AccountingBasis, StringComparison.OrdinalIgnoreCase)
+            || !Equals(readiness.ResolvedTemplate, template)
+            || readiness.ResolvedParameters.AsOfDate != parameters.AsOfDate
+            || !string.Equals(readiness.ResolvedParameters.PeriodId, parameters.PeriodId, StringComparison.Ordinal)
+            || !IsSha256Hash(readiness.EvidenceHash)
+            || readiness.Status != ReportingRunReadinessStatusDto.Ready
+            || readiness.BlockingReasons is null
+            || readiness.BlockingReasons.Count != 0
+            || readiness.Checks is null
+            || readiness.Checks.Count == 0
+            || !readiness.CanGenerateDraft
+            || parameters.Finality == ReportingFinalityDto.Final && !readiness.CanGenerateFinal)
+        {
+            return false;
+        }
+
+        if (readiness.Checks.Any(check =>
+                string.IsNullOrWhiteSpace(check.CheckId)
+                || check.EvidenceReferences is null
+                || check.EvidenceReferences.Count == 0
+                || check.EvidenceReferences.Any(string.IsNullOrWhiteSpace)
+                || (parameters.Finality == ReportingFinalityDto.Final ? check.BlocksFinal : check.BlocksDraft)
+                    && check.Status != ReportingRunReadinessStatusDto.Ready)
+            || readiness.Checks.Select(static check => check.CheckId).Distinct(StringComparer.Ordinal).Count() != readiness.Checks.Count
+            || manifest.Sections.Any(section =>
+                string.IsNullOrWhiteSpace(section.SectionId)
+                || !IsSha256Hash(section.Hash)
+                || section.Lineage is null
+                || !string.Equals(section.DatasetSnapshotId, snapshot.SnapshotId, StringComparison.Ordinal)
+                || !string.Equals(section.ReconciliationCheckpointId, snapshot.ReconciliationCheckpointId, StringComparison.Ordinal)
+                || !string.Equals(section.Lineage.SectionId, section.SectionId, StringComparison.Ordinal)
+                || !string.Equals(section.Lineage.DatasetSnapshotId, snapshot.SnapshotId, StringComparison.Ordinal)
+                || !string.Equals(section.Lineage.DatasetSnapshotHash, snapshot.SnapshotHash, StringComparison.OrdinalIgnoreCase)
+                || !string.Equals(section.Lineage.ReconciliationCheckpointId, snapshot.ReconciliationCheckpointId, StringComparison.Ordinal)
+                || section.Lineage.CapturedAtUtc != snapshot.CapturedAtUtc)
+            || manifest.Artifacts.Any(string.IsNullOrWhiteSpace)
+            || manifest.Artifacts.Distinct(StringComparer.Ordinal).Count() != manifest.Artifacts.Length)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static string? ResolveBoundLedgerBookId(ReportingRunParametersDto parameters) =>
+        parameters.LedgerBook.LedgerBookId?.ToString("D", CultureInfo.InvariantCulture)
+        ?? NormalizeOptional(parameters.LedgerBook.LedgerBookCode);
+
+    private static bool IsSha256Hash(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Trim().Length != 64)
+        {
+            return false;
+        }
+
+        try
+        {
+            return Convert.FromHexString(value.Trim()).Length == 32;
+        }
+        catch (FormatException)
+        {
+            return false;
         }
     }
 
     private static string BuildRunAuditRoute(string runId) =>
         UiApiRoutes.WithParam(UiApiRoutes.ReportingRunAuditTrail, "runId", runId);
+
+    private static string BuildGovernedRunRoute(string runId) =>
+        UiApiRoutes.WithParam(UiApiRoutes.ReportingGovernedRun, "runId", runId);
 
     private static IEnumerable<WorkstationReportingRunLinkPayload> BuildWorkflowDrilldownLinks(
         ReportPackWorkflowRecordDto record)
@@ -2935,14 +3078,6 @@ public sealed partial class ReportPackRunReadService
             kind: "report-pack",
             label: "Report-pack manifest",
             href: $"/api/fund-structure/report-packs/{reportId}",
-            method: "GET",
-            isBrowserNavigable: true,
-            source: "ReportPackWorkflow");
-        yield return BuildRunLink(
-            id: $"{record.ReportId:D}:evidence-bundle",
-            kind: "evidence",
-            label: "Evidence bundle",
-            href: $"/api/fund-structure/report-packs/{reportId}/evidence-bundle",
             method: "GET",
             isBrowserNavigable: true,
             source: "ReportPackWorkflow");
@@ -3005,22 +3140,23 @@ public sealed partial class ReportPackRunReadService
             id: $"{record.ReportId:D}:publication-manifest",
             kind: "publication",
             label: "Publication manifest",
-            href: publication.RetainedManifestPath,
+            href: ReportingDeliveryReadModelSecurity.SanitizeHref(publication.RetainedManifestPath),
             method: "GET",
             isBrowserNavigable: false,
             source: "ReportPackWorkflow");
 
         foreach (var link in publication.EvidenceLinks)
         {
-            if (!string.IsNullOrWhiteSpace(link.Route))
+            var href = ReportingDeliveryReadModelSecurity.SanitizeOptionalHref(link.Route);
+            if (!string.IsNullOrWhiteSpace(href))
             {
                 yield return BuildRunLink(
                     id: $"{record.ReportId:D}:publication:{link.EvidenceId}",
                     kind: "publication-evidence",
                     label: string.IsNullOrWhiteSpace(link.Label) ? link.EvidenceId : link.Label,
-                    href: SanitizeDeliveryHref(link.Route!),
+                    href: href,
                     method: "GET",
-                    isBrowserNavigable: IsHttpRoute(link.Route),
+                    isBrowserNavigable: IsHttpRoute(href),
                     source: string.IsNullOrWhiteSpace(link.Source) ? "publication" : link.Source!);
             }
         }
@@ -3046,133 +3182,48 @@ public sealed partial class ReportPackRunReadService
 
         foreach (var link in restatement.EvidenceLinks ?? [])
         {
-            if (!string.IsNullOrWhiteSpace(link.Route))
+            var href = ReportingDeliveryReadModelSecurity.SanitizeOptionalHref(link.Route);
+            if (!string.IsNullOrWhiteSpace(href))
             {
                 yield return BuildRunLink(
                     id: $"{record.ReportId:D}:restatement:{link.EvidenceId}",
                     kind: "restatement-evidence",
                     label: string.IsNullOrWhiteSpace(link.Label) ? link.EvidenceId : link.Label,
-                    href: SanitizeDeliveryHref(link.Route!),
+                    href: href,
                     method: "GET",
-                    isBrowserNavigable: IsHttpRoute(link.Route),
+                    isBrowserNavigable: IsHttpRoute(href),
                     source: string.IsNullOrWhiteSpace(link.Source) ? "restatement" : link.Source!);
             }
         }
     }
 
     private static IEnumerable<WorkstationReportingRunNextActionPayload> BuildWorkflowNextActions(
-        ReportPackWorkflowRecordDto record)
+        ReportPackWorkflowRecordDto record,
+        ReportingOutputManifest? canonicalRun)
     {
-        var reportId = EscapeReportId(record.ReportId);
-        if (record.State is ReportPackWorkflowStateDto.Draft or ReportPackWorkflowStateDto.Validated or ReportPackWorkflowStateDto.Rejected)
+        if (canonicalRun is null)
         {
             yield return BuildRunAction(
-                id: $"{record.ReportId:D}:submit",
-                kind: "approval-submit",
-                label: record.State == ReportPackWorkflowStateDto.Rejected ? "Return pack to review" : "Submit pack for review",
-                href: $"/api/fund-structure/reporting/packs/{reportId}/submit",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
+                id: $"{record.ReportId:D}:migration-required",
+                kind: "migration-required",
+                label: "Create a certified governed run",
+                href: UiApiRoutes.ReportingRuns,
+                method: "GET",
+                isEnabled: false,
+                disabledReason: "This legacy report pack is read-only and has no immutable canonical governed-run binding. Create a new certified run before approval, release, restatement, or distribution.",
                 isBrowserNavigable: false);
+            yield break;
         }
 
-        if (record.State is ReportPackWorkflowStateDto.InReview or ReportPackWorkflowStateDto.PendingApproval)
-        {
-            yield return BuildRunAction(
-                id: $"{record.ReportId:D}:approve",
-                kind: "approval",
-                label: "Approve report pack",
-                href: $"/api/fund-structure/reporting/packs/{reportId}/approve",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-            yield return BuildRunAction(
-                id: $"{record.ReportId:D}:reject",
-                kind: "approval-reject",
-                label: "Reject for correction",
-                href: $"/api/fund-structure/reporting/packs/{reportId}/reject",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-        }
-
-        if (record.State == ReportPackWorkflowStateDto.Approved)
-        {
-            yield return BuildRunAction(
-                id: $"{record.ReportId:D}:publish",
-                kind: "publication",
-                label: "Publish retained report pack",
-                href: $"/api/fund-structure/reporting/packs/{reportId}/publish",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-        }
-
-        if (record.State == ReportPackWorkflowStateDto.Published)
-        {
-            foreach (var action in BuildDeliveryActions(record))
-            {
-                yield return action;
-            }
-
-            yield return BuildRunAction(
-                id: $"{record.ReportId:D}:restate",
-                kind: "restatement",
-                label: "Create restatement",
-                href: $"/api/fund-structure/reporting/packs/{reportId}/restatements",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-            yield return BuildRunAction(
-                id: $"{record.ReportId:D}:archive",
-                kind: "archive",
-                label: "Archive published pack",
-                href: $"/api/fund-structure/reporting/packs/{reportId}/archive",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-        }
-
-        if (record.State == ReportPackWorkflowStateDto.Restated)
-        {
-            foreach (var action in BuildDeliveryActions(record))
-            {
-                yield return action;
-            }
-
-            yield return BuildRunAction(
-                id: $"{record.ReportId:D}:archive",
-                kind: "archive",
-                label: "Archive restated pack",
-                href: $"/api/fund-structure/reporting/packs/{reportId}/archive",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-        }
-    }
-
-    private static IEnumerable<WorkstationReportingRunNextActionPayload> BuildDeliveryActions(ReportPackWorkflowRecordDto record)
-    {
-        var reportId = EscapeReportId(record.ReportId);
-        foreach (var policy in DistributionPolicies)
-        {
-            yield return BuildRunAction(
-                id: $"{record.ReportId:D}:delivery:{policy.DistributionId}",
-                kind: $"delivery:{policy.DistributionId}",
-                label: $"Deliver to {policy.Recipient}",
-                href: $"/api/fund-structure/reporting/packs/{reportId}/deliveries",
-                method: "POST",
-                isEnabled: true,
-                disabledReason: null,
-                isBrowserNavigable: false);
-        }
+        yield return BuildRunAction(
+            id: $"{record.ReportId:D}:open-governed-run",
+            kind: "governed-run",
+            label: "Continue in governed run",
+            href: BuildGovernedRunRoute(canonicalRun.RunId),
+            method: "GET",
+            isEnabled: true,
+            disabledReason: null,
+            isBrowserNavigable: true);
     }
 
     private static IEnumerable<string> BuildWorkflowStatusActions(ReportPackWorkflowRecordDto record)

@@ -418,6 +418,20 @@ public sealed class DailyValuationScheduledWorker
                     ct).ConfigureAwait(false);
             }
 
+            if (positionResolution.Positions.Count == 0)
+            {
+                return await CompleteAsync(
+                    running,
+                    nowUtc,
+                    DailyValuationScheduleStateDto.NoAdjustment,
+                    "Daily valuation completed from an authoritative flat-position snapshot; no unrealized adjustment was required.",
+                    journalEntryIds: [],
+                    batchCorrelationId: BuildBatchCorrelationId(item, scheduledForUtc),
+                    positionResolution.EvidenceLinks,
+                    blockers: [],
+                    ct).ConfigureAwait(false);
+            }
+
             var batchCorrelationId = BuildBatchCorrelationId(item, scheduledForUtc);
             var run = await _intakeRunner.RunDailyMarkToMarketIntakeAsync(
                 new RunDailyMarkToMarketDraftIntakeRequest(

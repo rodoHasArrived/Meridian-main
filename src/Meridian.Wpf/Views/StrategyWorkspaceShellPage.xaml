@@ -72,14 +72,14 @@
                             <Border Margin="0,18,0,0"
                                     Padding="14,12"
                                     CornerRadius="12"
-                                    Background="#12253A"
-                                    BorderBrush="#22486B"
+                                    Background="{StaticResource StrategyHeroSurfaceBrush}"
+                                    BorderBrush="{StaticResource StrategyHeroBorderBrush}"
                                     BorderThickness="1">
                                 <StackPanel>
                                     <TextBlock Text="Selected Run"
                                                FontSize="11"
                                                FontWeight="SemiBold"
-                                               Foreground="#7EA3C5" />
+                                               Foreground="{StaticResource StrategyHeroLabelBrush}" />
                                     <TextBlock x:Name="ActiveRunNameText"
                                                Margin="0,6,0,0"
                                                FontSize="18"
@@ -89,7 +89,7 @@
                                     <TextBlock x:Name="ActiveRunMetaText"
                                                Margin="0,4,0,0"
                                                FontSize="12"
-                                               Foreground="#A8BED7"
+                                               Foreground="{StaticResource StrategyHeroMetaBrush}"
                                                Text="{Binding ActiveRunMetaText}" />
                                 </StackPanel>
                             </Border>
