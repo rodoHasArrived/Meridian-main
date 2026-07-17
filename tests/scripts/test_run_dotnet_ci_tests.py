@@ -57,6 +57,22 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         self.assertIn("trx;LogFilePrefix=core", command)
         self.assertIn("/p:EnableWindowsTargeting=true", command)
 
+    def test_build_dotnet_test_command_enables_blame_hang_timeout(self):
+        project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")
+        results_dir = Path("artifacts/test-results/dotnet")
+
+        command = MODULE.build_dotnet_test_command(
+            project,
+            configuration="Release",
+            test_filter="Category!=Integration&Category!=Performance",
+            results_dir=results_dir,
+        )
+
+        self.assertIn("--blame-hang", command)
+        self.assertIn("--blame-hang-timeout", command)
+        timeout_value = command[command.index("--blame-hang-timeout") + 1]
+        self.assertEqual(timeout_value, "10m")
+
     def test_build_dotnet_build_command_uses_no_restore_and_windows_targeting(self):
         project = MODULE.TestProject("core", "tests/Meridian.Tests/Meridian.Tests.csproj")
 
