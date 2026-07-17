@@ -2013,7 +2013,7 @@ public sealed class ReportPackWorkflowServiceTests
             recipient.DistributionId == "board-reporting-committee" &&
             recipient.Recipient == "Board reporting committee" &&
             recipient.Channel == "Board portal");
-        packet.EntitlementScope.Should().Be("CompanyWide");
+        packet.EntitlementScope.Should().Be("CompanyWide company=company-a");
         packet.ApprovalChain.Should().Contain(step => step.Action == "published");
         packet.DatasetVersion.Should().Be("manifest-1");
         packet.TemplateVersion.Should().Be("board-pack@v1");
