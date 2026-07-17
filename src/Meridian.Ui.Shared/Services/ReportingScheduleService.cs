@@ -2257,14 +2257,14 @@ public sealed class ReportingScheduleService
             return ReportPackDeliveryModeDto.EmailLink;
         }
 
-        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReportPackDeliveryModeDto.EvidenceVault;
-        }
-
         if (channel.Contains("portal", StringComparison.OrdinalIgnoreCase))
         {
             return ReportPackDeliveryModeDto.SecurePortal;
+        }
+
+        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.EvidenceVault;
         }
 
         return ReportPackDeliveryModeDto.InternalRoute;

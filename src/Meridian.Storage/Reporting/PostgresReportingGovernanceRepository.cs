@@ -937,7 +937,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                 entries.Add(entry);
             }
 
-            var result = entries.MoveToImmutable();
+            var result = entries.DrainToImmutable();
             if (!ReportingGovernanceAuditChain.Verify(result))
             {
                 throw Integrity(
@@ -989,7 +989,7 @@ public sealed class PostgresReportingGovernanceRepository : IReportingGovernance
                     reader.GetInt16(6)));
             }
 
-            return rows.MoveToImmutable();
+            return rows.DrainToImmutable();
         }
 
         private async Task<ReportingGovernancePersistenceStatus> VerifyLegacyRunAsync(
