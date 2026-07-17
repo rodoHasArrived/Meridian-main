@@ -117,6 +117,51 @@ class GenerateStructureDocsTests(unittest.TestCase):
             self.assertNotIn(".nuget", rendered)
             self.assertNotIn("artifacts", rendered)
 
+    def test_render_tree_skips_nested_worktree_checkouts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "Meridian.cs").write_text("namespace Meridian;\n", encoding="utf-8")
+            (root / ".claude" / "settings.json").parent.mkdir(parents=True)
+            (root / ".claude" / "settings.json").write_text("{}\n", encoding="utf-8")
+            # A git-ignored worktree holds a second checkout of the repository.
+            worktree_src = root / ".claude" / "worktrees" / "task-branch" / "src"
+            worktree_src.mkdir(parents=True)
+            (worktree_src / "WorktreeCopy.cs").write_text("namespace Meridian;\n", encoding="utf-8")
+
+            rendered = generate_structure_docs.render_tree(root)
+
+            self.assertIn("Meridian.cs", rendered)
+            self.assertIn("settings.json", rendered)
+            self.assertNotIn("worktrees", rendered)
+            self.assertNotIn("WorktreeCopy.cs", rendered)
+
+    def test_parse_args_defaults_output_to_canonical_path_per_mode(self) -> None:
+        cases = [
+            ([], "docs/generated/repository-structure.md"),
+            (["--workflows-only"], "docs/generated/workflows-overview.md"),
+            (["--providers-only"], "docs/generated/provider-registry.md"),
+        ]
+        for argv, expected in cases:
+            with self.subTest(argv=argv):
+                with patch.object(sys, "argv", ["generate-structure-docs.py", *argv]):
+                    args = generate_structure_docs.parse_args()
+                self.assertIsNone(args.output)
+
+                mode = "structure"
+                if args.workflows_only:
+                    mode = "workflows"
+                elif args.providers_only:
+                    mode = "providers"
+                self.assertEqual(expected, generate_structure_docs.DEFAULT_OUTPUTS[mode])
+
+    def test_parse_args_honors_explicit_output_override(self) -> None:
+        with patch.object(
+            sys, "argv", ["generate-structure-docs.py", "--workflows-only", "--output", "custom.md"]
+        ):
+            args = generate_structure_docs.parse_args()
+        self.assertEqual("custom.md", args.output)
+
     def test_render_tree_skips_symlinked_entries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as external:
             root = Path(tmp)
