@@ -44,6 +44,13 @@ EXCLUDED_ROOT_DIR_NAMES = {
     "data",
 }
 
+# Git-ignored directories that the filesystem merge in `_git_visible_files` would otherwise
+# pick up. These hold checkouts of the repository itself, so walking them injects thousands of
+# duplicate entries and makes the generated tree depend on local scratch state.
+EXCLUDED_RELATIVE_DIR_PATHS = {
+    ".claude/worktrees",
+}
+
 EXCLUDED_FILE_SUFFIXES = {
     ".bak",
     ".log",
@@ -73,6 +80,22 @@ def utc_now() -> str:
     return STABLE_GENERATED_AT
 
 
+def write_text_lf(path: Path, content: str) -> None:
+    """Write UTF-8 text with LF endings so generated docs match the repo on every platform."""
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+
+
+def _is_excluded_relative_dir(relative_parts: tuple[str, ...]) -> bool:
+    if not relative_parts:
+        return False
+    candidate = "/".join(relative_parts)
+    return any(
+        candidate == excluded or candidate.startswith(excluded + "/")
+        for excluded in EXCLUDED_RELATIVE_DIR_PATHS
+    )
+
+
 def is_excluded(path: Path, root: Path | None = None) -> bool:
     if path.is_symlink():
         return True
@@ -87,6 +110,8 @@ def is_excluded(path: Path, root: Path | None = None) -> bool:
         except ValueError:
             relative_parts = parts
         if relative_parts and relative_parts[0] in EXCLUDED_ROOT_DIR_NAMES:
+            return True
+        if _is_excluded_relative_dir(relative_parts):
             return True
         if len(relative_parts) == 1 and relative_parts[0] in EXCLUDED_ROOT_FILE_NAMES:
             return True
@@ -111,6 +136,8 @@ def _is_excluded_relative_file(path: PurePosixPath) -> bool:
     if not parts or any(part in EXCLUDED_DIR_NAMES for part in parts):
         return True
     if parts[0] in EXCLUDED_ROOT_DIR_NAMES:
+        return True
+    if _is_excluded_relative_dir(parts):
         return True
     if len(parts) == 1 and parts[0] in EXCLUDED_ROOT_FILE_NAMES:
         return True
@@ -377,9 +404,22 @@ def generate_provider_registry(root: Path) -> str:
     return "\n".join(lines)
 
 
+DEFAULT_OUTPUTS = {
+    "workflows": "docs/generated/workflows-overview.md",
+    "providers": "docs/generated/provider-registry.md",
+    "structure": "docs/generated/repository-structure.md",
+}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate documentation artifacts for repo structure and workflows.")
-    parser.add_argument("--output", required=True, help="Path to output markdown file")
+    parser.add_argument(
+        "--output",
+        help=(
+            "Path to output markdown file. Defaults to the canonical path for the "
+            f"selected mode ({', '.join(f'{k}: {v}' for k, v in DEFAULT_OUTPUTS.items())})."
+        ),
+    )
     parser.add_argument("--format", default="markdown", help="Output format (currently markdown only)")
     parser.add_argument("--workflows-only", action="store_true", help="Generate workflows overview")
     parser.add_argument("--providers-only", action="store_true", help="Generate provider registry")
@@ -392,21 +432,21 @@ def main() -> int:
     if args.format.lower() != "markdown":
         raise SystemExit("Only markdown format is supported")
 
-    root = Path.cwd()
-    output_path = Path(args.output)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
     if args.workflows_only and args.providers_only:
         raise SystemExit("--workflows-only and --providers-only are mutually exclusive")
 
-    if args.workflows_only:
-        content = generate_workflows_overview(root)
-    elif args.providers_only:
-        content = generate_provider_registry(root)
-    else:
-        content = generate_repository_structure(root)
+    root = Path.cwd()
 
-    output_path.write_text(content, encoding="utf-8")
+    if args.workflows_only:
+        mode, content = "workflows", generate_workflows_overview(root)
+    elif args.providers_only:
+        mode, content = "providers", generate_provider_registry(root)
+    else:
+        mode, content = "structure", generate_repository_structure(root)
+
+    output_path = Path(args.output or DEFAULT_OUTPUTS[mode])
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    write_text_lf(output_path, content)
     return 0
 
 

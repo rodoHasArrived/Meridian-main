@@ -345,6 +345,20 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
+            ]),
+        new(
+            AssetClass: "InvestmentFund",
+            SupportsCashflowScheduleByDefault: false,
+            UsesFaceValueLots: false,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.Ticker,
+                SecurityIdentifierKind.Isin,
+                SecurityIdentifierKind.Cusip,
+                SecurityIdentifierKind.Figi,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.InternalCode
             ])
     ];
 

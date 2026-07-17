@@ -104,5 +104,74 @@ class GenerateApiContractCoverageDashboardTests(unittest.TestCase):
             )
 
 
+    def _build_repo_with_endpoint(self, root: Path) -> None:
+        endpoints = root / "src" / "Meridian.Ui.Shared" / "Endpoints"
+        endpoints.mkdir(parents=True)
+        (endpoints / "FirstRunEndpoints.cs").write_text(
+            'app.MapGet("/api/auth/desktop-launch/{ticket}", Handler);\n',
+            encoding="utf-8",
+        )
+        (root / "docs").mkdir()
+
+    def test_generated_reports_do_not_count_as_documentation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._build_repo_with_endpoint(root)
+            # A prior dashboard run lists every scanned route in its own report.
+            (root / "docs" / "status").mkdir()
+            (root / "docs" / "status" / "api-contract-coverage-dashboard.md").write_text(
+                "| GET | `/api/auth/desktop-launch/{ticket}` | gap |\n",
+                encoding="utf-8",
+            )
+
+            payload = api_contract_coverage.build_dashboard(root)
+
+            self.assertEqual(0, payload["summary"]["documented_endpoint_count"])
+            self.assertEqual(1, payload["summary"]["undocumented_endpoint_count"])
+
+    def test_hand_written_docs_still_count_as_documentation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._build_repo_with_endpoint(root)
+            (root / "docs" / "development").mkdir()
+            (root / "docs" / "development" / "first-run.md").write_text(
+                "The desktop launch handshake calls `/api/auth/desktop-launch/{ticket}`.\n",
+                encoding="utf-8",
+            )
+
+            payload = api_contract_coverage.build_dashboard(root)
+
+            self.assertEqual(1, payload["summary"]["documented_endpoint_count"])
+            self.assertEqual(0, payload["summary"]["undocumented_endpoint_count"])
+
+    def test_coverage_is_stable_when_a_prior_report_is_present(self) -> None:
+        """The score must not depend on whether a previous run left a report behind."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._build_repo_with_endpoint(root)
+            (root / "docs" / "development").mkdir()
+            (root / "docs" / "development" / "first-run.md").write_text(
+                "Calls `/api/auth/desktop-launch/{ticket}`.\n",
+                encoding="utf-8",
+            )
+
+            first = api_contract_coverage.build_dashboard(root)
+
+            (root / "docs" / "status").mkdir()
+            (root / "docs" / "status" / "api-contract-coverage-dashboard.md").write_text(
+                "| GET | `/api/auth/desktop-launch/{ticket}` | documented |\n",
+                encoding="utf-8",
+            )
+            (root / "docs" / "generated" / "workflow-command-reference.md").parent.mkdir()
+            (root / "docs" / "generated" / "workflow-command-reference.md").write_text(
+                "`/api/auth/desktop-launch/{ticket}`\n",
+                encoding="utf-8",
+            )
+
+            second = api_contract_coverage.build_dashboard(root)
+
+            self.assertEqual(first["score_percent"], second["score_percent"])
+
+
 if __name__ == "__main__":
     unittest.main()
