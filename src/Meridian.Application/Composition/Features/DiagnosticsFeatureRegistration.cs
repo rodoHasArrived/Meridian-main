@@ -70,8 +70,12 @@ internal sealed class DiagnosticsFeatureRegistration : IServiceFeatureRegistrati
                 eventPipeline is null ? null : () => eventPipeline.GetStatistics());
         });
 
-        // Sample data generator
-        services.AddSingleton<SampleDataGenerator>();
+        // Sample data generation is a development and test capability. Keep it out of the
+        // production graph so packaged workstation startup cannot expose fixture generation.
+        if (!ProductionServiceRegistrationPolicy.IsProductionComposition(services))
+        {
+            services.AddSingleton<SampleDataGenerator>();
+        }
 
         // API documentation service
         services.AddSingleton<ApiDocumentationService>();

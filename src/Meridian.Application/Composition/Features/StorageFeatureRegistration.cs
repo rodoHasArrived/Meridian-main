@@ -399,12 +399,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
-        services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
-        services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
-            sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
-        services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
-            sp.GetService<IAssetOperationsProjectionStore>() as IInstrumentPositionProjectionStore
-            ?? sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        if (!AssetOperationsStartup.IsConfigured())
+        {
+            services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
+            services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        }
         services.TryAddSingleton<AssetObligationProjectionService>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
@@ -568,17 +570,20 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
             return new FundOperationsPersistenceOptions { DomainModes = domainModes };
         });
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+        if (!ProductionServiceRegistrationPolicy.IsProductionComposition(services))
+        {
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+        }
         return services;
     }
 

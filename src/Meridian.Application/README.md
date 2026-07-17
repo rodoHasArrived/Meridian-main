@@ -382,7 +382,9 @@ and UI presentation concerns in their owning layers.
   `Meridian.Platform.Diagnostics`; Application composition and endpoints consume it with Core-owned
   redaction/masking helpers, Platform-owned error tracking, and friendly error formatting rather
   than Application-local utility services. Sample market-event
-  generation is registered from `Meridian.DataIntegration.Testing.SampleDataGenerator`. Canonical
+  generation is registered outside Production from
+  `Meridian.DataIntegration.Testing.SampleDataGenerator`; packaged production composition omits the
+  fixture generator entirely. Canonical
   symbol resolution is registered from `Meridian.Storage.Services.CanonicalSymbolRegistry`.
   API documentation model generation is registered from
   `Meridian.Platform.ApiDocumentation.ApiDocumentationService`.
@@ -411,7 +413,9 @@ and UI presentation concerns in their owning layers.
   startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
   `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
   persistence-backed services. Local/dev launcher flows may set
-  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment.
+  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment. Placeholder
+  projection-reconciliation jobs are also omitted from production composition until real domain
+  reconcilers replace them; production startup does not report a no-op comparison as assurance.
   `ProviderFeatureRegistration` supplies a non-secret empty `IConfiguration` fallback before
   registering provider adapters, preserving host-provided configuration when present while keeping
   credential-gated data providers resolvable in composition slices.
