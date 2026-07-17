@@ -269,6 +269,15 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
     private static byte[] RenderSupportingSchedules(ReportingOutputManifest manifest)
     {
+        // Guard the default/empty case before enumerating: a default ImmutableArray throws on
+        // enumeration (the run-failure and legacy paths can leave this member uninitialized), and an
+        // empty or absent grid set falls back to the certified-rows CSV — same result the trailing
+        // check produced, but without first touching a default array.
+        if (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty)
+        {
+            return RenderCertifiedRowsCsv(manifest);
+        }
+
         var builder = new StringBuilder("gridId,rowKey,column,value\r\n");
         foreach (var grid in manifest.RenderedReportWriterGrids.OrderBy(static grid => grid.GridId, StringComparer.Ordinal))
         {
@@ -279,11 +288,6 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                     AppendCsvRow(builder, grid.GridId, row.RowKey, value.Key, value.Value);
                 }
             }
-        }
-
-        if (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty)
-        {
-            return RenderCertifiedRowsCsv(manifest);
         }
 
         return Utf8(builder.ToString());
