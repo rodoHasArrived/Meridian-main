@@ -603,7 +603,30 @@ public sealed class FileReportingRunStore : IReportingRunStore
         })));
 
     private string ComputeManifestHash(ReportingOutputManifest manifest) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(manifest, _jsonOptions)));
+        ComputeSha256(Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(NormalizeManifestArraysForHashing(manifest), _jsonOptions)));
+
+    // A manifest can carry default (uninitialized) ImmutableArray members — most commonly on the
+    // run-failure path, before the grid/diff collections are populated. Serializing a default
+    // ImmutableArray throws InvalidOperationException, which would abort the durable write (and, on
+    // load, the integrity verification) instead of persisting the failed run. Normalize every
+    // optional array member to Empty before hashing. This is a no-op for populated manifests — a
+    // populated array and Empty both serialize to their element JSON — so hashes for already-retained
+    // runs are unchanged, keeping save-side and load-side verification consistent.
+    private static ReportingOutputManifest NormalizeManifestArraysForHashing(
+        ReportingOutputManifest manifest) =>
+        manifest with
+        {
+            Sections = OrEmpty(manifest.Sections),
+            Artifacts = OrEmpty(manifest.Artifacts),
+            ReportWriterGrids = OrEmpty(manifest.ReportWriterGrids),
+            RenderedReportWriterGrids = OrEmpty(manifest.RenderedReportWriterGrids),
+            ReportWriterGridDiffs = OrEmpty(manifest.ReportWriterGridDiffs),
+            CertifiedDatasetRows = OrEmpty(manifest.CertifiedDatasetRows)
+        };
+
+    private static ImmutableArray<T> OrEmpty<T>(ImmutableArray<T> value) =>
+        value.IsDefault ? ImmutableArray<T>.Empty : value;
 
     private string ComputePayloadHash(IReadOnlyList<ReportingRunSnapshot> runs) =>
         ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(runs, _jsonOptions)));
