@@ -225,9 +225,12 @@ public static class SecurityMasterGoldenRecordMerge
             await store.UpsertProjectionAsync(merged, ct).ConfigureAwait(false);
             return true;
         }
-        catch (Exception ex) when (onError is not null)
+        catch (Exception ex)
         {
-            onError(ex);
+            // Best-effort by contract: the conflict's status transition is already committed, so a
+            // merge failure must never unwind a completed resolution — swallow it (surfacing it via
+            // onError when a callback is supplied) rather than propagating even when onError is null.
+            onError?.Invoke(ex);
             return false;
         }
     }
