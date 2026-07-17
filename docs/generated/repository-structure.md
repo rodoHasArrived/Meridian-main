@@ -1678,6 +1678,7 @@ Meridian-main
 │   │   ├── deployment-packaging.md
 │   │   ├── failover-and-recovery.md
 │   │   ├── fund-ops-persistence-cutover.md
+│   │   ├── governed-reporting-operations.md
 │   │   ├── plaid-provider-operations.md
 │   │   ├── preflight-checklist.md
 │   │   ├── provider-backfill-operations.md
@@ -4197,6 +4198,7 @@ Meridian-main
 │   │   │   ├── OperationsWorkflowAuditHashing.cs
 │   │   │   └── PostgresOperationsContinuityStore.cs
 │   │   ├── PrivateCapital
+│   │   │   ├── LedgerCapitalAccountReconciliationResolver.cs
 │   │   │   ├── PrivateCapitalActivityProjectionBuilder.cs
 │   │   │   ├── PrivateCapitalCapitalAccountSubledgerBuilder.cs
 │   │   │   ├── PrivateCapitalCloseCockpitService.cs
@@ -4937,12 +4939,15 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── ReportGenerationService.cs
 │   │   ├── ReportingArtifactContracts.cs
+│   │   ├── ReportingArtifactDeclaration.cs
 │   │   ├── ReportingContracts.cs
 │   │   ├── ReportingDistributionContracts.cs
+│   │   ├── ReportingGovernanceCanonicalValidation.cs
 │   │   ├── ReportingGovernanceContracts.cs
 │   │   ├── ReportingGovernanceService.cs
 │   │   ├── ReportingNumberFormat.cs
 │   │   ├── ReportingOrchestrationService.cs
+│   │   ├── ReportingReconciliationEvidenceContracts.cs
 │   │   ├── ReportingStarterKitCatalog.cs
 │   │   ├── ReportSnapshotDiffEngine.cs
 │   │   ├── ReportWriterGridEngine.cs
@@ -5137,6 +5142,7 @@ Meridian-main
 │   │   ├── Query
 │   │   │   └── DuckDbQueryService.cs
 │   │   ├── Replay
+│   │   │   ├── CompressedJsonlStream.cs
 │   │   │   ├── JsonlReplayer.cs
 │   │   │   └── MemoryMappedJsonlReader.cs
 │   │   ├── Reporting
@@ -5144,18 +5150,24 @@ Meridian-main
 │   │   │   │   ├── 001_reporting_artifact_blobs.sql
 │   │   │   │   ├── 002_reporting_governance.sql
 │   │   │   │   ├── 003_reporting_distribution.sql
-│   │   │   │   └── 004_reporting_artifact_catalog_audit.sql
+│   │   │   │   ├── 004_reporting_artifact_catalog_audit.sql
+│   │   │   │   ├── 005_reporting_distribution_hardening.sql
+│   │   │   │   ├── 006_reporting_reconciliation_evidence.sql
+│   │   │   │   ├── 007_reporting_governance_scope_hardening.sql
+│   │   │   │   └── 008_reporting_governance_format_versions.sql
 │   │   │   ├── PostgresReportingAccessGrantStore.cs
 │   │   │   ├── PostgresReportingArtifactAuditStore.cs
 │   │   │   ├── PostgresReportingArtifactCatalog.cs
 │   │   │   ├── PostgresReportingArtifactStore.cs
 │   │   │   ├── PostgresReportingDeliveryStore.cs
 │   │   │   ├── PostgresReportingGovernanceRepository.cs
+│   │   │   ├── PostgresReportingReconciliationEvidenceStore.cs
 │   │   │   ├── ReportingArtifactCatalogJsonContext.cs
 │   │   │   ├── ReportingArtifactStoreOptions.cs
 │   │   │   ├── ReportingDistributionStateCorruptionException.cs
 │   │   │   ├── ReportingDistributionStoreGuard.cs
 │   │   │   ├── ReportingGovernanceJsonContext.cs
+│   │   │   ├── ReportingGovernanceLegacyContracts.cs
 │   │   │   └── ReportingMigrationRunner.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── Migrations
@@ -5793,8 +5805,14 @@ Meridian-main
 │   │   │   │   │   ├── report-writer-grid-format.test.ts
 │   │   │   │   │   ├── report-writer-grid-format.ts
 │   │   │   │   │   ├── reporting-distributions.ts
+│   │   │   │   │   ├── reporting-governance-api.test.ts
+│   │   │   │   │   ├── reporting-governance-api.ts
+│   │   │   │   │   ├── reporting-governance-routes.test.ts
+│   │   │   │   │   ├── reporting-governance-routes.ts
 │   │   │   │   │   ├── reporting-hub.test.ts
 │   │   │   │   │   ├── reporting-hub.ts
+│   │   │   │   │   ├── reporting-link-safety.test.ts
+│   │   │   │   │   ├── reporting-link-safety.ts
 │   │   │   │   │   ├── reporting-periods.test.ts
 │   │   │   │   │   ├── reporting-periods.ts
 │   │   │   │   │   ├── route-error-telemetry.test.ts
@@ -5978,6 +5996,8 @@ Meridian-main
 │   │   │   │   │   ├── quant-lab-screen.view-model.ts
 │   │   │   │   │   ├── report-library-screen.test.tsx
 │   │   │   │   │   ├── report-library-screen.tsx
+│   │   │   │   │   ├── report-run-governance-screen.test.tsx
+│   │   │   │   │   ├── report-run-governance-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.test.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.tsx
 │   │   │   │   │   ├── report-run-parameters-screen.view-model.test.ts
@@ -6087,6 +6107,7 @@ Meridian-main
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   ├── provider-accounting.ts
 │   │   │   │   │   ├── provider-setup.ts
+│   │   │   │   │   ├── reporting-governance.ts
 │   │   │   │   │   ├── workstation-1.ts
 │   │   │   │   │   ├── workstation-2.ts
 │   │   │   │   │   ├── workstation-3.ts
@@ -6324,7 +6345,6 @@ Meridian-main
 │   │   │   ├── FundAccountEndpoints.cs
 │   │   │   ├── FundProfileScopeEndpointFilters.cs
 │   │   │   ├── FundStructureEndpoints.cs
-│   │   │   ├── FundStructureEndpoints.DeliveryPortal.cs
 │   │   │   ├── FundStructureEndpoints.ReportingGovernance.cs
 │   │   │   ├── FundStructureEndpoints.ReportingRunStream.cs
 │   │   │   ├── FundStructureEndpoints.StructuredReportingExport.cs
@@ -6456,12 +6476,12 @@ Meridian-main
 │   │   │   ├── AccountingMigrationRunArtifactStore.cs
 │   │   │   ├── AccountingMigrationRunExecutionService.cs
 │   │   │   ├── AccountingMigrationRunWorkerPlanStore.cs
+│   │   │   ├── AccountingPositionSnapshotCaptureService.cs
 │   │   │   ├── AccountingProductionCertificationProfileStore.cs
 │   │   │   ├── AccountingProductionReadinessService.cs
 │   │   │   ├── AccountingTenantAdministrationProfileStore.cs
 │   │   │   ├── AlpacaBrokerageConnectionService.cs
 │   │   │   ├── AuditTrailExplorerService.cs
-│   │   │   ├── AutomatedJournalCapitalAccountReconciliationResolver.cs
 │   │   │   ├── AutomatedJournalDividendPositionResolver.cs
 │   │   │   ├── AutomatedJournalDraftIntakeService.cs
 │   │   │   ├── AutomatedJournalEventProducers.cs
@@ -6482,6 +6502,7 @@ Meridian-main
 │   │   │   ├── DailyValuationBatchLifecycleService.cs
 │   │   │   ├── DailyValuationPositionService.cs
 │   │   │   ├── DailyValuationScheduler.cs
+│   │   │   ├── DesktopLaunchTicketService.cs
 │   │   │   ├── DesktopWorkstationLaunchService.cs
 │   │   │   ├── DirectLendingOperationsReadService.cs
 │   │   │   ├── Dk1TrustGateReadinessService.cs
@@ -6506,6 +6527,7 @@ Meridian-main
 │   │   │   ├── LedgerAmountProvenanceService.cs
 │   │   │   ├── LedgerDimensionMapper.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
+│   │   │   ├── LedgerReportingAuthoritativeSource.cs
 │   │   │   ├── ManualJournalEntryDraftStores.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.cs
@@ -6530,16 +6552,23 @@ Meridian-main
 │   │   │   ├── ReportAccessPolicyEvaluator.cs
 │   │   │   ├── ReportingAccessGrantService.cs
 │   │   │   ├── ReportingArtifactVaultService.cs
+│   │   │   ├── ReportingCertifiedArtifactProducer.cs
 │   │   │   ├── ReportingDeliveryDispatcher.cs
+│   │   │   ├── ReportingDeliveryReadModelSecurity.cs
 │   │   │   ├── ReportingGovernanceApiProjector.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.cs
 │   │   │   ├── ReportingGovernanceReleaseAuthorizationVerifier.cs
+│   │   │   ├── ReportingReconciliationEvidenceSource.cs
+│   │   │   ├── ReportingReconciliationEvidenceStore.cs
 │   │   │   ├── ReportingRunCertificationService.cs
 │   │   │   ├── ReportingRunCommandService.cs
 │   │   │   ├── ReportingRunReadinessService.cs
 │   │   │   ├── ReportingRunStore.cs
 │   │   │   ├── ReportingScheduleService.cs
 │   │   │   ├── ReportingSecureDistributionApplicationService.cs
+│   │   │   ├── ReportingSecureDistributionHostedService.cs
+│   │   │   ├── ReportingSecureDistributionHttpRelayClient.cs
+│   │   │   ├── ReportingSecureDistributionProviderReceipts.cs
 │   │   │   ├── ReportingSecureDistributionServiceCollectionExtensions.cs
 │   │   │   ├── ReportingStarterKitService.cs
 │   │   │   ├── ReportingStateCorruptionException.cs
@@ -6738,7 +6767,10 @@ Meridian-main
 │   │   │   │   ├── Shell
 │   │   │   │   │   ├── ReportingWorkspaceShellPage.xaml
 │   │   │   │   │   └── ReportingWorkspaceShellPage.xaml.cs
-│   │   │   │   └── ReportingFeatureModule.cs
+│   │   │   │   ├── ReportingFeatureModule.cs
+│   │   │   │   ├── ReportingGovernanceApiClient.cs
+│   │   │   │   ├── ReportingGovernanceWorkbenchViewModel.cs
+│   │   │   │   └── ReportingRunRequestBuilder.cs
 │   │   │   ├── Settings
 │   │   │   │   ├── Shell
 │   │   │   │   │   ├── SettingsWorkspaceShellModels.cs
@@ -6827,6 +6859,7 @@ Meridian-main
 │   │   │   ├── DemoTourService.cs
 │   │   │   ├── DesktopAuthenticationSession.cs
 │   │   │   ├── DesktopLaunchArguments.cs
+│   │   │   ├── DesktopLaunchTicketClient.cs
 │   │   │   ├── DropImportService.cs
 │   │   │   ├── ExportFormat.cs
 │   │   │   ├── ExportPresetService.cs
@@ -8113,7 +8146,9 @@ Meridian-main
 │   │   ├── Reporting
 │   │   │   ├── NavAttributionServiceTests.cs
 │   │   │   ├── ReportGenerationServiceTests.cs
+│   │   │   ├── ReportingGovernanceCanonicalValidationTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs
+│   │   │   ├── ReportingSecureDistributionAuthorizationTests.cs
 │   │   │   ├── ReportingSecureDistributionTests.cs
 │   │   │   ├── ReportSnapshotDiffEngineTests.cs
 │   │   │   └── ReportWriterGridEngineTests.cs
@@ -8209,7 +8244,8 @@ Meridian-main
 │   │   │   │   ├── ReportingArtifactCatalogAuditStoreTests.cs
 │   │   │   │   ├── ReportingArtifactStoreTests.cs
 │   │   │   │   ├── ReportingDistributionStoreTests.cs
-│   │   │   │   └── ReportingGovernanceRepositoryTests.cs
+│   │   │   │   ├── ReportingGovernanceRepositoryTests.cs
+│   │   │   │   └── ReportingReconciliationEvidenceStoreTests.cs
 │   │   │   ├── AccountingConfigurationPostgresStoreTests.cs
 │   │   │   ├── AdaptivePartitionPlacementPlannerTests.cs
 │   │   │   ├── AnalysisExportServiceTests.cs
@@ -8342,6 +8378,7 @@ Meridian-main
 │   │   │   │   └── StreamTopicTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
 │   │   │   ├── AccountingMigrationRunExecutionServiceTests.cs
+│   │   │   ├── AccountingPositionSnapshotCaptureServiceTests.cs
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
 │   │   │   ├── AccountingReportPackageServiceTests.cs
@@ -8367,6 +8404,7 @@ Meridian-main
 │   │   │   ├── DailyValuationPositionServiceTests.cs
 │   │   │   ├── DailyValuationScheduleIdentityTests.cs
 │   │   │   ├── DataOperationsAssuranceServiceTests.cs
+│   │   │   ├── DesktopLaunchTicketServiceTests.cs
 │   │   │   ├── DiagnosticsEndpointsTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs
 │   │   │   ├── EdgarReferenceDataEndpointsTests.cs
@@ -8385,6 +8423,8 @@ Meridian-main
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
+│   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
+│   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── OmsIntegrationServiceTests.cs
 │   │   │   ├── OperationsContinuityReconciliationBridgeTests.cs
 │   │   │   ├── OperatorApprovalFlowScenarioTests.cs
@@ -8405,13 +8445,18 @@ Meridian-main
 │   │   │   ├── RegistryFundProfileTenantGuardTests.cs
 │   │   │   ├── ReportingArtifactVaultServiceTests.cs
 │   │   │   ├── ReportingDeliveryReleaseGateTests.cs
+│   │   │   ├── ReportingFileStoreLegacyCompatibilityTests.cs
 │   │   │   ├── ReportingGovernanceEndpointTests.cs
 │   │   │   ├── ReportingPersistenceFailClosedTests.cs
 │   │   │   ├── ReportingRunCertificationServiceTests.cs
+│   │   │   ├── ReportingRunReadinessEndpointTests.cs
+│   │   │   ├── ReportingRunReadinessServiceTests.cs
 │   │   │   ├── ReportingRunStreamEndpointTests.cs
+│   │   │   ├── ReportingTenantIsolationTests.cs
 │   │   │   ├── ReportPackValidationServiceTests.cs
 │   │   │   ├── ReportPackWorkflowServiceTests.cs
 │   │   │   ├── RiskEndpointsTests.cs
+│   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
@@ -8551,7 +8596,9 @@ Meridian-main
 │   │   │   ├── Portfolio
 │   │   │   │   └── PortfolioFeatureModuleTests.cs
 │   │   │   ├── Reporting
-│   │   │   │   └── ReportingFeatureModuleTests.cs
+│   │   │   │   ├── ReportingFeatureModuleTests.cs
+│   │   │   │   ├── ReportingGovernanceWorkbenchViewModelTests.cs
+│   │   │   │   └── ReportingWorkspaceGovernanceSurfaceTests.cs
 │   │   │   ├── Settings
 │   │   │   │   ├── Shell
 │   │   │   │   │   └── SettingsWorkspaceShellViewModelTests.cs

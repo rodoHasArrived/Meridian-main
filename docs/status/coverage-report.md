@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**2892 / 7870** items documented (**36.7%**) &mdash; Grade: **F**
+**2905 / 7970** items documented (**36.4%**) &mdash; Grade: **F**
 
 ```text
-[=======-------------] 36.7%
+[=======-------------] 36.4%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2767 | 7418 | 37.3% | F |
-| API Endpoints | 111 | 299 | 37.1% | F |
+| Public Classes / Interfaces | 2779 | 7509 | 37.0% | F |
+| API Endpoints | 112 | 308 | 36.4% | F |
 | Configuration Options | 3 | 142 | 2.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4651 undocumented)
+### Public Classes / Interfaces (4730 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -77,9 +77,9 @@
 | `IStructuredCashFlowLedgerBridge` | `src/Meridian.Application/SecurityMaster/CashFlow/StructuredCashFlowLedgerBridge.cs:13` |
 | `ICorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:6` |
 | `CorporateActionAppendResult` | `src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:17` |
-| ... and 4601 more | |
+| ... and 4680 more | |
 
-### API Endpoints (188 undocumented)
+### API Endpoints (196 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -133,7 +133,7 @@
 | `/{loanId:guid}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:715` |
 | `/{loanId:guid}/restructures` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:745` |
 | `/{loanId:guid}/amortization/discount-premium` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:775` |
-| ... and 138 more | |
+| ... and 146 more | |
 
 ### Configuration Options (139 undocumented)
 
@@ -193,8 +193,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4651 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 188 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 4730 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+2. **API Endpoints**: 196 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 139 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
