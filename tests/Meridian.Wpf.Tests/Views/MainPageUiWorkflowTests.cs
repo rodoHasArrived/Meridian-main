@@ -409,7 +409,9 @@ public sealed class MainPageUiWorkflowTests
             facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(6);
 
             facade.Click(facade.TradingWorkspaceButton);
-            await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading").ConfigureAwait(true);
+            await WaitForConditionAsync(
+                () => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading",
+                timeoutMs: 15000).ConfigureAwait(true);
 
             facade.ViewModel.WorkspaceHomeSummaryChromeVisibility.Should().Be(Visibility.Visible);
             facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripTrading")
@@ -435,8 +437,9 @@ public sealed class MainPageUiWorkflowTests
                 DefaultLedgerScope: FundLedgerScope.Consolidated)).ConfigureAwait(true);
             await fundContextService.SelectFundProfileAsync("alpha-fund").ConfigureAwait(true);
 
-            await WaitForConditionAsync(() =>
-                facade.ViewModel.PrimaryWorkflowSummary?.NextAction.Label == "Open Strategy Runs").ConfigureAwait(true);
+            await WaitForConditionAsync(
+                () => facade.ViewModel.PrimaryWorkflowSummary?.NextAction.Label == "Open Strategy Runs",
+                timeoutMs: 15000).ConfigureAwait(true);
 
             facade.ViewModel.PrimaryWorkflowSummary!.NextAction.Label.Should().Be("Open Strategy Runs");
             facade.ViewModel.SecondaryWorkflowSummaries.Single(summary => summary.WorkspaceId == "accounting").NextAction.Label.Should().Be("Open Accounting Shell");

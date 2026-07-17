@@ -8,7 +8,10 @@ public sealed class SecurityAssetClassCatalogTests
     [Fact]
     public void AssetClasses_ShouldExposeCanonicalSecurityMasterCoverage()
     {
-        SecurityAssetClassCatalog.AssetClasses.Should().Contain(
+        // Pass an explicit collection: the params overload of Contain binds its second argument to
+        // `because`, which would silently assert only the first asset class.
+        SecurityAssetClassCatalog.AssetClasses.Should().Contain(new[]
+        {
             "Equity",
             "Option",
             "Bond",
@@ -32,7 +35,9 @@ public sealed class SecurityAssetClassCatalogTests
             "CryptoCurrency",
             "Cfd",
             "Warrant",
-            "OtherSecurity");
+            "InvestmentFund",
+            "OtherSecurity"
+        });
     }
 
     [Fact]
