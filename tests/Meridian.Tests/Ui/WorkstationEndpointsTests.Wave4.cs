@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -414,13 +415,16 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task LedgerCloseManagementEndpoints_ProjectClosePlanAndRetainLateAdjustment()
     {
-        await using var app = await CreateAppAsync(
-            RegisterOperationsContinuityServices,
-            currentUserPermissions: UserPermission.AdminMaintenance,
-            currentUserCompanyId: null);
-        var client = app.GetTestClient();
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterOperationsContinuityServices(services);
+                RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-07");
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
 
         using var startResponse = await client.PostAsJsonAsync(
             UiApiRoutes.OperationsContinuity,
@@ -999,13 +1003,16 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task LedgerCloseManagementEndpoints_ConfigureClosePlanMaterialitySignOffsAndDependencies()
     {
-        await using var app = await CreateAppAsync(
-            RegisterOperationsContinuityServices,
-            currentUserPermissions: UserPermission.AdminMaintenance,
-            currentUserCompanyId: null);
-        var client = app.GetTestClient();
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterOperationsContinuityServices(services);
+                RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-08");
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
 
         using var startResponse = await client.PostAsJsonAsync(
             UiApiRoutes.OperationsContinuity,
@@ -1129,13 +1136,16 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task LedgerCloseManagementEndpoints_LockPeriodReturnsServiceBlockersWithoutPosting()
     {
-        await using var app = await CreateAppAsync(
-            RegisterOperationsContinuityServices,
-            currentUserPermissions: UserPermission.AdminMaintenance,
-            currentUserCompanyId: null);
-        var client = app.GetTestClient();
         var fundAccountId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                RegisterOperationsContinuityServices(services);
+                RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-09");
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
 
         using var startResponse = await client.PostAsJsonAsync(
             UiApiRoutes.OperationsContinuity,
@@ -2184,11 +2194,16 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task LedgerAccountingReportPackageEndpoint_BlocksCertificationWhenMaterialLateAdjustmentIsUnapproved()
     {
+        var fundAccountId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
         await using var app = await CreateAppAsync(
-            RegisterOperationsContinuityServices,
+            services =>
+            {
+                RegisterOperationsContinuityServices(services);
+                RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-08");
+            },
             currentUserPermissions: UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
-        var fundAccountId = Guid.NewGuid();
 
         using var startResponse = await client.PostAsJsonAsync(
             UiApiRoutes.OperationsContinuity,
@@ -2197,7 +2212,8 @@ public sealed partial class WorkstationEndpointsTests
                 "2026-08",
                 SecurityMasterSnapshotId: null,
                 BrokerSource: "custodian",
-                Actor: "local-actor"));
+                Actor: "local-actor",
+                LedgerBookId: ledgerBookId));
         startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
         var workflowId = start!.Workflow!.WorkflowId;
@@ -2211,7 +2227,7 @@ public sealed partial class WorkstationEndpointsTests
                 Currency: "usd",
                 Reason: "Material NAV true-up discovered after close review.",
                 RequestedBy: "browser-user",
-                EvidenceLinks: ["evidence:late-adjustment:2026-08:nav-true-up"]),
+                EvidenceLinks: [$"evidence:late-adjustment:2026-08:book:{ledgerBookId:D}:nav-true-up"]),
             ServerJsonOptions);
         adjustmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var adjustmentPlan = await adjustmentResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
@@ -2250,7 +2266,7 @@ public sealed partial class WorkstationEndpointsTests
                 ManualJournalEntryStatusDto.Approved,
                 "browser-user",
                 "Controller approval retained before report certification.",
-                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.RequestId}:nav-true-up-approval"]),
+                EvidenceLinks: [$"evidence:late-adjustment:{adjustment.RequestId}:book:{ledgerBookId:D}:nav-true-up-approval"]),
                 options: ServerJsonOptions)
         };
         reviewRequest.Headers.Add("X-Meridian-Test-User", "controller-user");
@@ -2286,12 +2302,16 @@ public sealed partial class WorkstationEndpointsTests
     {
         var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-tests", "accounting-productization", Guid.NewGuid().ToString("N"));
         var fundAccountId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
         Guid workflowId;
 
         await using (var app = await CreateAppAsync(
-            services => RegisterDurableOperationsContinuityServices(services, dataRoot),
-            currentUserPermissions: UserPermission.AdminMaintenance,
-            currentUserCompanyId: null))
+            services =>
+            {
+                RegisterDurableOperationsContinuityServices(services, dataRoot);
+                RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-07");
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance))
         {
             var client = app.GetTestClient();
 
@@ -2302,7 +2322,8 @@ public sealed partial class WorkstationEndpointsTests
                     "2026-07",
                     SecurityMasterSnapshotId: null,
                     BrokerSource: "custodian",
-                    Actor: "local-actor"));
+                    Actor: "local-actor",
+                    LedgerBookId: ledgerBookId));
             startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
             workflowId = start!.Workflow!.WorkflowId;
@@ -2316,7 +2337,7 @@ public sealed partial class WorkstationEndpointsTests
                     Currency: "usd",
                     Reason: "Retained material close adjustment.",
                     RequestedBy: "browser-user",
-                    EvidenceLinks: [$"evidence:late-adjustment:workflow:{workflowId:D}:period:2026-07:durable-request"]),
+                    EvidenceLinks: [$"evidence:late-adjustment:workflow:{workflowId:D}:period:2026-07:book:{ledgerBookId:D}:durable-request"]),
                 ServerJsonOptions);
             adjustmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -2345,9 +2366,12 @@ public sealed partial class WorkstationEndpointsTests
         File.Exists(Path.Combine(dataRoot, "accounting", "accounting-report-packages.json")).Should().BeTrue();
 
         await using var restartedApp = await CreateAppAsync(
-            services => RegisterDurableOperationsContinuityServices(services, dataRoot),
-            currentUserPermissions: UserPermission.AdminMaintenance,
-            currentUserCompanyId: null);
+            services =>
+            {
+                RegisterDurableOperationsContinuityServices(services, dataRoot);
+                RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-07");
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance);
         var restartedClient = restartedApp.GetTestClient();
 
         var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan.Replace("{workflowId:guid}", workflowId.ToString("D"));
@@ -2365,7 +2389,8 @@ public sealed partial class WorkstationEndpointsTests
         historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var packages = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
         packages.Should().ContainSingle(row =>
-            row.FinancialStatements.PackageId == "accounting-report-package-fund-alpha-2026-07-tenant-tenant-test-company-tenant-test" &&
+            row.FinancialStatements.PackageId == $"accounting-report-package-fund-alpha-2026-07-book-{ledgerBookId:N}-tenant-tenant-test-company-tenant-test" &&
+            row.FinancialStatements.LedgerBookId == ledgerBookId &&
             row.InvestorCapitalStatements.Single().EndingCapital == 111_500m);
     }
 
@@ -2781,8 +2806,29 @@ public sealed partial class WorkstationEndpointsTests
             MaterialityPolicy: new MaterialityPolicyDto("scope-test", 10_000m, 0.01m, "USD", "Controller", true),
             WorkflowVersion: 7);
 
-    private static ILedgerBookService BuildScopedCloseLedger(Guid ledgerBookId, Guid fundAccountId)
+    private static void RegisterScopedCloseAccessServices(
+        IServiceCollection services,
+        Guid ledgerBookId,
+        Guid fundAccountId,
+        string periodId)
     {
+        services.AddSingleton(BuildScopedCloseLedger(ledgerBookId, fundAccountId, periodId));
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        registry.ResolveAsync("fund-profile-alpha", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("fund-profile-alpha", "tenant-test", "tenant-test"));
+        services.AddSingleton(registry);
+    }
+
+    private static ILedgerBookService BuildScopedCloseLedger(
+        Guid ledgerBookId,
+        Guid fundAccountId,
+        string periodId = "2026-06")
+    {
+        var periodParts = periodId.Split('-');
+        var year = int.Parse(periodParts[0], CultureInfo.InvariantCulture);
+        var month = int.Parse(periodParts[1], CultureInfo.InvariantCulture);
+        var periodStart = new DateOnly(year, month, 1);
+        var periodEnd = new DateOnly(year, month, DateTime.DaysInMonth(year, month));
         var ledger = Substitute.For<ILedgerBookService>();
         ledger.GetBookAsync(ledgerBookId, Arg.Any<CancellationToken>())
             .Returns(new LedgerBookDto(
@@ -2792,22 +2838,22 @@ public sealed partial class WorkstationEndpointsTests
                 FundStructureNodeKindDto.Account,
                 "Fund Alpha primary ledger",
                 "USD",
-                DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
-                DateTimeOffset.Parse("2026-06-30T23:59:59Z")));
+                new DateTimeOffset(periodStart.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                new DateTimeOffset(periodEnd.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero)));
         ledger.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
             .Returns(
             [
                 new LedgerPeriodDto(
                     Guid.NewGuid(),
                     ledgerBookId,
-                    2026,
-                    6,
-                    "2026-06",
-                    new DateOnly(2026, 6, 1),
-                    new DateOnly(2026, 6, 30),
+                    year,
+                    month,
+                    periodId,
+                    periodStart,
+                    periodEnd,
                     LedgerPeriodStatusDto.HardClosed,
-                    DateTimeOffset.Parse("2026-06-01T00:00:00Z"),
-                    DateTimeOffset.Parse("2026-07-03T12:00:00Z"),
+                    new DateTimeOffset(periodStart.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                    new DateTimeOffset(periodEnd.AddDays(3).ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero),
                     3)
             ]);
         return ledger;

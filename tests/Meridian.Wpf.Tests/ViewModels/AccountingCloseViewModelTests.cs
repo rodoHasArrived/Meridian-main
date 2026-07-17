@@ -103,6 +103,7 @@ public sealed class AccountingCloseViewModelTests
         viewModel.ClosingEntriesNetIncomeRollText.Should().Be("+1,500.00 USD");
         viewModel.ClosingEntriesBalanceCountText.Should().Be("2 temporary-account balances");
         viewModel.ClosingEntriesLockPostureText.Should().Be("Posting required before lock");
+        viewModel.ClosePeriodLockStatusText.Should().Be("Close plan 2026-05 cannot lock until closing entries advance from Draft queued to Posted.");
         viewModel.ClosingEntriesJournalEvidenceText.Should().Contain("Draft aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee (Draft)");
         viewModel.ClosingEntriesJournalEvidenceText.Should().Contain("closing batches 11111111-2222-3333-4444-555555555555");
         viewModel.ClosingEntriesJournalEvidenceText.Should().Contain("reversal drafts 66666666-7777-8888-9999-aaaaaaaaaaaa");

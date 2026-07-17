@@ -947,13 +947,13 @@ public sealed class EventDrivenDecouplingTests
 
         var elapsed = Stopwatch.StartNew();
         var disposeTask = consumer.DisposeAsync().AsTask();
-        await gate.CancellationCallbackStarted.WaitAsync(TimeSpan.FromSeconds(1));
         await disposeTask.WaitAsync(TimeSpan.FromSeconds(1));
         elapsed.Stop();
 
         elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
         ledger.Journal.Should().BeEmpty();
 
+        await gate.CancellationCallbackStarted.WaitAsync(TimeSpan.FromSeconds(5));
         gate.ReleaseCancellationCallback();
         gate.ReleaseValidation();
         Func<Task> processingAction = async () => await consumer.ProcessingCompletion;

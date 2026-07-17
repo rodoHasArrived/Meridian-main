@@ -1384,6 +1384,14 @@ public sealed class AccountingConfigurationServiceTests
                 "Revenue",
                 FinancialAccountId: "MSFT"),
             "valuation-ops"));
+        await configuration.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto(
+                "unrealized-loss",
+                "Expenses:Unrealized Loss",
+                "Unrealized Loss",
+                "Expense"),
+            "valuation-ops"));
 
         var journalStore = WritableManualJournalLedgerJournalStore.Default(AccountingBasisKindDto.Primary);
         journalStore.Seed(BuildJournal(
@@ -1430,12 +1438,9 @@ public sealed class AccountingConfigurationServiceTests
             intake,
             new FeeScheduleAccrualEventProducer(),
             dailyMarkToMarketService: new DailyMarkToMarketService(
-                new StaticMarkPriceSource(new MarkPriceQuote(
-                    160m,
-                    "trusted-close",
-                    "evidence://prices/AAPL/2026-06-30",
-                    FairValueLevel.Level1,
-                    PriceAsOf: new DateOnly(2026, 6, 30)))));
+                priceSource,
+                new LedgerMarkToMarketCarryingValueSource(journalStore)),
+            dailyValuationPositionService: positionService);
         var scheduleSource = new InMemoryDailyValuationPortfolioSource();
         var configured = await scheduleSource.SaveAsync(new DailyValuationScheduleWorkItem(
             "daily-valuation-fund-alpha",
@@ -1490,7 +1495,8 @@ public sealed class AccountingConfigurationServiceTests
         var scheduleStatus = await scheduleSource.GetStatusAsync(
             "fund-alpha",
             ManualJournalLedgerBookId,
-            "2026-06");
+            "2026-06",
+            entityId: "entity-master");
         scheduleStatus.State.Should().Be(DailyValuationScheduleStateDto.DraftReady);
         scheduleStatus.NextRunAtUtc.Should().Be(asOf.AddDays(1));
         scheduleStatus.EvidenceLinks.Should().Contain(link => link.Route == "evidence://prices/AAPL/2026-06-30/initial");
@@ -1534,7 +1540,11 @@ public sealed class AccountingConfigurationServiceTests
 
         var correctionBatch = await scheduler.RunDueAsync(correctionAsOf);
         var correctionRun = correctionBatch.Runs.Should().ContainSingle().Subject;
-        correctionRun.State.Should().Be(DailyValuationScheduleStateDto.DraftReady);
+        correctionRun.State.Should().Be(
+            DailyValuationScheduleStateDto.DraftReady,
+            "the corrected marks should produce an incremental draft batch; summary: {0}; blockers: {1}",
+            correctionRun.Summary,
+            string.Join(" | ", correctionRun.Blockers));
         correctionRun.JournalEntryIds.Should().HaveCount(2)
             .And.NotBeEquivalentTo(initialPosting.JournalEntryIds);
         var correctionPosting = await batchLifecycle.ApproveAndPostAsync(new DailyValuationBatchLifecycleRequestDto(
@@ -1615,6 +1625,12 @@ public sealed class AccountingConfigurationServiceTests
         var runner = new AutomatedJournalIntakeRunner(
             new AutomatedJournalDraftIntakeService(workbench, draftStore, configuration),
             new FeeScheduleAccrualEventProducer(),
+            dailyMarkToMarketService: new DailyMarkToMarketService(
+                new StaticMarkPriceSource(new MarkPriceQuote(
+                    1m,
+                    "unused-empty-portfolio-price",
+                    "evidence://prices/unused",
+                    PriceAsOf: DateOnly.FromDateTime(dueAt.UtcDateTime)))),
             dailyValuationPositionService: positionService);
         var source = new InMemoryDailyValuationPortfolioSource();
         await source.SaveAsync(new DailyValuationScheduleWorkItem(
@@ -8470,7 +8486,7 @@ public sealed class AccountingConfigurationServiceTests
             Version: 0,
             Lines:
             [
-                new ManualJournalEntryLineDto("debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash", SecurityId: Guid.NewGuid()),
+                new ManualJournalEntryLineDto("debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash"),
                 new ManualJournalEntryLineDto("credit-income", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Income:Interest")
             ],
             EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je"],

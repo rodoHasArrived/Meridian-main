@@ -900,6 +900,7 @@ public sealed class ReportPackWorkflowServiceTests
         submitted.Should().NotBeNull();
         submitted!.Status.Should().Be(ReportTemplateLifecycleStatusDto.InReview);
 
+        client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "independent.controller");
         var approveResponse = await client.PostAsJsonAsync(
             $"/api/fund-structure/reporting/templates/{draft.Definition.TemplateId.Name}/versions/{draft.Definition.TemplateId.Version}/approve",
             new ReportTemplateDecisionRequestDto("Controller approved fee disclosure", "APP-TPL-2"),
@@ -2453,12 +2454,18 @@ public sealed class ReportPackWorkflowServiceTests
     public void Scenario_NewFundWorkspace_EmergingManagerStarterKitSeedsEditableReportingDesk()
     {
         var templateCatalog = new DefaultReportingTemplateCatalog();
+        var governedCatalog = new GovernedReportingTemplateCatalog(
+            templateCatalog,
+            new ReportTemplateRegistryService());
         var accessContext = BoundAccessContext("fund-controller");
         var orchestration = new ReportingOrchestrationService(
-            templateCatalog,
+            governedCatalog,
             new DeterministicReportingSectionRenderer(),
             () => new DateTimeOffset(2026, 7, 6, 16, 0, 0, TimeSpan.Zero));
-        var schedules = new ReportingScheduleService(orchestration, new InMemoryReportingScheduleStore([]));
+        var schedules = new ReportingScheduleService(
+            orchestration,
+            new InMemoryReportingScheduleStore([]),
+            governedTemplateCatalog: governedCatalog);
         var starterKits = new ReportingStarterKitService(
             new DefaultReportingStarterKitCatalog(),
             templateCatalog,
@@ -5309,7 +5316,11 @@ public sealed class ReportPackWorkflowServiceTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = username;
+            var actor = context.Request.Headers.TryGetValue("X-Meridian-Test-User", out var testActor) &&
+                !string.IsNullOrWhiteSpace(testActor.ToString())
+                    ? testActor.ToString().Trim()
+                    : username;
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = actor;
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = role;
             if (!string.IsNullOrWhiteSpace(roleProfileName))
             {

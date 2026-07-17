@@ -157,7 +157,21 @@ public sealed class DataQualityViewModelCharacterizationTests
     public void ApplySymbolFilter_WhenSelectedRowIsFilteredOut_ShouldClearDrilldown()
     {
         using var viewModel = CreateSubject();
-        var selected = new SymbolQualityModel { Symbol = "AAPL", ScoreFormatted = "99.0%", Grade = "A", Status = "Healthy" };
+        var selected = new SymbolQualityModel
+        {
+            Symbol = "AAPL",
+            Score = 99.0,
+            ScoreFormatted = "99.0%",
+            Grade = "A",
+            Status = "Healthy",
+            Presentation = new DataQualitySymbolPresentation
+            {
+                Symbol = "AAPL",
+                Score = 99.0,
+                ScoreFormatted = "99.0%",
+                Status = "Healthy"
+            }
+        };
         viewModel.SymbolQuality.Add(selected);
         viewModel.SymbolQuality.Add(new SymbolQualityModel { Symbol = "MSFT" });
         viewModel.ApplySymbolFilter(string.Empty);

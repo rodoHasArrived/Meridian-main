@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
+using Meridian.Application.Services;
 using Meridian.Core.Config;
 using Meridian.Contracts.Api;
 using Meridian.Domain.Events;
@@ -106,6 +107,24 @@ public sealed class ProviderFeatureRegistrationTests : IDisposable
         await using var client = registry.CreateStreamingClient("alpaca");
 
         client.Should().BeOfType<AlpacaMarketDataClient>();
+    }
+
+    [Fact]
+    public async Task Register_DoesNotResolveProviderSelector_WhileBootstrappingProviderRegistry()
+    {
+        Environment.SetEnvironmentVariable("ALPACA_KEY_ID", "AKXXXXXXXXXXXXXXXX");
+        Environment.SetEnvironmentVariable("ALPACA_SECRET_KEY", "secretxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+        var configPath = WriteConfig(new AppConfig(DataSource: DataSourceKind.IB));
+        var services = CreateServices(configPath);
+        services.AddSingleton(new ConfigurationService(
+            ibGatewayAvailabilityProbe: static () => false,
+            providerSelectorAccessor: static () => throw new InvalidOperationException(
+                "Provider selection must not run while ProviderRegistry is being constructed.")));
+
+        await using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<ProviderRegistry>().Should().NotBeNull();
     }
 
     private static ServiceCollection CreateServices(string configPath)

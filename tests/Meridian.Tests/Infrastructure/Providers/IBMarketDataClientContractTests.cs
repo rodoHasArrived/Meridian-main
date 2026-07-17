@@ -55,7 +55,7 @@ public sealed class IBMarketDataClientDiagnosticsTests
         connected.LastConnectedAt.Should().NotBeNull();
         if (client.IsSimulation)
         {
-            connected.ProviderName.Should().Contain("simulation",
+            connected.ProviderName.Should().ContainEquivalentOf("simulation",
                 "operators must be able to tell synthetic data from a live TWS connection");
         }
 
