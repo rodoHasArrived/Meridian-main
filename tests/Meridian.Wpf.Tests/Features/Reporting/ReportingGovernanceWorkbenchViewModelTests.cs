@@ -39,7 +39,8 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
 
         await viewModel.AssessReadinessCommand.ExecuteAsync(null);
 
-        var request = client.LastReadinessRequest.Should().NotBeNull().Subject;
+        client.LastReadinessRequest.Should().NotBeNull();
+        var request = client.LastReadinessRequest!;
         request.Template.Should().Be(new VersionedReportTemplateIdDto("board-governance-packet", 3));
         request.DatasetRows.Should().BeNull();
         request.DatasetSourceId.Should().BeNull();
@@ -47,7 +48,8 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
         request.JobId.Should().BeNull();
         request.AllowRestatement.Should().BeFalse();
 
-        var parameters = request.Parameters.Should().NotBeNull().Subject;
+        request.Parameters.Should().NotBeNull();
+        var parameters = request.Parameters!;
         parameters.Scope.FundProfileId.Should().Be("fund-atlas");
         parameters.Scope.EntityScopeKind.Should().Be(ReportingEntityScopeKindDto.Portfolio);
         parameters.Scope.EntityId.Should().Be("entity-7");
@@ -434,7 +436,8 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
         viewModel.DeliveryBody = "Use the secure portal to review the released board pack.";
         await viewModel.QueueDeliveryCommand.ExecuteAsync(null);
 
-        var request = client.LastDeliveryRequest.Should().NotBeNull().Subject;
+        client.LastDeliveryRequest.Should().NotBeNull();
+        var request = client.LastDeliveryRequest!;
         request.RunId.Should().Be("run-42");
         request.ArtifactIds.Should().Equal("artifact-pdf", "artifact-manifest");
         request.RecipientPrincipalId.Should().Be("board-reviewers");
