@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.Composition;
 using Meridian.Application.Accounting;
 using Meridian.Core.Contracts;
 using Meridian.Application.DirectLending;
@@ -71,6 +72,8 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
     {
+        var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
+
         services.TryAddSingleton<ConfigStore>(sp =>
         {
             var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
@@ -154,7 +157,10 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<FirstRunExperienceService>();
         services.TryAddSingleton<DesktopWorkstationLaunchService>();
         services.TryAddSingleton<DesktopLaunchTicketService>();
-        services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
+        if (!isProductionComposition)
+        {
+            services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
+        }
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
         services.TryAddSingleton<IngestionOperationsService>();
         services.TryAddSingleton<StorageAssuranceService>();
@@ -182,12 +188,18 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
-        services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
-        services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
-            sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        if (!services.Any(static descriptor =>
+                descriptor.ServiceType == typeof(IAssetOperationsProjectionStore)))
+        {
+            services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
+            services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        }
         services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
             sp.GetService<IAssetOperationsProjectionStore>() as IInstrumentPositionProjectionStore
-            ?? sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            ?? throw new InvalidOperationException(
+                "The configured Asset Operations projection store must also implement " +
+                $"{nameof(IInstrumentPositionProjectionStore)}."));
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();

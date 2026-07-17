@@ -39,8 +39,9 @@ local workstation API process behavior, or production API binding policy.
 
 `ApiHost` configuration separates local workstation hosting from remote API deployment. The default
 `LocalWorkstation` posture preserves `http://localhost:8080` and host-served `/workstation` assets.
-`ProductionApi` is the remote service posture for browser and WPF workstations; production
-auth-required startup rejects non-HTTPS bindings unless
+Required-auth production startup permits HTTP only when every `LocalWorkstation` binding is
+loopback. `ProductionApi` is the remote service posture for browser and WPF workstations; it rejects
+non-HTTPS bindings unless
 `AllowInsecureTransportForReverseProxy` is explicitly enabled for a trusted TLS-terminating proxy.
 `AllowedOrigins` declares browser workstation origins that may call the API when the UI is deployed
 separately from the service.

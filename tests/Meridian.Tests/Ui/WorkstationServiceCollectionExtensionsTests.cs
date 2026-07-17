@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Meridian.Application.Composition;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.AssetOperations;
@@ -130,6 +132,28 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         provider.GetRequiredService<IInstrumentPositionProjectionStore>()
             .Should()
             .BeSameAs(customStore);
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(InMemoryAssetOperationsProjectionStore));
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_WhenEnvironmentIsProduction_OmitsProcessLocalOperatorInbox()
+    {
+        using var environment = new Meridian.Tests.Application.Composition.EnvironmentVariableScope(
+            "ASPNETCORE_ENVIRONMENT",
+            "Production");
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(IOperatorInboxService));
     }
 
     [Fact]

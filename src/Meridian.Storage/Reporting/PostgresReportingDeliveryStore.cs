@@ -124,10 +124,10 @@ public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore
             $"""
             select job.job_id, job.tenant_id, job.access_grant_id
             from {_jobTable} as job
-            join {_grantTable} as grant
-              on grant.grant_id = job.access_grant_id
-             and grant.tenant_id = job.tenant_id
-            where grant.revoked_at_utc is null
+            join {_grantTable} as access_grant
+              on access_grant.grant_id = job.access_grant_id
+             and access_grant.tenant_id = job.tenant_id
+            where access_grant.revoked_at_utc is null
               and exists (
                   select 1
                   from {_receiptTable} as receipt

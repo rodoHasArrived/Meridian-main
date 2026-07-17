@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Application.Composition.Features;
+using Meridian.DataIntegration.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Application.Composition;
@@ -42,6 +44,30 @@ public sealed class ProductionServiceRegistrationPolicyTests
         Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
 
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void DiagnosticsFeatureRegistration_WhenEnvironmentIsProduction_OmitsSampleDataGenerator()
+    {
+        using var environment = new EnvironmentVariableScope("ASPNETCORE_ENVIRONMENT", "Production");
+        var services = new ServiceCollection();
+
+        new DiagnosticsFeatureRegistration().Register(services, CompositionOptions.Default);
+
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(SampleDataGenerator));
+    }
+
+    [Fact]
+    public void DiagnosticsFeatureRegistration_WhenEnvironmentIsNotProduction_RegistersSampleDataGenerator()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+
+        new DiagnosticsFeatureRegistration().Register(services, CompositionOptions.Default);
+
+        services.Should().ContainSingle(descriptor =>
+            descriptor.ServiceType == typeof(SampleDataGenerator));
     }
 
     [Fact]

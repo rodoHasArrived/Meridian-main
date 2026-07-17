@@ -58,6 +58,9 @@ should use that accessor instead of reparsing `HttpContext.Items` or trusting cl
 and company fields. The `/api/workstation` route group also requires that tenant scope before any
 workstation endpoint handler runs, so browser and WPF clients must operate through an authenticated
 tenant-scoped session rather than relying on client-supplied organization fields.
+Session and CSRF cookies are marked `Secure` for HTTPS and non-loopback production requests. The
+supported local-workstation HTTP binding omits that flag only when both ends of the connection are
+loopback, allowing the packaged browser login to return its `SameSite=Strict` cookies on localhost.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. `SecurityMasterWorkbenchQueryService` is published under
@@ -100,6 +103,13 @@ AssetOperations readiness, ledger impact, and report usage instead of asking bro
 to rebuild those relationships locally. Security Master remains the canonical identity owner while
 the Asset Operations seam contributes downstream roles, positions, economic state, and projection
 lineage; the explorer composes those owners without creating a parent Instrument Master.
+Shared workstation registration preserves a pre-registered durable Asset Operations projection
+store and adds the in-memory fallback only when no store is present, preventing packaged
+production composition from reintroducing a fixture implementation after host storage wiring.
+The process-local operator-inbox mutation store is likewise omitted in production; the shared
+endpoint continues to derive its actionable queue from durable readiness and reconciliation
+sources. The in-memory report-pack security-line index remains production-safe because it is a
+derived cache rebuilt from persisted workflow records and carries no source-of-truth state.
 Corporate-action mutations posted through shared Security Master endpoints delegate validation and
 append auditing to the application-owned
 `ISecurityMasterCorporateActionCommandService`.

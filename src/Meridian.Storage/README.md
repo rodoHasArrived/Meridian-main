@@ -251,7 +251,10 @@ plus append-only position economic-state history. `IInstrumentPositionProjection
 unfiltered security history, effective-dated security/book lookup, position lookup, and a
 transactional compare-and-swap write without exposing a ledger-balance API. Its PostgreSQL and
 in-memory implementations apply the same missing-role, date-window, overlap, cross-book, owner,
-dimension, provenance, and stale-version guards. The compatibility aggregate command derives the
+dimension, provenance, stale-version, identity, state-version, lineage, approval, and replay guards.
+Composition binds both Asset Operations projection interfaces to the PostgreSQL store when its
+connection is configured and only registers the in-memory fallback when that durable store is
+absent. The compatibility aggregate command derives the
 persisted version inside the same serializable write while preserving the legacy ability to import a
 strictly newer sparse version; exact `ExpectedVersion` compare-and-swap remains exclusive to the
 dedicated store. New dedicated writes require retained event provenance and evidence. PostgreSQL
