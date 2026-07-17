@@ -74,16 +74,16 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
         return Task.FromResult(conflict);
     }
 
-    public Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct)
+    public async Task<SecurityMasterConflict?> ResolveAsync(ResolveConflictRequest request, CancellationToken ct)
     {
         if (!_conflicts.TryGetValue(request.ConflictId, out var existing))
-            return Task.FromResult<SecurityMasterConflict?>(null);
+            return null;
 
         // Only an Open conflict can be resolved. Returning null when the conflict was already
         // resolved or dismissed lets a governed caller detect a concurrent/duplicate decision
         // instead of silently overwriting the first operator's winner.
         if (!string.Equals(existing.Status, "Open", StringComparison.OrdinalIgnoreCase))
-            return Task.FromResult<SecurityMasterConflict?>(null);
+            return null;
 
         var newStatus = request.Resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)
             ? "Dismissed"
@@ -105,20 +105,37 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
         // (Open) record wins. A concurrent resolver that lost the race observes null and must not
         // re-apply its decision.
         if (!_conflicts.TryUpdate(request.ConflictId, updated, existing))
-            return Task.FromResult<SecurityMasterConflict?>(null);
+            return null;
 
         _logger.LogInformation(
             "Conflict {ConflictId} for security {SecurityId} {Status} by {ResolvedBy}",
             request.ConflictId, existing.SecurityId, newStatus, request.ResolvedBy);
 
-        return Task.FromResult<SecurityMasterConflict?>(updated);
+        // Golden-record merge: apply a resolved field-value conflict's winning value into the security's
+        // stored terms and stamp field-level provenance, so both stores rewrite the projection rather
+        // than only annotating the winner. No-op for identifier-ambiguity or dismissed conflicts.
+        await SecurityMasterGoldenRecordMerge.ApplyResolvedFieldWinnerAsync(
+            _store,
+            updated,
+            request,
+            DateTimeOffset.UtcNow,
+            ex => _logger.LogWarning(
+                ex,
+                "Conflict {ConflictId} resolved but applying the winning field value to security {SecurityId} failed.",
+                updated.ConflictId, updated.SecurityId),
+            ct).ConfigureAwait(false);
+
+        return updated;
     }
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
     {
         // Load all projections and check the new record's identifiers against existing ones.
         var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        var candidates = SecurityMasterConflictDetection.DetectForProjection(projection, all, DateTimeOffset.UtcNow);
+        var detectedAt = DateTimeOffset.UtcNow;
+        var candidates = SecurityMasterConflictDetection.DetectForProjection(projection, all, detectedAt)
+            .Concat(SecurityMasterConflictDetection.DetectFieldConflictsForProjection(projection, all, detectedAt))
+            .ToList();
 
         int newConflicts = 0;
         foreach (var conflict in candidates)

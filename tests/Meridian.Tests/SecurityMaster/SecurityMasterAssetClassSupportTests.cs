@@ -28,6 +28,7 @@ public sealed class SecurityMasterAssetClassSupportTests
     [InlineData("PrivateCompanyEquity")]
     [InlineData("RealEstateHolding")]
     [InlineData("CommitmentGuarantee")]
+    [InlineData("InvestmentFund")]
     public async Task CreateAsync_SupportsCashAndShortTermSecurityAssetClasses(string assetClass)
     {
         var securityId = Guid.NewGuid();
@@ -380,6 +381,15 @@ public sealed class SecurityMasterAssetClassSupportTests
                 {
                     new { covenantType = "Liquidity", threshold = "Minimum cash reserve", notes = "Quarterly test" }
                 }
+            }),
+            "InvestmentFund" => JsonSerializer.SerializeToElement(new
+            {
+                fundType = "ETF",
+                fundFamily = "Meridian Index Funds",
+                navCurrency = "USD",
+                distributionPolicy = "Distributing",
+                isStableNav = false,
+                pricingSource = "Bloomberg"
             }),
             _ => throw new ArgumentOutOfRangeException(nameof(assetClass), assetClass, "Unsupported test asset class.")
         };

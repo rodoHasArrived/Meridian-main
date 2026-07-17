@@ -28,11 +28,34 @@ public interface ISecurityMasterLedgerBridge
         CancellationToken ct = default);
 }
 
+/// <param name="PositionQuantity">Record-date held quantity/face; drives dividend and paydown sizing.</param>
+/// <param name="PriorFactor">
+/// The pool factor already reflected in the held face at the start of the paydown, from real
+/// position/factor-schedule state. When <see langword="null"/> the bridge falls back to the
+/// legacy synthetic assumption (prior factor = 1).
+/// </param>
+/// <param name="CurrentFactor">
+/// The pool factor after the paydown, from real position/factor-schedule state. When
+/// <see langword="null"/> the bridge derives it from the corporate action's distribution ratio
+/// against <see cref="PriorFactor"/> (legacy synthetic behavior).
+/// </param>
+/// <param name="PositionVersion">
+/// The durable book-position version the paydown is projected against, so the factor engine's
+/// optimistic-concurrency guard runs against real state instead of a synthetic version of 1.
+/// </param>
+/// <param name="ExpectedPositionVersion">
+/// The position version the caller expects to still be current; defaults to
+/// <see cref="PositionVersion"/> when not supplied.
+/// </param>
 public sealed record CorporateActionLedgerPostingContext(
     decimal PositionQuantity = 0m,
     decimal WithholdingTaxRate = 0m,
     string? FinancialAccountId = null,
-    bool AutoReverseSupersededPostings = false);
+    bool AutoReverseSupersededPostings = false,
+    decimal? PriorFactor = null,
+    decimal? CurrentFactor = null,
+    long? PositionVersion = null,
+    long? ExpectedPositionVersion = null);
 
 /// <summary>
 /// Default implementation of <see cref="ISecurityMasterLedgerBridge"/>.
@@ -470,14 +493,25 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     {
         var factorDelta = action.DistributionRatio!.Value;
         var positionId = DeriveJournalId(action.SecurityId, $"factor-position:{ticker}");
+
+        // Prefer real position/factor-schedule state when the caller supplies it; only fall back to
+        // the legacy synthetic assumption (prior factor = 1, factor delta applied straight to face,
+        // position version = 1) when no durable position context is available. Supplying real prior/
+        // current factors and a real position version restores the factor engine's optimistic-
+        // concurrency and no-change guards instead of bypassing them.
+        var priorFactor = context.PriorFactor ?? 1m;
+        var currentFactor = context.CurrentFactor ?? priorFactor - factorDelta;
+        var positionVersion = context.PositionVersion ?? 1L;
+        var expectedPositionVersion = context.ExpectedPositionVersion ?? positionVersion;
+
         return _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
             action.SecurityId,
             positionId,
-            PositionVersion: 1,
-            ExpectedPositionVersion: 1,
+            PositionVersion: positionVersion,
+            ExpectedPositionVersion: expectedPositionVersion,
             HeldFace: context.PositionQuantity,
-            PriorFactor: 1m,
-            CurrentFactor: 1m - factorDelta,
+            PriorFactor: priorFactor,
+            CurrentFactor: currentFactor,
             Currency: action.Currency ?? string.Empty,
             EffectiveDate: action.ExDate,
             OccurredAtUtc: occurredAtUtc,

@@ -251,6 +251,35 @@ public static class SecurityAssetPackRegistry
         return ValidateCandidateSet([]);
     }
 
+    /// <summary>
+    /// Referential-integrity diagnostic between advertised asset-pack coverage and the modeled type
+    /// system: returns the distinct asset classes that one or more packs advertise but for which
+    /// <see cref="SecurityAssetClassCatalog"/> has no descriptor — i.e. coverage the registry claims
+    /// that the create/classification path cannot actually service. Kept separate from
+    /// <see cref="ValidateAll"/> so that surfacing intentionally forward-looking (not-yet-modeled)
+    /// coverage does not flip pack validity; callers decide whether an entry is a real gap or a
+    /// deliberately staged one.
+    /// </summary>
+    public static IReadOnlyList<string> AssetClassesWithoutCatalogBacking()
+        => AssetClassesWithoutCatalogBacking(SecurityAssetClassCatalog.AssetClasses);
+
+    /// <summary>
+    /// Overload that checks advertised pack coverage against an explicit set of modeled asset-class
+    /// names (the canonical <see cref="SecurityAssetClassCatalog.AssetClasses"/> in production; a
+    /// supplied set in tests).
+    /// </summary>
+    public static IReadOnlyList<string> AssetClassesWithoutCatalogBacking(IReadOnlyList<string> modeledAssetClasses)
+    {
+        ArgumentNullException.ThrowIfNull(modeledAssetClasses);
+        var modeled = new HashSet<string>(modeledAssetClasses, StringComparer.OrdinalIgnoreCase);
+        return Packs
+            .SelectMany(static pack => pack.AssetClasses)
+            .Where(assetClass => !modeled.Contains(assetClass))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static assetClass => assetClass, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
     public static AssetPackRegistryValidationResult ValidateCandidateSet(
         IReadOnlyList<SecurityAssetPackDescriptor> candidatePacks)
     {

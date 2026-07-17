@@ -410,6 +410,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
 
+        // Institutional accounting seams: corporate-action → ledger posting and the reference-data →
+        // tax-lot cost-basis adjustment projector. Both are built and tested but previously had no
+        // production registration, so corporate-action ledger postings and factor/amortization
+        // cost-basis relief never ran in a live host. Both are storage-independent (they consume the
+        // always-registered ISecurityMasterQueryService and IFactorPaydownProjectionService), so they
+        // register unconditionally alongside the factor projector rather than behind the SM env-gate.
+        services.TryAddSingleton<ISecurityMasterCostBasisAdjustmentService, SecurityMasterCostBasisAdjustmentService>();
+        services.TryAddSingleton<ISecurityMasterLedgerBridge, SecurityMasterLedgerBridge>();
+
         if (DirectLendingStartup.IsConfigured())
         {
             services.AddSingleton(directLendingOptions);

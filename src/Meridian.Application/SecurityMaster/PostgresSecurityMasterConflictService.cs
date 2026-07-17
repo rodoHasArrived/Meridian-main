@@ -132,13 +132,37 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         _logger.LogInformation(
             "Conflict {ConflictId} for security {SecurityId} {Status} by {ResolvedBy}",
             updated.ConflictId, updated.SecurityId, newStatus, request.ResolvedBy?.ReplaceLineEndings(" "));
+
+        // Golden-record merge: for a resolved field-value conflict, apply the winning value into the
+        // security's stored terms and stamp field-level provenance — resolution rewrites the projection
+        // instead of only annotating the winner. No-op for identifier-ambiguity or dismissed conflicts.
+        var merged = await SecurityMasterGoldenRecordMerge.ApplyResolvedFieldWinnerAsync(
+            _store,
+            updated,
+            request,
+            DateTimeOffset.UtcNow,
+            ex => _logger.LogWarning(
+                ex,
+                "Conflict {ConflictId} resolved but applying the winning field value to security {SecurityId} failed.",
+                updated.ConflictId, updated.SecurityId),
+            ct).ConfigureAwait(false);
+        if (merged)
+        {
+            _logger.LogInformation(
+                "Applied winning value for {FieldPath} to security {SecurityId} from conflict {ConflictId}.",
+                updated.FieldPath, updated.SecurityId, updated.ConflictId);
+        }
+
         return updated;
     }
 
     public async Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
     {
         var all = await _store.LoadAllAsync(ct).ConfigureAwait(false);
-        var candidates = SecurityMasterConflictDetection.DetectForProjection(projection, all, DateTimeOffset.UtcNow);
+        var detectedAt = DateTimeOffset.UtcNow;
+        var candidates = SecurityMasterConflictDetection.DetectForProjection(projection, all, detectedAt)
+            .Concat(SecurityMasterConflictDetection.DetectFieldConflictsForProjection(projection, all, detectedAt))
+            .ToList();
         if (candidates.Count == 0)
         {
             return;

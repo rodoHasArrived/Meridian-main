@@ -429,6 +429,38 @@ public sealed class SecurityAssetClassCatalogTests
     }
 
     [Fact]
+    public void AssetPackRegistry_ShouldSurfaceAdvertisedAssetClassesWithoutCatalogBacking()
+    {
+        var gap = SecurityAssetPackRegistry.AssetClassesWithoutCatalogBacking();
+        var modeled = new HashSet<string>(SecurityAssetClassCatalog.AssetClasses, StringComparer.OrdinalIgnoreCase);
+
+        // Referential-integrity check: packs advertise coverage the type system does not model.
+        // ExchangeTradedFund is a concrete example — a pack claims it (see
+        // AssetPackRegistry_FindByAssetClass_...) while the catalog only models Equity — so the
+        // registry's advertised coverage must not be read as backed create/classification support.
+        gap.Should().NotBeEmpty();
+        gap.Should().Contain("ExchangeTradedFund");
+
+        // The diagnostic must never flag an asset class the catalog already models.
+        gap.Should().OnlyContain(assetClass => !modeled.Contains(assetClass));
+        gap.Should().NotContain("Equity");
+        gap.Should().NotContain("Bond");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ShouldReportNoGap_WhenModeledSetCoversEveryAdvertisedClass()
+    {
+        // Feeding the full advertised set in as "modeled" yields an empty gap, proving the diagnostic
+        // is a pure function of the (advertised, modeled) relationship rather than a hardcoded list.
+        var advertised = SecurityAssetPackRegistry.All
+            .SelectMany(static pack => pack.AssetClasses)
+            .Distinct()
+            .ToArray();
+
+        SecurityAssetPackRegistry.AssetClassesWithoutCatalogBacking(advertised).Should().BeEmpty();
+    }
+
+    [Fact]
     public void AssetPackRegistry_FindByAssetClass_ShouldMapAssetClassToPackWithoutLedgerChanges()
     {
         var loanPacks = SecurityAssetPackRegistry.FindByAssetClass("DirectLoan");

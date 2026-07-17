@@ -589,7 +589,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             reader.GetString(5),
             reader.GetString(6),
             JsonDocument.Parse(reader.GetString(7)).RootElement.Clone(),
-            JsonDocument.Parse(reader.GetString(8)).RootElement.Clone(),
+            NormalizeAssetSpecificTermsOnRead(reader.GetString(8)),
             JsonDocument.Parse(reader.GetString(9)).RootElement.Clone(),
             reader.GetInt64(10),
             new DateTimeOffset(reader.GetDateTime(11), TimeSpan.Zero),
@@ -603,6 +603,17 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         var aliases = await LoadAliasesAsync(connection, securityId, ct).ConfigureAwait(false);
         return projection with { Identifiers = identifiers, Aliases = aliases };
     }
+
+    /// <summary>
+    /// Runs the asset-specific-terms payload through the migrate-on-read upcaster so every read —
+    /// not only writes — returns an explicitly versioned, normalized payload. Legacy blobs stored
+    /// before explicit versioning are stamped with their resolved <c>schemaVersion</c> here rather
+    /// than requiring a bulk data migration; payloads that already carry a version are returned
+    /// unchanged. Falls back to a raw parse only when the upcaster cannot interpret the text.
+    /// </summary>
+    private JsonElement NormalizeAssetSpecificTermsOnRead(string rawJson)
+        => _assetSpecificTermsUpcaster.Upcast(rawJson)?.Payload
+            ?? JsonDocument.Parse(rawJson).RootElement.Clone();
 
     private async Task<IReadOnlyList<SecurityIdentifierDto>> LoadIdentifiersAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
     {
