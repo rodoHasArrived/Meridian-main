@@ -326,6 +326,7 @@ Write-Host "  $summaryJsonPath"
 Write-Host "  $summaryMarkdownPath"
 
 if ($summary.result -ne "passed") {
+    Write-MeridianFailedStepDiagnostics -Steps $steps
     $failedStepNames = ($failedSteps | ForEach-Object { $_.name }) -join ", "
     throw "WPF development validation failed: $failedStepNames"
 }

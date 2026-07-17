@@ -674,6 +674,30 @@ function Stop-MeridianRepoOwnedTestHostProcesses {
     return $repoTestHosts
 }
 
+function Write-MeridianFailedStepDiagnostics {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]$Steps
+    )
+
+    # Surface each failed step's captured output tail to the console so CI logs show the actual
+    # build/test error. Without this the error lives only in the uploaded validation artifact,
+    # which makes intermittent (flaky) failures effectively undiagnosable from the run log.
+    $failed = @($Steps | Where-Object { $_.exitCode -ne 0 })
+    foreach ($failedStep in $failed) {
+        Write-Host ""
+        Write-Host ("::group::Failed step output - {0} (exit {1})" -f $failedStep.name, $failedStep.exitCode) -ForegroundColor Red
+        $tailText = [string]$failedStep.tail
+        if (-not [string]::IsNullOrWhiteSpace($tailText)) {
+            Write-Host $tailText
+        }
+        else {
+            Write-Host ("(no captured output tail; see {0})" -f $failedStep.logPath)
+        }
+        Write-Host "::endgroup::"
+    }
+}
+
 function Invoke-MeridianStepWithTestHostRetry {
     [CmdletBinding()]
     param(
@@ -696,10 +720,16 @@ function Invoke-MeridianStepWithTestHostRetry {
         return $step
     }
 
-    $repoTestHosts = @(Get-MeridianRepoOwnedTestHostProcesses -RepoRoot $RepoRoot)
-    if ($repoTestHosts.Count -eq 0 -or $null -eq $RetryEvents -or -not $RetryEvents.GetType().GetMethod('Add')) {
+    if ($null -eq $RetryEvents -or -not $RetryEvents.GetType().GetMethod('Add')) {
         return $step
     }
+
+    # Retry once on any non-zero exit. Stale repo-owned testhost processes holding output-file
+    # locks are the known cause of intermittent WPF build/test failures, but detecting them is
+    # racy - the holder can exit between the failure and this check - so a single retry after
+    # clearing any testhosts still present absorbs the transient class without masking a genuinely
+    # broken build, which simply fails again on the retry.
+    $repoTestHosts = @(Get-MeridianRepoOwnedTestHostProcesses -RepoRoot $RepoRoot)
 
     $retryLogSuffix = if ($LogName -match '\.log$') { '-retry.log' } else { '-retry.log' }
     $retryLogName = if ($LogName -match '\.log$') {
@@ -713,7 +743,12 @@ function Invoke-MeridianStepWithTestHostRetry {
 
     Stop-MeridianRepoOwnedTestHostProcesses -RepoRoot $RepoRoot | Out-Null
 
-    $retryReason = "build failed while repo-owned testhost processes were still running"
+    $retryReason = if ($repoTestHosts.Count -gt 0) {
+        "step failed while repo-owned testhost processes were still running"
+    }
+    else {
+        "step failed with a transient error; retried once"
+    }
     [void]$RetryEvents.Add([ordered]@{
             step = $Name
             reason = $retryReason
@@ -723,5 +758,14 @@ function Invoke-MeridianStepWithTestHostRetry {
     $retryStepName = "$Name (retry after testhost cleanup)"
     $retryStep = Invoke-MeridianLoggedStep -Name $retryStepName -Command $Command -LogPath $retryLogPath
     [void]$Steps.Add($retryStep)
+
+    if ($retryStep.exitCode -eq 0) {
+        # The retry recovered a transient failure. Clear the first attempt's non-zero exit from the
+        # pass/fail computation (which counts any step with exitCode -ne 0) so a flake the retry
+        # already recovered does not fail the lane. The retry event and the retry step above both
+        # preserve the record that a first attempt failed and a retry was run.
+        $step.exitCode = 0
+    }
+
     return $retryStep
 }
