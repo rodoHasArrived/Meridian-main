@@ -12,9 +12,13 @@ async function main() {
   if (!trackerOnly) {
     const rendered = await generateUiDiagrams({ repoRoot, renderAll });
 
+    // Diagrams are emitted to both docs/diagrams/ and docs/diagrams/ui/, so log
+    // repo-relative paths — basenames alone render the two copies identically.
     for (const item of rendered) {
       const suffix = item.svgChanged ? 'svg updated' : 'svg unchanged';
-      console.log(`Rendered ${path.basename(item.dotPath)} -> ${path.basename(item.svgPath)} (${suffix})`);
+      const from = path.relative(repoRoot, item.dotPath).replaceAll(path.sep, '/');
+      const to = path.relative(repoRoot, item.svgPath).replaceAll(path.sep, '/');
+      console.log(`Rendered ${from} -> ${to} (${suffix})`);
     }
   }
 
