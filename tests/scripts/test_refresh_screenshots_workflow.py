@@ -302,7 +302,22 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertNotIn("Run a governed report now", captures["W04C"].get("waitForTexts", []))
         self.assertIn("Review approval details", captures["W04E"].get("waitForTexts", []))
         self.assertNotIn("report-run-board-202605", captures["W04E"].get("waitForTexts", []))
-        self.assertIn("Generated artifact references", captures["W04I2"].get("waitForTexts", []))
+
+        # The run-detail capture renders the governed screen, which loads its run from the
+        # authoritative reporting endpoints instead of the workstation reporting read model.
+        self.assertIn("Governed lifecycle", captures["W04I2"].get("waitForTexts", []))
+        self.assertIn("Immutable release artifacts", captures["W04I2"].get("waitForTexts", []))
+        self.assertIn(
+            "Governed report run unavailable",
+            captures["W04I2"].get("waitForAbsentTexts", []),
+        )
+
+        governed_run_path = "/api/fund-structure/reporting/runs/report-run-investor-202605"
+        self.assertIn(governed_run_path, captures["W04I2"].get("requiredApiRoutes", []))
+        self.assertEqual(
+            "Released",
+            self.web_screenshot_fixtures["routes"][governed_run_path]["governanceState"],
+        )
 
     def test_data_import_and_settings_captures_use_canonical_task_routes(self) -> None:
         captures = {

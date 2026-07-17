@@ -815,7 +815,8 @@ public sealed class ReportPackWorkflowServiceTests
         manifest.Sections.Select(static section => section.SectionId).Should().Contain(
             "sector-pivot",
             "security-topn",
-            "strategy-contribution");
+            "strategy-contribution",
+            "__VACUITY_PROBE__");
         manifest.Artifacts.Should().Contain($"report-writer://{manifest.RunId}/grids/sector-pivot");
         manifest.Artifacts.Should().Contain($"report-writer://{manifest.RunId}/grids/security-topn");
         manifest.Artifacts.Should().Contain($"report-writer://{manifest.RunId}/grids/strategy-contribution");

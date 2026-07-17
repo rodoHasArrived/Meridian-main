@@ -25,7 +25,8 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             "RealEstateHolding",
             "CommitmentGuarantee",
             "CustomAsset",
-            "OtherSecurity");
+            "OtherSecurity",
+            "__VACUITY_PROBE__");
         result.AssetClasses.Should().OnlyContain(static row =>
             row.EvidenceRequirements.Any(static requirement => requirement.Category == "SecurityMaster")
             && row.EvidenceRequirements.Any(static requirement => requirement.Category == "ProviderEvidence")
@@ -313,7 +314,8 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             "LoanScheduleEvidence",
             "CommitmentCovenantEvidence",
             "PaydownObligationLedger",
-            "DirectLendingRuleKernel");
+            "DirectLendingRuleKernel",
+            "__VACUITY_PROBE__");
         row.DrillThroughTargets.Should().Contain(target =>
             target.TargetType == "PaydownObligationLedger" &&
             target.Source == "LoanAccountingProjector");
@@ -359,7 +361,8 @@ public sealed class SecurityMasterOperationalReadinessServiceTests
             "AssetProfileLineage",
             "ServicerTrusteeEvidence",
             "StructuredValuationEvidence",
-            "ObligationCloseEvidence");
+            "ObligationCloseEvidence",
+            "__VACUITY_PROBE__");
         row.DrillThroughTargets.Should().Contain(target =>
             target.TargetType == "ObligationCloseEvidence" &&
             target.Status == "ReviewRequired" &&

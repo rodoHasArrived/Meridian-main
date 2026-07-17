@@ -745,16 +745,25 @@
     {
       "id": "W04I2",
       "name": "web-reporting-run-detail",
-      "path": "/reporting/runs/detail?runId=report-run-board-202605",
+      "path": "/reporting/runs/detail?runId=report-run-investor-202605",
       "docLabel": "Reporting \u2014 Run Detail",
       "waitForText": "Report Run Detail",
       "requiredApiRoutes": [
-        "/api/workstation/reporting"
+        "/api/fund-structure/reporting/runs/report-run-investor-202605",
+        "/api/fund-structure/reporting/runs/series/report-series-investor-monthly-statement",
+        "/api/fund-structure/reporting/distribution/transports",
+        "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/deliveries",
+        "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/access-grants"
       ],
       "waitForTexts": [
-        "Parameters used",
-        "Generated artifact references",
-        "Clone parameters"
+        "Governed lifecycle",
+        "Immutable release artifacts",
+        "Immutable audit trail",
+        "Authenticated transport catalog"
+      ],
+      "waitForAbsentTexts": [
+        "Loading governed report run",
+        "Governed report run unavailable"
       ]
     },
     {

@@ -70,7 +70,8 @@ public sealed class ConfigJsonSchemaGeneratorTests
             "AllowInsecureTransportForReverseProxy",
             "DeploymentMode",
             "ServeWorkstationAssets",
-            "Urls");
+            "Urls",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]
@@ -99,7 +100,8 @@ public sealed class ConfigJsonSchemaGeneratorTests
             "SourcePrecedence",
             "GoldenCopySource",
             "RequireIndependentReviewer",
-            "MaxBulkResolveBatch");
+            "MaxBulkResolveBatch",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]
