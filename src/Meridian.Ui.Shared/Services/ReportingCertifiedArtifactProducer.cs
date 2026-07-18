@@ -269,6 +269,11 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
     private static byte[] RenderSupportingSchedules(ReportingOutputManifest manifest)
     {
+        if (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty)
+        {
+            return RenderCertifiedRowsCsv(manifest);
+        }
+
         var builder = new StringBuilder("gridId,rowKey,column,value\r\n");
         foreach (var grid in manifest.RenderedReportWriterGrids.OrderBy(static grid => grid.GridId, StringComparer.Ordinal))
         {
@@ -279,11 +284,6 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                     AppendCsvRow(builder, grid.GridId, row.RowKey, value.Key, value.Value);
                 }
             }
-        }
-
-        if (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty)
-        {
-            return RenderCertifiedRowsCsv(manifest);
         }
 
         return Utf8(builder.ToString());
@@ -319,8 +319,10 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
     private static byte[] RenderGrid(ReportingOutputManifest manifest, string gridId)
     {
-        var grid = manifest.RenderedReportWriterGrids.SingleOrDefault(item =>
-            string.Equals(item.GridId, gridId, StringComparison.OrdinalIgnoreCase))
+        var grid = (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty
+                ? null
+                : manifest.RenderedReportWriterGrids.SingleOrDefault(item =>
+                    string.Equals(item.GridId, gridId, StringComparison.OrdinalIgnoreCase)))
             ?? throw new ReportingGovernanceException(
                 $"Declared report-writer grid '{gridId}' has no rendered grid payload.");
         return SerializeCanonical(new
