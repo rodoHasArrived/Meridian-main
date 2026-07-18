@@ -1,12 +1,12 @@
 {
-  "total_files": 624,
-  "total_lines": 112212,
-  "orphaned_count": 244,
+  "total_files": 659,
+  "total_lines": 122012,
+  "orphaned_count": 246,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 205,
-  "average_lines": 179.8,
-  "health_score": 80,
+  "average_lines": 185.1,
+  "health_score": 81,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -236,6 +236,8 @@
     "docs/source/source-readme-template.md",
     "docs/source/source-todo-standard.md",
     "docs/testing/wave2-cockpit-reliability-evidence-runbook.md",
+    "output/schema-control-29654725912/candidate/reports/schema-diff.md",
+    "output/schema-control-29654725912/candidate/reports/summary.md",
     "plugins/frontend-web-dev/agents/electron-angular-native.md",
     "plugins/frontend-web-dev/agents/expert-react-frontend-engineer.md",
     "plugins/frontend-web-dev/skills/playwright-explore-website/SKILL.md",
@@ -2511,7 +2513,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9158,
+      "line_count": 9164,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2719,7 +2721,7 @@
     },
     {
       "path": "docs/operators/reconciliation-operations.md",
-      "line_count": 65,
+      "line_count": 90,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4710,6 +4712,286 @@
       "stale": false
     },
     {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/asset-operations-contracts.md",
+      "line_count": 432,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/banking-contracts.md",
+      "line_count": 82,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/direct-lending-contracts-page-01.md",
+      "line_count": 675,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/direct-lending-contracts-page-02.md",
+      "line_count": 176,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/direct-lending-contracts.md",
+      "line_count": 13,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/fund-governance-contracts-page-01.md",
+      "line_count": 747,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/fund-governance-contracts-page-02.md",
+      "line_count": 617,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/fund-governance-contracts.md",
+      "line_count": 13,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/identity-access-contracts.md",
+      "line_count": 316,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/ledger-contracts-page-01.md",
+      "line_count": 800,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/ledger-contracts-page-02.md",
+      "line_count": 764,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/ledger-contracts-page-03.md",
+      "line_count": 763,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/ledger-contracts-page-04.md",
+      "line_count": 490,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/ledger-contracts.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/money-market-contracts.md",
+      "line_count": 24,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/reporting-contracts.md",
+      "line_count": 186,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/security-master-contracts-page-01.md",
+      "line_count": 533,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/security-master-contracts-page-02.md",
+      "line_count": 616,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/security-master-contracts-page-03.md",
+      "line_count": 84,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/contracts/security-master-contracts.md",
+      "line_count": 14,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/data-object-catalog.md",
+      "line_count": 39,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/asset_operations.md",
+      "line_count": 199,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/banking.md",
+      "line_count": 52,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/fund_accounts.md",
+      "line_count": 214,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/fund_structure.md",
+      "line_count": 179,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/identity_access.md",
+      "line_count": 50,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/ledger.md",
+      "line_count": 310,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/money_market.md",
+      "line_count": 50,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/public.md",
+      "line_count": 17,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/reporting.md",
+      "line_count": 201,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/modules/security_master.md",
+      "line_count": 1007,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/README.md",
+      "line_count": 8,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/docs/schema-catalog.md",
+      "line_count": 22,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/reports/schema-diff.md",
+      "line_count": 25,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "output/schema-control-29654725912/candidate/reports/summary.md",
+      "line_count": 18,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "plugins/frontend-web-dev/agents/electron-angular-native.md",
       "line_count": 286,
       "has_heading": true,
@@ -4895,7 +5177,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1396,
+      "line_count": 1400,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4959,7 +5241,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 566,
+      "line_count": 568,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5151,7 +5433,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 1955,
+      "line_count": 1958,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5159,7 +5441,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1305,
+      "line_count": 1311,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5183,7 +5465,7 @@
     },
     {
       "path": "src/Meridian.Ui/README.md",
-      "line_count": 99,
+      "line_count": 102,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
