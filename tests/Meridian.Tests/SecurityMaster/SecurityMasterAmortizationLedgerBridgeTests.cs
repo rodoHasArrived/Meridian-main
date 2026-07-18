@@ -34,6 +34,15 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     private static StructuredCashFlowProjectionDto Projection(params StructuredCashFlowScheduleEntry[] schedule)
         => new(SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base, DateTimeOffset.UtcNow, schedule);
 
+    private static StructuredCashFlowProjectionDto Projection(StructuredCashFlowTerms terms, params StructuredCashFlowScheduleEntry[] schedule)
+        => new(SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base, DateTimeOffset.UtcNow, schedule, TermsUsed: terms);
+
+    private static StructuredCashFlowTerms TermsWith(DateOnly maturity, string dayCount = "ACT/365")
+        => StructuredCashFlowTerms.Empty with { MaturityDate = maturity, DayCountConvention = dayCount };
+
+    private static LedgerTaxLot Lot(decimal quantity, decimal unitCost, int year = 2026, int month = 1, int day = 1)
+        => new("lot-1", new DateOnly(year, month, day), quantity, unitCost, SecurityId);
+
     private static StructuredCashFlowProjectionDto ScenarioProjection(
         StructuredCashFlowScenario scenario,
         StructuredCashFlowStaleness staleness,
@@ -70,12 +79,13 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     [Fact]
     public async Task PostProjectedCashFlowsAsync_AmortizesPremiumTowardPar()
     {
-        var projection = Projection(Period(2026, 6, 30, interest: 20m));
+        var projection = Projection(TermsWith(maturity: new DateOnly(2026, 6, 30)), Period(2026, 6, 30, interest: 20m));
         var bridge = BuildBridge(CashFlowServiceWith(projection));
         var ledger = new DomainLedger();
 
-        // 1,000 face bought at 102% -> 20 of premium amortized over the single posted period.
-        var context = new AmortizationLedgerPostingContext(PositionFace: 1000m, PurchasePricePercentOfPar: 102m);
+        // A lot of 10 par-100 units bought at 102 -> 20 of premium, fully amortized by the single
+        // posted period because that period is the maturity date.
+        var context = new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 10m, unitCost: 102m)]);
         var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, context);
 
         posted.Should().Be(1);
@@ -88,11 +98,11 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     [Fact]
     public async Task PostProjectedCashFlowsAsync_AccretesDiscountTowardPar()
     {
-        var projection = Projection(Period(2026, 6, 30, interest: 0m));
+        var projection = Projection(TermsWith(maturity: new DateOnly(2026, 6, 30)), Period(2026, 6, 30, interest: 0m));
         var bridge = BuildBridge(CashFlowServiceWith(projection));
         var ledger = new DomainLedger();
 
-        var context = new AmortizationLedgerPostingContext(PositionFace: 1000m, PurchasePricePercentOfPar: 98m);
+        var context = new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 10m, unitCost: 98m)]);
         var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, context);
 
         posted.Should().Be(1);
@@ -139,10 +149,12 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     [Fact]
     public async Task PostProjectedCashFlowsAsync_SmallPremiumOverManyPeriods_NeverBooksReversedSign()
     {
-        // 1 face at 102% -> 0.02 total premium spread over 4 periods. Naive per-period rounding
-        // would over-allocate the first periods and flip the last period into a discount accretion;
-        // the cumulative-target distribution keeps every share a premium write-down.
+        // A tiny lot (0.01 par-100 units at 102) -> 0.02 total premium spread over 4 quarterly
+        // periods. Naive per-period rounding would over-allocate the first periods and flip a later
+        // period into a discount accretion; the cumulative-target distribution over monotone
+        // day-count weights keeps every share a premium write-down.
         var projection = Projection(
+            TermsWith(maturity: new DateOnly(2026, 12, 31), dayCount: "30/360"),
             Period(2026, 3, 31, interest: 5m),
             Period(2026, 6, 30, interest: 5m),
             Period(2026, 9, 30, interest: 5m),
@@ -150,7 +162,7 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         var bridge = BuildBridge(CashFlowServiceWith(projection));
         var ledger = new DomainLedger();
 
-        var context = new AmortizationLedgerPostingContext(PositionFace: 1m, PurchasePricePercentOfPar: 102m);
+        var context = new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 0.01m, unitCost: 102m)]);
         var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, context);
 
         posted.Should().Be(4);
@@ -163,6 +175,53 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
             .Where(line => line.Account == securities)
             .Should().OnlyContain(line => line.Debit == 0m);
         ledger.GetBalance(securities).Should().Be(-0.02m);
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_WeighsAmortizationByDayCountYearFraction()
+    {
+        // 20 of premium over two semiannual periods under ACT/365: the first period covers
+        // 181/365 of the year (Jan 1 -> Jul 1), so it amortizes round(20 x 181/365) = 9.92 and the
+        // second takes the 10.08 remainder. An equal per-period split would post 10.00/10.00 — this
+        // pins the same year-fraction method the cost-basis relief engine uses.
+        var projection = Projection(
+            TermsWith(maturity: new DateOnly(2027, 1, 1), dayCount: "ACT/365"),
+            Period(2026, 7, 1, interest: 0m),
+            Period(2027, 1, 1, interest: 0m));
+        var bridge = BuildBridge(CashFlowServiceWith(projection));
+        var ledger = new DomainLedger();
+
+        var context = new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 10m, unitCost: 102m)]);
+        var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, context);
+
+        posted.Should().Be(2);
+        var securities = LedgerAccounts.Securities(Ticker);
+        var credits = ledger.Journal
+            .Select(entry => entry.Lines.Where(line => line.Account == securities).Sum(line => line.Credit))
+            .ToList();
+        credits.Should().Equal(9.92m, 10.08m);
+        ledger.GetBalance(securities).Should().Be(-20m);
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_DoesNotAmortizeBeforeTheLotIsAcquired()
+    {
+        // The lot is acquired on the first period date, so that period accrues nothing for it; the
+        // full 20 of premium amortizes across the lot's actual holding window only.
+        var projection = Projection(
+            TermsWith(maturity: new DateOnly(2026, 12, 31)),
+            Period(2026, 6, 30, interest: 0m),
+            Period(2026, 12, 31, interest: 0m));
+        var bridge = BuildBridge(CashFlowServiceWith(projection));
+        var ledger = new DomainLedger();
+
+        var context = new AmortizationLedgerPostingContext(
+            OpenLots: [Lot(quantity: 10m, unitCost: 102m, year: 2026, month: 6, day: 30)]);
+        var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, context);
+
+        // Only the second period posts: the first has no coupon and no amortization yet.
+        posted.Should().Be(1);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
     }
 
     [Fact]

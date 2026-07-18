@@ -50,7 +50,12 @@ internal static class SecurityEconomicDefinitionAdapter
             ? economic.TypeName
             : economic.LegacyAssetClass;
 
-        var assetSpecificTerms = economic.LegacyAssetSpecificTerms?.Clone() ?? economic.EconomicTerms;
+        // The legacy slot expects the flat v1 asset-specific-terms family. When only the structured
+        // v2 economic-terms document exists, route it through the upcaster chain so it lands as a
+        // valid v1 payload — putting the raw v2 document here made every read of the row fail with
+        // "Unsupported schemaVersion '2'".
+        var assetSpecificTerms = economic.LegacyAssetSpecificTerms?.Clone()
+            ?? SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms).Payload;
         var primaryIdentifier = economic.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
 
         return new SecurityProjectionRecord(

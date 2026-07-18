@@ -3150,6 +3150,9 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =>
             Task.CompletedTask;
+
+        public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct) =>
+            Task.CompletedTask;
     }
 
     private sealed record SymbolValidationIssue(

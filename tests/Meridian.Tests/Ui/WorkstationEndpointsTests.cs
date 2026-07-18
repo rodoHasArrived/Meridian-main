@@ -8424,6 +8424,9 @@ public sealed partial class WorkstationEndpointsTests
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct)
             => Task.CompletedTask;
+
+        public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
+            => Task.CompletedTask;
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore

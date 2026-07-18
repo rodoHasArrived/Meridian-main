@@ -14,7 +14,8 @@ public sealed record StructuredCashFlowTerms(
     decimal? CouponRate,
     string? PaymentFrequency,
     string? DayCountConvention,
-    IReadOnlyList<StructuredFactorScheduleEntry> FactorSchedule)
+    IReadOnlyList<StructuredFactorScheduleEntry> FactorSchedule,
+    IReadOnlyList<StructuredCashFlowLeg>? Legs = null)
 {
     /// <summary>An empty term set used when a security carries no readable structured terms.</summary>
     public static StructuredCashFlowTerms Empty { get; } = new(
@@ -29,6 +30,9 @@ public sealed record StructuredCashFlowTerms(
 
     /// <summary>True when a typed, multi-point factor schedule was resolved from the terms.</summary>
     public bool HasFactorSchedule => FactorSchedule.Count > 0;
+
+    /// <summary>True when typed cash-flow legs were resolved (multi-leg or floating-rate structure).</summary>
+    public bool HasLegs => Legs is { Count: > 0 };
 
     /// <summary>
     /// Returns the pool factor in effect on <paramref name="asOf"/> — the latest scheduled factor

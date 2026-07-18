@@ -194,17 +194,21 @@ internal static class SecurityMasterMapping
         };
 
     private static SecurityIdentifierDto ToIdentifierDto(SecurityIdentifierSnapshot identifier)
-        => new(
-            Enum.Parse<SecurityIdentifierKind>(identifier.Kind, ignoreCase: true),
+    {
+        // Read-tolerant: a kind stamped by a newer node degrades to Unknown so the snapshot stays
+        // readable; the strict write-side mapping (ToIdentifier) still rejects Unknown, so an
+        // unrecognized kind is never silently re-persisted.
+        var kind = SecurityMasterEnumReads.ParseOrFallback(identifier.Kind, SecurityIdentifierKind.Unknown);
+        return new(
+            kind,
             identifier.Value,
             identifier.IsPrimary,
             identifier.ValidFrom,
             identifier.ValidTo.HasValue ? identifier.ValidTo.Value : null,
             string.IsNullOrWhiteSpace(identifier.Provider) ? null : identifier.Provider,
-            SecurityIdentifierNormalizer.NormalizeValue(
-                Enum.Parse<SecurityIdentifierKind>(identifier.Kind, ignoreCase: true),
-                identifier.Value),
+            SecurityIdentifierNormalizer.NormalizeValue(kind, identifier.Value),
             SecurityIdentifierNormalizer.NormalizeProvider(identifier.Provider));
+    }
 
     private static CommonTerms ToCommonTerms(JsonElement json)
         => new(
@@ -388,7 +392,16 @@ internal static class SecurityMasterMapping
                 ToDistributionPolicyOption(GetOptionalString(json, "distributionPolicy")),
                 ToOption(GetOptionalBoolean(json, "isStableNav")),
                 ToOption(GetOptionalString(json, "pricingSource")))),
-            _ => throw new InvalidOperationException($"Unsupported asset class '{assetClass}'.")
+            // Unknown classes degrade to OtherSecurity with the raw class preserved as the category
+            // instead of failing every read of the row. A newer node can register a class this node
+            // has no deserializer for; throwing here made that a total read outage per security
+            // (see the InvestmentFund regression in SecurityMasterMappingInteropTests).
+            _ => SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
+                assetClass,
+                ToOption(GetOptionalString(json, "subType")),
+                ToOption(GetOptionalDateOnly(json, "maturity")),
+                ToOption(GetOptionalString(json, "issuerName")),
+                ToOption(GetOptionalString(json, "settlementType"))))
         };
     }
 
@@ -555,13 +568,7 @@ internal static class SecurityMasterMapping
            && !string.IsNullOrWhiteSpace(customProfileId.GetString());
 
     private static bool SupportsProfileBackedTerms(string assetClass)
-        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase);
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms;
 
     private static JsonElement ResolveAssetTermsJson(JsonElement json)
         => json.TryGetProperty("profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object
