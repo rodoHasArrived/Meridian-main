@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Execution.Services;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Ui.Shared.Services;
@@ -65,6 +66,29 @@ public sealed class WorkstationServiceCollectionExtensionsTests
         provider.GetRequiredService<ITradingOperatorReadinessProvider>()
             .Should()
             .BeSameAs(provider.GetRequiredService<TradingOperatorReadinessService>());
+    }
+
+    [Fact]
+    public void AddWorkstationSharedServices_ResolvesAccountingEvidenceServicesThroughInterfaces()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var configPath = Path.Combine(root, "appsettings.json");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(configPath, "{}");
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(new CoreConfigStore(configPath));
+
+        services.AddWorkstationSharedServices();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IAutomatedJournalCapitalAccountReconciliationResolver>()
+            .Should()
+            .BeOfType<LedgerCapitalAccountReconciliationResolver>();
+        provider.GetRequiredService<IAccountingPositionSnapshotCaptureService>()
+            .Should()
+            .BeOfType<AccountingPositionSnapshotCaptureService>();
     }
 
     [Fact]

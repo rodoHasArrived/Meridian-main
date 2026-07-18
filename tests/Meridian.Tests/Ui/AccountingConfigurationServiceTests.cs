@@ -1336,6 +1336,50 @@ public sealed class AccountingConfigurationServiceTests
         write.Entry.Metadata.IdempotencyKey.Should().Be($"manual-je:{ManualJournalLedgerBookId:N}:{saved.JournalEntryId:N}");
     }
 
+    [Fact]
+    public async Task Scenario_ManualJournalEntryLifecycle_InstrumentPostingWithoutAuthoritativeSecurityMasterFailsClosed()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(
+            configuration,
+            includeAuthoritativeSecurityMaster: false);
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry(),
+            "ops-user"));
+        var submitted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            JournalEntryLifecycleActionDto.Submit,
+            "controller",
+            saved.Version,
+            Notes: "Submit instrument-bearing manual journal for review.",
+            EvidenceLinks: ["evidence://accounting/manual-je/submit"],
+            LedgerBookId: saved.LedgerBookId));
+        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntry.JournalEntryId,
+            submitted.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.JournalEntry.Version,
+            Notes: "Controller approved with retained evidence.",
+            EvidenceLinks: [ManualJournalApprovalEvidence(submitted.JournalEntry)],
+            LedgerBookId: submitted.JournalEntry.LedgerBookId));
+
+        var post = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Attempt posting without an authoritative Security Master.",
+            EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
+            LedgerBookId: approved.JournalEntry.LedgerBookId));
+
+        await post.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Instrument-bearing manual journal posting requires an authoritative Security Master query service.");
+    }
+
     /// <summary>
     /// Scenario: two listed securities receive a corrected same-day close. Both the original and
     /// corrected batches traverse intake and the all-entry approval/post lifecycle, while restart
@@ -1429,12 +1473,8 @@ public sealed class AccountingConfigurationServiceTests
         var runner = new AutomatedJournalIntakeRunner(
             intake,
             new FeeScheduleAccrualEventProducer(),
-            dailyMarkToMarketService: new DailyMarkToMarketService(
-                new StaticMarkPriceSource(new MarkPriceQuote(
-                    160m,
-                    "trusted-close",
-                    "evidence://prices/AAPL/2026-06-30",
-                    PriceAsOf: new DateOnly(2026, 6, 30)))));
+            dailyMarkToMarketService: new DailyMarkToMarketService(priceSource),
+            dailyValuationPositionService: positionService);
         var scheduleSource = new InMemoryDailyValuationPortfolioSource();
         var configured = await scheduleSource.SaveAsync(new DailyValuationScheduleWorkItem(
             "daily-valuation-fund-alpha",
@@ -1489,7 +1529,8 @@ public sealed class AccountingConfigurationServiceTests
         var scheduleStatus = await scheduleSource.GetStatusAsync(
             "fund-alpha",
             ManualJournalLedgerBookId,
-            "2026-06");
+            "2026-06",
+            entityId: "entity-master");
         scheduleStatus.State.Should().Be(DailyValuationScheduleStateDto.DraftReady);
         scheduleStatus.NextRunAtUtc.Should().Be(asOf.AddDays(1));
         scheduleStatus.EvidenceLinks.Should().Contain(link => link.Route == "evidence://prices/AAPL/2026-06-30/initial");
@@ -1614,6 +1655,8 @@ public sealed class AccountingConfigurationServiceTests
         var runner = new AutomatedJournalIntakeRunner(
             new AutomatedJournalDraftIntakeService(workbench, draftStore, configuration),
             new FeeScheduleAccrualEventProducer(),
+            dailyMarkToMarketService: new DailyMarkToMarketService(
+                Substitute.For<IMarkPriceSource>()),
             dailyValuationPositionService: positionService);
         var source = new InMemoryDailyValuationPortfolioSource();
         await source.SaveAsync(new DailyValuationScheduleWorkItem(
@@ -7575,7 +7618,8 @@ public sealed class AccountingConfigurationServiceTests
         IBankTransactionSource? bankTransactionSource = null,
         bool includeDefaultJournalStore = true,
         IGovernedLedgerPostingTarget? postingTarget = null,
-        IManualJournalEntryDraftStore? draftStore = null)
+        IManualJournalEntryDraftStore? draftStore = null,
+        bool includeAuthoritativeSecurityMaster = true)
     {
         journalStore ??= includeDefaultJournalStore
             ? WritableManualJournalLedgerJournalStore.Default()
@@ -7585,6 +7629,9 @@ public sealed class AccountingConfigurationServiceTests
             draftStore ?? new InMemoryManualJournalEntryDraftStore(),
             configurationService,
             new InMemoryAccountingActionAuditStore(),
+            securityMasterQueryService: includeAuthoritativeSecurityMaster
+                ? new DailyValuationSecurityMasterQueryService()
+                : null,
             journalStore: journalStore,
             reportPackWorkflowService: reportPackWorkflowService,
             bankTransactionSource: bankTransactionSource,
@@ -8469,7 +8516,14 @@ public sealed class AccountingConfigurationServiceTests
             Version: 0,
             Lines:
             [
-                new ManualJournalEntryLineDto("debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash", SecurityId: Guid.NewGuid()),
+                new ManualJournalEntryLineDto(
+                    "debit-cash",
+                    AccountingTemplateLineSideDto.Debit,
+                    100m,
+                    "USD",
+                    "Assets:Cash",
+                    SecurityId: DailyValuationAaplSecurityId,
+                    LedgerAccountSymbol: "AAPL"),
                 new ManualJournalEntryLineDto("credit-income", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Income:Interest")
             ],
             EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je"],

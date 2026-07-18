@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
@@ -7,8 +8,10 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution;
 using Meridian.Execution.Events;
+using Meridian.Execution.Serialization;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -28,6 +31,22 @@ public sealed class EventDrivenDecouplingTests
         Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
         Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
         Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"));
+
+    private static TradeFillLedgerPostingContext CreateSameLabelDifferentExactContext(bool changeLedgerBook)
+        => changeLedgerBook
+            ? TestPostingContext with
+            {
+                LedgerBookId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd")
+            }
+            : TestPostingContext with
+            {
+                PeriodId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee")
+            };
+
+    private static TradeFillLedgerPostingContext CreateSameIdentityDifferentPolicyContext(bool changeVersion)
+        => changeVersion
+            ? TestPostingContext with { AccountingPolicyVersion = "2" }
+            : TestPostingContext with { AccountingPolicyId = "execution-trade-fill-v2" };
 
     // -------------------------------------------------------------------------
     // TradeExecutedEvent
@@ -466,6 +485,152 @@ public sealed class EventDrivenDecouplingTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task WalTradeFillPostingStore_SameBookPeriodAndLabelWithDifferentPolicy_FailsClosedOnRestart(
+        bool changeVersion)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var mismatchedContext = CreateSameIdentityDifferentPolicyContext(changeVersion);
+        var retainedFill = MakeBuyEvent("POLICY");
+        try
+        {
+            await using (var original = new WalTradeFillPostingStore(
+                             new TradeFillPostingStoreOptions(root, TestPostingContext),
+                             NullLogger<WalTradeFillPostingStore>.Instance))
+            {
+                await original.AcceptAsync(retainedFill);
+                original.ScopeIdentity.Should().Be(TradeFillPostingScopeIdentity.FromContext(TestPostingContext));
+            }
+
+            var mismatched = new WalTradeFillPostingStore(
+                new TradeFillPostingStoreOptions(root, mismatchedContext),
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            Func<Task> load = async () => await mismatched.LoadPendingAsync();
+
+            await load.Should().ThrowAsync<InvalidDataException>()
+                .WithMessage("*scope identity*does not match configured scope identity*");
+
+            Func<Task> dispose = async () => await mismatched.DisposeAsync();
+            await dispose.Should().ThrowAsync<InvalidDataException>(
+                "disposing a store whose durable identity failed initialization preserves the startup failure");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task WalTradeFillPostingStore_LegacyLabelOnlySnapshot_LoadsOnlyInLegacyMode()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var legacyOptions = new TradeFillPostingStoreOptions(root, TestPostingScope);
+        var retainedFill = MakeBuyEvent("LEGACY");
+        var acceptedAtUtc = DateTimeOffset.UtcNow;
+        var legacySnapshot = new TradeFillPostingSnapshot(
+            Version: 1,
+            PostingScope: TestPostingScope,
+            AppliedThroughWalSequence: 0,
+            NextStoreSequence: 1,
+            Pending:
+            [
+                new TradeFillPostingSnapshotItem(
+                    new PendingTradeFillPosting(1, TestPostingScope, retainedFill, acceptedAtUtc),
+                    WalAccepted: false)
+            ]);
+        try
+        {
+            Directory.CreateDirectory(legacyOptions.ScopeDirectory);
+            await File.WriteAllTextAsync(
+                legacyOptions.SnapshotPath,
+                JsonSerializer.Serialize(
+                    legacySnapshot,
+                    ExecutionJsonContext.Default.TradeFillPostingSnapshot));
+
+            await using (var legacyStore = new WalTradeFillPostingStore(
+                             legacyOptions,
+                             NullLogger<WalTradeFillPostingStore>.Instance))
+            {
+                var pending = await legacyStore.LoadPendingAsync();
+                pending.Should().ContainSingle(item => item.TradeEvent == retainedFill);
+                legacyStore.ScopeIdentity.Should().Be(new TradeFillPostingScopeIdentity(TestPostingScope));
+            }
+
+            var exactStore = new WalTradeFillPostingStore(
+                new TradeFillPostingStoreOptions(root, TestPostingContext),
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            Func<Task> loadExact = async () => await exactStore.LoadPendingAsync();
+
+            await loadExact.Should().ThrowAsync<InvalidDataException>()
+                .WithMessage("*scope identity*does not match configured scope identity*");
+
+            Func<Task> disposeExact = async () => await exactStore.DisposeAsync();
+            await disposeExact.Should().ThrowAsync<InvalidDataException>();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task WalTradeFillPostingStore_LegacyWalWithoutScopeIdentity_LoadsOnlyInLegacyMode()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var legacyOptions = new TradeFillPostingStoreOptions(Path.Combine(root, "legacy"), TestPostingScope);
+        var exactOptions = new TradeFillPostingStoreOptions(Path.Combine(root, "exact"), TestPostingContext);
+        var retainedFill = MakeBuyEvent("LEGACY-WAL");
+        var legacyPayload = JsonSerializer.Serialize(
+            new TradeFillPendingWalPayload(
+                TestPostingScope,
+                retainedFill,
+                DateTimeOffset.UtcNow,
+                StoreSequence: 1),
+            ExecutionJsonContext.Default.TradeFillPendingWalPayload);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        try
+        {
+            legacyPayload.Should().NotContain("scopeIdentity",
+                "the fixture must represent the pre-identity WAL format");
+            foreach (var options in new[] { legacyOptions, exactOptions })
+            {
+                await using var wal = new WriteAheadLog(
+                    options.WalDirectory,
+                    new WalOptions { SyncMode = WalSyncMode.EveryWrite });
+                await wal.InitializeAsync(cts.Token);
+                await wal.AppendAsync(legacyPayload, "TradeFillPending", cts.Token);
+            }
+
+            await using (var legacyStore = new WalTradeFillPostingStore(
+                             legacyOptions,
+                             NullLogger<WalTradeFillPostingStore>.Instance))
+            {
+                var pending = await legacyStore.LoadPendingAsync(cts.Token);
+                pending.Should().ContainSingle(item => item.TradeEvent == retainedFill);
+            }
+
+            var exactStore = new WalTradeFillPostingStore(
+                exactOptions,
+                NullLogger<WalTradeFillPostingStore>.Instance);
+            Func<Task> loadExact = async () => await exactStore.LoadPendingAsync(cts.Token);
+
+            await loadExact.Should().ThrowAsync<InvalidDataException>()
+                .WithMessage("*scope identity*does not match configured scope identity*");
+
+            Func<Task> disposeExact = async () => await exactStore.DisposeAsync();
+            await disposeExact.Should().ThrowAsync<InvalidDataException>();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task Scenario_OmsAccountingHandoff_WalOutage_ReplaysAfterProcessRestart()
     {
@@ -544,14 +709,14 @@ public sealed class EventDrivenDecouplingTests
     public async Task Scenario_OmsPrimaryWalAndSnapshotFail_ResultFailsClosedAndFallbackReplaysAfterRestart()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
-        var primaryOptions = new TradeFillPostingStoreOptions(Path.Combine(root, "primary"), TestPostingScope)
+        var primaryOptions = new TradeFillPostingStoreOptions(Path.Combine(root, "primary"), TestPostingContext)
         {
             WalAppendOverride = (_, _, _) => throw new IOException("simulated primary WAL outage"),
             SnapshotWriteOverride = (_, _) => throw new IOException("simulated primary snapshot outage")
         };
         var failureOptions = new TradeFillHandoffFailureStoreOptions(
             Path.Combine(root, "fallback"),
-            TestPostingScope);
+            TestPostingContext);
         try
         {
             Guid fillId;
@@ -592,7 +757,7 @@ public sealed class EventDrivenDecouplingTests
 
             var recoveredLedger = new Meridian.Ledger.Ledger();
             await using var recoveredPrimaryStore = new WalTradeFillPostingStore(
-                new TradeFillPostingStoreOptions(Path.Combine(root, "primary"), TestPostingScope),
+                new TradeFillPostingStoreOptions(Path.Combine(root, "primary"), TestPostingContext),
                 NullLogger<WalTradeFillPostingStore>.Instance);
             await using var recoveredFailureStore = new AtomicTradeFillHandoffFailureStore(failureOptions);
             var recoveredConsumer = new LedgerPostingConsumer(
@@ -655,7 +820,7 @@ public sealed class EventDrivenDecouplingTests
     }
 
     [Fact]
-    public async Task AddTradeFillLedgerPosting_FallbackScopeMismatch_FailsFast()
+    public async Task AddTradeFillLedgerPosting_MatchingLabelWithoutExactPrimaryIdentity_FailsFast()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
         try
@@ -666,6 +831,95 @@ public sealed class EventDrivenDecouplingTests
                 _ => new InMemoryTradeFillLedgerPostingTarget(),
                 _ => new InMemoryTradeFillPostingStore(TestPostingScope),
                 _ => new AtomicTradeFillHandoffFailureStore(
+                    new TradeFillHandoffFailureStoreOptions(root, TestPostingContext)));
+            await using var provider = services.BuildServiceProvider();
+
+            var resolve = () => provider.GetRequiredService<ITradeFillPostingStore>();
+
+            resolve.Should().Throw<InvalidOperationException>()
+                .WithMessage("*does not match*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AddTradeFillLedgerPosting_SameBookPeriodAndLabelDifferentPrimaryPolicy_FailsFast(
+        bool changeVersion)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var mismatchedContext = CreateSameIdentityDifferentPolicyContext(changeVersion);
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddTradeFillLedgerPosting(
+                TestPostingContext,
+                _ => new InMemoryTradeFillLedgerPostingTarget(),
+                _ => new InMemoryTradeFillPostingStore(mismatchedContext),
+                _ => new AtomicTradeFillHandoffFailureStore(
+                    new TradeFillHandoffFailureStoreOptions(root, TestPostingContext)));
+            await using var provider = services.BuildServiceProvider();
+
+            var resolve = () => provider.GetRequiredService<ITradeFillPostingStore>();
+
+            resolve.Should().Throw<InvalidOperationException>()
+                .WithMessage("*does not match*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AddTradeFillLedgerPosting_SameBookPeriodAndLabelDifferentFallbackPolicy_FailsFast(
+        bool changeVersion)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var mismatchedContext = CreateSameIdentityDifferentPolicyContext(changeVersion);
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddTradeFillLedgerPosting(
+                TestPostingContext,
+                _ => new InMemoryTradeFillLedgerPostingTarget(),
+                _ => new InMemoryTradeFillPostingStore(TestPostingContext),
+                _ => new AtomicTradeFillHandoffFailureStore(
+                    new TradeFillHandoffFailureStoreOptions(root, mismatchedContext)));
+            await using var provider = services.BuildServiceProvider();
+
+            var resolve = () => provider.GetRequiredService<ITradeFillHandoffFailureStore>();
+
+            resolve.Should().Throw<InvalidOperationException>()
+                .WithMessage("*does not match*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task AddTradeFillLedgerPosting_FallbackScopeMismatch_FailsFast()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddTradeFillLedgerPosting(
+                TestPostingContext,
+                _ => new InMemoryTradeFillLedgerPostingTarget(),
+                _ => new InMemoryTradeFillPostingStore(TestPostingContext),
+                _ => new AtomicTradeFillHandoffFailureStore(
                     new TradeFillHandoffFailureStoreOptions(root, "different-book/different-period")));
             await using var provider = services.BuildServiceProvider();
 
@@ -673,6 +927,64 @@ public sealed class EventDrivenDecouplingTests
 
             resolve.Should().Throw<InvalidOperationException>()
                 .WithMessage("*different-book/different-period*does not match*test-ledger/open-period*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task AddTradeFillLedgerPosting_MatchingLabelWithoutExactFallbackIdentity_FailsFast()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddTradeFillLedgerPosting(
+                TestPostingContext,
+                _ => new InMemoryTradeFillLedgerPostingTarget(),
+                _ => new InMemoryTradeFillPostingStore(TestPostingContext),
+                _ => new AtomicTradeFillHandoffFailureStore(
+                    new TradeFillHandoffFailureStoreOptions(root, TestPostingScope)));
+            await using var provider = services.BuildServiceProvider();
+
+            var resolve = () => provider.GetRequiredService<ITradeFillHandoffFailureStore>();
+
+            resolve.Should().Throw<InvalidOperationException>()
+                .WithMessage("*does not match*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AddTradeFillLedgerPosting_SameLabelDifferentExactBookOrPeriod_FailsFast(
+        bool changeLedgerBook)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var fallbackContext = CreateSameLabelDifferentExactContext(changeLedgerBook);
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddTradeFillLedgerPosting(
+                TestPostingContext,
+                _ => new InMemoryTradeFillLedgerPostingTarget(),
+                _ => new InMemoryTradeFillPostingStore(TestPostingContext),
+                _ => new AtomicTradeFillHandoffFailureStore(
+                    new TradeFillHandoffFailureStoreOptions(root, fallbackContext)));
+            await using var provider = services.BuildServiceProvider();
+
+            var resolve = () => provider.GetRequiredService<ITradeFillHandoffFailureStore>();
+
+            resolve.Should().Throw<InvalidOperationException>()
+                .WithMessage("*does not match*");
         }
         finally
         {
@@ -725,6 +1037,85 @@ public sealed class EventDrivenDecouplingTests
             create.Should().Throw<ArgumentException>()
                 .WithParameterName("tradeFillHandoffFailureStore")
                 .WithMessage("*different-book/different-period*does not match*test-ledger/open-period*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task OrderManagementSystem_ExactPublisherAndLabelOnlyFallbackWithSameLabel_FailsFast()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            await using var failureStore = new AtomicTradeFillHandoffFailureStore(
+                new TradeFillHandoffFailureStoreOptions(root, TestPostingScope));
+
+            var create = () => new OrderManagementSystem(
+                new ImmediateFillGateway(),
+                NullLogger<OrderManagementSystem>.Instance,
+                tradeEventPublisher: new ExactScopedTradeEventPublisher(TestPostingContext),
+                tradeFillHandoffFailureStore: failureStore);
+
+            create.Should().Throw<ArgumentException>()
+                .WithParameterName("tradeFillHandoffFailureStore")
+                .WithMessage("*does not match*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OrderManagementSystem_SameLabelDifferentExactBookOrPeriod_FailsFast(
+        bool changeLedgerBook)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        var fallbackContext = CreateSameLabelDifferentExactContext(changeLedgerBook);
+        try
+        {
+            await using var failureStore = new AtomicTradeFillHandoffFailureStore(
+                new TradeFillHandoffFailureStoreOptions(root, fallbackContext));
+
+            var create = () => new OrderManagementSystem(
+                new ImmediateFillGateway(),
+                NullLogger<OrderManagementSystem>.Instance,
+                tradeEventPublisher: new ExactScopedTradeEventPublisher(TestPostingContext),
+                tradeFillHandoffFailureStore: failureStore);
+
+            create.Should().Throw<ArgumentException>()
+                .WithParameterName("tradeFillHandoffFailureStore")
+                .WithMessage("*does not match*");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task OrderManagementSystem_LabelOnlyPublisherAndFallbackWithSameLabel_Composes()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fill-posting-tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            await using var failureStore = new AtomicTradeFillHandoffFailureStore(
+                new TradeFillHandoffFailureStoreOptions(root, TestPostingScope));
+            using var oms = new OrderManagementSystem(
+                new ImmediateFillGateway(),
+                NullLogger<OrderManagementSystem>.Instance,
+                tradeEventPublisher: new ScopedTradeEventPublisher(TestPostingScope),
+                tradeFillHandoffFailureStore: failureStore);
+
+            oms.Should().NotBeNull();
         }
         finally
         {
@@ -1254,6 +1645,23 @@ public sealed class EventDrivenDecouplingTests
         }
     }
 
+    private sealed class ExactScopedTradeEventPublisher : IScopedTradeEventPublisher
+    {
+        public ExactScopedTradeEventPublisher(TradeFillLedgerPostingContext postingContext)
+        {
+            ScopeIdentity = TradeFillPostingScopeIdentity.FromContext(postingContext);
+            PostingScope = ScopeIdentity.PostingScope;
+        }
+
+        public string PostingScope { get; }
+
+        public TradeFillPostingScopeIdentity ScopeIdentity { get; }
+
+        public void Publish(TradeExecutedEvent tradeEvent)
+        {
+        }
+    }
+
     private sealed class InMemoryTradeFillLedgerPostingTarget : ITradeFillLedgerPostingTarget
     {
         private readonly object _sync = new();
@@ -1324,14 +1732,28 @@ public sealed class EventDrivenDecouplingTests
         }
     }
 
-    private sealed class InMemoryTradeFillPostingStore(string postingScope) : ITradeFillPostingStore
+    private sealed class InMemoryTradeFillPostingStore : ITradeFillPostingStore
     {
         private readonly object _sync = new();
         private readonly Dictionary<Guid, PendingTradeFillPosting> _pending = [];
         private readonly HashSet<Guid> _posted = [];
         private long _sequence;
 
-        public string PostingScope { get; } = postingScope;
+        public InMemoryTradeFillPostingStore(string postingScope)
+        {
+            PostingScope = postingScope;
+            ScopeIdentity = new TradeFillPostingScopeIdentity(postingScope).Validate();
+        }
+
+        public InMemoryTradeFillPostingStore(TradeFillLedgerPostingContext postingContext)
+        {
+            ScopeIdentity = TradeFillPostingScopeIdentity.FromContext(postingContext);
+            PostingScope = ScopeIdentity.PostingScope;
+        }
+
+        public string PostingScope { get; }
+
+        public TradeFillPostingScopeIdentity ScopeIdentity { get; }
 
         public int PostedCount
         {

@@ -25,6 +25,7 @@ using Meridian.QuantScript;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Services.Services.Integrations;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
@@ -126,6 +127,40 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddMutationRateLimiter();
         builder.Services.AddSingleton(_lifecycle);
 
+        var tradeFillPostingOptions = builder.Configuration
+            .GetSection(TradeFillLedgerPostingHostOptions.SectionKey)
+            .Get<TradeFillLedgerPostingHostOptions>()
+            ?? new TradeFillLedgerPostingHostOptions();
+        if (tradeFillPostingOptions.Enabled)
+        {
+            if (!LedgerStartup.IsConfigured())
+            {
+                throw new InvalidOperationException(
+                    $"{TradeFillLedgerPostingHostOptions.SectionKey}:Enabled requires {LedgerStartup.ConnectionStringVariable} so accepted fills have an authoritative ledger target.");
+            }
+
+            var postingContext = tradeFillPostingOptions.BuildContext();
+            var tradeFillStoreRoot = Path.Combine(resolvedDataRoot, "execution", "trade-fill-ledger");
+            builder.Services.AddTradeFillLedgerPosting(
+                postingContext,
+                sp => new GovernedTradeFillLedgerPostingTarget(
+                    sp.GetRequiredService<IGovernedLedgerPostingTarget>(),
+                    sp.GetRequiredService<ILedgerJournalStore>()),
+                sp => new WalTradeFillPostingStore(
+                    new TradeFillPostingStoreOptions(tradeFillStoreRoot, postingContext),
+                    sp.GetRequiredService<ILogger<WalTradeFillPostingStore>>()),
+                _ => new AtomicTradeFillHandoffFailureStore(
+                    new TradeFillHandoffFailureStoreOptions(
+                        tradeFillStoreRoot,
+                        postingContext)),
+                configure: options =>
+                {
+                    options.ChannelCapacity = tradeFillPostingOptions.ChannelCapacity;
+                    options.DrainTimeout = tradeFillPostingOptions.DrainTimeout;
+                    options.CancellationTimeout = tradeFillPostingOptions.CancellationTimeout;
+                });
+        }
+
         builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
         builder.Services.AddWorkstationSharedServices();
         builder.Services.AddOmsIntegrationApiHandlers();
@@ -209,7 +244,8 @@ public sealed class UiServer : IAsyncDisposable
                 portfolioState: portfolio,
                 sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
                 options: sp.GetRequiredService<OrderManagementSystemOptions>(),
-                tradeEventPublisher: sp.GetService<ITradeEventPublisher>());
+                tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
+                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(

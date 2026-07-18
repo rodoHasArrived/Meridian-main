@@ -17,11 +17,18 @@ public interface ITradeEventPublisher
 }
 
 /// <summary>
-/// A trade-event publisher bound to one exact durable accounting scope.
+/// A trade-event publisher bound to one durable accounting scope.
 /// Consumers use this contract to reject recovery stores from another book or period.
 /// </summary>
 public interface IScopedTradeEventPublisher : ITradeEventPublisher
 {
-    /// <summary>The exact ledger posting scope owned by this publisher.</summary>
+    /// <summary>The durable ledger posting scope label owned by this publisher.</summary>
     string PostingScope { get; }
+
+    /// <summary>
+    /// Gets the accounting identity owned by this publisher. Legacy implementations that expose
+    /// only <see cref="PostingScope"/> remain label-only and can compose only with another
+    /// label-only participant.
+    /// </summary>
+    TradeFillPostingScopeIdentity ScopeIdentity => new(PostingScope);
 }

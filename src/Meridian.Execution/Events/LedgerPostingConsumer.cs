@@ -34,6 +34,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     private readonly ITradeFillPostingStore _postingStore;
     private readonly TradeFillLedgerPostingContext _postingContext;
     private readonly string _postingScope;
+    private readonly TradeFillPostingScopeIdentity _scopeIdentity;
     private readonly TaskCompletionSource _recoveryLoaded = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
@@ -53,6 +54,9 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
     /// <inheritdoc />
     public string PostingScope => _postingScope;
+
+    /// <inheritdoc />
+    public TradeFillPostingScopeIdentity ScopeIdentity => _scopeIdentity;
 
     /// <summary>
     /// Initialises a new <see cref="LedgerPostingConsumer"/> bound to one durable accounting scope.
@@ -94,10 +98,27 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         if (channelCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(channelCapacity));
         postingContext = postingContext.Validate();
+        var expectedScopeIdentity = TradeFillPostingScopeIdentity.FromContext(postingContext);
+        var postingStoreScopeIdentity = postingStore.ScopeIdentity.Validate();
+        if (!string.Equals(
+                postingStoreScopeIdentity.PostingScope,
+                postingStore.PostingScope,
+                StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Posting store scope identity label does not match its configured posting scope.",
+                nameof(postingStore));
+        }
         if (!string.Equals(postingStore.PostingScope, postingContext.PostingScope, StringComparison.Ordinal))
         {
             throw new ArgumentException(
                 $"Posting store scope '{postingStore.PostingScope}' does not match ledger scope '{postingContext.PostingScope}'.",
+                nameof(postingContext));
+        }
+        if (postingStoreScopeIdentity.IsExact && postingStoreScopeIdentity != expectedScopeIdentity)
+        {
+            throw new ArgumentException(
+                $"Posting store scope identity '{postingStoreScopeIdentity}' does not match ledger scope identity '{expectedScopeIdentity}'.",
                 nameof(postingContext));
         }
 
@@ -107,6 +128,9 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         _postingStore = postingStore;
         _postingContext = postingContext;
         _postingScope = postingContext.PostingScope;
+        _scopeIdentity = postingStoreScopeIdentity.IsExact
+            ? expectedScopeIdentity
+            : postingStoreScopeIdentity;
         _securityValidationGate = securityValidationGate;
         _requireSecurityMasterPostingGate = requireSecurityMasterPostingGate;
         _drainTimeout = RequirePositiveTimeout(drainTimeout, DefaultDrainTimeout, nameof(drainTimeout));
