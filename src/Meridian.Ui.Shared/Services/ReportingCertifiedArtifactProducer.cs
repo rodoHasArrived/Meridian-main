@@ -269,6 +269,10 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
     private static byte[] RenderSupportingSchedules(ReportingOutputManifest manifest)
     {
+        // Guard the default/empty case before enumerating: a default ImmutableArray throws on
+        // enumeration (the run-failure and legacy paths can leave this member uninitialized), and an
+        // empty or absent grid set falls back to the certified-rows CSV — same result the trailing
+        // check produced, but without first touching a default array.
         if (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty)
         {
             return RenderCertifiedRowsCsv(manifest);

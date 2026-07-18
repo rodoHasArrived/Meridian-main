@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Endpoints;
@@ -29,6 +30,24 @@ public sealed class ReportingRunStreamEndpointTests
     private const string SeededRunId = "job-stream-20260501";
     private const string SeededTenantId = "tenant-a";
     private const string SeededCompanyId = "company-a";
+    private const string SeededOrganizationId = "organization-a";
+    private const string SeededFundId = "fund-a";
+    private const string SeededBookId = "book-a";
+    private const string SeededPeriodId = "2026-05";
+    private static readonly DateOnly SeededAsOfDate = new(2026, 5, 1);
+    private const string SeededCheckpointId = "ledger-checkpoint-stream-a";
+    private static readonly string SeededCheckpointHash = new('a', 64);
+    private static readonly string SeededSnapshotHash = new('b', 64);
+    private static readonly string SeededReconciliationHash = new('c', 64);
+    private static readonly string SeededReadinessEvidenceHash = new('d', 64);
+    // Governed reporting (a67c21f9) requires a fully certified contract before rendering, so the
+    // canonical parameters JSON and its SHA-256 must agree. This hash is sha256(SeededParametersJson).
+    private const string SeededParametersJson =
+        "{\"template\":\"investor-monthly-statement\",\"asOf\":\"2026-05-01\",\"basis\":\"Gaap\"}";
+    private const string SeededParametersHash =
+        "66ad5f72177c2b494a7b8afdf001acdda1126fc80cf6fdcb1d1aab274520e431";
+    private static string SeededSourceEvidenceId =>
+        $"reporting-source-checkpoint:{SeededCheckpointId}:{SeededCheckpointHash}";
 
     [Fact]
     public async Task WithoutReadPermission_Returns403()
@@ -196,6 +215,111 @@ public sealed class ReportingRunStreamEndpointTests
         }
     }
 
+    // Builds the fully certified ReportingJobContract governed reporting now requires: scope, source,
+    // and snapshot agree on tenant/org/company/fund/book/period; snapshot binds the source checkpoint;
+    // the parameters JSON matches its SHA-256; and readiness carries an evidence-backed Ready check.
+    private static ReportingJobContract BuildCertifiedStreamContract()
+    {
+        var resolvedTemplate = new VersionedReportTemplateIdDto("investor-monthly-statement", 1);
+        var parameters = new ReportingRunParametersDto(
+            new ReportingRunScopeDto(SeededFundId),
+            SeededPeriodId,
+            SeededAsOfDate,
+            new ReportingLedgerBookSelectionDto(Guid.Parse("11111111-1111-1111-1111-111111111111")),
+            ReportingAccountingBasisDto.Gaap,
+            "USD",
+            ReportingConsolidationLevelDto.Fund,
+            ReportingOutputFormatDto.Pdf,
+            ReportingFinalityDto.Draft,
+            IncludeSupportingSchedules: true,
+            IncludeEvidenceAppendix: true);
+        var source = new ReportingAuthoritativeSourceCheckpoint(
+            "durable-ledger-journal",
+            $"ledger:{SeededBookId}:{SeededPeriodId}",
+            SeededTenantId,
+            SeededOrganizationId,
+            SeededCompanyId,
+            SeededFundId,
+            SeededBookId,
+            SeededPeriodId,
+            "Gaap",
+            SeededAsOfDate,
+            FixedNow,
+            0L,
+            0,
+            0,
+            SeededCheckpointId,
+            SeededCheckpointHash,
+            FixedNow,
+            ImmutableArray.Create(SeededSourceEvidenceId));
+        var snapshot = new ReportingCertifiedSnapshotScope(
+            SeededTenantId,
+            SeededOrganizationId,
+            SeededCompanyId,
+            SeededFundId,
+            SeededBookId,
+            SeededPeriodId,
+            "snapshot-stream-a",
+            SeededSnapshotHash,
+            "reconciliation-stream-a",
+            FixedNow,
+            SourceCheckpointId: SeededCheckpointId,
+            SourceCheckpointHash: SeededCheckpointHash,
+            ReconciliationCheckpointHash: SeededReconciliationHash,
+            ParametersCanonicalJson: SeededParametersJson,
+            ParametersHash: SeededParametersHash);
+        var readiness = new ReportingRunReadinessDto(
+            "readiness-stream-a",
+            FixedNow,
+            resolvedTemplate,
+            parameters,
+            ReportingRunReadinessStatusDto.Ready,
+            CanGenerateDraft: true,
+            CanGenerateFinal: true,
+            Checks:
+            [
+                new ReportingRunReadinessCheckDto(
+                    "ledger-source",
+                    "Ledger source",
+                    ReportingRunReadinessStatusDto.Ready,
+                    "Certified ledger source is ready.",
+                    0,
+                    BlocksDraft: false,
+                    BlocksFinal: false,
+                    EvidenceReferences: [SeededSourceEvidenceId])
+            ],
+            BlockingReasons: [],
+            EvidenceHash: SeededReadinessEvidenceHash);
+        return new ReportingJobContract(
+            "job-stream",
+            "investor-monthly-statement",
+            SeededAsOfDate,
+            ReportingRunTrigger.AdHoc,
+            0,
+            "op",
+            FixedNow,
+            ResolvedTemplate: resolvedTemplate,
+            ResolvedParameters: parameters,
+            Readiness: readiness,
+            OperationalScope: new ReportingOperationalScope(
+                SeededTenantId,
+                SeededOrganizationId,
+                SeededCompanyId,
+                SeededFundId,
+                SeededBookId,
+                SeededPeriodId),
+            ImmutableAccessScope: new ReportingAccessScope(
+                "policy-a",
+                "1",
+                ReportingGovernanceAccessMode.CompanyWide,
+                OwnerPrincipalId: null,
+                AllowOwnerAccess: false,
+                Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
+                PolicyHash: "policy-hash-a"),
+            CertifiedSnapshot: snapshot,
+            AuthoritativeSource: source);
+    }
+
     private static async Task<WebApplication> CreateStreamAppAsync(
         bool grantPermission = true,
         bool registerBroadcaster = true,
@@ -233,10 +357,8 @@ public sealed class ReportingRunStreamEndpointTests
                 Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
                 PolicyHash: "policy-hash-a"));
         var orchestration = new ReportingOrchestrationService(
-            new DefaultReportingTemplateCatalog(),
-            new DeterministicReportingSectionRenderer(),
-            () => FixedNow,
-            new SeededRunStore(new ReportingRunSnapshot(seededManifest, [], FixedNow)));
+            new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
+        await orchestration.ExecuteAsync(BuildCertifiedStreamContract(), CancellationToken.None);
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
