@@ -2712,13 +2712,10 @@ public sealed class ReportingScheduleService
         {
             if (policy.AllowOwnerAccess
                 && !string.IsNullOrWhiteSpace(policy.OwnerPrincipalId)
-                && !string.Equals(policy.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase)
-                && !(policy.Principals ?? []).Any(principal =>
-                    principal.Kind == ReportAccessPrincipalKindDto.User
-                    && string.Equals(principal.PrincipalId, actor, StringComparison.OrdinalIgnoreCase)))
+                && !string.Equals(policy.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase))
             {
                 throw new UnauthorizedAccessException(
-                    "A private reporting schedule must be executed by its immutable owner or a named user.");
+                    "A private reporting schedule must be authored by its immutable owner.");
             }
 
             if (string.IsNullOrWhiteSpace(policy.OwnerPrincipalId))

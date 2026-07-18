@@ -205,33 +205,38 @@ public sealed class ReportingRunStreamEndpointTests
         string requestCompanyId = SeededCompanyId,
         bool grantAdminOverride = false)
     {
+        // Certified orchestration rejects partially-bound contracts (ValidateCertifiedContract),
+        // so seed the tenant-scoped run through the store fallback instead of ExecuteAsync: these
+        // tests exercise streaming and access enforcement, not certification.
+        var seededManifest = new ReportingOutputManifest(
+            SeededRunId,
+            "investor-monthly-statement",
+            new DateOnly(2026, 5, 1),
+            ReportingRunStatus.Draft,
+            ImmutableArray<ReportingSectionManifest>.Empty,
+            ImmutableArray<string>.Empty,
+            1,
+            ReportingRunTrigger.AdHoc,
+            OperationalScope: new ReportingOperationalScope(
+                SeededTenantId,
+                "organization-a",
+                SeededCompanyId,
+                FundId: null,
+                BookId: "book-a",
+                PeriodId: "2026-05"),
+            ImmutableAccessScope: new ReportingAccessScope(
+                "policy-a",
+                "1",
+                ReportingGovernanceAccessMode.CompanyWide,
+                OwnerPrincipalId: null,
+                AllowOwnerAccess: false,
+                Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
+                PolicyHash: "policy-hash-a"));
         var orchestration = new ReportingOrchestrationService(
-            new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
-        await orchestration.ExecuteAsync(
-            new ReportingJobContract(
-                "job-stream",
-                "investor-monthly-statement",
-                new DateOnly(2026, 5, 1),
-                ReportingRunTrigger.AdHoc,
-                0,
-                "op",
-                FixedNow,
-                OperationalScope: new ReportingOperationalScope(
-                    SeededTenantId,
-                    "organization-a",
-                    SeededCompanyId,
-                    FundId: null,
-                    BookId: "book-a",
-                    PeriodId: "2026-05"),
-                ImmutableAccessScope: new ReportingAccessScope(
-                    "policy-a",
-                    "1",
-                    ReportingGovernanceAccessMode.CompanyWide,
-                    OwnerPrincipalId: null,
-                    AllowOwnerAccess: false,
-                    Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
-                    PolicyHash: "policy-hash-a")),
-            CancellationToken.None);
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => FixedNow,
+            new SeededRunStore(new ReportingRunSnapshot(seededManifest, [], FixedNow)));
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -278,5 +283,22 @@ public sealed class ReportingRunStreamEndpointTests
         app.MapReportingRunStreamEndpoints(ServerJsonOptions);
         await app.StartAsync();
         return app;
+    }
+
+    private sealed class SeededRunStore(ReportingRunSnapshot run) : IReportingRunStore
+    {
+        public IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25) => [run];
+
+        public ReportingOutputManifest? GetManifest(string runId) =>
+            string.Equals(run.Manifest.RunId, runId, StringComparison.Ordinal) ? run.Manifest : null;
+
+        public IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId) =>
+            string.Equals(run.Manifest.RunId, runId, StringComparison.Ordinal) ? run.AuditTrail : [];
+
+        public Task SaveAsync(
+            ReportingOutputManifest manifest,
+            IReadOnlyList<ReportingRunAuditEntry> auditTrail,
+            CancellationToken ct = default) =>
+            Task.CompletedTask;
     }
 }
