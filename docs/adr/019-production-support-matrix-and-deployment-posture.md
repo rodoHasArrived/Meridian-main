@@ -38,11 +38,11 @@ remote multi-node topology is close to certifiable.
 
 | Dimension | Supported in the v1 production envelope | Explicitly experimental (fail closed / not production) |
 |-----------|------------------------------------------|--------------------------------------------------------|
-| Topology | Single-operator, single-company, single-node **local workstation**: one Meridian host process per operator machine | Remote/browser-hosted `ProductionApi`, multi-node, shared multi-tenant hosting |
+| Topology | Single-operator, single-company, single-node **local workstation**: one unelevated per-user lifecycle supervisor owns one Meridian host process and, when configured, one dedicated local PostgreSQL instance per operator machine | Remote/browser-hosted `ProductionApi`, multi-node, shared multi-tenant hosting, machine-wide lifecycle services |
 | OS / runtime | Windows 11 x64, .NET 10, installed via the desktop-installer lane | Linux container (`deploy/docker/`, `deploy/k8s/`), `deploy/systemd/` service |
 | UI | Browser workstation served over loopback by the local host, plus the WPF desktop shell (co-equal lanes over shared contracts) | Any remotely served workstation origin |
 | Auth / tenancy | `AuthenticationMode.Required` (packaged/customer builds already default to it); one company per isolated deployment | `Optional` auth outside dev/test; cross-tenant shared deployments (until `PRD-001` tenant partitioning completes) |
-| Storage | Local WAL / atomic-file stores under the resolved `DataRoot`; operator-provisioned **local** PostgreSQL for the domains that require it (fund accounts, fund structure, security master, direct lending) | Remote/managed database topologies; any in-memory, null, or no-op store in a production posture |
+| Storage | Local WAL / atomic-file stores under the resolved `DataRoot`; supervisor-managed dedicated **local** PostgreSQL for the domains that require it (fund accounts, fund structure, security master, direct lending). An explicitly configured `external` local PostgreSQL mode is supported as a non-owning compatibility posture. | Remote/managed database topologies; any in-memory, null, or no-op store in a production posture |
 | Providers | Approved HTTPS provider connections through the existing connection registry | SFTP (`PRD-104`), QuantLab in-process script execution (`PRD-012`) |
 
 Everything in the right-hand column stays in the repository as labeled experimental material and
@@ -54,6 +54,28 @@ Under this decision the `PRD-000` completion evidence item "a `ProductionApi` in
 that starts successfully" is re-scoped to: the **supported local-workstation posture composes and
 starts**, and every experimental posture **fails closed with a diagnostic naming the prohibited
 bindings**. Sign-off on this ADR ratifies that amendment.
+
+### 1.1. Supported process and database ownership
+
+The lifecycle supervisor and Meridian host remain one supported single-node deployment, not a
+multi-node topology. Their responsibilities are deliberately separate:
+
+- `Meridian.LifecycleSupervisor.exe` is a persistent, unelevated process in the current user's
+  session. It owns single-instance enforcement, preflight, child-process identity, host start and
+  stop, dedicated PostgreSQL start/readiness/stop, timeout escalation, and the combined session
+  receipt. It is not installed as a machine-wide Windows Service.
+- The Meridian host owns in-process startup phases, readiness, accepting-work state, deterministic
+  drain and flush sequencing, the host lifecycle receipt, and the final termination signal.
+- In `dedicated` database mode, the supervisor owns exactly the PostgreSQL process identified by
+  the installation manifest. It verifies executable path, process start time, data directory, and
+  port before adopting, signalling, or terminating that process.
+- In `external` database mode, the supervisor may check reachability but never starts, adopts,
+  stops, or terminates PostgreSQL.
+- A forced host or database termination is permitted only after the configured graceful deadline,
+  after process identity has been revalidated, and must be recorded in the lifecycle receipt.
+
+The detailed state machines, control channels, readiness contract, shutdown sequence, and receipt
+format are governed by [ADR-020](020-lifecycle-control-plane.md).
 
 ### 2. One typed deployment posture, one policy, validated on the final graph
 
@@ -85,6 +107,8 @@ bindings**. Sign-off on this ADR ratifies that amendment.
 | Policy | `src/Meridian.Application/Composition/ProductionServiceRegistrationPolicy.cs` | Unified production resolution + prohibited-implementation matcher |
 | Guard | `src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs` | Final-graph startup validation |
 | Host mapping | `src/Meridian/ApiHostOptions.cs`, `src/Meridian/UiServer.cs` | Strict mode parsing, posture declaration before composition |
+| Lifecycle supervisor | `src/Meridian.LifecycleSupervisor/` | Per-user process and dedicated-database ownership boundary |
+| Lifecycle contracts | `src/Meridian.Contracts/Lifecycle/` | Shared readiness, operation, progress, and receipt contracts |
 | Tests | `tests/Meridian.Tests/Application/Composition/` | Startup-rejection and posture-unification tests |
 
 ## Rationale
@@ -120,6 +144,8 @@ default environment stays unvalidated.
 
 - One binding answer to "is this production?" and one enforcement seam for the whole graph,
   including late and factory-hidden registrations.
+- Deterministic ownership of the Meridian host and dedicated PostgreSQL lifecycle without requiring
+  an elevated or machine-wide service.
 - Production postures fail closed **today**, with a diagnostic enumerating exactly which real
   bindings remain to be built — turning the remaining `PRD-*` work into a machine-generated list.
 - Unrecognized deployment-mode strings can no longer silently demote a production host to
@@ -131,6 +157,8 @@ default environment stays unvalidated.
   production certification is blocked anyway; the guard makes that state explicit).
 - Eager singleton resolution at production startup surfaces construction failures at boot
   (intended fail-fast, but it changes startup timing for production postures).
+- The supported workstation now has two cooperating Meridian processes, so packaging,
+  diagnostics, and process-identity validation must cover both.
 
 ### Neutral
 
@@ -165,7 +193,8 @@ services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorksta
 - [Program state registry](../roadmap/data/program-state.yml)
 - [Layer boundaries](../architecture/layer-boundaries.md)
 - [ADR-017: Modular operational monolith](017-modular-operational-monolith.md)
+- [ADR-020: Local Lifecycle Control Plane](020-lifecycle-control-plane.md)
 
 ---
 
-*Last Updated: 2026-07-12*
+*Last Updated: 2026-07-17*

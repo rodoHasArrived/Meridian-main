@@ -62,6 +62,20 @@ public sealed class DesktopModeRunner
         }
         finally
         {
+            if (ctx.Lifecycle.IsShutdownRequested &&
+                ctx.Lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle &&
+                !runtimeLifecycle.TerminationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, runtimeLifecycle.TerminationToken);
+                }
+                catch (OperationCanceledException) when (runtimeLifecycle.TerminationToken.IsCancellationRequested)
+                {
+                    // The in-process shutdown sequence persisted its receipt and released the host.
+                }
+            }
+
             using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
             try
             {

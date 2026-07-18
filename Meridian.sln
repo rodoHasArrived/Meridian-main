@@ -103,6 +103,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.DesignModules.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.TestSupport", "tests\Meridian.TestSupport\Meridian.TestSupport.csproj", "{7E57C0DE-0001-4A5B-9C3D-0000000000A1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.Lifecycle.Tests", "tests\Meridian.Lifecycle.Tests\Meridian.Lifecycle.Tests.csproj", "{C1FEC0DE-2026-0717-A019-000000000020}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -665,6 +667,18 @@ Global
 		{7E57C0DE-0001-4A5B-9C3D-0000000000A1}.Release|x64.Build.0 = Release|Any CPU
 		{7E57C0DE-0001-4A5B-9C3D-0000000000A1}.Release|x86.ActiveCfg = Release|Any CPU
 		{7E57C0DE-0001-4A5B-9C3D-0000000000A1}.Release|x86.Build.0 = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Debug|x86.Build.0 = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Release|x64.Build.0 = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Release|x86.ActiveCfg = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000020}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -696,5 +710,6 @@ Global
 		{3C621690-326B-4A1F-9E69-31106C6644FD} = {E1111111-F222-0333-1444-255555555555}
 		{76C15D76-0630-497D-ACFB-804399EECFB4} = {E2222222-F333-0444-1555-266666666666}
 		{7E57C0DE-0001-4A5B-9C3D-0000000000A1} = {E2222222-F333-0444-1555-266666666666}
+		{C1FEC0DE-2026-0717-A019-000000000020} = {E2222222-F333-0444-1555-266666666666}
 	EndGlobalSection
 EndGlobal

@@ -1,10 +1,13 @@
 using System.Text.Json;
+using Meridian.Application.Composition.Startup;
 using Meridian.Application.Monitoring;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Lifecycle;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -55,26 +58,37 @@ public static class StatusEndpoints
             .Produces(200);
 
         // Readiness probe
-        app.MapGet(UiApiRoutes.Ready, () =>
-        {
-            var (isReady, message) = handlers.CheckReadiness();
-            return isReady ? Results.Ok(message) : Results.StatusCode(503);
-        })
+        app.MapGet(UiApiRoutes.Ready, (CancellationToken ct) =>
+            GetReadinessResultAsync(app, handlers, jsonOptions, ct))
         .WithName("GetReady")
         .WithTags("Health")
         .WithDescription("Readiness probe returning 200 when the service is ready to accept requests, or 503 if not.")
         .Produces(200)
         .Produces(503);
 
-        app.MapGet("/readyz", () =>
-        {
-            var (isReady, message) = handlers.CheckReadiness();
-            return isReady ? Results.Ok(message) : Results.StatusCode(503);
-        })
+        app.MapGet("/readyz", (CancellationToken ct) =>
+            GetReadinessResultAsync(app, handlers, jsonOptions, ct))
         .WithName("GetReadyz")
         .WithTags("Health")
         .Produces(200)
         .Produces(503);
+
+        app.MapGet("/startupz", (CancellationToken ct) =>
+            GetStartupResultAsync(app, handlers, jsonOptions, ct))
+        .WithName("GetStartupz")
+        .WithTags("Health")
+        .WithDescription("Sanitized pre-login startup progress for the local workstation.")
+        .Produces<RuntimeLifecycleSnapshotDto>(200)
+        .Produces<RuntimeLifecycleSnapshotDto>(202)
+        .Produces<RuntimeLifecycleSnapshotDto>(503);
+
+        app.MapGet("/startup", () => Results.Content(
+                HtmlTemplateGenerator.Startup(),
+                "text/html; charset=utf-8"))
+            .WithName("GetStartupCenter")
+            .WithTags("Health")
+            .WithDescription("Pre-login lifecycle progress and readiness checks.")
+            .Produces(StatusCodes.Status200OK, contentType: "text/html");
 
         // Liveness probe
         app.MapGet(UiApiRoutes.Live, () => Results.Ok("alive"))
@@ -248,5 +262,62 @@ public static class StatusEndpoints
                 // Client disconnected
             }
         });
+    }
+
+    private static async Task<IResult> GetReadinessResultAsync(
+        WebApplication app,
+        StatusEndpointHandlers handlers,
+        JsonSerializerOptions jsonOptions,
+        CancellationToken ct)
+    {
+        var readinessService = app.Services.GetService<IRuntimeReadinessService>();
+        if (readinessService is null)
+        {
+            var (isReady, message) = handlers.CheckReadiness();
+            return isReady ? Results.Ok(message) : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+
+        var snapshot = await readinessService.EvaluateAsync(ct).ConfigureAwait(false);
+        var isReady = snapshot.AcceptingWork &&
+                      snapshot.Readiness is RuntimeReadinessStatus.Ready or RuntimeReadinessStatus.Degraded;
+        return Results.Json(
+            snapshot,
+            jsonOptions,
+            statusCode: isReady
+                ? StatusCodes.Status200OK
+                : StatusCodes.Status503ServiceUnavailable);
+    }
+
+    private static async Task<IResult> GetStartupResultAsync(
+        WebApplication app,
+        StatusEndpointHandlers handlers,
+        JsonSerializerOptions jsonOptions,
+        CancellationToken ct)
+    {
+        var readinessService = app.Services.GetService<IRuntimeReadinessService>();
+        if (readinessService is null)
+        {
+            var (isReady, _) = handlers.CheckReadiness();
+            return Results.Json(
+                new { state = isReady ? "ready" : "starting" },
+                jsonOptions,
+                statusCode: isReady
+                    ? StatusCodes.Status200OK
+                    : StatusCodes.Status202Accepted);
+        }
+
+        var snapshot = await readinessService.EvaluateAsync(ct).ConfigureAwait(false);
+        var statusCode = snapshot.State switch
+        {
+            RuntimeLifecycleState.Ready or RuntimeLifecycleState.Degraded => StatusCodes.Status200OK,
+            RuntimeLifecycleState.Failed or
+            RuntimeLifecycleState.ShutdownRequested or
+            RuntimeLifecycleState.Draining or
+            RuntimeLifecycleState.Flushing or
+            RuntimeLifecycleState.StoppingHost or
+            RuntimeLifecycleState.Stopped => StatusCodes.Status503ServiceUnavailable,
+            _ => StatusCodes.Status202Accepted
+        };
+        return Results.Json(snapshot, jsonOptions, statusCode: statusCode);
     }
 }
