@@ -1023,6 +1023,70 @@ public sealed class OrderManagementSystemTests : IDisposable
             yield break;
         }
     }
+
+    // ---- Duplicate client order id guard ----
+
+    [Fact]
+    public async Task PlaceOrderAsync_DuplicateClientOrderIdForActiveOrder_RejectsWithoutTouchingOriginal()
+    {
+        // Limit orders stay accepted (active) in the paper gateway.
+        var originalResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 150m,
+            ClientOrderId = "CLIENT-1"
+        });
+        originalResult.Success.Should().BeTrue();
+        var originalState = _oms.GetOrder("CLIENT-1");
+        originalState.Should().NotBeNull();
+
+        var duplicateResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "TSLA",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 99,
+            ClientOrderId = "CLIENT-1"
+        });
+
+        duplicateResult.Success.Should().BeFalse();
+        duplicateResult.ErrorMessage.Should().Contain("Duplicate client order id");
+        _oms.GetOrder("CLIENT-1").Should().Be(originalState,
+            "a duplicate submission must not overwrite the tracked state of the active order");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_ClientOrderIdReuseAfterTerminalOrder_Succeeds()
+    {
+        // Market orders fill immediately in the paper gateway, so the first order is terminal.
+        var firstResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "MSFT",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 5,
+            ClientOrderId = "CLIENT-2"
+        });
+        firstResult.Success.Should().BeTrue();
+        _oms.GetOrder("CLIENT-2")!.Status.Should().Be(OrderStatus.Filled);
+
+        var secondResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "GOOG",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 3,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-2"
+        });
+
+        secondResult.Success.Should().BeTrue(
+            "a terminal order's client order id may be reclaimed, consistent with retention trimming");
+        _oms.GetOrder("CLIENT-2")!.Symbol.Should().Be("GOOG");
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1094,70 +1158,6 @@ public sealed class OrderManagementSystemGateTests : IDisposable
 
         // Gateway fills market orders immediately, so no rejection from missing gate
         result.Success.Should().BeTrue("no gate means any symbol is accepted");
-    }
-
-    // ---- Duplicate client order id guard ----
-
-    [Fact]
-    public async Task PlaceOrderAsync_DuplicateClientOrderIdForActiveOrder_RejectsWithoutTouchingOriginal()
-    {
-        // Limit orders stay accepted (active) in the paper gateway.
-        var originalResult = await _oms.PlaceOrderAsync(new OrderRequest
-        {
-            Symbol = "AAPL",
-            Side = OrderSide.Buy,
-            Type = OrderType.Limit,
-            Quantity = 10,
-            LimitPrice = 150m,
-            ClientOrderId = "CLIENT-1"
-        });
-        originalResult.Success.Should().BeTrue();
-        var originalState = _oms.GetOrder("CLIENT-1");
-        originalState.Should().NotBeNull();
-
-        var duplicateResult = await _oms.PlaceOrderAsync(new OrderRequest
-        {
-            Symbol = "TSLA",
-            Side = OrderSide.Sell,
-            Type = OrderType.Market,
-            Quantity = 99,
-            ClientOrderId = "CLIENT-1"
-        });
-
-        duplicateResult.Success.Should().BeFalse();
-        duplicateResult.ErrorMessage.Should().Contain("Duplicate client order id");
-        _oms.GetOrder("CLIENT-1").Should().Be(originalState,
-            "a duplicate submission must not overwrite the tracked state of the active order");
-    }
-
-    [Fact]
-    public async Task PlaceOrderAsync_ClientOrderIdReuseAfterTerminalOrder_Succeeds()
-    {
-        // Market orders fill immediately in the paper gateway, so the first order is terminal.
-        var firstResult = await _oms.PlaceOrderAsync(new OrderRequest
-        {
-            Symbol = "MSFT",
-            Side = OrderSide.Buy,
-            Type = OrderType.Market,
-            Quantity = 5,
-            ClientOrderId = "CLIENT-2"
-        });
-        firstResult.Success.Should().BeTrue();
-        _oms.GetOrder("CLIENT-2")!.Status.Should().Be(OrderStatus.Filled);
-
-        var secondResult = await _oms.PlaceOrderAsync(new OrderRequest
-        {
-            Symbol = "GOOG",
-            Side = OrderSide.Buy,
-            Type = OrderType.Limit,
-            Quantity = 3,
-            LimitPrice = 100m,
-            ClientOrderId = "CLIENT-2"
-        });
-
-        secondResult.Success.Should().BeTrue(
-            "a terminal order's client order id may be reclaimed, consistent with retention trimming");
-        _oms.GetOrder("CLIENT-2")!.Symbol.Should().Be("GOOG");
     }
 
     [Fact]
