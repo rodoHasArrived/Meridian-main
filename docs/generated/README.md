@@ -17,6 +17,7 @@ Generated pages in this subtree should carry an auto-generated notice when they 
 | Roadmap views | `docs/roadmap/data/*.yml` and roadmap renderers | `docs/roadmap/generated/*` | Edit YAML registry or renderer, then validate/render. |
 | Source docs | `docs/source/data/*.yml`, source READMEs, source-doc renderers | `docs/source/generated/*` and generated README blocks | Edit registry/source README, then validate/render. |
 | Health and evidence dashboards | Build/test/artifact inputs and dashboard generators | status and generated dashboard markdown/json | Update generator or evidence input. |
+| PostgreSQL schema and data-object catalog | Versioned SQL migrations, disposable PostgreSQL `pg_catalog`, public C# contracts, and `database/schema-control.json` | `database/manifest/**`, `docs/generated/database/**` | Build a hosted snapshot, review it, promote it, and rerun schema-control verification. |
 | AI inventory and skill reports | `.codex/`, `.claude/`, `.agents/`, `.github/`, scripts, and validators | generated AI reports and inventory outputs | Update watched surface and run inventory checks. |
 
 ## Key Scripts

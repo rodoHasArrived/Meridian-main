@@ -28,7 +28,7 @@ Reference content here must stay schema/procedure-neutral and claim-stable. Proc
 | Contract compatibility and schemas | [Contract Compatibility Matrix](contract-compatibility-matrix.md), [Provider Validation Evidence Schema](provider-validation-evidence-schema.md), [Provider Validation Matrix](provider-validation-matrix.md) | Keep generated or matrix-owned content in place until moved through a focused migration. |
 | UFL and asset profiles | [UFL Supported Assets Index](ufl-supported-assets-index.md), [UFL Capability Model](ufl-capability-model.md), [UFL Conformance Matrix](ufl-conformance-matrix.md) | Target-state lookup material now lives in reference. |
 | Ledger, accounting, and reporting contracts | [Ledger Journal Store](ledger-journal-store.md), [Export Preflight Rules](export-preflight-rules.md), [Accounting Configuration](accounting-configuration.md), [Accounting Report Packs](accounting-report-packs.md) | Stable contracts and artifact layouts. |
-| Database schema | [Database Schema](database-schema.md) | Consolidated PostgreSQL store registry, per-schema table catalogs, and cross-store keys; migrations under `src/Meridian.Storage/*/Migrations/` stay authoritative. |
+| Database schema | [Database Schema](database-schema.md) | Schema-control entrypoint for authoritative SQL migrations, generated `pg_catalog` manifests, DTO/data-object diagrams, policies, and dependency maps. |
 | Strategy contracts | [Backtest Preflight and Stage Telemetry](backtest-preflight-and-stage-telemetry.md), [Strategy Briefing Workflow](strategy-briefing-workflow.md), [Strategy Promotion History](strategy-promotion-history.md) | DTOs, persistence fields, and workflow contract shapes. |
 | Dependencies and open-source notices | [Open Source References](open-source-references.md), [Dependencies](../DEPENDENCIES.md) | Package inventory and third-party acknowledgement lookup. |
 
@@ -55,7 +55,7 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [Brand Assets](brand-assets.md) | Brand asset reference material. |
 | [Data Dictionary](data-dictionary.md) | Data field definitions and types. |
 | [Data Uniformity](data-uniformity.md) | Cross-provider consistency guidelines. |
-| [Database Schema](database-schema.md) | Consolidated PostgreSQL schema map for the current programs: store registry, ER diagrams, table catalogs, cross-store keys, and non-relational persistence summary. |
+| [Database Schema](database-schema.md) | Maintained PostgreSQL schema-control map with generated ER diagrams, public contract-object diagrams, migration inventory, policy results, and dependency metadata. |
 | [Design Review Memo](design-review-memo.md) | Key design constraints and decisions retained as reference material. |
 | [EDGAR Reference Data](edgar-reference-data.md) | EDGAR filer, ticker association, XBRL fact, filing-derived security data, CLI, API, and local storage reference. |
 | [Contract Compatibility Matrix](contract-compatibility-matrix.md) | Shared contract/versioning baseline for workstation routes, DTOs, services, and migration behavior. |

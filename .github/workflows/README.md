@@ -21,6 +21,7 @@ scope.
 | `verify-workflows` | `Meridian CI` workflow hygiene lane plus lane manifest validation. |
 | `verify-fast` | Local aggregate of `verify-dotnet` and `verify-browser`. |
 | `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted curated lanes. |
+| `schema-control` | `PostgreSQL Schema Control` (`schema-control.yml`) for migration execution, catalog/policy validation, and generated schema/data-object drift checks. |
 | `verify-full` | Local-only broad lane (`make verify-full`) used before PR when needed. |
 | `verify-desktop` | `Windows Desktop Build` (`windows-desktop-build.yml`). |
 | `verify-release` | `Publish Smoke` (`publish-smoke.yml`) and `Desktop Installer Packaging` (`desktop-installer-packaging.yml`). |
@@ -35,6 +36,7 @@ scope.
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | WPF, WPF dependency, desktop workflow script, or manual changes | Runs `scripts/dev/validate-wpf-dev.ps1` with the desktop workflow script-test default or a manual filter override. | WPF dev-loop evidence |
 | WPF Route Validation | `wpf-route-validation.yml` | WPF, shared route dependency, route script, or manual changes | Runs position-blotter and operator-inbox route validation scripts on Windows. | Route validation evidence |
 | Documentation Automation | `documentation.yml` | Documentation, Codex memory, docs-script, workflow, WPF navigation, diagram changes, or manual | Runs docs automation checks, validates AI inventory, Codex memory summary/receipt commands and focused memory-checker tests, regenerates tracked documentation outputs, refreshes Mermaid/UI diagrams using root lockfile-backed `npm ci`, renders UML artifacts through the PlantUML container, excludes version-specific UML render binaries from the final freshness diff, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
+| PostgreSQL Schema Control | `schema-control.yml` | PostgreSQL migrations, public contracts, schema-control registry/policies/tooling, generated database docs, or manual | Applies all registered SQL migrations to disposable PostgreSQL 16, extracts `pg_catalog`, inventories public C# data objects, evaluates policy and migration safety rules, and rejects stale deterministic manifests or diagrams. Manual `snapshot` mode uploads refresh candidates without writing to the repository. | Candidate manifests, generated docs/diagrams, policy report, schema diff, and run summary |
 | Roadmap Source Docs | `roadmap-source-docs.yml` | Roadmap/source/status/architecture/source-README changes or manual | Enforces PR phase scope for roadmap/source-doc changes, validates roadmap and source registries, renders generated outputs, and checks for drift. | None |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks, validates tooling metadata, validates workflow syntax with `actionlint`, and checks AI contract/navigation drift. | None |
 | Provider Validation | `provider-validation.yml` | Weekly or manual | Runs the Wave 1 provider validation evidence bundle and DK1 sign-off packet generation. | Provider validation evidence |
@@ -147,6 +149,13 @@ Workflow hygiene:
 ```powershell
 python build/scripts/ci/check-workflow-hygiene.py
 python build/scripts/ci/check-lane-manifest.py --summary
+```
+
+PostgreSQL schema control:
+
+```powershell
+python build/scripts/schema-control.py inventory --base-ref origin/main
+gh workflow run schema-control.yml --ref <branch> -f mode=snapshot
 ```
 
 Documentation automation:
