@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `e36fc4dcddac`
+- Source fingerprint: `abe272a642e8`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `93`
 - Open automated tasks: `1`
@@ -845,7 +845,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as LifecycleControl (LifecycleControlPage).
 - [ ] Capture a fixture-mode desktop screenshot for LifecycleControl or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/LifecycleControlViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/StartupWindowViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/LifecycleControlPageSmokeTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/LifecycleControlViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/StartupWindowViewModelTests.cs, +1 more.
 
 #### Diagnostics (`Diagnostics`)
 
