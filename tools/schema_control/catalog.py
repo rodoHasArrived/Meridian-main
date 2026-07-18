@@ -228,7 +228,7 @@ select
     end as generated_expression,
     case
         when attribute.attcollation = 0 then null
-        else collation_namespace.nspname || '.' || collation.collname
+        else collation_namespace.nspname || '.' || collation_record.collname
     end as collation,
     coalesce(
         (
@@ -255,9 +255,9 @@ join pg_catalog.pg_namespace type_namespace on type_namespace.oid = data_type.ty
 left join pg_catalog.pg_attrdef default_value
     on default_value.adrelid = attribute.attrelid
    and default_value.adnum = attribute.attnum
-left join pg_catalog.pg_collation collation on collation.oid = attribute.attcollation
+left join pg_catalog.pg_collation collation_record on collation_record.oid = attribute.attcollation
 left join pg_catalog.pg_namespace collation_namespace
-    on collation_namespace.oid = collation.collnamespace
+    on collation_namespace.oid = collation_record.collnamespace
 where namespace.nspname = any(%(schemas)s)
   and relation.relkind in ('r', 'p', 'v', 'm', 'f')
   and attribute.attnum > 0
@@ -599,7 +599,7 @@ select
     ) as constraints,
     case
         when domain_type.typcollation = 0 then null
-        else collation_namespace.nspname || '.' || collation.collname
+        else collation_namespace.nspname || '.' || collation_record.collname
     end as collation,
     coalesce(
         (
@@ -620,9 +620,9 @@ select
     obj_description(domain_type.oid, 'pg_type') as comment
 from pg_catalog.pg_type domain_type
 join pg_catalog.pg_namespace namespace on namespace.oid = domain_type.typnamespace
-left join pg_catalog.pg_collation collation on collation.oid = domain_type.typcollation
+left join pg_catalog.pg_collation collation_record on collation_record.oid = domain_type.typcollation
 left join pg_catalog.pg_namespace collation_namespace
-    on collation_namespace.oid = collation.collnamespace
+    on collation_namespace.oid = collation_record.collnamespace
 where namespace.nspname = any(%(schemas)s)
   and domain_type.typtype = 'd'
 order by namespace.nspname, domain_type.typname;

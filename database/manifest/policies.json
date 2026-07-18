@@ -1,0 +1,1981 @@
+{
+  "counts": {
+    "error": 0,
+    "info": 0,
+    "total": 183,
+    "warning": 183
+  },
+  "failed": false,
+  "findings": [
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_actual_activity"
+      },
+      "message": "Business table asset_operations.asset_actual_activity does not have a table comment.",
+      "object": "asset_operations.asset_actual_activity",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_cash_flow_projection_runs"
+      },
+      "message": "Business table asset_operations.asset_cash_flow_projection_runs does not have a table comment.",
+      "object": "asset_operations.asset_cash_flow_projection_runs",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_ledger_projections"
+      },
+      "message": "Business table asset_operations.asset_ledger_projections does not have a table comment.",
+      "object": "asset_operations.asset_ledger_projections",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_lifecycle_events"
+      },
+      "message": "Business table asset_operations.asset_lifecycle_events does not have a table comment.",
+      "object": "asset_operations.asset_lifecycle_events",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_operation_subjects"
+      },
+      "message": "Business table asset_operations.asset_operation_subjects does not have a table comment.",
+      "object": "asset_operations.asset_operation_subjects",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_operations_readiness"
+      },
+      "message": "Business table asset_operations.asset_operations_readiness does not have a table comment.",
+      "object": "asset_operations.asset_operations_readiness",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_projected_cash_flows"
+      },
+      "message": "Business table asset_operations.asset_projected_cash_flows does not have a table comment.",
+      "object": "asset_operations.asset_projected_cash_flows",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_reconciliation_results"
+      },
+      "message": "Business table asset_operations.asset_reconciliation_results does not have a table comment.",
+      "object": "asset_operations.asset_reconciliation_results",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_reconciliation_runs"
+      },
+      "message": "Business table asset_operations.asset_reconciliation_runs does not have a table comment.",
+      "object": "asset_operations.asset_reconciliation_runs",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_terms_versions"
+      },
+      "message": "Business table asset_operations.asset_terms_versions does not have a table comment.",
+      "object": "asset_operations.asset_terms_versions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "asset_workflow_audit"
+      },
+      "message": "Business table asset_operations.asset_workflow_audit does not have a table comment.",
+      "object": "asset_operations.asset_workflow_audit",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "book_position_projections"
+      },
+      "message": "Business table asset_operations.book_position_projections does not have a table comment.",
+      "object": "asset_operations.book_position_projections",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "instrument_role_projections"
+      },
+      "message": "Business table asset_operations.instrument_role_projections does not have a table comment.",
+      "object": "asset_operations.instrument_role_projections",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "asset_operations",
+        "table": "position_economic_state_projections"
+      },
+      "message": "Business table asset_operations.position_economic_state_projections does not have a table comment.",
+      "object": "asset_operations.position_economic_state_projections",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "banking",
+        "table": "bank_transactions"
+      },
+      "message": "Business table banking.bank_transactions does not have a table comment.",
+      "object": "banking.bank_transactions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "banking",
+        "table": "pending_payments"
+      },
+      "message": "Business table banking.pending_payments does not have a table comment.",
+      "object": "banking.pending_payments",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "account_balance_snapshot"
+      },
+      "message": "Business table fund_accounts.account_balance_snapshot does not have a table comment.",
+      "object": "fund_accounts.account_balance_snapshot",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "account_definition"
+      },
+      "message": "Business table fund_accounts.account_definition does not have a table comment.",
+      "object": "fund_accounts.account_definition",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "account_margin_snapshot"
+      },
+      "message": "Business table fund_accounts.account_margin_snapshot does not have a table comment.",
+      "object": "fund_accounts.account_margin_snapshot",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "account_reconciliation_breaks"
+      },
+      "message": "Business table fund_accounts.account_reconciliation_breaks does not have a table comment.",
+      "object": "fund_accounts.account_reconciliation_breaks",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "account_reconciliation_run"
+      },
+      "message": "Business table fund_accounts.account_reconciliation_run does not have a table comment.",
+      "object": "fund_accounts.account_reconciliation_run",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "account_sync_history"
+      },
+      "message": "Business table fund_accounts.account_sync_history does not have a table comment.",
+      "object": "fund_accounts.account_sync_history",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "bank_statement_batch"
+      },
+      "message": "Business table fund_accounts.bank_statement_batch does not have a table comment.",
+      "object": "fund_accounts.bank_statement_batch",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "bank_statement_line"
+      },
+      "message": "Business table fund_accounts.bank_statement_line does not have a table comment.",
+      "object": "fund_accounts.bank_statement_line",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "custodian_position_line"
+      },
+      "message": "Business table fund_accounts.custodian_position_line does not have a table comment.",
+      "object": "fund_accounts.custodian_position_line",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_accounts",
+        "table": "custodian_statement_batch"
+      },
+      "message": "Business table fund_accounts.custodian_statement_batch does not have a table comment.",
+      "object": "fund_accounts.custodian_statement_batch",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "business"
+      },
+      "message": "Business table fund_structure.business does not have a table comment.",
+      "object": "fund_structure.business",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "client"
+      },
+      "message": "Business table fund_structure.client does not have a table comment.",
+      "object": "fund_structure.client",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "fund"
+      },
+      "message": "Business table fund_structure.fund does not have a table comment.",
+      "object": "fund_structure.fund",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "fund_structure_assignment"
+      },
+      "message": "Business table fund_structure.fund_structure_assignment does not have a table comment.",
+      "object": "fund_structure.fund_structure_assignment",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "investment_portfolio"
+      },
+      "message": "Business table fund_structure.investment_portfolio does not have a table comment.",
+      "object": "fund_structure.investment_portfolio",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "legal_entity"
+      },
+      "message": "Business table fund_structure.legal_entity does not have a table comment.",
+      "object": "fund_structure.legal_entity",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "organization"
+      },
+      "message": "Business table fund_structure.organization does not have a table comment.",
+      "object": "fund_structure.organization",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "ownership_link"
+      },
+      "message": "Business table fund_structure.ownership_link does not have a table comment.",
+      "object": "fund_structure.ownership_link",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "sleeve"
+      },
+      "message": "Business table fund_structure.sleeve does not have a table comment.",
+      "object": "fund_structure.sleeve",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "vehicle"
+      },
+      "message": "Business table fund_structure.vehicle does not have a table comment.",
+      "object": "fund_structure.vehicle",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "identity_access",
+        "table": "user_access_assignment"
+      },
+      "message": "Business table identity_access.user_access_assignment does not have a table comment.",
+      "object": "identity_access.user_access_assignment",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "accounting_action_audit_events"
+      },
+      "message": "Business table ledger.accounting_action_audit_events does not have a table comment.",
+      "object": "ledger.accounting_action_audit_events",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "accounting_configuration_chart_nodes"
+      },
+      "message": "Business table ledger.accounting_configuration_chart_nodes does not have a table comment.",
+      "object": "ledger.accounting_configuration_chart_nodes",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "accounting_configuration_journal_templates"
+      },
+      "message": "Business table ledger.accounting_configuration_journal_templates does not have a table comment.",
+      "object": "ledger.accounting_configuration_journal_templates",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "accounting_configuration_posting_rules"
+      },
+      "message": "Business table ledger.accounting_configuration_posting_rules does not have a table comment.",
+      "object": "ledger.accounting_configuration_posting_rules",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "accounting_configuration_rule_test_cases"
+      },
+      "message": "Business table ledger.accounting_configuration_rule_test_cases does not have a table comment.",
+      "object": "ledger.accounting_configuration_rule_test_cases",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "accounting_configuration_workspaces"
+      },
+      "message": "Business table ledger.accounting_configuration_workspaces does not have a table comment.",
+      "object": "ledger.accounting_configuration_workspaces",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "accounting_periods"
+      },
+      "message": "Business table ledger.accounting_periods does not have a table comment.",
+      "object": "ledger.accounting_periods",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "accounting_policies"
+      },
+      "message": "Business table ledger.accounting_policies does not have a table comment.",
+      "object": "ledger.accounting_policies",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "fund_profile_tenancy"
+      },
+      "message": "Business table ledger.fund_profile_tenancy does not have a table comment.",
+      "object": "ledger.fund_profile_tenancy",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "journal_entries"
+      },
+      "message": "Business table ledger.journal_entries does not have a table comment.",
+      "object": "ledger.journal_entries",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "journal_legs"
+      },
+      "message": "Business table ledger.journal_legs does not have a table comment.",
+      "object": "ledger.journal_legs",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "ledger_books"
+      },
+      "message": "Business table ledger.ledger_books does not have a table comment.",
+      "object": "ledger.ledger_books",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "operations_continuity_audit"
+      },
+      "message": "Business table ledger.operations_continuity_audit does not have a table comment.",
+      "object": "ledger.operations_continuity_audit",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "operations_continuity_workflows"
+      },
+      "message": "Business table ledger.operations_continuity_workflows does not have a table comment.",
+      "object": "ledger.operations_continuity_workflows",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "period_close_events"
+      },
+      "message": "Business table ledger.period_close_events does not have a table comment.",
+      "object": "ledger.period_close_events",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "tax_lot_policies"
+      },
+      "message": "Business table ledger.tax_lot_policies does not have a table comment.",
+      "object": "ledger.tax_lot_policies",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "tax_lots"
+      },
+      "message": "Business table ledger.tax_lots does not have a table comment.",
+      "object": "ledger.tax_lots",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "money_market",
+        "table": "mmf_funds"
+      },
+      "message": "Business table money_market.mmf_funds does not have a table comment.",
+      "object": "money_market.mmf_funds",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "money_market",
+        "table": "mmf_liquidity_overrides"
+      },
+      "message": "Business table money_market.mmf_liquidity_overrides does not have a table comment.",
+      "object": "money_market.mmf_liquidity_overrides",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "money_market",
+        "table": "mmf_rebuild_checkpoints"
+      },
+      "message": "Business table money_market.mmf_rebuild_checkpoints does not have a table comment.",
+      "object": "money_market.mmf_rebuild_checkpoints",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_access_grants"
+      },
+      "message": "Business table reporting.reporting_access_grants does not have a table comment.",
+      "object": "reporting.reporting_access_grants",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_audit"
+      },
+      "message": "Business table reporting.reporting_artifact_audit does not have a table comment.",
+      "object": "reporting.reporting_artifact_audit",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_audit_chain_head"
+      },
+      "message": "Business table reporting.reporting_artifact_audit_chain_head does not have a table comment.",
+      "object": "reporting.reporting_artifact_audit_chain_head",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_blobs"
+      },
+      "message": "Business table reporting.reporting_artifact_blobs does not have a table comment.",
+      "object": "reporting.reporting_artifact_blobs",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_catalog"
+      },
+      "message": "Business table reporting.reporting_artifact_catalog does not have a table comment.",
+      "object": "reporting.reporting_artifact_catalog",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_packages"
+      },
+      "message": "Business table reporting.reporting_artifact_packages does not have a table comment.",
+      "object": "reporting.reporting_artifact_packages",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_delivery_jobs"
+      },
+      "message": "Business table reporting.reporting_delivery_jobs does not have a table comment.",
+      "object": "reporting.reporting_delivery_jobs",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_delivery_receipts"
+      },
+      "message": "Business table reporting.reporting_delivery_receipts does not have a table comment.",
+      "object": "reporting.reporting_delivery_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_governance_audit"
+      },
+      "message": "Business table reporting.reporting_governance_audit does not have a table comment.",
+      "object": "reporting.reporting_governance_audit",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_governed_runs"
+      },
+      "message": "Business table reporting.reporting_governed_runs does not have a table comment.",
+      "object": "reporting.reporting_governed_runs",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_reconciliation_evidence"
+      },
+      "message": "Business table reporting.reporting_reconciliation_evidence does not have a table comment.",
+      "object": "reporting.reporting_reconciliation_evidence",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_restatement_requests"
+      },
+      "message": "Business table reporting.reporting_restatement_requests does not have a table comment.",
+      "object": "reporting.reporting_restatement_requests",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "accounting_period_lock"
+      },
+      "message": "Business table security_master.accounting_period_lock does not have a table comment.",
+      "object": "security_master.accounting_period_lock",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "accrual_entry_projection"
+      },
+      "message": "Business table security_master.accrual_entry_projection does not have a table comment.",
+      "object": "security_master.accrual_entry_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "bond_accrual_convention_projection"
+      },
+      "message": "Business table security_master.bond_accrual_convention_projection does not have a table comment.",
+      "object": "security_master.bond_accrual_convention_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "bond_issuer_projection"
+      },
+      "message": "Business table security_master.bond_issuer_projection does not have a table comment.",
+      "object": "security_master.bond_issuer_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "bond_lifecycle_projection"
+      },
+      "message": "Business table security_master.bond_lifecycle_projection does not have a table comment.",
+      "object": "security_master.bond_lifecycle_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "bond_projection"
+      },
+      "message": "Business table security_master.bond_projection does not have a table comment.",
+      "object": "security_master.bond_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "cash_transaction"
+      },
+      "message": "Business table security_master.cash_transaction does not have a table comment.",
+      "object": "security_master.cash_transaction",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "certificate_of_deposit_projection"
+      },
+      "message": "Business table security_master.certificate_of_deposit_projection does not have a table comment.",
+      "object": "security_master.certificate_of_deposit_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "commodity_projection"
+      },
+      "message": "Business table security_master.commodity_projection does not have a table comment.",
+      "object": "security_master.commodity_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "corporate_actions"
+      },
+      "message": "Business table security_master.corporate_actions does not have a table comment.",
+      "object": "security_master.corporate_actions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "crypto_projection"
+      },
+      "message": "Business table security_master.crypto_projection does not have a table comment.",
+      "object": "security_master.crypto_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "data_vendor_entitlements"
+      },
+      "message": "Business table security_master.data_vendor_entitlements does not have a table comment.",
+      "object": "security_master.data_vendor_entitlements",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "deposit_projection"
+      },
+      "message": "Business table security_master.deposit_projection does not have a table comment.",
+      "object": "security_master.deposit_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "drawdown_lot_projection"
+      },
+      "message": "Business table security_master.drawdown_lot_projection does not have a table comment.",
+      "object": "security_master.drawdown_lot_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "equity_projection"
+      },
+      "message": "Business table security_master.equity_projection does not have a table comment.",
+      "object": "security_master.equity_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "fee_balance"
+      },
+      "message": "Business table security_master.fee_balance does not have a table comment.",
+      "object": "security_master.fee_balance",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "future_projection"
+      },
+      "message": "Business table security_master.future_projection does not have a table comment.",
+      "object": "security_master.future_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "fxspot_projection"
+      },
+      "message": "Business table security_master.fxspot_projection does not have a table comment.",
+      "object": "security_master.fxspot_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "journal_entry"
+      },
+      "message": "Business table security_master.journal_entry does not have a table comment.",
+      "object": "security_master.journal_entry",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "journal_line"
+      },
+      "message": "Business table security_master.journal_line does not have a table comment.",
+      "object": "security_master.journal_line",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "loan_contract"
+      },
+      "message": "Business table security_master.loan_contract does not have a table comment.",
+      "object": "security_master.loan_contract",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "loan_event"
+      },
+      "message": "Business table security_master.loan_event does not have a table comment.",
+      "object": "security_master.loan_event",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "loan_servicing_projection"
+      },
+      "message": "Business table security_master.loan_servicing_projection does not have a table comment.",
+      "object": "security_master.loan_servicing_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "loan_snapshot"
+      },
+      "message": "Business table security_master.loan_snapshot does not have a table comment.",
+      "object": "security_master.loan_snapshot",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "loan_state"
+      },
+      "message": "Business table security_master.loan_state does not have a table comment.",
+      "object": "security_master.loan_state",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "loan_terms_version"
+      },
+      "message": "Business table security_master.loan_terms_version does not have a table comment.",
+      "object": "security_master.loan_terms_version",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "money_market_fund_projection"
+      },
+      "message": "Business table security_master.money_market_fund_projection does not have a table comment.",
+      "object": "security_master.money_market_fund_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "operations_workflow_audit"
+      },
+      "message": "Business table security_master.operations_workflow_audit does not have a table comment.",
+      "object": "security_master.operations_workflow_audit",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "option_alias_projection"
+      },
+      "message": "Business table security_master.option_alias_projection does not have a table comment.",
+      "object": "security_master.option_alias_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "option_contract_projection"
+      },
+      "message": "Business table security_master.option_contract_projection does not have a table comment.",
+      "object": "security_master.option_contract_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "option_lifecycle_projection"
+      },
+      "message": "Business table security_master.option_lifecycle_projection does not have a table comment.",
+      "object": "security_master.option_lifecycle_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "option_series_projection"
+      },
+      "message": "Business table security_master.option_series_projection does not have a table comment.",
+      "object": "security_master.option_series_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "outbox_message"
+      },
+      "message": "Business table security_master.outbox_message does not have a table comment.",
+      "object": "security_master.outbox_message",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "payment_allocation"
+      },
+      "message": "Business table security_master.payment_allocation does not have a table comment.",
+      "object": "security_master.payment_allocation",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "projected_cash_flow"
+      },
+      "message": "Business table security_master.projected_cash_flow does not have a table comment.",
+      "object": "security_master.projected_cash_flow",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "projection_checkpoint"
+      },
+      "message": "Business table security_master.projection_checkpoint does not have a table comment.",
+      "object": "security_master.projection_checkpoint",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "projection_run"
+      },
+      "message": "Business table security_master.projection_run does not have a table comment.",
+      "object": "security_master.projection_run",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "read_model_checkpoint"
+      },
+      "message": "Business table security_master.read_model_checkpoint does not have a table comment.",
+      "object": "security_master.read_model_checkpoint",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "reconciliation_exception"
+      },
+      "message": "Business table security_master.reconciliation_exception does not have a table comment.",
+      "object": "security_master.reconciliation_exception",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "reconciliation_result"
+      },
+      "message": "Business table security_master.reconciliation_result does not have a table comment.",
+      "object": "security_master.reconciliation_result",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "reconciliation_run"
+      },
+      "message": "Business table security_master.reconciliation_run does not have a table comment.",
+      "object": "security_master.reconciliation_run",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "securities"
+      },
+      "message": "Business table security_master.securities does not have a table comment.",
+      "object": "security_master.securities",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_aliases"
+      },
+      "message": "Business table security_master.security_aliases does not have a table comment.",
+      "object": "security_master.security_aliases",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_cashflow_source_assignments"
+      },
+      "message": "Business table security_master.security_cashflow_source_assignments does not have a table comment.",
+      "object": "security_master.security_cashflow_source_assignments",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_events"
+      },
+      "message": "Business table security_master.security_events does not have a table comment.",
+      "object": "security_master.security_events",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_identifiers"
+      },
+      "message": "Business table security_master.security_identifiers does not have a table comment.",
+      "object": "security_master.security_identifiers",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_master_conflicts"
+      },
+      "message": "Business table security_master.security_master_conflicts does not have a table comment.",
+      "object": "security_master.security_master_conflicts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_master_quality_reports"
+      },
+      "message": "Business table security_master.security_master_quality_reports does not have a table comment.",
+      "object": "security_master.security_master_quality_reports",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_master_revisions"
+      },
+      "message": "Business table security_master.security_master_revisions does not have a table comment.",
+      "object": "security_master.security_master_revisions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_operator_overrides"
+      },
+      "message": "Business table security_master.security_operator_overrides does not have a table comment.",
+      "object": "security_master.security_operator_overrides",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_pricing_hierarchy"
+      },
+      "message": "Business table security_master.security_pricing_hierarchy does not have a table comment.",
+      "object": "security_master.security_pricing_hierarchy",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_raw_prices"
+      },
+      "message": "Business table security_master.security_raw_prices does not have a table comment.",
+      "object": "security_master.security_raw_prices",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "security_snapshots"
+      },
+      "message": "Business table security_master.security_snapshots does not have a table comment.",
+      "object": "security_master.security_snapshots",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicer_position_report_line"
+      },
+      "message": "Business table security_master.servicer_position_report_line does not have a table comment.",
+      "object": "security_master.servicer_position_report_line",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicer_report_batch"
+      },
+      "message": "Business table security_master.servicer_report_batch does not have a table comment.",
+      "object": "security_master.servicer_report_batch",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicer_statement_apply_audit"
+      },
+      "message": "Business table security_master.servicer_statement_apply_audit does not have a table comment.",
+      "object": "security_master.servicer_statement_apply_audit",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicer_statement_import_batch"
+      },
+      "message": "Business table security_master.servicer_statement_import_batch does not have a table comment.",
+      "object": "security_master.servicer_statement_import_batch",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicer_statement_import_row"
+      },
+      "message": "Business table security_master.servicer_statement_import_row does not have a table comment.",
+      "object": "security_master.servicer_statement_import_row",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicer_statement_validation_issue"
+      },
+      "message": "Business table security_master.servicer_statement_validation_issue does not have a table comment.",
+      "object": "security_master.servicer_statement_validation_issue",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicer_transaction_report_line"
+      },
+      "message": "Business table security_master.servicer_transaction_report_line does not have a table comment.",
+      "object": "security_master.servicer_transaction_report_line",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicing_revision_processing"
+      },
+      "message": "Business table security_master.servicing_revision_processing does not have a table comment.",
+      "object": "security_master.servicing_revision_processing",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicing_revision_projection"
+      },
+      "message": "Business table security_master.servicing_revision_projection does not have a table comment.",
+      "object": "security_master.servicing_revision_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "servicing_revision_source"
+      },
+      "message": "Business table security_master.servicing_revision_source does not have a table comment.",
+      "object": "security_master.servicing_revision_source",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
+        "table": "swap_projection"
+      },
+      "message": "Business table security_master.swap_projection does not have a table comment.",
+      "object": "security_master.swap_projection",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "role_id",
+          "security_id",
+          "owner_scope_id",
+          "owner_scope_kind"
+        ],
+        "constraint": "fk_book_position_projection_role_scope",
+        "schema": "asset_operations",
+        "table": "book_position_projections"
+      },
+      "message": "Foreign key asset_operations.book_position_projections.fk_book_position_projection_role_scope is not covered by a left-prefix index.",
+      "object": "asset_operations.book_position_projections.fk_book_position_projection_role_scope",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "position_id",
+          "security_id",
+          "ledger_book_id",
+          "owner_scope_id",
+          "owner_scope_kind"
+        ],
+        "constraint": "fk_position_economic_state_position_scope",
+        "schema": "asset_operations",
+        "table": "position_economic_state_projections"
+      },
+      "message": "Foreign key asset_operations.position_economic_state_projections.fk_position_economic_state_position_scope is not covered by a left-prefix index.",
+      "object": "asset_operations.position_economic_state_projections.fk_position_economic_state_position_scope",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "account_id"
+        ],
+        "constraint": "bank_statement_batch_account_id_fkey",
+        "schema": "fund_accounts",
+        "table": "bank_statement_batch"
+      },
+      "message": "Foreign key fund_accounts.bank_statement_batch.bank_statement_batch_account_id_fkey is not covered by a left-prefix index.",
+      "object": "fund_accounts.bank_statement_batch.bank_statement_batch_account_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "batch_id"
+        ],
+        "constraint": "bank_statement_line_batch_id_fkey",
+        "schema": "fund_accounts",
+        "table": "bank_statement_line"
+      },
+      "message": "Foreign key fund_accounts.bank_statement_line.bank_statement_line_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "fund_accounts.bank_statement_line.bank_statement_line_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "batch_id"
+        ],
+        "constraint": "custodian_position_line_batch_id_fkey",
+        "schema": "fund_accounts",
+        "table": "custodian_position_line"
+      },
+      "message": "Foreign key fund_accounts.custodian_position_line.custodian_position_line_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "fund_accounts.custodian_position_line.custodian_position_line_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "account_id"
+        ],
+        "constraint": "custodian_statement_batch_account_id_fkey",
+        "schema": "fund_accounts",
+        "table": "custodian_statement_batch"
+      },
+      "message": "Foreign key fund_accounts.custodian_statement_batch.custodian_statement_batch_account_id_fkey is not covered by a left-prefix index.",
+      "object": "fund_accounts.custodian_statement_batch.custodian_statement_batch_account_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "source_journal_entry_id"
+        ],
+        "constraint": "tax_lots_source_journal_entry_id_fkey",
+        "schema": "ledger",
+        "table": "tax_lots"
+      },
+      "message": "Foreign key ledger.tax_lots.tax_lots_source_journal_entry_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.tax_lots.tax_lots_source_journal_entry_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "job_id",
+          "tenant_id"
+        ],
+        "constraint": "fk_reporting_delivery_receipt_job",
+        "schema": "reporting",
+        "table": "reporting_delivery_receipts"
+      },
+      "message": "Foreign key reporting.reporting_delivery_receipts.fk_reporting_delivery_receipt_job is not covered by a left-prefix index.",
+      "object": "reporting.reporting_delivery_receipts.fk_reporting_delivery_receipt_job",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tenant_id",
+          "predecessor_run_id"
+        ],
+        "constraint": "fk_reporting_restatement_predecessor",
+        "schema": "reporting",
+        "table": "reporting_restatement_requests"
+      },
+      "message": "Foreign key reporting.reporting_restatement_requests.fk_reporting_restatement_predecessor is not covered by a left-prefix index.",
+      "object": "reporting.reporting_restatement_requests.fk_reporting_restatement_predecessor",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "source_event_id"
+        ],
+        "constraint": "cash_transaction_source_event_id_fkey",
+        "schema": "security_master",
+        "table": "cash_transaction"
+      },
+      "message": "Foreign key security_master.cash_transaction.cash_transaction_source_event_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.cash_transaction.cash_transaction_source_event_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "source_event_id"
+        ],
+        "constraint": "fee_balance_source_event_id_fkey",
+        "schema": "security_master",
+        "table": "fee_balance"
+      },
+      "message": "Foreign key security_master.fee_balance.fee_balance_source_event_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.fee_balance.fee_balance_source_event_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "source_event_id"
+        ],
+        "constraint": "journal_entry_source_event_id_fkey",
+        "schema": "security_master",
+        "table": "journal_entry"
+      },
+      "message": "Foreign key security_master.journal_entry.journal_entry_source_event_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.journal_entry.journal_entry_source_event_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "security_id"
+        ],
+        "constraint": "option_contract_projection_security_id_fkey",
+        "schema": "security_master",
+        "table": "option_contract_projection"
+      },
+      "message": "Foreign key security_master.option_contract_projection.option_contract_projection_security_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.option_contract_projection.option_contract_projection_security_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "underlying_security_id"
+        ],
+        "constraint": "option_contract_projection_underlying_security_id_fkey",
+        "schema": "security_master",
+        "table": "option_contract_projection"
+      },
+      "message": "Foreign key security_master.option_contract_projection.option_contract_projection_underlying_security_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.option_contract_projection.option_contract_projection_underlying_security_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "contract_symbol"
+        ],
+        "constraint": "option_series_projection_contract_symbol_fkey",
+        "schema": "security_master",
+        "table": "option_series_projection"
+      },
+      "message": "Foreign key security_master.option_series_projection.option_series_projection_contract_symbol_fkey is not covered by a left-prefix index.",
+      "object": "security_master.option_series_projection.option_series_projection_contract_symbol_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "source_event_id"
+        ],
+        "constraint": "payment_allocation_source_event_id_fkey",
+        "schema": "security_master",
+        "table": "payment_allocation"
+      },
+      "message": "Foreign key security_master.payment_allocation.payment_allocation_source_event_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.payment_allocation.payment_allocation_source_event_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "loan_id"
+        ],
+        "constraint": "projected_cash_flow_loan_id_fkey",
+        "schema": "security_master",
+        "table": "projected_cash_flow"
+      },
+      "message": "Foreign key security_master.projected_cash_flow.projected_cash_flow_loan_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.projected_cash_flow.projected_cash_flow_loan_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "supersedes_projection_run_id"
+        ],
+        "constraint": "projection_run_supersedes_projection_run_id_fkey",
+        "schema": "security_master",
+        "table": "projection_run"
+      },
+      "message": "Foreign key security_master.projection_run.projection_run_supersedes_projection_run_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.projection_run.projection_run_supersedes_projection_run_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "trigger_event_id"
+        ],
+        "constraint": "projection_run_trigger_event_id_fkey",
+        "schema": "security_master",
+        "table": "projection_run"
+      },
+      "message": "Foreign key security_master.projection_run.projection_run_trigger_event_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.projection_run.projection_run_trigger_event_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "reconciliation_result_id"
+        ],
+        "constraint": "reconciliation_exception_reconciliation_result_id_fkey",
+        "schema": "security_master",
+        "table": "reconciliation_exception"
+      },
+      "message": "Foreign key security_master.reconciliation_exception.reconciliation_exception_reconciliation_result_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.reconciliation_exception.reconciliation_exception_reconciliation_result_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "cash_transaction_id"
+        ],
+        "constraint": "reconciliation_result_cash_transaction_id_fkey",
+        "schema": "security_master",
+        "table": "reconciliation_result"
+      },
+      "message": "Foreign key security_master.reconciliation_result.reconciliation_result_cash_transaction_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.reconciliation_result.reconciliation_result_cash_transaction_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "loan_id"
+        ],
+        "constraint": "reconciliation_result_loan_id_fkey",
+        "schema": "security_master",
+        "table": "reconciliation_result"
+      },
+      "message": "Foreign key security_master.reconciliation_result.reconciliation_result_loan_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.reconciliation_result.reconciliation_result_loan_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "projected_flow_id"
+        ],
+        "constraint": "reconciliation_result_projected_flow_id_fkey",
+        "schema": "security_master",
+        "table": "reconciliation_result"
+      },
+      "message": "Foreign key security_master.reconciliation_result.reconciliation_result_projected_flow_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.reconciliation_result.reconciliation_result_projected_flow_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "loan_id"
+        ],
+        "constraint": "reconciliation_run_loan_id_fkey",
+        "schema": "security_master",
+        "table": "reconciliation_run"
+      },
+      "message": "Foreign key security_master.reconciliation_run.reconciliation_run_loan_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.reconciliation_run.reconciliation_run_loan_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "projection_run_id"
+        ],
+        "constraint": "reconciliation_run_projection_run_id_fkey",
+        "schema": "security_master",
+        "table": "reconciliation_run"
+      },
+      "message": "Foreign key security_master.reconciliation_run.reconciliation_run_projection_run_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.reconciliation_run.reconciliation_run_projection_run_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "security_id"
+        ],
+        "constraint": "security_aliases_security_id_fkey",
+        "schema": "security_master",
+        "table": "security_aliases"
+      },
+      "message": "Foreign key security_master.security_aliases.security_aliases_security_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.security_aliases.security_aliases_security_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "loan_id"
+        ],
+        "constraint": "servicer_position_report_line_loan_id_fkey",
+        "schema": "security_master",
+        "table": "servicer_position_report_line"
+      },
+      "message": "Foreign key security_master.servicer_position_report_line.servicer_position_report_line_loan_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.servicer_position_report_line.servicer_position_report_line_loan_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "servicer_report_batch_id"
+        ],
+        "constraint": "servicer_statement_import_batch_servicer_report_batch_id_fkey",
+        "schema": "security_master",
+        "table": "servicer_statement_import_batch"
+      },
+      "message": "Foreign key security_master.servicer_statement_import_batch.servicer_statement_import_batch_servicer_report_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.servicer_statement_import_batch.servicer_statement_import_batch_servicer_report_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "loan_id"
+        ],
+        "constraint": "servicer_transaction_report_line_loan_id_fkey",
+        "schema": "security_master",
+        "table": "servicer_transaction_report_line"
+      },
+      "message": "Foreign key security_master.servicer_transaction_report_line.servicer_transaction_report_line_loan_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.servicer_transaction_report_line.servicer_transaction_report_line_loan_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "servicer_report_batch_id"
+        ],
+        "constraint": "servicing_revision_source_servicer_report_batch_id_fkey",
+        "schema": "security_master",
+        "table": "servicing_revision_source"
+      },
+      "message": "Foreign key security_master.servicing_revision_source.servicing_revision_source_servicer_report_batch_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.servicing_revision_source.servicing_revision_source_servicer_report_batch_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "directory": "src/Meridian.Storage/DirectLending/Migrations",
+        "drift_policy": "reapply",
+        "migration_set": "direct-lending",
+        "schema": "security_master"
+      },
+      "message": "Migration set direct-lending uses legacy reapply-on-drift behavior.",
+      "object": "direct-lending",
+      "rule_id": "legacy-reapply-migration",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "directory": "src/Meridian.Storage/FundAccounts/Migrations",
+        "drift_policy": "reapply",
+        "migration_set": "fund-accounts",
+        "schema": "fund_accounts"
+      },
+      "message": "Migration set fund-accounts uses legacy reapply-on-drift behavior.",
+      "object": "fund-accounts",
+      "rule_id": "legacy-reapply-migration",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "directory": "src/Meridian.Storage/FundStructure/Migrations",
+        "drift_policy": "reapply",
+        "migration_set": "fund-structure",
+        "schema": "fund_structure"
+      },
+      "message": "Migration set fund-structure uses legacy reapply-on-drift behavior.",
+      "object": "fund-structure",
+      "rule_id": "legacy-reapply-migration",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "directory": "src/Meridian.Identity/Migrations",
+        "drift_policy": "reapply",
+        "migration_set": "identity-access",
+        "schema": "identity_access"
+      },
+      "message": "Migration set identity-access uses legacy reapply-on-drift behavior.",
+      "object": "identity-access",
+      "rule_id": "legacy-reapply-migration",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "directory": "src/Meridian.Storage/Ledger/Migrations",
+        "drift_policy": "reapply",
+        "migration_set": "ledger",
+        "schema": "ledger"
+      },
+      "message": "Migration set ledger uses legacy reapply-on-drift behavior.",
+      "object": "ledger",
+      "rule_id": "legacy-reapply-migration",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "identity_access",
+        "table": "identity_access_schema_migrations"
+      },
+      "message": "Table identity_access.identity_access_schema_migrations is in an RLS-required schema but row-level security is disabled.",
+      "object": "identity_access.identity_access_schema_migrations",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "identity_access",
+        "table": "user_access_assignment"
+      },
+      "message": "Table identity_access.user_access_assignment is in an RLS-required schema but row-level security is disabled.",
+      "object": "identity_access.user_access_assignment",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_access_grants"
+      },
+      "message": "Table reporting.reporting_access_grants is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_access_grants",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_audit"
+      },
+      "message": "Table reporting.reporting_artifact_audit is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_artifact_audit",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_audit_chain_head"
+      },
+      "message": "Table reporting.reporting_artifact_audit_chain_head is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_artifact_audit_chain_head",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_blobs"
+      },
+      "message": "Table reporting.reporting_artifact_blobs is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_artifact_blobs",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_catalog"
+      },
+      "message": "Table reporting.reporting_artifact_catalog is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_artifact_catalog",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_artifact_packages"
+      },
+      "message": "Table reporting.reporting_artifact_packages is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_artifact_packages",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_delivery_jobs"
+      },
+      "message": "Table reporting.reporting_delivery_jobs is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_delivery_jobs",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_delivery_receipts"
+      },
+      "message": "Table reporting.reporting_delivery_receipts is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_delivery_receipts",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_governance_audit"
+      },
+      "message": "Table reporting.reporting_governance_audit is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_governance_audit",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_governed_runs"
+      },
+      "message": "Table reporting.reporting_governed_runs is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_governed_runs",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_reconciliation_evidence"
+      },
+      "message": "Table reporting.reporting_reconciliation_evidence is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_reconciliation_evidence",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_restatement_requests"
+      },
+      "message": "Table reporting.reporting_restatement_requests is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_restatement_requests",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_schema_migrations"
+      },
+      "message": "Table reporting.reporting_schema_migrations is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_schema_migrations",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    }
+  ],
+  "fingerprint": "a48dce3e060f710c51f23225e6ee344a6fadee99eae677d57bca058c6b56aae2"
+}

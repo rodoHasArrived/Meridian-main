@@ -11,7 +11,7 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 ## Overall Health Score
 
 ```text
-  [#######################-------] 78/100
+  [########################------] 81/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 586 |
-| Total lines | 101,442 |
-| Average file size (lines) | 173.1 |
-| Orphaned files | 244 |
+| Total documentation files | 658 |
+| Total lines | 121,997 |
+| Average file size (lines) | 185.4 |
+| Orphaned files | 245 |
 | Files without headings | 148 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 203 |
-| **Health score** | **78/100** |
+| TODO/FIXME markers | 205 |
+| **Health score** | **81/100** |
 
 ### Score Breakdown
 
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `Meridian Design System/SKILL.md`
 - `Meridian Design System/VISUAL_FOUNDATIONS.md`
 - `Meridian Design System/components/accounting/AccountTree.prompt.md`
-- ... and 224 more
+- ... and 225 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 78 | 586 | 244 | 0 |
+| 1970-01-01 | 81 | 658 | 245 | 0 |
 
 ---
 

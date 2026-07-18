@@ -1,0 +1,921 @@
+erDiagram
+    security_master_accounting_period_lock {
+        text ledger_basis PK
+        date period_start_date PK
+        date period_end_date PK
+        text status
+        text locked_by
+        timestamp_with_time_zone locked_at
+        text reopened_by
+        timestamp_with_time_zone reopened_at
+        text reason
+        timestamp_with_time_zone created_at
+    }
+    security_master_accrual_entry_projection {
+        uuid accrual_entry_id PK
+        uuid loan_id
+        date accrual_date
+        numeric_24_8_ interest_amount
+        numeric_24_8_ commitment_fee_amount
+        numeric_24_8_ penalty_amount
+        numeric_18_8_ annual_rate_applied
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_bond_accrual_convention_projection {
+        uuid security_id PK,FK
+        text day_count_convention
+        integer settlement_cycle_days
+        text holiday_calendar_id
+        text coupon_kind
+        numeric fixed_coupon_rate
+        text floating_rate_index
+        numeric floating_spread_bps
+        bigint version
+    }
+    security_master_bond_issuer_projection {
+        uuid security_id PK,FK
+        text issuer_name
+        text display_name
+        text primary_identifier_value
+        text currency
+        date maturity_date
+        text seniority
+        bigint version
+    }
+    security_master_bond_lifecycle_projection {
+        uuid security_id PK,FK
+        text lifecycle_stat
+        date issue_date
+        date call_date
+        date maturity_date
+        boolean is_callable
+        bigint version
+        text subclass
+        numeric par
+        text payment_frequency
+        date legal_final_maturity
+        date pre_refund_date
+        date mandatory_put_date
+    }
+    security_master_bond_projection {
+        uuid security_id PK,FK
+        text issuer_name
+        text seniority
+        text subclass
+        date issue_date
+        date maturity_date
+        text coupon_kind
+        numeric fixed_coupon_rate
+        text floating_rate_index
+        numeric floating_spread_bps
+        bigint version
+    }
+    security_master_cash_transaction {
+        uuid cash_transaction_id PK
+        uuid loan_id FK
+        text transaction_type
+        date effective_date
+        date transaction_date
+        date settlement_date
+        numeric_24_2_ amount
+        text currency
+        text counterparty
+        text external_ref
+        uuid source_event_id FK
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone voided_at
+    }
+    security_master_certificate_of_deposit_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer_name
+        date maturity_date
+        numeric_12_6_ coupon_rate
+        date callable_date
+        text day_count
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_commodity_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text commodity_type
+        text denomination
+        numeric_24_8_ contract_size
+        text exchange_code
+        character_2_ delivery_country
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_corporate_actions {
+        uuid corp_act_id PK
+        uuid security_id FK
+        text event_type
+        date ex_date
+        date pay_date
+        numeric dividend_per_share
+        text currency
+        numeric split_ratio
+        uuid new_security_id
+        numeric distribution_ratio
+        uuid acquirer_security_id
+        numeric exchange_ratio
+        numeric subscription_price_per_share
+        numeric rights_per_share
+        timestamp_with_time_zone recorded_at
+        date record_date
+        text lifecycle_state
+        uuid supersedes_corp_act_id
+        numeric redemption_price_percent_of_par
+    }
+    security_master_crypto_projection {
+        uuid security_id PK
+        text display_name
+        text base_currency
+        text quote_currency
+        text network
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_data_vendor_entitlements {
+        uuid entitlement_id PK
+        text vendor_name
+        text data_type
+        text contract_reference
+        timestamp_with_time_zone effective_from
+        timestamp_with_time_zone effective_to
+        numeric_28_2_ aum_threshold_usd
+        boolean requires_direct_client_contract
+        text contact_email
+        integer renewal_reminder_days
+        boolean is_active
+        text created_by
+        timestamp_with_time_zone created_at
+        text client_id
+        text account_id
+        text fund_profile_id
+        uuid security_id
+        text source_category
+        text expected_refresh_cadence
+        integer default_max_days_stale
+        text operator_metadata
+    }
+    security_master_deposit_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text deposit_type
+        text institution_name
+        date maturity_date
+        numeric_12_6_ interest_rate
+        text day_count
+        boolean is_callable
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_direct_lending_schema_migrations {
+        text filename PK
+        text checksum
+        timestamp_with_time_zone applied_at
+    }
+    security_master_drawdown_lot_projection {
+        uuid lot_id PK
+        uuid loan_id
+        date drawdown_date
+        date settle_date
+        numeric_24_2_ original_principal
+        numeric_24_2_ remaining_principal
+        text external_ref
+    }
+    security_master_equity_projection {
+        uuid security_id PK,FK
+        text display_name
+        text currency
+        text share_class
+        text voting_rights_cat
+        text classification
+        text exchange_code
+        text country_of_risk
+        text issuer_name
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_fee_balance {
+        uuid fee_balance_id PK
+        uuid loan_id FK
+        text fee_type
+        date effective_date
+        numeric_24_2_ original_amount
+        numeric_24_2_ unpaid_amount
+        uuid source_event_id FK
+        text note
+        timestamp_with_time_zone created_at
+    }
+    security_master_future_projection {
+        uuid security_id PK,FK
+        text display_name
+        text currency
+        text root_symbol
+        text contract_month
+        date expiry_date
+        numeric multiplier
+        text settlement_type
+        boolean is_roll_target
+        integer roll_window_days
+        date last_trading_dt
+        date first_notice_dt
+        date delivery_month_dt
+        text delivery_location_code
+        text lifecycle_stat
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_fxspot_projection {
+        uuid security_id PK,FK
+        text display_name
+        text base_currency
+        text quote_currency
+        text pair_code
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_journal_entry {
+        uuid journal_entry_id PK
+        uuid loan_id FK
+        date accounting_date
+        date effective_date
+        uuid source_event_id FK
+        text entry_type
+        text ledger_basis
+        text description
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone posted_at
+        text status
+    }
+    security_master_journal_line {
+        uuid journal_line_id PK
+        uuid journal_entry_id FK
+        integer line_no
+        text account_code
+        numeric_24_2_ debit_amount
+        numeric_24_2_ credit_amount
+        text currency
+        jsonb dimensions_json
+        timestamp_with_time_zone created_at
+    }
+    security_master_loan_contract {
+        uuid loan_id PK
+        bigint aggregate_version
+        text facility_name
+        uuid borrower_id
+        text borrower_name
+        uuid legal_entity_id
+        text status
+        date effective_date
+        date activation_date
+        date close_date
+        integer current_terms_version
+        text base_currency
+        timestamp_with_time_zone updated_at
+    }
+    security_master_loan_event {
+        uuid event_id PK
+        uuid loan_id
+        bigint aggregate_version
+        text event_type
+        date effective_date
+        timestamp_with_time_zone recorded_at
+        jsonb payload
+        uuid causation_id
+        uuid correlation_id
+        uuid command_id
+        text source_system
+        boolean replay_flag
+        integer event_schema_version
+        bigint event_position
+    }
+    security_master_loan_event_event_position_seq {
+        text catalogued_object
+    }
+    security_master_loan_event_position_seq {
+        text catalogued_object
+    }
+    security_master_loan_servicing_projection {
+        uuid loan_id PK
+        bigint aggregate_version
+        text status
+        numeric_24_2_ current_commitment
+        numeric_24_2_ total_drawn
+        numeric_24_2_ available_to_draw
+        numeric_24_2_ principal_outstanding
+        numeric_24_2_ interest_accrued_unpaid
+        numeric_24_2_ commitment_fee_accrued_unpaid
+        numeric_24_2_ fees_accrued_unpaid
+        numeric_24_2_ penalty_accrued_unpaid
+        jsonb current_rate_reset_json
+        date last_accrual_date
+        date last_payment_date
+        bigint servicing_revision
+        timestamp_with_time_zone updated_at
+    }
+    security_master_loan_snapshot {
+        uuid loan_id PK
+        bigint aggregate_version PK
+        jsonb contract_json
+        jsonb servicing_json
+        timestamp_with_time_zone created_at
+    }
+    security_master_loan_state {
+        uuid loan_id PK
+        bigint aggregate_version
+        jsonb contract_json
+        jsonb servicing_json
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+    }
+    security_master_loan_terms_version {
+        uuid loan_id PK
+        integer terms_version PK
+        text terms_hash
+        text source_action
+        text amendment_reason
+        timestamp_with_time_zone recorded_at
+        date origination_date
+        date maturity_date
+        numeric_24_2_ commitment_amount
+        text base_currency
+        text rate_type_kind
+        numeric_18_8_ fixed_annual_rate
+        text interest_index_name
+        numeric_18_8_ spread_bps
+        numeric_18_8_ floor_rate
+        numeric_18_8_ cap_rate
+        text day_count_basis
+        text payment_frequency
+        text amortization_type
+        numeric_18_8_ commitment_fee_rate
+        numeric_18_8_ default_rate_spread_bps
+        boolean prepayment_allowed
+        jsonb covenants_json
+        integer interest_only_months
+        integer grace_period_days
+        numeric_18_8_ effective_rate_floor
+        numeric_18_8_ effective_rate_cap
+        numeric_18_8_ prepayment_penalty_rate
+    }
+    security_master_money_market_fund_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text fund_family
+        boolean sweep_eligible
+        integer weighted_average_maturity_days
+        boolean liquidity_fee_eligible
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_operations_workflow_audit {
+        uuid audit_id PK
+        timestamp_with_time_zone occurred_at_utc
+        text workflow_id
+        uuid fund_account_id
+        text period_id
+        text event_type
+        text from_state
+        text to_state
+        text gate
+        text from_gate_status
+        text to_gate_status
+        text actor
+        text rationale
+        text trace_id
+        text request_id
+        text session_id
+        text run_id
+        text broker_reference_id
+        text security_reference_id
+        text ledger_reference_id
+        text reconciliation_reference_id
+        text evidence_reference_id
+        text audit_reference_id
+        text hash
+        text previous_hash
+        text severity
+        text[] tags
+        timestamp_with_time_zone created_at
+    }
+    security_master_option_alias_projection {
+        text contract_symbol PK,FK
+        text alias_kind PK
+        text alias_value PK
+        text provider PK
+        text normalized_alias
+    }
+    security_master_option_contract_projection {
+        text contract_symbol PK
+        uuid security_id FK
+        text option_chain_id
+        text underlying_symbol
+        uuid underlying_security_id FK
+        text put_call
+        numeric strike
+        date expiry_date
+        numeric multiplier
+        boolean is_adjusted
+        date last_trading_dt
+        text lifecycle_stat
+        timestamp_with_time_zone updated_at
+        bigint version
+    }
+    security_master_option_lifecycle_projection {
+        text contract_symbol PK,FK
+        text lifecycle_stat
+        timestamp_with_time_zone listed_at
+        date last_trading_dt
+        date expiry_date
+        bigint version
+    }
+    security_master_option_series_projection {
+        text option_chain_id PK
+        text contract_symbol PK,FK
+        text underlying_symbol
+        date expiry_date
+        numeric strike
+        text put_call
+    }
+    security_master_outbox_message {
+        uuid outbox_message_id PK
+        text topic
+        text message_key
+        jsonb payload
+        jsonb headers
+        timestamp_with_time_zone occurred_at
+        timestamp_with_time_zone visible_after
+        timestamp_with_time_zone processed_at
+        integer error_count
+        text last_error
+    }
+    security_master_payment_allocation {
+        uuid allocation_id PK
+        uuid loan_id FK
+        uuid cash_transaction_id FK
+        integer allocation_seq_no
+        text target_type
+        uuid target_id
+        numeric_24_2_ allocated_amount
+        text allocation_rule
+        uuid source_event_id FK
+        timestamp_with_time_zone created_at
+    }
+    security_master_projected_cash_flow {
+        uuid projected_flow_id PK
+        uuid projection_run_id FK
+        uuid loan_id FK
+        integer flow_seq_no
+        text flow_type
+        date due_date
+        date accrual_start_date
+        date accrual_end_date
+        numeric_24_2_ amount
+        text currency
+        numeric_24_8_ principal_basis
+        numeric_12_8_ annual_rate
+        jsonb formula_trace_json
+        timestamp_with_time_zone created_at
+    }
+    security_master_projection_checkpoint {
+        text projection_name PK
+        bigint last_global_sequence
+        timestamp_with_time_zone updated_at
+    }
+    security_master_projection_run {
+        uuid projection_run_id PK
+        uuid loan_id FK
+        integer loan_terms_version
+        bigint servicing_revision
+        date projection_as_of
+        date market_data_as_of
+        uuid trigger_event_id FK
+        text trigger_type
+        text terms_hash
+        text engine_version
+        text status
+        uuid supersedes_projection_run_id FK
+        timestamp_with_time_zone generated_at
+    }
+    security_master_read_model_checkpoint {
+        text projection_name PK
+        bigint last_processed_position
+        uuid last_event_id
+        timestamp_with_time_zone last_rebuilt_at
+        text status
+        text details
+    }
+    security_master_reconciliation_exception {
+        uuid exception_id PK
+        uuid reconciliation_result_id FK
+        text exception_type
+        text severity
+        text status
+        text assigned_to
+        text resolution_note
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone resolved_at
+    }
+    security_master_reconciliation_result {
+        uuid reconciliation_result_id PK
+        uuid reconciliation_run_id FK
+        uuid loan_id FK
+        uuid projected_flow_id FK
+        uuid cash_transaction_id FK
+        text match_status
+        numeric_24_2_ expected_amount
+        numeric_24_2_ actual_amount
+        numeric_24_2_ variance_amount
+        date expected_date
+        date actual_date
+        text match_rule
+        jsonb tolerance_json
+        text[] notes
+        timestamp_with_time_zone created_at
+    }
+    security_master_reconciliation_run {
+        uuid reconciliation_run_id PK
+        uuid loan_id FK
+        uuid projection_run_id FK
+        timestamp_with_time_zone requested_at
+        timestamp_with_time_zone completed_at
+        text status
+    }
+    security_master_schema_migrations {
+        integer ordinal
+        text filename PK
+        text checksum
+        timestamp_with_time_zone applied_at
+    }
+    security_master_securities {
+        uuid security_id PK
+        text asset_class
+        text status
+        text display_name
+        text currency
+        text country_of_risk
+        text issuer_name
+        text exchange_code
+        numeric lot_size
+        numeric tick_size
+        text primary_identifier_kind
+        text primary_identifier_value
+        jsonb common_terms
+        jsonb asset_specific_terms
+        jsonb provenance
+        bigint version
+        timestamp_with_time_zone effective_from
+        timestamp_with_time_zone effective_to
+        tsvector search_vector
+        text normalized_primary_identifier_value
+        integer schema_version
+    }
+    security_master_security_aliases {
+        uuid alias_id PK
+        uuid security_id FK
+        text alias_kind
+        text alias_value
+        text provider
+        text scope
+        text reason
+        text created_by
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone valid_from
+        timestamp_with_time_zone valid_to
+        boolean is_enabled
+        text normalized_alias_value
+        text normalized_provider
+    }
+    security_master_security_cashflow_source_assignments {
+        uuid security_id PK,FK
+        text source_kind
+        timestamp_with_time_zone last_updated_utc
+        boolean is_client_override
+        text client_confirmed_by
+        timestamp_with_time_zone client_confirmed_at
+    }
+    security_master_security_events {
+        bigint global_sequence PK
+        uuid security_id
+        bigint stream_version
+        text event_type
+        timestamp_with_time_zone event_timestamp
+        text actor
+        uuid correlation_id
+        uuid causation_id
+        jsonb payload
+        jsonb metadata
+    }
+    security_master_security_events_global_sequence_seq {
+        text catalogued_object
+    }
+    security_master_security_identifiers {
+        uuid security_id PK,FK
+        text identifier_kind PK
+        text identifier_value PK
+        text provider
+        boolean is_primary
+        timestamp_with_time_zone valid_from PK
+        timestamp_with_time_zone valid_to
+        text source
+        numeric_5_4_ confidence
+        boolean manual_override
+        text normalized_identifier_value
+        text normalized_provider
+    }
+    security_master_security_master_conflicts {
+        uuid conflict_id PK
+        uuid security_id
+        text conflict_kind
+        text field_path
+        text provider_a
+        text value_a
+        text provider_b
+        text value_b
+        timestamp_with_time_zone detected_at
+        text status
+        text resolved_winner_source
+        text resolved_by
+        text resolved_reason
+        timestamp_with_time_zone resolved_at
+    }
+    security_master_security_master_quality_reports {
+        bigint id PK
+        timestamp_with_time_zone run_at
+        jsonb report_json
+    }
+    security_master_security_master_quality_reports_id_seq {
+        text catalogued_object
+    }
+    security_master_security_master_revisions {
+        uuid revision_id PK
+        uuid security_id
+        text state
+        text actor
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        uuid workflow_id
+        text field_path
+        timestamp_with_time_zone field_effective_from
+        text field_justification
+        text fund_profile_id
+    }
+    security_master_security_operator_overrides {
+        uuid security_id PK,FK
+        jsonb values
+        text updated_by
+        timestamp_with_time_zone updated_at
+        text approval_status
+        text reason_code
+        text reviewed_by
+        timestamp_with_time_zone reviewed_at
+        jsonb audit_trail
+    }
+    security_master_security_pricing_hierarchy {
+        uuid security_id PK,FK
+        text account_id PK
+        jsonb entries
+        timestamp_with_time_zone as_of
+        text updated_by
+    }
+    security_master_security_raw_prices {
+        uuid security_id PK,FK
+        text source_id PK
+        numeric_28_10_ price
+        timestamp_with_time_zone price_as_of
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_security_snapshots {
+        uuid security_id PK
+        bigint version
+        timestamp_with_time_zone snapshot_timestamp
+        jsonb payload
+    }
+    security_master_servicer_position_report_line {
+        uuid servicer_report_line_id PK
+        uuid servicer_report_batch_id FK
+        uuid loan_id FK
+        date report_as_of_date
+        numeric_24_2_ principal_outstanding
+        numeric_24_2_ interest_accrued_unpaid
+        numeric_24_2_ fees_accrued_unpaid
+        numeric_24_2_ penalty_accrued_unpaid
+        numeric_24_2_ commitment_available
+        date next_due_date
+        numeric_24_2_ next_due_amount
+        text delinquency_status
+        jsonb raw_payload
+        timestamp_with_time_zone created_at
+    }
+    security_master_servicer_report_batch {
+        uuid servicer_report_batch_id PK
+        text servicer_name
+        text report_type
+        text source_format
+        date report_as_of_date
+        timestamp_with_time_zone received_at
+        text file_name
+        text file_hash
+        integer row_count
+        text status
+        text loaded_by
+        text notes
+    }
+    security_master_servicer_statement_apply_audit {
+        uuid servicer_statement_apply_id PK
+        uuid servicer_statement_batch_id FK
+        text row_id
+        uuid loan_id
+        text apply_mode
+        text applied_by
+        timestamp_with_time_zone applied_at
+        uuid command_id
+        uuid correlation_id
+        text source_system
+        text status
+        text result_message
+        text rationale
+    }
+    security_master_servicer_statement_import_batch {
+        uuid servicer_statement_batch_id PK
+        uuid servicer_report_batch_id FK
+        text statement_kind
+        text servicer_name
+        date statement_date
+        text source_format
+        text source_file_name
+        text raw_payload_hash
+        text imported_by
+        timestamp_with_time_zone imported_at
+        text fund_account_id
+        text cash_account_id
+        text statement_run_id
+        text status
+        text evidence_route
+        integer row_count
+        integer mapped_row_count
+        integer unmapped_row_count
+        integer duplicate_row_count
+        integer ready_to_apply_row_count
+        integer applied_row_count
+        text notes
+    }
+    security_master_servicer_statement_import_row {
+        uuid servicer_statement_row_id PK
+        uuid servicer_statement_batch_id FK
+        text row_id
+        integer row_number
+        text statement_kind
+        text row_status
+        uuid loan_id
+        uuid security_id
+        text security_symbol
+        text external_loan_reference
+        text servicer_loan_number
+        text borrower_reference
+        text fund_account_id
+        text cash_account_id
+        date statement_date
+        date effective_date
+        date settlement_date
+        numeric_24_2_ principal_outstanding
+        numeric_24_2_ interest_accrued_unpaid
+        numeric_24_2_ fees_accrued_unpaid
+        numeric_24_2_ penalty_accrued_unpaid
+        numeric_24_2_ commitment_available
+        numeric_24_2_ gross_amount
+        numeric_24_2_ principal_amount
+        numeric_24_2_ interest_amount
+        numeric_24_2_ fee_amount
+        numeric_24_2_ penalty_amount
+        text currency
+        text external_ref
+        text row_hash
+        jsonb raw_payload
+        text suggested_apply_mode
+        text evidence_route
+        timestamp_with_time_zone created_at
+    }
+    security_master_servicer_statement_validation_issue {
+        uuid servicer_statement_issue_id PK
+        uuid servicer_statement_batch_id FK
+        text row_id
+        text issue_code
+        text severity
+        text message
+        text field_name
+        text route
+        timestamp_with_time_zone created_at
+    }
+    security_master_servicer_transaction_report_line {
+        uuid servicer_report_line_id PK
+        uuid servicer_report_batch_id FK
+        uuid loan_id FK
+        text servicer_transaction_id
+        text transaction_type
+        date effective_date
+        date transaction_date
+        date settlement_date
+        numeric_24_2_ gross_amount
+        numeric_24_2_ principal_amount
+        numeric_24_2_ interest_amount
+        numeric_24_2_ fee_amount
+        numeric_24_2_ penalty_amount
+        text currency
+        text external_ref
+        jsonb raw_payload
+        timestamp_with_time_zone created_at
+    }
+    security_master_servicing_revision_processing {
+        uuid loan_id PK
+        bigint servicing_revision PK
+        text processing_stage PK
+        text status
+        timestamp_with_time_zone started_at
+        timestamp_with_time_zone completed_at
+        text details
+    }
+    security_master_servicing_revision_projection {
+        uuid loan_id PK
+        bigint revision_number PK
+        text revision_source_type
+        date effective_as_of_date
+        timestamp_with_time_zone created_at
+        text notes
+    }
+    security_master_servicing_revision_source {
+        uuid loan_id PK
+        bigint servicing_revision PK
+        uuid servicer_report_batch_id PK,FK
+        text report_type
+    }
+    security_master_swap_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text swap_type
+        date effective_date
+        date maturity_date
+        text lifecycle_stat
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
+    security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
+    security_master_journal_entry ||--o{ security_master_journal_line : "journal_line_journal_entry_id_fkey"
+    security_master_loan_contract ||--o{ security_master_cash_transaction : "cash_transaction_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_fee_balance : "fee_balance_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_journal_entry : "journal_entry_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_payment_allocation : "payment_allocation_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_projected_cash_flow : "projected_cash_flow_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_projection_run : "projection_run_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_reconciliation_result : "reconciliation_result_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_reconciliation_run : "reconciliation_run_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_loan_id_fkey"
+    security_master_loan_contract ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_loan_id_fkey"
+    security_master_loan_event ||--o{ security_master_cash_transaction : "cash_transaction_source_event_id_fkey"
+    security_master_loan_event ||--o{ security_master_fee_balance : "fee_balance_source_event_id_fkey"
+    security_master_loan_event ||--o{ security_master_journal_entry : "journal_entry_source_event_id_fkey"
+    security_master_loan_event ||--o{ security_master_payment_allocation : "payment_allocation_source_event_id_fkey"
+    security_master_loan_event ||--o{ security_master_projection_run : "projection_run_trigger_event_id_fkey"
+    security_master_option_contract_projection ||--o{ security_master_option_alias_projection : "option_alias_projection_contract_symbol_fkey"
+    security_master_option_contract_projection ||--o{ security_master_option_lifecycle_projection : "option_lifecycle_projection_contract_symbol_fkey"
+    security_master_option_contract_projection ||--o{ security_master_option_series_projection : "option_series_projection_contract_symbol_fkey"
+    security_master_projected_cash_flow ||--o{ security_master_reconciliation_result : "reconciliation_result_projected_flow_id_fkey"
+    security_master_projection_run ||--o{ security_master_projected_cash_flow : "projected_cash_flow_projection_run_id_fkey"
+    security_master_projection_run ||--o{ security_master_projection_run : "projection_run_supersedes_projection_run_id_fkey"
+    security_master_projection_run ||--o{ security_master_reconciliation_run : "reconciliation_run_projection_run_id_fkey"
+    security_master_reconciliation_result ||--o{ security_master_reconciliation_exception : "reconciliation_exception_reconciliation_result_id_fkey"
+    security_master_reconciliation_run ||--o{ security_master_reconciliation_result : "reconciliation_result_reconciliation_run_id_fkey"
+    security_master_securities ||--o{ security_master_bond_accrual_convention_projection : "bond_accrual_convention_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_bond_issuer_projection : "bond_issuer_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_bond_lifecycle_projection : "bond_lifecycle_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_bond_projection : "bond_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_corporate_actions : "corporate_actions_security_id_fkey"
+    security_master_securities ||--o{ security_master_equity_projection : "equity_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_future_projection : "future_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
+    security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_operator_overrides : "security_operator_overrides_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
+    security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
+    security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
+    security_master_servicer_report_batch ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_servicer_report_batch_id_fkey"
+    security_master_servicer_report_batch ||--o{ security_master_servicing_revision_source : "servicing_revision_source_servicer_report_batch_id_fkey"
+    security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_apply_audit : "servicer_statement_apply_audit_servicer_statement_batch_id_fkey"
+    security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_import_row : "servicer_statement_import_row_servicer_statement_batch_id_fkey"
+    security_master_servicer_statement_import_batch ||--o{ security_master_servicer_statement_validation_issue : "servicer_statement_validation__servicer_statement_batch_id_fkey"

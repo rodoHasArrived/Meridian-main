@@ -1,0 +1,187 @@
+erDiagram
+    fund_accounts_account_balance_snapshot {
+        uuid snapshot_id PK
+        uuid account_id FK
+        uuid fund_id
+        date as_of_date
+        text currency
+        numeric_24_6_ cash_balance
+        numeric_24_6_ securities_market_value
+        numeric_24_6_ accrued_interest
+        numeric_24_6_ pending_settlement
+        numeric_24_6_ unrealized_pnl
+        numeric_24_6_ realized_pnl
+        text source
+        timestamp_with_time_zone recorded_at
+        text external_reference
+    }
+    fund_accounts_account_definition {
+        uuid account_id PK
+        text account_type
+        uuid entity_id
+        uuid fund_id
+        uuid sleeve_id
+        uuid vehicle_id
+        text account_code
+        text display_name
+        text base_currency
+        text institution
+        boolean is_active
+        timestamp_with_time_zone effective_from
+        timestamp_with_time_zone effective_to
+        text portfolio_id
+        text ledger_reference
+        text strategy_id
+        text run_id
+        text operational_status
+        jsonb custodian_details
+        jsonb bank_details
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        text tenant_id
+    }
+    fund_accounts_account_margin_snapshot {
+        uuid margin_snapshot_id PK
+        uuid account_id FK
+        timestamp_with_time_zone effective_at
+        timestamp_with_time_zone recorded_at
+        text currency
+        text margin_type
+        text margin_call_status
+        numeric_24_6_ initial_margin
+        numeric_24_6_ maintenance_margin
+        numeric_24_6_ excess_liquidity
+        numeric_24_6_ buying_power
+        numeric_24_6_ sma
+        numeric_24_6_ loan_balance
+        numeric_24_6_ debit_balance
+        numeric_24_6_ credit_balance
+        numeric_24_6_ collateral_value
+        numeric_24_6_ marginable_securities_value
+        numeric_24_6_ non_marginable_securities_value
+        numeric_12_6_ margin_utilization
+        integer missing_requirement_count
+        integer missing_collateral_classification_count
+        integer concentration_limit_breach_count
+        boolean is_live_account
+        boolean approved_for_live_margin
+        jsonb requirements_json
+        jsonb warnings_json
+        text provider_id
+        text external_account_id
+        timestamp_with_time_zone fresh_until
+        text agreement_evidence_path
+        text snapshot_evidence_path
+        text correlation_id
+    }
+    fund_accounts_account_reconciliation_breaks {
+        uuid result_id PK
+        uuid reconciliation_run_id FK
+        text break_type
+        text check_label
+        boolean is_match
+        text category
+        text status
+        numeric_24_6_ expected_amount
+        numeric_24_6_ actual_amount
+        numeric_24_6_ variance
+        text reason
+    }
+    fund_accounts_account_reconciliation_run {
+        uuid reconciliation_run_id PK
+        uuid account_id FK
+        date as_of_date
+        text status
+        integer total_checks
+        integer total_matched
+        integer total_breaks
+        numeric_24_6_ break_amount_total
+        timestamp_with_time_zone requested_at
+        timestamp_with_time_zone completed_at
+        text requested_by
+    }
+    fund_accounts_account_sync_history {
+        uuid sync_history_id PK
+        uuid account_id FK
+        text capability
+        text status
+        text provider_link_status
+        text provider_id
+        text external_account_id
+        timestamp_with_time_zone attempted_at
+        timestamp_with_time_zone completed_at
+        timestamp_with_time_zone fresh_until
+        text failure_kind
+        text failure_message
+        text correlation_id
+        text requested_by
+        text raw_evidence_path
+        text projection_evidence_path
+        integer security_missing_count
+        jsonb warnings
+    }
+    fund_accounts_bank_statement_batch {
+        uuid batch_id PK
+        uuid account_id FK
+        date statement_date
+        text bank_name
+        text file_name
+        integer line_count
+        timestamp_with_time_zone ingested_at
+        text loaded_by
+    }
+    fund_accounts_bank_statement_line {
+        uuid statement_line_id PK
+        uuid batch_id FK
+        uuid account_id FK
+        date statement_date
+        date value_date
+        numeric_24_6_ amount
+        text currency
+        text transaction_type
+        text description
+        text external_reference
+        numeric_24_6_ running_balance
+    }
+    fund_accounts_custodian_position_line {
+        uuid position_line_id PK
+        uuid batch_id FK
+        uuid account_id FK
+        date as_of_date
+        text security_identifier
+        text identifier_type
+        numeric_24_8_ quantity
+        numeric_24_6_ market_value
+        text market_value_currency
+        numeric_24_6_ cost_basis
+        numeric_24_6_ accrued_income
+        boolean settlement_pending
+        jsonb raw_payload
+    }
+    fund_accounts_custodian_statement_batch {
+        uuid batch_id PK
+        uuid account_id FK
+        date as_of_date
+        text custodian_name
+        text source_format
+        text file_name
+        integer line_count
+        timestamp_with_time_zone ingested_at
+        text loaded_by
+    }
+    fund_accounts_fund_account_schema_migrations {
+        text filename PK
+        text checksum
+        timestamp_with_time_zone applied_at
+    }
+    fund_accounts_account_definition ||--o{ fund_accounts_account_balance_snapshot : "account_balance_snapshot_account_id_fkey"
+    fund_accounts_account_definition ||--o{ fund_accounts_account_margin_snapshot : "account_margin_snapshot_account_id_fkey"
+    fund_accounts_account_definition ||--o{ fund_accounts_account_reconciliation_run : "account_reconciliation_run_account_id_fkey"
+    fund_accounts_account_definition ||--o{ fund_accounts_account_sync_history : "account_sync_history_account_id_fkey"
+    fund_accounts_account_definition ||--o{ fund_accounts_bank_statement_batch : "bank_statement_batch_account_id_fkey"
+    fund_accounts_account_definition ||--o{ fund_accounts_bank_statement_line : "bank_statement_line_account_id_fkey"
+    fund_accounts_account_definition ||--o{ fund_accounts_custodian_position_line : "custodian_position_line_account_id_fkey"
+    fund_accounts_account_definition ||--o{ fund_accounts_custodian_statement_batch : "custodian_statement_batch_account_id_fkey"
+    fund_accounts_account_reconciliation_run ||--o{ fund_accounts_account_reconciliation_breaks : "account_reconciliation_breaks_reconciliation_run_id_fkey"
+    fund_accounts_bank_statement_batch ||--o{ fund_accounts_bank_statement_line : "bank_statement_line_batch_id_fkey"
+    fund_accounts_custodian_statement_batch ||--o{ fund_accounts_custodian_position_line : "custodian_position_line_batch_id_fkey"

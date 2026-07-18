@@ -6,6 +6,7 @@ import unittest
 from decimal import Decimal
 from typing import Any
 
+from tools.schema_control import catalog
 from tools.schema_control.catalog import extract_catalog
 from tools.schema_control.common import sha256_text
 
@@ -636,6 +637,12 @@ def _extract(
 
 
 class CatalogExtractionTests(unittest.TestCase):
+    def test_catalog_queries_do_not_use_collation_as_a_relation_alias(self) -> None:
+        query_text = "\n".join(query for _, query in catalog._QUERIES)
+
+        self.assertNotIn("pg_collation collation on", query_text)
+        self.assertIn("pg_collation collation_record on", query_text)
+
     def test_extracts_postgresql_categories_and_logical_schema_mapping(self) -> None:
         manifest, connection, urls = _extract(_catalog_rows())
 

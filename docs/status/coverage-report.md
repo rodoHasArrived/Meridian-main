@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**2892 / 7870** items documented (**36.7%**) &mdash; Grade: **F**
+**3592 / 8037** items documented (**44.7%**) &mdash; Grade: **D**
 
 ```text
-[=======-------------] 36.7%
+[=========-----------] 44.7%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 2767 | 7418 | 37.3% | F |
-| API Endpoints | 111 | 299 | 37.1% | F |
+| Public Classes / Interfaces | 3466 | 7572 | 45.8% | D |
+| API Endpoints | 112 | 312 | 35.9% | F |
 | Configuration Options | 3 | 142 | 2.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4651 undocumented)
+### Public Classes / Interfaces (4106 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -64,6 +64,11 @@
 | `MeridianDeploymentPostureServiceCollectionExtensions` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:25` |
 | `ProductionRegistrationGuardServiceCollectionExtensions` | `src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs:85` |
 | `ProductionSafeImplementationAttribute` | `src/Meridian.Application/Composition/ProductionServiceRegistrationPolicy.cs:17` |
+| `IRuntimeReadinessService` | `src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:18` |
+| `DelegateRuntimeReadinessCheck` | `src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:23` |
+| `IRuntimeShutdownSequence` | `src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:17` |
+| `RuntimeShutdownOptions` | `src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:22` |
+| `LifecycleControlPlaneHostedService` | `src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:150` |
 | `ICompositeDataQualityReadService` | `src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:19` |
 | `CompositeDataQualityGap` | `src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:29` |
 | `ProviderIntegrationSetupValidationIssue` | `src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs:10` |
@@ -72,14 +77,9 @@
 | `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543` |
 | `ScheduledBackfillType` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:187` |
 | `BackfillSchedulePresets` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:213` |
-| `ScheduleStatusSummary` | `src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:413` |
-| `ScheduledBackfillOptions` | `src/Meridian.Application/Scheduling/ScheduledBackfillService.cs:630` |
-| `IStructuredCashFlowLedgerBridge` | `src/Meridian.Application/SecurityMaster/CashFlow/StructuredCashFlowLedgerBridge.cs:13` |
-| `ICorporateActionCommandService` | `src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:6` |
-| `CorporateActionAppendResult` | `src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:17` |
-| ... and 4601 more | |
+| ... and 4056 more | |
 
-### API Endpoints (188 undocumented)
+### API Endpoints (200 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -133,7 +133,7 @@
 | `/{loanId:guid}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:715` |
 | `/{loanId:guid}/restructures` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:745` |
 | `/{loanId:guid}/amortization/discount-premium` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:775` |
-| ... and 138 more | |
+| ... and 150 more | |
 
 ### Configuration Options (139 undocumented)
 
@@ -193,8 +193,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4651 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 188 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 4106 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+2. **API Endpoints**: 200 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 139 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---
