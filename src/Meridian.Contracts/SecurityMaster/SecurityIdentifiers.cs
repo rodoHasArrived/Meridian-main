@@ -29,7 +29,14 @@ public enum SecurityIdentifierKind
     /// <summary>Reuters Instrument Code — used by Refinitiv Eikon / LSEG feeds.</summary>
     Ric,
     /// <summary>SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security.</summary>
-    Cik
+    Cik,
+    /// <summary>
+    /// Read-tolerance member: a kind written by a newer node that this node does not recognize.
+    /// Rows carrying it stay readable (mixed-version rollout) but cannot be written back as-is —
+    /// the command mapping rejects <see cref="Unknown"/> so unrecognized kinds are never silently
+    /// re-persisted.
+    /// </summary>
+    Unknown
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<SecurityAliasScope>))]
@@ -38,7 +45,9 @@ public enum SecurityAliasScope
     Operations,
     Collector,
     Execution,
-    Migration
+    Migration,
+    /// <summary>Read-tolerance member for scopes written by newer nodes; see <see cref="SecurityIdentifierKind.Unknown"/>.</summary>
+    Unknown
 }
 
 public sealed record SecurityIdentifierDto(

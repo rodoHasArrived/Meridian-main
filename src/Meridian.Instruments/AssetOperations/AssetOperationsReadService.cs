@@ -408,7 +408,7 @@ public static class AssetOperationsProjectionBuilder
         var periodMonths = Math.Max(1, 12 / paymentFrequency);
         var principalBasis = ResolveBondPrincipalBasis(bond);
         var outstandingPrincipal = principalBasis;
-        var normalizedDayCountConvention = NormalizeDayCountConvention(bond.AccrualConvention?.DayCountConvention);
+        var dayCountConvention = bond.AccrualConvention?.DayCountConvention;
         var sinkingFundEntries = bond.SinkingFund?.Schedule
             .Where(static entry => entry.Amount > 0m)
             .OrderBy(static entry => entry.SinkDate)
@@ -430,7 +430,7 @@ public static class AssetOperationsProjectionBuilder
                 var couponAmount = CalculateBondCouponAmount(
                     outstandingPrincipal,
                     coupon,
-                    normalizedDayCountConvention,
+                    dayCountConvention,
                     accrualStart,
                     accrualEnd,
                     paymentFrequency);
@@ -755,74 +755,19 @@ public static class AssetOperationsProjectionBuilder
     private static decimal CalculateBondCouponAmount(
         decimal principalBasis,
         decimal couponRatePercent,
-        string? normalizedDayCountConvention,
+        string? dayCountConvention,
         DateOnly accrualStart,
         DateOnly accrualEnd,
         int paymentFrequency)
     {
-        var yearFraction = CalculateYearFraction(normalizedDayCountConvention, accrualStart, accrualEnd, paymentFrequency);
+        var convention = DayCountConventions.Parse(dayCountConvention);
+        // An absent/unrecognized convention keeps the historical "one coupon period" assumption for the
+        // read-model preview; recognized conventions route through the canonical day-count engine so this
+        // preview ties with the GL accrual and cost-basis-relief paths.
+        var yearFraction = convention == DayCountConvention.Unknown
+            ? 1m / Math.Max(1, paymentFrequency)
+            : DayCountConventions.Fraction(convention, accrualStart, accrualEnd);
         return RoundCash(principalBasis * (couponRatePercent / 100m) * yearFraction);
-    }
-
-    private static string? NormalizeDayCountConvention(string? dayCountConvention)
-        => string.IsNullOrWhiteSpace(dayCountConvention)
-            ? null
-            : dayCountConvention
-                .Replace(" ", string.Empty, StringComparison.Ordinal)
-                .Replace("-", string.Empty, StringComparison.Ordinal)
-                .Replace("_", string.Empty, StringComparison.Ordinal)
-                .ToUpperInvariant();
-
-    private static decimal CalculateYearFraction(
-        string? normalizedDayCountConvention,
-        DateOnly accrualStart,
-        DateOnly accrualEnd,
-        int paymentFrequency)
-    {
-        if (accrualEnd <= accrualStart)
-        {
-            return 0m;
-        }
-
-        if (normalizedDayCountConvention is not null &&
-            normalizedDayCountConvention.Contains("30/360", StringComparison.Ordinal))
-        {
-            return Days360(accrualStart, accrualEnd) / 360m;
-        }
-
-        var actualDays = accrualEnd.DayNumber - accrualStart.DayNumber;
-        if (IsActual360(normalizedDayCountConvention))
-        {
-            return actualDays / 360m;
-        }
-
-        if (IsActual365(normalizedDayCountConvention))
-        {
-            return actualDays / 365m;
-        }
-
-        return 1m / Math.Max(1, paymentFrequency);
-    }
-
-    private static bool IsActual360(string? normalizedDayCountConvention)
-        => normalizedDayCountConvention is not null &&
-           (normalizedDayCountConvention.Contains("ACT/360", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACT360", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACTUAL/360", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACTUAL360", StringComparison.Ordinal));
-
-    private static bool IsActual365(string? normalizedDayCountConvention)
-        => normalizedDayCountConvention is not null &&
-           (normalizedDayCountConvention.Contains("ACT/365", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACT365", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACTUAL/365", StringComparison.Ordinal) ||
-            normalizedDayCountConvention.Contains("ACTUAL365", StringComparison.Ordinal));
-
-    private static decimal Days360(DateOnly start, DateOnly end)
-    {
-        var startDay = start.Day == 31 ? 30 : start.Day;
-        var endDay = end.Day == 31 && startDay >= 30 ? 30 : end.Day;
-        return ((end.Year - start.Year) * 360m) + ((end.Month - start.Month) * 30m) + (endDay - startDay);
     }
 
     private static decimal RoundCash(decimal amount)

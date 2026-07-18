@@ -583,7 +583,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         var projection = new SecurityProjectionRecord(
             reader.GetGuid(0),
             reader.GetString(1),
-            Enum.Parse<SecurityStatusDto>(reader.GetString(2), ignoreCase: true),
+            SecurityMasterEnumReads.ParseOrFallback(reader.GetString(2), SecurityStatusDto.Unknown),
             reader.GetString(3),
             reader.GetString(4),
             reader.GetString(5),
@@ -621,7 +621,9 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            var kind = Enum.Parse<SecurityIdentifierKind>(reader.GetString(0), ignoreCase: true);
+            // Read-tolerant: an identifier kind written by a newer node degrades to Unknown so the
+            // row (and every other identifier on the security) stays readable.
+            var kind = SecurityMasterEnumReads.ParseOrFallback(reader.GetString(0), SecurityIdentifierKind.Unknown);
             var value = reader.GetString(1);
             var provider = reader.IsDBNull(5) ? null : reader.GetString(5);
             var normalizedValue = reader.IsDBNull(6)
@@ -667,7 +669,7 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
                 reader.GetString(1),
                 reader.GetString(2),
                 reader.IsDBNull(3) ? null : reader.GetString(3),
-                Enum.Parse<SecurityAliasScope>(reader.GetString(4), ignoreCase: true),
+                SecurityMasterEnumReads.ParseOrFallback(reader.GetString(4), SecurityAliasScope.Unknown),
                 reader.IsDBNull(5) ? null : reader.GetString(5),
                 reader.GetString(6),
                 new DateTimeOffset(reader.GetDateTime(7), TimeSpan.Zero),

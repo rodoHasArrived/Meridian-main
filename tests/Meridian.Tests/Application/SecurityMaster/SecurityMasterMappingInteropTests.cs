@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.Domain;
 using Meridian.FSharp.SecurityMasterInterop;
 
 namespace Meridian.Tests.Application.SecurityMaster;
@@ -129,6 +130,46 @@ public sealed class SecurityMasterMappingInteropTests
         terms.GetProperty("distributionPolicy").GetString().Should().Be("Distributing");
         terms.GetProperty("isStableNav").GetBoolean().Should().BeFalse();
         terms.GetProperty("pricingSource").GetString().Should().Be("Bloomberg");
+    }
+
+    [Fact]
+    public void ToCreateCommand_UnknownAssetClass_DegradesToOtherSecurityPreservingRawClass()
+    {
+        // A class this node has no deserializer for must not fail the read: it degrades to
+        // OtherSecurity with the raw class retained as the category. Before this fallback, an
+        // unknown class threw on every load of the row (the InvestmentFund incident above).
+        var now = DateTimeOffset.UtcNow;
+        var request = new CreateSecurityRequest(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: "EsotericBasketCertificate",
+            CommonTerms: JsonSerializer.SerializeToElement(new
+            {
+                displayName = "Unknown-class security",
+                currency = "USD"
+            }),
+            AssetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                subType = "Basket",
+                issuerName = "Structured Issuer AG",
+                maturity = "2032-06-30"
+            }),
+            Identifiers:
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "UNKNOWN-1", true, now)
+            ],
+            EffectiveFrom: now,
+            SourceSystem: "interop-tests",
+            UpdatedBy: "interop-tests",
+            SourceRecordId: "unknown-class-fallback",
+            Reason: "Unknown asset classes must degrade instead of throwing");
+
+        var command = SecurityMasterMapping.ToCreateCommand(request);
+
+        var otherSecurity = command.Kind.Should().BeOfType<SecurityKind.OtherSecurity>().Subject;
+        otherSecurity.Item.Category.Should().Be("EsotericBasketCertificate");
+        otherSecurity.Item.SubType.Value.Should().Be("Basket");
+        otherSecurity.Item.IssuerName.Value.Should().Be("Structured Issuer AG");
+        otherSecurity.Item.Maturity.Value.Should().Be(new DateOnly(2032, 6, 30));
     }
 
     /// <summary>
