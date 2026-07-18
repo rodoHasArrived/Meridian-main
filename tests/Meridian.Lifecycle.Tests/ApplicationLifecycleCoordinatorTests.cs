@@ -74,6 +74,22 @@ public sealed class ApplicationLifecycleCoordinatorTests
     }
 
     [Fact]
+    public void ExternalCancellation_RecordsOperationBeforeStopWorkTokenIsReleased()
+    {
+        using var externalCts = new CancellationTokenSource();
+        using var lifecycle = ApplicationLifecycleCoordinator.Create(_log, externalCts.Token);
+        LifecycleShutdownOperationDto? operationWhenStopReleased = null;
+        using var registration = lifecycle.StopWorkToken.Register(() =>
+            operationWhenStopReleased = lifecycle.ActiveShutdownOperation);
+
+        externalCts.Cancel();
+
+        operationWhenStopReleased.Should().NotBeNull();
+        operationWhenStopReleased!.Reason.Should().Be(LifecycleShutdownReason.ExternalCancellation);
+        lifecycle.StopWorkToken.IsCancellationRequested.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task CompleteShutdown_RecordsMatchingReceipt()
     {
         using var lifecycle = ApplicationLifecycleCoordinator.Create(_log);

@@ -78,7 +78,7 @@ public sealed class ApplicationLifecycleCoordinator : IApplicationLifecycleCoord
         string? localShutdownToken)
     {
         _log = log.ForContext<ApplicationLifecycleCoordinator>();
-        _stopWorkCts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
+        _stopWorkCts = new CancellationTokenSource();
         LocalShutdownToken = string.IsNullOrWhiteSpace(localShutdownToken)
             ? null
             : localShutdownToken;

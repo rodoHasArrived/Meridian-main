@@ -8,27 +8,11 @@ namespace Meridian.Wpf.Tests.Services;
 public sealed class BackendServiceManagerTests
 {
     [Fact]
-    public void BuildProcessArguments_StartsDesktopModeOnConfiguredPort()
+    public void BuildProcessArguments_DelegatesStartupToLifecycleSupervisor()
     {
-        var args = BackendServiceManager.BuildProcessArguments(
-            @"C:\config\appsettings.json",
-            "http://localhost:9105");
+        var args = BackendServiceManager.BuildProcessArguments();
 
-        args.Should().Equal(
-            "--mode",
-            "desktop",
-            "--config",
-            @"C:\config\appsettings.json",
-            "--http-port",
-            "9105");
-    }
-
-    [Fact]
-    public void ResolveHttpPort_FallsBackToDefaultPortForInvalidServiceUrl()
-    {
-        var port = BackendServiceManager.ResolveHttpPort("not-a-valid-url");
-
-        port.Should().Be(8080);
+        args.Should().Equal("start");
     }
 
     [Fact]

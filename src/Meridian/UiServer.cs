@@ -178,6 +178,11 @@ public sealed class UiServer : IAsyncDisposable
             builder.Services.AddSingleton<IRuntimeShutdownParticipant, EventPipelineShutdownParticipant>();
             builder.Services.AddSingleton<IRuntimeShutdownSequence, RuntimeShutdownSequence>();
             builder.Services.AddHostedService<LifecycleControlPlaneHostedService>();
+            if (!string.IsNullOrWhiteSpace(
+                    Environment.GetEnvironmentVariable(LifecycleSupervisorBridgeHostedService.PipeEnvironmentVariable)))
+            {
+                builder.Services.AddHostedService<LifecycleSupervisorBridgeHostedService>();
+            }
 
             AddLifecycleReadinessChecks(
                 builder.Services,
@@ -733,8 +738,8 @@ public sealed class UiServer : IAsyncDisposable
                 if (!_apiHostOptions.ServeWorkstationAssets)
                 {
                     return ValueTask.FromResult(new RuntimeReadinessCheckResult(
-                        LifecycleCheckStatus.Skipped,
-                        "This host does not serve workstation assets."));
+                        LifecycleCheckStatus.Passing,
+                        "Workstation assets are not required by this host posture."));
                 }
 
                 var indexPath = Path.Combine(contentRootPath, "wwwroot", "workstation", "index.html");

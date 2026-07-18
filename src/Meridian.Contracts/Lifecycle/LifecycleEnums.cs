@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Lifecycle;
 
+[JsonConverter(typeof(JsonStringEnumConverter<RuntimeLifecycleState>))]
 public enum RuntimeLifecycleState
 {
     Created,
@@ -17,6 +20,7 @@ public enum RuntimeLifecycleState
     Failed
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<RuntimeReadinessStatus>))]
 public enum RuntimeReadinessStatus
 {
     Starting,
@@ -27,12 +31,14 @@ public enum RuntimeReadinessStatus
     Failed
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LifecycleCheckRequirement>))]
 public enum LifecycleCheckRequirement
 {
     Required,
     Degradable
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LifecycleCheckStatus>))]
 public enum LifecycleCheckStatus
 {
     Pending,
@@ -42,6 +48,7 @@ public enum LifecycleCheckStatus
     Skipped
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LifecycleShutdownReason>))]
 public enum LifecycleShutdownReason
 {
     Operator,
@@ -54,6 +61,7 @@ public enum LifecycleShutdownReason
     StartupFailure
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LifecycleShutdownStage>))]
 public enum LifecycleShutdownStage
 {
     Requested,
@@ -66,6 +74,7 @@ public enum LifecycleShutdownStage
     Failed
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LifecycleShutdownOutcome>))]
 public enum LifecycleShutdownOutcome
 {
     Pending,
@@ -77,6 +86,7 @@ public enum LifecycleShutdownOutcome
     Cancelled
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LifecycleDatabaseManagementMode>))]
 public enum LifecycleDatabaseManagementMode
 {
     Dedicated,

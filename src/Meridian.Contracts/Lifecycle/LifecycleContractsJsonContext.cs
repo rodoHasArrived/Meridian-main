@@ -27,4 +27,9 @@ namespace Meridian.Contracts.Lifecycle;
 [JsonSerializable(typeof(IReadOnlyList<LifecycleShutdownParticipantReceiptDto>))]
 [JsonSerializable(typeof(LifecycleShutdownReceiptDto))]
 [JsonSerializable(typeof(LifecycleSessionReceiptDto))]
+[JsonSerializable(typeof(LifecycleSupervisorManifestDto))]
+[JsonSerializable(typeof(LifecycleOwnedProcessDto))]
+[JsonSerializable(typeof(LifecycleDatabaseIdentityDto))]
+[JsonSerializable(typeof(LifecycleSupervisorStatusDto))]
+[JsonSerializable(typeof(LifecycleSupervisorMessageDto))]
 public sealed partial class LifecycleContractsJsonContext : JsonSerializerContext;

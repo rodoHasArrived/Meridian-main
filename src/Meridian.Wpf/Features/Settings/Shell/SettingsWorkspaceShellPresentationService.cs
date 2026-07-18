@@ -61,6 +61,7 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
         SecondaryCommands =
         [
             new WorkspaceCommandItem { Id = "SystemHealth", Label = "System Health", Description = "Open workstation and dependency readiness.", Glyph = "\uE9D9" },
+            new WorkspaceCommandItem { Id = "LifecycleControl", Label = "Lifecycle", Description = "Inspect readiness and request supervised restart or shutdown.", Glyph = "\uE7E8" },
             new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Notifications", Description = "Open alerts and workstation events.", Glyph = "\uE7F4" },
             new WorkspaceCommandItem { Id = "Help", Label = "Help", Description = "Open support resources.", Glyph = "\uE897" }
         ]
@@ -91,6 +92,18 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
             Tone = WorkspaceTone.Info,
             PrimaryActionId = "Diagnostics",
             PrimaryActionLabel = "Diagnostics",
+            SecondaryActionId = "SystemHealth",
+            SecondaryActionLabel = "System Health"
+        },
+        new WorkspaceQueueItem
+        {
+            Title = "Lifecycle control plane",
+            Detail = "Inspect runtime readiness and use the supervisor-owned restart or shutdown path.",
+            StatusLabel = "Supervised",
+            CountLabel = "Host + database",
+            Tone = WorkspaceTone.Info,
+            PrimaryActionId = "LifecycleControl",
+            PrimaryActionLabel = "Lifecycle Control",
             SecondaryActionId = "SystemHealth",
             SecondaryActionLabel = "System Health"
         }

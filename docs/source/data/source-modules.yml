@@ -27,6 +27,22 @@ modules:
     todos: []
     last_reviewed: 2026-06-06
 
+  - id: SRC-LIFECYCLE-SUPERVISOR
+    path: src/Meridian.LifecycleSupervisor
+    name: Meridian lifecycle supervisor
+    layer: Host
+    status: active
+    owner_lane: Runtime Host
+    purpose: Persistent per-user ownership boundary for installed Meridian host and dedicated PostgreSQL process startup, exact-identity shutdown, readiness, restart, and lifecycle receipts; external database mode is validation-only and non-owning.
+    readme: src/Meridian.LifecycleSupervisor/README.md
+    roadmap_items: []
+    stage_gates: []
+    validation:
+      - dotnet test tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj --configuration Release --disable-build-servers /m:1
+    diagrams: []
+    todos: []
+    last_reviewed: 2026-07-17
+
   - id: SRC-APP
     path: src/Meridian.Application
     name: Meridian application layer

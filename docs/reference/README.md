@@ -21,7 +21,7 @@ Reference content here must stay schema/procedure-neutral and claim-stable. Proc
 
 | Area | Canonical or migration source | Notes |
 | --- | --- | --- |
-| HTTP and local API contracts | [API Reference](api-reference.md), [OMS/EMS Integration](oms-ems-integration.md), [Accounting Configuration](accounting-configuration.md), [Governed Accounting Reporting](accounting-report-packs.md) | Keep route, request, response, idempotency, and storage-shape details here. |
+| HTTP and local API contracts | [API Reference](api-reference.md), [Lifecycle Control Plane](lifecycle-control-plane.md), [OMS/EMS Integration](oms-ems-integration.md), [Accounting Configuration](accounting-configuration.md), [Governed Accounting Reporting](accounting-report-packs.md) | Keep route, request, response, idempotency, and storage-shape details here. |
 | Data fields and normalization | [Data Dictionary](data-dictionary.md), [Data Uniformity](data-uniformity.md), [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Stable field/type definitions and cross-provider terminology. |
 | Environment and config | [Environment Variables](environment-variables.md), [Appsettings Schema Reference](appsettings-schema.md), [EDGAR Reference Data](edgar-reference-data.md) | Lookup details only; setup procedures belong in operators/start docs. |
 | Provider capability and readiness lookup | [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), [Provider Integration Status](provider-integration-status.md) | Canonical lookup in this lane; keep procedure and rollout details in operators. |

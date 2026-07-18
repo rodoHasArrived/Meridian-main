@@ -41,6 +41,20 @@ public sealed class RuntimeReadinessServiceTests
     }
 
     [Fact]
+    public async Task EvaluateAsync_RequiredCheckIsSkipped_ReturnsNotReady()
+    {
+        using var lifecycle = ApplicationLifecycleCoordinator.Create(_log);
+        var service = new RuntimeReadinessService(
+            lifecycle,
+            [CreateCheck("database", LifecycleCheckRequirement.Required, LifecycleCheckStatus.Skipped)]);
+
+        var snapshot = await service.EvaluateAsync();
+
+        snapshot.Readiness.Should().Be(RuntimeReadinessStatus.NotReady);
+        snapshot.AcceptingWork.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task EvaluateAsync_DegradableCheckFails_ReturnsDegradedAndAcceptsWork()
     {
         using var lifecycle = ApplicationLifecycleCoordinator.Create(_log);

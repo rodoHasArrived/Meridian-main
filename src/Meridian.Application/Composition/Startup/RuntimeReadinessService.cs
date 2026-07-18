@@ -106,7 +106,7 @@ public sealed class RuntimeReadinessService : IRuntimeReadinessService
 
         var requiredFailure = results.Any(result =>
             result.Requirement == LifecycleCheckRequirement.Required &&
-            result.Status is LifecycleCheckStatus.Failing or LifecycleCheckStatus.Pending);
+            result.Status is LifecycleCheckStatus.Failing or LifecycleCheckStatus.Pending or LifecycleCheckStatus.Skipped);
         var degraded = results.Any(result =>
             result.Status == LifecycleCheckStatus.Degraded ||
             result.Requirement == LifecycleCheckRequirement.Degradable &&

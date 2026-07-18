@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian.Storage
@@ -75,6 +75,9 @@ lookup paths, and evidence trails those layers rely on.
   `MERIDIAN_REPORTING_SCHEMA` (default `reporting`); certified run and schedule/handoff snapshots
   remain separate integrity-validated files under the resolved `DataRoot` and must be recovered as
   part of the same reporting state set.
+- `Runtime/` - atomic JSON storage for the latest host lifecycle shutdown receipt. Installed
+  supervisor session receipts remain below the supervisor-managed data root and use the same
+  write-through-then-rename durability posture.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
   tiering, and scheduled cleanup.
 

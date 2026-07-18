@@ -72,6 +72,26 @@ public sealed class RuntimeShutdownSequenceTests
         store.HostReceipt.Should().Be(receipt);
     }
 
+    [Fact]
+    public async Task HostedService_GenericHostStop_CreatesTypedShutdownAndRunsSequence()
+    {
+        using var lifecycle = ApplicationLifecycleCoordinator.Create(_log);
+        var sequence = new RecordingShutdownSequence();
+        var service = new LifecycleControlPlaneHostedService(
+            lifecycle,
+            sequence,
+            NullLogger<LifecycleControlPlaneHostedService>.Instance);
+
+        await service.StartAsync(CancellationToken.None);
+        await service.StopAsync(CancellationToken.None);
+
+        sequence.ExecutionCount.Should().Be(1);
+        lifecycle.ActiveShutdownOperation.Should().NotBeNull();
+        lifecycle.ActiveShutdownOperation!.Reason.Should().Be(LifecycleShutdownReason.ExternalCancellation);
+        lifecycle.ActiveShutdownOperation.RequestedBy.Should().Be("generic-host");
+        lifecycle.TerminationToken.IsCancellationRequested.Should().BeTrue();
+    }
+
     private static RuntimeShutdownSequence CreateSequence(
         IRuntimeLifecycleControlPlane lifecycle,
         ILifecycleReceiptStore store,
@@ -135,5 +155,26 @@ public sealed class RuntimeShutdownSequenceTests
 
         public ValueTask WriteSessionReceiptAsync(LifecycleSessionReceiptDto receipt, CancellationToken ct = default)
             => ValueTask.CompletedTask;
+    }
+
+    private sealed class RecordingShutdownSequence : IRuntimeShutdownSequence
+    {
+        public int ExecutionCount { get; private set; }
+
+        public ValueTask<LifecycleShutdownReceiptDto> ExecuteAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            ExecutionCount++;
+            return ValueTask.FromResult(new LifecycleShutdownReceiptDto
+            {
+                SessionId = "test-session",
+                OperationId = "test-operation",
+                Reason = LifecycleShutdownReason.ExternalCancellation,
+                Outcome = LifecycleShutdownOutcome.Succeeded,
+                StartedAtUtc = DateTimeOffset.UtcNow,
+                CompletedAtUtc = DateTimeOffset.UtcNow,
+                ForcedTermination = false
+            });
+        }
     }
 }

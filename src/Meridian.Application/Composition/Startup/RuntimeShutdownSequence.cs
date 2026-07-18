@@ -165,6 +165,17 @@ public sealed class LifecycleControlPlaneHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        using var stoppingRegistration = stoppingToken.Register(() =>
+        {
+            _ = _lifecycle.RequestShutdownAsync(
+                new LifecycleShutdownRequestDto
+                {
+                    Reason = LifecycleShutdownReason.ExternalCancellation,
+                    RequestedBy = "generic-host",
+                    Detail = "The generic host requested lifecycle shutdown."
+                });
+        });
+
         try
         {
             await Task.Delay(Timeout.InfiniteTimeSpan, _lifecycle.StopWorkToken).ConfigureAwait(false);

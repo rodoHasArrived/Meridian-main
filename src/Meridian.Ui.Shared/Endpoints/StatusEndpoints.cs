@@ -273,8 +273,8 @@ public static class StatusEndpoints
         var readinessService = app.Services.GetService<IRuntimeReadinessService>();
         if (readinessService is null)
         {
-            var (isReady, message) = handlers.CheckReadiness();
-            return isReady ? Results.Ok(message) : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+            var (legacyIsReady, message) = handlers.CheckReadiness();
+            return legacyIsReady ? Results.Ok(message) : Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
         }
 
         var snapshot = await readinessService.EvaluateAsync(ct).ConfigureAwait(false);
