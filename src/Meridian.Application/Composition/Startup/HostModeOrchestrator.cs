@@ -38,11 +38,11 @@ public sealed class HostModeOrchestrator
             ? ApplicationLifecycleCoordinator.Create(_log, ct)
             : null;
         var effectiveLifecycle = lifecycle ?? ownedLifecycle!;
-        // Compatibility callers do not host RuntimeShutdownSequence, so external cancellation
-        // must also release the runner's termination wait. Production bootstrap supplies an
-        // explicit lifecycle and retains the full drain, receipt, and host-release sequence.
-        using var compatibilityTerminationRegistration = ownedLifecycle is not null && ct.CanBeCanceled
-            ? ct.Register(ownedLifecycle.SignalTermination)
+        // Compatibility callers do not host RuntimeShutdownSequence, so any accepted shutdown
+        // request must also release the runner's termination wait. Production bootstrap supplies
+        // an explicit lifecycle and retains the full drain, receipt, and host-release sequence.
+        using var compatibilityTerminationRegistration = ownedLifecycle is not null
+            ? ownedLifecycle.StopWorkToken.Register(ownedLifecycle.SignalTermination)
             : default;
         try
         {
