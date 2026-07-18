@@ -65,7 +65,8 @@ internal static class LifecycleSupervisorPreflight
             try
             {
                 var candidate = Path.Combine(segment, fileName);
-                if (File.Exists(candidate)) return Path.GetFullPath(candidate);
+                if (File.Exists(candidate))
+                    return Path.GetFullPath(candidate);
             }
             catch (ArgumentException)
             {
@@ -146,12 +147,14 @@ internal sealed class LifecycleDatabaseController
                     ],
                     TimeSpan.FromSeconds(_configuration.Manifest.DatabaseTimeoutSeconds),
                     ct).ConfigureAwait(false);
-                if (Directory.Exists(_dataDirectory)) Directory.Delete(_dataDirectory);
+                if (Directory.Exists(_dataDirectory))
+                    Directory.Delete(_dataDirectory);
                 Directory.Move(initializingDirectory, _dataDirectory);
             }
             finally
             {
-                if (File.Exists(passwordFile)) File.Delete(passwordFile);
+                if (File.Exists(passwordFile))
+                    File.Delete(passwordFile);
                 if (Directory.Exists(initializingDirectory))
                     Directory.Delete(initializingDirectory, recursive: true);
             }
@@ -247,7 +250,8 @@ internal sealed class LifecycleDatabaseController
     private string LoadOrCreateDatabasePassword()
     {
         var existing = LifecycleProtectedSecretStore.Read(_configuration.DatabaseSecretPath);
-        if (!string.IsNullOrWhiteSpace(existing)) return existing;
+        if (!string.IsNullOrWhiteSpace(existing))
+            return existing;
         if (File.Exists(Path.Combine(_dataDirectory, "PG_VERSION")))
         {
             throw new InvalidOperationException(
@@ -262,7 +266,8 @@ internal sealed class LifecycleDatabaseController
     private LifecycleDatabaseIdentityDto? TryReadOwnedIdentity(string pgCtlPath)
     {
         var pidFile = Path.Combine(_dataDirectory, "postmaster.pid");
-        if (!File.Exists(pidFile)) return null;
+        if (!File.Exists(pidFile))
+            return null;
         try
         {
             var lines = File.ReadAllLines(pidFile);
@@ -306,7 +311,8 @@ internal sealed class LifecycleDatabaseController
         process = null;
         if (identity.ProcessId is not { } pid ||
             identity.StartedAtUtc is not { } startedAt ||
-            string.IsNullOrWhiteSpace(identity.ExecutablePath)) return false;
+            string.IsNullOrWhiteSpace(identity.ExecutablePath))
+            return false;
         try
         {
             process = Process.GetProcessById(pid);
@@ -355,7 +361,8 @@ internal sealed class LifecycleDatabaseController
             RedirectStandardError = true,
             WorkingDirectory = Path.GetDirectoryName(executable)!
         };
-        foreach (var argument in arguments) start.ArgumentList.Add(argument);
+        foreach (var argument in arguments)
+            start.ArgumentList.Add(argument);
         using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {Path.GetFileName(executable)}.");
         var standardOutput = process.StandardOutput.ReadToEndAsync(ct);
         var standardError = process.StandardError.ReadToEndAsync(ct);
@@ -384,7 +391,8 @@ internal sealed class LifecycleDatabaseController
 
     private static async Task TerminateToolProcessAsync(Process process)
     {
-        if (process.HasExited) return;
+        if (process.HasExited)
+            return;
         process.Kill(entireProcessTree: true);
         await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
     }

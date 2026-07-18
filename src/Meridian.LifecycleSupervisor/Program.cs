@@ -80,7 +80,8 @@ internal static class Program
             {
                 Console.WriteLine(response.Message);
             }
-            if (!response.Success) return 1;
+            if (!response.Success)
+                return 1;
             if (command == "stop")
             {
                 return await WaitForSupervisorStopAsync(configuration).ConfigureAwait(false)

@@ -206,7 +206,7 @@
       "path": "src/Meridian.LifecycleSupervisor",
       "readme": "src/Meridian.LifecycleSupervisor/README.md",
       "readme_hash": "d7cf46649495ac6acf617f163348d76f85be711548ea65d064ff8c79b39b1fa8",
-      "source_hash": "b8e692dcb6763bab840de88db48bad0c924ebeff475e31d0157ed07a18936ce6"
+      "source_hash": "d4fca8e341f99b54f7de037e77d6f6d6c1b1858a20a14c146ad82cc8dda69b0d"
     },
     {
       "id": "SRC-MCP",
@@ -283,7 +283,7 @@
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
       "readme_hash": "0aab94b19f0b9f3d231c3899f2117c6d8ad1103a237247bdbcd243a9003406b6",
-      "source_hash": "98c6e2d2396c25434c906fe925233b29bee28daea4007ac9515e7e35b59bd3e6"
+      "source_hash": "edd32d9c33a621b79409a6b77cbc4514ad5a826224a893781e043d1aa443cf4e"
     }
   ],
   "schema": {

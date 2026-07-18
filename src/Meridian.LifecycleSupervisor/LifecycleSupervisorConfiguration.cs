@@ -148,7 +148,8 @@ internal static class AtomicJsonFile
         }
         finally
         {
-            if (File.Exists(temporary)) File.Delete(temporary);
+            if (File.Exists(temporary))
+                File.Delete(temporary);
         }
     }
 }

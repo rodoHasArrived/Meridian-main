@@ -30,7 +30,8 @@ internal static class LifecycleSupervisorClient
                 LifecycleContractsJsonContext.Default.LifecycleSupervisorMessageDto);
             await writer.WriteLineAsync(json.AsMemory(), timeoutCts.Token).ConfigureAwait(false);
             var responseLine = await reader.ReadLineAsync(timeoutCts.Token).ConfigureAwait(false);
-            if (responseLine is null) throw new IOException("The lifecycle supervisor closed the command pipe.");
+            if (responseLine is null)
+                throw new IOException("The lifecycle supervisor closed the command pipe.");
             return JsonSerializer.Deserialize(
                        responseLine,
                        LifecycleContractsJsonContext.Default.LifecycleSupervisorMessageDto)
@@ -73,8 +74,10 @@ internal sealed class LifecycleSupervisorPipeServer : IAsyncDisposable
         CancellationToken ct)
     {
         HostConnection? host;
-        lock (_hostGate) host = _host;
-        if (host is null) return false;
+        lock (_hostGate)
+            host = _host;
+        if (host is null)
+            return false;
 
         var request = new LifecycleSupervisorMessageDto
         {
@@ -84,7 +87,8 @@ internal sealed class LifecycleSupervisorPipeServer : IAsyncDisposable
         };
         var completion = new TaskCompletionSource<LifecycleSupervisorMessageDto>(
             TaskCreationOptions.RunContinuationsAsynchronously);
-        if (!_hostResponses.TryAdd(request.RequestId, completion)) return false;
+        if (!_hostResponses.TryAdd(request.RequestId, completion))
+            return false;
 
         try
         {
@@ -118,10 +122,12 @@ internal sealed class LifecycleSupervisorPipeServer : IAsyncDisposable
             _host = null;
         }
 
-        if (host is not null) await host.DisposeAsync().ConfigureAwait(false);
+        if (host is not null)
+            await host.DisposeAsync().ConfigureAwait(false);
         if (_acceptLoop is not null)
         {
-            try { await _acceptLoop.ConfigureAwait(false); }
+            try
+            { await _acceptLoop.ConfigureAwait(false); }
             catch (OperationCanceledException) { }
         }
         _shutdown.Dispose();
@@ -179,7 +185,8 @@ internal sealed class LifecycleSupervisorPipeServer : IAsyncDisposable
         using var reader = new StreamReader(pipe, leaveOpen: true);
         await using var writer = new StreamWriter(pipe, leaveOpen: true) { AutoFlush = true };
         var firstLine = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-        if (firstLine is null) return;
+        if (firstLine is null)
+            return;
         var first = Deserialize(firstLine);
 
         if (!string.Equals(first.Command, "register-host", StringComparison.OrdinalIgnoreCase))
@@ -199,7 +206,8 @@ internal sealed class LifecycleSupervisorPipeServer : IAsyncDisposable
             prior = _host;
             _host = connection;
         }
-        if (prior is not null) await prior.DisposeAsync().ConfigureAwait(false);
+        if (prior is not null)
+            await prior.DisposeAsync().ConfigureAwait(false);
         _hostStatusHandler(first);
 
         try
@@ -207,7 +215,8 @@ internal sealed class LifecycleSupervisorPipeServer : IAsyncDisposable
             while (!ct.IsCancellationRequested && pipe.IsConnected)
             {
                 var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-                if (line is null) break;
+                if (line is null)
+                    break;
                 var message = Deserialize(line);
                 if (string.Equals(message.Command, "host-status", StringComparison.OrdinalIgnoreCase))
                 {
@@ -223,7 +232,8 @@ internal sealed class LifecycleSupervisorPipeServer : IAsyncDisposable
         {
             lock (_hostGate)
             {
-                if (ReferenceEquals(_host, connection)) _host = null;
+                if (ReferenceEquals(_host, connection))
+                    _host = null;
             }
         }
     }

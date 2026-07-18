@@ -400,13 +400,15 @@ public partial class App : System.Windows.Application
         foreach (var installRoot in installRoots)
         {
             var manifestPath = Path.Combine(installRoot!, "service", "lifecycle-supervisor.json");
-            if (!File.Exists(manifestPath)) continue;
+            if (!File.Exists(manifestPath))
+                continue;
             try
             {
                 var manifest = JsonSerializer.Deserialize(
                     File.ReadAllText(manifestPath),
                     LifecycleContractsJsonContext.Default.LifecycleSupervisorManifestDto);
-                if (string.IsNullOrWhiteSpace(manifest?.DataRoot)) continue;
+                if (string.IsNullOrWhiteSpace(manifest?.DataRoot))
+                    continue;
                 var expanded = Environment.ExpandEnvironmentVariables(manifest.DataRoot);
                 return Path.GetFullPath(
                     Path.IsPathRooted(expanded)

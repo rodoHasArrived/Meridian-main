@@ -53,10 +53,12 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
             TaskCompletionSource<SupervisorAction> actionSource;
             lock (_gate)
             {
-                if (_stopRequested) return 0;
+                if (_stopRequested)
+                    return 0;
                 _requestedAction = NewActionSource();
                 actionSource = _requestedAction;
-                if (_restartRequested) actionSource.TrySetResult(SupervisorAction.Restart);
+                if (_restartRequested)
+                    actionSource.TrySetResult(SupervisorAction.Restart);
             }
             using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             try
@@ -124,7 +126,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     private async Task StartSessionAsync(CancellationToken ct)
     {
         var preflight = LifecycleSupervisorPreflight.Evaluate(_configuration);
-        if (!preflight.Success) throw new InvalidOperationException(preflight.Message);
+        if (!preflight.Success)
+            throw new InvalidOperationException(preflight.Message);
 
         _sessionId = Guid.NewGuid().ToString("N");
         _startedAtUtc = DateTimeOffset.UtcNow;
@@ -260,7 +263,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
 
     private async Task StopSessionAsync(SupervisorAction action, CancellationToken ct)
     {
-        if (_sessionId is null) return;
+        if (_sessionId is null)
+            return;
         var shutdownStarted = DateTimeOffset.UtcNow;
         var hostForced = false;
         var databaseForced = false;
@@ -367,7 +371,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     private async Task<bool> RequestHttpFallbackShutdownAsync(CancellationToken ct)
     {
         var token = LifecycleProtectedSecretStore.Read(_configuration.SecretPath);
-        if (string.IsNullOrWhiteSpace(token) || _httpPort is null) return false;
+        if (string.IsNullOrWhiteSpace(token) || _httpPort is null)
+            return false;
         try
         {
             using var request = new HttpRequestMessage(
@@ -485,7 +490,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
 
     private void PersistStatus()
     {
-        if (_sessionId is null) return;
+        if (_sessionId is null)
+            return;
         AtomicJsonFile.Write(
             Path.Combine(_configuration.RuntimeRoot, "supervisor-session.json"),
             JsonSerializer.SerializeToUtf8Bytes(
@@ -496,7 +502,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     private void DeleteRuntimeStatus()
     {
         var path = Path.Combine(_configuration.RuntimeRoot, "supervisor-session.json");
-        if (File.Exists(path)) File.Delete(path);
+        if (File.Exists(path))
+            File.Delete(path);
     }
 
     private void PersistSessionReceipt(LifecycleSessionReceiptDto receipt)
@@ -511,12 +518,14 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
 
     private LifecycleSessionReceiptDto? LoadLatestSessionReceipt()
     {
-        if (!Directory.Exists(_configuration.ReceiptRoot)) return null;
+        if (!Directory.Exists(_configuration.ReceiptRoot))
+            return null;
         var latest = Directory.EnumerateFiles(_configuration.ReceiptRoot, "session-*.json")
             .Select(path => new FileInfo(path))
             .OrderByDescending(file => file.LastWriteTimeUtc)
             .FirstOrDefault();
-        if (latest is null) return null;
+        if (latest is null)
+            return null;
         try
         {
             return JsonSerializer.Deserialize(
@@ -532,9 +541,11 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     private LifecycleShutdownReceiptDto? LoadHostReceipt()
     {
         var hostSessionId = _hostSessionId;
-        if (string.IsNullOrWhiteSpace(hostSessionId)) return null;
+        if (string.IsNullOrWhiteSpace(hostSessionId))
+            return null;
         var path = Path.Combine(_configuration.ReceiptRoot, $"host-{hostSessionId}.json");
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
         try
         {
             return JsonSerializer.Deserialize(
@@ -549,7 +560,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
 
     private void OpenBrowser()
     {
-        if (_httpPort is null) return;
+        if (_httpPort is null)
+            return;
         var accountStore = Path.Combine(_configuration.DataRoot, "governance", "user-accounts.json");
         var destination = File.Exists(accountStore)
             ? $"http://127.0.0.1:{_httpPort}/login?returnUrl=%2Fworkstation%2F"
@@ -569,8 +581,10 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
                 return true;
             }
 
-            if (_stopRequested) return false;
-            if (action == SupervisorAction.Restart) _restartRequested = true;
+            if (_stopRequested)
+                return false;
+            if (action == SupervisorAction.Restart)
+                _restartRequested = true;
             _requestedAction.TrySetResult(action);
             return true;
         }
@@ -580,9 +594,11 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     {
         lock (_gate)
         {
-            if (_stopRequested) return false;
+            if (_stopRequested)
+                return false;
             var shouldRestart = action == SupervisorAction.Restart || _restartRequested;
-            if (shouldRestart) _restartRequested = false;
+            if (shouldRestart)
+                _restartRequested = false;
             return shouldRestart;
         }
     }
@@ -594,7 +610,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     {
         var listener = new TcpListener(IPAddress.Loopback, 0);
         listener.Start();
-        try { return ((IPEndPoint)listener.LocalEndpoint).Port; }
+        try
+        { return ((IPEndPoint)listener.LocalEndpoint).Port; }
         finally { listener.Stop(); }
     }
 
@@ -611,7 +628,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
         out Process? process)
     {
         process = null;
-        if (identity is null) return false;
+        if (identity is null)
+            return false;
         try
         {
             process = Process.GetProcessById(identity.ProcessId);
@@ -674,7 +692,8 @@ internal static class LifecycleProtectedSecretStore
 
     public static string? Read(string path)
     {
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
         try
         {
             var clear = ProtectedData.Unprotect(
@@ -691,6 +710,7 @@ internal static class LifecycleProtectedSecretStore
 
     public static void Delete(string path)
     {
-        if (File.Exists(path)) File.Delete(path);
+        if (File.Exists(path))
+            File.Delete(path);
     }
 }

@@ -110,7 +110,8 @@ public sealed class LifecycleControlClient : ILifecycleControlClient, IDisposabl
             message.Headers.TryAddWithoutValidation(CsrfHeaderName, csrf);
 
         using var response = await _http.SendAsync(message, cancellationToken).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+            return null;
         return await response.Content.ReadFromJsonAsync<LifecycleShutdownAcceptedDto>(
             DesktopJsonOptions.Api,
             cancellationToken).ConfigureAwait(false);
@@ -118,7 +119,8 @@ public sealed class LifecycleControlClient : ILifecycleControlClient, IDisposabl
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         if (_authenticationSession is not null)
             _authenticationSession.SignedOut -= OnDesktopSignedOut;
         _http.Dispose();
@@ -149,7 +151,8 @@ public sealed class LifecycleControlClient : ILifecycleControlClient, IDisposabl
     private async Task<T?> GetAsync<T>(string endpoint, CancellationToken ct) where T : class
     {
         using var response = await _http.GetAsync(BuildUri(endpoint), ct).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+            return null;
         return await response.Content.ReadFromJsonAsync<T>(DesktopJsonOptions.Api, ct).ConfigureAwait(false);
     }
 

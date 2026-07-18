@@ -182,7 +182,8 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
     private bool LaunchSupervisorCommand(string command)
     {
         var executable = ResolveExecutablePath(null);
-        if (string.IsNullOrWhiteSpace(executable)) return false;
+        if (string.IsNullOrWhiteSpace(executable))
+            return false;
         var process = Process.Start(CreateSupervisorStartInfo(executable, command));
         process?.Dispose();
         return process is not null;
