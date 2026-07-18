@@ -341,29 +341,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// <summary>
     /// Checks if IB Gateway/TWS is available on default ports.
     /// </summary>
-    public bool IsIBGatewayAvailable()
-    {
-        try
-        {
-            var ports = new[] { 7496, 7497, 4001, 4002 };
-            foreach (var port in ports)
-            {
-                using var client = new System.Net.Sockets.TcpClient();
-                var result = client.BeginConnect("127.0.0.1", port, null, null);
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100));
-                if (success && client.Connected)
-                {
-                    client.EndConnect(result);
-                    return true;
-                }
-            }
-        }
-        catch
-        {
-            // Ignore connection errors
-        }
-        return false;
-    }
+    public bool IsIBGatewayAvailable() => IBGatewayProbe.IsAvailable();
 
 
 

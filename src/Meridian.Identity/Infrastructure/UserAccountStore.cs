@@ -160,7 +160,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var snapshot = ReadSnapshot();
+            var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
             var accounts = snapshot.Accounts.ToList();
             var index = accounts.FindIndex(account => AccountKey(account.Username) == validated.AccountKey);
             var existing = index >= 0 ? accounts[index] : null;
@@ -246,7 +246,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var snapshot = ReadSnapshot();
+            var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
             var accounts = snapshot.Accounts.ToList();
             var index = accounts.FindIndex(account => AccountKey(account.Username) == accountKey);
             if (index < 0)
@@ -303,7 +303,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         await _writeGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var snapshot = ReadSnapshot();
+            var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
             var accounts = snapshot.Accounts.ToList();
             var index = accounts.FindIndex(account => AccountKey(account.Username) == accountKey);
             if (index < 0)
@@ -394,24 +394,44 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 return new UserAccountSnapshot([]);
             }
 
-            try
-            {
-                var snapshot = JsonSerializer.Deserialize<UserAccountSnapshot>(
-                    File.ReadAllText(_path),
-                    JsonOptions);
-                return snapshot ?? new UserAccountSnapshot([]);
-            }
-            catch (JsonException ex)
-            {
-                // Fail safe (no accounts) so the surface stays available, but surface the
-                // data-integrity problem instead of silently masking a corrupt governance file
-                // as "no accounts exist".
-                _logger?.LogError(
-                    ex,
-                    "Corrupt user-account governance file at {Path}; treating as no accounts. Manual data-integrity review required.",
-                    _path);
-                return new UserAccountSnapshot([]);
-            }
+            return ParseSnapshotSafe(File.ReadAllText(_path));
+        }
+    }
+
+    /// <summary>
+    /// Async snapshot read for the mutation paths, which already serialize on
+    /// <see cref="_writeGate"/> — the blocking <see cref="_readGate"/> is not taken here.
+    /// The snapshot file is written via <see cref="AtomicFileWriter"/> (write + rename),
+    /// so a plain read never observes a partial write.
+    /// </summary>
+    private async Task<UserAccountSnapshot> ReadSnapshotAsync(CancellationToken ct)
+    {
+        if (!File.Exists(_path))
+        {
+            return new UserAccountSnapshot([]);
+        }
+
+        var json = await File.ReadAllTextAsync(_path, ct).ConfigureAwait(false);
+        return ParseSnapshotSafe(json);
+    }
+
+    private UserAccountSnapshot ParseSnapshotSafe(string json)
+    {
+        try
+        {
+            var snapshot = JsonSerializer.Deserialize<UserAccountSnapshot>(json, JsonOptions);
+            return snapshot ?? new UserAccountSnapshot([]);
+        }
+        catch (JsonException ex)
+        {
+            // Fail safe (no accounts) so the surface stays available, but surface the
+            // data-integrity problem instead of silently masking a corrupt governance file
+            // as "no accounts exist".
+            _logger?.LogError(
+                ex,
+                "Corrupt user-account governance file at {Path}; treating as no accounts. Manual data-integrity review required.",
+                _path);
+            return new UserAccountSnapshot([]);
         }
     }
 

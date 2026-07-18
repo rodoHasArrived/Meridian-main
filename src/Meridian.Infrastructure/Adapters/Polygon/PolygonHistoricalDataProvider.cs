@@ -126,7 +126,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
             if (!response.IsSuccessStatusCode)
             {
-                HandleHttpResponse(response, symbol, "bars");
+                await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -225,7 +225,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
             if (!response.IsSuccessStatusCode)
             {
-                HandleHttpResponse(response, symbol, "bars");
+                await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);

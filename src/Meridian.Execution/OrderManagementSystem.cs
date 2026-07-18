@@ -898,7 +898,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 return;
             try
             {
-                _tradeEventPublisher.Publish(failure.TradeEvent);
+                await _tradeEventPublisher.PublishAsync(failure.TradeEvent).ConfigureAwait(false);
                 await _tradeFillHandoffFailureStore
                     .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
                     .ConfigureAwait(false);
@@ -1062,7 +1062,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                         ResolveFinancialAccountId(orderId));
                     try
                     {
-                        _tradeEventPublisher.Publish(progress.TradeEvent);
+                        await _tradeEventPublisher.PublishAsync(progress.TradeEvent).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -1151,6 +1151,11 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 $"Fill report '{fillIncrement.OrderId}' for '{fillIncrement.Symbol}' has no execution price.");
         }
 
+        // STABILITY CONTRACT: the deterministic fillId below is derived from this exact field
+        // list, order, and encoding. Ledger entries already posted for a fill are keyed by it,
+        // so changing any part of the identity (adding/removing/reordering fields, formats)
+        // silently changes fill identity and re-posts fills after a restart. Do not modify
+        // without a migration plan for previously posted ledger entries.
         var canonicalIdentity = string.Join(
             "|",
             EncodeIdentityPart(fillIncrement.OrderId),

@@ -14,6 +14,17 @@ public interface ITradeEventPublisher
     /// </summary>
     /// <param name="tradeEvent">The trade event to publish.</param>
     void Publish(TradeExecutedEvent tradeEvent);
+
+    /// <summary>
+    /// Asynchronous variant of <see cref="Publish"/> with identical durability and
+    /// backpressure semantics. Async callers (e.g. the fill-processing pipeline) should
+    /// prefer this so buffer backpressure awaits instead of blocking a thread.
+    /// </summary>
+    Task PublishAsync(TradeExecutedEvent tradeEvent)
+    {
+        Publish(tradeEvent);
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>

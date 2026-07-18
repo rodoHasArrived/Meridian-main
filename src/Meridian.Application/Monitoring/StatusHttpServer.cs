@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -434,7 +435,15 @@ setInterval(refresh,2000);refresh();
             }
         }
 
-        return string.Equals(headerToken, _accessToken, StringComparison.Ordinal);
+        if (string.IsNullOrWhiteSpace(headerToken))
+        {
+            return false;
+        }
+
+        // Constant-time comparison so remote callers cannot recover the token via timing.
+        var expected = Encoding.UTF8.GetBytes(_accessToken);
+        var provided = Encoding.UTF8.GetBytes(headerToken);
+        return CryptographicOperations.FixedTimeEquals(provided, expected);
     }
 
     private static string ResolveBindAddress(string bindAddress, bool allowRemoteAccess)

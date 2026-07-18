@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Database, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { apiGetJson, apiPostJson } from "@/lib/api";
+import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { Button } from "@/components/ui/button";
 import type { FirstRunStatus } from "./types";
 
@@ -20,7 +21,7 @@ const dataChoices = [
   ["skip", "Skip for now"]
 ] as const;
 
-export function FirstRunScreen({ initialStatus }: { initialStatus?: FirstRunStatus | null }) {
+export function FirstRunScreen({ initialStatus, onStatusChange }: { initialStatus?: FirstRunStatus | null; onStatusChange?: (status: FirstRunStatus) => void }) {
   const navigate = useNavigate();
   const [status, setStatus] = useState<FirstRunStatus | null>(initialStatus ?? null);
   const [step, setStep] = useState(0);
@@ -31,7 +32,7 @@ export function FirstRunScreen({ initialStatus }: { initialStatus?: FirstRunStat
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!status) apiGetJson<FirstRunStatus>("/api/workstation/first-run/").then(setStatus).catch((reason) => setError(String(reason)));
+    if (!status) apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus).then(setStatus).catch((reason) => setError(String(reason)));
   }, [status]);
 
   useEffect(() => {
@@ -46,13 +47,16 @@ export function FirstRunScreen({ initialStatus }: { initialStatus?: FirstRunStat
     setBusy(true);
     setError(null);
     try {
-      const next = await apiPostJson<FirstRunStatus>("/api/workstation/first-run/complete", {
+      const next = await apiPostJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunComplete, {
         goal,
         starterKitId,
         dataChoice,
         useSampleData: dataChoice === "sample"
       });
       setStatus(next);
+      // Report completion upward so AppRoot's redirect guard releases the user
+      // instead of bouncing post-setup navigation back to /setup.
+      onStatusChange?.(next);
       setStep(4);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Meridian could not save this workspace setup.");

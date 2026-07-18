@@ -1,6 +1,11 @@
 // Meridian accounting — shared money helpers. No React, no DOM. Used by AmountCell and the
 // ledger/statement primitives so every amount formats identically: mono tabular, fixed decimals,
 // accounting parentheses for negatives, zero-as-dash, explicit signs on deltas.
+//
+// SCOPE: this module is the deliberate ACCOUNTING exception — statement convention with
+// parenthesized negatives and U+2212 minus. All non-accounting screens must use the
+// Intl-based formatters in `lib/format.ts` instead. A rounding/negative-display policy
+// change must be applied to whichever of the two conventions it targets, knowingly.
 
 /** Options accepted by {@link formatMoney}. */
 export interface FormatMoneyOptions {
