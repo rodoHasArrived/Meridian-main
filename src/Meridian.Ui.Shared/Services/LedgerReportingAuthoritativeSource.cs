@@ -730,7 +730,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                 rows.Add(row);
             }
         }
-        return rows.DrainToImmutable();
+        return rows.ToImmutable();
     }
 
     private static string ComputeCheckpointHash(
