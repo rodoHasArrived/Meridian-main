@@ -57,7 +57,24 @@
       "Bash(gh auth *)",
       "Bash(git log *)",
       "Bash(git status *)",
-      "Bash(git rev-list *)"
+      "Bash(git rev-list *)",
+      "Bash(git -C \"D:/Meridian-provider-accounting\" status --porcelain)",
+      "Bash(git -C \"D:/Meridian-schema-control\" status --porcelain)",
+      "Bash(git -C \"D:/Meridian-consumer-install-followup\" status --porcelain)",
+      "Bash(git -C \"D:/Meridian-reporting-test-repair\" status --porcelain)",
+      "Bash(git -C \"D:/Meridian-current-main-ci-repair\" diff --stat)",
+      "Bash(git -C \"D:/Meridian-schema-control\" diff --stat)",
+      "Bash(git -C \"D:/Meridian-provider-accounting\" diff --stat)",
+      "Bash(git -C \"D:/Meridian-current-main-ci-repair\" diff -- \"**/SecureReportingDistributionEndpoints.cs\" \"**/ReportingSecureDistributionApplicationService.cs\")",
+      "Bash([ -f \"$F\" ])",
+      "Bash(wc -c)",
+      "Bash(echo '=== size: __CMDSUB_OUTPUT__ bytes ===')",
+      "Bash(tail -40 'C:/Users/Andrew James Rowden/AppData/Local/Temp/claude/D--Meridian-main/f91db4b6-6277-47d7-b2f7-6c5b62d751f0/tasks/by61g3l4l.output')",
+      "Bash(echo \"no output file\")",
+      "Bash(set -e)",
+      "Bash(git checkout *)",
+      "PowerShell(dotnet test tests/Meridian.Tests -c Debug -p:EnableWindowsTargeting=true --filter \"FullyQualifiedName~SecurityMasterMappingInteropTests|FullyQualifiedName~SecurityAssetClassCatalogTests\" 2>&1)",
+      "PowerShell($ErrorActionPreference='Continue')"
     ]
   }
 }

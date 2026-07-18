@@ -151,6 +151,736 @@
                     </Grid>
                 </Border>
 
+                <Border Style="{StaticResource WorkspaceWorkbenchCardStyle}"
+                        Margin="0,0,0,12"
+                        AutomationProperties.Name="Governed reporting lifecycle workbench"
+                        AutomationProperties.AutomationId="ReportingGovernanceWorkbench">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Certified Run &amp; Governance"
+                                           Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Configure the exact reporting scope, use server-owned readiness, and advance one immutable run through maker-checker release."
+                                           Margin="0,5,0,0"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding Governance.StatusText}"
+                                       Margin="16,0,0,0"
+                                       MaxWidth="480"
+                                       TextAlignment="Right"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       AutomationProperties.AutomationId="ReportingGovernanceOperationStatus" />
+                        </Grid>
+
+                        <Border Margin="0,10,0,0"
+                                Padding="10"
+                                Background="{StaticResource ConsoleAccentRedAlpha10Brush}"
+                                BorderBrush="{StaticResource DangerColorBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Visibility="{Binding Governance.HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="ReportingGovernanceErrorPanel">
+                            <TextBlock Text="{Binding Governance.ErrorText}"
+                                       Foreground="{StaticResource DangerColorBrush}"
+                                       TextWrapping="Wrap" />
+                        </Border>
+
+                        <Expander Header="Run parameters"
+                                  IsExpanded="True"
+                                  Margin="0,12,0,0"
+                                  AutomationProperties.AutomationId="ReportingGovernanceRunParameters">
+                            <StackPanel Margin="0,10,0,0">
+                                <UniformGrid Columns="4">
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Template name" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.TemplateName, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceTemplateNameInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Exact version" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.TemplateVersion, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceTemplateVersionInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Fund profile" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.FundProfileId, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceFundInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="As-of date (yyyy-MM-dd)" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.AsOfDateText, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceAsOfDateInput" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Period" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.PeriodId, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernancePeriodInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Ledger book id" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.LedgerBookIdText, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceLedgerBookIdInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Ledger book code" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.LedgerBookCode, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceLedgerBookCodeInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="Presentation currency" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.PresentationCurrency, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceCurrencyInput" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Entity scope" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <ComboBox ItemsSource="{Binding Governance.EntityScopeOptions}"
+                                                  SelectedItem="{Binding Governance.EntityScopeKind}"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceEntityScopeInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Entity id" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.EntityId, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceEntityInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Portfolio id" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.PortfolioId, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernancePortfolioInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="Investor id" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.InvestorId, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceInvestorInput" />
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Accounting basis" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <ComboBox ItemsSource="{Binding Governance.AccountingBasisOptions}"
+                                                  SelectedItem="{Binding Governance.AccountingBasis}"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceBasisInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Consolidation" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <ComboBox ItemsSource="{Binding Governance.ConsolidationOptions}"
+                                                  SelectedItem="{Binding Governance.ConsolidationLevel}"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceConsolidationInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Output" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <ComboBox ItemsSource="{Binding Governance.OutputFormatOptions}"
+                                                  SelectedItem="{Binding Governance.OutputFormat}"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceOutputInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="Finality" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <ComboBox ItemsSource="{Binding Governance.FinalityOptions}"
+                                                  SelectedItem="{Binding Governance.Finality}"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceFinalityInput" />
+                                    </StackPanel>
+                                </UniformGrid>
+
+                                <Grid Margin="0,2,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Content="Supporting schedules"
+                                              IsChecked="{Binding Governance.IncludeSupportingSchedules}"
+                                              Margin="0,0,16,0"
+                                              AutomationProperties.AutomationId="ReportingGovernanceSupportingSchedulesInput" />
+                                    <CheckBox Grid.Column="1"
+                                              Content="Evidence appendix"
+                                              IsChecked="{Binding Governance.IncludeEvidenceAppendix}"
+                                              Margin="0,0,16,0"
+                                              AutomationProperties.AutomationId="ReportingGovernanceEvidenceAppendixInput" />
+                                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                        <TextBlock Text="Template parameters (key=value;...)" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.TemplateParametersText, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceTemplateParametersInput" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3">
+                                        <TextBlock Text="Dimension overrides (StrategyId=...; gl.Project=...)" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.DimensionOverridesText, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceDimensionsInput" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <WrapPanel Margin="0,12,0,0">
+                                    <Button Content="Assess readiness"
+                                            Command="{Binding Governance.AssessReadinessCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            ToolTip="{Binding Governance.AssessReadinessTooltip}"
+                                            ToolTipService.ShowOnDisabled="True"
+                                            Margin="0,0,8,0"
+                                            AutomationProperties.AutomationId="ReportingGovernanceAssessReadinessButton" />
+                                    <Button Content="Generate governed run"
+                                            Command="{Binding Governance.GenerateGovernedRunCommand}"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            ToolTip="{Binding Governance.GenerateRunTooltip}"
+                                            ToolTipService.ShowOnDisabled="True"
+                                            AutomationProperties.AutomationId="ReportingGovernanceGenerateRunButton" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
+
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.05*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource WorkspaceQueueCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Preflight readiness" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding Governance.ReadinessStatusText}"
+                                               Margin="0,6,0,0"
+                                               FontWeight="SemiBold"
+                                               AutomationProperties.AutomationId="ReportingGovernanceReadinessStatus" />
+                                    <TextBlock Text="{Binding Governance.ReadinessBlockerText}"
+                                               Margin="0,4,0,8"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="ReportingGovernanceReadinessBlockers" />
+                                    <ItemsControl ItemsSource="{Binding Governance.ReadinessChecks}"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceReadinessChecks">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,2,0,2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="150" />
+                                                        <ColumnDefinition Width="90" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding Label}" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Status}" FontWeight="SemiBold" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Summary}" TextWrapping="Wrap" Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource WorkspaceQueueCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Governed run" Style="{StaticResource CardHeaderStyle}" />
+                                    <Grid Margin="0,8,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Text="{Binding Governance.CurrentRunId, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceRunIdInput" />
+                                        <Button Grid.Column="1"
+                                                Content="Load"
+                                                Command="{Binding Governance.LoadGovernedRunCommand}"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Margin="8,0,0,0"
+                                                AutomationProperties.AutomationId="ReportingGovernanceLoadRunButton" />
+                                        <Button Grid.Column="2"
+                                                Content="Govern"
+                                                Command="{Binding Governance.GovernCompletedRunCommand}"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Margin="8,0,0,0"
+                                                AutomationProperties.AutomationId="ReportingGovernanceGovernRunButton" />
+                                    </Grid>
+                                    <TextBlock Text="{Binding Governance.LifecyclePathText}"
+                                               Margin="0,8,0,0"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding Governance.LifecycleStateText}"
+                                               Margin="0,4,0,0"
+                                               FontWeight="SemiBold"
+                                               AutomationProperties.AutomationId="ReportingGovernanceLifecycleState" />
+                                    <TextBox Text="{Binding Governance.ApprovalDecisionNote, UpdateSourceTrigger=PropertyChanged}"
+                                             Margin="0,8,0,0"
+                                             MinHeight="32"
+                                             ToolTip="Independent approval rationale"
+                                             AutomationProperties.Name="Independent approval rationale"
+                                             AutomationProperties.AutomationId="ReportingGovernanceApprovalNoteInput" />
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <Button Content="Validate"
+                                                Command="{Binding Governance.ValidateCommand}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                ToolTip="{Binding Governance.ValidateTooltip}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Margin="0,0,6,6"
+                                                AutomationProperties.AutomationId="ReportingGovernanceValidateButton" />
+                                        <Button Content="Submit"
+                                                Command="{Binding Governance.SubmitCommand}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                ToolTip="{Binding Governance.SubmitTooltip}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Margin="0,0,6,6"
+                                                AutomationProperties.AutomationId="ReportingGovernanceSubmitButton" />
+                                        <Button Content="Approve"
+                                                Command="{Binding Governance.ApproveCommand}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                ToolTip="{Binding Governance.ApproveTooltip}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Margin="0,0,6,6"
+                                                AutomationProperties.AutomationId="ReportingGovernanceApproveButton" />
+                                        <Button Content="Release"
+                                                Command="{Binding Governance.ReleaseCommand}"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                ToolTip="{Binding Governance.ReleaseTooltip}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Margin="0,0,0,6"
+                                                AutomationProperties.AutomationId="ReportingGovernanceReleaseButton" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource WorkspaceInspectorCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Immutable scope &amp; evidence" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding Governance.MakerCheckerStatusText}"
+                                               Margin="0,7,0,0"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="ReportingGovernanceMakerCheckerStatus" />
+                                    <TextBlock Text="{Binding Governance.ScopeSnapshotText}"
+                                               Margin="0,7,0,0"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="ReportingGovernanceScopeSnapshot" />
+                                    <TextBlock Text="{Binding Governance.CertifiedSnapshotText}"
+                                               Margin="0,7,0,0"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="ReportingGovernanceCertifiedSnapshot" />
+                                    <TextBlock Text="{Binding Governance.ArtifactSummaryText}"
+                                               Margin="0,7,0,0"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="ReportingGovernanceArtifactSummary" />
+                                    <ItemsControl ItemsSource="{Binding Governance.ReleasedArtifacts}"
+                                                  Margin="0,7,0,0"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceReleasedArtifacts">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,2,0,2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="140" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="90" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding ArtifactId}" />
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding ArtifactHash}"
+                                                               Margin="8,0,8,0"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding ArtifactHash}" />
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding ByteLength, StringFormat={}{0:N0} bytes}"
+                                                               TextAlignment="Right" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource WorkspaceInspectorCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Governed restatement" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding Governance.RestatementStatusText}"
+                                               Margin="0,7,0,0"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="ReportingGovernanceRestatementStatus" />
+                                    <TextBox Text="{Binding Governance.RestatementReason, UpdateSourceTrigger=PropertyChanged}"
+                                             Margin="0,8,0,0"
+                                             MinHeight="36"
+                                             ToolTip="Reason and business context for a new immutable revision"
+                                             AutomationProperties.Name="Restatement reason"
+                                             AutomationProperties.AutomationId="ReportingGovernanceRestatementReasonInput" />
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <Button Content="Request restatement"
+                                                Command="{Binding Governance.RequestRestatementCommand}"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                ToolTip="{Binding Governance.RestatementTooltip}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Margin="0,0,8,0"
+                                                AutomationProperties.AutomationId="ReportingGovernanceRequestRestatementButton" />
+                                        <Button Content="Approve new revision"
+                                                Command="{Binding Governance.ApproveRestatementCommand}"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                ToolTip="{Binding Governance.ApproveRestatementTooltip}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                AutomationProperties.AutomationId="ReportingGovernanceApproveRestatementButton" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Expander Header="Retained governed &amp; schedule evidence"
+                                  IsExpanded="True"
+                                  Margin="0,12,0,0"
+                                  AutomationProperties.AutomationId="ReportingGovernanceRetainedEvidencePanel">
+                            <StackPanel Margin="0,10,0,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.1*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="0.9*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Style="{StaticResource WorkspaceInspectorCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Retained governed readiness" Style="{StaticResource CardHeaderStyle}" />
+                                            <TextBlock Text="{Binding Governance.RetainedReadinessStatusText}"
+                                                       Margin="0,6,0,0"
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"
+                                                       AutomationProperties.AutomationId="ReportingGovernanceRetainedReadinessStatus" />
+                                            <TextBlock Text="{Binding Governance.RetainedReadinessReceiptText}"
+                                                       Margin="0,4,0,8"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                       TextWrapping="Wrap"
+                                                       AutomationProperties.AutomationId="ReportingGovernanceRetainedReadinessReceipt" />
+                                            <DataGrid ItemsSource="{Binding Governance.RetainedReadinessChecks}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      CanUserAddRows="False"
+                                                      EnableRowVirtualization="True"
+                                                      EnableColumnVirtualization="True"
+                                                      MaxHeight="180"
+                                                      AutomationProperties.Name="Retained governed readiness checks"
+                                                      AutomationProperties.AutomationId="ReportingGovernanceRetainedReadinessChecks">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Check" Binding="{Binding CheckId}" Width="140" />
+                                                    <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="80" />
+                                                    <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                                    <DataGridTextColumn Header="Evidence ids" Binding="{Binding EvidenceIds}" Width="220" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Column="2" Style="{StaticResource WorkspaceInspectorCardStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="Retained access policy" Style="{StaticResource CardHeaderStyle}" />
+                                            <TextBlock Text="{Binding Governance.RetainedAccessPolicyText}"
+                                                       Margin="0,6,0,0"
+                                                       TextWrapping="Wrap"
+                                                       AutomationProperties.AutomationId="ReportingGovernanceRetainedAccessPolicy" />
+                                            <TextBlock Text="{Binding Governance.RetainedAccessOwnerText}"
+                                                       Margin="0,4,0,8"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                       TextWrapping="Wrap"
+                                                       AutomationProperties.AutomationId="ReportingGovernanceRetainedAccessOwner" />
+                                            <DataGrid ItemsSource="{Binding Governance.RetainedAccessPrincipals}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      CanUserAddRows="False"
+                                                      EnableRowVirtualization="True"
+                                                      EnableColumnVirtualization="True"
+                                                      MaxHeight="180"
+                                                      AutomationProperties.Name="Retained typed access principals"
+                                                      AutomationProperties.AutomationId="ReportingGovernanceRetainedAccessPrincipals">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Kind" Binding="{Binding Kind}" Width="100" />
+                                                    <DataGridTextColumn Header="Principal" Binding="{Binding PrincipalId}" Width="*" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <Border Margin="0,12,0,0" Style="{StaticResource WorkspaceInspectorCardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Exact normalized parameters" Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="{Binding Governance.RetainedParameterStatusText}"
+                                                   Margin="0,5,0,8"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   AutomationProperties.AutomationId="ReportingGovernanceRetainedParameterStatus" />
+                                        <DataGrid ItemsSource="{Binding Governance.RetainedParameterRows}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  EnableRowVirtualization="True"
+                                                  EnableColumnVirtualization="True"
+                                                  MaxHeight="220"
+                                                  AutomationProperties.Name="Exact retained normalized report parameters"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceRetainedParameters">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Group" Binding="{Binding Group}" Width="150" />
+                                                <DataGridTextColumn Header="Parameter" Binding="{Binding Name}" Width="220" />
+                                                <DataGridTextColumn Header="Retained value" Binding="{Binding Value}" Width="*" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,12,0,0" Style="{StaticResource WorkspaceInspectorCardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Scheduled release handoffs" Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="{Binding Governance.ScheduleReleaseHandoffStatusText}"
+                                                   Margin="0,5,0,8"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   AutomationProperties.AutomationId="ReportingGovernanceScheduleHandoffStatus" />
+                                        <DataGrid ItemsSource="{Binding Governance.ScheduleReleaseHandoffs}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  EnableRowVirtualization="True"
+                                                  EnableColumnVirtualization="True"
+                                                  MaxHeight="220"
+                                                  AutomationProperties.Name="Scheduled post-release delivery handoffs"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceScheduleHandoffs">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Schedule" Binding="{Binding ScheduleId}" Width="130" />
+                                                <DataGridTextColumn Header="Policy snapshot hash" Binding="{Binding AccessPolicySnapshotHash}" Width="220" />
+                                                <DataGridTextColumn Header="Handoff" Binding="{Binding HandoffId}" Width="150" />
+                                                <DataGridTextColumn Header="Run" Binding="{Binding RunId}" Width="130" />
+                                                <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100" />
+                                                <DataGridTextColumn Header="Recipient" Binding="{Binding Recipient}" Width="180" />
+                                                <DataGridTextColumn Header="Transport" Binding="{Binding TransportId}" Width="130" />
+                                                <DataGridTextColumn Header="Delivery job" Binding="{Binding DeliveryJobId}" Width="150" />
+                                                <DataGridTextColumn Header="Created" Binding="{Binding CreatedAtUtc}" Width="150" />
+                                                <DataGridTextColumn Header="Enqueued" Binding="{Binding EnqueuedAtUtc}" Width="150" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander Header="Secure distribution"
+                                  IsExpanded="False"
+                                  Margin="0,12,0,0"
+                                  AutomationProperties.AutomationId="ReportingGovernanceDistributionPanel">
+                            <StackPanel Margin="0,10,0,0">
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Governance.DistributionCapabilityStatusText}"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="ReportingGovernanceDistributionCapabilities" />
+                                    <Button Grid.Column="1"
+                                            Content="Refresh capabilities"
+                                            Command="{Binding Governance.RefreshDistributionCapabilitiesCommand}"
+                                            Style="{StaticResource GhostButtonStyle}"
+                                            Margin="12,0,0,0"
+                                            AutomationProperties.AutomationId="ReportingGovernanceRefreshDistributionCapabilitiesButton" />
+                                </Grid>
+                                <UniformGrid Columns="4">
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Distribution id" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.DistributionId, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceDistributionIdInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Transport" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <ComboBox ItemsSource="{Binding Governance.TransportOptions}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  SelectedValuePath="TransportId"
+                                                  SelectedValue="{Binding Governance.TransportId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  ToolTip="{Binding Governance.SelectedTransport.DisabledReasonCode}"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceTransportInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Recipient principal (optional)" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.RecipientPrincipalId, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceRecipientInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Recipient kind" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <ComboBox ItemsSource="{Binding Governance.RecipientPrincipalKinds}"
+                                                  SelectedItem="{Binding Governance.RecipientPrincipalKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  AutomationProperties.AutomationId="ReportingGovernanceRecipientKindInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding Governance.DestinationFieldLabel}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.Destination, UpdateSourceTrigger=PropertyChanged}"
+                                                 ToolTip="{Binding Governance.DestinationFieldHelp}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceDestinationInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Subject" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.DeliverySubject, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceDeliverySubjectInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Body" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.DeliveryBody, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceDeliveryBodyInput" />
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,10,8">
+                                        <TextBlock Text="Grant lifetime / max uses" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="8" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding Governance.GrantLifetimeSecondsText, UpdateSourceTrigger=PropertyChanged}"
+                                                     AutomationProperties.AutomationId="ReportingGovernanceGrantLifetimeInput" />
+                                            <TextBox Grid.Column="2"
+                                                     Text="{Binding Governance.GrantMaxUsesText, UpdateSourceTrigger=PropertyChanged}"
+                                                     AutomationProperties.AutomationId="ReportingGovernanceGrantMaxUsesInput" />
+                                        </Grid>
+                                    </StackPanel>
+                                    <StackPanel Margin="0,0,0,8">
+                                        <TextBlock Text="Maximum attempts" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                        <TextBox Text="{Binding Governance.MaxDeliveryAttempts, UpdateSourceTrigger=PropertyChanged}"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceDeliveryAttemptsInput" />
+                                    </StackPanel>
+                                </UniformGrid>
+                                <WrapPanel>
+                                    <Button Content="Queue secure delivery"
+                                            Command="{Binding Governance.QueueDeliveryCommand}"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            ToolTip="{Binding Governance.QueueDeliveryTooltip}"
+                                            ToolTipService.ShowOnDisabled="True"
+                                            AutomationProperties.AutomationId="ReportingGovernanceQueueDeliveryButton" />
+                                    <TextBlock Text="{Binding Governance.DistributionStatusText}"
+                                               Margin="12,4,0,0"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="ReportingGovernanceDistributionStatus" />
+                                </WrapPanel>
+
+                                <Border Margin="0,10,0,0"
+                                        Padding="10"
+                                        Style="{StaticResource WorkspaceInspectorCardStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Recipient access grants"
+                                                   Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="{Binding Governance.LastIssuedGrantStatus}"
+                                                   Margin="0,5,0,0"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   AutomationProperties.AutomationId="ReportingGovernanceIssuedGrantStatus" />
+                                        <TextBox Text="{Binding Governance.LastIssuedRecipientAccessUri, Mode=OneWay}"
+                                                 IsReadOnly="True"
+                                                 Margin="0,6,0,0"
+                                                 Visibility="{Binding Governance.HasLastIssuedRecipientAccessUri, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                 ToolTip="One-time recipient link. The bearer is in the URI fragment and is not retained after the next distribution or run action."
+                                                 AutomationProperties.Name="One-time recipient access link"
+                                                 AutomationProperties.AutomationId="ReportingGovernanceIssuedRecipientLink" />
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="200" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Content="Issue access grant"
+                                                    Command="{Binding Governance.IssueAccessGrantCommand}"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    ToolTip="{Binding Governance.IssueAccessGrantTooltip}"
+                                                    ToolTipService.ShowOnDisabled="True"
+                                                    Margin="0,0,10,0"
+                                                    AutomationProperties.AutomationId="ReportingGovernanceIssueAccessGrantButton" />
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding Governance.AccessGrants}"
+                                                      DisplayMemberPath="GrantId"
+                                                      SelectedValuePath="GrantId"
+                                                      SelectedValue="{Binding Governance.SelectedAccessGrantId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      Margin="0,0,10,0"
+                                                      AutomationProperties.Name="Retained access grant"
+                                                      AutomationProperties.AutomationId="ReportingGovernanceAccessGrantSelector" />
+                                            <TextBox Grid.Column="2"
+                                                     Text="{Binding Governance.GrantRevocationReason, UpdateSourceTrigger=PropertyChanged}"
+                                                     Margin="0,0,10,0"
+                                                     ToolTip="Required retained reason for access revocation"
+                                                     AutomationProperties.Name="Access grant revocation reason"
+                                                     AutomationProperties.AutomationId="ReportingGovernanceGrantRevocationReasonInput" />
+                                            <Button Grid.Column="3"
+                                                    Content="Revoke grant"
+                                                    Command="{Binding Governance.RevokeAccessGrantCommand}"
+                                                    Style="{StaticResource GhostButtonStyle}"
+                                                    ToolTip="{Binding Governance.RevokeAccessGrantTooltip}"
+                                                    ToolTipService.ShowOnDisabled="True"
+                                                    AutomationProperties.AutomationId="ReportingGovernanceRevokeAccessGrantButton" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="{Binding Governance.DistributionHistoryStatusText}"
+                                           Margin="0,10,0,6"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="ReportingGovernanceDistributionHistoryStatus" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="12" />
+                                        <ColumnDefinition Width="1*" />
+                                    </Grid.ColumnDefinitions>
+                                    <DataGrid Grid.Column="0"
+                                              ItemsSource="{Binding Governance.DeliveryHistory}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              CanUserAddRows="False"
+                                              EnableRowVirtualization="True"
+                                              EnableColumnVirtualization="True"
+                                              MaxHeight="180"
+                                              AutomationProperties.Name="Retained delivery history"
+                                              AutomationProperties.AutomationId="ReportingGovernanceDeliveryHistory">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Job" Binding="{Binding JobId}" Width="*" />
+                                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="90" />
+                                            <DataGridTextColumn Header="Transport" Binding="{Binding TransportId}" Width="120" />
+                                            <DataGridTextColumn Header="Recipient" Binding="{Binding Recipient}" Width="120" />
+                                            <DataGridTextColumn Header="Kind" Binding="{Binding RecipientKind}" Width="75" />
+                                            <DataGridTextColumn Header="Attempts" Binding="{Binding AttemptCount}" Width="70" />
+                                            <DataGridTextColumn Header="Updated" Binding="{Binding UpdatedAtUtc, StringFormat={}{0:u}}" Width="150" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <DataGrid Grid.Column="2"
+                                              ItemsSource="{Binding Governance.AccessGrants}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              CanUserAddRows="False"
+                                              EnableRowVirtualization="True"
+                                              EnableColumnVirtualization="True"
+                                              MaxHeight="180"
+                                              AutomationProperties.Name="Retained access grant state"
+                                              AutomationProperties.AutomationId="ReportingGovernanceAccessGrantHistory">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Grant" Binding="{Binding GrantId}" Width="*" />
+                                            <DataGridTextColumn Header="Audience" Binding="{Binding Audience}" Width="120" />
+                                            <DataGridTextColumn Header="Kind" Binding="{Binding AudienceKind}" Width="75" />
+                                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="90" />
+                                            <DataGridTextColumn Header="Expires" Binding="{Binding ExpiresAtUtc, StringFormat={}{0:u}}" Width="150" />
+                                            <DataGridTextColumn Header="Uses" Binding="{Binding UseCount}" Width="60" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+                    </StackPanel>
+                </Border>
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.25*" />

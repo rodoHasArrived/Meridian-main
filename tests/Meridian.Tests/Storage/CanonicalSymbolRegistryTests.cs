@@ -524,6 +524,35 @@ public sealed class CanonicalSymbolRegistryTests : IDisposable
     }
 
     [Fact]
+    public async Task RegisterAsync_SameSecurityIdDifferentCanonicalTicker_ExposesOneResolvableDefinition()
+    {
+        var securityId = Guid.NewGuid();
+        var startingCount = _canonicalRegistry.Count;
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "RENAMED.OLD",
+            SecurityId = securityId,
+            DisplayName = "Renamed issuer"
+        });
+        await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "RENAMED.NEW",
+            SecurityId = securityId,
+            Figi = "BBG-RENAMED-1"
+        });
+
+        _canonicalRegistry.Count.Should().Be(startingCount + 1);
+        _canonicalRegistry.ResolveToCanonical("RENAMED.OLD").Should().Be("RENAMED.OLD");
+        _canonicalRegistry.ResolveToCanonical("RENAMED.NEW").Should().Be("RENAMED.OLD");
+        var definition = _canonicalRegistry.GetDefinition("RENAMED.NEW");
+        definition.Should().NotBeNull();
+        definition!.SecurityId.Should().Be(securityId);
+        definition.Canonical.Should().Be("RENAMED.OLD");
+        definition.Aliases.Should().Contain("RENAMED.NEW");
+        definition.Figi.Should().Be("BBG-RENAMED-1");
+    }
+
+    [Fact]
     public async Task OperatorOverride_WinsAndCanBeRemovedWithoutDeletingSecurity()
     {
         await _canonicalRegistry.RegisterAsync(new CanonicalSymbolDefinition

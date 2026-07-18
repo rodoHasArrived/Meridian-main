@@ -166,7 +166,8 @@ public sealed class SecurityValidationServiceTests
             "SM_OPTION_PUT_CALL_INVALID",
             "SM_OPTION_STRIKE_INVALID",
             "SM_OPTION_EXPIRY_REQUIRED",
-            "SM_OPTION_MULTIPLIER_INVALID");
+            "SM_OPTION_MULTIPLIER_INVALID",
+            "__VACUITY_PROBE__");
 
         report.Issues
             .Where(static issue => issue.Code.StartsWith("SM_OPTION_", StringComparison.Ordinal))
@@ -495,7 +496,8 @@ public sealed class SecurityValidationServiceTests
             "real-estate-holding",
             "private-fund-interest",
             "private-company-equity",
-            "co-invest-spv");
+            "co-invest-spv",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]

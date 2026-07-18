@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-30
+**Reviewed:** 2026-07-15
 
 This is the canonical lookup lane for Meridian APIs, environment variables, CLI/configuration surfaces, schemas, provider capability matrices, glossary-style definitions, and stable product/reference tables.
 
@@ -21,7 +21,7 @@ Reference content here must stay schema/procedure-neutral and claim-stable. Proc
 
 | Area | Canonical or migration source | Notes |
 | --- | --- | --- |
-| HTTP and local API contracts | [API Reference](api-reference.md), [OMS/EMS Integration](oms-ems-integration.md), [Accounting Configuration](accounting-configuration.md), [Accounting Report Packs](accounting-report-packs.md) | Keep route, request, response, idempotency, and storage-shape details here. |
+| HTTP and local API contracts | [API Reference](api-reference.md), [OMS/EMS Integration](oms-ems-integration.md), [Accounting Configuration](accounting-configuration.md), [Governed Accounting Reporting](accounting-report-packs.md) | Keep route, request, response, idempotency, and storage-shape details here. |
 | Data fields and normalization | [Data Dictionary](data-dictionary.md), [Data Uniformity](data-uniformity.md), [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Stable field/type definitions and cross-provider terminology. |
 | Environment and config | [Environment Variables](environment-variables.md), [Appsettings Schema Reference](appsettings-schema.md), [EDGAR Reference Data](edgar-reference-data.md) | Lookup details only; setup procedures belong in operators/start docs. |
 | Provider capability and readiness lookup | [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), [Provider Integration Status](provider-integration-status.md) | Canonical lookup in this lane; keep procedure and rollout details in operators. |
@@ -67,7 +67,7 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [Appsettings Schema Reference](appsettings-schema.md) | `appsettings.sample.json` and schema quick map for high-impact runtime sections. |
 | [Export Preflight Rules](export-preflight-rules.md) | Export validation rule engine, rule IDs, and reuse pattern. |
 | [Accounting Configuration](accounting-configuration.md) | Browser-first accounting setup DTOs, local API routes, non-posting preview behavior, and action audit seam. |
-| [Accounting Report Packs](accounting-report-packs.md) | Local-first fund-ops report-pack artifact routes, contracts, and storage layout. |
+| [Governed Accounting Reporting](accounting-report-packs.md) | Certified point-in-time runs, maker-checker lifecycle, immutable artifacts, schedules, grants, delivery jobs, and provider receipt contracts. |
 | [Ledger Journal Store](ledger-journal-store.md) | Postgres journal-entry, accounting-period, migration, and DI contract. |
 | [OMS/EMS Integration](oms-ems-integration.md) | Versioned integration endpoint contracts, idempotent ingest semantics, adapter diagnostics, Excel sync policy, signing, and runbook steps. |
 | [Open Source References](open-source-references.md) | Third-party library acknowledgements. |

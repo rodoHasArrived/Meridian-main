@@ -43,6 +43,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--require-fresh", self.web_workflow)
         self.assertIn("pull-requests: write", self.web_workflow)
         self.assertIn("uses: peter-evans/create-pull-request@v8", self.web_workflow)
+        capture_step = self.web_workflow.split("- name: Capture web screenshots", 1)[1].split(
+            "- name: Validate web screenshot captures", 1
+        )[0]
+        self.assertNotIn("continue-on-error: true", capture_step)
         self.assertIn("continue-on-error: true", self.web_workflow)
         self.assertIn("branch: automation/web-screenshot-capture", self.web_workflow)
         self.assertIn("base: ${{ github.event.repository.default_branch }}", self.web_workflow)
@@ -298,7 +302,22 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertNotIn("Run a governed report now", captures["W04C"].get("waitForTexts", []))
         self.assertIn("Review approval details", captures["W04E"].get("waitForTexts", []))
         self.assertNotIn("report-run-board-202605", captures["W04E"].get("waitForTexts", []))
-        self.assertIn("Generated artifact references", captures["W04I2"].get("waitForTexts", []))
+
+        # The run-detail capture renders the governed screen, which loads its run from the
+        # authoritative reporting endpoints instead of the workstation reporting read model.
+        self.assertIn("Governed lifecycle", captures["W04I2"].get("waitForTexts", []))
+        self.assertIn("Immutable release artifacts", captures["W04I2"].get("waitForTexts", []))
+        self.assertIn(
+            "Governed report run unavailable",
+            captures["W04I2"].get("waitForAbsentTexts", []),
+        )
+
+        governed_run_path = "/api/fund-structure/reporting/runs/report-run-investor-202605"
+        self.assertIn(governed_run_path, captures["W04I2"].get("requiredApiRoutes", []))
+        self.assertEqual(
+            "Released",
+            self.web_screenshot_fixtures["routes"][governed_run_path]["governanceState"],
+        )
 
     def test_data_import_and_settings_captures_use_canonical_task_routes(self) -> None:
         captures = {
@@ -310,8 +329,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             for capture in self.web_screenshot_routes.get("captures", [])
         }
 
-        self.assertEqual(75, len(captures))
+        self.assertEqual(77, len(captures))
         self.assertEqual("/data/import", captures["W06I"].get("path"))
+        self.assertEqual("/data/operations", captures["W06J"].get("path"))
+        self.assertEqual("/data/assurance", captures["W06K"].get("path"))
         self.assertIn("Governed file import", captures["W06I"].get("waitForTexts", []))
         self.assertIn("Selected Backfill", captures["W06C"].get("waitForTexts", []))
         self.assertEqual("/settings/accounting-systems", captures["W07B"].get("path"))
@@ -445,7 +466,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
     def test_web_screenshot_capture_script_enforces_route_coverage(self) -> None:
         self.assertIn(
-            "assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath)",
+            "findMissingCaptureRoutePaths(allCaptures, routeCatalogPath, appShellPath)",
             self.web_screenshot_capture_script,
         )
         self.assertIn("WORKSTATION_ROUTE_CATALOG", self.web_screenshot_capture_script)
@@ -459,9 +480,32 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             "settingsDiagnosticEndpoints",
         ):
             self.assertIn(compatibility_route_key, self.web_screenshot_capture_script)
-        self.assertIn("Web screenshot route coverage is incomplete", self.web_screenshot_capture_script)
+        # Coverage gaps are still enforced, but reported at the end of the run as a
+        # non-zero failure instead of aborting before any screenshot is captured.
+        self.assertIn("Live route(s) without a screenshot capture entry", self.web_screenshot_capture_script)
         self.assertIn("assertCaptureRouteStateIdentity(allCaptures)", self.web_screenshot_capture_script)
         self.assertIn("must use a unique route state", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_isolates_per_route_failures(self) -> None:
+        # A screen that fails to render is recorded and skipped so the run continues
+        # through the remaining screens, then exits non-zero with a consolidated
+        # summary. One broken screen must never abort the whole catalog.
+        self.assertIn("::warning::Skipped ", self.web_screenshot_capture_script)
+        self.assertIn("did not render correctly and were skipped", self.web_screenshot_capture_script)
+        self.assertIn("Screenshot capture summary:", self.web_screenshot_capture_script)
+        self.assertIn("route(s) failed to render", self.web_screenshot_capture_script)
+        self.assertIn("readiness-timeout-ms", self.web_screenshot_capture_script)
+
+        capture_loop = self.web_screenshot_capture_script.split("for (const capture of captures)", 1)[1]
+        capture_loop = capture_loop.split("const proxyErrors = logs.filter", 1)[0]
+        self.assertNotIn("throw error;", capture_loop)
+
+    def test_web_screenshot_workflow_uploads_partial_catalog_on_failure(self) -> None:
+        upload_step = self.web_workflow.split("- name: Upload screenshot artifacts", 1)[1].split(
+            "- name:", 1
+        )[0]
+        self.assertIn("if: ${{ always() }}", upload_step)
+        self.assertIn("if-no-files-found: ignore", upload_step)
 
     def test_web_screenshot_capture_script_supports_targeted_capture_filters(self) -> None:
         self.assertIn('valueLists.get("capture")', self.web_screenshot_capture_script)

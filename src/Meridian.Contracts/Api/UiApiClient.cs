@@ -73,8 +73,8 @@ public sealed class UiApiClient
     public async Task<List<BackfillPreset>?> GetBackfillPresetsAsync(CancellationToken ct = default)
         => await GetAsync<List<BackfillPreset>>(UiApiRoutes.BackfillPresets, ct).ConfigureAwait(false);
 
-    public async Task<List<BackfillExecution>?> GetBackfillExecutionsAsync(int limit = 50, CancellationToken ct = default)
-        => await GetAsync<List<BackfillExecution>>(
+    public async Task<BackfillExecutionHistoryResponse?> GetBackfillExecutionsAsync(int limit = 50, CancellationToken ct = default)
+        => await GetAsync<BackfillExecutionHistoryResponse>(
             UiApiRoutes.WithQuery(UiApiRoutes.BackfillExecutions, $"limit={limit}"), ct).ConfigureAwait(false);
 
     public async Task<BackfillStatistics?> GetBackfillStatisticsAsync(int? hours = null, CancellationToken ct = default)

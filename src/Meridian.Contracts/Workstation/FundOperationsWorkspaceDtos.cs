@@ -1009,7 +1009,47 @@ public sealed record ReportingScheduleDeliveryTargetDto(
     string DistributionId,
     IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
     ReportPackDeliveryModeDto? DeliveryMode = null,
-    string? Note = null);
+    string? Note = null,
+    string? RecipientPrincipalId = null,
+    ReportAccessPrincipalKindDto? RecipientPrincipalKind = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduledReleaseHandoffStateDto>))]
+public enum ReportingScheduledReleaseHandoffStateDto
+{
+    PendingRelease = 0,
+    Enqueued = 1
+}
+
+/// <summary>
+/// Durable, token-free handoff from scheduled generation to the canonical post-release secure
+/// distribution queue. Package identities and bearer grants are intentionally derived only after
+/// governance release and are never retained here.
+/// </summary>
+public sealed record ReportingScheduledReleaseHandoffDto(
+    string HandoffId,
+    string TenantId,
+    string CompanyId,
+    string ScheduleId,
+    string RunId,
+    string TemplateId,
+    string DistributionId,
+    string TargetDistributionId,
+    string TransportId,
+    string? RecipientPrincipalId,
+    string Destination,
+    string Subject,
+    string Body,
+    IReadOnlyList<GovernanceReportArtifactFormatDto>? RequestedFormats,
+    IReadOnlyList<string>? ArtifactIds,
+    int? GrantLifetimeSeconds,
+    int? GrantMaxUses,
+    int MaxAttempts,
+    DateTimeOffset CreatedAtUtc,
+    ReportingScheduledReleaseHandoffStateDto State = ReportingScheduledReleaseHandoffStateDto.PendingRelease,
+    string? EnqueuedDeliveryJobId = null,
+    DateTimeOffset? EnqueuedAtUtc = null,
+    string? RecipientPrincipalKind = null,
+    string? DeliveryTargetsSnapshotHash = null);
 
 public sealed record ReportingScheduleDeliveryPlanDto(
     string PlanId,
@@ -1122,7 +1162,10 @@ public sealed record ReportingScheduleRecordDto(
     string? TenantId = null,
     string? CompanyId = null,
     ReportAccessPolicyDto? AccessPolicySnapshot = null,
-    ReportingRunReadinessDto? LastReadiness = null);
+    ReportingRunReadinessDto? LastReadiness = null,
+    IReadOnlyList<ReportingScheduledReleaseHandoffDto>? ReleaseDeliveryHandoffs = null,
+    string? AccessPolicySnapshotHash = null,
+    string? DeliveryTargetsSnapshotHash = null);
 
 public sealed record ReportingScheduleUpsertRequestDto(
     string ScheduleId,
@@ -1629,7 +1672,9 @@ public sealed record ReportTemplateGovernanceRecordDto(
     DateTimeOffset? RejectedAt = null,
     string? DecisionRationale = null,
     string? ApprovalReference = null,
-    VersionedReportTemplateIdDto? BasedOnTemplateId = null);
+    VersionedReportTemplateIdDto? BasedOnTemplateId = null,
+    string? TenantId = null,
+    string? CompanyId = null);
 
 public sealed record ReportTemplateDraftRequestDto(
     string Name,

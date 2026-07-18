@@ -36,6 +36,29 @@ public sealed class WorkspaceShellPrimitiveControlsTests
     }
 
     [Fact]
+    public void WorkspaceCommandSurface_ShouldKeepWorkflowHeaderWithinCompactViewport()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+            var control = new WorkspaceCommandSurfaceControl
+            {
+                DataContext = new
+                {
+                    FixtureModeBannerVisibility = Visibility.Collapsed,
+                    DataWorkspaceHomeChromeVisibility = Visibility.Visible,
+                    CurrentPageTitle = "Add provider wizard",
+                    CurrentPageSubtitle = "Configure a new provider integration step by step without pushing workflow content below the viewport."
+                }
+            };
+
+            control.Measure(new Size(808, double.PositiveInfinity));
+
+            control.DesiredSize.Height.Should().BeLessThan(400);
+        });
+    }
+
+    [Fact]
     public void WorkspaceEvidenceStrip_ShouldExposeReusableAutomationContract()
     {
         WpfTestThread.Run(() =>

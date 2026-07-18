@@ -17,6 +17,7 @@ using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Wpf.Tests.Features.Accounting;
 
@@ -80,6 +81,22 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingConfigurationService, AccountingConfigurationService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IManualJournalEntryDraftStore>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IManualJournalEntryWorkbenchService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IDailyValuationPortfolioSource>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IDailyValuationScheduleStatusSource>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAutomatedJournalScheduleStore>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IAutomatedJournalScheduleStatusSource>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<DailyValuationPositionService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<DailyValuationBatchLifecycleService>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<DailyValuationScheduledWorker>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<AutomatedJournalScheduledWorker>(services, ServiceLifetime.Singleton);
+        services.Should().Contain(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(DailyValuationSchedulerHostedService) &&
+            descriptor.Lifetime == ServiceLifetime.Singleton);
+        services.Should().Contain(descriptor =>
+            descriptor.ServiceType == typeof(IHostedService) &&
+            descriptor.ImplementationType == typeof(AutomatedJournalSchedulerHostedService) &&
+            descriptor.Lifetime == ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<ICapitalAccountWorkbenchService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IAccountingCloseManagementService, AccountingCloseManagementService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IPrivateCapitalCloseCockpitService>(services, ServiceLifetime.Singleton);
@@ -95,6 +112,37 @@ public sealed class AccountingFeatureModuleTests
         services.Should().Contain(descriptor => descriptor.ServiceType == typeof(IAccountingSystemProvider) && descriptor.ImplementationType == typeof(NetSuiteFixtureAccountingProvider) && descriptor.Lifetime == ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingSystemIntegrationService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingProductionReadinessService>(services, ServiceLifetime.Singleton);
+    }
+
+    [Fact]
+    public async Task Register_ResolvesMonthlyAutomationGraph_AndHostedOneShot()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        var configurationStore = new InMemoryAccountingConfigurationStore();
+        var auditStore = new InMemoryAccountingActionAuditStore();
+        var configurationService = new AccountingConfigurationService(configurationStore, auditStore);
+        var draftStore = new InMemoryManualJournalEntryDraftStore();
+        var workbench = new ManualJournalEntryWorkbenchService(draftStore, configurationService, auditStore);
+        var scheduleStore = new InMemoryAutomatedJournalScheduleStore();
+        services.AddSingleton<IAccountingConfigurationStore>(configurationStore);
+        services.AddSingleton<IAccountingActionAuditStore>(auditStore);
+        services.AddSingleton<IAccountingConfigurationService>(configurationService);
+        services.AddSingleton<IManualJournalEntryDraftStore>(draftStore);
+        services.AddSingleton<IManualJournalEntryWorkbenchService>(workbench);
+        services.AddSingleton<IAutomatedJournalScheduleStore>(scheduleStore);
+        services.AddSingleton<IAutomatedJournalScheduleStatusSource>(scheduleStore);
+
+        new AccountingFeatureModule().Register(services);
+        await using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<AutomatedJournalScheduledWorker>().Should().NotBeNull();
+        var hosted = provider.GetServices<IHostedService>()
+            .OfType<AutomatedJournalSchedulerHostedService>()
+            .Should().ContainSingle().Subject;
+        var result = await hosted.RunOnceAsync();
+
+        result.Runs.Should().BeEmpty();
     }
 
     [Theory]

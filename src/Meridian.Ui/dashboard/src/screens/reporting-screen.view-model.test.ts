@@ -610,12 +610,63 @@ describe("useReportingScreenViewModel", () => {
           runCount: 0,
           description: "Monthly investor statement close packet.",
           datasetSourceId: "portfolio-reporting-cuts",
+          accessPolicySnapshotHash: "sha256:schedule-policy-1",
           deliveryTargets: [
             {
               distributionId: "board-reporting-committee",
               formats: ["Pdf", "Xlsx", "Csv"],
               deliveryMode: "SecurePortal",
               note: "Board package."
+            }
+          ],
+          releaseDeliveryHandoffs: [
+            {
+              handoffId: "handoff-pending",
+              tenantId: "tenant-alpha",
+              companyId: "company-alpha",
+              scheduleId: "sched-investor",
+              runId: "run-pending",
+              templateId: "investor-monthly-statement",
+              distributionId: "board-reporting-committee",
+              targetDistributionId: "board-reporting-committee",
+              transportId: "secure-portal",
+              recipientPrincipalId: null,
+              destination: "recipient-destination",
+              subject: "Private subject",
+              body: "Private body",
+              requestedFormats: ["Pdf", "Xlsx"],
+              artifactIds: ["artifact-pdf"],
+              grantLifetimeSeconds: 3600,
+              grantMaxUses: 1,
+              maxAttempts: 3,
+              createdAtUtc: "2026-06-01T08:05:00Z",
+              state: "PendingRelease",
+              enqueuedDeliveryJobId: null,
+              enqueuedAtUtc: null
+            },
+            {
+              handoffId: "handoff-enqueued",
+              tenantId: "tenant-alpha",
+              companyId: "company-alpha",
+              scheduleId: "sched-investor",
+              runId: "run-enqueued",
+              templateId: "investor-monthly-statement",
+              distributionId: "board-reporting-committee",
+              targetDistributionId: "board-reporting-committee-secondary",
+              transportId: "email-link",
+              recipientPrincipalId: "principal-board",
+              destination: "recipient-destination",
+              subject: "Private subject",
+              body: "Private body",
+              requestedFormats: ["Pdf"],
+              artifactIds: ["artifact-pdf"],
+              grantLifetimeSeconds: 3600,
+              grantMaxUses: 1,
+              maxAttempts: 3,
+              createdAtUtc: "2026-05-01T08:05:00Z",
+              state: "Enqueued",
+              enqueuedDeliveryJobId: "delivery-job-1",
+              enqueuedAtUtc: "2026-05-01T08:10:00Z"
             }
           ]
         }
@@ -628,9 +679,28 @@ describe("useReportingScreenViewModel", () => {
       id: "sched-investor",
       deliveryTargetLabel: "board-reporting-committee via SecurePortal (Pdf/Xlsx/Csv)",
       datasetSourceLabel: "Portfolio reporting cuts (2)",
+      accessPolicySnapshotLabel: "sha256:schedule-policy-1",
+      releaseGateLabel: "1 handoff awaiting governance release; 1 enqueued",
+      releaseGateVariant: "warning",
       nextAsOfLabel: "Jun 1, 2026",
       lastRunLabel: "Not run"
     });
+    expect(result.current.scheduleRows[0].releaseHandoffs).toEqual([
+      expect.objectContaining({
+        id: "handoff-pending",
+        runId: "run-pending",
+        formatsLabel: "Pdf, Xlsx",
+        state: "PendingRelease",
+        enqueuedLabel: "Awaiting governance release"
+      }),
+      expect.objectContaining({
+        id: "handoff-enqueued",
+        distributionLabel: "board-reporting-committee to board-reporting-committee-secondary",
+        transportId: "email-link",
+        state: "Enqueued",
+        enqueuedLabel: expect.stringContaining("delivery-job-1")
+      })
+    ]);
   });
 
   it("surfaces lifecycle actions for custom report-template versions", () => {

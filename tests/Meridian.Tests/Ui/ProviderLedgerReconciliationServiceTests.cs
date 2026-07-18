@@ -3122,7 +3122,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
 
         public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
             Guid requestedSecurityId,
-            OperatorOverrideDecisionRequest request,
+            OperatorOverrideDecision decision,
             CancellationToken ct = default) =>
             throw new NotSupportedException();
     }

@@ -161,6 +161,8 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         using var provider = services.BuildServiceProvider();
         var legacyStore = provider.GetRequiredService<IAssetOperationsProjectionStore>();
         legacyStore.Should().BeOfType<PostgresAssetOperationsProjectionStore>();
+        services.Should().NotContain(descriptor =>
+            descriptor.ServiceType == typeof(InMemoryAssetOperationsProjectionStore));
         provider.GetRequiredService<IInstrumentPositionProjectionStore>()
             .Should()
             .BeSameAs(legacyStore);
@@ -276,6 +278,9 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(PostgresFundStructureStore));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(PostgresFundStructureService));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IFundStructureService));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(IDomainProjectionReconciliationJob));
+        services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
+            sd.ImplementationType == typeof(ProjectionReconciliationHostedService));
     }
 
     [Fact]

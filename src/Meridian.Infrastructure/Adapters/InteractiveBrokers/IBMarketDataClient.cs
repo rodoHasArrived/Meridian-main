@@ -29,7 +29,6 @@ public sealed class IBMarketDataClient :
 {
     private readonly IMarketDataClient _inner;
     private readonly bool _isSimulation;
-    private readonly ProviderConnectionSupervisor _simulationSupervisor;
     private readonly ProviderRateLimitTracker _streamingRateLimits;
 
     public IBMarketDataClient(
@@ -40,13 +39,6 @@ public sealed class IBMarketDataClient :
         OptionDataCollector? optionCollector = null,
         IBOptions? options = null)
     {
-        _simulationSupervisor = new ProviderConnectionSupervisor(
-            providerName: "Interactive Brokers (simulation)",
-            maxReconnectAttempts: 3,
-            retryBaseDelay: TimeSpan.FromSeconds(1),
-            maxRetryDelay: TimeSpan.FromSeconds(10));
-        _simulationSupervisor.StateChanged += OnSimulationSupervisorStateChanged;
-
         _streamingRateLimits = new ProviderRateLimitTracker();
         _streamingRateLimits.RegisterProvider(
             "ib",
@@ -64,13 +56,13 @@ public sealed class IBMarketDataClient :
             options ?? new IBOptions());
         liveClient.RateLimitHit += RecordPacingViolation;
         liveClient.StreamingRequestSent += RecordStreamingRequest;
-        liveClient.ConnectionDiagnosticsChanged += OnInnerConnectionDiagnosticsChanged;
         _inner = liveClient;
         _isSimulation = false;
 #else
         _inner = new IBSimulationClient(publisher);
         _isSimulation = true;
 #endif
+        _inner.ConnectionDiagnosticsChanged += OnInnerConnectionDiagnosticsChanged;
     }
 
     /// <summary>
@@ -136,32 +128,11 @@ public sealed class IBMarketDataClient :
     /// <inheritdoc/>
     /// <remarks>
     /// TWS/Gateway connectivity is a raw TCP socket, not a WebSocket, so
-    /// <see cref="System.Net.WebSockets.WebSocketState.None"/> is reported. When the inner
-    /// client exposes richer diagnostics (real IBAPI builds), those win over the facade view.
+    /// <see cref="System.Net.WebSockets.WebSocketState.None"/> is reported. The inner client
+    /// owns the lifecycle evidence for both live and simulation builds.
     /// </remarks>
     public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
-    {
-        if (_inner is IProviderConnectionDiagnosticsSource innerSource)
-            return innerSource.GetConnectionDiagnosticsSnapshot();
-
-        var supervisor = _simulationSupervisor.GetSnapshot();
-        return new WebSocketConnectionDiagnostics(
-            ProviderName: _isSimulation ? "Interactive Brokers (simulation)" : "Interactive Brokers",
-            LifecycleState: supervisor.LifecycleState,
-            WebSocketState: System.Net.WebSockets.WebSocketState.None,
-            IsConnected: supervisor.IsConnected,
-            IsReconnecting: supervisor.IsReconnecting,
-            ReconnectAttempts: supervisor.ReconnectAttempts,
-            LastConnectedAt: supervisor.LastConnectedAt,
-            LastDisconnectedAt: supervisor.LastDisconnectedAt,
-            LastHeartbeatReceivedAt: null,
-            LastMessageReceivedAt: null,
-            LastReconnectAttemptAt: supervisor.LastReconnectAttemptAt,
-            LastError: supervisor.LastError,
-            LastFailureKind: supervisor.LastFailureKind,
-            ConnectionAge: supervisor.ConnectionAge,
-            IdleDuration: null);
-    }
+        => _inner.GetConnectionDiagnosticsSnapshot();
 
     /// <inheritdoc/>
     public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
@@ -182,24 +153,11 @@ public sealed class IBMarketDataClient :
             status.Reason);
     }
 
-    public async Task ConnectAsync(CancellationToken ct = default)
-    {
-        if (_inner is IProviderConnectionDiagnosticsSource)
-            await _inner.ConnectAsync(ct).ConfigureAwait(false);
-        else
-            await _simulationSupervisor.ConnectAsync(_inner.ConnectAsync, ct).ConfigureAwait(false);
-    }
+    public Task ConnectAsync(CancellationToken ct = default)
+        => _inner.ConnectAsync(ct);
 
-    public async Task DisconnectAsync(CancellationToken ct = default)
-    {
-        if (_inner is IProviderConnectionDiagnosticsSource)
-            await _inner.DisconnectAsync(ct).ConfigureAwait(false);
-        else
-            await _simulationSupervisor.DisconnectAsync(_inner.DisconnectAsync, ct).ConfigureAwait(false);
-    }
-
-    private void OnSimulationSupervisorStateChanged(ProviderConnectionSupervisorSnapshot _)
-        => ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
+    public Task DisconnectAsync(CancellationToken ct = default)
+        => _inner.DisconnectAsync(ct);
 
     private void OnInnerConnectionDiagnosticsChanged(WebSocketConnectionDiagnostics snapshot)
         => ConnectionDiagnosticsChanged?.Invoke(snapshot);
@@ -242,17 +200,15 @@ public sealed class IBMarketDataClient :
 
     public async ValueTask DisposeAsync()
     {
-        _simulationSupervisor.StateChanged -= OnSimulationSupervisorStateChanged;
+        _inner.ConnectionDiagnosticsChanged -= OnInnerConnectionDiagnosticsChanged;
 #if IBAPI
         if (_inner is IBMarketDataClientIBApi liveClient)
         {
             liveClient.RateLimitHit -= RecordPacingViolation;
             liveClient.StreamingRequestSent -= RecordStreamingRequest;
-            liveClient.ConnectionDiagnosticsChanged -= OnInnerConnectionDiagnosticsChanged;
         }
 #endif
         await _inner.DisposeAsync().ConfigureAwait(false);
-        await _simulationSupervisor.DisposeAsync().ConfigureAwait(false);
         _streamingRateLimits.Dispose();
     }
 }

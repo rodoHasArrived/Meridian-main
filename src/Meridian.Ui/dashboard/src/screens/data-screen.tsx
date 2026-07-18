@@ -37,8 +37,12 @@ import {
   buildDataAnalyticsDegradedViewModel,
   DataAnalyticsDegradedRegion
 } from "@/screens/data-screen.analytics-status";
+import type { CellActionApi } from "@/screens/data-screen.cell-actions";
 import { useDataQueryPanel } from "@/screens/data-screen.query-panel.view-model";
-import { useDataQualityPanel } from "@/screens/data-screen.data-quality.view-model";
+import {
+  useDataQualityPanel,
+  type QualityDashboardFetcher
+} from "@/screens/data-screen.data-quality.view-model";
 import {
   CAPABILITY_LEGEND,
   useCapabilityMatrixPanel,
@@ -53,8 +57,10 @@ import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.dat
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
+import { DATA_ROUTE_TABS, DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { resultToneClass } from "@/screens/data-screen.tone-styles";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
   DATA_PROVIDER_DETAIL_PANEL_ID,
   useDataViewModel
@@ -91,6 +97,8 @@ interface DataScreenProps {
   providerRoutingBindings?: ProviderRoutingBinding[] | null;
   providerRoutingTrustSnapshots?: ProviderRoutingTrustSnapshot[] | null;
   providerRoutingRefreshing?: boolean;
+  dataQualityFetcher?: QualityDashboardFetcher;
+  dataQualityActionApi?: Partial<CellActionApi>;
   onProviderSetupConfigured?: () => Promise<void> | void;
   onProviderRoutingRefresh?: () => Promise<void> | void;
 }
@@ -155,47 +163,6 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   }
 ];
 
-/**
- * Route-scoped views: each Data sub-route renders its focused workstream and
- * the workspace root renders the health/analytics overview. The tab strip and
- * the sidebar sub-navigation share this taxonomy.
- */
-const dataRouteTabs = [
-  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, workstream: "overview" },
-  { id: "providers", label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders, workstream: "providers" },
-  { id: "import", label: "Import", route: WORKSTATION_ROUTE_CATALOG.dataImport, workstream: "import" },
-  { id: "backfills", label: "Backfills", route: WORKSTATION_ROUTE_CATALOG.dataBackfills, workstream: "backfills" },
-  { id: "exports", label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports, workstream: "exports" },
-  { id: "query", label: "SQL query", route: WORKSTATION_ROUTE_CATALOG.dataQuery, workstream: "query" }
-] as const;
-
-const dataRouteViewCopy: Record<string, { title: string; description: string }> = {
-  overview: {
-    title: "Data overview",
-    description: "Provider posture, data quality, and analytics posture. Providers, backfills, exports, and SQL have focused routes."
-  },
-  providers: {
-    title: "Provider catalog",
-    description: "Source health, credentials, routing trust, verification, and recovery actions."
-  },
-  import: {
-    title: "Data import",
-    description: "Template-led retained-file preview, validation evidence, and downstream handoff."
-  },
-  backfills: {
-    title: "Backfill queue",
-    description: "Historical repair jobs with operator-visible status, ranges, and result evidence."
-  },
-  exports: {
-    title: "Export packages",
-    description: "Governed export runs and downstream handoff evidence."
-  },
-  query: {
-    title: "SQL query",
-    description: "Read-only SQL workbench over the workstation store."
-  }
-};
-
 export function DataScreen({
   data,
   providerConnections = null,
@@ -204,6 +171,8 @@ export function DataScreen({
   providerRoutingBindings = null,
   providerRoutingTrustSnapshots = null,
   providerRoutingRefreshing = false,
+  dataQualityFetcher,
+  dataQualityActionApi,
   onProviderSetupConfigured,
   onProviderRoutingRefresh
 }: DataScreenProps) {
@@ -232,7 +201,7 @@ export function DataScreen({
   ]);
   const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
   const queryPanel = useDataQueryPanel();
-  const qualityPanel = useDataQualityPanel();
+  const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
@@ -242,6 +211,8 @@ export function DataScreen({
   const showProviderWorkstream = activeWorkstream === "providers";
   const showImportWorkstream = activeWorkstream === "import";
   const showBackfillWorkstream = activeWorkstream === "backfills";
+  const showOperationsWorkstream = activeWorkstream === "operations";
+  const showAssuranceWorkstream = activeWorkstream === "assurance";
   const showExportWorkstream = activeWorkstream === "exports";
   const showQueryWorkstream = activeWorkstream === "query";
 
@@ -249,8 +220,8 @@ export function DataScreen({
     return <DataOperationsLoadingPanel state={vm.loadingState} />;
   }
 
-  const routeCopy = dataRouteViewCopy[activeWorkstream] ?? dataRouteViewCopy.overview;
-  const routeTabs = dataRouteTabs.map((tab) => ({
+  const routeCopy = DATA_ROUTE_VIEW_COPY[activeWorkstream];
+  const routeTabs = DATA_ROUTE_TABS.map((tab) => ({
     id: tab.id,
     label: tab.label,
     selected: tab.workstream === activeWorkstream
@@ -285,7 +256,7 @@ export function DataScreen({
             label="Data routes"
             tabs={routeTabs}
             onSelect={(id) => {
-              const tab = dataRouteTabs.find((candidate) => candidate.id === id);
+              const tab = DATA_ROUTE_TABS.find((candidate) => candidate.id === id);
               if (tab) {
                 // Preserve the querystring: the operating scope is threaded
                 // through search params across the shell.
@@ -330,7 +301,12 @@ export function DataScreen({
             <div className="mt-4 space-y-4">
               {analyticsDegraded ? <DataAnalyticsDegradedRegion vm={analyticsDegraded} /> : null}
 
-              {!analyticsUnavailable.has("data-quality") ? <DataQualityRegion panel={qualityPanel} /> : null}
+              {!analyticsUnavailable.has("data-quality") ? (
+                <DataQualityRegion
+                  panel={qualityPanel}
+                  {...(dataQualityActionApi ? { actionApi: dataQualityActionApi } : {})}
+                />
+              ) : null}
 
               {!analyticsUnavailable.has("capability-matrix") ? <CapabilityMatrixRegion panel={capabilityMatrixPanel} /> : null}
 
@@ -343,7 +319,7 @@ export function DataScreen({
       ) : null}
 
       <section className="data-management-main" aria-label="Data workstreams">
-        {activeWorkstream !== "overview" && !showBackfillWorkstream ? (
+        {activeWorkstream !== "overview" && !showBackfillWorkstream && !showOperationsWorkstream && !showAssuranceWorkstream ? (
           <RouteFocusCard
             state={vm.routeFocusCard}
           />
@@ -481,6 +457,10 @@ export function DataScreen({
         ) : null}
 
         {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
+
+        {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
+
+        {showAssuranceWorkstream ? <StorageAssuranceWorkstream /> : null}
 
         {showExportWorkstream ? <DataExportWorkstream vm={vm} /> : null}
 

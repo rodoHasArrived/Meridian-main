@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.Ledger;
@@ -235,6 +236,14 @@ public static partial class LedgerEndpoints
 
             try
             {
+                if (request.CloseKind != LedgerPeriodCloseKindDto.SoftClose)
+                {
+                    return Results.BadRequest(new
+                    {
+                        error = "The generic ledger-period endpoint supports soft close only. Use the governed close-management period-lock workflow for hard close."
+                    });
+                }
+
                 var result = await service
                     .ClosePeriodAsync(
                         periodId,
@@ -547,503 +556,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
-        app.MapGet(UiApiRoutes.LedgerAccountingConfiguration, async (
-            string? fundProfileId,
-            Guid? ledgerBookId,
-            HttpContext context) =>
-        {
-            if (!HasLedgerReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-            var workspace = await service
-                .GetWorkspaceAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
-                .ConfigureAwait(false);
-            return Results.Json(workspace, jsonOptions);
-        })
-        .WithName("GetAccountingConfiguration")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
-        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationChart, async (UpsertChartOfAccountsNodeRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var result = await service.UpsertChartNodeAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("UpsertAccountingConfigurationChartNode")
-        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationTemplates, async (UpsertJournalEntryTemplateRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var result = await service.UpsertTemplateAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("UpsertAccountingConfigurationTemplate")
-        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRules, async (UpsertPostingRuleRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var result = await service.UpsertPostingRuleAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("UpsertAccountingConfigurationPostingRule")
-        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRulePromotionApprovals, async (ApprovePostingRulePromotionRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerCertificationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var result = await service.ApprovePostingRulePromotionAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
-        })
-        .WithName("ApproveAccountingConfigurationPostingRulePromotion")
-        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleTestCases, async (UpsertAccountingRuleTestCaseRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerMutationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var result = await service.UpsertRuleTestCaseAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("UpsertAccountingConfigurationPostingRuleTestCase")
-        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPreview, async (PreviewJournalTemplateRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-            if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var result = await service.PreviewTemplateAsync(request with
-            {
-                Actor = ResolveMutationActor(context, request.Actor),
-                TenantId = tenantContext.TenantId,
-                CompanyId = tenantContext.CompanyId
-            }, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions);
-        })
-        .WithName("PreviewAccountingConfigurationTemplate")
-        .Produces<AccountingJournalTemplatePreviewDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        // SEC-005 slice 4c-iii: body-scoped fund EVALUATION (read-permission POST). The fund-scope read
-        // gate above is fail-open; this adds the write/evaluate tenant gate so enforcement fails closed.
-        .RequireFundScopedWriteTenant();
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleDryRun, async (RuleDryRunRequestDto request, HttpContext context) =>
-        {
-            if (!HasLedgerReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
-                {
-                    return EndpointHelpers.Forbidden();
-                }
-
-                var result = await service.DryRunPostingRuleAsync(request with
-                {
-                    Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
-                }, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("DryRunAccountingConfigurationPostingRule")
-        .Produces<RuleDryRunResultDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant();
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidates, async (PostingRuleJournalCandidateRequestDto request, HttpContext context) =>
-        {
-            if (!HasLedgerReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingPostingCandidateService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
-                {
-                    return EndpointHelpers.Forbidden();
-                }
-
-                var result = await service
-                    .BuildCandidateAsync(request with
-                    {
-                        Actor = ResolveMutationActor(context, request.Actor),
-                        TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId
-                    }, context.RequestAborted)
-                    .ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("BuildAccountingConfigurationPostingRuleCandidate")
-        .Produces<PostingRuleJournalCandidateResultDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant();
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleCandidatePosts, async (PostPostingRuleJournalCandidateRequestDto request, HttpContext context) =>
-        {
-            if (!HasLedgerCertificationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingPostingCandidatePostService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                var result = await service
-                    .PostCandidateAsync(request with
-                    {
-                        Actor = ResolveMutationActor(context, request.Actor),
-                        TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId
-                    }, context.RequestAborted)
-                    .ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Conflict(new { error = ex.Message });
-            }
-        })
-        .WithName("PostAccountingConfigurationPostingRuleCandidate")
-        .Produces<PostedPostingRuleJournalCandidateResultDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status409Conflict)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleProjectionSets, async (AccountingBasisProjectionSetRequestDto request, HttpContext context) =>
-        {
-            if (!HasLedgerReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingBasisProjectionSetService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
-                {
-                    return EndpointHelpers.Forbidden();
-                }
-
-                var result = await service
-                    .BuildProjectionSetAsync(request with
-                    {
-                        Actor = ResolveMutationActor(context, request.Actor),
-                        TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId
-                    }, context.RequestAborted)
-                    .ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("BuildAccountingConfigurationPostingRuleProjectionSet")
-        .Produces<AccountingBasisProjectionSetDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant();
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests, async (ExecuteAccountingRuleTestCasesRequestDto request, HttpContext context) =>
-        {
-            if (!HasLedgerReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                if (!await IsBodyFundScopeAccessibleAsync(context, tenantContext, request.FundProfileId).ConfigureAwait(false))
-                {
-                    return EndpointHelpers.Forbidden();
-                }
-
-                var result = await service.ExecuteRuleTestCasesAsync(request with
-                {
-                    Actor = ResolveMutationActor(context, request.Actor),
-                    TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
-                }, context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("ExecuteAccountingConfigurationPostingRuleTests")
-        .Produces<AccountingRuleTestSuiteResultDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant();
-
-        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationActivate, async (ActivateAccountingConfigurationRequest request, HttpContext context) =>
-        {
-            if (!HasLedgerCertificationPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            try
-            {
-                var result = await service.ActivateAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-        })
-        .WithName("ActivateAccountingConfiguration")
-        .Produces<AccountingConfigurationWorkspaceDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented)
-        .RequireFundScopedWriteTenant()
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
-
-        app.MapGet(UiApiRoutes.LedgerAccountingConfigurationAudit, async (
-            string? fundProfileId,
-            Guid? ledgerBookId,
-            HttpContext context) =>
-        {
-            if (!HasLedgerReadPermission(context))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            var service = ResolveAccountingConfigurationService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
-            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-            var audit = await service
-                .ListAuditAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
-                .ConfigureAwait(false);
-            return Results.Json(audit, jsonOptions);
-        })
-        .WithName("ListAccountingConfigurationAudit")
-        .RequireFundProfileTenantScope(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)
-        .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status501NotImplemented);
+        MapAccountingConfigurationEndpoints(app, jsonOptions);
 
         app.MapGet(UiApiRoutes.LedgerCloseManagementPeriodPlan, async (
             Guid workflowId,
@@ -1060,10 +573,15 @@ public static partial class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
-            var result = await service.GetPeriodPlanAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
-            return result is null
+            var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, workflowId).ConfigureAwait(false);
+            if (!scope.IsAccessible)
+            {
+                return CloseWorkflowScopeDenied();
+            }
+
+            return scope.Plan is null
                 ? Results.NotFound(new { error = $"Close workflow '{workflowId}' was not found." })
-                : Results.Json(result, jsonOptions);
+                : Results.Json(scope.Plan, jsonOptions);
         })
         .WithName("GetLedgerCloseManagementPeriodPlan")
         .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
@@ -1088,11 +606,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor ?? string.Empty);
                 var result = await service
-                    .ConfigurePeriodPlanAsync(
+                    .ConfigurePeriodPlanScopedAsync(
                         request with { Actor = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1138,11 +668,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.RequestedBy);
                 var result = await service
-                    .RequestLateAdjustmentAsync(
+                    .RequestLateAdjustmentScopedAsync(
                         request with { RequestedBy = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1188,11 +730,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
-                    .ReviewLateAdjustmentAsync(
+                    .ReviewLateAdjustmentScopedAsync(
                         request with { Actor = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1238,11 +792,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
-                    .SignOffCloseTaskAsync(
+                    .SignOffCloseTaskScopedAsync(
                         request with { Actor = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1288,11 +854,23 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
-                    .ReviewCloseEvidenceAsync(
+                    .ReviewCloseEvidenceScopedAsync(
                         request with { Actor = actor },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1338,15 +916,27 @@ public static partial class LedgerEndpoints
 
             try
             {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
-                    .LockClosePeriodAsync(
+                    .LockClosePeriodScopedAsync(
                         request with
                         {
                             Actor = actor,
                             ActionOrigin = OperationsActionOriginDto.HumanOperator
                         },
                         actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1367,6 +957,77 @@ public static partial class LedgerEndpoints
         })
         .WithName("LockLedgerCloseManagementPeriod")
         .Produces<ClosePeriodLockResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerCloseManagementPeriodReopen, async (
+            ReopenClosePeriodRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context) ||
+                !TryResolveControllerRole(context, out var controllerRole))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingCloseManagementService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var scope = await ResolveCloseWorkflowTenantScopeAsync(context, service, request.WorkflowId).ConfigureAwait(false);
+                if (!scope.IsAccessible)
+                {
+                    return CloseWorkflowScopeDenied();
+                }
+                if (scope.Plan is null)
+                {
+                    return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
+                }
+
+                var actor = ResolveMutationActor(context, request.Actor);
+                var result = await service
+                    .ReopenClosePeriodScopedAsync(
+                        request with
+                        {
+                            Actor = actor,
+                            Role = controllerRole
+                        },
+                        actor,
+                        scope.TenantContext.TenantId,
+                        scope.TenantContext.CompanyId,
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return result is null
+                    ? Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." })
+                    : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+            catch (NotSupportedException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status501NotImplemented);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or LedgerBookServiceException)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("ReopenLedgerCloseManagementPeriod")
+        .Produces<ClosePeriodReopenResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
@@ -2231,6 +1892,114 @@ public static partial class LedgerEndpoints
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending);
 
+    private static async Task<CloseWorkflowTenantScope> ResolveCloseWorkflowTenantScopeAsync(
+        HttpContext context,
+        IAccountingCloseManagementService service,
+        Guid workflowId)
+    {
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        var plan = await service
+            .GetPeriodPlanScopedAsync(workflowId, tenant.TenantId, tenant.CompanyId, context.RequestAborted)
+            .ConfigureAwait(false);
+        if (!tenant.HasTenantScope ||
+            string.IsNullOrWhiteSpace(tenant.TenantId) ||
+            string.IsNullOrWhiteSpace(tenant.CompanyId))
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+
+        if (plan is null)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: true);
+        }
+
+        if (plan.LedgerBookId is not { } ledgerBookId || ledgerBookId == Guid.Empty)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+
+        var ledgerBookService = context.RequestServices.GetService<ILedgerBookService>();
+        if (ledgerBookService is null)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+
+        var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+        var guard = context.RequestServices.GetService<IFundProfileTenantGuard>();
+        if (registry is null)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+
+        try
+        {
+            var book = await ledgerBookService.GetBookAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            if (book is null ||
+                !Guid.TryParse(plan.FundProfileId, out var fundAccountId) ||
+                fundAccountId == Guid.Empty ||
+                book.FundStructureNodeId != fundAccountId ||
+                !string.Equals(book.BaseCurrency, plan.MaterialityPolicy.Currency, StringComparison.OrdinalIgnoreCase))
+            {
+                return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+            }
+
+            var periods = await ledgerBookService
+                .ListPeriodsAsync(new LedgerPeriodQuery(LedgerBookId: ledgerBookId), context.RequestAborted)
+                .ConfigureAwait(false);
+            var hasPeriodId = Guid.TryParse(plan.PeriodId, out var requestedPeriodId);
+            if (!periods.Any(period =>
+                    (hasPeriodId && period.PeriodId == requestedPeriodId) ||
+                    string.Equals(period.Label, plan.PeriodId, StringComparison.OrdinalIgnoreCase)))
+            {
+                return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+            }
+
+            // FundProfileId on the close plan identifies the operations fund account. The
+            // authoritative tenant owner is the ledger book's fund profile, after proving that the
+            // book belongs to that exact fund-account node.
+            var owner = await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
+            if (owner is null || !CloseWorkflowOwnerMatches(owner, tenant))
+            {
+                return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+            }
+
+            if (guard is not null)
+            {
+                var decision = await guard
+                    .EvaluateAsync(tenant, book.FundProfileId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                if (!decision.IsAllowed)
+                {
+                    return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+                }
+            }
+
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: true);
+        }
+        catch (LedgerBookServiceException)
+        {
+            return new CloseWorkflowTenantScope(plan, tenant, IsAccessible: false);
+        }
+    }
+
+    private static bool CloseWorkflowOwnerMatches(
+        FundProfileOwnership owner,
+        WorkstationTenantContext tenant)
+        => owner.IsHeldBy(tenant.TenantId) &&
+           !string.IsNullOrWhiteSpace(owner.CompanyId) &&
+           !string.IsNullOrWhiteSpace(tenant.CompanyId) &&
+           string.Equals(owner.CompanyId.Trim(), tenant.CompanyId.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static IResult CloseWorkflowScopeDenied()
+        => Results.Problem(
+            "The requested close workflow is not accessible to the current tenant and company.",
+            statusCode: StatusCodes.Status403Forbidden);
+
+    private sealed record CloseWorkflowTenantScope(
+        ClosePeriodPlanDto? Plan,
+        WorkstationTenantContext TenantContext,
+        bool IsAccessible);
+
     /// <summary>
     /// Tenant isolation (SEC-005 slice 3) for body-supplied fund scopes on POST read/preview routes the
     /// query-string <see cref="FundProfileScopeEndpointFilters"/> filter cannot see. Returns true (allow)
@@ -2263,6 +2032,28 @@ public static partial class LedgerEndpoints
             context,
             UserPermission.AdminMaintenance,
             UserPermission.ManageDirectLending);
+
+    private static bool TryResolveControllerRole(HttpContext context, out string role)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var rawRole) &&
+            rawRole is UserRole userRole &&
+            userRole == UserRole.Controller)
+        {
+            role = "Controller";
+            return true;
+        }
+
+        var profile = HttpContextWorkstationTenantContextAccessor.Resolve(context).RoleProfileName;
+        if (string.Equals(profile, "Controller", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(profile, "Fund Controller", StringComparison.OrdinalIgnoreCase))
+        {
+            role = profile!.Trim();
+            return true;
+        }
+
+        role = string.Empty;
+        return false;
+    }
 
     private static bool HasLedgerCertificationPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
@@ -3202,490 +2993,4 @@ public static partial class LedgerEndpoints
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private static PrivateCapitalActivityProjectionDto FilterPrivateCapitalActivity(
-        PrivateCapitalActivityProjectionDto activity,
-        string? fundEventId,
-        string? capitalAccountId,
-        string? investorId,
-        string? paymentIntentId)
-    {
-        var normalizedFundEventId = NormalizeOptional(fundEventId);
-        var normalizedCapitalAccountId = NormalizeOptional(capitalAccountId);
-        var normalizedInvestorId = NormalizeOptional(investorId);
-        var normalizedPaymentIntentId = NormalizeOptional(paymentIntentId);
-        if (normalizedFundEventId is null &&
-            normalizedCapitalAccountId is null &&
-            normalizedInvestorId is null &&
-            normalizedPaymentIntentId is null)
-        {
-            return activity;
-        }
-
-        var paymentIntentFundEventIds = normalizedPaymentIntentId is null
-            ? null
-            : activity.FundEvents
-                .Where(item => MatchesPrivateCapitalFilter(item.PaymentIntentId, normalizedPaymentIntentId))
-                .Select(static item => item.FundEventId)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var matchingFundEvents = activity.FundEvents
-            .Where(item =>
-                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
-                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
-                MatchesPrivateCapitalFilter(item.PaymentIntentId, normalizedPaymentIntentId))
-            .ToArray();
-        var matchingSubledgerEntries = activity.CapitalAccountSubledgerEntries
-            .Where(item =>
-                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
-                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
-                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds))
-            .ToArray();
-        var matchingLedgerImpacts = activity.LedgerImpacts
-            .Where(item =>
-                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
-                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
-                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds))
-            .ToArray();
-        var matchingReportOutputs = activity.ReportOutputs
-            .Where(item =>
-                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
-                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
-                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds))
-            .ToArray();
-        var matchedFundEventIds = matchingFundEvents
-            .Select(static item => item.FundEventId)
-            .Concat(matchingSubledgerEntries.Select(static item => item.FundEventId))
-            .Concat(matchingLedgerImpacts.Select(static item => item.FundEventId))
-            .Concat(matchingReportOutputs.Select(static item => item.FundEventId))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var fundEvents = activity.FundEvents
-            .Where(item => matchedFundEventIds.Contains(item.FundEventId))
-            .ToArray();
-        var retainedFundEventIds = fundEvents
-            .Select(static item => item.FundEventId)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var retainedPaymentIntentIds = fundEvents
-            .Select(static item => item.PaymentIntentId)
-            .Where(static item => !string.IsNullOrWhiteSpace(item))
-            .Select(static item => item!)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var capitalAccountSubledgerEntries = activity.CapitalAccountSubledgerEntries
-            .Where(item =>
-                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
-                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
-                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds) &&
-                retainedFundEventIds.Contains(item.FundEventId))
-            .ToArray();
-        var ledgerImpacts = activity.LedgerImpacts
-            .Where(item =>
-                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
-                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
-                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds) &&
-                retainedFundEventIds.Contains(item.FundEventId))
-            .ToArray();
-        var reportOutputs = activity.ReportOutputs
-            .Where(item =>
-                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
-                (MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                 MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) ||
-                 ((normalizedCapitalAccountId is not null || normalizedInvestorId is not null) &&
-                  capitalAccountSubledgerEntries.Any(entry => string.Equals(entry.FundEventId, item.FundEventId, StringComparison.OrdinalIgnoreCase)))) &&
-                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds) &&
-                retainedFundEventIds.Contains(item.FundEventId))
-            .ToArray();
-        var paymentIntents = activity.PaymentIntents
-            .Where(item =>
-                MatchesPrivateCapitalFilter(item.PaymentIntentId, normalizedPaymentIntentId) &&
-                (retainedPaymentIntentIds.Contains(item.PaymentIntentId) ||
-                 (!string.IsNullOrWhiteSpace(item.FundEventId) && retainedFundEventIds.Contains(item.FundEventId)) ||
-                 MatchesPrivateCapitalFilter(item.ExpectedCashMovement.CapitalAccountId, normalizedCapitalAccountId) &&
-                 MatchesPrivateCapitalFilter(item.ExpectedCashMovement.InvestorId, normalizedInvestorId) &&
-                 MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId)))
-            .ToArray();
-        var fundEventRecords = PrivateCapitalFundEventLedgerRecordBuilder.Build(
-            activity.FundProfileId,
-            fundEvents,
-            capitalAccountSubledgerEntries,
-            ledgerImpacts,
-            reportOutputs);
-        var capitalAccounts = BuildFilteredCapitalAccounts(capitalAccountSubledgerEntries, fundEvents);
-        var retainedCapitalAccountIds = capitalAccounts
-            .Select(static item => item.CapitalAccountId)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var retainedJournalEntryIds = fundEvents
-            .Select(static item => item.JournalEntryId.ToString("D"))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var validationIssues = activity.ValidationIssues
-            .Where(issue => MatchesFilteredPrivateCapitalIssue(
-                issue,
-                retainedFundEventIds,
-                retainedCapitalAccountIds,
-                retainedJournalEntryIds))
-            .ToArray();
-        var currency = fundEvents
-            .Select(static item => item.Currency)
-            .Concat(capitalAccountSubledgerEntries.Select(static item => item.Currency))
-            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? activity.Currency;
-        var netCapitalActivity = capitalAccountSubledgerEntries.Length > 0
-            ? capitalAccountSubledgerEntries.Sum(static item => item.NetCapitalActivity)
-            : fundEvents.Sum(static item => item.NetCapitalActivity);
-        var capitalAccountSubledgers = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
-            activity.FundProfileId,
-            activity.LedgerBookId,
-            activity.ProjectedAtUtc,
-            capitalAccounts,
-            fundEventRecords,
-            capitalAccountSubledgerEntries,
-            ledgerImpacts,
-            reportOutputs,
-            validationIssues);
-
-        return new PrivateCapitalActivityProjectionDto(
-            activity.FundProfileId,
-            activity.LedgerBookId,
-            activity.ProjectedAtUtc,
-            fundEvents.Length,
-            capitalAccounts.Count,
-            fundEvents.Count(static item => item.JournalStatus is ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved),
-            fundEvents.Count(static item => item.JournalStatus == ManualJournalEntryStatusDto.Submitted),
-            fundEvents.Count(static item => item.IsPosted),
-            reportOutputs.Count(static item => item.IsPublished),
-            netCapitalActivity,
-            currency,
-            fundEvents,
-            capitalAccounts,
-            capitalAccountSubledgerEntries,
-            ledgerImpacts,
-            reportOutputs,
-            validationIssues,
-            fundEventRecords,
-            capitalAccountSubledgers,
-            paymentIntents);
-    }
-
-    private static IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> BuildFilteredCapitalAccounts(
-        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> subledgerEntries,
-        IReadOnlyList<PrivateCapitalFundEventDto> fundEvents)
-    {
-        if (subledgerEntries.Count > 0)
-        {
-            return subledgerEntries
-                .GroupBy(static item => new { item.CapitalAccountId, item.InvestorId, item.Currency })
-                .Select(group =>
-                {
-                    var ordered = group
-                        .OrderByDescending(static item => item.EffectiveDate)
-                        .ThenByDescending(static item => item.UpdatedAtUtc)
-                        .ToArray();
-                    return new PrivateCapitalCapitalAccountActivityDto(
-                        group.Key.CapitalAccountId,
-                        group.Key.InvestorId,
-                        group.Key.Currency,
-                        group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.CapitalCall).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                        group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Distribution).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                        group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Subscription).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                        group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Redemption).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                        group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.ManagementFee).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                        group.Sum(static item => item.NetCapitalActivity),
-                        group.Select(static item => item.FundEventId).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
-                        ordered.Length == 0 ? null : ordered[0].EffectiveDate,
-                        ordered.Length == 0 ? null : ordered[0].FundEventType,
-                        group
-                            .Select(static item => item.FundEventId)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .Order(StringComparer.OrdinalIgnoreCase)
-                            .ToArray());
-                })
-                .OrderBy(static item => item.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.InvestorId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.Currency, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-        }
-
-        return fundEvents
-            .GroupBy(item => new { item.CapitalAccountId, item.InvestorId, item.Currency })
-            .Select(group =>
-            {
-                var ordered = group
-                    .OrderByDescending(static item => item.EffectiveDate)
-                    .ThenByDescending(static item => item.UpdatedAtUtc)
-                    .ToArray();
-                return new PrivateCapitalCapitalAccountActivityDto(
-                    group.Key.CapitalAccountId,
-                    group.Key.InvestorId,
-                    group.Key.Currency,
-                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.CapitalCall).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Distribution).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Subscription).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Redemption).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.ManagementFee).Sum(static item => Math.Abs(item.NetCapitalActivity)),
-                    group.Sum(static item => item.NetCapitalActivity),
-                    group.Count(),
-                    ordered.Length == 0 ? null : ordered[0].EffectiveDate,
-                    ordered.Length == 0 ? null : ordered[0].FundEventType,
-                    group
-                        .Select(static item => item.FundEventId)
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .Order(StringComparer.OrdinalIgnoreCase)
-                        .ToArray());
-            })
-            .OrderBy(static item => item.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static item => item.InvestorId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static item => item.Currency, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-    }
-
-    private static bool MatchesPrivateCapitalFilter(string? value, string? filter)
-        => filter is null || string.Equals(value?.Trim(), filter, StringComparison.OrdinalIgnoreCase);
-
-    private static bool MatchesPrivateCapitalFundEventSet(
-        string fundEventId,
-        IReadOnlySet<string>? fundEventIds)
-        => fundEventIds is null || fundEventIds.Contains(fundEventId);
-
-    private static bool MatchesFilteredPrivateCapitalIssue(
-        AccountingConfigurationValidationIssueDto issue,
-        IReadOnlySet<string> retainedFundEventIds,
-        IReadOnlySet<string> retainedCapitalAccountIds,
-        IReadOnlySet<string> retainedJournalEntryIds)
-    {
-        if (retainedFundEventIds.Count == 0 &&
-            retainedCapitalAccountIds.Count == 0 &&
-            retainedJournalEntryIds.Count == 0)
-        {
-            return false;
-        }
-
-        var targetId = NormalizeOptional(issue.TargetId);
-        return targetId is null ||
-               retainedFundEventIds.Contains(targetId) ||
-               retainedCapitalAccountIds.Contains(targetId) ||
-               retainedJournalEntryIds.Contains(targetId);
-    }
-
-    private static async Task<LedgerPeriodSummaryLoadResult> LoadClosedPeriodSummariesAsync(
-        ILedgerBookService service,
-        Guid? ledgerBookId,
-        string? fundProfileId,
-        Guid? fundStructureNodeId,
-        AccountingBasisKindDto? accountingBasis,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        CancellationToken cancellationToken)
-    {
-        var periods = await service
-            .ListPeriodsAsync(
-                new LedgerPeriodQuery(
-                    ledgerBookId,
-                    fundProfileId,
-                    fundStructureNodeId,
-                    Status: null,
-                    OpenOnly: false,
-                    accountingBasis),
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        var closedPeriods = periods
-            .Where(period => period.Status != LedgerPeriodStatusDto.Open)
-            .Where(period => !startDate.HasValue || period.EndDate >= startDate.Value)
-            .Where(period => !endDate.HasValue || period.StartDate <= endDate.Value)
-            .OrderBy(static period => period.StartDate)
-            .ThenBy(static period => period.PeriodNo)
-            .ToArray();
-
-        var summaries = new List<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)>(closedPeriods.Length);
-        foreach (var period in closedPeriods)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (ledgerBookId.HasValue && period.LedgerBookId != ledgerBookId.Value)
-            {
-                return LedgerPeriodSummaryLoadResult.Conflict(
-                    $"Ledger period '{period.PeriodId:D}' belongs to ledger book '{period.LedgerBookId:D}', not requested ledger book '{ledgerBookId.Value:D}'.");
-            }
-
-            var summary = await service.GetPeriodSummaryAsync(period.PeriodId, cancellationToken).ConfigureAwait(false);
-            if (summary is not null)
-            {
-                if (summary.LedgerBookId != period.LedgerBookId)
-                {
-                    return LedgerPeriodSummaryLoadResult.Conflict(
-                        $"Closed-period summary for period '{period.PeriodId:D}' belongs to ledger book '{summary.LedgerBookId:D}', but the period belongs to ledger book '{period.LedgerBookId:D}'.");
-                }
-
-                summaries.Add((period, summary));
-            }
-        }
-
-        return LedgerPeriodSummaryLoadResult.Success(summaries);
-    }
-
-    private sealed record LedgerPeriodSummaryLoadResult(
-        IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> Summaries,
-        IResult? Error)
-    {
-        public static LedgerPeriodSummaryLoadResult Success(
-            IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> summaries)
-            => new(summaries, Error: null);
-
-        public static LedgerPeriodSummaryLoadResult Conflict(string message)
-            => new([], Results.Conflict(new { error = message }));
-    }
-
-    private static LedgerCrossPeriodTrialBalanceReportDto BuildTrialBalanceReport(
-        IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> summaries,
-        Guid? ledgerBookId,
-        string? fundProfileId,
-        Guid? fundStructureNodeId,
-        AccountingBasisKindDto? accountingBasis,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        LedgerDimensionReportFilter dimensionFilter)
-    {
-        var filteredSummaries = summaries
-            .Select(item => (item.period, summary: ApplyDimensionFilter(item.summary, dimensionFilter)))
-            .ToArray();
-        var lines = filteredSummaries
-            .SelectMany(static item => item.summary.TrialBalance.Select(line => new LedgerCrossPeriodTrialBalanceLineDto(
-                item.summary.PeriodId,
-                item.summary.LedgerBookId,
-                item.summary.FiscalYear,
-                item.summary.PeriodNo,
-                item.summary.Label,
-                line.AccountName,
-                line.AccountType,
-                line.Symbol,
-                line.FinancialAccountId,
-                line.DebitTotal,
-                line.CreditTotal,
-                line.Balance,
-                line.EntryCount,
-                line.AccountingBasis,
-                line.AccountingPolicyId,
-                line.AccountingPolicyVersion,
-                line.RuleId,
-                line.RuleVersion,
-                line.SourceEventId,
-                line.SourceJournalEntryId,
-                CanonicalizeDimensions(line.Dimensions))))
-            .ToArray();
-
-        return new LedgerCrossPeriodTrialBalanceReportDto(
-            DateTimeOffset.UtcNow,
-            ledgerBookId,
-            NormalizeOptional(fundProfileId),
-            fundStructureNodeId,
-            accountingBasis,
-            startDate,
-            endDate,
-            filteredSummaries.Select(static item => item.period).ToArray(),
-            lines,
-            filteredSummaries.Sum(static item => item.summary.TotalDebits),
-            filteredSummaries.Sum(static item => item.summary.TotalCredits),
-            filteredSummaries.Sum(static item => item.summary.NetIncome));
-    }
-
-    private static LedgerCrossPeriodPnlReportDto BuildPnlReport(
-        IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)> summaries,
-        Guid? ledgerBookId,
-        string? fundProfileId,
-        Guid? fundStructureNodeId,
-        AccountingBasisKindDto? accountingBasis,
-        DateOnly? startDate,
-        DateOnly? endDate,
-        LedgerDimensionReportFilter dimensionFilter)
-    {
-        var periods = summaries
-            .Select(item => BuildPnlSummary(ApplyDimensionFilter(item.summary, dimensionFilter)))
-            .ToArray();
-
-        return new LedgerCrossPeriodPnlReportDto(
-            DateTimeOffset.UtcNow,
-            ledgerBookId,
-            NormalizeOptional(fundProfileId),
-            fundStructureNodeId,
-            accountingBasis,
-            startDate,
-            endDate,
-            periods,
-            periods.Sum(static period => period.TotalRevenue),
-            periods.Sum(static period => period.TotalExpenses),
-            periods.Sum(static period => period.NetIncome),
-            periods.Sum(static period => period.RealizedNetIncome),
-            periods.Sum(static period => period.AccrualBasisAdjustmentNetImpact));
-    }
-
-    private sealed record LedgerDimensionReportFilter(
-        string? FundId,
-        string? EntityId,
-        string? SleeveId,
-        string? StrategyId,
-        string? InvestorId,
-        string? CapitalAccountId,
-        string? InstrumentId,
-        string? PositionId,
-        string? TaxLotId,
-        string? CostCenterId,
-        string? CounterpartyId,
-        string? OrganizationId,
-        string? PortfolioId,
-        string? BookId,
-        string? AccountId,
-        string? CustomerId,
-        string? VendorId,
-        string? ProjectId,
-        IReadOnlyDictionary<string, string> ExternalGlDimensions)
-    {
-        public bool HasCriteria
-            => FundId is not null
-               || EntityId is not null
-               || SleeveId is not null
-               || StrategyId is not null
-               || InvestorId is not null
-               || CapitalAccountId is not null
-               || InstrumentId is not null
-               || PositionId is not null
-               || TaxLotId is not null
-               || CostCenterId is not null
-               || CounterpartyId is not null
-               || OrganizationId is not null
-               || PortfolioId is not null
-               || BookId is not null
-               || AccountId is not null
-               || CustomerId is not null
-               || VendorId is not null
-               || ProjectId is not null
-               || ExternalGlDimensions.Count > 0;
-    }
-
-    private static bool ContainsAccrualMarker(string? value)
-        => !string.IsNullOrWhiteSpace(value)
-           && value.Contains("accru", StringComparison.OrdinalIgnoreCase);
-
-    private static bool TryGetLedgerCloseActor(HttpContext context, out string actor)
-    {
-        actor = string.Empty;
-        if (context.Items[LoginSessionMiddleware.CurrentUserKey] is not string username ||
-            string.IsNullOrWhiteSpace(username))
-        {
-            return false;
-        }
-
-        if (context.Items[LoginSessionMiddleware.CurrentUserRoleKey] is not UserRole role)
-        {
-            return false;
-        }
-
-        if (role is not UserRole.Admin and not UserRole.Accounting)
-        {
-            return false;
-        }
-
-        actor = username.Trim();
-        return true;
-    }
 }

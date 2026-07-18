@@ -381,6 +381,13 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "strike")),
                 ToOption(GetOptionalDateOnly(json, "expiry")),
                 ToOption(GetOptionalDecimal(json, "multiplier")))),
+            "InvestmentFund" => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
+                ToOption(GetOptionalString(json, "fundType")),
+                ToOption(GetOptionalString(json, "fundFamily")),
+                ToOption(GetOptionalString(json, "navCurrency")),
+                ToDistributionPolicyOption(GetOptionalString(json, "distributionPolicy")),
+                ToOption(GetOptionalBoolean(json, "isStableNav")),
+                ToOption(GetOptionalString(json, "pricingSource")))),
             _ => throw new InvalidOperationException($"Unsupported asset class '{assetClass}'.")
         };
     }
@@ -489,6 +496,20 @@ internal static class SecurityMasterMapping
 
     private static FSharpOption<int> ToOption(int? value)
         => value.HasValue ? FSharpOption<int>.Some(value.Value) : FSharpOption<int>.None;
+
+    private static FSharpOption<bool> ToOption(bool? value)
+        => value.HasValue ? FSharpOption<bool>.Some(value.Value) : FSharpOption<bool>.None;
+
+    private static FSharpOption<DistributionPolicy> ToDistributionPolicyOption(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? FSharpOption<DistributionPolicy>.None
+            : FSharpOption<DistributionPolicy>.Some(value.Trim() switch
+            {
+                "Accumulating" => DistributionPolicy.Accumulating,
+                "Distributing" => DistributionPolicy.Distributing,
+                "Sweep" => DistributionPolicy.Sweep,
+                var other => DistributionPolicy.NewOtherDistribution(other)
+            });
 
     private static FSharpOption<DateOnly> ToOption(DateOnly? value)
         => value.HasValue ? FSharpOption<DateOnly>.Some(value.Value) : FSharpOption<DateOnly>.None;

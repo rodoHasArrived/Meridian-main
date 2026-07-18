@@ -184,6 +184,28 @@ function Copy-DirectoryContents {
     }
 }
 
+function Copy-PublishedHostContents {
+    param(
+        [Parameter(Mandatory)][string]$Source,
+        [Parameter(Mandatory)][string]$Destination
+    )
+
+    Assert-RequiredPath -Path $Source -Description "Published host directory"
+    New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+
+    # Replace every host-owned top-level directory so files removed from the source tree cannot
+    # survive an incremental install. Extra top-level install additions (for example a separately
+    # provisioned local dependency) are preserved because they are not present in the publish root.
+    Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
+        $destinationPath = Join-Path $Destination $_.Name
+        if ($_.PSIsContainer -and (Test-Path -LiteralPath $destinationPath)) {
+            Remove-Item -LiteralPath $destinationPath -Recurse -Force
+        }
+
+        Copy-Item -LiteralPath $_.FullName -Destination $Destination -Recurse -Force
+    }
+}
+
 function Get-InstallTimestamp {
     return Get-Date -Format "yyyyMMdd-HHmmss"
 }
@@ -270,6 +292,34 @@ function Test-DirectoryContentsMatch {
         }
 
         if ([int64]$destinationIndex[$entry.RelativePath] -ne [int64]$entry.Length) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Test-PublishedHostContentsMatch {
+    param(
+        [Parameter(Mandatory)][string]$Source,
+        [Parameter(Mandatory)][string]$Destination
+    )
+
+    if (-not (Test-DirectoryContentsMatch -Source $Source -Destination $Destination)) {
+        return $false
+    }
+
+    # Extra top-level install additions are allowed, but every directory owned by the published
+    # host must be an exact file set so removed migrations and other content cannot linger.
+    foreach ($sourceDirectory in (Get-ChildItem -LiteralPath $Source -Directory -Force)) {
+        $destinationDirectory = Join-Path $Destination $sourceDirectory.Name
+        if (-not (Test-Path -LiteralPath $destinationDirectory)) {
+            return $false
+        }
+
+        $sourceFiles = @(Get-DirectoryFileIndex -Root $sourceDirectory.FullName)
+        $destinationFiles = @(Get-DirectoryFileIndex -Root $destinationDirectory)
+        if ($sourceFiles.Count -ne $destinationFiles.Count) {
             return $false
         }
     }
@@ -1517,6 +1567,9 @@ Assert-RequiredPath -Path (Join-Path $workstationAssetSource "index.html") -Desc
 
 if (-not $SkipHostPublish) {
     Invoke-Step -Name "Publish Meridian local host" -Action {
+        if (Test-Path -LiteralPath $publishRoot) {
+            Remove-Item -LiteralPath $publishRoot -Recurse -Force
+        }
         New-Item -ItemType Directory -Path $publishRoot -Force | Out-Null
         $publishTrimmed = $EnableTrimmedPublish.IsPresent.ToString().ToLowerInvariant()
 
@@ -1550,7 +1603,7 @@ if (-not (Test-Path -LiteralPath $publishExePath) -and
 
 Assert-RequiredPath -Path $publishExePath -Description "Published Meridian.exe"
 
-$hostCopySkipped = Test-DirectoryContentsMatch -Source $hostSourceRoot -Destination $installRootPath
+$hostCopySkipped = Test-PublishedHostContentsMatch -Source $hostSourceRoot -Destination $installRootPath
 $bundleCopySkipped = Test-DirectoryContentsMatch -Source $workstationAssetSource -Destination $targetBundle
 $staleShortcutRemovals = New-Object System.Collections.Generic.List[string]
 $legacyShortcutRemovals = New-Object System.Collections.Generic.List[string]
@@ -1594,7 +1647,7 @@ if ($hostCopySkipped) {
 }
 else {
     Invoke-Step -Name "Copy host files into install root" -Action {
-        Copy-DirectoryContents -Source $hostSourceRoot -Destination $installRootPath
+        Copy-PublishedHostContents -Source $hostSourceRoot -Destination $installRootPath
     }
 }
 

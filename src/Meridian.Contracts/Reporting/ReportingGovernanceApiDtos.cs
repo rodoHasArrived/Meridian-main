@@ -1,3 +1,5 @@
+using Meridian.Contracts.Workstation;
+
 namespace Meridian.Contracts.Reporting;
 
 /// <summary>
@@ -39,14 +41,30 @@ public sealed record ReportingGovernanceAccessScopeDto(
     string PolicyVersion,
     string Mode,
     string? OwnerPrincipalId,
-    IReadOnlyList<string> PrincipalIds,
+    bool AllowOwnerAccess,
+    IReadOnlyList<ReportingGovernanceAccessPrincipalDto> Principals,
     string PolicyHash);
+
+public sealed record ReportingGovernanceAccessPrincipalDto(
+    string Kind,
+    string PrincipalId);
 
 public sealed record ReportingGovernanceCertifiedSnapshotDto(
     string SnapshotId,
     string SnapshotHash,
     string ReconciliationCheckpointId,
-    DateTimeOffset CapturedAtUtc);
+    DateTimeOffset CapturedAtUtc,
+    string? SourceCheckpointId = null,
+    string? SourceCheckpointHash = null,
+    string? ReconciliationCheckpointHash = null,
+    string? ParametersCanonicalJson = null,
+    string? ParametersHash = null);
+
+public sealed record ReportingGovernanceActionAvailabilityDto(
+    string Action,
+    bool IsAllowed,
+    string? BlockedReason,
+    long ExpectedVersion);
 
 public sealed record ReportingGovernanceAuthorityDto(
     string ActorId,
@@ -127,7 +145,13 @@ public sealed record GovernedReportingRunDto(
     ReportingGovernanceReadinessDto? Readiness,
     ReportingGovernanceApprovalDto? Approval,
     ReportingGovernanceReleaseDto? Release,
-    IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail);
+    IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail,
+    ReportingRunParametersDto? NormalizedParameters = null,
+    IReadOnlyList<ReportingGovernanceActionAvailabilityDto>? ActionAvailability = null)
+{
+    public IReadOnlyList<ReportingGovernanceActionAvailabilityDto> ActionAvailability { get; init; } =
+        ActionAvailability ?? [];
+}
 
 public sealed record ReportingGovernanceChangedLineDto(
     string LineKey,
@@ -150,8 +174,18 @@ public sealed record ReportingGovernanceRestatementDto(
     ReportingGovernanceAuthorityDto? ApprovedBy,
     DateTimeOffset? ApprovedAtUtc,
     string? DraftRunId,
-    IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail);
+    IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail,
+    IReadOnlyList<ReportingGovernanceActionAvailabilityDto>? ActionAvailability = null)
+{
+    public IReadOnlyList<ReportingGovernanceActionAvailabilityDto> ActionAvailability { get; init; } =
+        ActionAvailability ?? [];
+}
 
 public sealed record ReportingGovernanceRestatementApprovalDto(
     ReportingGovernanceRestatementDto Request,
     GovernedReportingRunDto DraftRun);
+
+public sealed record ReportingGovernanceSeriesHistoryDto(
+    string SeriesId,
+    IReadOnlyList<GovernedReportingRunDto> Runs,
+    IReadOnlyList<ReportingGovernanceRestatementDto> RestatementRequests);

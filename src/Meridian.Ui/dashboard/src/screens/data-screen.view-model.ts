@@ -38,9 +38,24 @@ import type {
   DataOperationsRouteFocusCardState,
   DataOperationsWorkstream
 } from "@/screens/data-screen.route-state";
+import type {
+  DataOperationsDetailField,
+  ProviderSetupCredentialFieldState,
+  ProviderSetupDialogState,
+  ProviderSetupFormState,
+  ProviderSetupInstitutionSearchPhase,
+  ProviderSetupInstitutionSearchState,
+  ProviderSetupNextActionState,
+  ProviderSetupPhase,
+  ProviderSetupPlaidLinkTokenPhase,
+  ProviderSetupSuccessMetadataState,
+  ProviderSetupSummaryState,
+  ProviderSetupWorkflowStepState
+} from "@/screens/data-screen.provider-setup.types";
 import { buildDataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   BackfillPreviewResult,
+  BackfillExecutionHistoryResponse,
   BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
   BackfillTriggerRequest,
@@ -59,7 +74,6 @@ import type {
   ProviderReadinessRow,
   ProviderReadinessStatus,
   ProviderReadinessSummary,
-  ProviderKind,
   ProviderKindMeta,
   PlaidInstitution,
   PlaidLinkTokenResponse,
@@ -83,6 +97,28 @@ export type {
   DataOperationsWorkstream,
   DataWorkstationViewState
 } from "@/screens/data-screen.route-state";
+export type {
+  DataOperationsDetailField,
+  ProviderSetupCapabilityOptionState,
+  ProviderSetupCredentialFieldState,
+  ProviderSetupDialogState,
+  ProviderSetupEnvironmentFieldState,
+  ProviderSetupEnvironmentOptionState,
+  ProviderSetupFormState,
+  ProviderSetupInstitutionSearchPhase,
+  ProviderSetupInstitutionSearchResultState,
+  ProviderSetupInstitutionSearchState,
+  ProviderSetupKindOptionState,
+  ProviderSetupLiveAcknowledgementState,
+  ProviderSetupNextActionState,
+  ProviderSetupPhase,
+  ProviderSetupPlaidLinkTokenPhase,
+  ProviderSetupSelectFieldState,
+  ProviderSetupSuccessMetadataState,
+  ProviderSetupSummaryState,
+  ProviderSetupTextFieldState,
+  ProviderSetupWorkflowStepState
+} from "@/screens/data-screen.provider-setup.types";
 
 export { formatProviderReasonLabel, normalizeProviderTrustScore };
 
@@ -211,10 +247,40 @@ export interface BackfillLiveProgressState {
   observedAt: string;
 }
 
+export type BackfillRemediationQueueSortColumn = "tier" | "deadline";
+
+export interface BackfillRemediationQueueSortState {
+  columnId: BackfillRemediationQueueSortColumn;
+  direction: "asc" | "desc";
+}
+
+export interface BackfillRemediationQueueRow {
+  executionId: string;
+  symbols: string;
+  provider: string;
+  tier: string;
+  tierSort: number;
+  status: string;
+  deadline: string;
+  deadlineSort: number;
+  workflow: string;
+  owner: string;
+  outcome: string;
+  evidence: string;
+}
+
+export interface BackfillRemediationQueueState {
+  rows: BackfillRemediationQueueRow[];
+  summary: string;
+  defaultProvider: string;
+  observedAt: string;
+}
+
 export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillPreviewResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   getProgress: (signal?: AbortSignal) => Promise<BackfillProgressResponse>;
+  getExecutions?: (signal?: AbortSignal) => Promise<BackfillExecutionHistoryResponse>;
 }
 
 export interface ProviderSetupLifecycleServices {
@@ -336,12 +402,6 @@ export interface DataOperationsProviderRow {
   ariaLabel: string;
   selectAriaLabel: string;
   detailDescription: string;
-}
-
-export interface DataOperationsDetailField {
-  id: string;
-  label: string;
-  value: string;
 }
 
 export type DataOperationsProviderTrustField = DataOperationsDetailField;
@@ -579,230 +639,6 @@ export type DataOperationsStatusRowClassName =
   | "bg-danger/5"
   | "bg-paper/5";
 
-// --- Provider setup types ---
-
-export interface ProviderSetupFormState {
-  kind: ProviderKind | string;
-  displayName: string;
-  environment?: "paper" | "live" | "sandbox" | "custom";
-  liveAcknowledged?: boolean;
-  apiKey: string;
-  apiSecret: string;
-  endpoint: string;
-  capabilities: string[];
-}
-
-export type ProviderSetupPhase = "idle" | "submitting" | "success" | "error";
-
-export interface ProviderSetupDialogState {
-  titleId: string;
-  descriptionId: string;
-  formLabel: string;
-  workflowSteps: ProviderSetupWorkflowStepState[];
-  providerKindField: ProviderSetupSelectFieldState;
-  selectedProviderSummary: ProviderSetupSummaryState;
-  displayNameField: ProviderSetupTextFieldState;
-  environmentField: ProviderSetupEnvironmentFieldState;
-  institutionSearch: ProviderSetupInstitutionSearchState | null;
-  liveAcknowledgement: ProviderSetupLiveAcknowledgementState;
-  credentialFields: ProviderSetupCredentialFieldState[];
-  capabilityOptions: ProviderSetupCapabilityOptionState[];
-  closeButtonLabel: string;
-  closeButtonDisabledReason: string | null;
-  cancelAction: {
-    label: string;
-    ariaLabel: string;
-    disabled: boolean;
-    disabledReason: string | null;
-  };
-  submitAction: {
-    label: string;
-    ariaLabel: string;
-    disabled: boolean;
-    disabledReason: string | null;
-    busy: boolean;
-    busyLabel: string;
-  };
-  statusLabel: string;
-  successPanel: {
-    title: string;
-    ariaLabel: string;
-  };
-  successMetadata: ProviderSetupSuccessMetadataState;
-  successActions: ProviderSetupNextActionState[];
-}
-
-export interface ProviderSetupWorkflowStepState {
-  id: "connect-source" | "acquire-data" | "validate-data" | "normalize-data" | "store-data" | "publish-data";
-  label: string;
-  description: string;
-  status: "complete" | "current" | "pending";
-  statusLabel: string;
-}
-
-export interface ProviderSetupSummaryState {
-  providerLabel: string;
-  description: string;
-  rows: DataOperationsDetailField[];
-  noCredentialMessage: string | null;
-}
-
-export interface ProviderSetupNextActionState {
-  id: "live-quotes" | "backfill" | "readiness" | "security-master" | "plaid-link" | "plaid-transfers";
-  label: string;
-  href: string;
-  ariaLabel: string;
-  variant: "default" | "outline";
-}
-
-export interface ProviderSetupSuccessMetadataState {
-  rows: DataOperationsDetailField[];
-  warnings: string[];
-  metadataAriaLabel: string;
-  warningsAriaLabel: string;
-}
-
-export interface ProviderSetupKindOptionState {
-  value: string;
-  label: string;
-}
-
-export interface ProviderSetupSelectFieldState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  description: string;
-  options: ProviderSetupKindOptionState[];
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface ProviderSetupTextFieldState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  field: "displayName";
-  value: string;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface ProviderSetupEnvironmentOptionState {
-  value: NonNullable<ProviderSetupFormState["environment"]>;
-  label: string;
-}
-
-export interface ProviderSetupEnvironmentFieldState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  description: string;
-  value: NonNullable<ProviderSetupFormState["environment"]>;
-  options: ProviderSetupEnvironmentOptionState[];
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface ProviderSetupLiveAcknowledgementState {
-  id: string;
-  label: string;
-  detail: string;
-  visible: boolean;
-  checked: boolean;
-  disabled: boolean;
-  disabledReason: string | null;
-  ariaLabel: string;
-}
-
-export type ProviderSetupInstitutionSearchPhase = "idle" | "searching" | "success" | "error";
-export type ProviderSetupPlaidLinkTokenPhase = "idle" | "creating" | "opening" | "exchanging" | "linked" | "ready" | "error";
-
-export interface ProviderSetupInstitutionSearchResultState {
-  institutionId: string;
-  name: string;
-  detail: string;
-  selected: boolean;
-}
-
-export interface ProviderSetupInstitutionSearchState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  placeholder: string;
-  description: string;
-  value: string;
-  disabled: boolean;
-  disabledReason: string | null;
-  phase: ProviderSetupInstitutionSearchPhase;
-  statusLabel: string;
-  searchAction: {
-    label: string;
-    ariaLabel: string;
-    disabled: boolean;
-    disabledReason: string | null;
-    busy: boolean;
-  };
-  results: ProviderSetupInstitutionSearchResultState[];
-  selectedInstitutionLabel: string | null;
-  linkTokenPhase: ProviderSetupPlaidLinkTokenPhase;
-  linkTokenStatusLabel: string;
-  linkTokenAction: {
-    label: string;
-    ariaLabel: string;
-    disabled: boolean;
-    disabledReason: string | null;
-    busy: boolean;
-  };
-  linkTokenResult: {
-    linkTokenPreview: string;
-    requestId: string | null;
-    expirationLabel: string | null;
-    institutionLabel: string | null;
-    environmentLabel: string | null;
-  } | null;
-  linkedEvidence: {
-    itemId: string;
-    institutionName: string;
-    status: string;
-    accountCountLabel: string;
-    accounts: Array<{
-      id: string;
-      name: string;
-      detail: string;
-    }>;
-    requestId: string | null;
-  } | null;
-  sandboxGuide: {
-    title: string;
-    detail: string;
-    username: string;
-    password: string;
-  } | null;
-  errorText: string | null;
-}
-
-export interface ProviderSetupCredentialFieldState {
-  id: string;
-  label: string;
-  ariaLabel: string;
-  field: "apiKey" | "apiSecret" | "endpoint";
-  type: "password" | "url";
-  value: string;
-  autoComplete: "new-password" | "off";
-  placeholder: string | null;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface ProviderSetupCapabilityOptionState {
-  id: string;
-  label: string;
-  description: string;
-  selected: boolean;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
 export const PROVIDER_KIND_CATALOG: ProviderKindMeta[] = [
   {
     kind: "polygon",
@@ -933,7 +769,8 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
-  getProgress: (signal) => workstationApi.getBackfillProgress({ signal })
+  getProgress: (signal) => workstationApi.getBackfillProgress({ signal }),
+  getExecutions: (signal) => workstationApi.getBackfillExecutionHistory(100, { signal })
 };
 const BACKFILL_PROGRESS_POLL_INTERVAL_MS = 500;
 const defaultProviderSetupLifecycle: ProviderSetupLifecycleServices = {};
@@ -1135,6 +972,14 @@ export function useDataViewModel(
   const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
   const [liveProgress, setLiveProgress] = useState<BackfillProgressResponse | null>(null);
+  const [remediationHistory, setRemediationHistory] = useState<BackfillExecutionHistoryResponse | null>(null);
+  const [remediationHistoryLoading, setRemediationHistoryLoading] = useState(false);
+  const [remediationHistoryError, setRemediationHistoryError] = useState<string | null>(null);
+  const [remediationQueueSort, setRemediationQueueSort] = useState<BackfillRemediationQueueSortState>({
+    columnId: "tier",
+    direction: "asc"
+  });
+  const remediationHistoryRevisionRef = useRef(0);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
@@ -1223,6 +1068,56 @@ export function useDataViewModel(
   }, [backfillLifecycle.invalidate, uploadLifecycle.invalidate]);
 
   const workstream = useMemo(() => resolveDataWorkstream(pathname), [pathname]);
+  const getBackfillExecutions = services.getExecutions;
+  const refreshRemediationHistory = useCallback(async (signal?: AbortSignal) => {
+    if (!getBackfillExecutions) {
+      return;
+    }
+
+    const revision = remediationHistoryRevisionRef.current + 1;
+    remediationHistoryRevisionRef.current = revision;
+    setRemediationHistoryLoading(true);
+    setRemediationHistoryError(null);
+
+    try {
+      const response = await getBackfillExecutions(signal);
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistory(response);
+      }
+    } catch (failure: unknown) {
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistoryError(
+          describeApiError(failure, "Backfill remediation history is unavailable.").summary
+        );
+      }
+    } finally {
+      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
+        setRemediationHistoryLoading(false);
+      }
+    }
+  }, [getBackfillExecutions]);
+
+  useEffect(() => {
+    if (workstream !== "backfills") {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    void refreshRemediationHistory(controller.signal);
+
+    return () => controller.abort();
+  }, [refreshRemediationHistory, workstream]);
+
+  const remediationQueueState = useMemo(
+    () => buildBackfillRemediationQueueState(remediationHistory, remediationQueueSort),
+    [remediationHistory, remediationQueueSort]
+  );
+  const toggleRemediationQueueSort = useCallback((columnId: string) => {
+    if (columnId !== "tier" && columnId !== "deadline") return;
+    setRemediationQueueSort((current) => current.columnId === columnId
+      ? { columnId, direction: current.direction === "asc" ? "desc" : "asc" }
+      : { columnId, direction: "asc" });
+  }, []);
   const selectedProvider = useMemo(
     () => resolveSelectedProvider(data?.providers ?? [], selectedProviderId),
     [data, selectedProviderId]
@@ -1590,6 +1485,11 @@ export function useDataViewModel(
       if (finalProgress && token.isCurrent()) {
         token.safeSetState(setLiveProgress, finalProgress);
       }
+      await refreshRemediationHistory(token.signal);
+      if (!token.isCurrent()) {
+        backfillLifecycle.markStale(token.version);
+        return;
+      }
       backfillLifecycle.succeed(token, { message: "Historical backfill run completed." });
     } catch (err) {
       if (!token.isCurrent()) {
@@ -1607,7 +1507,7 @@ export function useDataViewModel(
       }
       backfillLifecycle.finish(token);
     }
-  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, services]);
+  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, services]);
 
   const resetPlaidInstitutionSearch = useCallback(() => {
     plaidInstitutionSearchRevisionRef.current += 1;
@@ -2006,6 +1906,11 @@ export function useDataViewModel(
     result,
     runResultCard,
     liveProgressState,
+    remediationQueueState,
+    remediationHistoryLoading,
+    remediationHistoryError,
+    remediationQueueSort,
+    toggleRemediationQueueSort,
     error,
     busy,
     phase,
@@ -3989,6 +3894,63 @@ export function buildBackfillLiveProgressState(
   };
 }
 
+export function buildBackfillRemediationQueueState(
+  response: BackfillExecutionHistoryResponse | null,
+  sort: BackfillRemediationQueueSortState = { columnId: "tier", direction: "asc" }
+): BackfillRemediationQueueState | null {
+  if (!response) return null;
+
+  const defaultProvider = formatBackfillValue(response.autoRemediation.defaultProvider, "Not configured");
+  const rows = response.executions
+    .filter((execution) => execution.autoRemediationSla !== null)
+    .map((execution): BackfillRemediationQueueRow => {
+      const sla = execution.autoRemediationSla!;
+      const dueAt = new Date(sla.dueAtUtc);
+      const deadlineSort = Number.isNaN(dueAt.getTime()) ? Number.MAX_SAFE_INTEGER : dueAt.getTime();
+      return {
+        executionId: execution.executionId,
+        symbols: execution.symbols.length > 0 ? execution.symbols.join(", ") : `${execution.symbolsProcessed} symbol${execution.symbolsProcessed === 1 ? "" : "s"}`,
+        provider: formatBackfillValue(sla.provider, defaultProvider),
+        tier: sla.tier === "SameBusinessDay" ? "Same business day" : "Standard",
+        tierSort: sla.tier === "SameBusinessDay" ? 0 : 1,
+        status: formatBackfillRemediationStatus(sla.status),
+        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : `${formatUtcMinute(dueAt)} UTC`,
+        deadlineSort,
+        workflow: formatBackfillValue(sla.downstreamWorkflow, "Unassigned"),
+        owner: sla.requiresOwnerAssignment ? "Assignment required" : "Not required",
+        outcome: formatBackfillValue(execution.autoRemediationLastOutcome, execution.status),
+        evidence: [
+          formatBackfillValue(sla.reasonCode, "Reason unavailable"),
+          sla.triggerSource,
+          sla.isCompatibilityDerived ? "Compatibility-derived legacy evidence" : null
+        ].filter(Boolean).join(" · ")
+      };
+    });
+
+  const direction = sort.direction === "asc" ? 1 : -1;
+  rows.sort((left, right) => {
+    const comparison = sort.columnId === "deadline"
+      ? left.deadlineSort - right.deadlineSort
+      : left.tierSort - right.tierSort || left.deadlineSort - right.deadlineSort;
+    return comparison === 0
+      ? left.executionId.localeCompare(right.executionId)
+      : comparison * direction;
+  });
+
+  return {
+    rows,
+    summary: `${rows.length} retained remediation execution${rows.length === 1 ? "" : "s"}; ${response.autoRemediation.withReason} carry typed reason evidence.`,
+    defaultProvider,
+    observedAt: formatBackfillProgressTimestamp(response.timestamp)
+  };
+}
+
+function formatBackfillRemediationStatus(status: string): string {
+  return status
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (value) => value.toUpperCase());
+}
+
 function resolveBackfillProviderProgressStatus(
   symbol: BackfillProviderProgressSnapshot["symbols"][string]
 ): string {
@@ -4508,185 +4470,6 @@ export function buildProviderSetupDialogState(
   };
 }
 
-export function buildPlaidInstitutionSearchState({
-  form,
-  query,
-  phase,
-  results,
-  selectedInstitutionId,
-  error,
-  linkTokenPhase = "idle",
-  linkTokenResult = null,
-  exchangeResult = null,
-  linkTokenError = null
-}: {
-  form: ProviderSetupFormState;
-  query: string;
-  phase: ProviderSetupInstitutionSearchPhase;
-  results: PlaidInstitution[];
-  selectedInstitutionId: string | null;
-  error: ApiErrorDisplay | null;
-  linkTokenPhase?: ProviderSetupPlaidLinkTokenPhase;
-  linkTokenResult?: PlaidLinkTokenResponse | null;
-  exchangeResult?: PlaidPublicTokenExchangeResult | null;
-  linkTokenError?: ApiErrorDisplay | null;
-}): ProviderSetupInstitutionSearchState | null {
-  if (form.kind !== "plaid") {
-    return null;
-  }
-
-  const trimmedQuery = query.trim();
-  const disabledReason = null;
-  const searchDisabledReason = trimmedQuery.length < 2
-    ? "Type at least two characters to search for a financial institution."
-    : null;
-  const selectedInstitution = results.find((institution) => institution.institutionId === selectedInstitutionId);
-  const linkTokenDisabledReason = selectedInstitution
-    ? null
-    : "Select a supported financial institution before opening the secure bank connection.";
-  const linkInstitutionName = linkTokenResult?.institutionName ?? selectedInstitution?.name ?? "the selected institution";
-  const linkTokenStatusLabel = linkTokenPhase === "creating"
-    ? "Preparing the secure bank connection."
-    : linkTokenPhase === "opening"
-      ? `Plaid Link is open for ${linkInstitutionName}. Complete the secure bank login in the modal.`
-      : linkTokenPhase === "exchanging"
-        ? "Plaid Link returned a public token. Meridian is exchanging it on the server."
-        : linkTokenPhase === "linked"
-          ? `${linkInstitutionName} account evidence was linked and stored by Meridian.`
-          : linkTokenPhase === "ready"
-            ? `Secure sandbox bank connection is ready for ${linkInstitutionName}.`
-            : linkTokenPhase === "error"
-              ? linkTokenError?.summary ?? "Secure bank connection could not be prepared."
-              : selectedInstitution
-                ? `Open Plaid Link for ${selectedInstitution.name}, then sign in with the sandbox test credentials.`
-                : "Select a supported institution to prepare the sandbox bank connection.";
-  const statusLabel = phase === "searching"
-    ? "Searching supported financial institutions."
-    : phase === "error"
-      ? error?.summary ?? "Bank search failed."
-      : phase === "success"
-        ? results.length === 0
-          ? `No supported institutions matched "${trimmedQuery}".`
-          : `${results.length} supported institution${results.length === 1 ? "" : "s"} found for "${trimmedQuery}".`
-        : "Search Plaid-supported institutions before opening the bank connection flow.";
-
-  return {
-    id: "provider-setup-plaid-institution",
-    label: "Financial institution",
-    ariaLabel: "Search supported financial institutions",
-    placeholder: "Search for your bank",
-    description: "Availability comes from Meridian's bank-connection provider. Final consent still happens in the secure bank connection flow.",
-    value: query,
-    disabled: Boolean(disabledReason),
-    disabledReason,
-    phase,
-    statusLabel,
-    searchAction: {
-      label: phase === "searching" ? "Searching..." : "Search",
-      ariaLabel: searchDisabledReason
-        ? `Search supported financial institutions unavailable: ${searchDisabledReason}`
-        : `Search supported financial institutions for ${trimmedQuery}`,
-      disabled: phase === "searching" || searchDisabledReason !== null,
-      disabledReason: phase === "searching" ? "Bank search is already running." : searchDisabledReason,
-      busy: phase === "searching"
-    },
-    results: results.map((institution) => ({
-      institutionId: institution.institutionId,
-      name: institution.name,
-      detail: [
-        institution.institutionId,
-        institution.countryCodes.join(", "),
-        institution.products.length > 0 ? institution.products.join(", ") : null
-      ].filter(Boolean).join(" | "),
-      selected: institution.institutionId === selectedInstitutionId
-    })),
-    selectedInstitutionLabel: selectedInstitution?.name ?? null,
-    linkTokenPhase,
-    linkTokenStatusLabel,
-    linkTokenAction: {
-      label: linkTokenPhase === "creating"
-        ? "Preparing..."
-        : linkTokenPhase === "opening"
-          ? "Plaid Link open"
-          : linkTokenPhase === "exchanging"
-            ? "Linking..."
-            : linkTokenPhase === "linked"
-              ? "Linked"
-              : "Open secure bank connection",
-      ariaLabel: linkTokenDisabledReason
-        ? `Open secure bank connection unavailable: ${linkTokenDisabledReason}`
-        : `Open secure bank connection for ${selectedInstitution?.name}`,
-      disabled: linkTokenPhase === "creating" || linkTokenPhase === "opening" || linkTokenPhase === "exchanging" || linkTokenPhase === "linked" || linkTokenDisabledReason !== null,
-      disabledReason: linkTokenPhase === "creating" || linkTokenPhase === "opening" || linkTokenPhase === "exchanging"
-        ? "Secure bank connection is already in progress."
-        : linkTokenPhase === "linked"
-          ? "Bank account evidence is already linked."
-          : linkTokenDisabledReason,
-      busy: linkTokenPhase === "creating" || linkTokenPhase === "opening" || linkTokenPhase === "exchanging"
-    },
-    linkTokenResult: linkTokenResult
-      ? {
-          linkTokenPreview: maskLinkToken(linkTokenResult.linkToken),
-          requestId: linkTokenResult.requestId ?? null,
-          expirationLabel: formatOptionalDateTime(linkTokenResult.expiration ?? null),
-          institutionLabel: linkTokenResult.institutionName ?? selectedInstitution?.name ?? null,
-          environmentLabel: linkTokenResult.environment ?? form.environment ?? null
-        }
-      : null,
-    linkedEvidence: exchangeResult
-      ? {
-          itemId: exchangeResult.item.itemId,
-          institutionName: exchangeResult.item.institutionName,
-          status: exchangeResult.item.status,
-          accountCountLabel: `${exchangeResult.accounts.length} account${exchangeResult.accounts.length === 1 ? "" : "s"} linked`,
-          accounts: exchangeResult.accounts.map((account) => ({
-            id: account.plaidAccountId,
-            name: account.name,
-            detail: [
-              account.mask ? `mask ${account.mask}` : null,
-              account.type,
-              account.subtype
-            ].filter(Boolean).join(" | ")
-          })),
-          requestId: exchangeResult.requestId ?? null
-        }
-      : null,
-    sandboxGuide: form.environment === "sandbox" || linkTokenResult?.environment?.toLowerCase() === "sandbox"
-      ? {
-          title: "Sandbox login",
-          detail: "Use these Plaid Sandbox credentials inside the secure bank connection after Link opens.",
-          username: "user_good",
-          password: "pass_good"
-        }
-      : null,
-    errorText: error?.summary ?? null
-  };
-}
-
-function maskLinkToken(linkToken: string): string {
-  if (linkToken.length <= 16) {
-    return "Link token ready";
-  }
-
-  return `${linkToken.slice(0, 12)}...${linkToken.slice(-4)}`;
-}
-
-function formatOptionalDateTime(value: string | null): string | null {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short"
-  });
-}
-
 export function buildProviderSetupWorkflowSteps(phase: ProviderSetupPhase): ProviderSetupWorkflowStepState[] {
   const connected = phase === "success";
   return [
@@ -5040,3 +4823,5 @@ function providerSetupCredentialRequiredMessage(label: string, providerLabel: st
   const article = label.toUpperCase().startsWith("API") ? "An" : "A";
   return `${article} ${label} is required for ${providerLabel}.`;
 }
+import { buildPlaidInstitutionSearchState } from "./data-screen.plaid-institution-search";
+export { buildPlaidInstitutionSearchState } from "./data-screen.plaid-institution-search";

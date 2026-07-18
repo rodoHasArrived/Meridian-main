@@ -460,7 +460,7 @@
                         </Grid>
 
                         <ProgressBar x:Name="OverallProgressBar" Minimum="0" Maximum="100"
-                                     Value="{Binding OverallProgressPercent}" Height="8"
+                                     Value="{Binding OverallProgressPercent, Mode=OneWay}" Height="8"
                                      Background="{StaticResource ConsoleBackgroundMediumBrush}"
                                      Foreground="{StaticResource SuccessColorBrush}"
                                      Margin="0,0,0,16" />
@@ -908,7 +908,7 @@
                                   MaxHeight="200">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1EFFCA28" CornerRadius="4" Padding="12,8" Margin="0,2">
+                                    <Border Background="{StaticResource WarningTintSubtleBrush}" CornerRadius="4" Padding="12,8" Margin="0,2">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />

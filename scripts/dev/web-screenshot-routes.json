@@ -745,16 +745,25 @@
     {
       "id": "W04I2",
       "name": "web-reporting-run-detail",
-      "path": "/reporting/runs/detail?runId=report-run-board-202605",
+      "path": "/reporting/runs/detail?runId=report-run-investor-202605",
       "docLabel": "Reporting \u2014 Run Detail",
       "waitForText": "Report Run Detail",
       "requiredApiRoutes": [
-        "/api/workstation/reporting"
+        "/api/fund-structure/reporting/runs/report-run-investor-202605",
+        "/api/fund-structure/reporting/runs/series/report-series-investor-monthly-statement",
+        "/api/fund-structure/reporting/distribution/transports",
+        "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/deliveries",
+        "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/access-grants"
       ],
       "waitForTexts": [
-        "Parameters used",
-        "Generated artifact references",
-        "Clone parameters"
+        "Governed lifecycle",
+        "Immutable release artifacts",
+        "Immutable audit trail",
+        "Authenticated transport catalog"
+      ],
+      "waitForAbsentTexts": [
+        "Loading governed report run",
+        "Governed report run unavailable"
       ]
     },
     {
@@ -769,7 +778,7 @@
       "waitForTexts": [
         "Schedule delivery",
         "Monthly governed investor statement delivery.",
-        "Run due",
+        "Due schedules are leased and executed by Meridian",
         "Delivery history"
       ]
     },
@@ -1034,6 +1043,41 @@
         "Evidence subjects",
         "Document intake",
         "Evidence Vault documents"
+      ]
+    },
+    {
+      "id": "W06J",
+      "name": "web-data-ingestion-operations",
+      "path": "/data/operations",
+      "docLabel": "Data \u2014 Ingestion Operations",
+      "waitForText": "Ingestion Operations Center",
+      "requiredApiRoutes": [
+        "/api/workstation/data",
+        "/api/workstation/data/ingestion-operations"
+      ],
+      "waitForTexts": [
+        "Ingestion Operations Center",
+        "Action rationale",
+        "Resumable"
+      ],
+      "waitForAbsentTexts": [
+        "Loading ingestion operations\u2026"
+      ]
+    },
+    {
+      "id": "W06K",
+      "name": "web-data-storage-assurance",
+      "path": "/data/assurance",
+      "docLabel": "Data \u2014 Storage Assurance",
+      "waitForText": "Storage & Data Assurance",
+      "requiredApiRoutes": [
+        "/api/workstation/data",
+        "/api/workstation/data/storage-assurance"
+      ],
+      "waitForTexts": [
+        "Storage & Data Assurance",
+        "Assurance signals",
+        "Guarded maintenance"
       ]
     },
     {

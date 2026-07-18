@@ -1,9 +1,8 @@
-import { AlertCircle, BookCheck, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
+import { BookCheck, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -20,27 +19,33 @@ import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
 import { ReconciliationComparisonPanel, TrialBalanceTable } from "@/components/accounting";
 import {
+  approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
   certifyAccountingSystemExportPackage,
+  configureDailyValuationSchedule,
   createAccountingSystemExportPackage,
   getAccountingSystemExportPackageManifest,
   getAccountingSystemMappingProfiles,
   getAccountingSystemProviders,
   getFinancialOperationsCommandCenter,
+  getPrivateCapitalCloseCockpit,
   getLatestAccountingSystemImport,
   getLatestAccountingSystemReconciliation,
   getFinancialRecordExplorer,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
   listAccountingSystemExportPackages,
+  listDailyValuationSchedules,
   previewAccountingSystemImport,
   rejectOperationsContinuityWorkflow,
+  runDueDailyValuationSchedules,
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
+import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
@@ -51,6 +56,12 @@ import {
   SecurityOpenLotReadModelPanel,
 } from "@/screens/accounting-screen.security-master-detail-panels";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
+import {
+  OperationalExceptionWorkbenchPanel,
+  ReconciliationQueueSummaryCard,
+  TradingParametersPanel,
+  reconciliationQueueColumns,
+} from "@/screens/accounting-screen.operations-panels";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -83,21 +94,15 @@ import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-mo
 import type {
   AccountingConfigurationViewModel,
   AccountingRulesStudioPromotionReadinessViewModel,
-  CapitalAccountWorkbenchViewModel,
   ManualJournalEntryWorkbenchViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
-  ReconciliationQueuePanelViewState,
-  ReconciliationQueueRunRowViewModel,
   ReconciliationStatementRunRowViewModel,
-  ReconciliationQueueRunTone,
   ReconciliationBreakDetailViewModel,
   ReconciliationDetailActionsViewModel,
   CloseCommandCenterViewState,
-  OperationalExceptionWorkbenchViewState,
   SecuritySearchResultRowViewModel,
-  TradingParametersViewState,
 } from "@/screens/accounting-screen.view-model";
 import type {
   AccountingSystemImportDetail,
@@ -109,6 +114,7 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  DailyValuationScheduleWorkItem,
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialOperationsCommandCenter,
@@ -117,6 +123,7 @@ import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsTimelineEntry,
+  PrivateCapitalCloseCockpit,
 } from "@/types";
 import {
   approvalBlockedReason,
@@ -163,40 +170,6 @@ function resolveExplorerSecurityId(recordId: string): string | null {
     ? securityId
     : null;
 }
-
-const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
-  muted: "text-muted-foreground",
-  warning: "text-warning",
-  success: "text-success",
-  primary: "text-primary"
-};
-
-const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRowViewModel>[] = [
-  {
-    id: "run",
-    label: "Run",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.strategyName}</span>
-      </span>
-    )
-  },
-  { id: "mode", label: "Mode", render: (row) => <span className="font-mono uppercase text-muted-foreground">{row.modeLabel}</span> },
-  { id: "status", label: "Status", render: (row) => row.runStatusLabel },
-  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
-  { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.openBreakLabel}</span> },
-  {
-    id: "reconciliation",
-    label: "Reconciliation",
-    render: (row) => (
-      <span className={cn("font-mono text-xs uppercase tracking-[0.14em]", reconciliationQueueToneClass[row.reconciliationTone])}>
-        {row.reconciliationStatusLabel}
-      </span>
-    )
-  },
-  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span> }
-];
-
 
 const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStatementRunRowViewModel>[] = [
   { id: "brokerCustodian", label: "Broker/Custodian", render: (row) => <span title={row.unavailableReason ?? undefined}>{row.brokerCustodianLabel}</span> },
@@ -1063,7 +1036,15 @@ function mergeExternalGlExportPackage(
   return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
-function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } {
+interface CloseWorkflowQuery {
+  fundProfileId?: string;
+  fundAccountId?: string;
+  ledgerBookId?: string;
+  periodId?: string;
+  status?: string;
+}
+
+function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
   const params = new URLSearchParams(search);
   return {
     fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
@@ -1072,6 +1053,32 @@ function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fund
     periodId: normalizeOptionalQueryValue(params.get("periodId")),
     status: normalizeOptionalQueryValue(params.get("workflowStatus"))
   };
+}
+
+function selectCurrentDailyValuationSchedule(
+  schedules: DailyValuationScheduleWorkItem[],
+  status: PrivateCapitalCloseCockpit["dailyValuationStatus"] | null | undefined,
+  query: CloseWorkflowQuery
+): DailyValuationScheduleWorkItem | null {
+  const expectedScheduleId = status?.scheduleId?.trim() || null;
+  const expectedFundProfileId = status?.fundProfileId?.trim() || query.fundProfileId || null;
+  const expectedLedgerBookId = status?.ledgerBookId?.trim() || query.ledgerBookId || null;
+  const expectedPeriodId = status?.periodId?.trim() || query.periodId || null;
+  const expectedEntityId = status?.entityId?.trim() || null;
+  const expectedTenantId = status?.tenantId?.trim() || null;
+  const expectedCompanyId = status?.companyId?.trim() || null;
+  const matches = (actual: string | null | undefined, expected: string | null) =>
+    !expected || actual?.trim().localeCompare(expected, undefined, { sensitivity: "accent" }) === 0;
+
+  return schedules.find((schedule) =>
+    matches(schedule.scheduleId, expectedScheduleId) &&
+    matches(schedule.fundProfileId, expectedFundProfileId) &&
+    matches(schedule.ledgerBookId, expectedLedgerBookId) &&
+    matches(schedule.periodId, expectedPeriodId) &&
+    matches(schedule.entityId, expectedEntityId) &&
+    matches(schedule.tenantId, expectedTenantId) &&
+    matches(schedule.companyId, expectedCompanyId)
+  ) ?? null;
 }
 
 function normalizeOptionalQueryValue(value: string | null): string | undefined {
@@ -1693,6 +1700,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [financialOperationsCommandCenter, setFinancialOperationsCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
   const [financialOperationsCommandCenterLoading, setFinancialOperationsCommandCenterLoading] = useState(false);
   const [financialOperationsCommandCenterError, setFinancialOperationsCommandCenterError] = useState<string | null>(null);
+  const [privateCapitalCloseCockpit, setPrivateCapitalCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
+  const [dailyValuationSchedules, setDailyValuationSchedules] = useState<DailyValuationScheduleWorkItem[]>([]);
+  const [activeDailyValuationCommand, setActiveDailyValuationCommand] = useState<NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]> | null>(null);
+  const [dailyValuationBatchStatusText, setDailyValuationBatchStatusText] = useState<string | null>(null);
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
@@ -2105,6 +2116,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     if (!data) {
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
+      setPrivateCapitalCloseCockpit(null);
+      setDailyValuationSchedules([]);
       return;
     }
 
@@ -2113,17 +2126,24 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     setCloseWorkflowError(null);
     setFinancialOperationsCommandCenterError(null);
     try {
-      const [commandCenter, rows] = await Promise.all([
+      const [commandCenter, closeCockpit, rows, schedules] = await Promise.all([
         getFinancialOperationsCommandCenter(closeWorkflowQuery).catch(err => {
           setFinancialOperationsCommandCenterError(formatApprovalError(err, "Financial Operations command center could not be loaded."));
+          return null;
+        }),
+        getPrivateCapitalCloseCockpit(closeWorkflowQuery).catch(err => {
+          setFinancialOperationsCommandCenterError(formatApprovalError(err, "Private-capital close cockpit could not be loaded."));
           return null;
         }),
         getOperationsContinuityWorkflows(closeWorkflowQuery).catch(err => {
           setCloseWorkflowError(formatApprovalError(err, "Close workflow detail could not be loaded."));
           return [];
-        })
+        }),
+        listDailyValuationSchedules().catch(() => [])
       ]);
       setFinancialOperationsCommandCenter(commandCenter);
+      setPrivateCapitalCloseCockpit(closeCockpit);
+      setDailyValuationSchedules(schedules);
       const selected = selectCloseWorkflowSummary(rows, closeWorkflowQuery);
       if (!selected) {
         setCloseWorkflow(null);
@@ -2135,10 +2155,107 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     } catch (error) {
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
+      setPrivateCapitalCloseCockpit(null);
+      setDailyValuationSchedules([]);
       setCloseWorkflowError(formatApprovalError(error, "Close workflow detail could not be loaded."));
     } finally {
       setCloseWorkflowLoading(false);
       setFinancialOperationsCommandCenterLoading(false);
+    }
+  };
+
+  const effectiveDailyValuationStatus = privateCapitalCloseCockpit?.dailyValuationStatus
+    ?? financialOperationsCommandCenter?.privateCapitalCloseCockpit?.dailyValuationStatus
+    ?? null;
+  const currentDailyValuationSchedule = useMemo(
+    () => selectCurrentDailyValuationSchedule(dailyValuationSchedules, effectiveDailyValuationStatus, closeWorkflowQuery),
+    [closeWorkflowQuery, dailyValuationSchedules, effectiveDailyValuationStatus]
+  );
+
+  const runCloseCommand = async (
+    command: NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]>
+  ) => {
+    const status = effectiveDailyValuationStatus;
+    const hasRetainedBatch = Boolean(status?.batchCorrelationId) && (status?.journalEntryIds.length ?? 0) > 0;
+    if (command === "configure-daily-valuation-schedule" && !currentDailyValuationSchedule) {
+      setDailyValuationBatchStatusText("No server-retained daily valuation schedule is loaded for this close scope.");
+      return;
+    }
+    if (command === "configure-daily-valuation-schedule" &&
+        (status?.state === "Running" || status?.state === "DraftReady" ||
+          (status?.state === "Blocked" && hasRetainedBatch))) {
+      setDailyValuationBatchStatusText("Complete or correct the retained daily valuation batch before reconfiguring its schedule.");
+      return;
+    }
+    if (command === "run-due-daily-valuation-schedules" &&
+        (!currentDailyValuationSchedule || !status?.isConfigured || !status.isEnabled || status.state !== "Scheduled")) {
+      setDailyValuationBatchStatusText("The current close scope does not have an enabled Scheduled daily valuation configuration.");
+      return;
+    }
+    if ((command === "approve-daily-valuation-batch" && status?.state !== "DraftReady") ||
+        (command === "retry-daily-valuation-batch" && (status?.state !== "Blocked" || !hasRetainedBatch)) ||
+        ((command === "approve-daily-valuation-batch" || command === "retry-daily-valuation-batch") &&
+          (!status?.scheduleId || !status.fundProfileId || status.journalEntryIds.length === 0))) {
+      setDailyValuationBatchStatusText("No retained daily valuation batch is available for this command.");
+      return;
+    }
+
+    setActiveDailyValuationCommand(command);
+    setDailyValuationBatchStatusText(null);
+    try {
+      if (command === "configure-daily-valuation-schedule") {
+        const configured = await configureDailyValuationSchedule({
+          ...currentDailyValuationSchedule!,
+          actor: "close-cockpit-operator"
+        });
+        setDailyValuationBatchStatusText(
+          `Configured daily valuation schedule ${configured.scheduleId} for ${configured.nextRunAtUtc}.`
+        );
+        await refreshCloseWorkflow();
+        return;
+      }
+
+      if (command === "run-due-daily-valuation-schedules") {
+        const result = await runDueDailyValuationSchedules();
+        const currentRun = result.runs.find((run) => run.scheduleId === currentDailyValuationSchedule!.scheduleId);
+        setDailyValuationBatchStatusText(currentRun
+          ? `Daily valuation schedule ${currentRun.scheduleId} finished in ${currentRun.state}: ${currentRun.summary}`
+          : result.runs.length > 0
+            ? `Ran ${result.runs.length} due daily valuation schedule(s); the current schedule was not due.`
+            : "No daily valuation schedules were due for the current tenant scope.");
+        await refreshCloseWorkflow();
+        return;
+      }
+
+      const isRetry = command === "retry-daily-valuation-batch";
+      const result = await approveAndPostDailyValuationBatch({
+        scheduleId: status!.scheduleId!,
+        fundProfileId: status!.fundProfileId!,
+        actor: "close-cockpit-operator",
+        notes: isRetry
+          ? "Retried the incomplete retained daily valuation batch from the controller close cockpit."
+          : "Approved the complete retained daily valuation batch from the controller close cockpit.",
+        evidenceLinks: status!.evidenceLinks
+          .map((link) => link.route)
+          .filter((route): route is string => Boolean(route)),
+        tenantId: status!.tenantId ?? null,
+        companyId: status!.companyId ?? null
+      });
+      setDailyValuationBatchStatusText(result.isComplete
+        ? `${isRetry ? "Retried and posted" : "Posted"} all ${result.postedJournalEntryIds.length} daily valuation drafts in batch ${result.batchCorrelationId}.`
+        : `Daily valuation batch ${isRetry ? "retry " : ""}remains blocked: ${result.blockers.join(" ")}`);
+      await refreshCloseWorkflow();
+    } catch (error) {
+      const fallback = command === "configure-daily-valuation-schedule"
+        ? "Daily valuation schedule could not be configured."
+        : command === "run-due-daily-valuation-schedules"
+          ? "Due daily valuation schedules could not be run."
+          : command === "retry-daily-valuation-batch"
+            ? "Daily valuation batch correction and retry could not complete."
+            : "Daily valuation batch could not be approved and posted.";
+      setDailyValuationBatchStatusText(formatApprovalError(error, fallback));
+    } finally {
+      setActiveDailyValuationCommand(null);
     }
   };
 
@@ -2153,7 +2270,13 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const closeCommandCenter = useMemo(
     () => data ? buildCloseCommandCenterViewState({
       data,
-      commandCenter: financialOperationsCommandCenter,
+      commandCenter: financialOperationsCommandCenter
+        ? {
+          ...financialOperationsCommandCenter,
+          privateCapitalCloseCockpit: privateCapitalCloseCockpit
+            ?? financialOperationsCommandCenter.privateCapitalCloseCockpit
+        }
+        : null,
       commandCenterLoading: financialOperationsCommandCenterLoading,
       commandCenterError: financialOperationsCommandCenterError,
       workflow: closeWorkflow,
@@ -2162,7 +2285,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       accountingSystemProviders,
       accountingSystemImport,
       accountingSystemReconciliation,
-      multiAssetCoverage
+      multiAssetCoverage,
+      currentDailyValuationSchedule
     }) : null,
     [
       accountingSystemImport,
@@ -2175,7 +2299,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       financialOperationsCommandCenter,
       financialOperationsCommandCenterError,
       financialOperationsCommandCenterLoading,
-      multiAssetCoverage
+      multiAssetCoverage,
+      privateCapitalCloseCockpit,
+      currentDailyValuationSchedule
     ]
   );
   const closeReportPackage = useAccountingCloseReportPackageViewModel(closeWorkflow);
@@ -2283,7 +2409,15 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           <TechnicalDetails label="System details" className="panel-surface">
             <div className="space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
-              {closeCommandCenter ? <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} /> : null}
+              {closeCommandCenter ? (
+                <CloseCommandCenterPanel
+                  view={closeCommandCenter}
+                  onRefresh={() => void refreshCloseWorkflow()}
+                  onCommand={(command) => void runCloseCommand(command)}
+                  activeCommand={activeDailyValuationCommand}
+                  commandStatusText={dailyValuationBatchStatusText}
+                />
+              ) : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
               <AccountingTaskModeLauncher />
             </div>
@@ -2294,7 +2428,13 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       {sectionVisibility.showWorkflowDetails && workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 
       {sectionVisibility.showWorkflowDetails && closeCommandCenter ? (
-        <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} />
+        <CloseCommandCenterPanel
+          view={closeCommandCenter}
+          onRefresh={() => void refreshCloseWorkflow()}
+          onCommand={(command) => void runCloseCommand(command)}
+          activeCommand={activeDailyValuationCommand}
+          commandStatusText={dailyValuationBatchStatusText}
+        />
       ) : null}
 
       {sectionVisibility.showWorkflowDetails ? <AccountingCloseReportPackagePanel view={closeReportPackage} /> : null}
@@ -3982,196 +4122,6 @@ function CorporateActionsPanel({
   );
 }
 
-function TradingParametersPanel({ view }: { view: TradingParametersViewState }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          Trading parameters
-        </CardTitle>
-        <CardDescription>
-          Lot size, tick size, margin, and circuit-breaker constraints
-          {view.securityId ? <> for <span className="font-mono">{view.securityId}</span></> : null}
-          {view.asOfLabel !== "—" ? <> as of {view.asOfLabel}</> : null}.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && view.fields.length === 0 && (
-          <p className="text-sm text-muted-foreground">No trading parameters available for this security.</p>
-        )}
-        {view.fields.length > 0 && (
-          <dl className="grid gap-2">
-            {view.fields.map((field) => (
-              <div key={field.label} className="grid min-w-0 grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-                <dt className="min-w-0 text-xs text-muted-foreground">{field.label}</dt>
-                <dd className={cn(
-                  "min-w-0 break-words text-right font-mono text-xs",
-                  field.tone === "warning" ? "text-warning" : "text-foreground"
-                )}>
-                  {field.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function ReconciliationQueueSummaryCard({ view }: { view: ReconciliationQueuePanelViewState }) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              {view.overviewTitle}
-            </CardTitle>
-            <CardDescription className="mt-2">{view.overviewDescription}</CardDescription>
-          </div>
-          <Button asChild variant="outline" size="sm" className="w-fit shrink-0">
-            <Link to={view.overviewActionHref} aria-label={view.overviewActionAriaLabel}>
-              {view.overviewActionLabel}
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <DenseDataTable
-          columns={reconciliationQueueColumns}
-          rows={view.rows}
-          getRowId={(row) => row.runId}
-          getRowAriaLabel={(row) => row.ariaLabel}
-          emptyText={view.emptyText}
-          ariaLabel={view.listLabel}
-          caption={view.overviewCaption}
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-
-function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExceptionWorkbenchViewState }) {
-  return (
-    <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Exceptions</p>
-          <h3 id="accounting-exceptions-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link to={view.reconciliationHref}>Reconciliation queue</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link to={view.approvalsHref}>Approval gate</Link>
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {view.metricRows.map((metric) => (
-          <MetricSnapshotCard
-            key={metric.id}
-            id={metric.id}
-            label={metric.label}
-            value={metric.value}
-            delta={metric.detail}
-            tone={metric.tone}
-          />
-        ))}
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <Card className="panel-surface" role="region" aria-label="Unified operational exception queue">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
-              Case queue
-            </CardTitle>
-            <CardDescription>Reconciliation exceptions with owner, SLA, comments, and audit evidence counts.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {view.cases.length > 0 ? (
-              <div role="list" className="space-y-2" aria-label="Operational exception cases">
-                {view.cases.map((item) => (
-                  <div key={item.id} role="listitem" aria-label={item.ariaLabel} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground">{item.title}</div>
-                        <div className="mt-1 break-words text-xs leading-5 text-muted-foreground">{item.subtitle}</div>
-                      </div>
-                      <Badge variant={item.statusTone}>{item.statusLabel}</Badge>
-                    </div>
-                    <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4">
-                      <span>Owner: {item.ownerLabel}</span>
-                      <span>Urgency: {item.slaLabel}</span>
-                      <span>{item.commentLabel}</span>
-                      <span>{item.auditLabel}</span>
-                    </div>
-                    <Button asChild size="sm" variant="ghost" className="mt-3">
-                      <Link to={item.routeHref}>{item.routeLabel}</Link>
-                    </Button>
-                    <TechnicalDetails label="Audit details" className="mt-3 bg-background/45">
-                      <dl className="grid gap-2 text-xs text-muted-foreground">
-                        <AccountingValue label="Case ID" value={item.id} />
-                        <AccountingValue label="Raw category" value={item.rawCategoryLabel} />
-                      </dl>
-                    </TechnicalDetails>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                {view.emptyText}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface" role="region" aria-label="Exception workflow handoffs">
-          <CardHeader>
-            <CardTitle className="text-base">Workflow handoffs</CardTitle>
-            <CardDescription>Resolution work stays connected to approval, audit, and retained evidence paths.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button asChild variant="secondary" className="w-full justify-start">
-              <Link to={view.reconciliationHref}>Open break queue</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.approvalsHref}>Review approval blockers</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.evidenceHref}>Open exception evidence packet</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.auditHref}>Open audit timeline</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-}
-
 function AccountingHighlight({
   icon: Icon,
   title,
@@ -4190,344 +4140,6 @@ function AccountingHighlight({
   );
 }
 
-function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
-  if (!view.available) {
-    return (
-      <Card className="panel-surface" role="region" aria-labelledby="capital-account-workbench-heading">
-        <CardHeader>
-          <CardTitle id="capital-account-workbench-heading" className="text-base">{view.title}</CardTitle>
-          <CardDescription>{view.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <StatusBanner
-            role={view.errorText ? "alert" : "status"}
-            tone={view.errorText ? "danger" : "info"}
-            title={view.errorText ? "Capital account data unavailable" : "Loading capital account data"}
-            detail={view.errorText ?? "Loading investor accounts, allocation evidence, statement lineage, and audit links from the shared workbench."}
-          />
-          <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
-            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            {view.loading ? "Loading" : "Retry"}
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="panel-surface" role="region" aria-labelledby="capital-account-workbench-heading">
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Private capital</p>
-            <CardTitle id="capital-account-workbench-heading" className="text-base">{view.title}</CardTitle>
-            <CardDescription>{view.description}</CardDescription>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
-            <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
-              <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              Refresh
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {view.errorText ? (
-          <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-            {view.errorText}
-          </div>
-        ) : null}
-
-        <div className="flex flex-wrap gap-2">
-          <AccountingChip label="Projected" value={view.projectedAtLabel} />
-        </div>
-        <TechnicalDetails label="Workbench route" className="max-w-3xl">
-          <div className="break-all font-mono text-xs text-foreground">{view.workbenchRouteLabel}</div>
-        </TechnicalDetails>
-        <p className="text-sm leading-6 text-muted-foreground">{view.statusReason}</p>
-
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {view.summaryCards.map((metric) => (
-            <MetricSnapshotCard
-              key={metric.id}
-              id={metric.id}
-              label={metric.label}
-              value={metric.value}
-              delta={metric.detail}
-              tone={metric.tone}
-            />
-          ))}
-        </div>
-
-        {view.investorAccounts.length === 0 && !view.loading ? (
-          <div role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-3 text-sm text-foreground">
-            <p>{view.emptyText}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="outline">
-                <Link to={WORKSTATION_ROUTE_CATALOG.accountingJournalEntries}>Open journal entries</Link>
-              </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link to={WORKSTATION_ROUTE_CATALOG.accountingConfigure}>Review accounting scope</Link>
-              </Button>
-            </div>
-          </div>
-        ) : null}
-
-        {view.fundEventCommandRows.length > 0 ? (
-          <section className="space-y-2" aria-labelledby="capital-account-fund-event-command-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-fund-event-command-heading" className="text-sm font-semibold text-foreground">Fund-event command centers</h4>
-              <Badge variant="outline">{view.fundEventCommandRows.length.toLocaleString()} events</Badge>
-            </div>
-            <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Fund event</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Routes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.fundEventCommandRows.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60 align-top">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.title}</div>
-                        <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.memoLabel}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.netActivityLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.readinessReasonLabel}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.nextActionLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                        <div>{row.evidenceLabel}</div>
-                        <div className="mt-1">{row.subledgerLabel}</div>
-                        <div className="mt-1">{row.ledgerImpactLabel}</div>
-                        <div className="mt-1">{row.reportOutputLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <a
-                          className="block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={row.commandCenterRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open capital-account fund-event command center for ${row.title}`}
-                        >
-                          {row.commandCenterRouteLabel}
-                        </a>
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={row.activityRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open capital-account fund-event activity for ${row.title}`}
-                        >
-                          {row.activityRouteLabel}
-                        </a>
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={row.evidenceRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open capital-account fund-event evidence for ${row.title}`}
-                        >
-                          {row.evidenceRouteLabel}
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        ) : null}
-
-        <div className="grid min-w-0 gap-4 2xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-          <section className="min-w-0 space-y-2" aria-labelledby="capital-account-investor-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-investor-heading" className="text-sm font-semibold text-foreground">Investor capital accounts</h4>
-              <Badge variant="outline">{view.investorAccounts.length.toLocaleString()} rows</Badge>
-            </div>
-            <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[880px] text-sm">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Account</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-right">Net</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Cash support</th>
-                    <th className="px-3 py-2 text-left">Route</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.investorAccounts.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.title}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.eventLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono tabular-nums">
-                        <div className="text-foreground">{row.netActivityLabel}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.rollForwardLabel}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.activityMixLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{row.evidenceLabel}</td>
-                      <td className="px-3 py-2 text-xs">
-                        <Badge variant={row.paymentEvidenceTone}>{row.paymentEvidenceLabel}</Badge>
-                        <div className="mt-1 text-muted-foreground">{row.paymentEvidenceSummaryLabel}</div>
-                        <div className="mt-1 text-muted-foreground">{row.paymentEvidenceRequiredLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <a href={row.routeLabel} className="inline-flex whitespace-nowrap text-xs font-medium text-primary hover:underline">
-                          Open capital activity
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section className="min-w-0 space-y-2" aria-labelledby="capital-account-allocation-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-allocation-heading" className="text-sm font-semibold text-foreground">Allocation rules</h4>
-              <Badge variant="outline">{view.allocationRules.length.toLocaleString()} checks</Badge>
-            </div>
-            <div className="grid gap-2">
-              {view.allocationRules.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{row.label}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.accountLabel}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.reason}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.basis}</p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                    <AccountingChip label="Evidence" value={row.evidenceLabel} />
-                    <AccountingChip label="Required" value={row.requiredLabel} />
-                    <AccountingChip label="Policy" value={row.policyLabel} />
-                    <AccountingChip label="Effective" value={row.effectiveWindowLabel} />
-                    <AccountingChip label="Approval" value={row.approvalLabel} />
-                    <AccountingChip label="Inputs" value={row.inputSummaryLabel} />
-                    <AccountingChip label="Fund events" value={row.relatedFundEventLabel} />
-                  </div>
-                  <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{row.formulaLabel}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.traceLabel}</p>
-                  {row.routeLabel !== "No route" ? (
-                    <a href={row.routeLabel} className="mt-2 block text-xs font-medium text-primary hover:underline">
-                      Open allocation evidence
-                    </a>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className="grid gap-4 xl:grid-cols-2">
-          <section className="space-y-2" aria-labelledby="capital-account-statement-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-statement-heading" className="text-sm font-semibold text-foreground">Statement lineage</h4>
-              <Badge variant="outline">{view.statementLineage.length.toLocaleString()} statements</Badge>
-            </div>
-            <div className="grid gap-2">
-              {view.statementLineage.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{row.title}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  </div>
-                  <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                    <span>{row.publicationLabel}</span>
-                    <span>{row.provenanceLabel}</span>
-                    <span>{row.restatementLabel}</span>
-                  </div>
-                  {row.changedLineRows.length > 0 ? (
-                    <ul className="mt-2 grid gap-1 text-xs text-muted-foreground" aria-label={`${row.title} restatement changed lines`}>
-                      {row.changedLineRows.map((line) => (
-                        <li key={line.id} className="rounded-sm border border-border/60 px-2 py-1">
-                          <span className="break-all font-mono text-[11px]">{line.lineKey}</span>
-                          <span className="mx-2">{line.valueLabel}</span>
-                          <span>{line.evidenceLabel}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  <TechnicalDetails label="Statement technical details" className="mt-2">
-                    <div className="break-all font-mono text-[11px] text-muted-foreground">{row.manifestLabel}</div>
-                  </TechnicalDetails>
-                  <a href={row.routeLabel} className="mt-2 block text-xs font-medium text-primary hover:underline">Open statement</a>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="space-y-2" aria-labelledby="capital-account-audit-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-audit-heading" className="text-sm font-semibold text-foreground">Audit drill-through</h4>
-              <Badge variant="outline">{view.auditDrillThroughs.length.toLocaleString()} targets</Badge>
-            </div>
-            <div className="grid gap-2">
-              {view.auditDrillThroughs.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{row.title}</div>
-                      <div className="mt-1 text-xs uppercase text-muted-foreground">{row.kind}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.summary}</p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                    <AccountingChip label="Evidence" value={row.evidenceLabel} />
-                    <AccountingChip label="Related" value={row.relatedLabel} />
-                  </div>
-                  {row.routeLabel !== "No route" ? (
-                    <a href={row.routeLabel} className="mt-2 block text-xs font-medium text-primary hover:underline">
-                      Open audit evidence
-                    </a>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-md border border-success/30 bg-success/10 px-3 py-3">
-            <div className="text-xs font-semibold uppercase text-success">Live in v0.18 slice</div>
-            <ul className="mt-2 grid gap-1 text-sm text-foreground">
-              {view.liveCapabilities.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </div>
-          <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-            <div className="text-xs font-semibold uppercase text-muted-foreground">Still planned</div>
-            <ul className="mt-2 grid gap-1 text-sm text-muted-foreground">
-              {view.plannedCapabilities.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: ManualJournalEntryWorkbenchViewModel["privateCapitalActivity"] }) {
   return (

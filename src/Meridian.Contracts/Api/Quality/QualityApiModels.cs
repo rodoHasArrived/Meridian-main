@@ -37,7 +37,7 @@ public sealed record QualityDashboardResponse(
 public sealed record QualityCompositeDashboardResponse(
     string Version,
     DateTimeOffset ObservedAt,
-    double CompositeScore,
+    double? CompositeScore,
     string Status,
     bool IsPartial,
     double CoverageWeight,

@@ -7,16 +7,16 @@
         Width="320" Height="210"
         Title="{Binding Symbol}"
         ShowInTaskbar="False"
-        Background="#0A0A12"
+        Background="{StaticResource FloatWindowBackgroundBrush}"
         Topmost="True">
-    <Grid Background="#0A0A12">
+    <Grid Background="{StaticResource FloatWindowBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Title bar: drag to move, shows symbol name and close button -->
-        <Border Grid.Row="0" Background="#1A2A4A" Padding="8,5"
+        <Border Grid.Row="0" Background="{StaticResource FloatWindowChromeBrush}" Padding="8,5"
                 MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"
                 Cursor="SizeAll">
             <Grid>
@@ -31,7 +31,7 @@
                            VerticalAlignment="Center"/>
                 <Button Grid.Column="1"
                         Content="✕"
-                        Foreground="#888888" Background="Transparent"
+                        Foreground="{StaticResource DarkSurfaceMutedTextBrush}" Background="Transparent"
                         BorderThickness="0" Padding="6,2"
                         Cursor="Arrow"
                         FontSize="12"
@@ -60,20 +60,20 @@
 
             <!-- Bid -->
             <TextBlock Grid.Row="1" Grid.Column="0"
-                       Text="Bid:" Foreground="#888888" FontSize="12"
+                       Text="Bid:" Foreground="{StaticResource DarkSurfaceMutedTextBrush}" FontSize="12"
                        VerticalAlignment="Center" Margin="0,6,0,0"/>
             <TextBlock Grid.Row="1" Grid.Column="1"
                        Text="{Binding BidPrice, StringFormat=N4}"
-                       Foreground="#44CC44" FontFamily="Consolas" FontSize="12"
+                       Foreground="{StaticResource QuoteBidBrush}" FontFamily="Consolas" FontSize="12"
                        VerticalAlignment="Center" Margin="0,6,0,0"/>
 
             <!-- Ask -->
             <TextBlock Grid.Row="2" Grid.Column="0"
-                       Text="Ask:" Foreground="#888888" FontSize="12"
+                       Text="Ask:" Foreground="{StaticResource DarkSurfaceMutedTextBrush}" FontSize="12"
                        VerticalAlignment="Center" Margin="0,4,0,0"/>
             <TextBlock Grid.Row="2" Grid.Column="1"
                        Text="{Binding AskPrice, StringFormat=N4}"
-                       Foreground="#CC4444" FontFamily="Consolas" FontSize="12"
+                       Foreground="{StaticResource QuoteAskBrush}" FontFamily="Consolas" FontSize="12"
                        VerticalAlignment="Center" Margin="0,4,0,0"/>
         </Grid>
     </Grid>

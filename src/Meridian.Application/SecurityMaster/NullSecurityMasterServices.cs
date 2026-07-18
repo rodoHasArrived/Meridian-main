@@ -44,6 +44,12 @@ public sealed class NullSecurityMasterQueryService
     public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
         => Task.FromResult<SecurityDetailDto?>(null);
 
+    public Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(
+        Guid securityId,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+        => Task.FromResult<SecurityDetailDto?>(null);
+
     public Task<SecurityDetailDto?> GetByIdentifierAsync(
         SecurityIdentifierKind identifierKind,
         string identifierValue,
@@ -263,7 +269,7 @@ internal sealed class NullOperatorOverridesStore : IOperatorOverridesStore
 
     public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
         Guid securityId,
-        OperatorOverrideDecisionRequest request,
+        OperatorOverrideDecision decision,
         CancellationToken ct = default)
         => Task.FromException<OperatorOverridesDto>(new InvalidOperationException(
             "Security Master is not configured. " +

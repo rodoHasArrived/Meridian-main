@@ -1,6 +1,7 @@
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import type {
   AccountingWorkspaceResponse,
+  LedgerDimensionSet,
   ManualJournalEntryDraft,
   ReportingAccountingBasis,
   ReportingConsolidationLevel,
@@ -44,6 +45,7 @@ export interface ReportRunParameterDraftState {
   finality: ReportingFinality;
   includeSupportingSchedules: boolean;
   includeEvidenceAppendix: boolean;
+  dimensionsJson: string;
   templateParametersJson: string;
 }
 
@@ -87,6 +89,7 @@ export function buildDefaultReportRunParameterDraft({
     finality: retained?.finality ?? "Draft",
     includeSupportingSchedules: retained?.includeSupportingSchedules ?? true,
     includeEvidenceAppendix: retained?.includeEvidenceAppendix ?? true,
+    dimensionsJson: JSON.stringify(retained?.scope.dimensions ?? {}, null, 2),
     templateParametersJson: JSON.stringify(retained?.templateParameters ?? {}, null, 2)
   };
 }
@@ -128,6 +131,27 @@ export function validateAndBuildReportingRunParameters(
     issues.push("Enter the scoped investor ID.");
   }
 
+  const dimensions = parseLedgerDimensions(draft.dimensionsJson, issues);
+  if (
+    dimensions?.fundId
+    && fundProfileId
+    && dimensions.fundId.localeCompare(fundProfileId, undefined, { sensitivity: "base" }) !== 0
+  ) {
+    issues.push("Ledger dimension fundId must match the selected fund profile.");
+  }
+  if (ledgerBookId && !guidPattern.test(ledgerBookId)) {
+    issues.push("Ledger book ID must be a UUID.");
+  }
+  if (
+    dimensions?.bookId
+    && ledgerBookId
+    && guidPattern.test(dimensions.bookId)
+    && guidPattern.test(ledgerBookId)
+    && dimensions.bookId.toLowerCase() !== ledgerBookId.toLowerCase()
+  ) {
+    issues.push("Ledger dimension bookId must match the selected ledger book ID.");
+  }
+
   let templateParameters: Record<string, string> = {};
   try {
     const parsed = JSON.parse(draft.templateParametersJson.trim() || "{}");
@@ -158,7 +182,7 @@ export function validateAndBuildReportingRunParameters(
         entityId: draft.entityScopeKind === "Entity" ? draft.entityId.trim() || null : null,
         portfolioId: draft.entityScopeKind === "Portfolio" ? draft.portfolioId.trim() || null : null,
         investorId: draft.entityScopeKind === "Investor" ? draft.investorId.trim() || null : null,
-        dimensions: null
+        dimensions
       },
       periodId,
       asOfDate: retainedAsOfDate,
@@ -177,6 +201,105 @@ export function validateAndBuildReportingRunParameters(
     },
     issues: []
   };
+}
+
+const ledgerDimensionScalarKeys = [
+  "fundId",
+  "entityId",
+  "sleeveId",
+  "strategyId",
+  "investorId",
+  "capitalAccountId",
+  "instrumentId",
+  "positionId",
+  "taxLotId",
+  "costCenterId",
+  "counterpartyId",
+  "organizationId",
+  "portfolioId",
+  "bookId",
+  "accountId",
+  "customerId",
+  "vendorId",
+  "projectId"
+] as const satisfies ReadonlyArray<Exclude<keyof LedgerDimensionSet, "externalGlDimensions">>;
+
+const ledgerDimensionKeys = new Set<string>([
+  ...ledgerDimensionScalarKeys,
+  "externalGlDimensions"
+]);
+
+const guidDimensionKeys = new Set<string>(["instrumentId", "positionId", "bookId"]);
+const guidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function parseLedgerDimensions(
+  json: string,
+  issues: string[]
+): LedgerDimensionSet | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(json.trim() || "{}");
+  } catch {
+    issues.push("Ledger dimensions must contain valid JSON.");
+    return null;
+  }
+
+  if (!isPlainJsonObject(parsed)) {
+    issues.push("Ledger dimensions must be a JSON object.");
+    return null;
+  }
+
+  const unknownKeys = Object.keys(parsed).filter((key) => !ledgerDimensionKeys.has(key));
+  if (unknownKeys.length > 0) {
+    issues.push(`Unsupported ledger dimension field${unknownKeys.length === 1 ? "" : "s"}: ${unknownKeys.join(", ")}.`);
+  }
+
+  const dimensions: LedgerDimensionSet = {};
+  for (const key of ledgerDimensionScalarKeys) {
+    const value = parsed[key];
+    if (value === undefined || value === null || value === "") {
+      continue;
+    }
+    if (typeof value !== "string") {
+      issues.push(`Ledger dimension ${key} must be a string or null.`);
+      continue;
+    }
+
+    const normalized = value.trim();
+    if (!normalized) {
+      continue;
+    }
+    if (guidDimensionKeys.has(key) && !guidPattern.test(normalized)) {
+      issues.push(`Ledger dimension ${key} must be a UUID.`);
+      continue;
+    }
+    dimensions[key] = normalized;
+  }
+
+  const external = parsed.externalGlDimensions;
+  if (external !== undefined && external !== null) {
+    if (!isPlainJsonObject(external)) {
+      issues.push("Ledger dimension externalGlDimensions must be a JSON object of string values.");
+    } else {
+      const normalizedExternalEntries: Array<[string, string]> = [];
+      for (const [key, value] of Object.entries(external)) {
+        if (!key.trim() || typeof value !== "string" || !value.trim()) {
+          issues.push("Every external GL dimension key and value must be a non-empty string.");
+          continue;
+        }
+        normalizedExternalEntries.push([key.trim(), value.trim()]);
+      }
+      if (normalizedExternalEntries.length > 0) {
+        dimensions.externalGlDimensions = Object.fromEntries(normalizedExternalEntries);
+      }
+    }
+  }
+
+  return Object.keys(dimensions).length > 0 ? dimensions : null;
+}
+
+function isPlainJsonObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 export function buildAuthoritativeReadinessGateViewState(
@@ -208,11 +331,10 @@ export function buildAuthoritativeReadinessGateViewState(
 }
 
 /**
- * Advisory-only readiness check. There is no backend endpoint that aggregates "open reconciliation
- * breaks + unposted journals for this report's exact fund/period" — this sums whatever
- * reconciliation-queue and manual-journal-draft data is already loaded client-side. It is a
- * heads-up for the operator, not a compliance-grade blocking gate; see the plan's cross-cutting
- * risk notes before treating a "clear" result as authoritative.
+ * Supplemental client-loaded readiness card. The authoritative server preflight above evaluates
+ * the exact template, parameter set, ledger source, and reconciliation evidence for the requested
+ * run. This card only summarizes reconciliation-queue and manual-journal data already loaded in
+ * the browser, so it may add context but never weakens or replaces the server-owned decision.
  */
 export function buildReportRunReadinessGateViewState({
   reconciliationQueue,

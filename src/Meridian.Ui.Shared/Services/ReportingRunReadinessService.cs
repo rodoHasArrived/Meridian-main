@@ -5,6 +5,7 @@ using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
+using Meridian.Storage.Reporting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Services;
@@ -40,11 +41,172 @@ public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunRead
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var checks = new List<ReportingRunReadinessCheckDto>(3);
+        var checks = new List<ReportingRunReadinessCheckDto>(4);
         checks.Add(await EvaluateManualJournalsAsync(parameters, accessContext, ct).ConfigureAwait(false));
         checks.Add(await EvaluateAccountingReadinessAsync(parameters, accessContext, ct).ConfigureAwait(false));
-        checks.Add(EvaluateDataset(request, template, parameters, accessContext));
+        if (accessContext?.RequireBoundScope == true)
+        {
+            checks.AddRange(await EvaluateAuthoritativeCertificationAsync(
+                    template,
+                    parameters,
+                    accessContext,
+                    ct)
+                .ConfigureAwait(false));
+        }
+        else
+        {
+            checks.Add(EvaluateDataset(request, template, parameters, accessContext));
+        }
         return checks;
+    }
+
+    private async Task<IReadOnlyList<ReportingRunReadinessCheckDto>> EvaluateAuthoritativeCertificationAsync(
+        ReportingTemplateMetadata template,
+        ReportingRunParametersDto parameters,
+        ReportAccessQueryContext accessContext,
+        CancellationToken ct)
+    {
+        var source = _services.GetService<IReportingAuthoritativeSource>();
+        if (source is null)
+        {
+            return
+            [
+                Unavailable(
+                    "authoritative-report-source",
+                    "Exact authoritative reporting source",
+                    "The durable authoritative reporting source is not configured.",
+                    "/workstation/reporting/data"),
+                Unavailable(
+                    "exact-reconciliation-evidence",
+                    "Exact close and reconciliation evidence",
+                    "Exact reconciliation evidence cannot be evaluated until the authoritative source is available.",
+                    "/workstation/accounting/close")
+            ];
+        }
+
+        ReportingAuthoritativeSourceCapture capture;
+        try
+        {
+            capture = await source.CaptureAsync(parameters, accessContext, ct).ConfigureAwait(false);
+            ReportingRunCertificationService.ValidateCapture(capture, parameters, accessContext);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            return
+            [
+                Unavailable(
+                    "authoritative-report-source",
+                    "Exact authoritative reporting source",
+                    $"The exact authoritative reporting source could not be captured: {exception.Message}",
+                    "/workstation/reporting/data"),
+                Unavailable(
+                    "exact-reconciliation-evidence",
+                    "Exact close and reconciliation evidence",
+                    "Exact reconciliation evidence cannot be evaluated because authoritative source capture failed.",
+                    "/workstation/accounting/close")
+            ];
+        }
+
+        var sourceReady = template.ReportWriterGrids is not { Count: > 0 }
+            || !capture.DatasetRows.IsDefaultOrEmpty;
+        var sourceCheck = new ReportingRunReadinessCheckDto(
+            "authoritative-report-source",
+            "Exact authoritative reporting source",
+            sourceReady ? ReportingRunReadinessStatusDto.Ready : ReportingRunReadinessStatusDto.Blocked,
+            sourceReady
+                ? $"The durable source captured {capture.DatasetRows.Length} exact as-of row(s) at checkpoint {capture.Checkpoint.CheckpointId}."
+                : "The exact durable source contains no rows required by this report template.",
+            sourceReady ? 0 : 1,
+            BlocksDraft: !sourceReady,
+            BlocksFinal: !sourceReady,
+            "/workstation/reporting/data",
+            capture.Checkpoint.EvidenceIds);
+        var reconciliationSource = _services.GetService<IReportingReconciliationEvidenceSource>();
+        if (reconciliationSource is null)
+        {
+            return
+            [
+                sourceCheck,
+                Unavailable(
+                    "exact-reconciliation-evidence",
+                    "Exact close and reconciliation evidence",
+                    "The durable reconciliation evidence source is not configured.",
+                    "/workstation/accounting/close")
+            ];
+        }
+
+        try
+        {
+            var receipt = await reconciliationSource.ResolveAsync(
+                    parameters,
+                    capture.Checkpoint,
+                    accessContext,
+                    ct)
+                .ConfigureAwait(false);
+            return
+            [
+                sourceCheck,
+                Ready(
+                    "exact-reconciliation-evidence",
+                    "Exact close and reconciliation evidence",
+                    $"Exact retained close/reconciliation checkpoint {receipt.ReconciliationCheckpointId} matches the authoritative source cut.",
+                    "/workstation/accounting/close",
+                    receipt.EvidenceIds)
+            ];
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (ReportingReconciliationReadinessException exception)
+        {
+            return
+            [
+                sourceCheck,
+                new ReportingRunReadinessCheckDto(
+                    "exact-reconciliation-evidence",
+                    "Exact close and reconciliation evidence",
+                    ReportingRunReadinessStatusDto.Blocked,
+                    exception.Message,
+                    1,
+                    BlocksDraft: true,
+                    BlocksFinal: true,
+                    "/workstation/accounting/close",
+                    capture.Checkpoint.EvidenceIds)
+            ];
+        }
+        catch (ReportingArtifactCatalogIntegrityException exception)
+        {
+            return
+            [
+                sourceCheck,
+                Unavailable(
+                    "exact-reconciliation-evidence",
+                    "Exact close and reconciliation evidence",
+                    $"Retained reconciliation evidence failed integrity validation: {exception.Message}",
+                    "/workstation/accounting/close")
+            ];
+        }
+        catch (Exception exception)
+        {
+            return
+            [
+                sourceCheck,
+                Unavailable(
+                    "exact-reconciliation-evidence",
+                    "Exact close and reconciliation evidence",
+                    $"Exact reconciliation evidence could not be loaded: {exception.Message}",
+                    "/workstation/accounting/close")
+            ];
+        }
     }
 
     private async Task<ReportingRunReadinessCheckDto> EvaluateManualJournalsAsync(
@@ -313,9 +475,13 @@ public sealed class ReportingRunReadinessService
             throw new ArgumentException("template.name must match templateId.", nameof(request));
         }
 
-        var template = request.Template is null
-            ? _templateCatalog.Get(templateName)
-            : _templateCatalog.Get(request.Template);
+        var template = _governedTemplateCatalog is null
+            ? request.Template is null
+                ? _templateCatalog.Get(templateName)
+                : _templateCatalog.Get(request.Template)
+            : request.Template is null
+                ? _governedTemplateCatalog.Get(templateName, accessContext)
+                : _governedTemplateCatalog.Get(request.Template, accessContext);
         var resolvedTemplate = request.Template ?? new VersionedReportTemplateIdDto(
             template.TemplateId,
             ParseMajorVersion(template.Version));
@@ -344,15 +510,18 @@ public sealed class ReportingRunReadinessService
 
         var canGenerateDraft = checks.All(static check => !check.BlocksDraft || check.Status == ReportingRunReadinessStatusDto.Ready);
         var canGenerateFinal = checks.All(static check => !check.BlocksFinal || check.Status == ReportingRunReadinessStatusDto.Ready);
-        var status = !canGenerateDraft || !canGenerateFinal
+        var requestedFinal = parameters.Finality == ReportingFinalityDto.Final;
+        var canGenerateRequested = requestedFinal ? canGenerateFinal : canGenerateDraft;
+        var status = !canGenerateRequested
             ? ReportingRunReadinessStatusDto.Blocked
-            : checks.Any(static check => check.Status == ReportingRunReadinessStatusDto.ReviewRequired)
+            : checks.Any(check =>
+                check.Status == ReportingRunReadinessStatusDto.ReviewRequired
+                && (requestedFinal ? check.BlocksFinal : check.BlocksDraft))
                 ? ReportingRunReadinessStatusDto.ReviewRequired
                 : ReportingRunReadinessStatusDto.Ready;
         var blockingReasons = checks
-            .Where(check =>
-                (check.BlocksDraft && !canGenerateDraft || check.BlocksFinal && !canGenerateFinal) &&
-                check.Status != ReportingRunReadinessStatusDto.Ready)
+            .Where(check => (requestedFinal ? check.BlocksFinal : check.BlocksDraft)
+                && check.Status != ReportingRunReadinessStatusDto.Ready)
             .Select(static check => check.Summary)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -448,6 +617,46 @@ public sealed class ReportingRunReadinessService
             BlocksFinal: false,
             EvidenceReferences: [$"template:{template.TemplateId}@{template.Version}"]);
 
+        var invalidEnums = new List<string>();
+        if (!Enum.IsDefined(parameters.Scope.EntityScopeKind))
+        {
+            invalidEnums.Add(nameof(parameters.Scope.EntityScopeKind));
+        }
+        if (!Enum.IsDefined(parameters.AccountingBasis))
+        {
+            invalidEnums.Add(nameof(parameters.AccountingBasis));
+        }
+        if (!Enum.IsDefined(parameters.ConsolidationLevel))
+        {
+            invalidEnums.Add(nameof(parameters.ConsolidationLevel));
+        }
+        if (!Enum.IsDefined(parameters.OutputFormat))
+        {
+            invalidEnums.Add(nameof(parameters.OutputFormat));
+        }
+        if (!Enum.IsDefined(parameters.Finality))
+        {
+            invalidEnums.Add(nameof(parameters.Finality));
+        }
+        yield return invalidEnums.Count == 0
+            ? new ReportingRunReadinessCheckDto(
+                "parameter-enums",
+                "Supported reporting parameter values",
+                ReportingRunReadinessStatusDto.Ready,
+                "All reporting parameter enum values are supported.",
+                0,
+                BlocksDraft: false,
+                BlocksFinal: false,
+                EvidenceReferences: ["reporting-parameter-enums:supported"])
+            : new ReportingRunReadinessCheckDto(
+                "parameter-enums",
+                "Supported reporting parameter values",
+                ReportingRunReadinessStatusDto.Blocked,
+                $"Unsupported reporting parameter value(s): {string.Join(", ", invalidEnums)}.",
+                invalidEnums.Count,
+                BlocksDraft: true,
+                BlocksFinal: true);
+
         var requiresBoundTenantScope = accessContext?.RequireBoundScope == true;
         var hasBoundTenantScope = accessContext is not null
             && !string.IsNullOrWhiteSpace(accessContext.ActorPrincipalId)
@@ -505,6 +714,14 @@ public sealed class ReportingRunReadinessService
         if (parameters.Scope.EntityScopeKind == ReportingEntityScopeKindDto.Investor && string.IsNullOrWhiteSpace(parameters.Scope.InvestorId))
         {
             scopeIssues.Add("investor id");
+        }
+        if (Enum.IsDefined(parameters.Scope.EntityScopeKind)
+            && Enum.IsDefined(parameters.ConsolidationLevel)
+            && parameters.Scope.EntityScopeKind.ToString() != parameters.ConsolidationLevel.ToString()
+            && !(parameters.Scope.EntityScopeKind == ReportingEntityScopeKindDto.AllEntities
+                && parameters.ConsolidationLevel == ReportingConsolidationLevelDto.Fund))
+        {
+            scopeIssues.Add("matching entity scope and consolidation level");
         }
         if (string.IsNullOrWhiteSpace(parameters.PeriodId))
         {

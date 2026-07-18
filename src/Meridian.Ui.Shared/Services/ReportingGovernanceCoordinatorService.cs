@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Reporting;
@@ -20,7 +21,22 @@ public sealed record ReportingGovernanceCallerContext(
     UserPermission Permissions,
     ReportingCommandOrigin Origin,
     string CorrelationId,
-    ImmutableArray<string> PrincipalIds = default);
+    ImmutableArray<string> PrincipalIds = default)
+{
+    public bool Matches(ReportingAccessPrincipalScope principal) =>
+        principal.Kind switch
+        {
+            ReportingAccessPrincipalKind.User =>
+                string.Equals(ActorId.Trim(), principal.PrincipalId, StringComparison.OrdinalIgnoreCase),
+            ReportingAccessPrincipalKind.Group =>
+                !PrincipalIds.IsDefaultOrEmpty
+                && PrincipalIds.Any(group =>
+                    string.Equals(group?.Trim(), principal.PrincipalId, StringComparison.OrdinalIgnoreCase)),
+            ReportingAccessPrincipalKind.Company =>
+                string.Equals(CompanyId?.Trim(), principal.PrincipalId, StringComparison.OrdinalIgnoreCase),
+            _ => false
+        };
+}
 
 /// <summary>
 /// Exact output returned by the server-side renderer/artifact producer. Artifact ids must be the
@@ -85,8 +101,6 @@ public interface IReportingRestatementChangedLineResolver
 public sealed record ReportingRestatementCertificationInput(
     ReportingTemplateMetadata Template,
     ReportingRunReadinessDto Readiness,
-    IReadOnlyList<IReadOnlyDictionary<string, string>> DatasetRows,
-    string DatasetSourceId,
     ReportAccessQueryContext AccessContext);
 
 public interface IReportingRestatementCertificationInputProvider
@@ -96,6 +110,129 @@ public interface IReportingRestatementCertificationInputProvider
         GovernedReportingRun releasedPredecessor,
         ReportingGovernanceCallerContext caller,
         CancellationToken cancellationToken = default);
+}
+
+public sealed record ReportingGovernanceSeriesHistory(
+    string SeriesId,
+    IReadOnlyList<GovernedReportingRun> Runs,
+    IReadOnlyList<ReportingRestatementRequest> RestatementRequests);
+
+/// <summary>Production service-principal identity used only for immutable artifact retention.</summary>
+public sealed class ReportingArtifactRetentionAuthorityProvider : IReportingArtifactRetentionAuthorityProvider
+{
+    public ValueTask<ReportingAuthorityScope> ResolveAsync(
+        GovernedReportingRun governedRun,
+        ReportingGovernanceCallerContext releaseCaller,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(governedRun);
+        ArgumentNullException.ThrowIfNull(releaseCaller);
+        cancellationToken.ThrowIfCancellationRequested();
+        return ValueTask.FromResult(new ReportingAuthorityScope(
+            "reporting-artifact-retention",
+            governedRun.Scope.TenantId,
+            governedRun.Scope.OrganizationId,
+            governedRun.Scope.CompanyId,
+            [ReportingGovernancePermission.ExecuteRun],
+            ReportingCommandOrigin.ServicePrincipal,
+            $"{releaseCaller.CorrelationId.Trim()}:artifact-retention",
+            []));
+    }
+}
+
+/// <summary>
+/// Resolves the approved template and reconstructs immutable parameters exclusively from the
+/// released predecessor snapshot. No HTTP restatement body can replace source rows or parameters.
+/// </summary>
+public sealed class GovernedReportingRestatementCertificationInputProvider :
+    IReportingRestatementCertificationInputProvider
+{
+    private readonly GovernedReportingTemplateCatalog _templateCatalog;
+    private readonly ReportingRunReadinessService _readiness;
+
+    public GovernedReportingRestatementCertificationInputProvider(
+        GovernedReportingTemplateCatalog templateCatalog,
+        ReportingRunReadinessService readiness)
+    {
+        _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
+        _readiness = readiness ?? throw new ArgumentNullException(nameof(readiness));
+    }
+
+    public async ValueTask<ReportingRestatementCertificationInput> ResolveAsync(
+        ReportingRestatementRequest request,
+        GovernedReportingRun releasedPredecessor,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(releasedPredecessor);
+        ArgumentNullException.ThrowIfNull(caller);
+        if (string.IsNullOrWhiteSpace(releasedPredecessor.Snapshot.ParametersCanonicalJson)
+            || string.IsNullOrWhiteSpace(releasedPredecessor.Snapshot.ParametersHash))
+        {
+            throw new ReportingGovernanceException(
+                "Released predecessor has no immutable normalized parameter snapshot and cannot be restated.");
+        }
+
+        var parameters = ReportingRunCertificationService.DeserializeParameters(
+            releasedPredecessor.Snapshot.ParametersCanonicalJson);
+        var templateId = new VersionedReportTemplateIdDto(
+            releasedPredecessor.TemplateId,
+            int.Parse(releasedPredecessor.TemplateVersion, CultureInfo.InvariantCulture));
+        var accessContext = new ReportAccessQueryContext(
+            caller.ActorId.Trim(),
+            caller.PrincipalIds.IsDefault ? [] : caller.PrincipalIds,
+            releasedPredecessor.Scope.CompanyId,
+            HasGlobalOverride: false,
+            TenantId: releasedPredecessor.Scope.TenantId,
+            RequireBoundScope: true);
+        var template = _templateCatalog.Get(templateId, accessContext);
+        var readiness = await _readiness.AssessAsync(
+            new ReportingRunRequestDto(
+                template.TemplateId,
+                AsOfDate: parameters.AsOfDate,
+                RequestedBy: caller.ActorId,
+                Template: templateId,
+                Parameters: parameters),
+            accessContext,
+            cancellationToken).ConfigureAwait(false);
+        return new ReportingRestatementCertificationInput(template, readiness, accessContext);
+    }
+}
+
+/// <summary>
+/// Server-owned placeholder disclosure at request time. Approval replaces it with an exact diff of
+/// the predecessor and recertified immutable source rows before the request is marked Approved.
+/// </summary>
+public sealed class GovernedReportingRestatementChangedLineResolver :
+    IReportingRestatementChangedLineResolver
+{
+    public ValueTask<ImmutableArray<ReportingRestatementChangedLine>> ResolveAsync(
+        GovernedReportingRun releasedPredecessor,
+        string reason,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(releasedPredecessor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        ArgumentNullException.ThrowIfNull(caller);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (releasedPredecessor.GovernanceState != GovernedReportingState.Released
+            || releasedPredecessor.Release is null)
+        {
+            throw new ReportingGovernanceException(
+                "Changed-line discovery requires an immutable Released predecessor.");
+        }
+
+        return ValueTask.FromResult(ImmutableArray.Create(new ReportingRestatementChangedLine(
+            "authoritative-recertification",
+            releasedPredecessor.Snapshot.SnapshotHash,
+            "pending-exact-source-recapture",
+            [
+                $"snapshot:{releasedPredecessor.Snapshot.SnapshotId}:{releasedPredecessor.Snapshot.SnapshotHash}",
+                $"release-manifest:{releasedPredecessor.Release.ManifestId}:{releasedPredecessor.Release.ManifestHash}"
+            ])));
+    }
 }
 
 /// <summary>
@@ -114,6 +251,27 @@ public interface IReportingGovernanceEndpointCoordinator
         string seriesId,
         ReportingGovernanceCallerContext caller,
         CancellationToken cancellationToken = default);
+
+    Task<ReportingGovernanceSeriesHistory> GetSeriesHistoryAsync(
+        string seriesId,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default) =>
+        Task.FromException<ReportingGovernanceSeriesHistory>(
+            new NotSupportedException("Reporting series discovery is unavailable."));
+
+    Task<IReadOnlyList<ReportingRestatementRequest>> ListRestatementRequestsAsync(
+        string predecessorRunId,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default) =>
+        Task.FromException<IReadOnlyList<ReportingRestatementRequest>>(
+            new NotSupportedException("Reporting restatement discovery is unavailable."));
+
+    Task<ReportingRestatementRequest> GetRestatementRequestAsync(
+        string requestId,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default) =>
+        Task.FromException<ReportingRestatementRequest>(
+            new NotSupportedException("Reporting restatement discovery is unavailable."));
 
     Task<GovernedReportingRun> CreateFromCompletedCertifiedManifestAsync(
         string manifestRunId,
@@ -253,13 +411,88 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
             .ToArray();
     }
 
+    public async Task<ReportingGovernanceSeriesHistory> GetSeriesHistoryAsync(
+        string seriesId,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default)
+    {
+        RequireText(seriesId, nameof(seriesId));
+        var runs = await ListAsync(seriesId, caller, cancellationToken).ConfigureAwait(false);
+        if (runs.Count == 0)
+        {
+            throw new ReportingGovernanceNotFoundException(
+                $"Reporting series '{seriesId.Trim()}' was not found in the caller tenant and access scope.");
+        }
+
+        var accessibleRunIds = runs
+            .Select(static run => run.RunId)
+            .ToHashSet(StringComparer.Ordinal);
+        var requests = await _repository.ExecuteTransactionAsync(
+            (transaction, ct) => transaction.ListRestatementRequestsBySeriesAsync(
+                caller.TenantId.Trim(),
+                seriesId.Trim(),
+                ct),
+            cancellationToken).ConfigureAwait(false);
+        return new ReportingGovernanceSeriesHistory(
+            seriesId.Trim(),
+            runs,
+            requests
+                .Where(request => accessibleRunIds.Contains(request.PredecessorRunId))
+                .OrderBy(static request => request.RequestedAtUtc)
+                .ThenBy(static request => request.RequestId, StringComparer.Ordinal)
+                .ToArray());
+    }
+
+    public async Task<IReadOnlyList<ReportingRestatementRequest>> ListRestatementRequestsAsync(
+        string predecessorRunId,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default)
+    {
+        RequireText(predecessorRunId, nameof(predecessorRunId));
+        var predecessor = await GetAsync(predecessorRunId, caller, cancellationToken).ConfigureAwait(false);
+        var requests = await _repository.ExecuteTransactionAsync(
+            (transaction, ct) => transaction.ListRestatementRequestsBySeriesAsync(
+                caller.TenantId.Trim(),
+                predecessor.SeriesId,
+                ct),
+            cancellationToken).ConfigureAwait(false);
+        return requests
+            .Where(request => string.Equals(
+                request.PredecessorRunId,
+                predecessor.RunId,
+                StringComparison.Ordinal))
+            .OrderBy(static request => request.RequestedAtUtc)
+            .ThenBy(static request => request.RequestId, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    public async Task<ReportingRestatementRequest> GetRestatementRequestAsync(
+        string requestId,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default)
+    {
+        RequireText(requestId, nameof(requestId));
+        ValidateCaller(caller);
+        EnsureReadPermission(caller);
+        var request = await _repository.ExecuteTransactionAsync(
+            (transaction, ct) => transaction.GetRestatementRequestAsync(
+                caller.TenantId.Trim(),
+                requestId.Trim(),
+                ct),
+            cancellationToken).ConfigureAwait(false)
+            ?? throw new ReportingGovernanceNotFoundException(
+                $"Restatement request '{requestId.Trim()}' was not found in the caller tenant.");
+        _ = await GetAsync(request.PredecessorRunId, caller, cancellationToken).ConfigureAwait(false);
+        return request;
+    }
+
     public async Task<GovernedReportingRun> CreateFromCompletedCertifiedManifestAsync(
         string manifestRunId,
         ReportingGovernanceCallerContext caller,
         CancellationToken cancellationToken = default)
     {
         ValidateCaller(caller);
-        var manifest = GetRequiredCompletedCertifiedManifest(manifestRunId);
+        var manifest = GetRequiredCompletedCertifiedManifest(caller.TenantId, manifestRunId);
         var scope = manifest.OperationalScope!;
         var authority = ResolveAuthority(caller, scope);
         EnsurePermission(authority, ReportingGovernancePermission.CreateRun);
@@ -352,7 +585,13 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         var manifest = GetRequiredManifestForRun(run);
         var readiness = _certification.BuildGovernanceReadiness(
             run.RunId,
-            new CertifiedReportingRunContext(run.Scope, run.Access, run.Snapshot),
+            new CertifiedReportingRunContext(
+                run.Scope,
+                run.Access,
+                run.Snapshot,
+                manifest.AuthoritativeSource!,
+                manifest.CertifiedDatasetRows,
+                manifest.Readiness!),
             manifest.Readiness!);
         var authority = ResolveAuthority(caller, run.Scope);
         return await _governance
@@ -406,14 +645,14 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
                 $"Only an approved, successfully executed run can retain artifacts and release; run '{run.RunId}' is {run.ExecutionState}/{run.GovernanceState}.");
         }
 
-        var manifest = GetRequiredManifestForRun(run);
+        ReportingGovernanceCanonicalValidation.ValidateFinalReleaseSnapshot(run.Snapshot);
+
         var releaseAuthority = ResolveAuthority(caller, run.Scope);
         var retained = await ReadAndVerifyRetainedPackageAsync(
             run,
-            manifest,
             caller,
             cancellationToken).ConfigureAwait(false);
-        var evidenceIds = BuildReleaseEvidence(run, manifest, retained.AuditEventIds);
+        var evidenceIds = BuildReleaseEvidence(run, retained.Sections, retained.AuditEventIds);
         var releaseEvidence = new ReportingReleaseEvidence(
             retained.ManifestId,
             retained.ManifestHash,
@@ -493,12 +732,11 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
             .ResolveAsync(state.Request, state.Predecessor, caller, cancellationToken)
             .ConfigureAwait(false);
         ValidateRestatementCertificationInput(state.Predecessor, caller, certificationInput);
-        var certified = _certification.Certify(
+        var certified = await _certification.CertifyAsync(
             certificationInput.Template,
             certificationInput.Readiness,
-            certificationInput.DatasetRows,
-            certificationInput.DatasetSourceId,
-            certificationInput.AccessContext);
+            certificationInput.AccessContext,
+            cancellationToken).ConfigureAwait(false);
         if (!Equals(certified.OperationalScope, state.Predecessor.Scope)
             || !Equals(certified.AccessScope, state.Predecessor.Access))
         {
@@ -515,16 +753,121 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
                 "Restatement certification must produce a changed certified snapshot.");
         }
 
+        var predecessorManifest = GetRequiredManifestForRun(state.Predecessor);
+        var replacementManifest = await _orchestration.ExecuteAsync(
+            new ReportingJobContract(
+                JobId: $"restatement-{state.Request.RequestId}",
+                TemplateId: certificationInput.Template.TemplateId,
+                AsOfDate: certified.Readiness.ResolvedParameters.AsOfDate,
+                Trigger: ReportingRunTrigger.AdHoc,
+                MaxRetries: 0,
+                RequestedBy: state.Request.RequestedBy.ActorId,
+                RequestedAtUtc: DateTimeOffset.UtcNow,
+                DatasetRows: certified.DatasetRows,
+                ReportWriterDatasetSourceId: certified.AuthoritativeSource.SourceId,
+                ReportWriterDatasetSourceLabel: "Certified durable ledger journal",
+                AccessPolicy: certificationInput.Template.AccessPolicy,
+                RetryReason: state.Request.Reason,
+                AllowRestatement: true,
+                ResolvedTemplate: certified.Readiness.ResolvedTemplate,
+                ResolvedParameters: certified.Readiness.ResolvedParameters,
+                Readiness: certified.Readiness,
+                OperationalScope: certified.OperationalScope,
+                ImmutableAccessScope: certified.AccessScope,
+                CertifiedSnapshot: certified.Snapshot,
+                AuthoritativeSource: certified.AuthoritativeSource,
+                GovernedRunSeriesId: state.Predecessor.SeriesId),
+            cancellationToken).ConfigureAwait(false);
+        ValidateCompletedCertifiedManifest(replacementManifest);
+        if (!string.Equals(replacementManifest.RunSeriesId, state.Predecessor.SeriesId, StringComparison.Ordinal)
+            || !Equals(replacementManifest.CertifiedSnapshot, certified.Snapshot))
+        {
+            throw new ReportingGovernanceException(
+                "Restatement renderer did not preserve the governed series and replacement certification.");
+        }
+
+        var production = await _artifactProducer
+            .ProduceAsync(replacementManifest, cancellationToken)
+            .ConfigureAwait(false);
+        ValidateProduction(replacementManifest, production);
+        var changedLines = BuildRestatementChangedLines(
+            state.Predecessor,
+            predecessorManifest,
+            replacementManifest);
+
         var command = new ReportingRestatementApprovalCommand(
             state.Request.RequestId,
             expectedRequestVersion,
-            certified.Snapshot);
-        return await _governance
+            certified.Snapshot,
+            replacementManifest.RunId,
+            changedLines);
+        var prospectiveRun = new GovernedReportingRun(
+            replacementManifest.RunId,
+            state.Predecessor.SeriesId,
+            checked(state.Predecessor.Revision + 1),
+            state.Predecessor.TemplateId,
+            state.Predecessor.TemplateVersion,
+            certified.OperationalScope,
+            certified.AccessScope,
+            certified.Snapshot,
+            ResolveAuthority(caller, state.Predecessor.Scope),
+            DateTimeOffset.UtcNow,
+            state.Predecessor.RunId,
+            GovernedReportingExecutionState.Queued,
+            GovernedReportingState.Draft,
+            Version: 1,
+            Readiness: null,
+            Approval: null,
+            Release: null,
+            AuditTrail: [],
+            RestatementRequestId: state.Request.RequestId);
+        var retentionAuthority = await _retentionAuthorityProvider
+            .ResolveAsync(prospectiveRun, caller, cancellationToken)
+            .ConfigureAwait(false);
+        ValidateRetentionAuthority(prospectiveRun, releaseAuthority: null, retentionAuthority);
+        await RetainAndVerifyProductionAsync(
+            prospectiveRun,
+            production,
+            retentionAuthority,
+            cancellationToken).ConfigureAwait(false);
+
+        var approved = await _governance
             .ApproveRestatementAsync(
                 command,
                 ResolveAuthority(caller, state.Predecessor.Scope),
                 cancellationToken)
             .ConfigureAwait(false);
+        var draftRun = approved.DraftRun;
+        if (!string.Equals(draftRun.RunId, replacementManifest.RunId, StringComparison.Ordinal)
+            || !Equals(draftRun.Snapshot, certified.Snapshot))
+        {
+            throw new ReportingGovernanceException(
+                "Approved restatement draft is not bound to the recertified renderer manifest.");
+        }
+        if (draftRun.ExecutionState == GovernedReportingExecutionState.Queued)
+        {
+            draftRun = await _governance.BeginExecutionAsync(
+                draftRun.RunId,
+                draftRun.Version,
+                retentionAuthority,
+                cancellationToken).ConfigureAwait(false);
+        }
+        if (draftRun.ExecutionState == GovernedReportingExecutionState.Running)
+        {
+            draftRun = await _governance.CompleteExecutionAsync(
+                draftRun.RunId,
+                draftRun.Version,
+                retentionAuthority,
+                cancellationToken).ConfigureAwait(false);
+        }
+        if (draftRun.ExecutionState != GovernedReportingExecutionState.Succeeded
+            || draftRun.GovernanceState != GovernedReportingState.Draft)
+        {
+            throw new ReportingGovernanceException(
+                "Restatement approval did not finish in the required Succeeded/Draft state.");
+        }
+
+        return new ReportingRestatementApprovalResult(approved.Request, draftRun);
     }
 
     private async Task<GovernedReportingRun> GetForMutationAsync(
@@ -553,15 +896,18 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
 
     private ReportingOutputManifest GetRequiredManifestForRun(GovernedReportingRun run)
     {
-        var manifest = GetRequiredCompletedCertifiedManifest(run.RunId);
+        var manifest = GetRequiredCompletedCertifiedManifest(run.Scope.TenantId, run.RunId);
         EnsureRunMatchesManifest(run, manifest);
         return manifest;
     }
 
-    private ReportingOutputManifest GetRequiredCompletedCertifiedManifest(string manifestRunId)
+    private ReportingOutputManifest GetRequiredCompletedCertifiedManifest(
+        string tenantId,
+        string manifestRunId)
     {
+        RequireText(tenantId, nameof(tenantId));
         RequireText(manifestRunId, nameof(manifestRunId));
-        var manifest = _orchestration.GetManifest(manifestRunId.Trim())
+        var manifest = _orchestration.GetManifest(tenantId.Trim(), manifestRunId.Trim())
             ?? throw new ReportingGovernanceNotFoundException(
                 $"Completed reporting manifest '{manifestRunId.Trim()}' was not found.");
         ValidateCompletedCertifiedManifest(manifest);
@@ -585,7 +931,10 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
             || manifest.Readiness is null
             || manifest.OperationalScope is null
             || manifest.ImmutableAccessScope is null
-            || manifest.CertifiedSnapshot is null)
+            || manifest.CertifiedSnapshot is null
+            || manifest.AuthoritativeSource is null
+            || manifest.CertifiedDatasetRows.IsDefault
+            || manifest.CertifiedDatasetRows.Length != manifest.AuthoritativeSource.LedgerLineCount)
         {
             throw new ReportingGovernanceException(
                 $"Orchestration manifest '{manifest.RunId}' is missing certified template, parameter, readiness, scope, access, or snapshot state.");
@@ -631,7 +980,7 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         }
     }
 
-    private static void ValidateManifestScope(ReportingOutputManifest manifest)
+    internal static void ValidateManifestScope(ReportingOutputManifest manifest)
     {
         var scope = manifest.OperationalScope!;
         var snapshot = manifest.CertifiedSnapshot!;
@@ -655,7 +1004,6 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
             || !SameOptional(scope.FundId, snapshot.FundId)
             || !string.Equals(scope.BookId, snapshot.BookId, StringComparison.Ordinal)
             || !string.Equals(scope.PeriodId, snapshot.PeriodId, StringComparison.Ordinal)
-            || snapshot.CapturedAtUtc > manifest.Readiness!.EvaluatedAtUtc
             || manifest.ResolvedParameters!.AsOfDate != manifest.AsOfDate
             || !string.Equals(manifest.ResolvedParameters.PeriodId, scope.PeriodId, StringComparison.Ordinal)
             || !string.Equals(manifest.ResolvedParameters.Scope.FundProfileId, scope.FundId, StringComparison.Ordinal)
@@ -671,8 +1019,11 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         VersionedReportTemplateIdDto template,
         ReportingRunParametersDto parameters)
     {
-        if (readiness.Status != ReportingRunReadinessStatusDto.Ready
-            || !readiness.CanGenerateFinal
+        var finality = parameters.Finality;
+        var hasRequestedAuthority = finality == ReportingFinalityDto.Final
+            ? readiness.CanGenerateFinal
+            : readiness.CanGenerateDraft;
+        if (!hasRequestedAuthority
             || readiness.Checks is null
             || readiness.Checks.Count == 0
             || readiness.BlockingReasons is null
@@ -682,11 +1033,12 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
             || readiness.ResolvedParameters.AsOfDate != parameters.AsOfDate
             || !string.Equals(readiness.ResolvedParameters.PeriodId, parameters.PeriodId, StringComparison.Ordinal)
             || readiness.Checks.Any(check =>
-                check.Status != ReportingRunReadinessStatusDto.Ready
-                || string.IsNullOrWhiteSpace(check.CheckId)
+                string.IsNullOrWhiteSpace(check.CheckId)
                 || check.EvidenceReferences is null
                 || check.EvidenceReferences.Count == 0
-                || check.EvidenceReferences.Any(string.IsNullOrWhiteSpace))
+                || check.EvidenceReferences.Any(string.IsNullOrWhiteSpace)
+                || IsRequiredForFinality(check, finality)
+                    && check.Status != ReportingRunReadinessStatusDto.Ready)
             || readiness.Checks.Select(static check => check.CheckId).Distinct(StringComparer.Ordinal).Count() != readiness.Checks.Count)
         {
             throw new ReportingGovernanceException(
@@ -750,8 +1102,17 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
             || certification.EvidenceIds.Distinct(StringComparer.Ordinal).Count() != certification.EvidenceIds.Length
             || !string.Equals(
                 certification.SourceCheckpointId,
+                certification.Snapshot.SourceCheckpointId,
+                StringComparison.Ordinal)
+            || !string.Equals(
+                certification.SourceCheckpointHash,
+                certification.Snapshot.SourceCheckpointHash,
+                StringComparison.OrdinalIgnoreCase)
+            || string.Equals(
+                certification.SourceCheckpointId,
                 certification.Snapshot.ReconciliationCheckpointId,
                 StringComparison.Ordinal)
+            || !IsSha256(certification.Snapshot.ReconciliationCheckpointHash)
             || !certification.EvidenceIds.Contains(
                 BuildSourceCheckpointEvidence(
                     certification.SourceCheckpointId,
@@ -776,6 +1137,11 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
                 $"Renderer output for run '{manifest.RunId}' does not exactly match the declared artifact set.");
         }
     }
+
+    private static bool IsRequiredForFinality(
+        ReportingRunReadinessCheckDto check,
+        ReportingFinalityDto finality) =>
+        finality == ReportingFinalityDto.Final ? check.BlocksFinal : check.BlocksDraft;
 
     private async Task<RetainedProduction> RetainAndVerifyProductionAsync(
         GovernedReportingRun run,
@@ -806,7 +1172,6 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
 
     private async Task<VerifiedReleasePackage> ReadAndVerifyRetainedPackageAsync(
         GovernedReportingRun run,
-        ReportingOutputManifest manifest,
         ReportingGovernanceCallerContext caller,
         CancellationToken cancellationToken)
     {
@@ -823,15 +1188,20 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
                 ? ImmutableArray<string>.Empty
                 : caller.PrincipalIds,
             caller.CorrelationId.Trim());
-        var records = ImmutableArray.CreateBuilder<ReportingRetainedArtifactRecord>(manifest.Artifacts.Length);
-        var auditEventIds = ImmutableArray.CreateBuilder<string>(manifest.Artifacts.Length);
-        foreach (var artifactId in manifest.Artifacts.OrderBy(static id => id, StringComparer.Ordinal))
+        var package = await _artifactVault
+            .GetPackageForReleaseAsync(packageId, access, cancellationToken)
+            .ConfigureAwait(false);
+        var records = ImmutableArray.CreateBuilder<ReportingRetainedArtifactRecord>(package.Artifacts.Length);
+        var auditEventIds = ImmutableArray.CreateBuilder<string>(package.Artifacts.Length);
+        byte[]? retainedManifestBytes = null;
+        foreach (var catalogRecord in package.Artifacts.OrderBy(static item => item.ArtifactId, StringComparer.Ordinal))
         {
             var download = await _artifactVault
-                .ReadForDownloadAsync(packageId, artifactId, access, cancellationToken)
+                .ReadForDownloadAsync(packageId, catalogRecord.ArtifactId, access, cancellationToken)
                 .ConfigureAwait(false);
             var record = download.Artifact;
-            if (!string.Equals(record.PackageId, packageId, StringComparison.Ordinal)
+            if (!Equals(record, catalogRecord)
+                || !string.Equals(record.PackageId, packageId, StringComparison.Ordinal)
                 || !string.Equals(record.RunId, run.RunId, StringComparison.Ordinal)
                 || !string.Equals(record.SeriesId, run.SeriesId, StringComparison.Ordinal)
                 || record.Revision != run.Revision
@@ -845,7 +1215,12 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
                     StringComparison.OrdinalIgnoreCase))
             {
                 throw new ReportingArtifactCatalogIntegrityException(
-                    $"Retained artifact '{packageId}/{artifactId}' is not bound to the immutable governed run or exact stored bytes.");
+                    $"Retained artifact '{packageId}/{catalogRecord.ArtifactId}' is not bound to the immutable governed run or exact stored bytes.");
+            }
+
+            if (string.Equals(record.ArtifactId, record.ManifestId, StringComparison.Ordinal))
+            {
+                retainedManifestBytes = download.Content;
             }
 
             records.Add(record);
@@ -854,7 +1229,7 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
 
         var retained = records.MoveToImmutable();
         if (retained.IsDefaultOrEmpty
-            || retained.Select(static record => record.ArtifactId).Distinct(StringComparer.Ordinal).Count() != manifest.Artifacts.Length
+            || retained.Select(static record => record.ArtifactId).Distinct(StringComparer.Ordinal).Count() != package.Artifacts.Length
             || retained.Select(static record => record.ManifestId).Distinct(StringComparer.Ordinal).Count() != 1
             || retained.Select(static record => record.ManifestHash).Distinct(StringComparer.OrdinalIgnoreCase).Count() != 1)
         {
@@ -867,6 +1242,7 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         var retainedManifest = retained.SingleOrDefault(record =>
             string.Equals(record.ArtifactId, manifestId, StringComparison.Ordinal));
         if (retainedManifest is null
+            || retainedManifestBytes is null
             || !string.Equals(
                 retainedManifest.Identity.ContentHashSha256,
                 manifestHash,
@@ -874,6 +1250,35 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         {
             throw new ReportingArtifactCatalogIntegrityException(
                 $"Retained artifact package '{packageId}' has no verifiable exact manifest bytes.");
+        }
+
+        var retainedDocument = DeterministicReportingCertifiedArtifactProducer.ParseRetainedManifest(
+            retainedManifestBytes);
+        ValidateRetainedManifestBinding(run, retainedDocument);
+        var descriptors = retainedDocument.Artifacts.ToDictionary(
+            static descriptor => descriptor.ArtifactId,
+            StringComparer.Ordinal);
+        if (descriptors.Count != retained.Length)
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Retained artifact package '{packageId}' does not exactly match its immutable manifest descriptor set.");
+        }
+        foreach (var record in retained)
+        {
+            if (!descriptors.TryGetValue(record.ArtifactId, out var descriptor)
+                || !string.Equals(descriptor.FileName, record.FileName, StringComparison.Ordinal)
+                || !string.Equals(descriptor.ContentType, record.ContentType, StringComparison.Ordinal)
+                || (string.Equals(record.ArtifactId, manifestId, StringComparison.Ordinal)
+                    ? descriptor.ByteLength is not null || descriptor.ContentHashSha256 is not null
+                    : descriptor.ByteLength != record.ByteLength
+                      || !string.Equals(
+                          descriptor.ContentHashSha256,
+                          record.Identity.ContentHashSha256,
+                          StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ReportingArtifactCatalogIntegrityException(
+                    $"Retained artifact '{packageId}/{record.ArtifactId}' conflicts with its immutable manifest descriptor.");
+            }
         }
 
         return new VerifiedReleasePackage(
@@ -886,8 +1291,85 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
                     record.ByteLength))
                 .OrderBy(static artifact => artifact.ArtifactId, StringComparer.Ordinal)
                 .ToImmutableArray(),
-            auditEventIds.MoveToImmutable());
+            auditEventIds.MoveToImmutable(),
+            retainedDocument.Sections);
     }
+
+    private void ValidateRetainedManifestBinding(
+        GovernedReportingRun run,
+        ReportingRetainedManifestDocument document)
+    {
+        if (!string.Equals(document.RunId, run.RunId, StringComparison.Ordinal)
+            || !string.Equals(document.SeriesId, run.SeriesId, StringComparison.Ordinal)
+            || !string.Equals(document.TemplateId, run.TemplateId, StringComparison.Ordinal)
+            || !string.Equals(document.ResolvedTemplate.Name, run.TemplateId, StringComparison.Ordinal)
+            || !string.Equals(
+                document.ResolvedTemplate.Version.ToString(CultureInfo.InvariantCulture),
+                run.TemplateVersion,
+                StringComparison.Ordinal)
+            || !Equals(document.Scope, run.Scope)
+            || !Equals(document.Access, run.Access)
+            || !Equals(document.Snapshot, run.Snapshot)
+            || !string.Equals(document.ParametersCanonicalJson, run.Snapshot.ParametersCanonicalJson, StringComparison.Ordinal)
+            || !string.Equals(document.ParametersHash, run.Snapshot.ParametersHash, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(document.AuthoritativeSource.CheckpointId, run.Snapshot.SourceCheckpointId, StringComparison.Ordinal)
+            || !string.Equals(document.AuthoritativeSource.CheckpointHash, run.Snapshot.SourceCheckpointHash, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(document.AuthoritativeSource.TenantId, run.Scope.TenantId, StringComparison.Ordinal)
+            || !string.Equals(document.AuthoritativeSource.OrganizationId, run.Scope.OrganizationId, StringComparison.Ordinal)
+            || !string.Equals(document.AuthoritativeSource.CompanyId, run.Scope.CompanyId, StringComparison.Ordinal)
+            || !string.Equals(document.AuthoritativeSource.FundId, run.Scope.FundId, StringComparison.Ordinal)
+            || !string.Equals(document.AuthoritativeSource.LedgerBookId, run.Scope.BookId, StringComparison.Ordinal)
+            || !string.Equals(document.AuthoritativeSource.AccountingPeriodId, run.Scope.PeriodId, StringComparison.Ordinal)
+            || document.CertifiedDatasetRowCount != document.AuthoritativeSource.LedgerLineCount
+            || !string.Equals(
+                ComputeRetainedSnapshotHash(document),
+                run.Snapshot.SnapshotHash,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Retained reporting manifest '{document.RunId}' is not bound to the exact governed run, scope, access, parameters, or authoritative source.");
+        }
+
+        var rebuiltReadiness = _certification.BuildGovernanceReadiness(
+            run.RunId,
+            new CertifiedReportingRunContext(
+                document.Scope,
+                document.Access,
+                document.Snapshot,
+                document.AuthoritativeSource,
+                ImmutableArray<IReadOnlyDictionary<string, string>>.Empty,
+                document.Readiness),
+            document.Readiness);
+        ReportingGovernanceCanonicalValidation.ValidateReadiness(rebuiltReadiness, run);
+        if (run.Readiness is null
+            || !string.Equals(
+                rebuiltReadiness.ReceiptHash,
+                run.Readiness.ReceiptHash,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Retained reporting manifest '{document.RunId}' readiness evidence is not the exact governed receipt.");
+        }
+    }
+
+    private static string ComputeRetainedSnapshotHash(ReportingRetainedManifestDocument document) =>
+        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+        {
+            template = new
+            {
+                document.ResolvedTemplate.Name,
+                document.ResolvedTemplate.Version
+            },
+            scope = document.Scope,
+            access = document.Access,
+            parametersHash = document.ParametersHash,
+            sourceCheckpointId = document.AuthoritativeSource.CheckpointId,
+            sourceCheckpointHash = document.AuthoritativeSource.CheckpointHash,
+            reconciliationId = document.Snapshot.ReconciliationCheckpointId,
+            reconciliationHash = document.Snapshot.ReconciliationCheckpointHash,
+            readinessHash = document.Readiness.EvidenceHash,
+            certifiedDatasetHash = document.CertifiedDatasetHashSha256
+        })));
 
     private static void VerifyRetention(
         GovernedReportingRun run,
@@ -945,7 +1427,7 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
 
     private static ImmutableArray<string> BuildReleaseEvidence(
         GovernedReportingRun run,
-        ReportingOutputManifest manifest,
+        ImmutableArray<ReportingSectionManifest> sections,
         ImmutableArray<string> artifactAuditEventIds)
     {
         var evidence = new HashSet<string>(StringComparer.Ordinal)
@@ -964,12 +1446,92 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
             evidence.Add($"artifact-audit:{id}");
         }
 
-        foreach (var section in manifest.Sections)
+        foreach (var section in sections)
         {
             evidence.Add($"section:{section.SectionId}:{section.Hash}");
         }
 
         return evidence.OrderBy(static id => id, StringComparer.Ordinal).ToImmutableArray();
+    }
+
+    private static ImmutableArray<ReportingRestatementChangedLine> BuildRestatementChangedLines(
+        GovernedReportingRun predecessor,
+        ReportingOutputManifest predecessorManifest,
+        ReportingOutputManifest replacementManifest)
+    {
+        var before = IndexCertifiedRows(predecessorManifest.CertifiedDatasetRows);
+        var after = IndexCertifiedRows(replacementManifest.CertifiedDatasetRows);
+        var evidence = ImmutableArray.Create(
+            $"snapshot:{predecessor.Snapshot.SnapshotId}:{predecessor.Snapshot.SnapshotHash}",
+            $"snapshot:{replacementManifest.CertifiedSnapshot!.SnapshotId}:{replacementManifest.CertifiedSnapshot.SnapshotHash}",
+            BuildSourceCheckpointEvidence(
+                replacementManifest.AuthoritativeSource!.CheckpointId,
+                replacementManifest.AuthoritativeSource.CheckpointHash));
+        var changes = ImmutableArray.CreateBuilder<ReportingRestatementChangedLine>();
+        foreach (var key in before.Keys.Concat(after.Keys).Distinct(StringComparer.Ordinal).OrderBy(static value => value, StringComparer.Ordinal))
+        {
+            before.TryGetValue(key, out var previous);
+            after.TryGetValue(key, out var current);
+            if (string.Equals(previous, current, StringComparison.Ordinal))
+            {
+                continue;
+            }
+            changes.Add(new ReportingRestatementChangedLine(
+                key,
+                previous ?? "<not-present>",
+                current ?? "<not-present>",
+                evidence));
+        }
+
+        if (changes.Count == 0)
+        {
+            changes.Add(new ReportingRestatementChangedLine(
+                "certification-evidence",
+                predecessor.Snapshot.SnapshotHash,
+                replacementManifest.CertifiedSnapshot!.SnapshotHash,
+                evidence));
+        }
+        return changes.MoveToImmutable();
+    }
+
+    private static Dictionary<string, string> IndexCertifiedRows(
+        ImmutableArray<IReadOnlyDictionary<string, string>> rows)
+    {
+        if (rows.IsDefault)
+        {
+            throw new ReportingGovernanceException(
+                "Restatement comparison requires immutable certified source rows on both revisions.");
+        }
+
+        var indexed = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var row in rows)
+        {
+            var canonical = SerializeCanonicalRow(row);
+            var key = row.TryGetValue("entryId", out var entryId) && !string.IsNullOrWhiteSpace(entryId)
+                ? $"ledger-line:{entryId.Trim()}"
+                : $"ledger-row:{ComputeSha256(Encoding.UTF8.GetBytes(canonical))}";
+            if (!indexed.TryAdd(key, canonical))
+            {
+                throw new ReportingGovernanceException(
+                    $"Certified source contains duplicate immutable row identity '{key}'.");
+            }
+        }
+        return indexed;
+    }
+
+    private static string SerializeCanonicalRow(IReadOnlyDictionary<string, string> row)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new System.Text.Json.Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            foreach (var pair in row.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+            {
+                writer.WriteString(pair.Key, pair.Value);
+            }
+            writer.WriteEndObject();
+        }
+        return Encoding.UTF8.GetString(stream.ToArray());
     }
 
     private static void ValidateRetentionAuthority(
@@ -1001,11 +1563,8 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(input.Template);
         ArgumentNullException.ThrowIfNull(input.Readiness);
-        ArgumentNullException.ThrowIfNull(input.DatasetRows);
         ArgumentNullException.ThrowIfNull(input.AccessContext);
-        RequireText(input.DatasetSourceId, nameof(input.DatasetSourceId));
-        if (string.Equals(input.DatasetSourceId.Trim(), "custom-request-dataset", StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(input.Template.TemplateId, predecessor.TemplateId, StringComparison.Ordinal)
+        if (!string.Equals(input.Template.TemplateId, predecessor.TemplateId, StringComparison.Ordinal)
             || ResolveTemplateMajorVersion(input.Template.Version) != int.Parse(predecessor.TemplateVersion, CultureInfo.InvariantCulture)
             || !string.Equals(input.Readiness.ResolvedTemplate.Name, predecessor.TemplateId, StringComparison.Ordinal)
             || input.Readiness.ResolvedTemplate.Version != int.Parse(predecessor.TemplateVersion, CultureInfo.InvariantCulture)
@@ -1074,9 +1633,12 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         if (permissions.HasFlag(UserPermission.ApproveReporting))
         {
             resolved.Add(ReportingGovernancePermission.ApproveRun);
-            resolved.Add(ReportingGovernancePermission.ReleaseRun);
-            resolved.Add(ReportingGovernancePermission.RequestRestatement);
             resolved.Add(ReportingGovernancePermission.ApproveRestatement);
+        }
+
+        if (permissions.HasFlag(UserPermission.DeliverReporting))
+        {
+            resolved.Add(ReportingGovernancePermission.ReleaseRun);
         }
 
         return resolved.Distinct().ToImmutableArray();
@@ -1094,11 +1656,16 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         {
             ReportingGovernanceAccessMode.CompanyWide => true,
             ReportingGovernanceAccessMode.Private =>
-                string.Equals(run.Access.OwnerPrincipalId, caller.ActorId.Trim(), StringComparison.Ordinal),
+                (run.Access.AllowOwnerAccess
+                    && string.Equals(run.Access.OwnerPrincipalId, caller.ActorId.Trim(), StringComparison.OrdinalIgnoreCase))
+                || run.Access.Principals.Any(principal =>
+                    principal.Kind == ReportingAccessPrincipalKind.User
+                    && caller.Matches(principal)),
             ReportingGovernanceAccessMode.Restricted =>
-                (!string.IsNullOrWhiteSpace(run.Access.OwnerPrincipalId)
-                    && HasPrincipal(caller, run.Access.OwnerPrincipalId))
-                || run.Access.PrincipalIds.Any(principal => HasPrincipal(caller, principal)),
+                (run.Access.AllowOwnerAccess
+                    && !string.IsNullOrWhiteSpace(run.Access.OwnerPrincipalId)
+                    && string.Equals(run.Access.OwnerPrincipalId, caller.ActorId.Trim(), StringComparison.OrdinalIgnoreCase))
+                || run.Access.Principals.Any(caller.Matches),
             _ => false
         };
     }
@@ -1116,11 +1683,16 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         {
             ReportingGovernanceAccessMode.CompanyWide => true,
             ReportingGovernanceAccessMode.Private =>
-                string.Equals(access.OwnerPrincipalId, authority.ActorId, StringComparison.Ordinal),
+                (access.AllowOwnerAccess
+                    && string.Equals(access.OwnerPrincipalId, authority.ActorId, StringComparison.OrdinalIgnoreCase))
+                || access.Principals.Any(principal =>
+                    principal.Kind == ReportingAccessPrincipalKind.User
+                    && authority.Matches(principal)),
             ReportingGovernanceAccessMode.Restricted =>
-                (!string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
-                    && authority.HasPrincipal(access.OwnerPrincipalId))
-                || access.PrincipalIds.Any(authority.HasPrincipal),
+                (access.AllowOwnerAccess
+                    && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
+                    && string.Equals(access.OwnerPrincipalId, authority.ActorId, StringComparison.OrdinalIgnoreCase))
+                || access.Principals.Any(authority.Matches),
             _ => false
         };
         if (!allowed)
@@ -1129,11 +1701,6 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
                 "Authenticated caller is not included in the immutable reporting access scope.");
         }
     }
-
-    private static bool HasPrincipal(ReportingGovernanceCallerContext caller, string principal) =>
-        string.Equals(caller.ActorId.Trim(), principal, StringComparison.Ordinal)
-        || (!caller.PrincipalIds.IsDefaultOrEmpty
-            && caller.PrincipalIds.Any(item => string.Equals(item?.Trim(), principal, StringComparison.Ordinal)));
 
     private static void EnsureReadPermission(ReportingGovernanceCallerContext caller)
     {
@@ -1226,5 +1793,6 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
         string ManifestId,
         string ManifestHash,
         ImmutableArray<ReportingArtifactReference> Artifacts,
-        ImmutableArray<string> AuditEventIds);
+        ImmutableArray<string> AuditEventIds,
+        ImmutableArray<ReportingSectionManifest> Sections);
 }

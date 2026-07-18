@@ -1034,6 +1034,8 @@ export interface ReportingScheduleDeliveryTarget {
   formats?: GovernanceReportArtifactFormat[] | null;
   deliveryMode?: ReportPackDeliveryMode | null;
   note?: string | null;
+  recipientPrincipalId?: string | null;
+  recipientPrincipalKind?: "User" | "Group" | "Company" | null;
 }
 
 export interface ReportingScheduleDeliveryPlan {
@@ -1148,6 +1150,35 @@ export interface StructuredReportingExportPayload {
   rowLineage?: StructuredReportingExportRowLineage[] | null;
 }
 
+export type ReportingScheduledReleaseHandoffState = "PendingRelease" | "Enqueued";
+
+export interface ReportingScheduledReleaseHandoff {
+  handoffId: string;
+  tenantId: string;
+  companyId: string;
+  scheduleId: string;
+  runId: string;
+  templateId: string;
+  distributionId: string;
+  targetDistributionId: string;
+  transportId: string;
+  recipientPrincipalId: string | null;
+  recipientPrincipalKind?: "User" | "Group" | "Company" | null;
+  destination: string;
+  subject: string;
+  body: string;
+  requestedFormats: GovernanceReportArtifactFormat[] | null;
+  artifactIds: string[] | null;
+  grantLifetimeSeconds: number | null;
+  grantMaxUses: number | null;
+  maxAttempts: number;
+  createdAtUtc: string;
+  state: ReportingScheduledReleaseHandoffState;
+  enqueuedDeliveryJobId: string | null;
+  enqueuedAtUtc: string | null;
+  deliveryTargetsSnapshotHash?: string | null;
+}
+
 export interface ReportingScheduleRecord {
   scheduleId: string;
   templateId: string;
@@ -1174,6 +1205,9 @@ export interface ReportingScheduleRecord {
   companyId?: string | null;
   accessPolicySnapshot?: ReportAccessPolicy | null;
   lastReadiness?: ReportingRunReadiness | null;
+  releaseDeliveryHandoffs?: ReportingScheduledReleaseHandoff[] | null;
+  accessPolicySnapshotHash?: string | null;
+  deliveryTargetsSnapshotHash?: string | null;
 }
 
 export interface ReportingScheduleUpsertRequest {

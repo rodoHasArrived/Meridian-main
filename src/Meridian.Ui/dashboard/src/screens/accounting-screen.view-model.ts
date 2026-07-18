@@ -52,6 +52,10 @@ import {
   normalizeApiErrorDisplay
 } from "./accounting-screen.view-model.shared";
 import {
+  areReconciliationBreakQueuesEquivalent,
+  replaceBreakQueueItem,
+} from "./accounting-screen.reconciliation-queue-utils";
+import {
   buildOperationalExceptionWorkbenchState,
   buildReconciliationBreakQueueState,
   buildReconciliationComparisonViewState,
@@ -2455,6 +2459,13 @@ export interface CloseCommandCenterActionViewModel {
   href: string;
   ariaLabel: string;
   tone: AccountingToolingTone;
+  command?:
+    | "configure-daily-valuation-schedule"
+    | "run-due-daily-valuation-schedules"
+    | "approve-daily-valuation-batch"
+    | "retry-daily-valuation-batch";
+  busyLabel?: string;
+  disabledReason?: string | null;
 }
 
 export interface CloseCommandCenterViewState {
@@ -2582,6 +2593,32 @@ export interface AccountingCloseOperatingCoverageRowViewModel {
   blockerLabel: string;
   requiredAction: string;
   issueLabels: string[];
+}
+
+export interface AccountingClosePostingBalanceRowViewModel {
+  rowId: string;
+  accountLabel: string;
+  accountTypeLabel: string;
+  balanceLabel: string;
+  scopeLabel: string;
+  financialAccountLabel: string;
+}
+
+export interface AccountingClosePostingGateViewModel {
+  gateId: string;
+  label: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  isReadyForLock: boolean;
+  netIncomeRollLabel: string;
+  temporaryAccountBalanceLabel: string;
+  detail: string;
+  draftLabel: string;
+  idempotencyLabel: string;
+  closingBatchLabel: string;
+  reversalDraftLabel: string;
+  evidenceLabel: string;
+  balances: AccountingClosePostingBalanceRowViewModel[];
 }
 
 export interface AccountingCloseSetupTaskOptionViewModel {
@@ -2740,6 +2777,9 @@ export interface AccountingCloseReportPackageViewModel {
   lockClosePeriodBusy: boolean;
   lockClosePeriodStatusText: string | null;
   lockClosePeriodStatusTone: "neutral" | "success" | "danger";
+  queueClosingEntriesBusy: boolean;
+  queueClosingEntriesStatusText: string | null;
+  queueClosingEntriesStatusTone: "neutral" | "success" | "danger";
   configureClosePlanBusy: boolean;
   configureClosePlanStatusText: string | null;
   configureClosePlanStatusTone: "neutral" | "success" | "danger";
@@ -2764,6 +2804,8 @@ export interface AccountingCloseReportPackageViewModel {
   signOffDisabledReason: string | null;
   lockClosePeriodButtonLabel: string;
   lockClosePeriodDisabledReason: string | null;
+  queueClosingEntriesButtonLabel: string;
+  queueClosingEntriesDisabledReason: string | null;
   configureClosePlanButtonLabel: string;
   configureClosePlanDisabledReason: string | null;
   createLateAdjustmentDisabledReason: string | null;
@@ -2785,6 +2827,7 @@ export interface AccountingCloseReportPackageViewModel {
   signOffMatrixRows: AccountingCloseSignOffMatrixRowViewModel[];
   evidenceReviewRows: AccountingCloseEvidenceReviewRowViewModel[];
   operatingCoverageRows: AccountingCloseOperatingCoverageRowViewModel[];
+  closingEntriesGate: AccountingClosePostingGateViewModel | null;
   lateAdjustments: AccountingLateAdjustmentRowViewModel[];
   packageRows: AccountingReportPackageRowViewModel[];
   selectedPackage: AccountingReportPackageRowViewModel | null;
@@ -2796,6 +2839,7 @@ export interface AccountingCloseReportPackageViewModel {
   buildReportPackage: () => Promise<void>;
   certifyPackage: () => Promise<void>;
   lockClosePeriod: () => Promise<void>;
+  queueClosingEntries: () => Promise<void>;
   configureClosePlan: () => Promise<void>;
   signOffNextTask: () => Promise<void>;
   updateCloseSetupDraft: (patch: Partial<AccountingCloseSetupDraftViewModel>) => void;
@@ -7212,58 +7256,4 @@ function formatCorpActAmount(action: CorporateAction): string {
   }
 
   return "—";
-}
-
-function areReconciliationBreakQueuesEquivalent(
-  current: ReconciliationBreakQueueItem[],
-  next: ReconciliationBreakQueueItem[]
-): boolean {
-  if (current === next) {
-    return true;
-  }
-
-  if (current.length !== next.length) {
-    return false;
-  }
-
-  for (let index = 0; index < current.length; index += 1) {
-    const left = current[index];
-    const right = next[index];
-
-    if (
-      left.breakId !== right.breakId ||
-      left.runId !== right.runId ||
-      left.strategyName !== right.strategyName ||
-      left.category !== right.category ||
-      left.status !== right.status ||
-      left.variance !== right.variance ||
-      left.reason !== right.reason ||
-      left.assignedTo !== right.assignedTo ||
-      left.detectedAt !== right.detectedAt ||
-      left.lastUpdatedAt !== right.lastUpdatedAt ||
-      left.reviewedBy !== right.reviewedBy ||
-      left.reviewedAt !== right.reviewedAt ||
-      left.resolvedBy !== right.resolvedBy ||
-      left.resolvedAt !== right.resolvedAt ||
-      left.resolutionNote !== right.resolutionNote ||
-      left.routingTarget !== right.routingTarget ||
-      left.routingDetail !== right.routingDetail ||
-      left.recommendedAction !== right.recommendedAction
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function replaceBreakQueueItem(
-  current: ReconciliationBreakQueueItem[],
-  updated: ReconciliationBreakQueueItem
-): ReconciliationBreakQueueItem[] {
-  if (!current.some((item) => item.breakId === updated.breakId)) {
-    return [updated, ...current];
-  }
-
-  return current.map((item) => (item.breakId === updated.breakId ? updated : item));
 }

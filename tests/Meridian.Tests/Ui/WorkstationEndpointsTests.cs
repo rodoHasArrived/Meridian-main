@@ -143,7 +143,8 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_WithoutBackingServices_ShouldReturnServiceUnavailable()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var client = app.GetTestClient();
 
         UiApiRoutes.WorkstationStrategy.Should().Be("/api/workstation/strategy");
@@ -255,7 +256,8 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnServiceUnavailableInsteadOfFabricatedPayloads()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var client = app.GetTestClient();
 
         // The session bootstrap payload stays available with honest zeroed workspace counters.
@@ -5966,7 +5968,9 @@ public sealed partial class WorkstationEndpointsTests
     {
         // The reporting workspace rides on the accounting payload, which requires the strategy
         // run read service; without it the endpoint returns 503 instead of fabricated data.
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
+        await using var app = await CreateAppAsync(
+            services => RegisterRunReadServices(services),
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var client = app.GetTestClient();
 
         using var reporting = await ReadJsonAsync(client, "/api/workstation/reporting");
@@ -6022,14 +6026,21 @@ public sealed partial class WorkstationEndpointsTests
             ],
             accessPolicy: new ReportAccessPolicyDto(
                 ReportAccessModeDto.Restricted,
-                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]));
+                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]),
+            accessContext: new ReportAccessQueryContext(
+                ActorPrincipalId: "report.author",
+                CompanyId: "tenant-test",
+                TenantId: "tenant-test",
+                RequireBoundScope: true));
 
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton(new ReportPackRunReadService(
                 new DefaultReportingTemplateCatalog(),
                 workflowService: workflow));
-        }, currentUserRoleProfileName: "ops-control");
+        },
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting,
+            currentUserRoleProfileName: "ops-control");
         var client = app.GetTestClient();
         var requestedRoutes = new List<string>();
 
@@ -6183,7 +6194,8 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton(new ReportPackRunReadService(
                 new DefaultReportingTemplateCatalog(),
                 workflowService: workflow));
-        });
+        },
+            currentUserPermissions: UserPermission.ModifySecurityMaster | UserPermission.ViewReporting);
         var strangerClient = strangerApp.GetTestClient();
         var strangerResponse = await strangerClient.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
         var strangerAnalyticsResponse = await strangerClient.GetAsync("/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics");

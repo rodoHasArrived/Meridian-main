@@ -40,6 +40,41 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
             : null;
     }
 
+    public async Task<IReadOnlyList<ReportingAccessGrantRecord>> ListByPackageAsync(
+        string tenantId,
+        string packageId,
+        CancellationToken ct = default)
+    {
+        var normalizedTenantId = ReportingDistributionStoreGuard.NormalizeRequired(
+            tenantId,
+            nameof(tenantId),
+            256);
+        var normalizedPackageId = ReportingDistributionStoreGuard.NormalizeRequired(
+            packageId,
+            nameof(packageId),
+            256);
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select {GrantSelectList()}
+            from {_grantTable}
+            where tenant_id = @tenant_id
+              and package_id = @package_id
+            order by created_at_utc desc, grant_id;
+            """;
+        command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
+        command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, normalizedPackageId);
+        var grants = new List<ReportingAccessGrantRecord>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            grants.Add(ReadGrant(reader));
+        }
+
+        return grants;
+    }
+
     public async Task<bool> TryCreateAsync(
         ReportingAccessGrantRecord grant,
         CancellationToken ct = default)
@@ -55,6 +90,8 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
                 token_hash_sha256,
                 tenant_id,
                 audience,
+                audience_kind,
+                run_id,
                 package_id,
                 allow_package_read,
                 artifact_ids,
@@ -72,6 +109,8 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
                 @token_hash_sha256,
                 @tenant_id,
                 @audience,
+                @audience_kind,
+                @run_id,
                 @package_id,
                 @allow_package_read,
                 @artifact_ids,
@@ -183,28 +222,18 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            select grant_id,
-                   token_hash_sha256,
-                   tenant_id,
-                   audience,
-                   package_id,
-                   allow_package_read,
-                   artifact_ids,
-                   created_at_utc,
-                   expires_at_utc,
-                   max_uses,
-                   use_count,
-                   last_used_at_utc,
-                   revoked_at_utc,
-                   revoked_by,
-                   revocation_reason,
-                   version
+            select {GrantSelectList()}
             from {_grantTable}
             where grant_id = @grant_id
             {(forUpdate ? "for update" : string.Empty)};
             """;
         return command;
     }
+
+    private static string GrantSelectList() =>
+        "grant_id, token_hash_sha256, tenant_id, audience, audience_kind, run_id, package_id, "
+        + "allow_package_read, artifact_ids, created_at_utc, expires_at_utc, max_uses, "
+        + "use_count, last_used_at_utc, revoked_at_utc, revoked_by, revocation_reason, version";
 
     private static ReportingAccessGrantRecord ReadGrant(NpgsqlDataReader reader)
     {
@@ -216,18 +245,20 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
                 reader.GetString(1),
                 reader.GetString(2),
                 reader.GetString(3),
-                reader.GetString(4),
-                reader.GetBoolean(5),
-                reader.GetFieldValue<string[]>(6),
-                ReportingDistributionStoreGuard.ReadUtcTimestamp(reader, 7),
-                ReportingDistributionStoreGuard.ReadUtcTimestamp(reader, 8),
-                reader.GetInt32(9),
-                reader.GetInt32(10),
-                ReportingDistributionStoreGuard.ReadNullableUtcTimestamp(reader, 11),
-                ReportingDistributionStoreGuard.ReadNullableUtcTimestamp(reader, 12),
-                reader.IsDBNull(13) ? null : reader.GetString(13),
-                reader.IsDBNull(14) ? null : reader.GetString(14),
-                reader.GetInt64(15));
+                reader.GetString(5),
+                reader.GetString(6),
+                reader.GetBoolean(7),
+                reader.GetFieldValue<string[]>(8),
+                ReportingDistributionStoreGuard.ReadUtcTimestamp(reader, 9),
+                ReportingDistributionStoreGuard.ReadUtcTimestamp(reader, 10),
+                reader.GetInt32(11),
+                reader.GetInt32(12),
+                ReportingDistributionStoreGuard.ReadNullableUtcTimestamp(reader, 13),
+                ReportingDistributionStoreGuard.ReadNullableUtcTimestamp(reader, 14),
+                reader.IsDBNull(15) ? null : reader.GetString(15),
+                reader.IsDBNull(16) ? null : reader.GetString(16),
+                reader.GetInt64(17),
+                (ReportingAccessPrincipalKind)reader.GetInt32(4));
             ValidateGrant(grant, expectedVersion: null, requireExactVersion: false);
             return grant;
         }
@@ -255,6 +286,11 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         ReportingDistributionStoreGuard.ValidateSha256(grant.TokenHashSha256, nameof(grant.TokenHashSha256));
         ReportingDistributionStoreGuard.NormalizeRequired(grant.TenantId, nameof(grant.TenantId), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.NormalizeRequired(grant.Audience, nameof(grant.Audience), 512, requireCanonical: true);
+        if (!Enum.IsDefined(grant.AudienceKind))
+        {
+            throw new ArgumentOutOfRangeException(nameof(grant), "Reporting access grant audience kind is invalid.");
+        }
+        ReportingDistributionStoreGuard.NormalizeRequired(grant.RunId, nameof(grant.RunId), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.NormalizeRequired(grant.PackageId, nameof(grant.PackageId), 256, requireCanonical: true);
         ReportingDistributionStoreGuard.ValidateStringSet(grant.ArtifactIds, nameof(grant.ArtifactIds), 512);
         ReportingDistributionStoreGuard.RequireUtc(grant.CreatedAtUtc, nameof(grant.CreatedAtUtc));
@@ -270,9 +306,13 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         }
 
         if (grant.LastUsedAtUtc is { } lastUsed
-            && (lastUsed.Offset != TimeSpan.Zero || lastUsed < grant.CreatedAtUtc))
+            && (lastUsed.Offset != TimeSpan.Zero
+                || lastUsed < grant.CreatedAtUtc
+                || lastUsed >= grant.ExpiresAtUtc))
         {
-            throw new ArgumentException("Reporting access grant last-use time is invalid.", nameof(grant));
+            throw new ArgumentException(
+                "Reporting access grant last-use time must be UTC and fall within its active grant window.",
+                nameof(grant));
         }
 
         if (grant.RevokedAtUtc is null)
@@ -308,6 +348,8 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
             || !string.Equals(current.TokenHashSha256, updated.TokenHashSha256, StringComparison.Ordinal)
             || !string.Equals(current.TenantId, updated.TenantId, StringComparison.Ordinal)
             || !string.Equals(current.Audience, updated.Audience, StringComparison.Ordinal)
+            || current.AudienceKind != updated.AudienceKind
+            || !string.Equals(current.RunId, updated.RunId, StringComparison.Ordinal)
             || !string.Equals(current.PackageId, updated.PackageId, StringComparison.Ordinal)
             || current.AllowPackageRead != updated.AllowPackageRead
             || !current.ArtifactIds.SequenceEqual(updated.ArtifactIds, StringComparer.Ordinal)
@@ -336,6 +378,14 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
             throw new InvalidOperationException("Reporting access grant consumption requires a monotonic last-use time.");
         }
 
+        var consumedUse = updated.UseCount != current.UseCount;
+        var newlyRevoked = current.RevokedAtUtc is null && updated.RevokedAtUtc is not null;
+        if (consumedUse && (current.RevokedAtUtc is not null || newlyRevoked))
+        {
+            throw new InvalidOperationException(
+                "A reporting access grant cannot be consumed after or atomically with revocation.");
+        }
+
         if (current.RevokedAtUtc is not null
             && (updated.RevokedAtUtc != current.RevokedAtUtc
                 || !string.Equals(updated.RevokedBy, current.RevokedBy, StringComparison.Ordinal)
@@ -351,6 +401,8 @@ public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantSto
         command.Parameters.AddWithValue("token_hash_sha256", NpgsqlDbType.Text, grant.TokenHashSha256);
         command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, grant.TenantId);
         command.Parameters.AddWithValue("audience", NpgsqlDbType.Text, grant.Audience);
+        command.Parameters.AddWithValue("audience_kind", NpgsqlDbType.Integer, (int)grant.AudienceKind);
+        command.Parameters.AddWithValue("run_id", NpgsqlDbType.Text, grant.RunId);
         command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, grant.PackageId);
         command.Parameters.AddWithValue("allow_package_read", NpgsqlDbType.Boolean, grant.AllowPackageRead);
         command.Parameters.AddWithValue("artifact_ids", NpgsqlDbType.Array | NpgsqlDbType.Text, grant.ArtifactIds.ToArray());

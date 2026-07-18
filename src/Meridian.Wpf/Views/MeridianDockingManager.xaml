@@ -31,8 +31,8 @@
 
         <!-- ── Drag-and-drop drop-target overlay (preserves existing page-tag protocol) ── -->
         <Border x:Name="DropOverlay"
-                Background="#22007ACC"
-                BorderBrush="#66007ACC"
+                Background="{StaticResource DropTargetFillBrush}"
+                BorderBrush="{StaticResource DropTargetBorderBrush}"
                 BorderThickness="2"
                 Visibility="Collapsed">
             <TextBlock HorizontalAlignment="Center"

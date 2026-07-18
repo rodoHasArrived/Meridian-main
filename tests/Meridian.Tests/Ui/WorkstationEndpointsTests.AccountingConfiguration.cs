@@ -1125,6 +1125,177 @@ public sealed partial class WorkstationEndpointsTests
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
     }
 
+    [Theory]
+    [InlineData(JournalEntryLifecycleActionDto.Reverse)]
+    [InlineData(JournalEntryLifecycleActionDto.Rebook)]
+    public async Task ManualJournalEntryLifecycleEndpoint_HardClosedLedgerPeriodOverridesFalseClientLockFlag(
+        JournalEntryLifecycleActionDto correctionAction)
+    {
+        var journalStore = new WritableEndpointLedgerJournalStore();
+        await using var app = await CreateAppAsync(
+            services =>
+            {
+                services.AddSingleton<ILedgerJournalStore>(journalStore);
+                RegisterAccountingConfigurationServices(services);
+            },
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var preparerClient = app.GetTestClient();
+        preparerClient.DefaultRequestHeaders.Add("X-Meridian-Test-User", "journal-preparer");
+        var controllerClient = app.GetTestClient();
+        controllerClient.DefaultRequestHeaders.Add("X-Meridian-Test-User", "journal-controller");
+        var periodId = Guid.NewGuid();
+        var draft = ManualJournalEntryDraft("fund-event:fund-alpha:capital-call:hard-close-bypass") with
+        {
+            PeriodId = periodId.ToString("D")
+        };
+        var ledgerBookId = draft.LedgerBookId!.Value;
+        var openedAt = DateTimeOffset.UtcNow.AddMonths(-1);
+        var book = new LedgerBookRecord(
+            ledgerBookId,
+            draft.FundProfileId,
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Fund Alpha primary manual journal book",
+            "USD",
+            openedAt,
+            openedAt,
+            AccountingBasis: draft.AccountingBasis);
+        var period = new LedgerAccountingPeriod(
+            periodId,
+            ledgerBookId,
+            2026,
+            6,
+            "2026-06",
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30),
+            "Open",
+            openedAt,
+            null,
+            1);
+        journalStore.Seed(book, period);
+        var configurationService = app.Services.GetRequiredService<IAccountingConfigurationService>();
+        await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            draft.FundProfileId,
+            new ChartOfAccountsNodeDto("cash-hard-close-bypass", "Assets:Cash", "Cash", "Asset"),
+            "test-setup",
+            CompanyId: "tenant-test",
+            LedgerBookId: ledgerBookId,
+            TenantId: "tenant-test"));
+        await configurationService.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            draft.FundProfileId,
+            new ChartOfAccountsNodeDto(
+                "capital-hard-close-bypass",
+                "Equity:Capital Contributions",
+                "Capital Contributions",
+                "Equity"),
+            "test-setup",
+            CompanyId: "tenant-test",
+            LedgerBookId: ledgerBookId,
+            TenantId: "tenant-test"));
+        var submitted = await SaveAndSubmitManualJournalDraftAsync(
+            preparerClient,
+            draft,
+            "hard-close-bypass");
+        using var approveResponse = await controllerClient.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                submitted.JournalEntryId,
+                submitted.FundProfileId,
+                JournalEntryLifecycleActionDto.Approve,
+                "caller-supplied-actor",
+                submitted.Version,
+                Notes: "Controller approved the journal before period close.",
+                EvidenceLinks: [ManualJournalApprovalEvidence(submitted)],
+                LedgerBookId: ledgerBookId),
+            ServerJsonOptions);
+        var approveResponseBody = await approveResponse.Content.ReadAsStringAsync();
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.OK, approveResponseBody);
+        var approved = await approveResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
+        using var postResponse = await controllerClient.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                approved!.JournalEntry.JournalEntryId,
+                approved.JournalEntry.FundProfileId,
+                JournalEntryLifecycleActionDto.Post,
+                "caller-supplied-actor",
+                approved.JournalEntry.Version,
+                Notes: "Controller posted the journal before period close.",
+                EvidenceLinks: [ManualJournalPostingEvidence(approved.JournalEntry)],
+                LedgerBookId: ledgerBookId),
+            ServerJsonOptions);
+        var postResponseBody = await postResponse.Content.ReadAsStringAsync();
+        postResponse.StatusCode.Should().Be(HttpStatusCode.OK, postResponseBody);
+        var posted = await postResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
+        journalStore.Seed(book, period with
+        {
+            Status = "HardClosed",
+            ClosedAt = DateTimeOffset.UtcNow,
+            Version = period.Version + 1
+        });
+
+        var correctionEvidence = correctionAction == JournalEntryLifecycleActionDto.Reverse
+            ? ManualJournalReversalEvidence(posted!.JournalEntry)
+            : $"/api/workstation/evidence/subjects/accounting-record/rebook/ledger-book/{posted!.JournalEntry.LedgerBookId:D}/{posted.JournalEntry.PeriodId}";
+        using var correctionResponse = await controllerClient.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                posted.JournalEntry.JournalEntryId,
+                posted.JournalEntry.FundProfileId,
+                correctionAction,
+                "caller-supplied-actor",
+                posted.JournalEntry.Version,
+                Notes: "Attempt to bypass the durable hard close with a false client flag.",
+                EvidenceLinks: [correctionEvidence],
+                PeriodIsLocked: false,
+                LedgerBookId: ledgerBookId),
+            ServerJsonOptions);
+        var correctionResponseBody = await correctionResponse.Content.ReadAsStringAsync();
+        using var workbenchResponse = await controllerClient.GetAsync(
+            $"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId={draft.FundProfileId}&ledgerBookId={ledgerBookId:D}");
+        var workbench = await workbenchResponse.Content.ReadFromJsonAsync<ManualJournalEntryWorkbenchDto>(ServerJsonOptions);
+
+        correctionResponse.StatusCode.Should().Be(HttpStatusCode.Conflict, correctionResponseBody);
+        correctionResponseBody.Should().Contain("accounting period is locked after close");
+        workbenchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        workbench!.Drafts.Should().ContainSingle(item =>
+            item.JournalEntryId == posted.JournalEntry.JournalEntryId &&
+            item.Status == ManualJournalEntryStatusDto.Posted &&
+            item.Version == posted.JournalEntry.Version);
+        workbench.Drafts.Should().NotContain(item =>
+            item.ReversalOfJournalEntryId == posted.JournalEntry.JournalEntryId ||
+            item.RebookedFromJournalEntryId == posted.JournalEntry.JournalEntryId);
+
+        var hardClosedPeriod = period with
+        {
+            Status = "HardClosed",
+            ClosedAt = DateTimeOffset.UtcNow,
+            Version = period.Version + 1
+        };
+        journalStore.PeriodLookupOverride = correctionAction == JournalEntryLifecycleActionDto.Reverse
+            ? hardClosedPeriod with { LedgerBookId = Guid.NewGuid() }
+            : hardClosedPeriod with { PeriodId = Guid.NewGuid() };
+        using var validateScopeResponse = await controllerClient.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                posted.JournalEntry.JournalEntryId,
+                posted.JournalEntry.FundProfileId,
+                JournalEntryLifecycleActionDto.Validate,
+                "caller-supplied-actor",
+                posted.JournalEntry.Version,
+                PeriodIsLocked: false,
+                LedgerBookId: ledgerBookId),
+            ServerJsonOptions);
+        var validateScopeResponseBody = await validateScopeResponse.Content.ReadAsStringAsync();
+        validateScopeResponse.StatusCode.Should().Be(HttpStatusCode.OK, validateScopeResponseBody);
+        var validateScope = await validateScopeResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
+        validateScope!.JournalEntry.ValidationIssues.Should().NotContain(issue =>
+            issue.Code == "manual-je.period-locked");
+        validateScope.JournalEntry.ValidationIssues.Should().Contain(issue =>
+            issue.Code == (correctionAction == JournalEntryLifecycleActionDto.Reverse
+                ? "manual-je.period-book-mismatch"
+                : "manual-je.period-id-mismatch"));
+    }
+
     [Fact]
     public async Task ManualJournalEntryLifecycleEndpoint_RequiresAdminMaintenanceForReleaseTransitions()
     {
@@ -2444,6 +2615,8 @@ public sealed partial class WorkstationEndpointsTests
 
         public List<LedgerJournalEntryWrite> Appended { get; } = [];
 
+        public LedgerAccountingPeriod? PeriodLookupOverride { get; set; }
+
         public void Seed(LedgerBookRecord book, LedgerAccountingPeriod period)
         {
             _books.RemoveAll(item => item.LedgerBookId == book.LedgerBookId);
@@ -2498,7 +2671,7 @@ public sealed partial class WorkstationEndpointsTests
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult<LedgerAccountingPeriod?>(
-                _periods.SingleOrDefault(period => period.PeriodId == periodId));
+                PeriodLookupOverride ?? _periods.SingleOrDefault(period => period.PeriodId == periodId));
         }
 
         public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
