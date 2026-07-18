@@ -27,17 +27,10 @@
     "scriptPaths": []
   },
   "governance": {
-    "missingArtifacts": [
-      "postgresql-schema-control:database/manifest/catalog.json",
-      "postgresql-schema-control:database/manifest/contracts.json",
-      "postgresql-schema-control:database/manifest/dependencies.json",
-      "postgresql-schema-control:database/manifest/migrations.json",
-      "postgresql-schema-control:database/manifest/policies.json",
-      "postgresql-schema-control:docs/generated/database"
-    ],
+    "missingArtifacts": [],
     "staleArtifacts": [],
     "outsideCanonicalPaths": [],
     "orphanGeneratedOutputs": []
   },
-  "status": "drift-detected"
+  "status": "clean"
 }

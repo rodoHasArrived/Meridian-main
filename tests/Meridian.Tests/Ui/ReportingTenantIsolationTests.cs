@@ -882,11 +882,7 @@ public sealed class ReportingTenantIsolationTests
             artifactId.Contains("manifest", StringComparison.Ordinal)
             || artifactId.Contains("evidence-appendix", StringComparison.Ordinal));
 
-        var interruptedSchedulePath = Path.Combine(root, "interrupted-reporting-schedules.json");
-        var interruptedStore = new FileReportingScheduleStore(
-            new ReportingScheduleStoreOptions(interruptedSchedulePath),
-            NullLogger<FileReportingScheduleStore>.Instance);
-        interruptedStore.Save(
+        var interruptedStore = new StubReportingScheduleStore(
         [
             incompleteDraft with { State = ReportingScheduleStateDto.Active },
             retainedSchedule
@@ -899,9 +895,7 @@ public sealed class ReportingTenantIsolationTests
         var restartedGovernance = new RecordingScheduleGovernanceCoordinator(restartedOrchestration);
         var recoveredService = new ReportingScheduleService(
             restartedOrchestration,
-            new FileReportingScheduleStore(
-                new ReportingScheduleStoreOptions(interruptedSchedulePath),
-                NullLogger<FileReportingScheduleStore>.Instance),
+            interruptedStore,
             governedTemplateCatalog: catalog,
             readinessService: readiness,
             certificationService: certification,
@@ -924,9 +918,7 @@ public sealed class ReportingTenantIsolationTests
 
         var secondRestart = new ReportingScheduleService(
             restartedOrchestration,
-            new FileReportingScheduleStore(
-                new ReportingScheduleStoreOptions(interruptedSchedulePath),
-                NullLogger<FileReportingScheduleStore>.Instance),
+            interruptedStore,
             governedTemplateCatalog: catalog,
             readinessService: readiness,
             certificationService: certification,
@@ -940,9 +932,7 @@ public sealed class ReportingTenantIsolationTests
 
         var reloaded = new ReportingScheduleService(
             orchestration,
-            new FileReportingScheduleStore(
-                new ReportingScheduleStoreOptions(schedulePath),
-                NullLogger<FileReportingScheduleStore>.Instance),
+            interruptedStore,
             governedTemplateCatalog: catalog,
             readinessService: readiness,
             certificationService: certification,

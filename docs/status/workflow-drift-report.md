@@ -4,7 +4,7 @@
 
 - Manifest path: `docs/status/workflow-manifest.json`
 - Workflow count: `12`
-- Status: `drift-detected`
+- Status: `clean`
 
 ## Missing declared commands
 
@@ -13,7 +13,7 @@
 
 ## Artifact governance violations
 
-- Missing expected artifacts (6): `postgresql-schema-control:database/manifest/catalog.json`, `postgresql-schema-control:database/manifest/contracts.json`, `postgresql-schema-control:database/manifest/dependencies.json`, `postgresql-schema-control:database/manifest/migrations.json`, `postgresql-schema-control:database/manifest/policies.json`, `postgresql-schema-control:docs/generated/database`
+- Missing expected artifacts (0): None
 - Stale artifacts (0): None
 - Outside canonical paths (0): None
 - Orphan generated outputs (0): None

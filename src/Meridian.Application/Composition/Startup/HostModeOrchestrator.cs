@@ -34,8 +34,16 @@ public sealed class HostModeOrchestrator
         CancellationToken ct = default,
         IApplicationLifecycleCoordinator? lifecycle = null)
     {
-        var ownsLifecycle = lifecycle is null;
-        var effectiveLifecycle = lifecycle ?? ApplicationLifecycleCoordinator.Create(_log, ct);
+        var ownedLifecycle = lifecycle is null
+            ? ApplicationLifecycleCoordinator.Create(_log, ct)
+            : null;
+        var effectiveLifecycle = lifecycle ?? ownedLifecycle!;
+        // Compatibility callers do not host RuntimeShutdownSequence, so any accepted shutdown
+        // request must also release the runner's termination wait. Production bootstrap supplies
+        // an explicit lifecycle and retains the full drain, receipt, and host-release sequence.
+        using var compatibilityTerminationRegistration = ownedLifecycle is not null
+            ? ownedLifecycle.StopWorkToken.Register(ownedLifecycle.SignalTermination)
+            : default;
         try
         {
             var ctx = new StartupContext
@@ -56,9 +64,9 @@ public sealed class HostModeOrchestrator
         }
         finally
         {
-            if (ownsLifecycle)
+            if (ownedLifecycle is not null)
             {
-                effectiveLifecycle.Dispose();
+                ownedLifecycle.Dispose();
             }
         }
     }

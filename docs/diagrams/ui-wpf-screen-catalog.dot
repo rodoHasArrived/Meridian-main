@@ -18,7 +18,7 @@ digraph WpfScreenCatalog {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.1, arrowsize=0.7];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: a08eb2c49d47\nScreens: 92\nSource: src/Meridian.Wpf shell registry"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 000963fca811\nScreens: 93\nSource: src/Meridian.Wpf shell registry"];
   registry [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="ShellPageRegistryBuilder\nfeature modules + catalog partials"];
   generated -> registry [color="#38bdf8"];
 
@@ -280,7 +280,7 @@ digraph WpfScreenCatalog {
     label="Settings workspace";
     color="#334155";
     style="rounded";
-    workspace_7 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Settings\n17 screens\n6 sections"];
+    workspace_7 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Settings\n18 screens\n6 sections"];
     registry -> workspace_7 [color="#22d3ee"];
     workspace_7_section_1 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Notifications\n3 screens"];
     workspace_7 -> workspace_7_section_1;
@@ -316,10 +316,12 @@ digraph WpfScreenCatalog {
     workspace_7_section_5 -> workspace_7_section_5_Settings;
     workspace_7_section_5_CredentialManagement [fillcolor="#1e293b", label="Credential management\nCredentialManagement → CredentialManagementPage\nPrimary | order 20"];
     workspace_7_section_5 -> workspace_7_section_5_CredentialManagement;
-    workspace_7_section_6 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Operations\n5 screens"];
+    workspace_7_section_6 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Operations\n6 screens"];
     workspace_7 -> workspace_7_section_6;
     workspace_7_section_6_SystemHealth [fillcolor="#1e293b", label="System health\nSystemHealth → SystemHealthPage\nPrimary | order 30"];
     workspace_7_section_6 -> workspace_7_section_6_SystemHealth;
+    workspace_7_section_6_LifecycleControl [fillcolor="#1e293b", label="Lifecycle control\nLifecycleControl → LifecycleControlPage\nPrimary | order 35"];
+    workspace_7_section_6 -> workspace_7_section_6_LifecycleControl;
     workspace_7_section_6_Diagnostics [fillcolor="#1e293b", label="Diagnostics\nDiagnostics → DiagnosticsPage\nPrimary | order 40"];
     workspace_7_section_6 -> workspace_7_section_6_Diagnostics;
     workspace_7_section_6_ServiceManager [fillcolor="#312e81", label="Service manager\nServiceManager → ServiceManagerPage\nSecondary | order 50"];

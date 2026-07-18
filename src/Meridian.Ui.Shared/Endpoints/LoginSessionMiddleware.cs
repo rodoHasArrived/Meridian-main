@@ -65,8 +65,12 @@ public sealed class LoginSessionMiddleware
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
         "/healthz",
+        "/ready",
         "/readyz",
-        "/livez"
+        "/live",
+        "/livez",
+        "/startup",
+        "/startupz"
     };
 
     private readonly RequestDelegate _next;
@@ -180,7 +184,8 @@ public sealed class LoginSessionMiddleware
     private static bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)
     {
         if (!trimmedPath.Equals("/api/system/lifecycle", StringComparison.OrdinalIgnoreCase) &&
-            !trimmedPath.Equals("/api/system/shutdown", StringComparison.OrdinalIgnoreCase))
+            !trimmedPath.Equals("/api/system/shutdown", StringComparison.OrdinalIgnoreCase) &&
+            !trimmedPath.StartsWith("/api/system/shutdown/", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

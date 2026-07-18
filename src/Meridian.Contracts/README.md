@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian.Contracts
@@ -24,6 +24,8 @@ or provider implementations.
 
 ## Key folders and files
 
+- `Lifecycle/` - shared runtime state, readiness-check, shutdown-operation, shutdown-receipt,
+  supervisor-manifest, exact-process-identity, database-identity, and session-receipt contracts.
 - `Workstation/` - workstation and operator workflow DTOs.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state

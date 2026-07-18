@@ -859,33 +859,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 continue; // Entry was trimmed between TryAdd and TryGetValue; retry.
             }
 
-        IReadOnlyList<RetainedTradeFillHandoffFailure> retained;
-        try
-        {
-            retained = await _tradeFillHandoffFailureStore.LoadPendingAsync(ct).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            return;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogCritical(ex, "Could not load retained accounting handoff failures");
-            return;
-        }
-
-        foreach (var failure in retained)
-        {
-            if (ct.IsCancellationRequested)
-                return;
-            try
-            {
-                await _tradeEventPublisher.PublishAsync(failure.TradeEvent).ConfigureAwait(false);
-                await _tradeFillHandoffFailureStore
-                    .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception ex)
+            if (!IsTerminalStatus(existing.Status))
             {
                 return false;
             }
@@ -910,152 +884,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
     {
         var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
 
-            var fillIncrement = progress.FillIncrement;
-
-            if (!progress.PortfolioApplied)
-            {
-                var realisedPnlBefore = _portfolioState?.RealisedPnl ?? 0m;
-
-                // Only fills for orders this OMS placed may mutate the paper portfolio;
-                // stream reports for external/untracked orders are still published below.
-                if (_portfolioState is PaperTradingPortfolio paperPortfolio
-                    && progress.IsTrackedOrder)
-                {
-                    paperPortfolio.ApplyFill(fillIncrement);
-                    progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
-                }
-
-                progress.NewCash = _portfolioState?.Cash ?? 0m;
-                progress.PortfolioApplied = true;
-            }
-
-            if (!progress.TradeEventPublished)
-            {
-                if (_tradeEventPublisher is not null && progress.IsTrackedOrder)
-                {
-                    progress.TradeEvent ??= CreateTradeExecutedEvent(
-                        fillIncrement,
-                        progress.CumulativeFilledQuantity,
-                        progress.RealizedPnl,
-                        progress.NewCash,
-                        ResolveFinancialAccountId(orderId));
-                    try
-                    {
-                        await _tradeEventPublisher.PublishAsync(progress.TradeEvent).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        var wasRetained = await RetainAccountingHandoffFailureAsync(
-                                progress.TradeEvent,
-                                ex,
-                                CancellationToken.None)
-                            .ConfigureAwait(false);
-                        throw new AccountingHandoffException(progress.TradeEvent, wasRetained, ex);
-                    }
-                }
-
-                progress.TradeEventPublished = true;
-            }
-
-            if (!progress.SessionRecorded)
-            {
-                await RecordSessionFillAsync(sessionId, fillIncrement, ct).ConfigureAwait(false);
-                progress.SessionRecorded = true;
-            }
-
-            if (!progress.ExecutionReportPublished)
-            {
-                // FullMode.Wait must be observed asynchronously. TryWrite here silently lost
-                // accepted fills whenever subscribers lagged behind the configured capacity.
-                await _executionChannel.Writer.WriteAsync(fillIncrement, ct).ConfigureAwait(false);
-                progress.ExecutionReportPublished = true;
-            }
-
-            progress.IsComplete = true;
-            TrackCompletedFill(report);
-        }
-        catch (AccountingHandoffException)
-        {
-            throw;
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            // Preserve the per-side-effect progress object. An identical gateway replay can
-            // resume at the failed step without applying portfolio/session/publication twice.
-            _logger.LogError(
-                ex,
-                "Fill processing paused for order {OrderId} ({Symbol} {FilledQuantity} @ {FillPrice}); a replay will resume the unfinished side effects",
-                progress.FillIncrement.OrderId,
-                progress.FillIncrement.Symbol,
-                progress.FillIncrement.FilledQuantity,
-                progress.FillIncrement.FillPrice);
-        }
-        finally
-        {
-            progress.Gate.Release();
-        }
-    }
-
-    private void TrackCompletedFill(ExecutionReport report)
-    {
-        _completedFillReportOrder.Enqueue(report);
-        while (_completedFillReportOrder.Count > MaxTrackedFillReports
-            && _completedFillReportOrder.TryDequeue(out var oldest))
-        {
-            if (_fillProcessing.TryGetValue(oldest, out var progress) && progress.IsComplete)
-                _fillProcessing.TryRemove(oldest, out _);
-        }
-    }
-
-    private string? ResolveFinancialAccountId(string? orderId)
-        => !string.IsNullOrWhiteSpace(orderId)
-            && _orderFinancialAccountIds.TryGetValue(orderId, out var accountId)
-                ? accountId
-                : null;
+        await RecordOrderRejectionAsync(
+            orderId,
+            request,
+            actor,
+            brokerName,
+            runId,
+            correlationId,
+            message,
+            ct,
+            rejectionSource: "duplicate client order id guard",
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
 
         return new OrderResult
         {
-            throw new InvalidOperationException(
-                $"Fill report '{fillIncrement.OrderId}' for '{fillIncrement.Symbol}' has no execution price.");
-        }
-
-        // STABILITY CONTRACT: the deterministic fillId below is derived from this exact field
-        // list, order, and encoding. Ledger entries already posted for a fill are keyed by it,
-        // so changing any part of the identity (adding/removing/reordering fields, formats)
-        // silently changes fill identity and re-posts fills after a restart. Do not modify
-        // without a migration plan for previously posted ledger entries.
-        var canonicalIdentity = string.Join(
-            "|",
-            EncodeIdentityPart(fillIncrement.OrderId),
-            EncodeIdentityPart(fillIncrement.ClientOrderId),
-            EncodeIdentityPart(fillIncrement.GatewayOrderId),
-            EncodeIdentityPart(fillIncrement.Symbol),
-            ((int)fillIncrement.Side).ToString(CultureInfo.InvariantCulture),
-            fillIncrement.FilledQuantity.ToString(CultureInfo.InvariantCulture),
-            cumulativeFilledQuantity.ToString(CultureInfo.InvariantCulture),
-            fillPrice.ToString(CultureInfo.InvariantCulture),
-            (fillIncrement.Commission ?? 0m).ToString(CultureInfo.InvariantCulture),
-            fillIncrement.Timestamp.ToUniversalTime().Ticks.ToString(CultureInfo.InvariantCulture),
-            EncodeIdentityPart(financialAccountId));
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalIdentity));
-        var fillId = new Guid(hash.AsSpan(0, 16));
-
-        return new TradeExecutedEvent(
-            fillId,
-            fillIncrement.ClientOrderId ?? fillIncrement.OrderId,
-            fillIncrement.Symbol,
-            fillIncrement.Side,
-            fillIncrement.FilledQuantity,
-            fillPrice,
-            fillIncrement.Commission ?? 0m,
-            realizedPnl,
-            newCash,
-            fillIncrement.Timestamp,
-            financialAccountId);
+            Success = false,
+            OrderId = orderId,
+            ErrorMessage = message
+        };
     }
 
     private static OrderState CreateRejectedState(

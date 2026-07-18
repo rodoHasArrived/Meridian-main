@@ -3914,6 +3914,36 @@ export function getPortfolioSymbolExposure(symbol: string) {
   return getJson<NetSymbolPosition>(portfolioSymbolExposureEndpoint(symbol));
 }
 
+// --- Runtime lifecycle ---
+
+export function getRuntimeLifecycle(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").RuntimeLifecycleSnapshot>(WORKSTATION_API_ENDPOINTS.runtimeLifecycle, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
+}
+
+export function requestRuntimeShutdown(
+  request: import("@/types").LifecycleShutdownRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").LifecycleShutdownAccepted>(WORKSTATION_API_ENDPOINTS.runtimeShutdown, request, options);
+}
+
+export function getRuntimeShutdownOperation(operationUri: string, options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").LifecycleShutdownOperation>(operationUri, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
+}
+
+export function getLatestRuntimeShutdownReceipt(options: ApiRequestOptions = {}) {
+  return getJson<import("@/types").LifecycleShutdownReceipt>(WORKSTATION_API_ENDPOINTS.runtimeShutdownReceiptsLatest, {
+    ...options,
+    allowDevelopmentFallback: false
+  });
+}
+
 // --- Live market data ---
 
 export function getLiveQuote(symbol: string, options: ApiRequestOptions = {}) {

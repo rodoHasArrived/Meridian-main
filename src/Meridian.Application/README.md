@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian.Application
@@ -373,12 +373,13 @@ and UI presentation concerns in their owning layers.
   `Meridian.Platform.Runtime.CliModeResolver` instead of Application-local runtime policy.
   Connectivity diagnostics and startup summaries use Platform runtime display helpers rather than
   Application-local display primitives. Runtime colocation profile activation is provided by
-  `Meridian.Platform.Performance.CoLocationProfileActivator`. Hosted graceful-shutdown flush and
-  shutdown sequence services live in Platform Runtime and consume the Core-owned
-  `Meridian.Core.Services.IFlushable` and `IFlushableQueueDiagnostics` contracts. Application
-  pipeline components expose queue diagnostics through that Core seam while consuming
-  Platform-owned shutdown lifecycle diagnostics rather than defining shared lifecycle DTOs or
-  diagnostic snapshots in Application. Diagnostic bundle generation lives in
+  `Meridian.Platform.Performance.CoLocationProfileActivator`. Application startup composition owns
+  the host-side lifecycle state machine, readiness checks, shutdown stage coordination, supervisor
+  named-pipe bridge, and participant ordering. The participants consume Core-owned
+  `Meridian.Core.Services.IFlushable` and `IFlushableQueueDiagnostics` contracts, while shared DTOs
+  remain in Contracts and the installed process/database owner remains the Lifecycle Supervisor.
+  The former Platform Runtime graceful-shutdown services are compatibility-only and are not newly
+  registered. Diagnostic bundle generation lives in
   `Meridian.Platform.Diagnostics`; Application composition and endpoints consume it with Core-owned
   redaction/masking helpers, Platform-owned error tracking, and friendly error formatting rather
   than Application-local utility services. Sample market-event

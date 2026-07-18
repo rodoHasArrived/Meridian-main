@@ -1,5 +1,6 @@
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
+import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
 import { formatNumber as formatNumberAmount } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -194,7 +195,6 @@ interface SettingsScreenProps {
 
 type ProviderInlineField = string;
 type ProviderInlineBusyAction = "test" | "save" | "verify" | "clear" | null;
-
 interface LedgerMappingAssignmentState {
   accountId: string;
   ledgerGroupId: string;
@@ -4826,7 +4826,7 @@ export function SettingsScreen({
         </Card>
       </section>
       ) : null}
-
+      {showRuntimeSection ? <LifecycleControlPanel /> : null}
       {showRuntimeSection ? (
       <Card id="runtime-feature-capabilities" className="panel-surface scroll-mt-6">
         <CardHeader>

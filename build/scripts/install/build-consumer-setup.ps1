@@ -2,6 +2,7 @@
 param(
     [string]$Configuration = "Release",
     [string]$OutputDirectory = "artifacts/consumer-setup",
+    [string]$PostgreSqlPayloadRoot = $env:MDC_POSTGRES_PAYLOAD_ROOT,
     [string]$SigningCertificate,
     [string]$SigningCertificatePassword
 )
@@ -16,6 +17,11 @@ if (-not $outputRoot.StartsWith($repoRoot + [IO.Path]::DirectorySeparatorChar, [
 Remove-Item -LiteralPath $outputRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path $payloadRoot -Force | Out-Null
 
+if ([string]::IsNullOrWhiteSpace($PostgreSqlPayloadRoot)) {
+    throw "A runtime-specific PostgreSQL payload is required. Set -PostgreSqlPayloadRoot or MDC_POSTGRES_PAYLOAD_ROOT."
+}
+$postgresPayloadRoot = [IO.Path]::GetFullPath($PostgreSqlPayloadRoot)
+
 Push-Location (Join-Path $repoRoot "src/Meridian.Ui/dashboard")
 try {
     npm ci --prefer-offline --no-audit --no-fund
@@ -28,8 +34,17 @@ foreach ($runtime in @("win-x64", "win-arm64")) {
     $desktopRoot = Join-Path $runtimeRoot "desktop"
     New-Item -ItemType Directory -Path $hostRoot, $desktopRoot -Force | Out-Null
 
+    $runtimePostgresRoot = Join-Path $postgresPayloadRoot $runtime
+    if (-not (Test-Path (Join-Path $runtimePostgresRoot "bin\postgres.exe")) -or
+        -not (Test-Path (Join-Path $runtimePostgresRoot "bin\pg_ctl.exe")) -or
+        -not (Test-Path (Join-Path $runtimePostgresRoot "bin\initdb.exe"))) {
+        throw "The PostgreSQL payload for $runtime must contain bin\postgres.exe, bin\pg_ctl.exe, and bin\initdb.exe under $runtimePostgresRoot."
+    }
+    Copy-Item -Path $runtimePostgresRoot -Destination (Join-Path $runtimeRoot "database") -Recurse -Force
+
     dotnet publish (Join-Path $repoRoot "src/Meridian/Meridian.csproj") -c $Configuration -r $runtime --self-contained true -o $hostRoot
     dotnet publish (Join-Path $repoRoot "src/Meridian.Wpf/Meridian.Wpf.csproj") -c $Configuration -r $runtime --self-contained true -o $desktopRoot /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
+    dotnet publish (Join-Path $repoRoot "src/Meridian.LifecycleSupervisor/Meridian.LifecycleSupervisor.csproj") -c $Configuration -r $runtime --self-contained true -o $runtimeRoot
     dotnet publish (Join-Path $repoRoot "src/Meridian.Launcher/Meridian.Launcher.csproj") -c $Configuration -r $runtime --self-contained true -o $runtimeRoot
 
     $workstationAssets = Join-Path $repoRoot "src/Meridian.Ui/wwwroot/workstation"

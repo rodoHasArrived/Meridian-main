@@ -168,7 +168,10 @@ public sealed class PilotAcceptanceHarnessTests
                     IncludeSupportingSchedules: true,
                     IncludeEvidenceAppendix: true)),
             "pilot.operator");
-        reportRunResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        reportRunResponse.StatusCode.Should().Be(
+            HttpStatusCode.Created,
+            "the governed endpoint returned {0}",
+            await reportRunResponse.Content.ReadAsStringAsync());
         var reportRun = await reportRunResponse.Content.ReadFromJsonAsync<ReportingRunResultDto>(
             ServerJsonOptions);
         reportRun.Should().NotBeNull();
@@ -457,6 +460,7 @@ public sealed class PilotAcceptanceHarnessTests
                 Path.Combine(root, "promotions"),
                 NullLogger<JsonlPromotionRecordStore>.Instance));
         builder.Services.AddSingleton<IReportingAuthoritativeSource, PilotReportingAuthoritativeSource>();
+        builder.Services.AddSingleton<IReportingReconciliationEvidenceSource, PilotReportingReconciliationEvidenceSource>();
         builder.Services.AddSingleton<IReportingRunReadinessDependencyEvaluator, PilotReportingReadinessDependencyEvaluator>();
         builder.Services.AddSingleton<IReportingGovernanceEndpointCoordinator, PilotReportingGovernanceCoordinator>();
 
@@ -1359,6 +1363,29 @@ public sealed class PilotAcceptanceHarnessTests
                 capturedAt,
                 evidence);
             return ValueTask.FromResult(new ReportingAuthoritativeSourceCapture(checkpoint, rows));
+        }
+    }
+
+    private sealed class PilotReportingReconciliationEvidenceSource : IReportingReconciliationEvidenceSource
+    {
+        public ValueTask<ReportingReconciliationEvidenceReceipt> ResolveAsync(
+            ReportingRunParametersDto parameters,
+            ReportingAuthoritativeSourceCheckpoint source,
+            ReportAccessQueryContext accessContext,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var completionId = $"pilot-close-{source.CheckpointId}";
+            var completionHash = PilotHash(
+                $"{source.CheckpointId}|{source.CheckpointHash}|{parameters.PeriodId}|{accessContext.TenantId}|closed");
+            return ValueTask.FromResult(ReportingReconciliationEvidenceValidation.CreateReceipt(
+                source,
+                new ReportingReconciliationCompletionEvidence(
+                    completionId,
+                    completionHash,
+                    source.CapturedAtUtc,
+                    HasOpenBreaks: false,
+                    [$"pilot-close:{completionId}:{completionHash}"])));
         }
     }
 
