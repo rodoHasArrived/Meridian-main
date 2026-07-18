@@ -48,7 +48,8 @@ public sealed class ReportingGovernanceWorkbenchViewModelTests
         request.JobId.Should().BeNull();
         request.AllowRestatement.Should().BeFalse();
 
-        var parameters = request.Parameters.Should().NotBeNull().Subject;
+        request.Parameters.Should().NotBeNull();
+        var parameters = request.Parameters!;
         parameters.Scope.FundProfileId.Should().Be("fund-atlas");
         parameters.Scope.EntityScopeKind.Should().Be(ReportingEntityScopeKindDto.Portfolio);
         parameters.Scope.EntityId.Should().Be("entity-7");
