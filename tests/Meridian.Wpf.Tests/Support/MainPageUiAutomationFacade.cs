@@ -143,6 +143,8 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
 
     public Frame ContentFrame => GetRequired<Frame>("ContentFrame");
 
+    public Grid WorkspaceHomeSurface => GetRequired<Grid>("WorkspaceHomeSurface");
+
     public Page? InnermostContentPage => NavigationHostInspector.ResolveInnermostPage(ContentFrame.Content);
 
     public Border WorkflowSummaryStrip => GetRequired<Border>("WorkflowSummaryStrip");
@@ -428,7 +430,7 @@ internal sealed class MainPageUiAutomationFacade : IDisposable
     {
         var navigationService = NavigationService.Instance;
         navigationService.SetServiceProvider(_serviceProvider);
-        navigationService.Initialize(ContentFrame);
+        navigationService.Initialize(ContentFrame, WorkspaceChromePresentationMode.Docked);
     }
 
     private static void RaiseLifecycleEvent(FrameworkElement element, RoutedEvent routedEvent)
