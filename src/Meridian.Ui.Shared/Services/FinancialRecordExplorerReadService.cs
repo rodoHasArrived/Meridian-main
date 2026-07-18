@@ -469,15 +469,10 @@ public sealed partial class FinancialRecordExplorerReadService
             .OrderByDescending(static record => record.UpdatedAt)
             .ThenBy(static record => record.ReportId)
             .ToArray();
-        // Consistent with the record projection above: an unbound (null) access context is the
-        // tenant-level legacy endpoint path, which shows retained attempts (sanitized). Governed
-        // callers pass a bound access context and keep the fail-closed company-scoped filter.
+        // Unbound (null) context = the legacy tenant-level endpoint: sanitized attempts, matching the unfiltered records above.
         var attempts = accessContext is null
             ? (deliveryAttempts ?? []).Select(ReportingDeliveryReadModelSecurity.SanitizeAttempt).ToArray()
-            : ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(
-                deliveryAttempts ?? [],
-                accessContext,
-                records);
+            : ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(deliveryAttempts ?? [], accessContext, records);
         var rows = records
             .SelectMany(record => record.LineProvenance!
                 .Select((line, index) => BuildReportLineProvenanceRow(record, line, attempts, index)))
