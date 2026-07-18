@@ -1096,6 +1096,135 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         result.Success.Should().BeTrue("no gate means any symbol is accepted");
     }
 
+    // ---- Duplicate client order id guard ----
+
+    [Fact]
+    public async Task PlaceOrderAsync_DuplicateClientOrderIdForActiveOrder_RejectsWithoutTouchingOriginal()
+    {
+        // Limit orders stay accepted (active) in the paper gateway.
+        var originalResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10,
+            LimitPrice = 150m,
+            ClientOrderId = "CLIENT-1"
+        });
+        originalResult.Success.Should().BeTrue();
+        var originalState = _oms.GetOrder("CLIENT-1");
+        originalState.Should().NotBeNull();
+
+        var duplicateResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "TSLA",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 99,
+            ClientOrderId = "CLIENT-1"
+        });
+
+        duplicateResult.Success.Should().BeFalse();
+        duplicateResult.ErrorMessage.Should().Contain("Duplicate client order id");
+        _oms.GetOrder("CLIENT-1").Should().Be(originalState,
+            "a duplicate submission must not overwrite the tracked state of the active order");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_ClientOrderIdReuseAfterTerminalOrder_Succeeds()
+    {
+        // Market orders fill immediately in the paper gateway, so the first order is terminal.
+        var firstResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "MSFT",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 5,
+            ClientOrderId = "CLIENT-2"
+        });
+        firstResult.Success.Should().BeTrue();
+        _oms.GetOrder("CLIENT-2")!.Status.Should().Be(OrderStatus.Filled);
+
+        var secondResult = await _oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "GOOG",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 3,
+            LimitPrice = 100m,
+            ClientOrderId = "CLIENT-2"
+        });
+
+        secondResult.Success.Should().BeTrue(
+            "a terminal order's client order id may be reclaimed, consistent with retention trimming");
+        _oms.GetOrder("CLIENT-2")!.Symbol.Should().Be("GOOG");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_GateRejectedReuseOfTerminalOrderId_PreservesTerminalState()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved());
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var firstResult = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "MSFT",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 5,
+            ClientOrderId = "CLIENT-3"
+        });
+        firstResult.Success.Should().BeTrue();
+        var filledState = oms.GetOrder("CLIENT-3");
+        filledState!.Status.Should().Be(OrderStatus.Filled);
+
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("limit breach"));
+
+        var rejectedResult = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "TSLA",
+            Side = OrderSide.Sell,
+            Type = OrderType.Market,
+            Quantity = 99,
+            ClientOrderId = "CLIENT-3"
+        });
+
+        rejectedResult.Success.Should().BeFalse();
+        oms.GetOrder("CLIENT-3").Should().Be(filledState,
+            "a gate-rejected submission reusing a terminal order's id must not overwrite the filled order's state");
+    }
+
+    [Fact]
+    public async Task PlaceOrderAsync_GateRejectionWithFreshId_StillRecordsRejectedState()
+    {
+        var riskValidator = Substitute.For<IRiskValidator>();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Rejected("limit breach"));
+        using var oms = new OrderManagementSystem(
+            _gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 1,
+            ClientOrderId = "CLIENT-4"
+        });
+
+        result.Success.Should().BeFalse();
+        oms.GetOrder("CLIENT-4")!.Status.Should().Be(OrderStatus.Rejected,
+            "a gate rejection under a previously unused id must still be visible in the order table");
+    }
+
     // ---- Stubs ----
 
     private sealed class ApproveAllGate : ISecurityMasterGate
