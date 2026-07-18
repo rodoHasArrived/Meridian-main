@@ -90,6 +90,7 @@ import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 import { FirstRunScreen } from "@/features/first-run/first-run-screen";
 import type { FirstRunStatus } from "@/features/first-run/types";
 import { apiGetJson } from "@/lib/api";
+import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 // Lazy route modules and data-backed panels often mount hash targets after the
 // shell route change. Wait briefly before falling back to the workbench landmark,
@@ -157,7 +158,7 @@ function AppRoot() {
   const [firstRunChecked, setFirstRunChecked] = useState(false);
   useEffect(() => {
     let active = true;
-    apiGetJson<FirstRunStatus>("/api/workstation/first-run/")
+    apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus)
       .then((value) => { if (active) { setFirstRun(value); setFirstRunChecked(true); } })
       .catch(() => { if (active) setFirstRunChecked(true); });
     return () => { active = false; };
@@ -170,12 +171,14 @@ function AppRoot() {
     return <Navigate to="/setup" replace />;
   }
   if (pathname === "/setup") {
-    return <FirstRunScreen initialStatus={firstRun} />;
+    // onStatusChange lifts completion back into this component's state so the
+    // redirect guard above releases the user instead of bouncing them to /setup.
+    return <FirstRunScreen initialStatus={firstRun} onStatusChange={setFirstRun} />;
   }
-  return <AppShell />;
+  return <AppShell firstRunStatus={firstRun} />;
 }
 
-function AppShell() {
+function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }) {
   const [commandOpen, setCommandOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
@@ -501,7 +504,7 @@ function AppShell() {
         actions={(
           <>
             <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
-            <ActivationHeaderProgress />
+            <ActivationHeaderProgress status={firstRunStatus} />
             <ActivityCenter />
             <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
           </>

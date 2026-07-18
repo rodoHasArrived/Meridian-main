@@ -200,6 +200,77 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task Scenario_TerminalClientOrderIdReuse_UnscopedReplacementFillDoesNotInheritPriorFundAccount()
+    {
+        var publisher = new RecordingTradeEventPublisher();
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport(
+                "pending",
+                OrderStatus.Accepted,
+                ExecutionReportType.New,
+                filledQty: 0m,
+                fillPrice: null)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            tradeEventPublisher: publisher);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        const string reusedClientOrderId = "terminal-reuse-1";
+        var firstFundAccountId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+
+        var first = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            ClientOrderId = reusedClientOrderId,
+            Symbol = "AAA",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 3m,
+            FundAccountId = firstFundAccountId
+        }, cts.Token);
+        first.Success.Should().BeTrue();
+        await gateway.PublishAsync(BuildReport(
+            reusedClientOrderId,
+            OrderStatus.Filled,
+            ExecutionReportType.Fill,
+            filledQty: 3m,
+            fillPrice: 10m,
+            symbol: "AAA"));
+        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 1,
+            "the scoped order fill must reach the accounting publisher before its terminal id is reused");
+
+        var replacement = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            ClientOrderId = reusedClientOrderId,
+            Symbol = "BBB",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 2m
+        }, cts.Token);
+        replacement.Success.Should().BeTrue(
+            "a client order id may be reused only after the prior order is terminal");
+        await gateway.PublishAsync(BuildReport(
+            reusedClientOrderId,
+            OrderStatus.Filled,
+            ExecutionReportType.Fill,
+            filledQty: 2m,
+            fillPrice: 20m,
+            symbol: "BBB"));
+        await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 2,
+            "the unscoped replacement fill must reach the accounting publisher");
+
+        var published = publisher.AcceptedEvents.ToArray();
+        published.Should().HaveCount(2);
+        published[0].Symbol.Should().Be("AAA");
+        published[0].FinancialAccountId.Should().Be(firstFundAccountId.ToString("D"),
+            "the first fill must retain the exact account scope captured before id reuse");
+        published[1].Symbol.Should().Be("BBB");
+        published[1].FinancialAccountId.Should().BeNull(
+            "an unscoped replacement must not inherit the prior terminal order's account map entry");
+    }
+
+    [Fact]
     public async Task AsyncFill_WhenPublisherCannotAccept_IsExposedAsDurableHandoffFailureAcrossRestart()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-oms-handoff-tests", Guid.NewGuid().ToString("N"));

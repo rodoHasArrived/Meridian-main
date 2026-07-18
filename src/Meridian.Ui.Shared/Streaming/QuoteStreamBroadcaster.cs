@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Meridian.Contracts.Api;
 using Meridian.Ui.Shared.Endpoints;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Streaming;
 
@@ -42,7 +44,8 @@ public sealed class QuoteStreamBroadcaster : IQuoteStreamBroadcaster, IAsyncDisp
             options.SubscriberChannelCapacity,
             // Quote topics are a bounded universe of canonical symbol sets — retain empty topics
             // (the shipped skip-build-when-empty optimization; also avoids a subscribe/evict race).
-            evictEmptyTopics: false);
+            evictEmptyTopics: false,
+            logger: services.GetService<ILoggerFactory>()?.CreateLogger<QuoteStreamBroadcaster>());
     }
 
     /// <inheritdoc />

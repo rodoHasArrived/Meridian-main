@@ -384,6 +384,17 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
                 if (maxSequence <= throughSequence && walFile != _currentWalPath)
                 {
+                    // A corrupt header makes the enumeration above yield zero records, which is
+                    // indistinguishable from "fully committed". Never delete such a file — it may
+                    // still hold the only copy of unreplayed records.
+                    if (!await HasValidHeaderAsync(walFile, ct))
+                    {
+                        _log.Error(
+                            "Refusing to truncate WAL file {File}: header is invalid; file preserved for inspection",
+                            walFile);
+                        continue;
+                    }
+
                     // Archive or delete the WAL file
                     if (_options.ArchiveAfterTruncate)
                     {
@@ -605,11 +616,38 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         if (!header.StartsWith(WalMagic))
         {
-            // A non-empty file with the wrong magic may still hold records. Treating it
-            // as empty would let TruncateAsync delete it and recovery skip its contents.
-            throw new InvalidDataException(
-                $"Invalid WAL header in '{walFile}'; refusing to treat the file as empty. " +
-                "Inspect the file or run RepairAsync before recovery can proceed.");
+            // A non-empty file with the wrong magic may still hold records. Header corruption
+            // follows the same policy as record corruption; TruncateAsync independently refuses
+            // to delete files whose header is invalid, so skipping here cannot cause deletion.
+            Interlocked.Increment(ref _corruptedRecordCount);
+            Interlocked.Increment(ref _skippedRecordCount);
+
+            switch (_options.CorruptionMode)
+            {
+                case WalCorruptionMode.Alert:
+                    _log.Error(
+                        "Invalid WAL header in {File}; skipping the file. It is preserved on disk for inspection",
+                        walFile);
+                    try
+                    { CorruptionDetected?.Invoke(1); }
+                    catch (Exception ex)
+                    {
+                        _log.Error(ex, "Exception in CorruptionDetected event handler; ignoring to continue recovery");
+                    }
+                    break;
+
+                case WalCorruptionMode.Halt:
+                    throw new InvalidDataException(
+                        $"Invalid WAL header in '{walFile}'; refusing to treat the file as empty. " +
+                        "Inspect the file or run RepairAsync before recovery can proceed.");
+
+                case WalCorruptionMode.Skip:
+                default:
+                    _log.Warning("Invalid WAL header in {File}; skipping the file", walFile);
+                    break;
+            }
+
+            yield break;
         }
 
         while (!reader.EndOfStream)
@@ -677,6 +715,19 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 Payload = payload
             };
         }
+    }
+
+    /// <summary>
+    /// Checks whether a WAL file starts with the expected magic header.
+    /// An empty (zero-record) file counts as valid: it holds nothing to lose.
+    /// </summary>
+    private static async Task<bool> HasValidHeaderAsync(string walFile, CancellationToken ct)
+    {
+        await using var stream = new FileStream(
+            walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(stream);
+        var header = await reader.ReadLineAsync(ct);
+        return header == null || header.StartsWith(WalMagic);
     }
 
     private async Task<long> GetLastSequenceNumberAsync(CancellationToken ct)
@@ -1056,11 +1107,12 @@ public sealed class WalOptions
 
     /// <summary>
     /// Controls how the WAL behaves when corrupted records are detected during recovery.
-    /// Defaults to <see cref="WalCorruptionMode.Skip"/> to preserve backwards compatibility.
-    /// Set to <see cref="WalCorruptionMode.Alert"/> in production so monitoring systems are
-    /// notified, or <see cref="WalCorruptionMode.Halt"/> to require manual operator review.
+    /// Defaults to <see cref="WalCorruptionMode.Alert"/> so corruption is never silent:
+    /// the durability backstop must not discard records without an operator signal.
+    /// Set to <see cref="WalCorruptionMode.Halt"/> to require manual operator review, or
+    /// opt into <see cref="WalCorruptionMode.Skip"/> only when silent-skip is acceptable.
     /// </summary>
-    public WalCorruptionMode CorruptionMode { get; set; } = WalCorruptionMode.Skip;
+    public WalCorruptionMode CorruptionMode { get; set; } = WalCorruptionMode.Alert;
 }
 
 /// <summary>

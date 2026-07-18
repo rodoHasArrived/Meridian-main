@@ -170,6 +170,41 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         }
     }
 
+    public async Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct)
+    {
+        var candidates = SecurityMasterConflictDetection.DetectFieldConflicts(previous, incoming, DateTimeOffset.UtcNow);
+        if (candidates.Count == 0)
+        {
+            return;
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+
+        int newConflicts = 0;
+        foreach (var conflict in candidates)
+        {
+            // Insert-if-absent preserves operator resolution state on re-detection.
+            var inserted = await InsertIfAbsentAsync(connection, transaction, conflict, ct).ConfigureAwait(false);
+            if (inserted)
+            {
+                newConflicts++;
+                _logger.LogWarning(
+                    "Cross-source field conflict on {FieldPath} for security {SecurityId}: {SourceA}='{ValueA}' vs {SourceB}='{ValueB}'",
+                    conflict.FieldPath, conflict.SecurityId, conflict.ProviderA, conflict.ValueA, conflict.ProviderB, conflict.ValueB);
+            }
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+
+        if (newConflicts > 0)
+        {
+            _logger.LogInformation(
+                "Recorded {Count} new field conflict(s) for security {SecurityId}",
+                newConflicts, incoming.SecurityId);
+        }
+    }
+
     private async Task<bool> InsertIfAbsentAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction? transaction,

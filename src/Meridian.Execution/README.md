@@ -50,10 +50,19 @@ and acknowledges only after the required trade and commission journals exist. Po
 a configured validation gate, resolved Security Master identity, non-blocked validation, and journal
 metadata that preserves the Security Master ID, fill ID, symbol, posting scope, and gate evidence for
 provenance. `UiServer` intentionally supplies no ledger consumer by default because its paper
-portfolios may own session ledgers and the host has no safe global book/period scope.
+portfolios may own session ledgers and the host has no safe global book/period scope. A book-owning
+deployment enables the production composition with
+`Execution:TradeFillLedgerPosting:Enabled=true` plus non-empty `AggregateId`, `PeriodId`, and
+`LedgerBookId`; the host derives one canonical scope, requires
+`MERIDIAN_LEDGER_CONNECTION_STRING`, and composes the governed target, WAL store, independent
+handoff-failure store, and OMS together. Changing book or period requires updating that scope and
+restarting the host rather than replaying retained fills into a new accounting context.
 The independent `ITradeFillHandoffFailureStore` must declare the same exact posting scope as the
 ledger consumer; composition fails before startup when the scopes differ, so restart recovery cannot
-route a prior book or period's fill into the current ledger. OMS disposal closes public-operation
+route a prior book or period's fill into the current ledger. Exact identities compare the scope label,
+aggregate, period, and ledger book. Legacy custom publishers and stores that expose only a label can
+compose with each other by that label, but mixing an exact identity with a label-only identity fails
+closed. OMS disposal closes public-operation
 admission and drains operations admitted before shutdown, including an in-flight broker submit and
 its synchronous fill handoff, before cancelling intake and awaiting both report and retained-handoff
 pumps. The publisher or failure store can therefore be disposed only after every OMS access ends.
@@ -64,6 +73,10 @@ P&amp;L, or publish an enriched `TradeExecutedEvent` through the abstraction ins
 the OMS fallback value.
 The OMS sends only fills for its own tracked orders to the accounting publisher; untracked broker
 stream reports remain observable through `ExecutionReports` but cannot contaminate the configured book.
+After a broker acknowledges a fill, the OMS admits it to the accounting publisher before attempting
+cancelable paper-session history or audit bookkeeping. Report-pump shutdown likewise cannot cancel a
+dequeued fill before durable accounting admission; downstream session/channel work may be cancelled
+after that boundary without rewriting the broker-filled order as rejected.
 Live execution controls include persisted circuit-breaker state, position limits, and manual
 overrides. Run-scoped manual overrides are matched against order `runId` metadata, and submitted
 paper orders that use an override carry the applied override ID, run/strategy/symbol scope, and

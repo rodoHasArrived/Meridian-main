@@ -68,7 +68,7 @@ public sealed class PortablePackagerService
             CompressionLevel = options.Compression == "zstd" ? CompressionLevel.SmallestSize : CompressionLevel.Optimal
         };
 
-        var result = await CreatePackageAsync(request, null, default);
+        var result = await CreatePackageAsync(request, null, ct);
 
         if (result.Success && result.OutputPath != null)
         {
@@ -102,7 +102,7 @@ public sealed class PortablePackagerService
     {
         if (options.ValidateFirst)
         {
-            var validation = await ValidatePackageAsync(options.PackagePath);
+            var validation = await ValidatePackageAsync(options.PackagePath, ct);
             if (!validation.IsValid)
             {
                 return new PackageImportResult
@@ -116,13 +116,17 @@ public sealed class PortablePackagerService
         var destPath = GetDefaultDataPath();
         try
         {
-            await ExtractPackageAsync(options.PackagePath, destPath, null, null, default);
+            await ExtractPackageAsync(options.PackagePath, destPath, null, null, ct);
 
             return new PackageImportResult
             {
                 Success = true,
                 FilesImported = Directory.GetFiles(destPath, "*", SearchOption.AllDirectories).Length
             };
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -139,7 +143,7 @@ public sealed class PortablePackagerService
     /// </summary>
     public async Task<PackageValidationResult> ValidatePackageAsync(string packagePath, CancellationToken ct = default)
     {
-        var result = await VerifyPackageAsync(packagePath, null, default);
+        var result = await VerifyPackageAsync(packagePath, null, ct);
 
         var validFiles = result.FileCount - result.Issues.Count;
         var corruptFiles = result.Issues.Count(i => i.Contains("Checksum mismatch"));
@@ -179,7 +183,7 @@ public sealed class PortablePackagerService
                 return null;
 
             manifestEntry.ExtractToFile(Path.Combine(tempDir, "manifest.json"));
-            var manifestJson = await File.ReadAllTextAsync(Path.Combine(tempDir, "manifest.json"));
+            var manifestJson = await File.ReadAllTextAsync(Path.Combine(tempDir, "manifest.json"), ct);
             var manifest = JsonSerializer.Deserialize<PackageManifest>(manifestJson);
 
             if (manifest == null)

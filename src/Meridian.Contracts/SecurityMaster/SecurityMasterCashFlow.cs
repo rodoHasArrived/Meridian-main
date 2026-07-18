@@ -13,7 +13,12 @@ public enum StructuredCashFlowSourceKind
     MoodysAnalytics,
     ClientProvided,
     CalculatedBullet,
-    CalculatedSinker
+    CalculatedSinker,
+    /// <summary>
+    /// Read-tolerance member: a source kind written by a newer node. Matches no provider and no
+    /// calculated path, so projections resolve to null (no data) instead of the row failing to read.
+    /// </summary>
+    Unknown
 }
 
 /// <summary>
@@ -79,14 +84,64 @@ public sealed record StructuredCashFlowScheduleEntry(
     decimal InterestAmount,
     decimal Factor);
 
+/// <summary>How a cash-flow leg's rate is determined.</summary>
+public enum CashFlowLegRateKind
+{
+    Fixed,
+    Floating,
+}
+
+/// <summary>Which side of a multi-leg structure a leg sits on, from the holder's perspective.</summary>
+public enum CashFlowLegDirection
+{
+    Receive,
+    Pay,
+}
+
+/// <summary>
+/// One leg of a multi-leg or floating-rate cash-flow structure (swap leg, floating-rate note,
+/// funding leg). Per-leg terms fall back to the security-level <see cref="StructuredCashFlowTerms"/>
+/// values when absent: <see cref="Notional"/> to <c>PrincipalFace</c>, <see cref="PaymentFrequency"/>
+/// and <see cref="DayCountConvention"/> to the security-level equivalents. Floating legs project at
+/// <see cref="CurrentIndexRate"/> (the last fixing) plus <see cref="SpreadBps"/> — a deliberate
+/// flat-forward simplification; no forward curve is implied.
+/// </summary>
+/// <param name="Direction">
+/// Null when the source terms carry no direction information. A single directionless leg projects
+/// as Receive; a multi-leg structure with any directionless leg cannot be netted honestly, so only
+/// per-leg schedules are produced for it.
+/// </param>
+public sealed record StructuredCashFlowLeg(
+    string LegId,
+    CashFlowLegRateKind RateKind,
+    CashFlowLegDirection? Direction,
+    decimal? FixedRate,
+    string? IndexName,
+    decimal? SpreadBps,
+    decimal? CurrentIndexRate,
+    decimal? Notional,
+    string? PaymentFrequency,
+    string? DayCountConvention,
+    bool ExchangesPrincipal = false);
+
+/// <summary>A single leg's projected schedule, always unsigned (direction is carried alongside).</summary>
+public sealed record StructuredCashFlowLegSchedule(
+    string LegId,
+    CashFlowLegRateKind RateKind,
+    CashFlowLegDirection? Direction,
+    IReadOnlyList<StructuredCashFlowScheduleEntry> Schedule);
+
 /// <summary>
 /// Full projected cash flow schedule for a security under one rate scenario.
 /// </summary>
 /// <remarks>
-/// The trailing <see cref="Staleness"/>, <see cref="SourceLastUpdatedUtc"/>, and
-/// <see cref="FactorSchedule"/> members are additive: existing callers that build a projection from
-/// the five leading members keep compiling, while newer consumers can gate on freshness and read a
-/// typed factor schedule instead of probing free-text terms.
+/// The trailing <see cref="Staleness"/>, <see cref="SourceLastUpdatedUtc"/>,
+/// <see cref="FactorSchedule"/>, and <see cref="TermsUsed"/> members are additive: existing callers
+/// that build a projection from the five leading members keep compiling, while newer consumers can
+/// gate on freshness and read typed terms instead of probing free-text term JSON.
+/// <see cref="TermsUsed"/> carries the exact resolved terms the schedule was projected from, so
+/// downstream ledger math (day-count weighting, maturity clamping) reuses the same economics as the
+/// schedule itself instead of re-resolving terms and risking divergence.
 /// </remarks>
 public sealed record StructuredCashFlowProjectionDto(
     Guid SecurityId,
@@ -96,7 +151,9 @@ public sealed record StructuredCashFlowProjectionDto(
     IReadOnlyList<StructuredCashFlowScheduleEntry> Schedule,
     StructuredCashFlowStaleness Staleness = StructuredCashFlowStaleness.Unknown,
     DateTimeOffset? SourceLastUpdatedUtc = null,
-    IReadOnlyList<StructuredFactorScheduleEntry>? FactorSchedule = null);
+    IReadOnlyList<StructuredFactorScheduleEntry>? FactorSchedule = null,
+    StructuredCashFlowTerms? TermsUsed = null,
+    IReadOnlyList<StructuredCashFlowLegSchedule>? LegSchedules = null);
 
 /// <summary>
 /// One balanced ledger journal line projected from a structured cash flow accrual.

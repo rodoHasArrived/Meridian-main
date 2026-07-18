@@ -34,6 +34,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     private readonly ITradeFillPostingStore _postingStore;
     private readonly TradeFillLedgerPostingContext _postingContext;
     private readonly string _postingScope;
+    private readonly TradeFillPostingScopeIdentity _scopeIdentity;
     private readonly TaskCompletionSource _recoveryLoaded = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly Task _processingTask;
     private readonly CancellationTokenSource _cts = new();
@@ -53,6 +54,9 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
     /// <inheritdoc />
     public string PostingScope => _postingScope;
+
+    /// <inheritdoc />
+    public TradeFillPostingScopeIdentity ScopeIdentity => _scopeIdentity;
 
     /// <summary>
     /// Initialises a new <see cref="LedgerPostingConsumer"/> bound to one durable accounting scope.
@@ -94,10 +98,27 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         if (channelCapacity <= 0)
             throw new ArgumentOutOfRangeException(nameof(channelCapacity));
         postingContext = postingContext.Validate();
+        var expectedScopeIdentity = TradeFillPostingScopeIdentity.FromContext(postingContext);
+        var postingStoreScopeIdentity = postingStore.ScopeIdentity.Validate();
+        if (!string.Equals(
+                postingStoreScopeIdentity.PostingScope,
+                postingStore.PostingScope,
+                StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Posting store scope identity label does not match its configured posting scope.",
+                nameof(postingStore));
+        }
         if (!string.Equals(postingStore.PostingScope, postingContext.PostingScope, StringComparison.Ordinal))
         {
             throw new ArgumentException(
                 $"Posting store scope '{postingStore.PostingScope}' does not match ledger scope '{postingContext.PostingScope}'.",
+                nameof(postingContext));
+        }
+        if (postingStoreScopeIdentity.IsExact && postingStoreScopeIdentity != expectedScopeIdentity)
+        {
+            throw new ArgumentException(
+                $"Posting store scope identity '{postingStoreScopeIdentity}' does not match ledger scope identity '{expectedScopeIdentity}'.",
                 nameof(postingContext));
         }
 
@@ -107,6 +128,9 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         _postingStore = postingStore;
         _postingContext = postingContext;
         _postingScope = postingContext.PostingScope;
+        _scopeIdentity = postingStoreScopeIdentity.IsExact
+            ? expectedScopeIdentity
+            : postingStoreScopeIdentity;
         _securityValidationGate = securityValidationGate;
         _requireSecurityMasterPostingGate = requireSecurityMasterPostingGate;
         _drainTimeout = RequirePositiveTimeout(drainTimeout, DefaultDrainTimeout, nameof(drainTimeout));
@@ -135,6 +159,21 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     ///     closed before enqueue; in the latter case the exception message confirms restart replay.
     /// </exception>
     public void Publish(TradeExecutedEvent tradeEvent)
+        // Sync bridge for legacy publishers; the fill-processing path awaits PublishAsync so
+        // storage backpressure never blocks a thread there.
+        => PublishAsync(tradeEvent).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// Durably accepts a <see cref="TradeExecutedEvent"/> for asynchronous ledger posting.
+    /// Returning means the fill can replay after restart. While the channel has capacity the
+    /// call returns after the WAL append; when full it awaits until the consumer frees space.
+    /// Intentionally not cancellable: once called, the fill must reach the durable store.
+    /// </summary>
+    /// <exception cref="ChannelClosedException">
+    ///     Disposal prevented acceptance, or the fill was durably accepted but the live channel
+    ///     closed before enqueue; in the latter case the exception message confirms restart replay.
+    /// </exception>
+    public async Task PublishAsync(TradeExecutedEvent tradeEvent)
     {
         ArgumentNullException.ThrowIfNull(tradeEvent);
         if (Volatile.Read(ref _disposeStarted) != 0)
@@ -145,19 +184,18 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
         // Establish a strict cut between restart replay and live acceptance so a fill cannot
         // appear in both the recovered snapshot and the channel during consumer startup.
-        _recoveryLoaded.Task.GetAwaiter().GetResult();
+        await _recoveryLoaded.Task.ConfigureAwait(false);
         if (Volatile.Read(ref _disposeStarted) != 0)
         {
             throw new ChannelClosedException(
                 $"LedgerPostingConsumer is disposed; fill {tradeEvent.FillId} for {tradeEvent.Symbol} was not accepted.");
         }
 
-        // The synchronous publisher contract intentionally applies storage backpressure here:
-        // returning means the executed fill is durably replayable even if this process stops.
-        var acceptance = _postingStore
+        // The publisher contract intentionally applies storage backpressure here: returning
+        // means the executed fill is durably replayable even if this process stops.
+        var acceptance = await _postingStore
             .AcceptAsync(tradeEvent, CancellationToken.None)
-            .GetAwaiter()
-            .GetResult();
+            .ConfigureAwait(false);
         if (!acceptance.ShouldEnqueue)
             return;
 
@@ -168,7 +206,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         if (_channel.Writer.TryWrite(posting))
             return;
 
-        // Slow path: channel full. Block the publisher until the consumer drains capacity
+        // Slow path: channel full. Hold the publisher until the consumer drains capacity
         // rather than dropping the fill — a dropped fill silently corrupts the books.
         _logger.LogWarning(
             "LedgerPostingConsumer channel is full; applying backpressure for fill {FillId} on {Symbol}",
@@ -176,7 +214,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
 
         while (!_channel.Writer.TryWrite(posting))
         {
-            var channelOpen = _channel.Writer.WaitToWriteAsync().AsTask().GetAwaiter().GetResult();
+            var channelOpen = await _channel.Writer.WaitToWriteAsync().ConfigureAwait(false);
             if (!channelOpen)
             {
                 throw new ChannelClosedException(

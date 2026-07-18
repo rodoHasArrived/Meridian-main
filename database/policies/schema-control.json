@@ -1,0 +1,37 @@
+{
+  "rules": {
+    "business-table-must-have-comment": {
+      "exclude": [
+        "*.schema_migrations",
+        "*.direct_lending_schema_migrations",
+        "*.asset_operations_schema_migrations",
+        "*.ledger_journal_schema_migrations",
+        "*.fund_structure_schema_migrations",
+        "*.fund_account_schema_migrations",
+        "*.reporting_schema_migrations",
+        "*.identity_access_schema_migrations"
+      ],
+      "severity": "warning"
+    },
+    "foreign-key-must-be-indexed": {
+      "severity": "warning"
+    },
+    "legacy-reapply-migration": {
+      "severity": "warning"
+    },
+    "no-public-schema": {
+      "severity": "error"
+    },
+    "schema-rls-required": {
+      "include_schemas": [
+        "identity_access",
+        "reporting"
+      ],
+      "severity": "warning"
+    },
+    "table-must-have-primary-key": {
+      "severity": "error"
+    }
+  },
+  "version": 1
+}

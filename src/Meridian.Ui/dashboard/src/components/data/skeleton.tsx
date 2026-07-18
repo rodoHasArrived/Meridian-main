@@ -1,6 +1,11 @@
 // Meridian Skeleton (Concrete) — a loading placeholder with a subtle shimmer that is
 // reduced-motion safe. Compose `text` lines / `block` cards / `circle` avatars, or use
 // SkeletonTable for a dense placeholder grid while a table is still fetching.
+//
+// NOTE: a second, Tailwind-based Skeleton family lives in `components/ui/skeleton.tsx`
+// (SkeletonGrid/SkeletonTimeline/SkeletonForm). The two APIs are incompatible by design:
+// this file belongs to the independent "Concrete" design-system surface (see concrete.ts).
+// Pick the family that matches the screen you are working in; do not mix them.
 import type { CSSProperties, HTMLAttributes } from "react";
 import { injectStyle } from "../operations/inject-style";
 

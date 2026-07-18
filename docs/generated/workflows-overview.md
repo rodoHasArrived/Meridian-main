@@ -4,7 +4,7 @@
 
 This inventory is generated from `.github/workflows/*.yml` and `.github/workflows/*.yaml` on disk.
 
-- Workflow count: `23`
+- Workflow count: `24`
 
 | Workflow File | Name | Triggers |
 |---|---|---|
@@ -26,6 +26,7 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/roadmap-source-docs.yml` | Roadmap Source Docs | workflow_dispatch, pull_request, push |
 | `.github/workflows/roadmap-tools-manual.yml` | Roadmap Tools (Manual) | workflow_dispatch |
 | `.github/workflows/robinhood-options-smoke.yml` | Robinhood Options Smoke | workflow_dispatch |
+| `.github/workflows/schema-control.yml` | PostgreSQL Schema Control | pull_request, workflow_dispatch |
 | `.github/workflows/targeted-test.yml` | Targeted Test | workflow_dispatch |
 | `.github/workflows/web-screenshot-capture.yml` | Web Screenshot Capture | workflow_dispatch |
 | `.github/workflows/windows-desktop-build.yml` | Windows Desktop Build | pull_request, push, workflow_dispatch |

@@ -7,7 +7,13 @@ namespace Meridian.Contracts.SecurityMaster;
 public enum SecurityStatusDto
 {
     Active,
-    Inactive
+    Inactive,
+    /// <summary>
+    /// Read-tolerance member: a status written by a newer node that this node does not recognize.
+    /// Treated as not-Active by filters, so unrecognized states degrade to conservative visibility
+    /// instead of failing every read of the row.
+    /// </summary>
+    Unknown
 }
 
 public sealed record SecuritySummaryDto(

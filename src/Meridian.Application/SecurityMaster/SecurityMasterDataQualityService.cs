@@ -22,13 +22,6 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
 
     private static readonly int MaxTermsAgeDays = 180;
 
-    // Asset classes whose canonical validator requires a maturity date (see AssetClassValidatorRegistry).
-    // Other non-equity classes (options, futures, FX, money-market funds, deposits) use different
-    // required fields, so MA001 must not flag them for a missing maturity.
-    private static readonly HashSet<string> MaturityBearingClasses = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Swap"
-    };
 
     // ISO 4217 subset covering the most common currencies; a full list would be loaded from a reference source.
     private static readonly HashSet<string> Iso4217Codes = new(StringComparer.OrdinalIgnoreCase)
@@ -122,8 +115,10 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     {
         var assetClass = security.AssetClass;
 
-        // Only maturity-bearing classes require a maturity date.
-        if (MaturityBearingClasses.Contains(assetClass))
+        // Only maturity-bearing classes require a maturity date; the shared catalog owns that fact.
+        // Other non-equity classes (options, futures, FX, money-market funds, deposits) use different
+        // required fields, so MA001 must not flag them for a missing maturity.
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresMaturity)
         {
             // The canonical Security Master mapper stores maturity under "maturity" for
             // Bond/CD/CP/TBill and "maturityDate" for swaps; accept either spelling.

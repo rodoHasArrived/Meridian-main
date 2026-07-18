@@ -2257,17 +2257,17 @@ public sealed class ReportingScheduleService
             return ReportPackDeliveryModeDto.EmailLink;
         }
 
-        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReportPackDeliveryModeDto.EvidenceVault;
-        }
-
         if (channel.Contains("portal", StringComparison.OrdinalIgnoreCase))
         {
             return ReportPackDeliveryModeDto.SecurePortal;
         }
 
-        return ReportPackDeliveryModeDto.InternalRoute;
+        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.EvidenceVault;
+        }
+
+        return ReportPackDeliveryModeDto.SecurePortal; // non-email scheduled handoffs use the secure-portal transport
     }
 
     private IReadOnlyList<IReadOnlyDictionary<string, string>>? ResolveDatasetRows(
@@ -2303,7 +2303,7 @@ public sealed class ReportingScheduleService
             manifest.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             manifest.AttemptCount,
             manifest.Sections.Length,
-            manifest.Sections.Count(static section => section.Lineage is not null),
+            manifest.Sections.Count(static section => !string.IsNullOrWhiteSpace(section.DatasetSnapshotId) && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId)),
             manifest.Artifacts.ToArray(),
             auditTrail.Select(static audit => audit.Action).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             manifest.FailureReason,
@@ -2712,13 +2712,10 @@ public sealed class ReportingScheduleService
         {
             if (policy.AllowOwnerAccess
                 && !string.IsNullOrWhiteSpace(policy.OwnerPrincipalId)
-                && !string.Equals(policy.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase)
-                && !(policy.Principals ?? []).Any(principal =>
-                    principal.Kind == ReportAccessPrincipalKindDto.User
-                    && string.Equals(principal.PrincipalId, actor, StringComparison.OrdinalIgnoreCase)))
+                && !string.Equals(policy.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase))
             {
                 throw new UnauthorizedAccessException(
-                    "A private reporting schedule must be executed by its immutable owner or a named user.");
+                    "A private reporting schedule must be authored by its immutable owner.");
             }
 
             if (string.IsNullOrWhiteSpace(policy.OwnerPrincipalId))

@@ -323,8 +323,10 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
 
     private static byte[] RenderGrid(ReportingOutputManifest manifest, string gridId)
     {
-        var grid = manifest.RenderedReportWriterGrids.SingleOrDefault(item =>
-            string.Equals(item.GridId, gridId, StringComparison.OrdinalIgnoreCase))
+        var grid = (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty
+                ? null
+                : manifest.RenderedReportWriterGrids.SingleOrDefault(item =>
+                    string.Equals(item.GridId, gridId, StringComparison.OrdinalIgnoreCase)))
             ?? throw new ReportingGovernanceException(
                 $"Declared report-writer grid '{gridId}' has no rendered grid payload.");
         return SerializeCanonical(new

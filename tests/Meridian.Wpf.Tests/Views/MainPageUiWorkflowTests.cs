@@ -331,12 +331,19 @@ public sealed class MainPageUiWorkflowTests
 
                 using var facade = new MainPageUiAutomationFacade();
 
+                facade.ContentFrame.Visibility.Should().Be(Visibility.Collapsed);
+                facade.WorkspaceHomeSurface.Visibility.Should().Be(Visibility.Visible);
+
                 facade.OpenCommandPalettePage("Backtest");
                 await WaitForConditionAsync(() => facade.ViewModel.IsWorkflowPageActive).ConfigureAwait(true);
+                await WaitForConditionAsync(() => facade.ContentFrame.ActualWidth > 0).ConfigureAwait(true);
 
                 facade.ViewModel.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
                 facade.ViewModel.ShellContextVisibility.Should().Be(Visibility.Collapsed);
                 facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Collapsed);
+                facade.ContentFrame.Visibility.Should().Be(Visibility.Visible);
+                facade.ContentFrame.ActualWidth.Should().BeGreaterThan(0);
+                facade.WorkspaceHomeSurface.Visibility.Should().Be(Visibility.Collapsed);
 
                 facade.Click(facade.ShellDensityToggleButton);
 

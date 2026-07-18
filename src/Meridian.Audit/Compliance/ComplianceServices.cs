@@ -251,6 +251,10 @@ public sealed class ImmutableAuditLogService
 
 public sealed class AccessReviewService
 {
+    // Registered as a singleton like the other compliance services, so concurrent reviews
+    // must not corrupt the list; guard mutation and snapshot reads the same way
+    // ImmutableAuditLogService does above.
+    private readonly object _lock = new();
     private readonly List<AccessReviewRecord> _reviews = [];
 
     public AccessReviewRecord ReviewDormantPermissions(string actorId, string reviewedBy, string[] currentRoles, DateTimeOffset lastUsedAtUtc)
@@ -265,9 +269,19 @@ public sealed class AccessReviewService
             RemovedRoles: removed,
             Reason: isDormant ? "Dormant permissions cleanup." : "No dormant permissions.");
 
-        _reviews.Add(review);
+        lock (_lock)
+        {
+            _reviews.Add(review);
+        }
+
         return review;
     }
 
-    public IReadOnlyList<AccessReviewRecord> GetReviews() => _reviews;
+    public IReadOnlyList<AccessReviewRecord> GetReviews()
+    {
+        lock (_lock)
+        {
+            return _reviews.ToArray();
+        }
+    }
 }

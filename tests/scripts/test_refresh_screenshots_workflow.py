@@ -466,7 +466,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
     def test_web_screenshot_capture_script_enforces_route_coverage(self) -> None:
         self.assertIn(
-            "assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath)",
+            "findMissingCaptureRoutePaths(allCaptures, routeCatalogPath, appShellPath)",
             self.web_screenshot_capture_script,
         )
         self.assertIn("WORKSTATION_ROUTE_CATALOG", self.web_screenshot_capture_script)
@@ -480,9 +480,32 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             "settingsDiagnosticEndpoints",
         ):
             self.assertIn(compatibility_route_key, self.web_screenshot_capture_script)
-        self.assertIn("Web screenshot route coverage is incomplete", self.web_screenshot_capture_script)
+        # Coverage gaps are still enforced, but reported at the end of the run as a
+        # non-zero failure instead of aborting before any screenshot is captured.
+        self.assertIn("Live route(s) without a screenshot capture entry", self.web_screenshot_capture_script)
         self.assertIn("assertCaptureRouteStateIdentity(allCaptures)", self.web_screenshot_capture_script)
         self.assertIn("must use a unique route state", self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_isolates_per_route_failures(self) -> None:
+        # A screen that fails to render is recorded and skipped so the run continues
+        # through the remaining screens, then exits non-zero with a consolidated
+        # summary. One broken screen must never abort the whole catalog.
+        self.assertIn("::warning::Skipped ", self.web_screenshot_capture_script)
+        self.assertIn("did not render correctly and were skipped", self.web_screenshot_capture_script)
+        self.assertIn("Screenshot capture summary:", self.web_screenshot_capture_script)
+        self.assertIn("route(s) failed to render", self.web_screenshot_capture_script)
+        self.assertIn("readiness-timeout-ms", self.web_screenshot_capture_script)
+
+        capture_loop = self.web_screenshot_capture_script.split("for (const capture of captures)", 1)[1]
+        capture_loop = capture_loop.split("const proxyErrors = logs.filter", 1)[0]
+        self.assertNotIn("throw error;", capture_loop)
+
+    def test_web_screenshot_workflow_uploads_partial_catalog_on_failure(self) -> None:
+        upload_step = self.web_workflow.split("- name: Upload screenshot artifacts", 1)[1].split(
+            "- name:", 1
+        )[0]
+        self.assertIn("if: ${{ always() }}", upload_step)
+        self.assertIn("if-no-files-found: ignore", upload_step)
 
     def test_web_screenshot_capture_script_supports_targeted_capture_filters(self) -> None:
         self.assertIn('valueLists.get("capture")', self.web_screenshot_capture_script)

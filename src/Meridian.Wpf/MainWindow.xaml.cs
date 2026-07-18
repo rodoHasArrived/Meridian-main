@@ -696,6 +696,11 @@ public partial class MainWindow : Window
         }
 
         _launchRouter.Apply(args, _viewModel);
+        if (request.HasPageNavigation && RootFrame.Content is MainPage mainPage)
+        {
+            mainPage.NavigateToLaunchPage(request.PageTag!);
+        }
+
         EnsureShellVisibleOnStartup();
 
         if (request.HasScreenshotRequest)
