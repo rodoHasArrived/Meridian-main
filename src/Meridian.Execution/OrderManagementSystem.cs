@@ -326,6 +326,17 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                 ct).ConfigureAwait(false);
         }
 
+        if (safeRequest.FundAccountId is { } fundAccountId)
+        {
+            _orderFinancialAccountIds[orderId] = fundAccountId.ToString("D");
+        }
+        else
+        {
+            // A terminal client-order id may be reused. Do not let the prior order's
+            // accounting scope leak into fills for an unscoped replacement order.
+            _orderFinancialAccountIds.TryRemove(orderId, out _);
+        }
+
         TrimRetainedOrdersIfNeeded();
         if (!string.IsNullOrWhiteSpace(sessionId))
         {
