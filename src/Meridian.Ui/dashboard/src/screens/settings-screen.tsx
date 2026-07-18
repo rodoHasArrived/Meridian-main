@@ -195,7 +195,6 @@ interface SettingsScreenProps {
 
 type ProviderInlineField = string;
 type ProviderInlineBusyAction = "test" | "save" | "verify" | "clear" | null;
-
 interface LedgerMappingAssignmentState {
   accountId: string;
   ledgerGroupId: string;
@@ -4827,9 +4826,7 @@ export function SettingsScreen({
         </Card>
       </section>
       ) : null}
-
       {showRuntimeSection ? <LifecycleControlPanel /> : null}
-
       {showRuntimeSection ? (
       <Card id="runtime-feature-capabilities" className="panel-surface scroll-mt-6">
         <CardHeader>
