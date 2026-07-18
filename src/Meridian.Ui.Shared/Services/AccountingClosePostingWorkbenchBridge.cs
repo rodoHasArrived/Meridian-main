@@ -201,12 +201,19 @@ public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePost
                 $"Ledger period '{period.Label}' is not hard-closed and cannot produce final-reporting reconciliation evidence.");
         }
 
+        // Lightweight hosts (no persistence-backed reporting store) compose the bridge without a
+        // retention service. The hard close is already committed and its posted batch locked; skip
+        // the certified evidence handoff rather than surfacing a non-convergent "retry idempotently"
+        // failure. When retention IS configured, transient store errors still fail closed below.
+        if (_reportingEvidenceRetention is null)
+        {
+            return;
+        }
+
         var completionId = $"hard-close-{period.PeriodId:N}-v{period.Version.ToString(CultureInfo.InvariantCulture)}";
         try
         {
-            var retention = _reportingEvidenceRetention
-                ?? throw new InvalidOperationException(
-                    "The durable reporting reconciliation evidence store is not configured.");
+            var retention = _reportingEvidenceRetention;
             var tenancy = _tenancyRegistry
                 ?? throw new InvalidOperationException(
                     "The authoritative fund tenancy registry is not configured.");

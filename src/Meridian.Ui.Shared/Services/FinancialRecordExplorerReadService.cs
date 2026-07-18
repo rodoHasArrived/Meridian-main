@@ -448,7 +448,7 @@ public sealed partial class FinancialRecordExplorerReadService
         var savedViews = await LoadSavedViewsAsync(tenantId, ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
         var explorer = BuildReportLineProvenanceExplorer(
             workflowService.ListRecords(200),
-            deliveryAttempts: [],
+            _reportPackDeliveryService?.ListAttempts(500),
             savedViews: savedViews);
         return ApplyExplorerQuery(explorer, query);
     }
@@ -469,10 +469,10 @@ public sealed partial class FinancialRecordExplorerReadService
             .OrderByDescending(static record => record.UpdatedAt)
             .ThenBy(static record => record.ReportId)
             .ToArray();
-        var attempts = ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(
-            deliveryAttempts ?? [],
-            accessContext,
-            records);
+        // Unbound (null) context = the legacy tenant-level endpoint: sanitized attempts, matching the unfiltered records above.
+        var attempts = accessContext is null
+            ? (deliveryAttempts ?? []).Select(ReportingDeliveryReadModelSecurity.SanitizeAttempt).ToArray()
+            : ReportingDeliveryReadModelSecurity.FilterVisibleAttempts(deliveryAttempts ?? [], accessContext, records);
         var rows = records
             .SelectMany(record => record.LineProvenance!
                 .Select((line, index) => BuildReportLineProvenanceRow(record, line, attempts, index)))
