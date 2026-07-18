@@ -2,8 +2,9 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-07-11  
-**Baseline:** `main` at `f0ac384a2`  
+**Reviewed:** 2026-07-18
+**Baseline:** `main` at `aa3d7edde`
+**Previous production audit:** `f0ac384a2` on 2026-07-11
 **Sources:** [Meridian Design Document (Version 0.25)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
 
 This is Meridian's single active implementation list for turning the existing program into a supported production release. Roadmap rows marked `done` prove bounded product capabilities; they do not by themselves certify security, correctness, durability, operability, packaging, or recovery. Detailed product rationale remains in the design document, and roadmap status remains in the roadmap registry.
@@ -28,13 +29,33 @@ Priority meanings:
 - `P1`: required production hardening or acceptance work. A row can be deferred only by narrowing the signed production envelope.
 - `P2`: cleanup and maintainability work that follows the critical migrations; it must not preserve a second policy implementation.
 
+### Current Release-Gate Snapshot
+
+| Gate | State at `aa3d7edde` | Interpretation |
+| --- | --- | --- |
+| P0 (`PRD-000` through `PRD-017`) | 18 open; 0 production-certified | No supported production release. Recent hardening is progress toward individual rows, not completion evidence for the full release gate. |
+| P1 (`PRD-100` through `PRD-114`) | 15 open | Required acceptance, operability, architecture, and product-envelope work remains. A row may move out only through an explicit support-matrix scope decision. |
+| P2 (`PRD-200` through `PRD-205`) | 6 open | Compatibility cleanup remains sequenced after the P0/P1 policy migrations it depends on. |
+| Active roadmap acceptance | 3 in progress | `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, and `W8-WPF-PARITY-001` remain active and are not production-certified by this tracker. |
+| Planned roadmap work | 1 planned | `W6-BTSTUDIO-001` remains planned and outside the v1 production envelope unless the signed support matrix includes it. |
+
+### Progress Since the 2026-07-11 Production Audit
+
+| Tracker rows advanced | Merged evidence through `aa3d7edde` | What remains open |
+| --- | --- | --- |
+| `PRD-000`, `PRD-013` | `37966560d` fixed production workstation installation startup and added production startup-policy smoke coverage. `dab7aa3a6` added the local lifecycle control plane, per-user supervisor, readiness checks, deterministic drain/flush ordering, atomic lifecycle receipts, browser/WPF lifecycle surfaces, installer integration, and focused lifecycle/supervisor tests. | ADR-019 and ADR-020 remain proposed; the supported envelope still needs core-team sign-off, experimental deployment dispositions, and clean-environment publish/install/start/upgrade/rollback certification. |
+| `PRD-003`, `PRD-006` | `ae341bd14` registered the shared `RiskRuleRuntimeService` as the OMS pre-trade `IRiskValidator` and removed the unused duplicate validator. `de913fbc6`, `0c5d09b6a`, and `4ad888510` added client-order-ID collision coverage, durable trade-fill posting/handoff state, awaited ledger publication, and related host-composition/concurrency tests. | One authoritative gateway state, fail-closed position/configuration handling, atomic/versioned order transitions, serialized operator-control state, complete execution-report lifecycle handling, and the universal governed ledger append boundary remain open. |
+| `PRD-007`, `PRD-009`, `PRD-105` | `a56843033` made compliance audit persistence restart-aware, serialized in-process audit-chain appends through atomic copy-on-write, and unified compressed replay handling. `4ad888510` made WAL corruption alert by default, rejected truncation with invalid headers, added credential-vault last-known-good backup, and serialized Evidence Vault review mutations. | Cross-process audit-chain CAS/locking, atomic action-plus-evidence outbox behavior, durable strategy/promotion/workflow state, lifecycle-owned delayed WAL flushing, Evidence Vault quotas/reservations/streaming, and multi-process recovery proof remain open. |
+| `PRD-100`, `PRD-110` | `667a376b4` repaired WPF deferred deep links, restored workflow-surface visibility/layout, and expanded desktop UI automation and smoke diagnostics. | `W8-WPF-PARITY-001` remains `in_progress`; polling ownership, cancellation/disposal, sync-over-async removal, and the complete route-parity inventory still require acceptance evidence. |
+| `PRD-016`, `PRD-017`, `PRD-114` | `2d5d884fc` introduced the schema-control catalog, policy, migration, render, test, and GitHub workflow lane. `574c8b455` and the later main-green/reporting repair merges hardened documentation automation and restored current validation baselines. | The production-certification lane still needs deterministic service-backed integration coverage, zero unowned skips, real coverage artifacts, release/tag evidence, and all documentation/status validators green on the same release commit. |
+
 ## Master Backlog
 
 ### P0 — Release Blockers
 
 | ID | Owner | TODO | Completion evidence |
 | --- | --- | --- | --- |
-| `PRD-000` | Runtime Host + Architecture + domain owners | **Declare one supported production envelope and make its final dependency graph valid.** Choose the supported desktop/local, browser-hosted, or hardened-container topology; define OS/runtime, auth, tenancy, storage, provider, and UI support; archive or label all other manifests experimental. Replace the split `ProductionApi`/environment policy and validate the graph after every registration so later in-memory bindings cannot bypass production checks. | A signed support matrix; one typed deployment posture; a `ProductionApi` integration test that starts successfully; startup rejection tests for every prohibited in-memory/null/no-op store. **Progress 2026-07-12:** [ADR-019](../adr/019-production-support-matrix-and-deployment-posture.md) (proposed, awaiting sign-off) drafts the support matrix; the typed posture (`MeridianDeploymentPosture`), one unified production resolution, and the final-graph `ProductionRegistrationGuardService` (first hosted service; static descriptor scan plus factory-resolved singleton checks) now fail startup closed, and `ApiHostOptions` rejects unrecognized deployment modes instead of falling back. Startup-rejection coverage: `ProductionRegistrationGuardServiceTests`, `ProductionServiceRegistrationPolicyTests`, `ApiHostOptionsDeploymentModeTests`. **Remaining:** sign ADR-019; archive or label the experimental `deploy/` manifests per the matrix; add the supported-posture startup integration test. |
+| `PRD-000` | Runtime Host + Architecture + domain owners | **Declare one supported production envelope and make its final dependency graph valid.** Choose the supported desktop/local, browser-hosted, or hardened-container topology; define OS/runtime, auth, tenancy, storage, provider, and UI support; archive or label all other manifests experimental. Replace the split `ProductionApi`/environment policy and validate the graph after every registration so later in-memory bindings cannot bypass production checks. | A signed support matrix; one typed deployment posture; a supported-posture integration test that starts successfully; startup rejection tests for every prohibited in-memory/null/no-op store. **Progress through 2026-07-18:** [ADR-019](../adr/019-production-support-matrix-and-deployment-posture.md) defines the v1 local-workstation support matrix but remains proposed; [ADR-020](../adr/020-lifecycle-control-plane.md) defines the implemented local lifecycle control plane and also remains proposed. `MeridianDeploymentPosture`, unified production resolution, the final-graph `ProductionRegistrationGuardService`, strict `ApiHostOptions` parsing, the lifecycle supervisor, readiness/shutdown coordination, and lifecycle receipts now have focused source/test coverage. **Remaining:** obtain core-team sign-off; disposition every experimental deployment surface; prove the exact supported local-workstation composition and startup in a clean installed environment; attach publish/install/upgrade/rollback evidence on the release commit. |
 | `PRD-001` | Identity + Security + Storage | **Make authentication, sessions, authorization, and tenancy fail closed.** Use one strict auth-mode parser, throttle and lock out repeated login attempts, derive review actors/roles from authenticated identity, provide durable/revocable sessions for any multi-node topology, and either enforce one company per isolated deployment or finish tenant partitioning. | Invalid auth modes fail startup; login receives deterministic `429`/lockout behavior; restart/revocation/multi-node tests pass; cross-tenant reads and writes are rejected. Evidence anchors: `AuthenticationMode.cs:17`, `UiServer.cs:471`, `AuthEndpoints.cs:34`, `LoginSessionMiddleware.cs:107`, `LoginSessionService.cs:15`, `docs/security/threat-model-current-state.md:46`, and `WorkstationServiceCollectionExtensions.cs:109`. |
 | `PRD-002` | Platform Security + Data Integration | **Eliminate plaintext provider credential persistence and unify credential ownership.** Migrate every consumer from the Core plaintext JSON store to the encrypted/audited vault, scope secrets to tenant/connection/account/environment, protect non-Windows vault keys with an OS keyring or KMS-backed mechanism, rotate safely, and securely remove the legacy sidecar. | No supported runtime writes `provider-credentials.json`; migration/rollback/rotation/two-account-isolation tests pass; raw secrets never appear in files, logs, or APIs. Current active plaintext path: `Meridian.Core/Contracts/IProviderCredentialStore.cs:5`, `ProviderCredentialStore.cs:9`, and `WorkstationServiceCollectionExtensions.cs:531`; encrypted alternative: `DataIntegration/Credentials/FileProviderCredentialStore.cs:13`. |
 | `PRD-003` | Ledger + Storage + Financial Operations | **Close the ledger append boundary.** Require a typed posting command, matching provenance, approval/evidence, a non-null idempotency key, and atomic expected-version enforcement for every material production append; isolate any legacy import boundary. | Null/mismatched command, stale version, concurrent duplicate, manual-journal, Operations Continuity, and direct-lending tests fail closed. Evidence anchors: `AccountingPostingCommandValidator.cs:14`, `ILedgerJournalStore.cs:86`, `OperationsLedgerPostingService.cs:210`, `AccountingPostingCommandDtos.cs:52`, `PostgresLedgerJournalStore.cs:91`, and `V_ledger_013__journal_idempotency_guards.sql:1`. |
@@ -153,7 +174,7 @@ The following remain deferred and are not production blockers unless the signed 
 
 ## Verification Snapshot
 
-Reviewed on 2026-06-16 against:
+Reviewed on 2026-07-18 at `main` commit `aa3d7edde` against:
 
 - `docs/roadmap/data/roadmap-items.yml`
 - `docs/roadmap/generated/ROADMAP_SUMMARY.md`
@@ -163,8 +184,9 @@ Reviewed on 2026-06-16 against:
 
 Result:
 
-- W1 through W5 roadmap rows are verified as `done` with `evidence_posture: complete`.
-- W5X-FREX-001, W5X-FINOPS-001, and bounded W7-LIVE-001 governance are verified as `done` with `evidence_posture: complete`; W6 remains `planned` with `evidence_posture: planned_evidence`.
+- W1 through W5 plus `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, and bounded `W7-LIVE-001` governance are verified as `done` with `evidence_posture: complete`.
+- `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, and `W8-WPF-PARITY-001` remain `in_progress` with `evidence_posture: in_progress`.
+- `W6-BTSTUDIO-001` remains `planned` with `evidence_posture: planned_evidence`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
 ## Verified Complete Items
