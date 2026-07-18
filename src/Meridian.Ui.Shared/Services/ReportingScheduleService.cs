@@ -2257,17 +2257,17 @@ public sealed class ReportingScheduleService
             return ReportPackDeliveryModeDto.EmailLink;
         }
 
-        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
-        {
-            return ReportPackDeliveryModeDto.EvidenceVault;
-        }
-
         if (channel.Contains("portal", StringComparison.OrdinalIgnoreCase))
         {
             return ReportPackDeliveryModeDto.SecurePortal;
         }
 
-        return ReportPackDeliveryModeDto.InternalRoute;
+        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.EvidenceVault;
+        }
+
+        return ReportPackDeliveryModeDto.SecurePortal; // non-email scheduled handoffs use the secure-portal transport
     }
 
     private IReadOnlyList<IReadOnlyDictionary<string, string>>? ResolveDatasetRows(
@@ -2303,7 +2303,7 @@ public sealed class ReportingScheduleService
             manifest.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             manifest.AttemptCount,
             manifest.Sections.Length,
-            manifest.Sections.Count(static section => section.Lineage is not null),
+            manifest.Sections.Count(static section => !string.IsNullOrWhiteSpace(section.DatasetSnapshotId) && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId)),
             manifest.Artifacts.ToArray(),
             auditTrail.Select(static audit => audit.Action).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             manifest.FailureReason,

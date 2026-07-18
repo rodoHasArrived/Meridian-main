@@ -195,6 +195,13 @@ def build_dotnet_test_command(
         "--no-build",
         "--filter",
         combined_filter,
+        # Abort and identify a hung test rather than letting the whole CI job wall-clock out.
+        # xunit.runner.json's longRunningTestSeconds only warns; blame-hang actively terminates
+        # the test host after the timeout and emits a sequence file naming the offending test.
+        # Mirrors the full-coverage lane in .github/workflows/ci.yml.
+        "--blame-hang",
+        "--blame-hang-timeout",
+        "10m",
         "--logger",
         f"trx;LogFilePrefix={project.name}",
         "--results-directory",

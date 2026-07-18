@@ -145,6 +145,15 @@ public sealed class FileReportingRunStore : IReportingRunStore
     {
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(auditTrail);
+
+        // Normalize every optional ImmutableArray member to Empty up front so the manifest that is
+        // validated, hashed, and serialized into the durable snapshot never carries a default
+        // (uninitialized) array. A default ImmutableArray throws on serialization, which would abort
+        // the whole write; and ValidateManifest rejects a default CertifiedDatasetRows before it
+        // reaches its certified-state gate, which would otherwise block persisting failed
+        // non-certified runs. Normalization is a no-op for populated manifests, so hashes and stored
+        // shape for already-retained runs are unchanged.
+        manifest = NormalizeManifestArrays(manifest);
         ValidateManifest(manifest);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -602,8 +611,35 @@ public sealed class FileReportingRunStore : IReportingRunStore
             certifiedDatasetHash = ComputeCertifiedRowsHash(manifest.CertifiedDatasetRows)
         })));
 
+    // Normalizes before hashing as well as at the SaveAsync entry point. Save-side manifests are
+    // already normalized, so this is a no-op there; on the load/verification path a manifest
+    // deserialized from a legacy or externally authored snapshot can still surface a default
+    // (or absent → default) array member, and hashing it directly would throw. Normalizing here
+    // keeps hashing robust and consistent with the save-side computation.
     private string ComputeManifestHash(ReportingOutputManifest manifest) =>
-        ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(manifest, _jsonOptions)));
+        ComputeSha256(Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(NormalizeManifestArrays(manifest), _jsonOptions)));
+
+    // A manifest can carry default (uninitialized) ImmutableArray members — most commonly on the
+    // run-failure path, before the grid/diff collections are populated. Serializing a default
+    // ImmutableArray throws InvalidOperationException, which would abort the durable write instead
+    // of persisting the run. Normalize every optional array member to Empty. This is a no-op for
+    // populated manifests — a populated array and Empty both serialize to their element JSON — so
+    // the stored shape and hashes for already-retained runs are unchanged.
+    private static ReportingOutputManifest NormalizeManifestArrays(
+        ReportingOutputManifest manifest) =>
+        manifest with
+        {
+            Sections = OrEmpty(manifest.Sections),
+            Artifacts = OrEmpty(manifest.Artifacts),
+            ReportWriterGrids = OrEmpty(manifest.ReportWriterGrids),
+            RenderedReportWriterGrids = OrEmpty(manifest.RenderedReportWriterGrids),
+            ReportWriterGridDiffs = OrEmpty(manifest.ReportWriterGridDiffs),
+            CertifiedDatasetRows = OrEmpty(manifest.CertifiedDatasetRows)
+        };
+
+    private static ImmutableArray<T> OrEmpty<T>(ImmutableArray<T> value) =>
+        value.IsDefault ? ImmutableArray<T>.Empty : value;
 
     private string ComputePayloadHash(IReadOnlyList<ReportingRunSnapshot> runs) =>
         ComputeSha256(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(runs, _jsonOptions)));

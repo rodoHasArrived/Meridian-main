@@ -1491,7 +1491,7 @@ public sealed class ReportingGovernanceCoordinatorService : IReportingGovernance
                 replacementManifest.CertifiedSnapshot!.SnapshotHash,
                 evidence));
         }
-        return changes.MoveToImmutable();
+        return changes.DrainToImmutable();
     }
 
     private static Dictionary<string, string> IndexCertifiedRows(

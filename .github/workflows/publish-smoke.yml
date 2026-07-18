@@ -34,6 +34,9 @@ concurrency:
 
 env:
   CI: true
+  # Bind the free-text version input to an environment variable so it is never
+  # interpolated directly into a pwsh run block (avoids shell/script injection).
+  VERSION: ${{ inputs.version }}
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
   DOTNET_NOLOGO: "true"
@@ -77,7 +80,7 @@ jobs:
           pwsh ./build/scripts/publish/publish.ps1 `
             -Platform '${{ inputs.runtime }}' `
             -Project '${{ inputs.project }}' `
-            -Version '${{ inputs.version }}' `
+            -Version "$env:VERSION" `
             -Configuration Release `
             -OutputDir artifacts/publish/publish-smoke `
             -OutputRetentionDays 0 `
@@ -89,7 +92,7 @@ jobs:
           python build/scripts/ci/generate-release-evidence-manifest.py `
             --project '${{ inputs.project }}' `
             --runtime '${{ inputs.runtime }}' `
-            --version '${{ inputs.version }}' `
+            --version "$env:VERSION" `
             --artifact-root artifacts/publish/publish-smoke `
             --output artifacts/publish/publish-smoke/release-evidence.json `
             --workflow-run-id '${{ github.run_id }}' `

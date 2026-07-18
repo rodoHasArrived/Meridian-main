@@ -548,8 +548,29 @@ function Write-UiSnapshot {
         [string]$Path
     )
 
-    $names = Get-ElementNameSnapshot -Root $Root
-    Write-Utf8File -Path $Path -Content ($names -join [Environment]::NewLine)
+    $lines = New-Object System.Collections.Generic.List[string]
+    $allElements = $Root.FindAll(
+        [System.Windows.Automation.TreeScope]::Descendants,
+        [System.Windows.Automation.Condition]::TrueCondition)
+
+    foreach ($element in $allElements) {
+        try {
+            $name = $element.Current.Name
+            $automationId = $element.Current.AutomationId
+            if ([string]::IsNullOrWhiteSpace($name) -and [string]::IsNullOrWhiteSpace($automationId)) {
+                continue
+            }
+
+            $controlType = $element.Current.ControlType.ProgrammaticName
+            $bounds = $element.Current.BoundingRectangle
+            $lines.Add(
+                "$controlType | id=$automationId | name=$name | offscreen=$($element.Current.IsOffscreen) | enabled=$($element.Current.IsEnabled) | bounds=$([int]$bounds.Left),$([int]$bounds.Top),$([int]$bounds.Width),$([int]$bounds.Height)")
+        }
+        catch {
+        }
+    }
+
+    Write-Utf8File -Path $Path -Content ($lines -join [Environment]::NewLine)
 }
 
 function Wait-ForElementByNames {
@@ -978,7 +999,7 @@ function Invoke-CommandPaletteNavigation {
 
     $paletteButton = Find-FirstVisibleElementByAutomationIds -Root $Root -AutomationIds @("ShellCommandPaletteButton")
     if ($null -eq $paletteButton) {
-        $paletteButton = Find-FirstVisibleElementByNames -Root $Root -Names @("Search", "Open Command Palette")
+        $paletteButton = Find-FirstVisibleElementByNames -Root $Root -Names @("Search")
     }
 
     if ($null -ne $paletteButton) {
@@ -986,7 +1007,12 @@ function Invoke-CommandPaletteNavigation {
         Invoke-OrClickElement -Element $paletteButton
     }
     else {
-        Write-Log "No visible command palette trigger was available. Opening it with Ctrl+K."
+        $mainPage = Find-FirstElementByAutomationIds -Root $Root -AutomationIds @("MainPage")
+        if ($null -ne $mainPage) {
+            $mainPage.SetFocus()
+        }
+
+        Write-Log "No visible stable command palette trigger was available. Opening it from the focused MainPage with Ctrl+K."
         Send-WindowKeys -Process $Process -Keys "^k"
     }
 
@@ -1074,11 +1100,18 @@ function Invoke-SmokeCase {
         }
 
         if ($null -eq $pageReady) {
-            Write-Log "$($Case.Name) was not visible immediately after startup. Activating its workspace and navigating through the command palette."
-            $null = Try-ActivateWorkspaceShell -Root $root -WorkspaceId $Case.WorkspaceId
+            Write-Log "$($Case.Name) was not visible immediately after context entry. Relaunching with the supported page route."
+            if (-not $process.HasExited) {
+                $null = $process.CloseMainWindow()
+                if (-not $process.WaitForExit(5000)) {
+                    Stop-Process -Id $process.Id -Force
+                }
+            }
+
+            $startProcessArgs["ArgumentList"] = @("--page=$($Case.PageTag)")
+            $process = Start-Process @startProcessArgs
             $root = Get-WindowAutomationRoot -Process $process
-            Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName
-            $root = Get-WindowAutomationRoot -Process $process
+            $root = Wait-ForShellReady -Root $root -Process $process -PageMarkers $Case.ReadyMarkers -TimeoutSeconds $startupTimeoutSeconds
             $pageReady = Wait-ForCasePage -Root $root -Case $Case -TimeoutSeconds 25
         }
 
@@ -1229,7 +1262,7 @@ $cases = @(
         PageTag = "AddProviderWizard"
         PageTitle = "Add Provider Wizard"
         PaletteResultName = "Add provider wizard"
-        ReadyMarkers = @("Add Provider Wizard", "Add Provider Relationship")
+        ReadyMarkers = @("Choose a Provider", "Add Provider Relationship")
         ExpectMarkers = @("Add Provider Relationship", "Robinhood", "Capabilities: Streaming, Symbol Search, Options, Brokerage", "Robinhood Access Token")
         ScreenshotName = "meridian-robinhood-provider-smoke.png"
         Action = {
