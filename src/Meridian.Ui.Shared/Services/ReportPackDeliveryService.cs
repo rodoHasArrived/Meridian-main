@@ -536,14 +536,14 @@ public sealed partial class ReportPackDeliveryService
             manifest.RunId,
             manifest.TemplateId,
             manifest.ScheduleId,
-            manifest.Artifacts.ToArray(),
+            manifest.Artifacts.IsDefault ? [] : manifest.Artifacts.ToArray(),
             DeliveryEvidencePacket: deliveryEvidencePacket,
             ReportingRunAsOfDate: manifest.AsOfDate.ToString("yyyy-MM-dd"),
             ReportingRunStatus: manifest.Status.ToString(),
             ReportingRunTrigger: manifest.Trigger.ToString(),
             ReportingRunAttemptCount: manifest.AttemptCount,
-            ReportingRunSectionCount: manifest.Sections.Length,
-            ReportingRunLineageLinkedSections: manifest.Sections.Count(static section => section.Lineage is not null),
+            ReportingRunSectionCount: manifest.Sections.IsDefault ? 0 : manifest.Sections.Length,
+            ReportingRunLineageLinkedSections: CountLineageLinkedSections(manifest.Sections),
             BrandingTheme: manifest.BrandingTheme,
             DeliveryAccessSummary: BuildDeliveryAccessSummary(mode, secureLink, portalRoute),
             DeliveryChannelSummary: BuildDeliveryChannelSummary(mode, policy),
@@ -758,7 +758,7 @@ public sealed partial class ReportPackDeliveryService
         IReadOnlyList<ReportPackDeliveryArtifactDto> artifacts,
         IReadOnlyList<ReportPackEvidenceLinkDto> artifactEvidenceLinks)
     {
-        var sourceArtifacts = DistinctValues(manifest.Artifacts);
+        var sourceArtifacts = DistinctValues(manifest.Artifacts.IsDefault ? [] : manifest.Artifacts);
         var packageContents = DistinctValues(
             artifacts.Select(static artifact => artifact.ArtifactName)
                 .Concat(sourceArtifacts.Select(static artifact => $"source-artifact:{artifact}")));
@@ -1679,9 +1679,9 @@ public sealed partial class ReportPackDeliveryService
         new("status", manifest.Status.ToString()),
         new("trigger", manifest.Trigger.ToString()),
         new("attemptCount", manifest.AttemptCount.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-        new("sectionCount", manifest.Sections.Length.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-        new("lineageLinkedSections", manifest.Sections.Count(static section => section.Lineage is not null).ToString(System.Globalization.CultureInfo.InvariantCulture)),
-        new("sourceArtifacts", string.Join(";", manifest.Artifacts)),
+        new("sectionCount", (manifest.Sections.IsDefault ? 0 : manifest.Sections.Length).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+        new("lineageLinkedSections", CountLineageLinkedSections(manifest.Sections).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+        new("sourceArtifacts", string.Join(";", manifest.Artifacts.IsDefault ? [] : manifest.Artifacts)),
         new("distributionId", distributionId),
         new("artifactName", artifactName),
         new("format", format.ToString()),
@@ -2234,6 +2234,19 @@ public sealed partial class ReportPackDeliveryService
             })
             .ToArray();
     }
+
+    /// <summary>
+    /// Counts sections whose retained lineage is actually populated, mirroring
+    /// <c>ReportingStatusProjectionService</c>; <see cref="ReportingSectionManifest.Lineage"/> is a
+    /// non-nullable reference, so a null check alone can never detect a missing lineage binding.
+    /// </summary>
+    private static int CountLineageLinkedSections(
+        System.Collections.Immutable.ImmutableArray<ReportingSectionManifest> sections) =>
+        sections.IsDefaultOrEmpty
+            ? 0
+            : sections.Count(static section =>
+                !string.IsNullOrWhiteSpace(section.DatasetSnapshotId)
+                && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId));
 
     private static (string? Summary, int? Passed, int? Warning, int? Failed) BuildGeneratedGridValidationSummary(
         string gridId,

@@ -216,7 +216,9 @@ public sealed class ReportingRunCommandService
             manifest.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             manifest.AttemptCount,
             manifest.Sections.Length,
-            manifest.Sections.Count(static section => section.Lineage is not null),
+            manifest.Sections.Count(static section =>
+                !string.IsNullOrWhiteSpace(section.DatasetSnapshotId)
+                && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId)),
             manifest.Artifacts
                 .Concat([
                     $"reporting-run://{manifest.RunId}/manifest",

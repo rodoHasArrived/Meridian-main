@@ -88,7 +88,7 @@ public static class ReportingReconciliationEvidenceValidation
         RequireText(source.CheckpointId, nameof(source.CheckpointId));
         RequireHash(source.CheckpointHash, nameof(source.CheckpointHash));
 
-        var evidence = (source.EvidenceIds.IsDefault ? ImmutableArray<string>.Empty : source.EvidenceIds)
+        var evidence = (source.EvidenceIds.IsDefault ? [] : source.EvidenceIds)
             .Concat(completion.EvidenceIds)
             .Append($"reconciliation-completion:{completion.CompletionCheckpointId}:{completion.CompletionCheckpointHash}")
             .Where(static item => !string.IsNullOrWhiteSpace(item))
