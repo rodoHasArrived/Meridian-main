@@ -6,15 +6,17 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-02
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian
 
-Consumer releases start this host through the installed Meridian launcher. The launcher
-owns dynamic loopback-port selection, first-account bootstrap, data-root separation,
-readiness polling, and browser launch. Direct host commands remain developer/operator
-surfaces, not end-user installation instructions.
+Consumer releases start this host through the persistent per-user lifecycle supervisor; the
+installed launcher is a thin shim. The supervisor owns dynamic loopback-port selection, the
+dedicated database and host process identities, data-root separation, readiness polling, shutdown
+deadlines, session receipts, and browser launch. The host owns its cooperative drain and flush
+sequence. Direct host commands remain developer/operator surfaces, not end-user installation
+instructions.
 
 ## Purpose
 

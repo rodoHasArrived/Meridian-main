@@ -12,6 +12,7 @@ using Meridian.Application.UI;
 using Meridian.Platform.Tracing;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Lifecycle;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
@@ -26,6 +27,7 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.Runtime;
 using Meridian.Ui.Services.Services.Integrations;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
@@ -60,6 +62,7 @@ public sealed class UiServer : IAsyncDisposable
     private readonly ApiHostOptions _apiHostOptions;
     private readonly string _configPath;
     private readonly int _port;
+    private volatile bool _databaseReadinessCompleted;
 
     /// <summary>
     /// Creates a new UiServer using the centralized ServiceCompositionRoot.
@@ -164,6 +167,30 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
         builder.Services.AddWorkstationSharedServices();
         builder.Services.AddOmsIntegrationApiHandlers();
+
+        if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
+        {
+            builder.Services.AddSingleton(runtimeLifecycle);
+            builder.Services.AddSingleton<IRuntimeLifecycleControlPlane>(runtimeLifecycle);
+            builder.Services.AddSingleton<ILifecycleReceiptStore>(new JsonLifecycleReceiptStore(
+                new LifecycleReceiptStoreOptions { DataRoot = resolvedDataRoot }));
+            builder.Services.AddSingleton(new RuntimeShutdownOptions());
+            builder.Services.AddSingleton<IRuntimeShutdownParticipant, EventPipelineShutdownParticipant>();
+            builder.Services.AddSingleton<IRuntimeShutdownSequence, RuntimeShutdownSequence>();
+            builder.Services.AddHostedService<LifecycleControlPlaneHostedService>();
+            if (!string.IsNullOrWhiteSpace(
+                    Environment.GetEnvironmentVariable(LifecycleSupervisorBridgeHostedService.PipeEnvironmentVariable)))
+            {
+                builder.Services.AddHostedService<LifecycleSupervisorBridgeHostedService>();
+            }
+
+            AddLifecycleReadinessChecks(
+                builder.Services,
+                contentRootPath,
+                resolvedDataRoot,
+                builder.Environment);
+            builder.Services.AddSingleton<IRuntimeReadinessService, RuntimeReadinessService>();
+        }
 
         builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
         {
@@ -360,6 +387,7 @@ public sealed class UiServer : IAsyncDisposable
         FundStructureStartup.EnsureDatabaseReady(_app.Services, _logger);
         BankingStartup.EnsureDatabaseReady(_app.Services, _logger);
         MoneyMarketStartup.EnsureDatabaseReady(_app.Services, _logger);
+        _databaseReadinessCompleted = true;
         readinessStopwatch.Stop();
         _logger.LogInformation("UiServer readiness checks completed in {ElapsedMs} ms", readinessStopwatch.ElapsedMilliseconds);
 
@@ -427,6 +455,18 @@ public sealed class UiServer : IAsyncDisposable
             if (authorizationFailure is not null)
                 return authorizationFailure;
 
+            if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
+            {
+                var snapshot = runtimeLifecycle.Snapshot with
+                {
+                    ProcessId = Environment.ProcessId,
+                    ProcessName = Process.GetCurrentProcess().ProcessName,
+                    Port = _port,
+                    ConfigPath = "[redacted]"
+                };
+                return Results.Ok(snapshot);
+            }
+
             return Results.Ok(new
             {
                 processId = Environment.ProcessId,
@@ -434,7 +474,7 @@ public sealed class UiServer : IAsyncDisposable
                 startedAtUtc = _lifecycle.StartedAtUtc,
                 uptimeSeconds = Math.Round((DateTimeOffset.UtcNow - _lifecycle.StartedAtUtc).TotalSeconds, 3),
                 port = _port,
-                configPath = _configPath,
+                configPath = "[redacted]",
                 shutdownRequested = _lifecycle.IsShutdownRequested,
                 shutdownReason = _lifecycle.ShutdownReason
             });
@@ -449,17 +489,82 @@ public sealed class UiServer : IAsyncDisposable
             if (authorizationFailure is not null)
                 return authorizationFailure;
 
+            if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
+            {
+                LifecycleShutdownRequestDto request;
+                try
+                {
+                    request = context.Request.ContentLength.GetValueOrDefault() > 0
+                        ? await System.Text.Json.JsonSerializer.DeserializeAsync(
+                            context.Request.Body,
+                            LifecycleContractsJsonContext.Default.LifecycleShutdownRequestDto,
+                            context.RequestAborted) ?? new LifecycleShutdownRequestDto()
+                        : new LifecycleShutdownRequestDto
+                        {
+                            Reason = LifecycleShutdownReason.HttpLocalShutdown,
+                            Detail = "Local lifecycle endpoint requested shutdown"
+                        };
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    return Results.BadRequest(new { error = "Invalid lifecycle shutdown request." });
+                }
+
+                var accepted = await runtimeLifecycle.RequestShutdownAsync(request, context.RequestAborted);
+                context.Response.Headers.Location = accepted.OperationUri;
+                return Results.Json(accepted, statusCode: StatusCodes.Status202Accepted);
+            }
+
             await _lifecycle.RequestShutdownAsync(
                 "http-local-shutdown",
                 "Local lifecycle endpoint requested shutdown",
                 context.RequestAborted);
-
             return Results.Json(new
             {
                 accepted = true,
                 processId = Environment.ProcessId,
                 shutdownRequested = _lifecycle.IsShutdownRequested
             }, statusCode: StatusCodes.Status202Accepted);
+        });
+
+        _app.MapGet("/api/system/shutdown/{operationId}", (string operationId, HttpContext context) =>
+        {
+            if (!IsLoopbackRequest(context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+            var authorizationFailure = ValidateLifecycleAuthorization(context);
+            if (authorizationFailure is not null)
+                return authorizationFailure;
+
+            if (_lifecycle is not IRuntimeLifecycleControlPlane runtimeLifecycle ||
+                runtimeLifecycle.ActiveShutdownOperation is not { } operation ||
+                !string.Equals(operation.OperationId, operationId, StringComparison.Ordinal))
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Ok(operation);
+        });
+
+        _app.MapGet("/api/system/shutdown/receipts/latest", async (HttpContext context) =>
+        {
+            if (!IsLoopbackRequest(context))
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+            var authorizationFailure = ValidateLifecycleAuthorization(context);
+            if (authorizationFailure is not null)
+                return authorizationFailure;
+
+            var runtimeLifecycle = _lifecycle as IRuntimeLifecycleControlPlane;
+            var receipt = runtimeLifecycle?.LatestShutdownReceipt;
+            if (receipt is null)
+            {
+                receipt = await _app.Services
+                    .GetRequiredService<ILifecycleReceiptStore>()
+                    .ReadLatestHostReceiptAsync(context.RequestAborted);
+            }
+
+            return receipt is null ? Results.NotFound() : Results.Ok(receipt);
         });
     }
 
@@ -590,10 +695,134 @@ public sealed class UiServer : IAsyncDisposable
         return MeridianPathDefaults.ResolveDataRoot(configPath, null);
     }
 
+    private void AddLifecycleReadinessChecks(
+        IServiceCollection services,
+        string contentRootPath,
+        string resolvedDataRoot,
+        IHostEnvironment environment)
+    {
+        var productionPosture = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
+
+        services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(
+            "configuration",
+            "Configuration",
+            LifecycleCheckRequirement.Required,
+            _ => ValueTask.FromResult(File.Exists(_configPath)
+                ? new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Configuration loaded.")
+                : new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Configuration file is unavailable."))));
+
+        services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(
+            "data-root",
+            "Data root",
+            LifecycleCheckRequirement.Required,
+            _ => ValueTask.FromResult(Directory.Exists(resolvedDataRoot)
+                ? new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Data root is available.")
+                : new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Data root is unavailable."))));
+
+        services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(
+            "authentication",
+            "Authentication",
+            LifecycleCheckRequirement.Required,
+            _ => ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                LifecycleCheckStatus.Passing,
+                IsAuthenticationRequired(environment)
+                    ? "Required authentication policy is active."
+                    : "Development authentication policy is active."))));
+
+        services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(
+            "workstation-assets",
+            "Workstation assets",
+            LifecycleCheckRequirement.Required,
+            _ =>
+            {
+                if (!_apiHostOptions.ServeWorkstationAssets)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Passing,
+                        "Workstation assets are not required by this host posture."));
+                }
+
+                var indexPath = Path.Combine(contentRootPath, "wwwroot", "workstation", "index.html");
+                return ValueTask.FromResult(File.Exists(indexPath)
+                    ? new RuntimeReadinessCheckResult(LifecycleCheckStatus.Passing, "Workstation bundle is available.")
+                    : new RuntimeReadinessCheckResult(LifecycleCheckStatus.Failing, "Workstation bundle is unavailable."));
+            }));
+
+        services.AddSingleton<IRuntimeReadinessCheck>(new DelegateRuntimeReadinessCheck(
+            "postgresql",
+            "PostgreSQL",
+            LifecycleCheckRequirement.Required,
+            _ =>
+            {
+                if (!_databaseReadinessCompleted)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Pending,
+                        "Database initialization is still running."));
+                }
+
+                var configured = HasConfiguredLocalPostgreSql();
+                if (productionPosture && !configured)
+                {
+                    return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Failing,
+                        "A required local PostgreSQL connection is not configured."));
+                }
+
+                return ValueTask.FromResult(new RuntimeReadinessCheckResult(
+                    LifecycleCheckStatus.Passing,
+                    configured
+                        ? "Configured PostgreSQL dependencies are ready."
+                        : "PostgreSQL is not required by this development posture."));
+            }));
+
+        services.AddSingleton<IRuntimeReadinessCheck>(sp => new DelegateRuntimeReadinessCheck(
+            "event-pipeline",
+            "Event pipeline",
+            LifecycleCheckRequirement.Required,
+            _ =>
+            {
+                var utilization = sp.GetRequiredService<EventPipeline>().GetStatistics().QueueUtilization;
+                var result = utilization switch
+                {
+                    >= 95 => new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Failing,
+                        "Event pipeline capacity is exhausted."),
+                    >= 80 => new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Degraded,
+                        "Event pipeline capacity is constrained."),
+                    _ => new RuntimeReadinessCheckResult(
+                        LifecycleCheckStatus.Passing,
+                        "Event pipeline can accept work.")
+                };
+                return ValueTask.FromResult(result);
+            }));
+    }
+
+    private static bool HasConfiguredLocalPostgreSql()
+    {
+        string[] variables =
+        [
+            "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
+            "MERIDIAN_LEDGER_CONNECTION_STRING",
+            "MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING",
+            "MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING",
+            "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING"
+        ];
+        return variables.Any(variable =>
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(variable)));
+    }
+
     public async Task StartAsync(CancellationToken ct = default)
     {
         var stopwatch = Stopwatch.StartNew();
         await _app.StartAsync(ct);
+        if (_lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle)
+        {
+            runtimeLifecycle.TransitionTo(RuntimeLifecycleState.EvaluatingReadiness, "evaluating-readiness");
+            var readiness = _app.Services.GetRequiredService<IRuntimeReadinessService>();
+            await readiness.EvaluateAsync(ct);
+        }
         _logger.LogInformation(
             "UiServer started on {Urls} in {ElapsedMs} ms",
             string.Join(", ", _app.Urls),

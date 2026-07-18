@@ -1,0 +1,986 @@
+{
+  "files": [
+    {
+      "filename": "001_security_master.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 1,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/001_security_master.sql",
+      "schema": "security_master",
+      "sha256": "db6b6e43796591c6496501fe25e874bf7512241d6951f15c655ffba19971e255"
+    },
+    {
+      "filename": "002_security_master_fts.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 2,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/002_security_master_fts.sql",
+      "schema": "security_master",
+      "sha256": "441bb66cf682e198dacb3c572ceeeef849ecee9d457a58780aae1b13316a1096"
+    },
+    {
+      "filename": "003_security_master_corp_actions.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 3,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/003_security_master_corp_actions.sql",
+      "schema": "security_master",
+      "sha256": "02d7e4f282957c4cee5dd5a39079bf3e5542acbe9f5d7c20a483d122fdee7c73"
+    },
+    {
+      "filename": "004_security_master_operator_overrides.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 4,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/004_security_master_operator_overrides.sql",
+      "schema": "security_master",
+      "sha256": "663d041aac86091c35871a2476ab516671f6afef70af8f6853552dc7af1512b6"
+    },
+    {
+      "filename": "005_security_master_bond_reference_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 5,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/005_security_master_bond_reference_projection.sql",
+      "schema": "security_master",
+      "sha256": "ba239dcf40bd8e4eb997e3a8217613c08e603bb333bf41de69da27c598d2768c"
+    },
+    {
+      "filename": "006_security_master_option_reference_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 6,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/006_security_master_option_reference_projection.sql",
+      "schema": "security_master",
+      "sha256": "0b41d501d75f4dc3b7f92f4ffd3dba6195a94461e5e2a3fd04c82444d633cc92"
+    },
+    {
+      "filename": "007_security_master_equity_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 7,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/007_security_master_equity_projection.sql",
+      "schema": "security_master",
+      "sha256": "fa9a3fa3a2c855b1254c13b438ab90e64a252ca581882fadc3d8665264b9440c"
+    },
+    {
+      "filename": "008_security_master_future_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 8,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/008_security_master_future_projection.sql",
+      "schema": "security_master",
+      "sha256": "8217de14aad61f0063e036e81cafcdfdb9dc10df9cc881c823fce10fe4f3a7c2"
+    },
+    {
+      "filename": "009_security_master_fxspot_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 9,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/009_security_master_fxspot_projection.sql",
+      "schema": "security_master",
+      "sha256": "41cdf58f780101b998f69bd659748dfdbd2d2497422d3de19ea620bace448be0"
+    },
+    {
+      "filename": "010_security_master_swap_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 10,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/010_security_master_swap_projection.sql",
+      "schema": "security_master",
+      "sha256": "d2182475d6a930a466f3a48c5497efff9d0032a97a9a5d618c985ea862943a9a"
+    },
+    {
+      "filename": "011_security_master_commodity_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 11,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/011_security_master_commodity_projection.sql",
+      "schema": "security_master",
+      "sha256": "c50fb75f0591b62fcfcb677bbc7dc950a26c154bc401f6a371b07abaf3dd1a02"
+    },
+    {
+      "filename": "012_security_master_crypto_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 12,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/012_security_master_crypto_projection.sql",
+      "schema": "security_master",
+      "sha256": "d2e0200f618f09e07f8e822731ce5fae7aa5695d4087906b92969e091818fb8e"
+    },
+    {
+      "filename": "013_security_master_deposit_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 13,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/013_security_master_deposit_projection.sql",
+      "schema": "security_master",
+      "sha256": "e3062a0cc75a412b73f2666b9dae9233e14e77215d154eaae6c471064a2ca343"
+    },
+    {
+      "filename": "014_security_master_money_market_fund_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 14,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/014_security_master_money_market_fund_projection.sql",
+      "schema": "security_master",
+      "sha256": "d2bf5bbca31dd3962de09d8d23e6d4c89cf3fd0ffe17b18d668fecd03b1233f4"
+    },
+    {
+      "filename": "015_security_master_certificate_of_deposit_projection.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 15,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/015_security_master_certificate_of_deposit_projection.sql",
+      "schema": "security_master",
+      "sha256": "93b5e74e0f309353075258c376374e378e50283883ed7daa1c5a55c00b8ec450"
+    },
+    {
+      "filename": "016_security_master_normalized_identifier_lookup.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 16,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/016_security_master_normalized_identifier_lookup.sql",
+      "schema": "security_master",
+      "sha256": "2d3ae34b786568a9dc332f6976a24cc50c7f1bb55fd06affe12188fc5177ef08"
+    },
+    {
+      "filename": "017_security_master_bond_clearwater_lifecycle_fields.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 17,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/017_security_master_bond_clearwater_lifecycle_fields.sql",
+      "schema": "security_master",
+      "sha256": "5c0b66a30e2ad2aa691ed9560ae9799b4f6c67e5de452fc99efa88da4a6e91fe"
+    },
+    {
+      "filename": "018_security_master_cashflow_sources.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 18,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/018_security_master_cashflow_sources.sql",
+      "schema": "security_master",
+      "sha256": "22132a38651be866e9a748e6d1f26aa1b35c16f51d268e195bd99c9d76e4f014"
+    },
+    {
+      "filename": "019_data_vendor_entitlements.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 19,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/019_data_vendor_entitlements.sql",
+      "schema": "security_master",
+      "sha256": "ed13b57ed50f7797602d90979262473d79cb449105979a4e079789e519205f34"
+    },
+    {
+      "filename": "020_data_vendor_entitlement_scope_metadata.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 20,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/020_data_vendor_entitlement_scope_metadata.sql",
+      "schema": "security_master",
+      "sha256": "dab3bf377237a6ffafb19b63001ed82d5d613b1be0f6e6173612a248bd7855c4"
+    },
+    {
+      "filename": "021_security_master_corp_action_lifecycle.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 21,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/021_security_master_corp_action_lifecycle.sql",
+      "schema": "security_master",
+      "sha256": "9ccd47adbfe36314ba30c7bc65ad20d62d91c6f9bf26da50078f7237f1c6fbfe"
+    },
+    {
+      "filename": "022_security_master_pricing_hierarchy.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 22,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/022_security_master_pricing_hierarchy.sql",
+      "schema": "security_master",
+      "sha256": "f9b58c4d1152925a3fa799f905d9e46b238e6fd45888d963cc79293c7253d240"
+    },
+    {
+      "filename": "023_security_master_quality_reports.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 23,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/023_security_master_quality_reports.sql",
+      "schema": "security_master",
+      "sha256": "36b94ffc72b508930d828da660a4cc530f98024f6749e3f52ddf4d23cd78e601"
+    },
+    {
+      "filename": "024_security_master_schema_version_column.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 24,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/024_security_master_schema_version_column.sql",
+      "schema": "security_master",
+      "sha256": "4eb1251f4c1c27c24c15c5722efb99cfcf1c6bd4c146c113291384d8ea5b0561"
+    },
+    {
+      "filename": "025_security_master_audit_stores.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 25,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/025_security_master_audit_stores.sql",
+      "schema": "security_master",
+      "sha256": "bdff7f9e62af66ad63917b3f0f9091d06d591e297a08ccde91a2596dbea2b8b2"
+    },
+    {
+      "filename": "026_security_master_operator_override_approvals.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 26,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/026_security_master_operator_override_approvals.sql",
+      "schema": "security_master",
+      "sha256": "e88af99934cd1679d86e82550b2ef8a5d954ae87489105d5facce856149f26b2"
+    },
+    {
+      "filename": "001_direct_lending.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/001_direct_lending.sql",
+      "schema": "security_master",
+      "sha256": "614c54fdee8302030f8a821cabfd95542b465a9c47a0f5d91d58bea13f9213f9"
+    },
+    {
+      "filename": "002_direct_lending_projections.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/002_direct_lending_projections.sql",
+      "schema": "security_master",
+      "sha256": "f5f39f2ebf9405ff16ce44adb987fa005bc1a93c1a0826c487032b9d1354ef3b"
+    },
+    {
+      "filename": "003_direct_lending_accrual_and_event_metadata.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/003_direct_lending_accrual_and_event_metadata.sql",
+      "schema": "security_master",
+      "sha256": "bf1b3412d45a6639237e5dab9437e2d421a927fe72601173d50c318dfdd0027e"
+    },
+    {
+      "filename": "004_direct_lending_event_schema_and_snapshots.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/004_direct_lending_event_schema_and_snapshots.sql",
+      "schema": "security_master",
+      "sha256": "2390f6529cb08e08d91fb17a62e8124b3d5b2fef515368cd5bd3d8caf9544826"
+    },
+    {
+      "filename": "005_direct_lending_operations.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql",
+      "schema": "security_master",
+      "sha256": "22078da260f2ed29cb9844f02e6f8f5fcad2c778df1e3cf26b0d48a9b32b009b"
+    },
+    {
+      "filename": "005_direct_lending_workflows.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_workflows.sql",
+      "schema": "security_master",
+      "sha256": "532f6bf881455a8b2233bbdaa3b8b61251a5927ab20b14bf56e73a10aa5e11fb"
+    },
+    {
+      "filename": "006_direct_lending_operations_workflow_audit.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/006_direct_lending_operations_workflow_audit.sql",
+      "schema": "security_master",
+      "sha256": "bc38f13bbc1dd5fc9ed088e1f3ec204c313601048ae5301cd78a168cf892dc0f"
+    },
+    {
+      "filename": "006_direct_lending_terms_projection_extended_fields.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/006_direct_lending_terms_projection_extended_fields.sql",
+      "schema": "security_master",
+      "sha256": "d0dedb9b3974e258f337e3302aac2f7cdbd273e5feac0aee0e7dbdc6250e580f"
+    },
+    {
+      "filename": "006_servicer_statement_intake.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/006_servicer_statement_intake.sql",
+      "schema": "security_master",
+      "sha256": "321788289b2013286dd124f417e89b1b2fea6407017487bd479617ba2413a12a"
+    },
+    {
+      "filename": "007_direct_lending_command_idempotency.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/007_direct_lending_command_idempotency.sql",
+      "schema": "security_master",
+      "sha256": "4e2b96e2c56f60291acc2a8b739afa5034b873232022ec0e8171159c9c1f4283"
+    },
+    {
+      "filename": "001_asset_operations.sql",
+      "immutable": true,
+      "migration_set_id": "asset-operations",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/001_asset_operations.sql",
+      "schema": "asset_operations",
+      "sha256": "086b2926dd3f0c85c944b44b613ae82ed0d28cd5fc321726293da0349a401f64"
+    },
+    {
+      "filename": "002_instrument_position_projections.sql",
+      "immutable": true,
+      "migration_set_id": "asset-operations",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/002_instrument_position_projections.sql",
+      "schema": "asset_operations",
+      "sha256": "000017804e978dd8a02c300724a8b3565f40a34eec666f0701bc685d17adf4ef"
+    },
+    {
+      "filename": "003_instrument_position_projection_guards.sql",
+      "immutable": true,
+      "migration_set_id": "asset-operations",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/003_instrument_position_projection_guards.sql",
+      "schema": "asset_operations",
+      "sha256": "98b7801747ccb82547ba0a1304895158c488865d64f58929d42b73c91bde72e2"
+    },
+    {
+      "filename": "V_ledger_001__journal_entries.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_001__journal_entries.sql",
+      "schema": "ledger",
+      "sha256": "62ce3a019bcd496a3a3058233ff927ac004df37cae7e4778567ef194ac9aebb1"
+    },
+    {
+      "filename": "V_ledger_002__accounting_periods.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_002__accounting_periods.sql",
+      "schema": "ledger",
+      "sha256": "7e459efec365dd3df51a4a1da70017bd379944dc0f11cbc9c211565794b24ad7"
+    },
+    {
+      "filename": "V_ledger_003__ledger_books.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_003__ledger_books.sql",
+      "schema": "ledger",
+      "sha256": "e5afc02e4fd60ac663d4870a643dc15629306ff4b9583136266a5e79cb5ebd67"
+    },
+    {
+      "filename": "V_ledger_004__accounting_basis_policies.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_004__accounting_basis_policies.sql",
+      "schema": "ledger",
+      "sha256": "3cf18dc76a3894ea414052e0923a8f330782de5b1024cb424d2fbf1f100b4172"
+    },
+    {
+      "filename": "V_ledger_005__journal_basis_lineage.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_005__journal_basis_lineage.sql",
+      "schema": "ledger",
+      "sha256": "3c64828d89b5d4cefe37d6add996c2f1d62383087acec9d2a2d92e6dcbf09460"
+    },
+    {
+      "filename": "V_ledger_006__journal_posting_kind.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_006__journal_posting_kind.sql",
+      "schema": "ledger",
+      "sha256": "52a3604f244fe9af20394b6bf17ec6400b4917f963c6404a7231837152139ff5"
+    },
+    {
+      "filename": "V_ledger_007__journal_adjustment_approval_metadata.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_007__journal_adjustment_approval_metadata.sql",
+      "schema": "ledger",
+      "sha256": "6b8936affee559e85e9d429c8ff2d34867d0424776cbfa6811d2f804b3c943a1"
+    },
+    {
+      "filename": "V_ledger_008__closing_entry_posting_kind.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_008__closing_entry_posting_kind.sql",
+      "schema": "ledger",
+      "sha256": "89585cd2f2ceb854b9bad1e7989aca3d5a28ec01f0cf77a80e5b79dcedf4d8d6"
+    },
+    {
+      "filename": "V_ledger_008__operations_continuity.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_008__operations_continuity.sql",
+      "schema": "ledger",
+      "sha256": "d6a01d679bee7dfb4dbe770659eb1b223b8749c0694354d77e94082aecd1b8bc"
+    },
+    {
+      "filename": "V_ledger_009__tax_lot_persistence.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_009__tax_lot_persistence.sql",
+      "schema": "ledger",
+      "sha256": "dc7fcb41c028f9b3cb096f7e73d424d88cfe62fcb3d7d9683a74fa7c9bf4584e"
+    },
+    {
+      "filename": "V_ledger_010__accounting_configuration.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_010__accounting_configuration.sql",
+      "schema": "ledger",
+      "sha256": "68f187cc913628f8d1563fc48138893362f3cb1ee889a9238b2174bf7f9c4318"
+    },
+    {
+      "filename": "V_ledger_011__accounting_rule_payload.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_011__accounting_rule_payload.sql",
+      "schema": "ledger",
+      "sha256": "593a974c2edad48a15dd594b502e952e917a7a69c68c0d36d066bcbce2ca54ca"
+    },
+    {
+      "filename": "V_ledger_012__accounting_rule_test_cases.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_012__accounting_rule_test_cases.sql",
+      "schema": "ledger",
+      "sha256": "1fc3ad122e83b8c6fb68d64d88a0dc2245b5899edb27cc725c5474c50c7e9534"
+    },
+    {
+      "filename": "V_ledger_013__journal_idempotency_guards.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_013__journal_idempotency_guards.sql",
+      "schema": "ledger",
+      "sha256": "58fcb9d8091819f59a3178a04156342bec252007108433fb0857c4153e1a91d8"
+    },
+    {
+      "filename": "V_ledger_014__journal_leg_dimensions.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_014__journal_leg_dimensions.sql",
+      "schema": "ledger",
+      "sha256": "6b7158932eb2d5b01c29b311262c5bb6f50df363f7f1d5dc381e3b75e8c096ac"
+    },
+    {
+      "filename": "V_ledger_015__accounting_configuration_ledger_book_scope.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_015__accounting_configuration_ledger_book_scope.sql",
+      "schema": "ledger",
+      "sha256": "f67c2d6a08928afd12515eabe9b9f2885bf594bb29380d8eaf6bc6819942bbc1"
+    },
+    {
+      "filename": "V_ledger_016__accounting_configuration_tenant_company_scope.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_016__accounting_configuration_tenant_company_scope.sql",
+      "schema": "ledger",
+      "sha256": "97551339bdf4352bd5745153fb66719f057fc2fb14c2731870b4c5073eab67c8"
+    },
+    {
+      "filename": "V_ledger_017__accounting_configuration_audit_tenant_scope.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_017__accounting_configuration_audit_tenant_scope.sql",
+      "schema": "ledger",
+      "sha256": "dfb2a238349ed181e7cae5dc0628dee69687e77d7d204c00a997be50f5a67ecb"
+    },
+    {
+      "filename": "V_ledger_018__accounting_audit_fund_lower_index.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_018__accounting_audit_fund_lower_index.sql",
+      "schema": "ledger",
+      "sha256": "3dccee13c9a2462f0ff1b03d8ca1176b5a5f713b3703ee5a63727d9da526135c"
+    },
+    {
+      "filename": "V_ledger_019__fund_profile_tenancy.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_019__fund_profile_tenancy.sql",
+      "schema": "ledger",
+      "sha256": "42526fe8fdf51c76b6ef38faa86d12c0c82327e0384377db3c84550dcbece925"
+    },
+    {
+      "filename": "V_ledger_020__fund_scope_tenant_columns.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_020__fund_scope_tenant_columns.sql",
+      "schema": "ledger",
+      "sha256": "1b46d0d6f11c381c2ad7f475dc60af3bc2ba5294e4fbf6cfa65cd0edd3171b71"
+    },
+    {
+      "filename": "V_ledger_021__operations_continuity_tenant_column.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_021__operations_continuity_tenant_column.sql",
+      "schema": "ledger",
+      "sha256": "8874cf56eead1a203d602d28a5aca2eab6e917b2eb175303cfe9dd2ef05575ab"
+    },
+    {
+      "filename": "V_ledger_022__tenant_lower_indexes.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_022__tenant_lower_indexes.sql",
+      "schema": "ledger",
+      "sha256": "f391ecf623e14fc15764a2261ecf998cc01b96f774b5d6b9b01fba2e797a99f9"
+    },
+    {
+      "filename": "V_ledger_023__journal_as_of_indexes.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_023__journal_as_of_indexes.sql",
+      "schema": "ledger",
+      "sha256": "c94c89f4573aed4f17cc38aac2bb7a7dac9528c243d05933a26826608c0507a6"
+    },
+    {
+      "filename": "V_ledger_024__tax_lot_average_cost_method.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_024__tax_lot_average_cost_method.sql",
+      "schema": "ledger",
+      "sha256": "49f6b3838be6c28c2229a5cd16b3970a862c6be5819fa1d23e3767fb82eff3fc"
+    },
+    {
+      "filename": "V_ledger_025__global_posting_command_identity.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_025__global_posting_command_identity.sql",
+      "schema": "ledger",
+      "sha256": "0ce4b1bd9d4221dbc89c6bea57c44247a6722872ab542936dea9bf653136e381"
+    },
+    {
+      "filename": "001_fund_structure.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/001_fund_structure.sql",
+      "schema": "fund_structure",
+      "sha256": "b32453b0d8ae1b531316ec7017ef5ea928d787e2e9edb52a12febbbde45d5ae8"
+    },
+    {
+      "filename": "001_fund_accounts.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/001_fund_accounts.sql",
+      "schema": "fund_accounts",
+      "sha256": "99f1013e4c93ba32833cde8420d70d99508a4e7e20415e1e1ce997405ea0ade4"
+    },
+    {
+      "filename": "002_add_operational_status.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/002_add_operational_status.sql",
+      "schema": "fund_accounts",
+      "sha256": "d2f59d4012ebe2ba6597cce0666b330a6228601aba57089b7d26cb940d1e60fc"
+    },
+    {
+      "filename": "003_fund_account_tenant_column.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/003_fund_account_tenant_column.sql",
+      "schema": "fund_accounts",
+      "sha256": "f13ef8f319673b5e26a6891c91c74bd65d2499e58249820d9408146b2026b50d"
+    },
+    {
+      "filename": "001_banking.sql",
+      "immutable": true,
+      "migration_set_id": "banking",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Banking/Migrations/001_banking.sql",
+      "schema": "banking",
+      "sha256": "f6028a9ce78f9cd3c18154f6b814be456bf492b74f3192fe01cf43221fc7810f"
+    },
+    {
+      "filename": "002_bank_transaction_recorded_by.sql",
+      "immutable": true,
+      "migration_set_id": "banking",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Banking/Migrations/002_bank_transaction_recorded_by.sql",
+      "schema": "banking",
+      "sha256": "e8225f2acd5bb0e47c1ecf41dfacaefe8b608928db825c442bdfda26be976af4"
+    },
+    {
+      "filename": "001_money_market.sql",
+      "immutable": true,
+      "migration_set_id": "money-market",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/MoneyMarket/Migrations/001_money_market.sql",
+      "schema": "money_market",
+      "sha256": "21ae0b00c74638a2b651da53c2677bba550523e7a20164bb64531a9ed21701ed"
+    },
+    {
+      "filename": "001_reporting_artifact_blobs.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/001_reporting_artifact_blobs.sql",
+      "schema": "reporting",
+      "sha256": "97c26c90170e1556904c4e4fc0fbea75134ec23f1996ffe1694d41aac43b30e3"
+    },
+    {
+      "filename": "002_reporting_governance.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/002_reporting_governance.sql",
+      "schema": "reporting",
+      "sha256": "3d66d2f07f460b14243898c20c689cc9ddb6132db60d969604b1eaa701433771"
+    },
+    {
+      "filename": "003_reporting_distribution.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/003_reporting_distribution.sql",
+      "schema": "reporting",
+      "sha256": "050ac70122ed833bda86e2ea3d64cc4a13395a947bf4517d90748b0f9d16fd6b"
+    },
+    {
+      "filename": "004_reporting_artifact_catalog_audit.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/004_reporting_artifact_catalog_audit.sql",
+      "schema": "reporting",
+      "sha256": "60d9dda335e12c58c46a4a0f118d7f48e335c08a4b71e0a0e3d5370b87e3966d"
+    },
+    {
+      "filename": "005_reporting_distribution_hardening.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/005_reporting_distribution_hardening.sql",
+      "schema": "reporting",
+      "sha256": "1ead6dc1b5c0476fc2054ffc9f2f5b0da2ddcbba35bb2c8e74e6304610e81485"
+    },
+    {
+      "filename": "006_reporting_reconciliation_evidence.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/006_reporting_reconciliation_evidence.sql",
+      "schema": "reporting",
+      "sha256": "9560b905add08659266826fd0534e8b760c976d5e1ebefcecd4d7c3f1e191177"
+    },
+    {
+      "filename": "007_reporting_governance_scope_hardening.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/007_reporting_governance_scope_hardening.sql",
+      "schema": "reporting",
+      "sha256": "5955c0e2279283f7032866348c669980361e4d494675347ccbb1d2ca486302e5"
+    },
+    {
+      "filename": "008_reporting_governance_format_versions.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/008_reporting_governance_format_versions.sql",
+      "schema": "reporting",
+      "sha256": "5619fc77cc5d29b5dc3942c1fbeac250cfc8eab54dc65556203c901f58e8201b"
+    },
+    {
+      "filename": "001_user_access_assignment.sql",
+      "immutable": true,
+      "migration_set_id": "identity-access",
+      "ordinal": null,
+      "path": "src/Meridian.Identity/Migrations/001_user_access_assignment.sql",
+      "schema": "identity_access",
+      "sha256": "58c0dcf87ba23c702f97f102778f3f8ff09b0e5c910a4e892f46157e43f2ce37"
+    }
+  ],
+  "findings": [],
+  "fingerprint": "dd1cf664675e7129d55253ead1fddc573bbbdb7031bb5c51649764ddf1d68508",
+  "format": "meridian.migration-manifest.v1",
+  "migration_sets": [
+    {
+      "connection_variables": [
+        "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
+        "MERIDIAN_SECURITY_MASTER_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/SecurityMaster/Migrations",
+      "display_name": "Security Master",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "security-master",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/SecurityMaster",
+      "quote_schema": false,
+      "schema": "security_master",
+      "track_ordinals": true
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
+        "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING",
+        "MERIDIAN_DIRECT_LENDING_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/DirectLending/Migrations",
+      "display_name": "Direct Lending",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "direct-lending",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "direct_lending_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/DirectLending",
+      "quote_schema": false,
+      "schema": "security_master",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING",
+        "MERIDIAN_ASSET_OPERATIONS_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/AssetOperations/Migrations",
+      "display_name": "Asset Operations",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "asset-operations",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": true,
+        "key_column": "migration_id",
+        "ordinal_column": "ordinal",
+        "table": "asset_operations_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/AssetOperations",
+      "quote_schema": true,
+      "schema": "asset_operations",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_LEDGER_CONNECTION_STRING",
+        "MERIDIAN_LEDGER_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/Ledger/Migrations",
+      "display_name": "Ledger and Operations Continuity",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "ledger",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "ledger_journal_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Ledger",
+      "quote_schema": false,
+      "schema": "ledger",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING",
+        "MERIDIAN_FUND_STRUCTURE_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/FundStructure/Migrations",
+      "display_name": "Fund Structure",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "fund-structure",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "fund_structure_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/FundStructure",
+      "quote_schema": false,
+      "schema": "fund_structure",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING",
+        "MERIDIAN_FUND_ACCOUNTS_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/FundAccounts/Migrations",
+      "display_name": "Fund Accounts",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "fund-accounts",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "fund_account_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/FundAccounts",
+      "quote_schema": false,
+      "schema": "fund_accounts",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_BANKING_CONNECTION_STRING",
+        "MERIDIAN_BANKING_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/Banking/Migrations",
+      "display_name": "Banking",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "banking",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Banking",
+      "quote_schema": false,
+      "schema": "banking",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_MONEY_MARKET_CONNECTION_STRING",
+        "MERIDIAN_MONEY_MARKET_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/MoneyMarket/Migrations",
+      "display_name": "Money Market",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "money-market",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/MoneyMarket",
+      "quote_schema": false,
+      "schema": "money_market",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_REPORTING_CONNECTION_STRING",
+        "MERIDIAN_REPORTING_SCHEMA",
+        "MERIDIAN_LEDGER_CONNECTION_STRING"
+      ],
+      "directory": "src/Meridian.Storage/Reporting/Migrations",
+      "display_name": "Reporting",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "reporting",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": true,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "reporting_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Reporting",
+      "quote_schema": true,
+      "schema": "reporting",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
+        "MERIDIAN_SCOPED_ACCESS_SCHEMA"
+      ],
+      "directory": "src/Meridian.Identity/Migrations",
+      "display_name": "Identity Scoped Access",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "identity-access",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "identity_access_schema_migrations"
+      },
+      "owner": "src/Meridian.Identity",
+      "quote_schema": true,
+      "schema": "identity_access",
+      "track_ordinals": false
+    }
+  ],
+  "summary": {
+    "errors": 0,
+    "files": 81,
+    "migration_sets": 10,
+    "waivers": 1,
+    "warnings": 0
+  },
+  "waivers": [
+    {
+      "category": "removed_migrations",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/026_security_operator_override_approval_trail.sql",
+      "reason": "Removed the later duplicate of 026_security_master_operator_override_approvals.sql; both files contained the same idempotent DDL and their shared ordinal made the production runner fail before opening PostgreSQL.",
+      "review_after": "2027-01-15",
+      "rule_id": ""
+    }
+  ]
+}

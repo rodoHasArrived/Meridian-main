@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian.Ui.Shared
@@ -31,8 +31,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 ## Key folders and files
 
 - `Endpoints/` - shared workstation endpoint mapping and projection helpers, including
-  fund-structure ownership lifecycle, portable packaging, archive-maintenance, and data-quality
-  monitoring routes.
+  host liveness/readiness/startup probes, fund-structure ownership lifecycle, portable packaging,
+  archive-maintenance, and data-quality monitoring routes.
 - `Extensibility/` - shared extensibility catalog service, tenant-template activation service, and
   provider adapters that expose configurable workflow registrations through
   `Meridian.Contracts.Extensibility`.
@@ -40,6 +40,12 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 - Project metadata - UI shared dependencies and build settings.
 
 ## Important workflows
+
+The lifecycle control plane publishes unauthenticated, sanitized `/livez`, `/readyz`, `/startupz`,
+and `/startup` surfaces for local process supervision and pre-login progress. Authenticated browser
+and WPF operator controls use the loopback-only `/api/system/lifecycle`,
+`/api/system/shutdown`, shutdown-operation, and latest-receipt routes. Clients consume the shared
+`Meridian.Contracts.Lifecycle` payloads and never infer readiness or terminate processes locally.
 
 `FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
 Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links, and the underlying ownership/cash-flow policy is owned by `Meridian.Entities.FundStructure`.

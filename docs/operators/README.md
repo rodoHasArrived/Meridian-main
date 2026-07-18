@@ -2,7 +2,7 @@
 title: Operator Documentation
 status: active
 owner: core-team
-reviewed: 2026-07-15
+reviewed: 2026-07-17
 audience: operators
 ---
 
@@ -37,6 +37,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | First local setup | [Start](../start/README.md) | fastest contributor/operator orientation |
 | Product operating scope | [Meridian Design Document](../product/meridian-design-document.md) | stakeholder design context for operator posture |
 | Daily operator controls | [Operators](./README.md) | this page |
+| Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |
@@ -44,6 +45,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 ## Active Operator Procedure Files
 
 - [Browser Workstation Installer](./browser-workstation-installer.md)
+- [Lifecycle Control Plane Reference](../reference/lifecycle-control-plane.md)
 - [Deployment and Packaging](./deployment-packaging.md)
 - [Failover and Recovery](./failover-and-recovery.md)
 - [Fund Operations Persistence Cutover](./fund-ops-persistence-cutover.md)

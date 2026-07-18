@@ -1481,7 +1481,9 @@ public sealed class AccountingConfigurationServiceTests
         var runner = new AutomatedJournalIntakeRunner(
             intake,
             new FeeScheduleAccrualEventProducer(),
-            dailyMarkToMarketService: new DailyMarkToMarketService(priceSource),
+            dailyMarkToMarketService: new DailyMarkToMarketService(
+                priceSource,
+                new LedgerMarkToMarketCarryingValueSource(journalStore)),
             dailyValuationPositionService: positionService);
         var scheduleSource = new InMemoryDailyValuationPortfolioSource();
         var configured = await scheduleSource.SaveAsync(new DailyValuationScheduleWorkItem(

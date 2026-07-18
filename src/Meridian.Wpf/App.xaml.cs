@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,6 +14,7 @@ using Meridian.Application.Services;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Lifecycle;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution.Sdk;
@@ -315,7 +317,19 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.StatusService>(_ => WpfServices.StatusService.Instance);
         services.AddSingleton<WpfServices.FirstRunService>(_ => WpfServices.FirstRunService.Instance);
         services.AddSingleton<WpfServices.DemoTourService>(_ => WpfServices.DemoTourService.Instance);
-        services.AddSingleton<UserProfileRegistry>();
+        var identityDataRoot = Environment.GetEnvironmentVariable("MDC_DATA_ROOT") ??
+                               ResolveLifecycleManifestDataRoot(AppContext.BaseDirectory) ??
+                               configuration["DataRoot"] ??
+                               Path.Combine(
+                                   Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                   "Meridian",
+                                   "Data");
+        services.AddSingleton<IUserAccountStore>(sp => new FileUserAccountStore(
+            new Meridian.Storage.StorageOptions { RootPath = Path.GetFullPath(identityDataRoot) },
+            sp.GetService<Microsoft.Extensions.Logging.ILogger<FileUserAccountStore>>()));
+        services.AddSingleton<UserProfileRegistry>(sp => new UserProfileRegistry(
+            roleProfileStore: null,
+            accountStore: sp.GetRequiredService<IUserAccountStore>()));
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();
@@ -371,6 +385,46 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
         services.AddSingleton<Meridian.ProviderSdk.IPluginLoaderService,
                               Meridian.ProviderSdk.PluginLoaderService>();
+    }
+
+    internal static string? ResolveLifecycleManifestDataRoot(string appBaseDirectory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(appBaseDirectory);
+        var baseDirectory = Path.GetFullPath(appBaseDirectory);
+        var installRoots = new[]
+        {
+            baseDirectory,
+            Directory.GetParent(baseDirectory)?.FullName
+        }.Where(path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var installRoot in installRoots)
+        {
+            var manifestPath = Path.Combine(installRoot!, "service", "lifecycle-supervisor.json");
+            if (!File.Exists(manifestPath))
+                continue;
+            try
+            {
+                var manifest = JsonSerializer.Deserialize(
+                    File.ReadAllText(manifestPath),
+                    LifecycleContractsJsonContext.Default.LifecycleSupervisorManifestDto);
+                if (string.IsNullOrWhiteSpace(manifest?.DataRoot))
+                    continue;
+                var expanded = Environment.ExpandEnvironmentVariables(manifest.DataRoot);
+                return Path.GetFullPath(
+                    Path.IsPathRooted(expanded)
+                        ? expanded
+                        : Path.Combine(installRoot!, expanded));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException)
+            {
+                WpfServices.LoggingService.Instance.LogWarning(
+                    "Could not resolve lifecycle supervisor data root for desktop authentication",
+                    ("ManifestPath", manifestPath),
+                    ("Error", ex.GetType().Name));
+            }
+        }
+
+        return null;
     }
 
     private static void AddHostEnvironmentFallback(IServiceCollection services)
@@ -661,8 +715,7 @@ public partial class App : System.Windows.Application
                 ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(cts.Token), "BackgroundTaskScheduler", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.PendingOperationsQueueService.Instance.ShutdownAsync(), "PendingOperationsQueue", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.OfflineTrackingPersistenceService.Instance.ShutdownAsync(), "OfflineTrackingPersistence", cts.Token),
-                ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token),
-                ShutdownServiceAsync(() => StopManagedBackendAsync(cts.Token), "BackendServiceManager", cts.Token)
+                ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token)
             };
 
             await Task.WhenAll(shutdownTasks).ConfigureAwait(false);
@@ -733,17 +786,6 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogError("WPF host dispose failed", ex);
-        }
-    }
-
-    private static async Task StopManagedBackendAsync(CancellationToken ct)
-    {
-        var result = await WpfServices.BackendServiceManager.Instance.StopAsync(ct).ConfigureAwait(false);
-        if (!result.Success)
-        {
-            WpfServices.LoggingService.Instance.LogWarning(
-                "Backend service manager reported a shutdown failure",
-                ("Message", result.Message));
         }
     }
 
