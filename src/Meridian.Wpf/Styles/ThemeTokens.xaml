@@ -314,4 +314,163 @@
     <SolidColorBrush x:Key="BadgeDangerForegroundBrush" Color="{StaticResource ConsoleAccentRedDim}" />
     <SolidColorBrush x:Key="DangerColorBrush"           Color="{StaticResource ConsoleAccentRedDim}" />
 
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- Tokens hoisted from inline page/control markup.                      -->
+    <!-- Exact legacy values are preserved; these centralize colors that      -->
+    <!-- were previously hardcoded in View XAML so future theming, dark-mode,  -->
+    <!-- and rebrand work has a single source of truth.                       -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Bright status/metric signal palette (health, diagnostics, analytics) -->
+    <Color x:Key="SignalPositiveColor">#48BB78</Color>
+    <Color x:Key="SignalPositiveVividColor">#3AD16A</Color>
+    <Color x:Key="SignalWarningColor">#ED8936</Color>
+    <Color x:Key="SignalNegativeColor">#F56565</Color>
+    <Color x:Key="SignalNegativeVividColor">#F85149</Color>
+    <SolidColorBrush x:Key="SignalPositiveBrush"      Color="{StaticResource SignalPositiveColor}" />
+    <SolidColorBrush x:Key="SignalPositiveVividBrush" Color="{StaticResource SignalPositiveVividColor}" />
+    <SolidColorBrush x:Key="SignalWarningBrush"       Color="{StaticResource SignalWarningColor}" />
+    <SolidColorBrush x:Key="SignalNegativeBrush"      Color="{StaticResource SignalNegativeColor}" />
+    <SolidColorBrush x:Key="SignalNegativeVividBrush" Color="{StaticResource SignalNegativeVividColor}" />
+
+    <!-- Notification severity badges -->
+    <Color x:Key="SeverityCriticalColor">#F44336</Color>
+    <Color x:Key="SeverityErrorColor">#FF5722</Color>
+    <Color x:Key="SeverityWarningColor">#FFC107</Color>
+    <Color x:Key="NotificationDangerSurfaceColor">#2D1B1B</Color>
+    <SolidColorBrush x:Key="SeverityCriticalBrush" Color="{StaticResource SeverityCriticalColor}" />
+    <SolidColorBrush x:Key="SeverityErrorBrush"    Color="{StaticResource SeverityErrorColor}" />
+    <SolidColorBrush x:Key="SeverityWarningBrush"  Color="{StaticResource SeverityWarningColor}" />
+    <SolidColorBrush x:Key="NotificationDangerSurfaceBrush" Color="{StaticResource NotificationDangerSurfaceColor}" />
+
+    <!-- Dark neutral ink for text on light/amber badges -->
+    <Color x:Key="BadgeDarkTextColor">#333333</Color>
+    <SolidColorBrush x:Key="BadgeDarkTextBrush" Color="{StaticResource BadgeDarkTextColor}" />
+
+    <!-- On-accent text (white text over solid accent fills) -->
+    <Color x:Key="OnAccentTextColor">#FFFFFF</Color>
+    <SolidColorBrush x:Key="OnAccentTextBrush" Color="{StaticResource OnAccentTextColor}" />
+
+    <!-- Muted text on dark chrome surfaces (float windows, metric tiles) -->
+    <Color x:Key="DarkSurfaceMutedTextColor">#888888</Color>
+    <SolidColorBrush x:Key="DarkSurfaceMutedTextBrush" Color="{StaticResource DarkSurfaceMutedTextColor}" />
+
+    <!-- Top bar / masthead text and accents (over the near-black brand bar) -->
+    <Color x:Key="TopBarTextSecondaryColor">#9CA3AF</Color>
+    <Color x:Key="TopBarTextMutedColor">#6B7280</Color>
+    <Color x:Key="TopBarAccentBlueColor">#60A5FA</Color>
+    <Color x:Key="TopBarAlertAmberColor">#F59E0B</Color>
+    <SolidColorBrush x:Key="TopBarTextSecondaryBrush" Color="{StaticResource TopBarTextSecondaryColor}" />
+    <SolidColorBrush x:Key="TopBarTextMutedBrush"     Color="{StaticResource TopBarTextMutedColor}" />
+    <SolidColorBrush x:Key="TopBarAccentBlueBrush"    Color="{StaticResource TopBarAccentBlueColor}" />
+    <SolidColorBrush x:Key="TopBarAlertAmberBrush"    Color="{StaticResource TopBarAlertAmberColor}" />
+
+    <!-- Startup window text (over the dark brand panel) -->
+    <Color x:Key="StartupSubtitleTextColor">#C9D1D9</Color>
+    <Color x:Key="StartupBodyTextColor">#AAB4BF</Color>
+    <Color x:Key="StartupFootnoteTextColor">#7E8792</Color>
+    <SolidColorBrush x:Key="StartupSubtitleTextBrush" Color="{StaticResource StartupSubtitleTextColor}" />
+    <SolidColorBrush x:Key="StartupBodyTextBrush"     Color="{StaticResource StartupBodyTextColor}" />
+    <SolidColorBrush x:Key="StartupFootnoteTextBrush" Color="{StaticResource StartupFootnoteTextColor}" />
+
+    <!-- Floating quote / page windows (dark detached surfaces) -->
+    <Color x:Key="FloatWindowBackgroundColor">#0A0A12</Color>
+    <Color x:Key="FloatWindowChromeColor">#1A2A4A</Color>
+    <Color x:Key="QuoteBidColor">#44CC44</Color>
+    <Color x:Key="QuoteAskColor">#CC4444</Color>
+    <SolidColorBrush x:Key="FloatWindowBackgroundBrush" Color="{StaticResource FloatWindowBackgroundColor}" />
+    <SolidColorBrush x:Key="FloatWindowChromeBrush"     Color="{StaticResource FloatWindowChromeColor}" />
+    <SolidColorBrush x:Key="QuoteBidBrush" Color="{StaticResource QuoteBidColor}" />
+    <SolidColorBrush x:Key="QuoteAskBrush" Color="{StaticResource QuoteAskColor}" />
+
+    <!-- Ticker strip (transparent overlay bar; alpha variants of the float navy) -->
+    <Color x:Key="TickerStripBackgroundColor">#EE0A0A0F</Color>
+    <Color x:Key="TickerStripBorderColor">#FF1A2A4A</Color>
+    <Color x:Key="TickerItemBackgroundColor">#0A0A1A</Color>
+    <Color x:Key="TickerFlashOverlayColor">#1AFFFFFF</Color>
+    <Color x:Key="TickerUpColor">#44AA44</Color>
+    <Color x:Key="TickerDownColor">#AA4444</Color>
+    <Color x:Key="TickerMutedGlyphColor">#44667799</Color>
+    <Color x:Key="TickerHairlineColor">#661A2A4A</Color>
+    <SolidColorBrush x:Key="TickerStripBackgroundBrush" Color="{StaticResource TickerStripBackgroundColor}" />
+    <SolidColorBrush x:Key="TickerStripBorderBrush"     Color="{StaticResource TickerStripBorderColor}" />
+    <SolidColorBrush x:Key="TickerItemBackgroundBrush"  Color="{StaticResource TickerItemBackgroundColor}" />
+    <SolidColorBrush x:Key="TickerFlashOverlayBrush"    Color="{StaticResource TickerFlashOverlayColor}" />
+    <SolidColorBrush x:Key="TickerUpBrush"    Color="{StaticResource TickerUpColor}" />
+    <SolidColorBrush x:Key="TickerDownBrush"  Color="{StaticResource TickerDownColor}" />
+    <SolidColorBrush x:Key="TickerMutedGlyphBrush" Color="{StaticResource TickerMutedGlyphColor}" />
+    <SolidColorBrush x:Key="TickerHairlineBrush"   Color="{StaticResource TickerHairlineColor}" />
+
+    <!-- Latency metric tiles and co-location badge (diagnostics) -->
+    <Color x:Key="MetricTileSurfaceColor">#1A3A5C</Color>
+    <Color x:Key="CoLocationBadgeSurfaceColor">#1A5C3A</Color>
+    <SolidColorBrush x:Key="MetricTileSurfaceBrush"      Color="{StaticResource MetricTileSurfaceColor}" />
+    <SolidColorBrush x:Key="CoLocationBadgeSurfaceBrush" Color="{StaticResource CoLocationBadgeSurfaceColor}" />
+
+    <!-- File-drop overlays (window drag-import and dock/split drop targets) -->
+    <Color x:Key="DropOverlayFillColor">#AA1A3A5C</Color>
+    <Color x:Key="DropOverlayBorderColor">#4499CC</Color>
+    <Color x:Key="DropOverlaySubtitleColor">#AACCFF</Color>
+    <Color x:Key="DropTargetFillColor">#22007ACC</Color>
+    <Color x:Key="DropTargetBorderColor">#66007ACC</Color>
+    <SolidColorBrush x:Key="DropOverlayFillBrush"     Color="{StaticResource DropOverlayFillColor}" />
+    <SolidColorBrush x:Key="DropOverlayBorderBrush"   Color="{StaticResource DropOverlayBorderColor}" />
+    <SolidColorBrush x:Key="DropOverlaySubtitleBrush" Color="{StaticResource DropOverlaySubtitleColor}" />
+    <SolidColorBrush x:Key="DropTargetFillBrush"      Color="{StaticResource DropTargetFillColor}" />
+    <SolidColorBrush x:Key="DropTargetBorderBrush"    Color="{StaticResource DropTargetBorderColor}" />
+
+    <!-- Modal scrim (busy/overlay dim layer) -->
+    <Color x:Key="ModalScrimColor">#80000000</Color>
+    <SolidColorBrush x:Key="ModalScrimBrush" Color="{StaticResource ModalScrimColor}" />
+
+    <!-- Strategy workspace hero card (blue-tinted dark) -->
+    <Color x:Key="StrategyHeroSurfaceColor">#12253A</Color>
+    <Color x:Key="StrategyHeroBorderColor">#22486B</Color>
+    <Color x:Key="StrategyHeroLabelColor">#7EA3C5</Color>
+    <Color x:Key="StrategyHeroMetaColor">#A8BED7</Color>
+    <SolidColorBrush x:Key="StrategyHeroSurfaceBrush" Color="{StaticResource StrategyHeroSurfaceColor}" />
+    <SolidColorBrush x:Key="StrategyHeroBorderBrush"  Color="{StaticResource StrategyHeroBorderColor}" />
+    <SolidColorBrush x:Key="StrategyHeroLabelBrush"   Color="{StaticResource StrategyHeroLabelColor}" />
+    <SolidColorBrush x:Key="StrategyHeroMetaBrush"    Color="{StaticResource StrategyHeroMetaColor}" />
+
+    <!-- Accounting workspace hero card (gold-tinted dark) -->
+    <Color x:Key="AccountingHeroSurfaceColor">#2D200F</Color>
+    <Color x:Key="AccountingHeroBorderColor">#875A24</Color>
+    <Color x:Key="AccountingHeroLabelColor">#E1B980</Color>
+    <Color x:Key="AccountingHeroSummaryColor">#F2DEC0</Color>
+    <Color x:Key="AccountingHeroDetailColor">#D7C2A4</Color>
+    <SolidColorBrush x:Key="AccountingHeroSurfaceBrush" Color="{StaticResource AccountingHeroSurfaceColor}" />
+    <SolidColorBrush x:Key="AccountingHeroBorderBrush"  Color="{StaticResource AccountingHeroBorderColor}" />
+    <SolidColorBrush x:Key="AccountingHeroLabelBrush"   Color="{StaticResource AccountingHeroLabelColor}" />
+    <SolidColorBrush x:Key="AccountingHeroSummaryBrush" Color="{StaticResource AccountingHeroSummaryColor}" />
+    <SolidColorBrush x:Key="AccountingHeroDetailBrush"  Color="{StaticResource AccountingHeroDetailColor}" />
+
+    <!-- Assorted banners / tints -->
+    <Color x:Key="InfoBannerTintColor">#0D58A6FA</Color>
+    <Color x:Key="WarningTintSubtleColor">#1EFFCA28</Color>
+    <Color x:Key="RecoveryBannerBorderColor">#C0392B</Color>
+    <SolidColorBrush x:Key="InfoBannerTintBrush"       Color="{StaticResource InfoBannerTintColor}" />
+    <SolidColorBrush x:Key="WarningTintSubtleBrush"    Color="{StaticResource WarningTintSubtleColor}" />
+    <SolidColorBrush x:Key="RecoveryBannerBorderBrush" Color="{StaticResource RecoveryBannerBorderColor}" />
+
+    <!-- Provider tag borders (IB cyan / Alpaca amber / Polygon blue) -->
+    <Color x:Key="TagIbBorderColor">#4D42C6D6</Color>
+    <Color x:Key="TagAlpacaBorderColor">#4DE4A84B</Color>
+    <Color x:Key="TagPolygonBorderColor">#4D7AB3FF</Color>
+    <SolidColorBrush x:Key="TagIbBorderBrush"      Color="{StaticResource TagIbBorderColor}" />
+    <SolidColorBrush x:Key="TagAlpacaBorderBrush"  Color="{StaticResource TagAlpacaBorderColor}" />
+    <SolidColorBrush x:Key="TagPolygonBorderBrush" Color="{StaticResource TagPolygonBorderColor}" />
+
+    <!-- Dark tooltip surface -->
+    <Color x:Key="DarkTooltipSurfaceColor">#0F1B28</Color>
+    <Color x:Key="DarkTooltipTextColor">#DCE8F4</Color>
+    <Color x:Key="DarkTooltipBorderColor">#1A2F42</Color>
+    <SolidColorBrush x:Key="DarkTooltipSurfaceBrush" Color="{StaticResource DarkTooltipSurfaceColor}" />
+    <SolidColorBrush x:Key="DarkTooltipTextBrush"    Color="{StaticResource DarkTooltipTextColor}" />
+    <SolidColorBrush x:Key="DarkTooltipBorderBrush"  Color="{StaticResource DarkTooltipBorderColor}" />
+
+    <!-- Effect colors (consumed as Color, not Brush) -->
+    <Color x:Key="ShadowColor">#000000</Color>
+    <Color x:Key="FlashHighlightColor">#333FB950</Color>
+
 </ResourceDictionary>

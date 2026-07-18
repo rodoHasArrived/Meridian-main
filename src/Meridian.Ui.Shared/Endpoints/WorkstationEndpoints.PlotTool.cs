@@ -154,43 +154,6 @@ public static partial class WorkstationEndpoints
             ActiveView: "workspace");
     }
 
-    private static WorkstationPlotToolPayload BuildStrategyFallbackPlotToolPayload()
-    {
-        var fallbackRun = new StrategyRunSummary(
-            RunId: "run-strategy-001",
-            StrategyId: "mean-reversion-fx",
-            StrategyName: "Mean Reversion FX",
-            Mode: StrategyRunMode.Paper,
-            Engine: StrategyRunEngine.MeridianNative,
-            Status: StrategyRunStatus.Running,
-            StartedAt: DateTimeOffset.UtcNow.AddMinutes(-20),
-            CompletedAt: null,
-            DatasetReference: "FX Majors",
-            FeedReference: "synthetic:fx",
-            PortfolioId: null,
-            LedgerReference: null,
-            NetPnl: 4200m,
-            TotalReturn: 0.042m,
-            FinalEquity: 104200m,
-            FillCount: 12,
-            LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-2),
-            AuditReference: null,
-            Identity: null,
-            Execution: null,
-            Promotion: null,
-            Governance: null,
-            FundProfileId: null,
-            FundDisplayName: null,
-            ParentRunId: null,
-            SweepId: null,
-            SweepDefinitionHash: null,
-            SweepObjective: null,
-            LiveStatus: null,
-            PaperStatus: null);
-
-        return BuildStrategyPlotToolPayload([fallbackRun], selectedRunIds: Array.Empty<string>());
-    }
-
     private static IEnumerable<(int X, int Y, bool Emphasis)> BuildPlotToolScatterPoints()
     {
         const int startX = 90;

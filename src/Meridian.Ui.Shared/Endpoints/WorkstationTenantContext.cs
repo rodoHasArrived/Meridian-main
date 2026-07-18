@@ -133,6 +133,13 @@ public static class WorkstationTenantScopeEndpointFilters
         return group;
     }
 
+    public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(RequireTenantScope);
+        builder.WithMetadata(new WorkstationTenantScopeMetadata());
+        return builder;
+    }
+
     private static ValueTask<object?> RequireTenantScope(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
         var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context.HttpContext);
@@ -143,6 +150,39 @@ public static class WorkstationTenantScopeEndpointFilters
 
         return ValueTask.FromResult<object?>(Results.Problem(
             MissingTenantScopeMessage,
+            statusCode: StatusCodes.Status403Forbidden));
+    }
+}
+
+/// <summary>
+/// Unconditional isolation gate for accounting automation mutations whose durable identity is
+/// tenant plus company. Unlike the broader rollout-controlled fund-write gate, this filter never
+/// permits or merely logs an incomplete scope.
+/// </summary>
+public static class WorkstationTenantCompanyScopeEndpointFilters
+{
+    private const string MissingScopeMessage =
+        "A tenant- and company-scoped workstation request context is required for accounting automation mutations.";
+
+    public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder)
+    {
+        builder.AddEndpointFilter(RequireTenantAndCompanyScopeAsync);
+        return builder;
+    }
+
+    private static ValueTask<object?> RequireTenantAndCompanyScopeAsync(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context.HttpContext);
+        if (!string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
+            !string.IsNullOrWhiteSpace(tenantContext.CompanyId))
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(Results.Problem(
+            MissingScopeMessage,
             statusCode: StatusCodes.Status403Forbidden));
     }
 }

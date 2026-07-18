@@ -19,10 +19,12 @@ import type {
   ExternalGlExportPackageManifest,
   ExternalGlMappingProfile,
   ClosePeriodPlan,
+  DailyValuationScheduleWorkItem,
   LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  PrivateCapitalCloseCockpit,
   CapitalAccountWorkbench,
   GeneratedPostingLine,
   PostingRuleJournalCandidateResult,
@@ -220,6 +222,7 @@ vi.mock("@/lib/api", async () => {
     applyManualJournalEntryLifecycleAction: vi.fn(),
     getLedgerCloseManagementPeriodPlan: vi.fn(),
     configureLedgerCloseManagementPeriodPlan: vi.fn(),
+    lockLedgerCloseManagementPeriod: vi.fn(),
     createLedgerCloseManagementLateAdjustment: vi.fn(),
     reviewLedgerCloseManagementLateAdjustment: vi.fn(),
     signOffLedgerCloseManagementTask: vi.fn(),
@@ -270,6 +273,11 @@ vi.mock("@/lib/api", async () => {
     }),
     getOperationsContinuityWorkflows: vi.fn().mockResolvedValue([]),
     getOperationsContinuityWorkflow: vi.fn(),
+    getPrivateCapitalCloseCockpit: vi.fn().mockResolvedValue(null),
+    listDailyValuationSchedules: vi.fn().mockResolvedValue([]),
+    configureDailyValuationSchedule: vi.fn(),
+    runDueDailyValuationSchedules: vi.fn(),
+    approveAndPostDailyValuationBatch: vi.fn(),
     getFinancialOperationsCommandCenter: vi.fn().mockResolvedValue({
       generatedAtUtc: "2026-06-01T12:00:00Z",
       fundProfileId: "fund-alpha",
@@ -1505,7 +1513,51 @@ async function renderAccountingScreenWithLocation(
   return { ...result, onLocationChange };
 }
 
+const SECURITY_MASTER_SEARCH_TIMEOUT_MS = 4_000;
+const defaultSearchSecuritiesImplementation = vi.mocked(api.searchSecurities).getMockImplementation();
+
+function enterAppleSecuritySearch() {
+  fireEvent.change(screen.getByPlaceholderText("Search securities…"), {
+    target: { value: "AAPL" }
+  });
+}
+
+function findAppleSecuritySearchRow() {
+  return screen.findByRole(
+    "row",
+    { name: "Open identity drill-in for Apple Inc." },
+    { timeout: SECURITY_MASTER_SEARCH_TIMEOUT_MS }
+  );
+}
+
 describe("AccountingScreen", () => {
+  beforeEach(() => {
+    const searchSecurities = vi.mocked(api.searchSecurities);
+    searchSecurities.mockReset();
+    if (defaultSearchSecuritiesImplementation) {
+      searchSecurities.mockImplementation(defaultSearchSecuritiesImplementation);
+    }
+  });
+
+  it("loads only the External GL request lane on its dedicated route", async () => {
+    vi.clearAllMocks();
+
+    await renderAccountingScreen(data, "/accounting/reconciliation/external-gl");
+
+    await waitFor(() => expect(api.getAccountingSystemProviders).toHaveBeenCalledTimes(1));
+    expect(api.getLatestAccountingSystemImport).toHaveBeenCalledTimes(1);
+    expect(api.getLatestAccountingSystemReconciliation).toHaveBeenCalledTimes(1);
+    expect(api.getAccountingSystemMappingProfiles).toHaveBeenCalledTimes(1);
+    expect(api.listAccountingSystemExportPackages).not.toHaveBeenCalled();
+    expect(api.getAccountingConfiguration).not.toHaveBeenCalled();
+    expect(api.getFinancialRecordExplorer).not.toHaveBeenCalled();
+    expect(api.getManualJournalEntryWorkbench).not.toHaveBeenCalled();
+    expect(api.getCapitalAccountWorkbench).not.toHaveBeenCalled();
+    expect(api.getOperationsContinuityWorkflows).not.toHaveBeenCalled();
+    expect(api.getFinancialOperationsCommandCenter).not.toHaveBeenCalled();
+    expect(api.getRunTrialBalance).not.toHaveBeenCalled();
+  });
+
   it("renders actionable Accounting loading work while workspace data loads", async () => {
     renderWithRouter(<AccountingScreen data={null} />, { initialEntries: ["/accounting/reconciliation"] });
     await waitForAsyncEffects();
@@ -2266,11 +2318,12 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/configure");
 
     expect(await screen.findByText("Accounting Rules Studio")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Production rollout setup and evidence"));
     expect(screen.getByText("Ledger book administration")).toBeInTheDocument();
     expect(screen.getByText("1 ledger book registered | selected Primary book.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting ledger book catalog" })).toBeInTheDocument();
-    expect(screen.getByText("policy-gaap/2026.06")).toBeInTheDocument();
-    expect(screen.getByText("fund-alpha / Entity entity-master")).toBeInTheDocument();
+    expect(screen.getByText("Gaap policy | version 2026.06")).toBeInTheDocument();
+    expect(screen.getByText("Entity scope")).toBeInTheDocument();
     expect(screen.getByText("Accounting production readiness")).toBeInTheDocument();
     expect(screen.getByText("78/100")).toBeInTheDocument();
     expect(screen.getByText("Tenant administration")).toBeInTheDocument();
@@ -2337,6 +2390,12 @@ describe("AccountingScreen", () => {
     });
     expect(screen.getAllByText("Trade buy posting").length).toBeGreaterThan(0);
     expect(screen.getByText("2026-01-01 -> 2026-12-31")).toBeInTheDocument();
+    const ruleInternals = screen.getByText("Rule scope and posting internals").closest("details");
+    expect(ruleInternals).not.toHaveAttribute("open");
+    expect(within(ruleInternals!).getByText("Scope")).toBeInTheDocument();
+    expect(within(ruleInternals!).getByText("Generated postings")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Rule scope and posting internals"));
+    expect(ruleInternals).toHaveAttribute("open");
     expect(screen.getByText("Fund: fund-alpha")).toBeInTheDocument();
     expect(screen.getByText(/event\.kind Equals TradeExecuted/)).toBeInTheDocument();
     expect(screen.getByText(/group-trade-source: Any \(required\)/)).toBeInTheDocument();
@@ -2352,7 +2411,7 @@ describe("AccountingScreen", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Approve rule promotion" }));
     await screen.findByText("Approved promotion for Trade buy posting.");
-    expect(screen.getByText("Approved by browser-accounting-operator")).toBeInTheDocument();
+    expect(screen.getByText("Approved by Accounting operator")).toBeInTheDocument();
     expect(api.approveAccountingConfigurationPostingRulePromotion).toHaveBeenCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
       ruleId: "rule-trade-buy",
@@ -2462,7 +2521,7 @@ describe("AccountingScreen", () => {
     }));
   }, 45_000);
 
-  it("renders external GL evidence package posture from the reconciliation response", async () => {
+  it("renders human external GL posture while keeping technical identifiers behind disclosures", async () => {
     const provider: AccountingSystemProvider = {
       providerId: "quickbooks-fixture",
       displayName: "QuickBooks Fixture",
@@ -2472,7 +2531,7 @@ describe("AccountingScreen", () => {
       supportsJournalEntries: true,
       supportsTrialBalance: true,
       supportsPosting: false,
-      statusLabel: "Ready for read-only import",
+      statusLabel: "Fixture import loaded",
       statusDetail: "Fixture provider ready.",
       evidenceKinds: ["QuickBooksTrialBalance"],
       mappingRequirements: [
@@ -2484,6 +2543,15 @@ describe("AccountingScreen", () => {
           requiredForGuardedExport: true
         }
       ]
+    };
+    const quickBooksLiveProvider: AccountingSystemProvider = {
+      ...provider,
+      providerId: "quickbooks",
+      displayName: "QuickBooks Online",
+      state: "Planned",
+      requiresCredentials: true,
+      statusLabel: "OAuth adapter planned",
+      statusDetail: "A governed live connection has not been configured."
     };
     const xeroProvider: AccountingSystemProvider = {
       providerId: "xero",
@@ -2739,7 +2807,7 @@ describe("AccountingScreen", () => {
       contentHash: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
     };
 
-    vi.mocked(api.getAccountingSystemProviders).mockResolvedValueOnce([provider, xeroProvider, netSuiteProvider]);
+    vi.mocked(api.getAccountingSystemProviders).mockResolvedValueOnce([provider, quickBooksLiveProvider, xeroProvider, netSuiteProvider]);
     vi.mocked(api.getLatestAccountingSystemImport).mockResolvedValueOnce(importDetail);
     vi.mocked(api.getLatestAccountingSystemReconciliation).mockResolvedValueOnce(reconciliation);
     vi.mocked(api.getAccountingSystemMappingProfiles).mockResolvedValueOnce(mappingProfiles);
@@ -2750,24 +2818,46 @@ describe("AccountingScreen", () => {
       .mockResolvedValueOnce(certifiedExportManifest);
     vi.mocked(api.certifyAccountingSystemExportPackage).mockResolvedValueOnce(certifiedExportPackage);
 
-    const { container } = await renderAccountingScreen(data, "/accounting/ledger");
+    const { container } = await renderAccountingScreen(data, "/accounting/reconciliation/external-gl");
 
     const providerPosture = await screen.findByRole("table", { name: "External GL provider import posture" });
-    expect(providerPosture).toHaveTextContent("QuickBooks Fixture");
+    expect(providerPosture).toHaveTextContent("QuickBooks import");
+    expect(providerPosture).not.toHaveTextContent("QuickBooks Fixture");
+    expect(screen.getByRole("heading", { name: "Imported QuickBooks evidence" })).toBeInTheDocument();
+    expect(screen.getByText("Read-only import ready")).toBeInTheDocument();
+    expect(screen.getAllByText("Direct connection unavailable").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Fixture import loaded")).not.toBeInTheDocument();
+    expect(screen.queryByText("OAuth adapter planned")).not.toBeInTheDocument();
     expect(providerPosture).toHaveTextContent("Mapping profile retained");
     expect(providerPosture).toHaveTextContent("Xero");
     expect(providerPosture).toHaveTextContent("NetSuite");
     expect(providerPosture).toHaveTextContent("Mapping profile needed");
     expect(providerPosture).toHaveTextContent("Live posting disabled");
+    expect(providerPosture).not.toHaveTextContent("quickbooks-fixture");
+    const providerIdentifiers = screen.getByText("Provider identifiers").closest("details");
+    expect(providerIdentifiers).not.toHaveAttribute("open");
+    expect(within(providerIdentifiers!).getByText("Provider: quickbooks-fixture")).toBeInTheDocument();
 
     const profiles = await screen.findByRole("table", { name: "External GL mapping profiles" });
     expect(profiles).toHaveTextContent("Default fund QBO mapping");
     expect(profiles).toHaveTextContent("Certified");
-    expect(profiles).toHaveTextContent("qbo-default-fund-certified");
+    expect(profiles).toHaveTextContent("QuickBooks import");
+    expect(profiles).not.toHaveTextContent("qbo-default-fund-certified");
+    const mappingIdentifiers = screen.getByText("Mapping profile identifiers").closest("details");
+    expect(mappingIdentifiers).not.toHaveAttribute("open");
+    expect(within(mappingIdentifiers!).getByText("Profile: qbo-default-fund-certified")).toBeInTheDocument();
 
     const reconciliationRows = await screen.findByRole("table", { name: "External GL reconciliation rows" });
     expect(reconciliationRows).toHaveTextContent("Cash");
-    expect(reconciliationRows).toHaveTextContent("MissingMeridian");
+    expect(reconciliationRows).toHaveTextContent("Missing from Meridian");
+    expect(reconciliationRows).not.toHaveTextContent("MissingMeridian");
+    expect(reconciliationRows).not.toHaveTextContent("quickbooks-fixture:trial-balance:cash");
+    expect(screen.getByText("1 open break", { exact: true })).toBeInTheDocument();
+    expect(screen.queryByText("Balanced", { exact: true })).not.toBeInTheDocument();
+    const reconciliationTechnicalDetails = screen.getByText("Reconciliation technical details").closest("details");
+    expect(reconciliationTechnicalDetails).not.toHaveAttribute("open");
+    expect(within(reconciliationTechnicalDetails!).getByText("gl-recon-qbo-fixture-20260131")).toBeInTheDocument();
+    expect(within(reconciliationTechnicalDetails!).getByText("quickbooks-fixture:trial-balance:cash")).toBeInTheDocument();
 
     const packages = await screen.findByLabelText("External GL evidence packages");
     expect(packages).toHaveTextContent("External GL import evidence");
@@ -2776,7 +2866,12 @@ describe("AccountingScreen", () => {
     expect(packages).toHaveTextContent("Missing");
     expect(packages).toHaveTextContent("Load Meridian ledger journal evidence");
     expect(packages).toHaveTextContent("GL reconciliation tie-out");
+    expect(packages).toHaveTextContent("Review required");
+    expect(packages).not.toHaveTextContent("ReviewRequired");
     expect(packages).toHaveTextContent("Resolve GL reconciliation breaks before approving close evidence.");
+    for (const disclosureLabel of screen.getAllByText("Evidence package technical details")) {
+      expect(disclosureLabel.closest("details")).not.toHaveAttribute("open");
+    }
 
     const safeguards = await screen.findByLabelText("External GL export safeguards");
     expect(safeguards).toHaveTextContent("Balanced reconciliation required");
@@ -2801,27 +2896,38 @@ describe("AccountingScreen", () => {
 
     const packageHistory = await screen.findByLabelText("External GL export package history");
     expect(packageHistory).toHaveTextContent("1 retained package");
-    expect(packageHistory).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20251231");
+    expect(packageHistory).toHaveTextContent("Guarded export package");
+    expect(packageHistory).toHaveTextContent("Dec 1, 2025 – Dec 31, 2025");
+    expect(packageHistory).toHaveTextContent("Created Jan 2, 2026");
+    expect(packageHistory).not.toHaveTextContent("2025-12-01 to 2025-12-31");
     expect(packageHistory).toHaveTextContent("Certified");
     expect(packageHistory).toHaveTextContent("Posting");
     expect(packageHistory).toHaveTextContent("Disabled");
+    const retainedHistoryTechnicalDetails = within(packageHistory).getByText("Export package technical details").closest("details");
+    expect(retainedHistoryTechnicalDetails).not.toHaveAttribute("open");
+    expect(within(retainedHistoryTechnicalDetails!).getByText("external-gl-export-quickbooks-fixture-default-fund-20251231")).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Create export package" }));
 
     const retainedPackage = await screen.findByLabelText("External GL export package");
-    expect(retainedPackage).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20260131");
+    expect(retainedPackage).toHaveTextContent("Guarded export package");
+    expect(retainedPackage).toHaveTextContent("Jan 1, 2026 – Jan 31, 2026");
+    expect(retainedPackage).not.toHaveTextContent("2026-01-01 to 2026-01-31");
     expect(retainedPackage).toHaveTextContent("Posting disabled");
-    expect(retainedPackage).toHaveTextContent("ReadyForReview");
+    expect(retainedPackage).toHaveTextContent("Ready for review");
+    expect(retainedPackage).not.toHaveTextContent("ReadyForReview");
     expect(retainedPackage).toHaveTextContent("Validation issues");
-    expect(retainedPackage).toHaveTextContent("Manifest hash");
-    expect(retainedPackage).toHaveTextContent("0123456789ab");
     expect(retainedPackage).toHaveTextContent("External posting");
     expect(retainedPackage).toHaveTextContent("Disabled");
-    expect(safeguards).toHaveTextContent("0123456789ab");
+    const currentPackageTechnicalDetails = within(retainedPackage).getByText("Export package technical details").closest("details");
+    expect(currentPackageTechnicalDetails).not.toHaveAttribute("open");
+    expect(within(currentPackageTechnicalDetails!).getByText(exportPackage.exportPackageId)).toBeInTheDocument();
+    expect(within(currentPackageTechnicalDetails!).getByText(exportManifest.contentHash)).toBeInTheDocument();
+    expect(safeguards).toHaveTextContent("Retained");
     expect(safeguards).toHaveTextContent("0 generated mapped export line(s) retained for review.");
     expect(safeguards).toHaveTextContent("1 package validation issue(s) retained; none are critical.");
     expect(packageHistory).toHaveTextContent("2 retained packages");
-    expect(packageHistory).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20260131");
+    expect(within(packageHistory).getByText(exportPackage.exportPackageId).closest("details")).not.toHaveAttribute("open");
     expect(api.createAccountingSystemExportPackage).toHaveBeenCalledWith(expect.objectContaining({
       actor: "browser-accounting-operator",
       providerId: "quickbooks-fixture",
@@ -2840,12 +2946,12 @@ describe("AccountingScreen", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Certify export" }));
 
-    await screen.findByText("Certified external GL export package external-gl-export-quickbooks-fixture-default-fund-20260131.");
+    await screen.findByText("External GL export package certified.");
     expect(retainedPackage).toHaveTextContent("Certified");
     expect(retainedPackage).toHaveTextContent("Posting disabled");
-    expect(retainedPackage).toHaveTextContent("abcdef012345");
     expect(retainedPackage).toHaveTextContent("External posting");
     expect(retainedPackage).toHaveTextContent("Disabled");
+    expect(within(currentPackageTechnicalDetails!).getByText(certifiedExportManifest.contentHash)).toBeInTheDocument();
     expect(api.certifyAccountingSystemExportPackage).toHaveBeenCalledWith(expect.objectContaining({
       exportPackageId: exportPackage.exportPackageId,
       actor: "browser-accounting-controller",
@@ -2865,6 +2971,7 @@ describe("AccountingScreen", () => {
     const user = userEvent.setup();
     const closePlan: ClosePeriodPlan = {
       closePlanId: "close-plan-workflow-approval-1",
+      workflowVersion: 12,
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-alpha",
       periodId: "2026-05",
@@ -2883,7 +2990,44 @@ describe("AccountingScreen", () => {
         requiresLateAdjustmentApproval: true
       },
       validationIssues: [],
-      closeCalendar: []
+      closeCalendar: [],
+      closingEntriesGate: {
+        gateId: "closing-entries:book-alpha:2026-05",
+        label: "Post closing entries",
+        state: "Required",
+        isReadyForLock: true,
+        netIncomeRoll: 1500,
+        temporaryAccountBalanceCount: 1,
+        detail: "Non-zero temporary-account balances require a closing-entry draft before period lock.",
+        idempotencyKey: "closing-entries:book-alpha:2026-05:v1",
+        balances: [{
+          accountName: "Advisory fee revenue",
+          accountType: "Revenue",
+          balance: 1500,
+          symbol: "ADV-FEE",
+          financialAccountId: "financial-account-revenue",
+          dimensions: {
+            fundId: "fund-alpha",
+            entityId: "entity-alpha",
+            sleeveId: "sleeve-credit"
+          }
+        }],
+        evidenceLinks: ["evidence/closing-entry-preview"],
+        closingBatchJournalEntryIds: [],
+        reversalDraftJournalEntryIds: []
+      }
+    };
+    const queuedClosePlan: ClosePeriodPlan = {
+      ...closePlan,
+      workflowVersion: 13,
+      closingEntriesGate: {
+        ...closePlan.closingEntriesGate!,
+        state: "DraftQueued",
+        isReadyForLock: false,
+        detail: "A closing-entry draft is queued for controller approval and posting.",
+        draftJournalEntryId: "closing-entry-draft-2026-05",
+        draftStatus: "Draft"
+      }
     };
     const lateAdjustmentPlan: ClosePeriodPlan = {
       ...closePlan,
@@ -2904,15 +3048,58 @@ describe("AccountingScreen", () => {
     };
     vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([approvalWorkflowSummary]);
     vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
-    vi.mocked(api.getLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
-    vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValueOnce([]);
+    vi.mocked(api.getLedgerCloseManagementPeriodPlan)
+      .mockResolvedValueOnce(closePlan)
+      .mockResolvedValue(queuedClosePlan);
+    vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValue([]);
     vi.mocked(api.configureLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
+    vi.mocked(api.lockLedgerCloseManagementPeriod).mockResolvedValueOnce({
+      isLocked: false,
+      plan: queuedClosePlan,
+      transition: null,
+      issues: []
+    });
     vi.mocked(api.createLedgerCloseManagementLateAdjustment).mockResolvedValueOnce(lateAdjustmentPlan);
 
     await renderAccountingScreen(data, "/accounting");
 
     const cockpit = await screen.findByRole("region", { name: "Accounting close and report package certification cockpit" });
     expect(await within(cockpit).findByText("$1,000 USD or 1% review by Controller")).toBeInTheDocument();
+    const closingEntriesGate = within(cockpit).getByRole("region", { name: "Post closing entries gate" });
+    expect(within(closingEntriesGate).getByText("Required")).toBeInTheDocument();
+    const netIncomeRoll = within(closingEntriesGate).getByText("Net-income roll").parentElement;
+    expect(netIncomeRoll).not.toBeNull();
+    expect(within(netIncomeRoll!).getByText("+$1,500.00 USD")).toBeInTheDocument();
+    expect(within(closingEntriesGate).getByText("Posting required before lock")).toBeInTheDocument();
+    const scopedBalances = within(closingEntriesGate).getByRole("table", { name: "Scoped temporary-account balances" });
+    expect(within(scopedBalances).getByText("Advisory fee revenue (ADV-FEE)")).toBeInTheDocument();
+    expect(within(scopedBalances).getByText("Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit")).toBeInTheDocument();
+    const queueClosingEntriesButton = within(closingEntriesGate).getByRole("button", { name: "Queue closing entries" });
+    expect(queueClosingEntriesButton).toBeEnabled();
+    expect(within(cockpit).getByRole("button", { name: "Lock period" })).toBeDisabled();
+
+    await user.click(queueClosingEntriesButton);
+
+    expect(await within(cockpit).findByText("Queued closing entries for 2026-05; state is Draft queued.")).toBeInTheDocument();
+    expect(api.lockLedgerCloseManagementPeriod).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-approval-1",
+      expectedWorkflowVersion: 12,
+      actor: "browser-accounting-controller",
+      rationale: "Prepare closing entries for close period 2026-05 before period lock.",
+      correlationId: "browser-close-period-closing-entries-workflow-approval-1",
+      prepareClosingEntriesOnly: true,
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/closing-entry-preparation/workflow-approval-1",
+        "evidence://close-package/workflow/workflow-approval-1/period/2026-05/book/book-alpha/closing-entry-preparation"
+      ])
+    }));
+    await waitFor(
+      () => expect(within(
+        within(cockpit).getByRole("region", { name: "Post closing entries gate" })
+      ).getByRole("button", { name: "Queue closing entries" })).toBeDisabled(),
+      { timeout: 5_000 }
+    );
+    expect(within(cockpit).getByRole("button", { name: "Lock period" })).toBeDisabled();
     await waitFor(() => expect(screen.getByRole("button", { name: "Retain close setup" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Retain close setup" }));
     expect(await within(cockpit).findByText("Retained close-plan setup for 2026-05.")).toBeInTheDocument();
@@ -2950,6 +3137,238 @@ describe("AccountingScreen", () => {
         "browser://accounting/close/materiality-review/workflow-approval-1"
       ])
     }));
+  });
+
+  it("runs retained daily valuation schedule, posting, and blocked-retry commands through typed endpoints", async () => {
+    vi.clearAllMocks();
+    const user = userEvent.setup();
+    const ledgerBookId = "11111111-1111-1111-1111-111111111111";
+    const periodId = "22222222-2222-2222-2222-222222222222";
+    const journalEntryIds = [
+      "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+      "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+    ];
+    const evidenceLink = {
+      evidenceId: "daily-valuation-schedule-evidence",
+      label: "Daily valuation schedule evidence",
+      route: `/api/workstation/evidence/subjects/accounting-record/daily-valuation/ledger-book/${ledgerBookId}/${periodId}`,
+      source: "daily-valuation-scheduler",
+      capturedAtUtc: "2026-06-01T01:00:00Z"
+    };
+    let currentSchedule: DailyValuationScheduleWorkItem = {
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      currency: "USD",
+      actor: "valuation-scheduler",
+      ledgerBookId,
+      periodId,
+      nextRunAtUtc: "2026-06-02T01:00:00Z",
+      positions: [],
+      policyId: "daily-close-policy",
+      policyName: "Approved daily close marks",
+      valuationMethod: "ClosingPrice",
+      policyApprovedBy: "controller",
+      policyApprovedAtUtc: "2026-05-01T00:00:00Z",
+      reason: "Retained daily close valuation schedule.",
+      isEnabled: true,
+      entityId: "entity-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      state: "Scheduled",
+      evidenceLinks: [evidenceLink],
+      blockers: [],
+      journalEntryIds: []
+    };
+    const buildCockpit = (
+      state: NonNullable<PrivateCapitalCloseCockpit["dailyValuationStatus"]>
+    ): PrivateCapitalCloseCockpit => ({
+      fundProfileId: "fund-alpha",
+      ledgerBookId,
+      fundAccountId: "fund-account-alpha",
+      periodId,
+      entityId: "entity-alpha",
+      projectedAtUtc: "2026-06-01T05:00:00Z",
+      cockpitRoute: "/accounting",
+      overallStatus: state.state === "Posted" ? "Ready" : state.state === "Blocked" ? "Blocked" : "ReviewRequired",
+      isReadyToClose: state.state === "Posted",
+      readinessScore: state.state === "Posted" ? 100 : 75,
+      workflowCount: 1,
+      fundEventCount: 0,
+      capitalAccountCount: 0,
+      reportOutputCount: 0,
+      deliveredReportOutputCount: 0,
+      readyLaneCount: state.state === "Posted" ? 1 : 0,
+      blockedLaneCount: state.state === "Blocked" ? 1 : 0,
+      lanes: [],
+      workflows: [],
+      blockers: [],
+      nextActions: [],
+      liveCapabilities: [],
+      plannedCapabilities: [],
+      dailyValuationStatus: state
+    });
+    const scheduledStatus: NonNullable<PrivateCapitalCloseCockpit["dailyValuationStatus"]> = {
+      scheduleId: currentSchedule.scheduleId,
+      fundProfileId: currentSchedule.fundProfileId,
+      ledgerBookId,
+      periodId,
+      isConfigured: true,
+      isEnabled: true,
+      nextRunAtUtc: currentSchedule.nextRunAtUtc,
+      lastRunAtUtc: null,
+      state: "Scheduled",
+      summary: "Daily valuation is scheduled.",
+      journalEntryId: null,
+      evidenceLinks: [evidenceLink],
+      blockers: [],
+      journalEntryIds: [],
+      batchCorrelationId: null,
+      entityId: "entity-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha"
+    };
+    const draftReadyStatus = {
+      ...scheduledStatus,
+      state: "DraftReady" as const,
+      summary: "Two retained valuation drafts are ready.",
+      journalEntryId: journalEntryIds[0],
+      journalEntryIds,
+      batchCorrelationId: "daily-valuation:fund-alpha:2026-06-02"
+    };
+    const blockedStatus = {
+      ...draftReadyStatus,
+      state: "Blocked" as const,
+      summary: "One of two retained valuation drafts posted before correction was required.",
+      blockers: ["Draft correction is required before retry."]
+    };
+    const postedStatus = {
+      ...blockedStatus,
+      state: "Posted" as const,
+      summary: "Both retained valuation drafts posted.",
+      blockers: []
+    };
+    let currentCockpit = buildCockpit(scheduledStatus);
+
+    vi.mocked(api.getPrivateCapitalCloseCockpit).mockImplementation(async () => currentCockpit);
+    vi.mocked(api.listDailyValuationSchedules).mockImplementation(async () => [currentSchedule]);
+    vi.mocked(api.configureDailyValuationSchedule).mockImplementation(async (request) => {
+      currentSchedule = { ...request, state: "Scheduled" };
+      return currentSchedule;
+    });
+    vi.mocked(api.runDueDailyValuationSchedules).mockImplementation(async () => {
+      currentSchedule = {
+        ...currentSchedule,
+        state: "DraftReady",
+        journalEntryId: journalEntryIds[0],
+        journalEntryIds,
+        batchCorrelationId: draftReadyStatus.batchCorrelationId
+      };
+      currentCockpit = buildCockpit(draftReadyStatus);
+      return {
+        evaluatedAtUtc: "2026-06-02T01:00:00Z",
+        runs: [{
+          scheduleId: currentSchedule.scheduleId,
+          scheduledForUtc: "2026-06-02T01:00:00Z",
+          state: "DraftReady",
+          summary: "Two retained valuation drafts are ready.",
+          journalEntryId: journalEntryIds[0],
+          blockers: [],
+          journalEntryIds,
+          batchCorrelationId: draftReadyStatus.batchCorrelationId
+        }]
+      };
+    });
+    vi.mocked(api.approveAndPostDailyValuationBatch)
+      .mockImplementationOnce(async () => {
+        currentSchedule = { ...currentSchedule, state: "Blocked", blockers: blockedStatus.blockers };
+        currentCockpit = buildCockpit(blockedStatus);
+        return {
+          scheduleId: currentSchedule.scheduleId,
+          batchCorrelationId: draftReadyStatus.batchCorrelationId!,
+          isComplete: false,
+          journalEntryIds,
+          postedJournalEntryIds: [journalEntryIds[0]],
+          blockers: blockedStatus.blockers
+        };
+      })
+      .mockImplementationOnce(async () => {
+        currentSchedule = { ...currentSchedule, state: "Posted", blockers: [] };
+        currentCockpit = buildCockpit(postedStatus);
+        return {
+          scheduleId: currentSchedule.scheduleId,
+          batchCorrelationId: draftReadyStatus.batchCorrelationId!,
+          isComplete: true,
+          journalEntryIds,
+          postedJournalEntryIds: journalEntryIds,
+          blockers: []
+        };
+      });
+
+    await renderAccountingScreen(
+      data,
+      `/accounting?fundProfileId=fund-alpha&ledgerBookId=${ledgerBookId}&periodId=${periodId}`
+    );
+
+    const commandCenter = await screen.findByRole("region", { name: "CFO and controller close command center" });
+    const configureButton = await within(commandCenter).findByRole("button", {
+      name: "Configure the server-retained daily valuation schedule for the current close scope"
+    });
+    const runDueButton = within(commandCenter).getByRole("button", {
+      name: "Run due daily valuation schedules for the current tenant scope"
+    });
+    expect(configureButton).toBeEnabled();
+    expect(runDueButton).toBeEnabled();
+
+    await user.click(configureButton);
+
+    expect(await within(commandCenter).findByText(`Configured daily valuation schedule daily-fund-alpha for ${currentSchedule.nextRunAtUtc}.`)).toBeInTheDocument();
+    expect(api.configureDailyValuationSchedule).toHaveBeenCalledWith(expect.objectContaining({
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      ledgerBookId,
+      periodId,
+      entityId: "entity-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      policyId: "daily-close-policy",
+      actor: "close-cockpit-operator"
+    }));
+
+    await user.click(within(commandCenter).getByRole("button", {
+      name: "Run due daily valuation schedules for the current tenant scope"
+    }));
+
+    expect(api.runDueDailyValuationSchedules).toHaveBeenCalledWith();
+    expect(await within(commandCenter).findByText(/finished in DraftReady/)).toBeInTheDocument();
+    const approveButton = await within(commandCenter).findByRole("button", {
+      name: "Approve and post the complete retained daily valuation batch"
+    });
+    await user.click(approveButton);
+
+    expect(await within(commandCenter).findByText(/batch remains blocked: Draft correction is required before retry/)).toBeInTheDocument();
+    expect(api.approveAndPostDailyValuationBatch).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      notes: "Approved the complete retained daily valuation batch from the controller close cockpit.",
+      evidenceLinks: [evidenceLink.route]
+    }));
+    const retryButton = await within(commandCenter).findByRole("button", {
+      name: "Correct and retry the incomplete retained daily valuation batch"
+    });
+    await user.click(retryButton);
+
+    expect(await within(commandCenter).findByText(/Retried and posted all 2 daily valuation drafts/)).toBeInTheDocument();
+    expect(api.approveAndPostDailyValuationBatch).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      notes: "Retried the incomplete retained daily valuation batch from the controller close cockpit."
+    }));
+    expect(api.getPrivateCapitalCloseCockpit).toHaveBeenCalledTimes(5);
+    expect(api.listDailyValuationSchedules).toHaveBeenCalledTimes(5);
   });
 
   it("scopes the close command center workflow lookup to route fund and period", async () => {
@@ -3008,14 +3427,18 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Accounting case workbench" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting case queue" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Selected accounting case" })).toBeInTheDocument();
+    const selectedCase = screen.getByRole("region", { name: "Selected accounting case" });
+    expect(selectedCase).toBeInTheDocument();
+    expect(selectedCase).not.toHaveTextContent("run-42");
+    const caseQueue = screen.getByRole("region", { name: "Accounting case queue" });
+    expect(caseQueue).not.toHaveTextContent("LEDGER_VALIDATION_REQUIRED");
     expect(screen.getByRole("region", { name: "Selected case evidence and actions" })).toBeInTheDocument();
     // The recovery navigator is replaced by the route tab strip in the header.
     const routeTabs = screen.getByRole("tablist", { name: "Accounting routes" });
     expect(within(routeTabs).getByRole("tab", { name: "Close" })).toHaveAttribute("aria-selected", "true");
     expect(within(routeTabs).getByRole("tab", { name: "Reconciliation" })).toBeInTheDocument();
     expect(within(routeTabs).getByRole("tab", { name: "Adjustments" })).toBeInTheDocument();
-    expect(within(routeTabs).getByRole("tab", { name: "Reports" })).toBeInTheDocument();
+    expect(within(routeTabs).getByRole("tab", { name: "Configure" })).toBeInTheDocument();
     fireEvent.click(screen.getByText("System details"));
     const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
     expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
@@ -3170,11 +3593,33 @@ describe("AccountingScreen", () => {
     expect(screen.getAllByText("Distribution").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Security").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toHaveAttribute(
+      "title",
+      "Run Validate on the current draft before approval submission."
+    );
+    expect(screen.getByText("Validation has not completed for the current draft. Use Validate before approval submission.")).toBeInTheDocument();
     expect(api.getManualJournalEntryWorkbench).toHaveBeenCalledWith({
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-alpha"
     });
+  });
+
+  it("presents retained evidence links as approval support without claiming evidence is missing", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({
+      ...manualJournalWorkbench,
+      drafts: [{
+        ...manualJournalDraft,
+        evidenceAttachments: []
+      }]
+    });
+
+    await renderAccountingScreen(data, "/accounting/journal-entries");
+
+    expect(screen.getByText("Retained evidence link 1")).toBeInTheDocument();
+    expect(screen.getByText("Available to validation and approval controls.")).toBeInTheDocument();
+    expect(screen.queryByText(/No source evidence is attached yet/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
   });
 
   it("applies manual journal lifecycle transitions through the shared endpoint and renders audit evidence", async () => {
@@ -3683,6 +4128,7 @@ describe("AccountingScreen", () => {
       evidenceLinks: request.evidenceLinks,
       evidenceAttachments: [request.attachment]
     }));
+    vi.mocked(api.validateManualJournalEntryDraft).mockImplementationOnce((request) => Promise.resolve(request.draft));
 
     await renderAccountingScreen(data, "/accounting/journal-entries");
 
@@ -3709,7 +4155,10 @@ describe("AccountingScreen", () => {
         evidenceKind: "SourceDocument"
       })
     }));
-    expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit approval" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Validate" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled());
+    expect(screen.getByText("Validation is current for this draft and no issues were returned.")).toBeInTheDocument();
   });
 
   it("renders approvals as a dedicated workstream and posts approval decisions", async () => {
@@ -3726,11 +4175,18 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/approvals?approvalId=approval-close-1");
 
     expect(await screen.findByRole("heading", { name: "Approval queue and audit gate" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Accounting approval queue" })).toHaveTextContent("2026-05");
-    expect(screen.getByRole("region", { name: "Selected approval detail" })).toHaveTextContent("approval-close-1");
-    expect(screen.getByRole("region", { name: "Selected approval detail" })).toHaveTextContent("ops.controller");
+    expect(screen.getByRole("heading", { name: "Approvals", level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
+    const approvalQueue = screen.getByRole("region", { name: "Accounting approval queue" });
+    expect(approvalQueue).toHaveTextContent("2026-05");
+    expect(approvalQueue).toHaveTextContent("Jun 1, 12:00 UTC");
+    expect(approvalQueue).not.toHaveTextContent("workflow-close-1");
+    const workflowIdentifiers = screen.getByText("Workflow identifiers").closest("details");
+    expect(workflowIdentifiers).not.toHaveAttribute("open");
+    expect(within(workflowIdentifiers!).getByText("approval-close-1")).toBeInTheDocument();
+    for (const metadataLabel of screen.getAllByText("Audit metadata")) {
+      expect(metadataLabel.closest("details")).not.toHaveAttribute("open");
+    }
     expect(screen.getByRole("region", { name: "Approval audit trail" })).toHaveTextContent("Submitted for controller sign-off.");
 
     await user.click(screen.getByRole("button", { name: "Approve" }));
@@ -3740,6 +4196,44 @@ describe("AccountingScreen", () => {
       reportPackId: "report-pack-2026-05",
       rationale: "Approved from Accounting approvals workstream."
     }));
+  });
+
+  it("uses workflow status when an approval record has not been created yet", async () => {
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValue({
+      ...approvalWorkflowDetail,
+      approvals: []
+    });
+
+    await renderAccountingScreen(data, "/accounting/approvals");
+
+    const selectedDetail = await screen.findByRole("region", { name: "Selected approval detail" });
+    expect(selectedDetail).toHaveTextContent("Workflow statePending");
+    expect(selectedDetail).toHaveTextContent("Approval decisionNot submitted");
+    expect(selectedDetail).not.toHaveTextContent("No approval row");
+    const identifiers = within(selectedDetail).getByText("Workflow identifiers").closest("details");
+    expect(identifiers).not.toHaveAttribute("open");
+    expect(within(identifiers!).getByText("Not yet created")).toBeInTheDocument();
+  });
+
+  it("surfaces blocked report readiness as the effective approval workflow state", async () => {
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValue({
+      ...approvalWorkflowDetail,
+      reportPackReadiness: {
+        ...approvalWorkflowDetail.reportPackReadiness,
+        isReady: false,
+        blockingReason: "Reconciliation evidence is incomplete."
+      }
+    });
+
+    await renderAccountingScreen(data, "/accounting/approvals");
+
+    const queue = await screen.findByRole("region", { name: "Accounting approval queue" });
+    expect(queue).toHaveTextContent("Blocked");
+    const selectedDetail = screen.getByRole("region", { name: "Selected approval detail" });
+    expect(selectedDetail).toHaveTextContent("Workflow stateBlocked");
+    expect(selectedDetail).toHaveTextContent("Approval decisionSubmitted");
   });
 
   it("renders reconciliation strong panels with view-model presentation state", async () => {
@@ -3779,6 +4273,10 @@ describe("AccountingScreen", () => {
       "/reporting/evidence?subjectKind=accounting-exceptions&subjectId=active"
     );
     expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).not.toHaveTextContent("run-42:cash");
+    const breakMetadata = screen.getByText("Break metadata").closest("details");
+    expect(breakMetadata).not.toHaveAttribute("open");
+    expect(within(breakMetadata!).getByText("run-42:cash")).toBeInTheDocument();
   });
 
   it("renders calibration tolerance profiles as selectable row-detail evidence", async () => {
@@ -3883,7 +4381,8 @@ describe("AccountingScreen", () => {
     expect(table).toHaveTextContent("Northern Trust");
     expect(table).toHaveTextContent("Fund A - Prime");
     expect(table).toHaveTextContent("2026-04");
-    expect(table).toHaveTextContent("ReviewRequired");
+    expect(table).toHaveTextContent("Review required");
+    expect(table).not.toHaveTextContent("ReviewRequired");
     expect(table).toHaveTextContent("24");
     expect(screen.getByRole("tab", { name: /Overview tab for statement run run-42/ })).toBeEnabled();
     expect(screen.getByRole("tab", { name: /Breaks & Cases tab for statement run run-42/ })).toHaveTextContent("2");
@@ -3938,7 +4437,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/ledger");
 
-    const table = await screen.findByRole("region", { name: "Primary trial balance lines for run-42" });
+    const table = await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
     expect(table).toBeInTheDocument();
     const cashRow = screen.getByRole("row", { name: /Cash Asset\. Primary basis/ });
     const financingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
@@ -3983,7 +4482,7 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/ledger");
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
   });
 
   it("renders structured trial-balance api-errors with endpoint and validation detail", async () => {
@@ -4106,11 +4605,11 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(reportingData, "/accounting/reporting");
 
-    // The reporting workstream has its own tab: the configure "Reports" tab
+    // The reporting workstream has its own tab: the Configure tab
     // must not claim selection here, since activating it would navigate to
     // /accounting/configure and hide this reporting-profile band.
     expect(screen.getByRole("tab", { name: "Delivery evidence", selected: true })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Reports", selected: false })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Configure", selected: false })).toBeInTheDocument();
 
     expect(screen.getByText("Report packet posture")).toBeInTheDocument();
     expect(screen.getAllByText(/Board, Audit/).length).toBeGreaterThan(0);
@@ -4133,24 +4632,73 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByRole("heading", { name: "Security & Instrument Explorer" })).toBeInTheDocument();
     expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Accounting");
-    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Security Master instruments");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Security Master");
     expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Instrument proof");
     expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("No selection");
     expect(screen.getByLabelText("Security & Instrument Explorer proof actions")).toHaveTextContent("Open search");
     expect(screen.getAllByText("Security coverage").length).toBeGreaterThan(0);
   });
 
-  it("announces security search failures as alerts", async () => {
+  it("synchronizes a resolved explorer instrument with the Security Master command deck", async () => {
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    const sourceRow = explorer.rows[0];
+    const selectedRow = {
+      ...sourceRow,
+      recordId: "security-instrument:sec-dev-001",
+      detail: { ...sourceRow.detail, recordId: "security-instrument:sec-dev-001" }
+    };
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({
+      ...explorer,
+      sourceState: "No-host fixture projection from Security Master instrument coverage.",
+      rows: [selectedRow],
+      selectedRecord: selectedRow.detail
+    });
+
+    await renderAccountingScreen(data, "/accounting/security-master");
+
+    await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-dev-001"));
+    const commandDeck = screen.getByRole("region", { name: "Security Master command deck" });
+    expect(commandDeck).toHaveTextContent("Selected security");
+    expect(commandDeck).not.toHaveTextContent("sec-dev-001");
+    const explorerSummary = screen.getByLabelText("Explorer summary");
+    await waitFor(() => expect(explorerSummary).toHaveTextContent("Review required"));
+    expect(explorerSummary).not.toHaveTextContent("CoverageReady");
+    expect(screen.getByText("Demo data: Security Master instrument coverage is loaded for review.")).toBeInTheDocument();
+    expect(screen.queryByText(/No-host fixture projection/i)).not.toBeInTheDocument();
+  });
+
+  it("preserves an in-progress security query while explorer metadata loads", async () => {
     const user = userEvent.setup();
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    let resolveExplorer!: (value: typeof explorer) => void;
+    vi.mocked(api.getFinancialRecordExplorer).mockImplementationOnce(() => new Promise((resolve) => {
+      resolveExplorer = resolve;
+    }));
+
+    await renderAccountingScreen(data, "/accounting/security-master");
+
+    const searchInput = screen.getByPlaceholderText("Search securities…");
+    await user.type(searchInput, "AAPL");
+    expect(screen.getByPlaceholderText("Search securities…")).toBe(searchInput);
+    expect(screen.getByPlaceholderText("Search securities…")).toHaveValue("AAPL");
+
+    resolveExplorer(explorer);
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Search securities…")).toHaveValue("AAPL");
+    });
+  });
+
+  it("announces security search failures as alerts", async () => {
     vi.mocked(api.searchSecurities).mockRejectedValueOnce(new Error("Provider offline"));
 
     await renderAccountingScreen(data, "/accounting/security-master");
 
-    await user.type(screen.getByLabelText("Search securities"), "AAPL");
+    enterAppleSecuritySearch();
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent("Security search failed: Provider offline");
-    });
+    }, { timeout: SECURITY_MASTER_SEARCH_TIMEOUT_MS });
   });
 
   it("accepts and renders alias rows inside identity drill-in for accounting workflows", async () => {
@@ -4214,8 +4762,8 @@ describe("AccountingScreen", () => {
     });
     await renderAccountingScreen(data, "/accounting/security-master");
 
-    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+    enterAppleSecuritySearch();
+    const securityRow = await findAppleSecuritySearchRow();
     expect(securityRow).toHaveAttribute("aria-controls", "security-master-identity-detail");
     expect(securityRow).toHaveAttribute("aria-expanded", "false");
     await user.click(securityRow);
@@ -4229,7 +4777,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Identifiers for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByRole("row", {
-      name: "Ticker AAPL, Primary, provider Bloomberg, valid 2024-01-01 -> active"
+      name: "Ticker AAPL, Primary, provider Bloomberg, valid Jan 1, 2024 – active"
     })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Aliases for Apple Inc." })).toBeInTheDocument();
     expect(screen.getByText("AAPL.OQ")).toBeInTheDocument();
@@ -4241,8 +4789,8 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/security-master");
 
-    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+    enterAppleSecuritySearch();
+    const securityRow = await findAppleSecuritySearchRow();
     await user.click(securityRow);
     await user.click(screen.getByRole("tab", { name: /^Reference data\b/i }));
 
@@ -4265,8 +4813,8 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/security-master?tab=reference");
 
-    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+    enterAppleSecuritySearch();
+    await user.click(await findAppleSecuritySearchRow());
 
     expect(screen.getByRole("tab", { name: /^Reference data\b/i })).toHaveAttribute("aria-selected", "true");
     expect(await screen.findByRole("heading", { name: "Multi-asset reference data" })).toBeInTheDocument();
@@ -4277,8 +4825,8 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/security-master?tab=unknown");
 
-    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+    enterAppleSecuritySearch();
+    await user.click(await findAppleSecuritySearchRow());
 
     expect(screen.getByRole("tab", { name: /^Identity\b/i })).toHaveAttribute("aria-selected", "true");
     expect(document.getElementById("security-master-identity-tab-panel")).not.toHaveAttribute("hidden");
@@ -4291,8 +4839,8 @@ describe("AccountingScreen", () => {
       "/accounting/security-master?fundAccountId=fund-alpha"
     );
 
-    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+    enterAppleSecuritySearch();
+    const securityRow = await findAppleSecuritySearchRow();
     await user.click(securityRow);
     await waitFor(() => expect(securityRow).toHaveAttribute("aria-selected", "true"));
 
@@ -4358,16 +4906,20 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/security-master");
 
-    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    const securityRow = await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." });
+    enterAppleSecuritySearch();
+    const securityRow = await findAppleSecuritySearchRow();
 
     securityRow.focus();
     await user.keyboard("[Enter]");
 
     expect(securityRow).toHaveAttribute("aria-controls", "security-master-identity-detail");
     expect(securityRow).toHaveAttribute("aria-expanded", "true");
-    expect(await screen.findByRole("region", { name: "Security identity detail for Apple Inc." })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Security detail page" })).toHaveTextContent("sec-1 · Equity");
+    const identitySummary = await screen.findByRole("region", { name: "Security identity detail for Apple Inc." });
+    expect(identitySummary).not.toHaveTextContent("sec-1");
+    const identityReferences = screen.getByText("Identity record references").closest("details");
+    expect(identityReferences).not.toHaveAttribute("open");
+    expect(within(identityReferences!).getByText("sec-1")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Security detail page" })).toHaveTextContent("Equity · Active");
     expect(screen.getByRole("toolbar", { name: "Security detail sections for Apple Inc." })).toHaveTextContent("Schedules");
     expect(screen.getByText("Security details")).toBeInTheDocument();
     expect(await screen.findByText("2 hidden overrides")).toBeInTheDocument();
@@ -4414,14 +4966,14 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/security-master");
 
-    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+    enterAppleSecuritySearch();
+    await user.click(await findAppleSecuritySearchRow());
     await user.click(screen.getByRole("tab", { name: /^Schedules\b/i }));
 
     const table = await screen.findByRole("treegrid", { name: "Cash-flow and factor schedules for sec-1" });
     expect(table).toHaveTextContent("sched-1-coupon");
-    const couponRow = screen.getByRole("row", { name: "Inspect schedule event Coupon for sec-1 on 2026-05-15" });
-    const principalRow = screen.getByRole("row", { name: "Inspect schedule event Principal for sec-1 on 2026-11-15" });
+    const couponRow = screen.getByRole("row", { name: "Inspect schedule event Coupon for sec-1 on May 15, 2026" });
+    const principalRow = screen.getByRole("row", { name: "Inspect schedule event Principal for sec-1 on Nov 15, 2026" });
     expect(couponRow).toHaveAttribute("aria-selected", "true");
     expect(couponRow).toHaveAttribute("aria-controls", "security-schedule-detail-panel");
     expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Coupon on sec-1" })).toHaveTextContent("Posted");
@@ -4480,8 +5032,8 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/security-master");
 
-    await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
-    await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
+    enterAppleSecuritySearch();
+    await user.click(await findAppleSecuritySearchRow());
     await user.click(screen.getByRole("tab", { name: /^Schedules\b/i }));
 
     const table = await screen.findByRole("treegrid", { name: "Corporate actions for sec-1" });
@@ -4512,6 +5064,9 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/security-master");
 
     expect(await screen.findByRole("group", { name: /Identifier conflict conflict-1/i })).toBeInTheDocument();
+    const conflictSummary = within(screen.getByLabelText("Explorer summary")).getByText("Open conflicts").parentElement;
+    expect(conflictSummary).toHaveTextContent("1");
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("1 open");
     expect(screen.getByText("Bloomberg -> security sec-1")).toBeInTheDocument();
     expect(screen.getByText("Refinitiv -> security sec-2")).toBeInTheDocument();
 

@@ -1,4 +1,5 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { createElement, StrictMode, type PropsWithChildren } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildParameterPanelState,
@@ -491,6 +492,21 @@ describe("Quant Lab view model helpers", () => {
       inputType: "checkbox"
     });
     expect(result.current.parameterPhase).toBe("ready");
+  });
+
+  it("finishes the initial parameter scan under React StrictMode", async () => {
+    const services: QuantLabServices = {
+      getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
+      extractParameters: vi.fn().mockResolvedValue({ parameters: [] }),
+      runScript: vi.fn<QuantLabServices["runScript"]>().mockResolvedValue({} as QuantRunResponse)
+    };
+    const wrapper = ({ children }: PropsWithChildren) => createElement(StrictMode, null, children);
+
+    const { result } = renderHook(() => useQuantLabScreenViewModel(services), { wrapper });
+
+    await waitFor(() => expect(result.current.parameterPhase).toBe("idle"));
+    expect(services.extractParameters).toHaveBeenCalled();
+    expect(result.current.parameterPanel.statusMessage).toBe("No runtime parameters detected in the current script.");
   });
 
   it("keeps completed run evidence labeled when source changes before completion", async () => {

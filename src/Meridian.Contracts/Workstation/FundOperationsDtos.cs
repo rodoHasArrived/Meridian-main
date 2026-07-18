@@ -29,7 +29,12 @@ public sealed record FundOperationsNavigationContext(
     Guid? AccountId = null,
     string? RunId = null,
     string? EvidenceSubject = null,
-    string? EvidenceSubjectTarget = null);
+    string? EvidenceSubjectTarget = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    Guid? LedgerBookId = null,
+    string? PeriodId = null,
+    string? EntityId = null);
 
 /// <summary>
 /// Summary cards shown at the top of the Accounting fund operations workspace.

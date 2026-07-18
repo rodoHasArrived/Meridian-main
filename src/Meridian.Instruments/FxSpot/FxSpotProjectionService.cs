@@ -3,30 +3,23 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.FxSpot;
 
-public sealed class FxSpotProjectionService : IFxSpotReferenceService
+public sealed class FxSpotProjectionService
+    : InstrumentProjectionServiceBase<FxSpotProjectionRow, FxSpotReferenceDto>, IFxSpotReferenceService
 {
-    private readonly ISecurityMasterStore _securityMasterStore;
     private readonly IFxSpotReferenceProjectionStore _projectionStore;
 
     public FxSpotProjectionService(
         ISecurityMasterStore securityMasterStore,
         IFxSpotReferenceProjectionStore projectionStore)
+        : base(securityMasterStore)
     {
-        _securityMasterStore = securityMasterStore;
         _projectionStore = projectionStore;
     }
 
-    public async Task<FxSpotReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
-    {
-        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "FxSpot", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
+    protected override string AssetClass => "FxSpot";
 
-        var row = await _projectionStore.GetFxSpotAsync(securityId, ct).ConfigureAwait(false);
-        return row is null ? null : MapRow(row);
-    }
+    protected override Task<FxSpotProjectionRow?> FetchRowAsync(Guid securityId, CancellationToken ct)
+        => _projectionStore.GetFxSpotAsync(securityId, ct);
 
     public async Task<FxSpotReferenceDto?> GetByPairCodeAsync(string pairCode, CancellationToken ct = default)
     {
@@ -39,18 +32,10 @@ public sealed class FxSpotProjectionService : IFxSpotReferenceService
         return row is null ? null : MapRow(row);
     }
 
-    public async Task<IReadOnlyList<FxSpotReferenceDto>> GetByCurrencyAsync(string currency, CancellationToken ct = default)
-    {
-        if (string.IsNullOrWhiteSpace(currency))
-        {
-            return Array.Empty<FxSpotReferenceDto>();
-        }
+    public Task<IReadOnlyList<FxSpotReferenceDto>> GetByCurrencyAsync(string currency, CancellationToken ct = default)
+        => QueryByTermAsync(currency, _projectionStore.GetByCurrencyAsync, ct, toUpperInvariant: true);
 
-        var rows = await _projectionStore.GetByCurrencyAsync(currency.Trim().ToUpperInvariant(), ct).ConfigureAwait(false);
-        return rows.Select(MapRow).ToArray();
-    }
-
-    private static FxSpotReferenceDto MapRow(FxSpotProjectionRow row)
+    protected override FxSpotReferenceDto MapRow(FxSpotProjectionRow row)
         => new(
             row.SecurityId,
             row.DisplayName,

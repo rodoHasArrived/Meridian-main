@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Backtesting
@@ -32,6 +32,11 @@ This layer should keep simulation behavior isolated from live execution while pr
 - Runtime and replay implementation files for historical simulation.
 
 ## Important workflows
+
+Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
+total basis by the projected monetary principal, and then recompute per-unit basis. The historical
+adjuster therefore uses the same held-face/factor economics as the governed production proof while
+remaining a rebuildable simulation rather than an accounting write path.
 
 Use this module for strategy backtests, simulation runtime behavior, and backtesting evidence.
 Backtest Studio engines must return canonical SDK `BacktestResult` instances so native Meridian and

@@ -7,6 +7,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Application;
@@ -3436,7 +3437,6 @@ public sealed class OperationsContinuityWorkflowServiceTests
             registerLedgerJournalStore ? ledgerJournalStore ?? new RecordingLedgerJournalStore() : null,
             securityMasterQueryService: new StaticSecurityMasterQueryService(securityStatuses ?? DefaultAuthoritativeSecurityStatuses()));
     }
-
 
     private static IReadOnlyDictionary<Guid, SecurityStatusDto> DefaultAuthoritativeSecurityStatuses() =>
         new Dictionary<Guid, SecurityStatusDto>

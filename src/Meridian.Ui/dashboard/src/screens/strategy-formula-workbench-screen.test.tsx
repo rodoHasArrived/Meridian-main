@@ -10,6 +10,8 @@ describe("StrategyFormulaWorkbenchScreen", () => {
 
     expect(screen.getByRole("heading", { name: "Formula Workbench" })).toBeInTheDocument();
     expect(screen.getByText("Formula catalog is not connected")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Review provider connections required by Formula Workbench" }))
+      .toHaveAttribute("href", "/settings/providers");
     expect(screen.getByRole("link", { name: "Open Strategy workspace" })).toHaveAttribute("href", "/strategy");
     expect(screen.queryByRole("button", { name: "Run local strategy formula preview" })).not.toBeInTheDocument();
   });

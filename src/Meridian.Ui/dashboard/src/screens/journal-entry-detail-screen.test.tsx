@@ -94,6 +94,18 @@ describe("JournalEntryDetailScreen", () => {
     await renderScreen("/accounting/journal-entries/detail");
 
     expect(screen.getByText(/Open this page from a trial balance, ledger, or reconciliation row/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Journal Entries" })).toHaveAttribute("href", "/accounting/journal-entries");
+    expect(screen.getByRole("link", { name: "Open Ledger Explorer" })).toHaveAttribute("href", "/accounting/ledger");
+  });
+
+  it("fails closed when the governed journal source is unavailable", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockRejectedValueOnce(new Error("offline"));
+
+    await renderScreen("/accounting/journal-entries/detail?journalEntryId=manual-je-1");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Source unavailable");
+    expect(screen.queryByText("Manual close adjustment")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
   });
 
   it("renders full detail for a manual draft entry", async () => {
@@ -134,6 +146,12 @@ describe("JournalEntryDetailScreen", () => {
 
     expect(await screen.findByText("Summary-only entry")).toBeInTheDocument();
     expect(screen.getByText(/only the run-ledger summary is available/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Posting summary" })).toBeInTheDocument();
+    expect(screen.getAllByText("$500.00").length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: "Open in Ledger Explorer" })).toHaveAttribute(
+      "href",
+      "/accounting/ledger?runId=run-42"
+    );
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
@@ -143,8 +161,8 @@ describe("JournalEntryDetailScreen", () => {
 
     await renderScreen("/accounting/journal-entries/detail?journalEntryId=unknown-je&runId=run-42");
 
-    expect(await screen.findByText("Journal entry not found")).toBeInTheDocument();
-    expect(screen.getByText(/No journal entry matching "unknown-je" was found/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Journal entry not found" })).toBeInTheDocument();
+    expect(screen.getByText(/No matching journal entry was found/)).toBeInTheDocument();
   });
 
   it("renders a not-found state without a runId and does not call the run ledger fallback", async () => {
@@ -152,7 +170,7 @@ describe("JournalEntryDetailScreen", () => {
 
     await renderScreen("/accounting/journal-entries/detail?journalEntryId=unknown-je");
 
-    expect(await screen.findByText("Journal entry not found")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Journal entry not found" })).toBeInTheDocument();
     expect(api.getRunLedgerJournal).not.toHaveBeenCalled();
   });
 });

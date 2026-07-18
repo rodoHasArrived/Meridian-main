@@ -6,10 +6,14 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-06
+last_reviewed: 2026-07-15
 ---
 
 # src/Meridian.Wpf
+
+The desktop workstation is installed as part of the single Meridian product and opened
+on demand from the browser workstation. It is not a separate end-user package or Start
+Menu product.
 
 ## Purpose
 
@@ -186,6 +190,11 @@ report-line drill-throughs stay route-compatible with the browser workstation. R
 provenance rows also carry shared instrument, position or transaction, reconciliation, journal,
 report-line, evidence, and audit-link actions that WPF maps through the same view-model route
 resolver instead of desktop-local lineage rules.
+The generic selected-record field and relationship surfaces also carry factor evidence, holder
+role/book position, economic projection, posting command, approval, immutable journal, and
+ledger/report evidence identities resolved by UI Shared. WPF registers the shared factor projector
+for independent desktop composition but does not calculate factor economics or query the journal in
+the view model.
 
 The desktop shell includes a first-launch and Settings entry point for a sample-data Demo / Sample Tour. Starting the tour enables `FixtureModeDetector` demo mode, selects the connected sample scenario, and walks operators through Data/provider status, Portfolio records, Accounting reconciliation, retained evidence/audit context, Reporting readiness, and Settings. The global demo banner and the tour banner label the workflow as demo/sample data only so sample records remain visually distinct from provider-backed operational data.
 
@@ -374,6 +383,21 @@ evidence and provenance review. Its home chrome stays compact: the Daily Reporti
 puts the shared summary text, writer, approval, and delivery posture beside direct report-pack, run
 status, evidence, and export routes before the decision queue instead of rendering a separate
 page-level hero.
+The same Reporting shell now hosts a thin canonical governance workbench over shared reporting
+contracts and API routes. Desktop operators can round-trip exact template/version, fund/entity,
+book, period, as-of, accounting-basis, currency, consolidation, output, finality, schedule,
+evidence, dimension, and template-parameter inputs; inspect server-owned readiness blockers; and
+advance retained runs through `Draft -> Validated -> InReview -> Approved -> Released`. The WPF
+view model enables lifecycle commands only from caller-specific server `ActionAvailability` entries
+and submits their server-owned expected versions. Secure delivery similarly uses the server transport
+catalog and its explicit queue, grant-issuance, grant-revocation, and per-transport readiness decisions;
+the desktop keeps no transport allow-list and fails closed when either projection is unavailable. The
+one-time recipient link is accepted only when its bearer is fragment-scoped, is kept in memory only
+until the next distribution or run action, and never appears in retained delivery or grant-history
+rows. The
+server continues to own tenant scope, maker-checker authorization, certified snapshot and access-policy
+hashes, immutable artifact references, restatement-as-new-revision behavior, and release-gated secure
+distribution receipts.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured
@@ -661,6 +685,7 @@ Keep WPF views declarative and move loading, disabled, preview, empty-state, and
 behavior into view models. Do not duplicate product logic that belongs in shared UI services.
 When telemetry, latency, order-flow, or preview data is unavailable, show an explicit unmeasured or
 unavailable state rather than seeded sample numbers or plausible-looking derived metrics.
+Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports title, explanation, severity, and up to two actions for provider setup, import, selection, freshness, reconciliation, reporting, and fixture-data recovery paths.
 
 ## Related docs
 
@@ -668,4 +693,6 @@ unavailable state rather than seeded sample numbers or plausible-looking derived
 - `docs/screenshots/desktop/README.md` - maintained desktop screenshot evidence index consumed by the generated screen tracker.
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/development/wpf-implementation-notes.md`
+- `docs/reference/accounting-report-packs.md`
+- `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-module-index.md`

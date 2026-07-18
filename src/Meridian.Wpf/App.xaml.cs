@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -121,9 +122,22 @@ public partial class App : System.Windows.Application
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         WpfServices.LoggingService.Instance.LogInfo("WPF application startup beginning");
-        _launchArgs = e.Args;
-        var launchRequest = DesktopLaunchArguments.Parse(e.Args);
-        if (launchRequest.HasActions && WpfServices.SingleInstanceService.TrySendArgsToPrimary(e.Args, timeoutMs: 5000))
+        try
+        {
+            _launchArgs = await DesktopLaunchTicketClient.ResolveAsync(e.Args);
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogError(
+                $"Desktop launch ticket redemption failed: {ex.Message}");
+            _launchArgs = e.Args
+                .Where(arg => !arg.StartsWith("--launch-ticket=", StringComparison.OrdinalIgnoreCase) &&
+                              !arg.StartsWith("--host=", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+        }
+
+        var launchRequest = DesktopLaunchArguments.Parse(_launchArgs);
+        if (launchRequest.HasActions && WpfServices.SingleInstanceService.TrySendArgsToPrimary(_launchArgs, timeoutMs: 5000))
         {
             Shutdown();
             return;
@@ -142,13 +156,13 @@ public partial class App : System.Windows.Application
         // forward the launch args to it via named pipe and exit cleanly.
         if (!WpfServices.SingleInstanceService.Instance.TryAcquire())
         {
-            WpfServices.SingleInstanceService.SendArgsToPrimary(e.Args);
+            WpfServices.SingleInstanceService.SendArgsToPrimary(_launchArgs);
             Shutdown();
             return;
         }
 
         // Detect fixture mode from --fixture arg or MDC_FIXTURE_MODE env var
-        _isFixtureMode = DetectFixtureMode(e.Args);
+        _isFixtureMode = DetectFixtureMode(_launchArgs);
         ApplyRenderModeOverrides();
 
         // Configure the host with dependency injection

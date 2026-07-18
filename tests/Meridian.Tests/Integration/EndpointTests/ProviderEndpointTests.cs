@@ -34,7 +34,12 @@ public sealed class ProviderEndpointTests
         var json = await DeserializeAsync(response);
         json.Should().ContainKey("providers");
         json.Should().ContainKey("totalCount");
+        json.Should().ContainKey("registrationReport");
         json["totalCount"].GetInt32().Should().BeGreaterThan(0);
+        var registrationReport = json["registrationReport"];
+        registrationReport.ValueKind.Should().Be(JsonValueKind.Object);
+        registrationReport.TryGetProperty("isHealthy", out _).Should().BeTrue();
+        registrationReport.GetProperty("failures").ValueKind.Should().Be(JsonValueKind.Array);
     }
 
     [Fact]
@@ -55,6 +60,44 @@ public sealed class ProviderEndpointTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
         json.Should().ContainKey("providers");
+    }
+
+    #endregion
+
+    #region GET /api/providers/rate-limits
+
+    [Fact]
+    public async Task GetRateLimits_ReturnsTypedProviderSnapshots()
+    {
+        var response = await _client.GetAsync("/api/providers/rate-limits");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var json = await DeserializeAsync(response);
+        json.Should().ContainKey("providers");
+        json.Should().ContainKey("timestamp");
+        var providers = json["providers"];
+        providers.ValueKind.Should().Be(JsonValueKind.Array);
+        providers.GetArrayLength().Should().BeGreaterThan(0);
+        var provider = providers[0];
+        provider.TryGetProperty("provider", out _).Should().BeTrue();
+        provider.TryGetProperty("name", out _).Should().BeTrue();
+        provider.TryGetProperty("displayName", out _).Should().BeTrue();
+        provider.TryGetProperty("stateAvailable", out _).Should().BeTrue();
+        provider.TryGetProperty("resetAt", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetRateLimitHistory_StatesThatHistoryIsNotRetained()
+    {
+        var response = await _client.GetAsync("/api/providers/synthetic/rate-limit-history?hours=12");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var json = await DeserializeAsync(response);
+        json["provider"].GetString().Should().Be("synthetic");
+        json["periodHours"].GetInt32().Should().Be(12);
+        json["isAvailable"].GetBoolean().Should().BeFalse();
+        json["history"].GetArrayLength().Should().Be(0);
+        json["message"].GetString().Should().Contain("not retained");
     }
 
     #endregion

@@ -144,7 +144,6 @@ jobs:
           echo "safe_output_dir=$resolved" >> "$GITHUB_OUTPUT"
       - name: Capture web screenshots
         id: capture_web
-        continue-on-error: true
         env:
           OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
           ROUTES_CONFIG: ${{ inputs.config }}
@@ -187,7 +186,9 @@ jobs:
           fi
 
       - name: Upload screenshot artifacts
-        if: ${{ steps.capture_web.outcome == 'success' }}
+        # Upload whatever screenshots were captured even when some routes failed
+        # to render, so a partial run still surfaces the screens that worked.
+        if: ${{ always() }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: web-screenshots-${{ github.run_number }}
@@ -198,7 +199,7 @@ jobs:
       - name: Open screenshot refresh pull request
         if: ${{ steps.capture_web.outcome == 'success' }}
         continue-on-error: true
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: automation/web-screenshot-capture
           base: ${{ github.event.repository.default_branch }}

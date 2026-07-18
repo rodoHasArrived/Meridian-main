@@ -14,17 +14,20 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IBondReferenceService? _bondReferenceService;
     private readonly AssetObligationProjectionService _obligationProjectionService;
+    private readonly IInstrumentPositionProjectionStore? _positionProjectionStore;
 
     public AssetOperationsReadService(
         IAssetOperationsProjectionStore? projectionStore = null,
         ISecurityMasterQueryService? securityMasterQueryService = null,
         IBondReferenceService? bondReferenceService = null,
-        AssetObligationProjectionService? obligationProjectionService = null)
+        AssetObligationProjectionService? obligationProjectionService = null,
+        IInstrumentPositionProjectionStore? positionProjectionStore = null)
     {
         _projectionStore = projectionStore;
         _securityMasterQueryService = securityMasterQueryService;
         _bondReferenceService = bondReferenceService;
         _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService();
+        _positionProjectionStore = positionProjectionStore;
     }
 
     public async Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
@@ -34,22 +37,49 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
         var published = _projectionStore is null
             ? null
             : await _projectionStore.GetAsync(securityId, ct).ConfigureAwait(false);
+        AssetOperationsDetailDto detail;
         if (published is not null)
         {
-            return AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(published);
+            detail = AssetOperationsProjectionBuilder.WithTermsObligationsTimeline(published);
         }
-
-        var security = _securityMasterQueryService is null
-            ? null
-            : await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null)
+        else
         {
-            return null;
+            var security = _securityMasterQueryService is null
+                ? null
+                : await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return null;
+            }
+
+            detail = string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+                ? await BuildBondOperationsAsync(security, ct).ConfigureAwait(false)
+                : _obligationProjectionService.ProjectFromSecurityMaster(security);
         }
 
-        return string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
-            ? await BuildBondOperationsAsync(security, ct).ConfigureAwait(false)
-            : _obligationProjectionService.ProjectFromSecurityMaster(security);
+        if (_positionProjectionStore is null)
+        {
+            return detail;
+        }
+
+        var positions = await _positionProjectionStore
+            .GetSecurityAsync(securityId, ct)
+            .ConfigureAwait(false);
+        if (positions.InstrumentRoles.Count == 0 &&
+            positions.BookPositions.Count == 0 &&
+            positions.PositionEconomicStates.Count == 0 &&
+            positions.ProjectionLineages.Count == 0)
+        {
+            return detail;
+        }
+
+        return detail with
+        {
+            InstrumentRoles = positions.InstrumentRoles,
+            BookPositions = positions.BookPositions,
+            PositionEconomicStates = positions.PositionEconomicStates,
+            ProjectionLineages = positions.ProjectionLineages
+        };
     }
 
     public async Task<AssetOperationsReadinessDto?> GetReadinessAsync(Guid securityId, CancellationToken ct = default)

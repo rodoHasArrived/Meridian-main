@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Application
@@ -255,7 +255,11 @@ and UI presentation concerns in their owning layers.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
-  valuation evidence. Asset-class mapping, instrument-kind mapping, the profile catalog contract,
+  valuation evidence. The compatibility factor bridge delegates economics to Instruments, requires
+  held face, and posts scaled monetary principal rather than a dimensionless factor delta. It remains
+  an in-memory reconciliation bridge; governed production posting still uses the Financial
+  Operations candidate, independent approval, and durable journal path. Asset-class mapping,
+  instrument-kind mapping, the profile catalog contract,
   and seeded approved custom/private asset profile templates are owned by
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
   validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
@@ -378,7 +382,9 @@ and UI presentation concerns in their owning layers.
   `Meridian.Platform.Diagnostics`; Application composition and endpoints consume it with Core-owned
   redaction/masking helpers, Platform-owned error tracking, and friendly error formatting rather
   than Application-local utility services. Sample market-event
-  generation is registered from `Meridian.DataIntegration.Testing.SampleDataGenerator`. Canonical
+  generation is registered outside Production from
+  `Meridian.DataIntegration.Testing.SampleDataGenerator`; packaged production composition omits the
+  fixture generator entirely. Canonical
   symbol resolution is registered from `Meridian.Storage.Services.CanonicalSymbolRegistry`.
   API documentation model generation is registered from
   `Meridian.Platform.ApiDocumentation.ApiDocumentationService`.
@@ -407,7 +413,9 @@ and UI presentation concerns in their owning layers.
   startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
   `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
   persistence-backed services. Local/dev launcher flows may set
-  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment.
+  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment. Placeholder
+  projection-reconciliation jobs are also omitted from production composition until real domain
+  reconcilers replace them; production startup does not report a no-op comparison as assurance.
   `ProviderFeatureRegistration` supplies a non-secret empty `IConfiguration` fallback before
   registering provider adapters, preserving host-provided configuration when present while keeping
   credential-gated data providers resolvable in composition slices.

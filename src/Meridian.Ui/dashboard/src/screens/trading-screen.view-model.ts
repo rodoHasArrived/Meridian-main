@@ -5,6 +5,13 @@ import { formatCurrency } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
+import {
+  buildTradingReadinessSummaryRows,
+  formatReadinessStatusValue,
+  formatTradingUtcDateTime as formatUtcDateTime,
+  type AcceptanceLevel,
+  type TradingReadinessSummaryRow
+} from "@/screens/trading-screen.readiness-summary";
 import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
@@ -20,17 +27,24 @@ import type {
   ReplayFileRecord,
   ReplayStatus,
   TradingActionResult,
-  TradingAcceptanceGateStatus,
   TradingFill,
   TradingOperatorReadiness,
   TradingOrder,
   TradingPosition,
   TradingRiskState,
-  TradingWorkspaceResponse,
-  WorkstationBrokerageSyncStatus
+  TradingWorkspaceResponse
 } from "@/types";
 
-export type AcceptanceLevel = "ready" | "review" | "atRisk";
+export {
+  formatReadinessStatusValue,
+  mapBrokerageSyncLevel,
+  mapReadinessStatusLevel
+} from "@/screens/trading-screen.readiness-summary";
+export type {
+  AcceptanceLevel,
+  TradingReadinessSummaryRow
+} from "@/screens/trading-screen.readiness-summary";
+
 export type TradingDataTone = "default" | "success" | "warning" | "danger" | "muted";
 export type TradingRouteWorkstream = "orders" | "positions" | "risk";
 export type TradingWorkflowPanelId = "strategy" | "replay" | "promotion";
@@ -414,14 +428,6 @@ export interface TradingBlotterViewModel {
   selectPosition: (id: string) => void;
   selectOrder: (id: string) => void;
   selectFill: (id: string) => void;
-}
-
-export interface TradingReadinessSummaryRow {
-  id: string;
-  label: string;
-  value: string;
-  level: AcceptanceLevel;
-  ariaLabel: string;
 }
 
 export interface TradingReadinessWorkItemRow {
@@ -892,144 +898,6 @@ function buildTradingReadinessWarningRows(warnings: string[]): TradingReadinessW
   }));
 }
 
-export function formatReadinessStatusValue(status: TradingAcceptanceGateStatus | string): string {
-  if (status === "ReviewRequired") {
-    return "Review required";
-  }
-
-  return status;
-}
-
-export function mapReadinessStatusLevel(status: TradingAcceptanceGateStatus | string): AcceptanceLevel {
-  if (status === "Ready") {
-    return "ready";
-  }
-
-  if (status === "Blocked") {
-    return "atRisk";
-  }
-
-  return "review";
-}
-
-export function mapBrokerageSyncLevel(status: WorkstationBrokerageSyncStatus): AcceptanceLevel {
-  if (status.health === "Healthy" && !status.isStale) {
-    return "ready";
-  }
-
-  if (status.health === "Failed" || status.health === "Degraded") {
-    return "atRisk";
-  }
-
-  return "review";
-}
-
-function buildTradingReadinessSummaryRows(readiness: TradingOperatorReadiness): TradingReadinessSummaryRow[] {
-  const overallValue = formatReadinessStatusValue(readiness.overallStatus);
-  const paperValue = readiness.readyForPaperOperation ? "Ready for paper" : "Not paper ready";
-  const liveBlockers = readiness.liveOperationBlockers ?? [];
-  const liveOperationRequirements = readiness.liveOperationRequirements ?? [];
-  const liveValue = readiness.readyForLiveOperation
-    ? "Ready for live"
-    : liveBlockers.length > 0
-      ? `${liveBlockers.length} blocker${liveBlockers.length === 1 ? "" : "s"}`
-      : "Not live ready";
-  const brokerageValue = readiness.brokerageSync
-    ? formatBrokerageSyncValue(readiness.brokerageSync)
-    : "No account sync";
-  const executionReconciliation = readiness.executionReconciliation ?? null;
-  const asOfLabel = formatUtcDateTime(readiness.asOf);
-  const rows: TradingReadinessSummaryRow[] = [
-    {
-      id: "overall",
-      label: "Overall",
-      value: overallValue,
-      level: mapReadinessStatusLevel(readiness.overallStatus),
-      ariaLabel: `Overall readiness: ${overallValue}`
-    },
-    {
-      id: "paper",
-      label: "Paper",
-      value: paperValue,
-      level: readiness.readyForPaperOperation ? "ready" : "review",
-      ariaLabel: `Paper operation readiness: ${paperValue}`
-    },
-    {
-      id: "live",
-      label: "Live",
-      value: liveValue,
-      level: readiness.readyForLiveOperation ? "ready" : liveBlockers.length > 0 ? "atRisk" : "review",
-      ariaLabel: `Live operation readiness: ${liveValue}${liveBlockers.length > 0 ? `. Blockers: ${liveBlockers.join(", ")}` : ""}`
-    },
-    {
-      id: "brokerage",
-      label: "Brokerage",
-      value: brokerageValue,
-      level: readiness.brokerageSync ? mapBrokerageSyncLevel(readiness.brokerageSync) : "review",
-      ariaLabel: `Brokerage sync: ${brokerageValue}`
-    }
-  ];
-
-  for (const requirement of liveOperationRequirements) {
-    const requirementValue = formatReadinessStatusValue(requirement.status);
-    rows.push({
-      id: `live-requirement-${requirement.requirementId}`,
-      label: requirement.label,
-      value: requirementValue,
-      level: mapReadinessStatusLevel(requirement.status),
-      ariaLabel: formatLiveOperationRequirementAriaLabel(requirement, requirementValue)
-    });
-  }
-
-  if (executionReconciliation) {
-    const executionValue = formatExecutionReconciliationValue(executionReconciliation);
-    rows.push({
-      id: "broker-execution",
-      label: "Broker orders",
-      value: executionValue,
-      level: mapReadinessStatusLevel(executionReconciliation.status),
-      ariaLabel: `Broker execution reconciliation: ${executionValue}`
-    });
-  }
-
-  rows.push(
-    {
-      id: "as-of",
-      label: "As of",
-      value: asOfLabel,
-      level: "review",
-      ariaLabel: `Readiness snapshot timestamp: ${asOfLabel}`
-    }
-  );
-
-  return rows;
-}
-
-function formatLiveOperationRequirementAriaLabel(
-  requirement: NonNullable<TradingOperatorReadiness["liveOperationRequirements"]>[number],
-  requirementValue: string
-): string {
-  const blocker = requirement.blockerCode ? ` Blocker: ${requirement.blockerCode}.` : "";
-  return `${requirement.label}: ${requirementValue}. ${requirement.detail}${blocker}`;
-}
-
-function formatBrokerageSyncValue(status: WorkstationBrokerageSyncStatus): string {
-  const staleSuffix = status.isStale && status.health !== "Stale" ? " stale" : "";
-  return `${status.health}${staleSuffix}`;
-}
-
-function formatExecutionReconciliationValue(reconciliation: NonNullable<TradingOperatorReadiness["executionReconciliation"]>): string {
-  if (reconciliation.status === "Ready") {
-    return `${reconciliation.matchedOpenOrderCount} matched`;
-  }
-
-  if (reconciliation.breakCount > 0) {
-    return `${reconciliation.breakCount} break${reconciliation.breakCount === 1 ? "" : "s"}`;
-  }
-
-  return formatReadinessStatusValue(reconciliation.status);
-}
-
 function buildTradingReadinessAnnouncement({
   readiness,
   refreshing,
@@ -1288,6 +1156,7 @@ export interface ExecutionAuditRow {
   outcomeTone: ExecutionEvidenceTone;
   message: string;
   metadataText: string;
+  technicalMetadataText: string | null;
   ariaLabel: string;
 }
 
@@ -1463,16 +1332,19 @@ export function buildExecutionEvidenceState({
 
 function buildExecutionAuditRow(entry: ExecutionAuditEntry): ExecutionAuditRow {
   const metadataText = formatExecutionAuditMetadata(entry);
+  const technicalMetadataText = formatExecutionAuditTechnicalMetadata(entry);
   const message = entry.message?.trim() || "No operator message recorded.";
+  const action = formatExecutionAuditAction(entry.action);
 
   return {
     id: entry.auditId,
-    action: entry.action,
+    action,
     outcome: entry.outcome,
     outcomeTone: mapExecutionOutcomeTone(entry.outcome),
     message,
     metadataText,
-    ariaLabel: `${entry.action} ${entry.outcome}. ${message} ${metadataText}`.trim()
+    technicalMetadataText,
+    ariaLabel: `${action} ${entry.outcome}. ${message} ${metadataText}`.trim()
   };
 }
 
@@ -1512,6 +1384,24 @@ function buildExecutionControlsPanel(snapshot: ExecutionControlSnapshot): Execut
 }
 
 function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
+  const occurredAt = new Date(entry.occurredAt);
+  if (Number.isNaN(occurredAt.getTime())) {
+    return "Recorded time unavailable";
+  }
+
+  return `Recorded ${new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+    timeZoneName: "short"
+  }).format(occurredAt).replace("24:", "00:")}`;
+}
+
+function formatExecutionAuditTechnicalMetadata(entry: ExecutionAuditEntry): string | null {
   const parts = [
     entry.occurredAt,
     entry.metadata?.sessionId ? `session ${entry.metadata.sessionId}` : null,
@@ -1520,7 +1410,21 @@ function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
     entry.runId ? `run ${entry.runId}` : null
   ].filter(Boolean);
 
-  return parts.join(" · ");
+  return parts.length > 0 ? parts.join(" · ") : null;
+}
+
+function formatExecutionAuditAction(action: string): string {
+  const normalized = action.trim();
+  if (normalized === "ReplayPaperSession") {
+    return "Paper session replay";
+  }
+
+  const words = normalized
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[._-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : "Execution activity";
 }
 
 function mapExecutionOutcomeTone(outcome: string): ExecutionEvidenceTone {
@@ -2919,6 +2823,7 @@ export interface TradingConfirmDialogState {
   statusAnnouncement: string;
   cancelButtonLabel: string;
   confirmButtonLabel: string;
+  confirmButtonVariant: "default" | "destructive";
   closeButtonLabel: string;
   confirmAriaLabel: string;
   closeAriaLabel: string;
@@ -3051,6 +2956,7 @@ export function buildTradingConfirmDialogState(state: TradingConfirmState): Trad
     statusAnnouncement: buildTradingConfirmStatusAnnouncement({ title, busy: state.busy, result: state.result, error: state.error }),
     cancelButtonLabel: "Cancel",
     confirmButtonLabel: state.busy ? "Processing..." : "Confirm",
+    confirmButtonVariant: isDestructiveTradingAction(state.action) ? "destructive" : "default",
     closeButtonLabel: "Close",
     confirmAriaLabel: title ? `Confirm ${title.toLowerCase()}` : "Confirm trading action",
     closeAriaLabel: title ? `Close ${title.toLowerCase()} confirmation` : "Close trading action confirmation",
@@ -3069,6 +2975,13 @@ export function buildTradingConfirmDialogState(state: TradingConfirmState): Trad
     resultPanel,
     errorPanel
   };
+}
+
+function isDestructiveTradingAction(action: TradingConfirmAction | null): boolean {
+  return action?.kind === "cancel-order"
+    || action?.kind === "cancel-all"
+    || action?.kind === "close-position"
+    || action?.kind === "stop-strategy";
 }
 
 function buildTradingConfirmDisabledReason(state: TradingConfirmState, isCompleted: boolean): string | null {
@@ -4151,21 +4064,6 @@ function formatQuantity(value: number): string {
     return "0";
   }
   return Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 4 });
-}
-
-function formatUtcDateTime(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function padUtc(value: number): string {
-  return value.toString().padStart(2, "0");
 }
 
 export type PromotionGateField =

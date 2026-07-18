@@ -1,11 +1,12 @@
 using System.Buffers;
-using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using Meridian.Core.Logging;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
+using Serilog;
 
 namespace Meridian.Storage.Replay;
 
@@ -79,12 +80,14 @@ public sealed class MemoryMappedJsonlReader
 {
     private readonly string _root;
     private readonly MemoryMappedReaderOptions _options;
+    private readonly ILogger _log = LoggingSetup.ForContext<MemoryMappedJsonlReader>();
 
     // Metrics
     private long _filesRead;
     private long _bytesRead;
     private long _eventsRead;
     private long _memoryMappedFilesUsed;
+    private long _corruptedLines;
 
     /// <summary>
     /// Total files read.
@@ -105,6 +108,11 @@ public sealed class MemoryMappedJsonlReader
     /// Number of files read using memory mapping.
     /// </summary>
     public long MemoryMappedFilesUsed => Interlocked.Read(ref _memoryMappedFilesUsed);
+
+    /// <summary>
+    /// Number of JSONL lines that failed to deserialize and were skipped during replay.
+    /// </summary>
+    public long CorruptedLines => Interlocked.Read(ref _corruptedLines);
 
     /// <summary>
     /// Creates a new MemoryMappedJsonlReader with default options.
@@ -153,8 +161,7 @@ public sealed class MemoryMappedJsonlReader
     {
         Interlocked.Increment(ref _filesRead);
 
-        var isCompressed = file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
-                          file.EndsWith(".gzip", StringComparison.OrdinalIgnoreCase);
+        var isCompressed = CompressedJsonlStream.IsCompressed(file);
 
         var fileInfo = new FileInfo(file);
         var useMemoryMapping = !isCompressed && fileInfo.Length >= _options.MinFileSizeForMapping;
@@ -168,7 +175,7 @@ public sealed class MemoryMappedJsonlReader
         }
         else
         {
-            await foreach (var evt in ReadFileStreamingAsync(file, isCompressed, ct))
+            await foreach (var evt in ReadFileStreamingAsync(file, ct))
             {
                 yield return evt;
             }
@@ -310,16 +317,12 @@ public sealed class MemoryMappedJsonlReader
     /// </summary>
     private async IAsyncEnumerable<MarketEvent> ReadFileStreamingAsync(
         string file,
-        bool isCompressed,
         [EnumeratorCancellation] CancellationToken ct)
     {
         await using var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, useAsync: true);
-        Stream stream = fs;
-
-        if (isCompressed)
-        {
-            stream = new GZipStream(fs, CompressionMode.Decompress);
-        }
+        // Shared codec detection (magic bytes, extension fallback) so streaming replay honors every
+        // compression suffix the storage policy can emit, not just gzip.
+        Stream stream = CompressedJsonlStream.Decompress(fs, file);
 
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 64 * 1024);
 
@@ -376,9 +379,11 @@ public sealed class MemoryMappedJsonlReader
                 {
                     results[i] = JsonSerializer.Deserialize<MarketEvent>(lines[i], MarketDataJsonContext.HighPerformanceOptions);
                 }
-                catch
+                catch (Exception ex)
                 {
                     results[i] = null;
+                    Interlocked.Increment(ref _corruptedLines);
+                    _log.Warning(ex, "Skipping corrupt JSONL line during memory-mapped replay (line index {LineIndex})", i);
                 }
             });
 
@@ -401,9 +406,11 @@ public sealed class MemoryMappedJsonlReader
                 {
                     evt = JsonSerializer.Deserialize<MarketEvent>(line, MarketDataJsonContext.HighPerformanceOptions);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Skip invalid lines
+                    // Skip invalid lines, but record and log the drop rather than hiding it.
+                    Interlocked.Increment(ref _corruptedLines);
+                    _log.Warning(ex, "Skipping corrupt JSONL line during memory-mapped replay");
                 }
 
                 if (evt != null)
@@ -460,9 +467,7 @@ public sealed class MemoryMappedJsonlReader
 
         var files = Directory.EnumerateFiles(_root, "*.jsonl*", SearchOption.AllDirectories).ToList();
         var totalSize = files.Sum(f => new FileInfo(f).Length);
-        var compressedCount = files.Count(f =>
-            f.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
-            f.EndsWith(".gzip", StringComparison.OrdinalIgnoreCase));
+        var compressedCount = files.Count(CompressedJsonlStream.IsCompressed);
 
         return new FileStatistics(
             files.Count,

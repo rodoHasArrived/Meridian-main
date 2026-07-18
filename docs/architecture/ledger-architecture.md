@@ -362,7 +362,10 @@ cash flow projection path now closes those gaps:
 - **Typed term resolution.** `StructuredCashFlowTermsResolver` resolves a security's raw term JSON
   into a strongly typed `StructuredCashFlowTerms` once, up front. All vendor key aliases (for
   example `par` / `originalFace` / `notional`) live in one documented, unit-tested place instead of
-  being re-probed inline in the amortization math.
+  being re-probed inline in the amortization math. The resolver and the shared `SecurityTermReader`
+  probing primitives live in `Meridian.Contracts` so both the cash-flow projection (Application) and
+  the asset-obligation projection (`AssetObligationProjectionService`, Instruments) resolve
+  fixed-income terms through the same code rather than each carrying a private copy of the probing.
 - **Typed factor schedule.** The resolver parses a `factorSchedule` array into typed
   `StructuredFactorScheduleEntry` points and seeds outstanding balance from the factor in effect on
   the projection date (`StructuredCashFlowTerms.FactorAsOf`), falling back to the scalar current
@@ -372,11 +375,14 @@ cash flow projection path now closes those gaps:
   projections are still returned, but flagged) and a hard gate for posting.
 - **Ledger wiring.** `StructuredCashFlowLedgerBridge` converts a fresh, base-scenario projection's
   per-period interest into `FixedIncomeAmortizationProjector` coupon-accrual inputs and returns
-  balanced `StructuredCashFlowLedgerPostingResult` journal postings. It refuses to post when the
-  source is stale or the scenario is a rate-shocked what-if, mirroring the operator-approved,
-  never-auto-post posture used elsewhere in the ledger. `ISecurityMasterCashFlowService.BuildLedgerPostingsAsync`
-  is the reachable entry point; `StructuredCashFlowLedgerBridge` is registered in the Security Master
-  service graph and is the production caller for the coupon-accrual projector path.
+  balanced `StructuredCashFlowLedgerPostingResult` journal postings (preview). The heavier
+  `SecurityMasterAmortizationLedgerBridge` posts one balanced accrual/amortization entry per period —
+  coupon accrual plus straight-line premium/discount when a position is supplied — and a separate
+  principal-paydown entry, into a live ledger. Both bridges consult a single
+  `StructuredCashFlowLedgerGate`, so neither the preview nor the posting path can route a stale source
+  or a rate-shocked what-if scenario to the general ledger. `ISecurityMasterCashFlowService.BuildLedgerPostingsAsync`
+  is the reachable preview entry point; both bridges are registered in the Security Master service
+  graph and are the production callers for the coupon-accrual projector path.
 
 ## Operations continuity workflow
 
@@ -542,7 +548,7 @@ Two predefined rules are provided:
 
 ### Portfolio ↔ ledger reconciliation
 
-`LedgerInterop.ReconcilePortfolioLedgerChecks` compares portfolio-level aggregates (cash, equity, positions) to their ledger counterparts and produces `PortfolioLedgerCheckResult` records. Categories include `matched`, `amount_mismatch`, `missing_ledger_coverage`, `missing_portfolio_coverage`, `classification_gap`, `timing_mismatch`, and `partial_match`.
+`LedgerInterop.ReconcilePortfolioLedgerChecks` compares portfolio-level aggregates (cash, equity, positions) to their ledger counterparts and produces `PortfolioLedgerCheckResult` records. Categories include `matched`, `amount_mismatch`, `missing_ledger_coverage`, `missing_portfolio_coverage`, `classification_gap`, `timing_mismatch`, `partial_match`, and `missing_data`. A check only classifies as `matched` when every value both sides supplied was actually compared and agreed; one-sided amount evidence classifies as `partial_match`, `timing_mismatch`, or `missing_data` (never a full match).
 
 Portfolio ↔ ledger checks are evaluated directly inside the F# kernel rather than being coerced through the day-based cash-flow matching rules. This keeps `MaxAsOfDriftMinutes` minute-granular, preserves `partial_match` as an explicit status/category at the interop boundary, and ensures the severity exposed to workstation/governance consumers comes from the F# classification result instead of being recomputed in C#.
 

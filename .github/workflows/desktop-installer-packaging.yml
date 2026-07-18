@@ -202,9 +202,81 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  build-consumer-setup:
+    name: package-consumer-setup
+    needs: release-preflight
+    runs-on: windows-latest
+    timeout-minutes: 120
+    environment:
+      name: desktop-release-signing
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v5.4.0
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Prepare signing certificate for a tag release
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: signing
+        shell: pwsh
+        env:
+          MDC_SIGNING_CERT_PFX_BASE64: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:MDC_SIGNING_CERT_PFX_BASE64)) {
+            throw "Tag release builds require MDC_SIGNING_CERT_PFX_BASE64 in the protected desktop-release-signing environment."
+          }
+          $certPath = Join-Path $env:RUNNER_TEMP "meridian-release-signing.pfx"
+          [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
+          "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Build the x64 and ARM64 consumer package
+        shell: pwsh
+        env:
+          MDC_SIGNING_CERT_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.MDC_SIGNING_CERT_PASSWORD || '' }}
+        run: |
+          pwsh ./build/scripts/install/build-consumer-setup.ps1 `
+            -SigningCertificate '${{ steps.signing.outputs.cert_path }}' `
+            -SigningCertificatePassword $env:MDC_SIGNING_CERT_PASSWORD
+
+      - name: Generate consumer release evidence
+        shell: pwsh
+        run: |
+          python build/scripts/ci/generate-release-evidence-manifest.py `
+            --project consumer-setup `
+            --runtime windows `
+            --artifact-root artifacts/consumer-setup `
+            --output artifacts/consumer-setup/release-evidence.json `
+            --workflow-run-id '${{ github.run_id }}' `
+            --validation-lane verify-desktop-release-preflight `
+            --validation-lane package-consumer-setup
+
+      - name: Upload consumer setup artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: meridian-consumer-setup-${{ github.run_id }}
+          path: |
+            artifacts/consumer-setup/Meridian-Setup.exe
+            artifacts/consumer-setup/release-evidence.json
+          if-no-files-found: error
+          retention-days: 14
+
   release:
     name: publish-desktop-installer-release
-    needs: build-msix
+    needs: [build-msix, build-consumer-setup]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -219,6 +291,12 @@ jobs:
           merge-multiple: true
           path: artifacts/release
 
+      - name: Download consumer setup artifact
+        uses: actions/download-artifact@v5.0.0
+        with:
+          name: meridian-consumer-setup-${{ github.run_id }}
+          path: artifacts/release/consumer
+
       - name: Publish GitHub release assets
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v2
         with:
@@ -226,6 +304,7 @@ jobs:
             artifacts/release/**/*.msix
             artifacts/release/**/*.msixbundle
             artifacts/release/**/*.appinstaller
+            artifacts/release/**/Meridian-Setup.exe
             artifacts/release/**/release-evidence.json
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}

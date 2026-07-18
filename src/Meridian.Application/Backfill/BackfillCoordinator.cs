@@ -39,6 +39,7 @@ public sealed class BackfillCoordinator : IDisposable
     private readonly IEventMetrics _metrics;
     private readonly ILogger _log = LoggingSetup.ForContext<BackfillCoordinator>();
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly BackfillProgressTracker _progressTracker = new();
     private readonly ISymbolResolver? _symbolResolver;
     private readonly OpenFigiSymbolResolver? _ownedSymbolResolver;
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
@@ -146,16 +147,17 @@ public sealed class BackfillCoordinator : IDisposable
     /// <summary>
     /// Gets current backfill progress. Returns null if no active backfill.
     /// </summary>
-    public object? GetProgress()
+    public BackfillRunProgressResponse? GetProgress()
     {
-        if (_lastRun is null)
+        var snapshot = _progressTracker.GetSnapshot();
+        if (_lastRun is null && !IsActive && snapshot.TotalSymbols == 0)
             return null;
-        return new
-        {
-            lastRun = _lastRun,
-            isActive = IsActive,
-            timestamp = DateTimeOffset.UtcNow
-        };
+
+        return new BackfillRunProgressResponse(
+            _lastRun,
+            IsActive,
+            ToContract(snapshot),
+            DateTimeOffset.UtcNow);
     }
 
     /// <summary>
@@ -216,6 +218,11 @@ public sealed class BackfillCoordinator : IDisposable
 
         try
         {
+            var normalizedSymbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
+            _progressTracker.Clear();
+            foreach (var symbol in normalizedSymbols)
+                _progressTracker.RegisterSymbol(symbol, request.From, request.To);
+
             var cfg = _store.Load();
             var compressionEnabled = cfg.Compress ?? false;
             var dataRoot = _store.GetDataRoot(cfg);
@@ -236,10 +243,24 @@ public sealed class BackfillCoordinator : IDisposable
 
             await statusStore.WriteAsync(result).ConfigureAwait(false);
             _lastRun = result;
+
+            var skipped = result.SkippedSymbols.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var symbol in normalizedSymbols)
+            {
+                if (skipped.Contains(symbol))
+                    _progressTracker.MarkSkipped(symbol);
+                else if (result.Success)
+                    _progressTracker.MarkCompleted(symbol);
+                else
+                    _progressTracker.MarkFailed(symbol, result.Error);
+            }
+
             return result;
         }
         catch (Exception ex)
         {
+            foreach (var symbol in BackfillSymbolNormalizer.Normalize(request.Symbols))
+                _progressTracker.MarkFailed(symbol, ex.Message);
             _log.Error(ex, "Backfill failed");
             throw;
         }
@@ -378,7 +399,8 @@ public sealed class BackfillCoordinator : IDisposable
                 providers,
                 backfillCfg?.EnableSymbolResolution ?? true ? _symbolResolver : null,
                 enableCrossValidation: false,
-                log: _log
+                log: _log,
+                progressTracker: _progressTracker
             );
 
             // Combine composite (for fallback routing) with individual providers (for direct selection)
@@ -469,6 +491,62 @@ public sealed class BackfillCoordinator : IDisposable
         _disposed = true;
 
         _ownedSymbolResolver?.Dispose();
+        _progressTracker.Dispose();
         _gate.Dispose();
+    }
+
+    private static BackfillProviderProgressSnapshotDto ToContract(BackfillProgressSnapshot snapshot)
+    {
+        var symbols = snapshot.Symbols.ToDictionary(
+            static item => item.Key,
+            static item =>
+            {
+                var value = item.Value;
+                return new BackfillProviderSymbolProgressDto(
+                    value.Symbol,
+                    value.FromDate == DateOnly.MinValue ? null : value.FromDate,
+                    value.ToDate == DateOnly.MinValue ? null : value.ToDate,
+                    value.TotalDays,
+                    value.CompletedDays,
+                    value.PercentComplete,
+                    value.IsCompleted,
+                    value.IsFailed,
+                    value.IsSkipped,
+                    value.CurrentProvider,
+                    value.CurrentStatus,
+                    value.ProviderAttempt,
+                    value.RetryRound,
+                    value.Operation,
+                    value.AttemptStartedAt,
+                    value.LastUpdatedAt,
+                    value.Error);
+            },
+            StringComparer.OrdinalIgnoreCase);
+
+        var attempts = (snapshot.RecentProviderAttempts ?? Array.Empty<ProviderBackfillProgress>())
+            .Select(static progress => new BackfillProviderAttemptProgressDto(
+                progress.Symbol,
+                progress.Provider,
+                progress.RangeStart,
+                progress.RangeEnd,
+                progress.ProviderAttempt,
+                progress.RetryRound,
+                progress.Operation,
+                progress.CurrentStatus,
+                progress.BarsDownloaded,
+                progress.StartedAt,
+                progress.EffectiveObservedAt,
+                progress.Error))
+            .ToArray();
+
+        return new BackfillProviderProgressSnapshotDto(
+            symbols,
+            attempts,
+            snapshot.OverallPercentComplete,
+            snapshot.TotalSymbols,
+            snapshot.CompletedSymbols,
+            snapshot.FailedSymbols,
+            snapshot.DroppedProviderNotifications,
+            snapshot.Timestamp);
     }
 }

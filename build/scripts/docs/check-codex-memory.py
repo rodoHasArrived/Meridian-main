@@ -701,6 +701,7 @@ def validate_entry_shape(root: Path, entry: Any, index_path: Path, seen_ids: set
     if not memory_file.exists():
         findings.append(Finding("error", finding_path, f"Memory file does not exist: {raw_file}"))
         return entry, findings
+    memory_display_path = rel(root, memory_file)
 
     memory_display_path = rel(root, memory_file)
     front_matter, front_findings = parse_front_matter(memory_file)

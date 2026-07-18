@@ -106,6 +106,7 @@ public sealed class LoginSessionMiddleware
 
         // Exempt the login page and all auth API endpoints
         if (trimmedPath.Equals("/login", StringComparison.OrdinalIgnoreCase) ||
+            trimmedPath.Equals("/setup/account", StringComparison.OrdinalIgnoreCase) ||
             trimmedPath.StartsWith("/api/auth", StringComparison.OrdinalIgnoreCase))
         {
             await _next(context);

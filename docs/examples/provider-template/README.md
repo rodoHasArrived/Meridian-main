@@ -77,7 +77,7 @@ Consult these production implementations for additional context:
 | Streaming (WebSocket) | `Adapters/Alpaca/AlpacaMarketDataClient.cs` |
 | Streaming (base class) | `Adapters/Core/WebSocketProviderBase.cs` |
 | Historical backfill | `Adapters/Finnhub/FinnhubHistoricalDataProvider.cs` |
-| Symbol search | `Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
+| Symbol search | `Adapters/Alpaca/AlpacaSymbolSearchProvider.cs` |
 | Constants pattern | `Adapters/InteractiveBrokers/IBApiLimits.cs` |
 | Config / options pattern | `src/Meridian.Core/Config/BackfillConfig.cs` |
 | Factory / DI wiring | `Adapters/Core/ProviderFactory.cs` |

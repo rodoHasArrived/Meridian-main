@@ -484,6 +484,127 @@ export interface PrivateCapitalCloseCockpitLane {
   requiredActions: string[];
 }
 
+export type DailyValuationScheduleState =
+  | "NotConfigured"
+  | "Scheduled"
+  | "Running"
+  | "DraftReady"
+  | "NoAdjustment"
+  | "Blocked"
+  | "Failed"
+  | "Posted";
+
+export interface DailyValuationScheduleStatus {
+  scheduleId?: string | null;
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  periodId?: string | null;
+  isConfigured: boolean;
+  isEnabled: boolean;
+  nextRunAtUtc?: string | null;
+  lastRunAtUtc?: string | null;
+  state: DailyValuationScheduleState;
+  summary: string;
+  journalEntryId?: string | null;
+  evidenceLinks: OperationsEvidenceLink[];
+  blockers: string[];
+  journalEntryIds: string[];
+  batchCorrelationId?: string | null;
+  entityId?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
+}
+
+export interface DailyValuationPosition {
+  symbol: string;
+  quantity: number;
+  costPrice: number;
+  financialAccountId?: string | null;
+  instrumentType?: string | null;
+  securityId?: string | null;
+}
+
+export interface DailyValuationPositionSnapshotScope {
+  runId: string;
+  accountId: string;
+}
+
+export interface DailyValuationScheduleWorkItem {
+  scheduleId: string;
+  fundProfileId: string;
+  currency: string;
+  actor: string;
+  ledgerBookId: string;
+  periodId: string;
+  nextRunAtUtc: string;
+  positions: DailyValuationPosition[];
+  policyId: string;
+  policyName: string;
+  valuationMethod: string;
+  policyApprovedBy: string;
+  policyApprovedAtUtc: string;
+  reason: string;
+  maximumMarkAgeDays?: number;
+  minimumConfidence?: "Low" | "Medium" | "High";
+  requireCompleteCoverage?: boolean;
+  isEnabled?: boolean;
+  closePeriodId?: string | null;
+  entityId?: string | null;
+  tenantId?: string | null;
+  companyId?: string | null;
+  state?: DailyValuationScheduleState;
+  lastRunAtUtc?: string | null;
+  lastScheduledForUtc?: string | null;
+  journalEntryId?: string | null;
+  lastSummary?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[];
+  blockers?: string[];
+  positionSnapshotScopes?: DailyValuationPositionSnapshotScope[];
+  useStaticPositionOverride?: boolean;
+  staticPositionsAsOfUtc?: string | null;
+  maximumPositionAgeDays?: number;
+  staticPositionHash?: string | null;
+  journalEntryIds?: string[];
+  batchCorrelationId?: string | null;
+  createdBy?: string | null;
+  lastConfiguredBy?: string | null;
+}
+
+export interface DailyValuationScheduledRunResult {
+  scheduleId: string;
+  scheduledForUtc: string;
+  state: DailyValuationScheduleState;
+  summary: string;
+  journalEntryId?: string | null;
+  blockers: string[];
+  journalEntryIds: string[];
+  batchCorrelationId?: string | null;
+}
+
+export interface DailyValuationScheduledBatchResult {
+  evaluatedAtUtc: string;
+  runs: DailyValuationScheduledRunResult[];
+}
+
+export interface DailyValuationBatchLifecycleRequest {
+  scheduleId: string;
+  fundProfileId: string;
+  actor: string;
+  notes: string;
+  evidenceLinks?: string[];
+  tenantId?: string | null;
+  companyId?: string | null;
+}
+
+export interface DailyValuationBatchLifecycleResult {
+  scheduleId: string;
+  batchCorrelationId: string;
+  isComplete: boolean;
+  journalEntryIds: string[];
+  postedJournalEntryIds: string[];
+  blockers: string[];
+}
+
 export interface PrivateCapitalCloseCockpit {
   fundProfileId?: string | null;
   ledgerBookId?: string | null;
@@ -511,6 +632,7 @@ export interface PrivateCapitalCloseCockpit {
   approvalHistory?: PrivateCapitalCloseCockpitApproval[] | null;
   navSupportPackages?: PrivateCapitalNavSupportPackage[] | null;
   evidencePackages?: OperationsEvidencePackageSummary[] | null;
+  dailyValuationStatus?: DailyValuationScheduleStatus | null;
 }
 
 export interface PrivateCapitalCapitalAccountSubledger {

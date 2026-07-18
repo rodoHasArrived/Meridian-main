@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Ui.Services;
 
@@ -33,6 +34,12 @@ public sealed class BackfillApiService
     {
         return await _apiClient.GetAsync<BackfillResultDto>(UiApiRoutes.BackfillStatus, ct);
     }
+
+    /// <summary>
+    /// Gets the typed live provider/fallback progress snapshot for the current or latest run.
+    /// </summary>
+    public Task<BackfillRunProgressResponse?> GetProgressAsync(CancellationToken ct = default) =>
+        _apiClient.GetAsync<BackfillRunProgressResponse>(UiApiRoutes.BackfillProgress, ct);
 
     /// <summary>
     /// Runs a backfill operation for the specified symbols.
@@ -120,10 +127,18 @@ public sealed class BackfillApiService
     /// </summary>
     public async Task<List<BackfillExecution>> GetExecutionHistoryAsync(int limit = 50, CancellationToken ct = default)
     {
-        var result = await _apiClient.GetAsync<List<BackfillExecution>>(
-            UiApiRoutes.WithQuery(UiApiRoutes.BackfillExecutions, $"limit={limit}"), ct);
-        return result ?? new List<BackfillExecution>();
+        var result = await GetExecutionHistoryResponseAsync(limit, ct);
+        return result?.Executions.ToList() ?? new List<BackfillExecution>();
     }
+
+    /// <summary>
+    /// Gets the governed execution-history envelope, including typed remediation SLA evidence.
+    /// </summary>
+    public Task<BackfillExecutionHistoryResponse?> GetExecutionHistoryResponseAsync(
+        int limit = 50,
+        CancellationToken ct = default) =>
+        _apiClient.GetAsync<BackfillExecutionHistoryResponse>(
+            UiApiRoutes.WithQuery(UiApiRoutes.BackfillExecutions, $"limit={limit}"), ct);
 
     /// <summary>
     /// Gets backfill statistics.

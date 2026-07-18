@@ -19,6 +19,14 @@ export const WORKSTATION_API_ENDPOINTS = {
   dataQuery: UI_API_ROUTES.WorkstationDataQuery,
   dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
   dataUploadPreview: UI_API_ROUTES.WorkstationDataUploadPreview,
+  dataUploadWorkbook: UI_API_ROUTES.WorkstationDataUploadWorkbook,
+  dataUploadWorkbookPreview: UI_API_ROUTES.WorkstationDataUploadWorkbookPreview,
+  ingestionOperations: UI_API_ROUTES.WorkstationIngestionOperations,
+  ingestionOperation: UI_API_ROUTES.WorkstationIngestionOperationById,
+  ingestionOperationAction: UI_API_ROUTES.WorkstationIngestionOperationAction,
+  storageAssurance: UI_API_ROUTES.WorkstationStorageAssurance,
+  storageMaintenancePreview: UI_API_ROUTES.WorkstationStorageMaintenancePreview,
+  storageMaintenanceExecute: UI_API_ROUTES.WorkstationStorageMaintenanceExecute,
   accounting: UI_API_ROUTES.WorkstationAccounting,
   ledgerBooks: UI_API_ROUTES.LedgerBooks,
   accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
@@ -52,6 +60,9 @@ export const WORKSTATION_API_ENDPOINTS = {
   manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
   manualJournalEntryEvidence: UI_API_ROUTES.LedgerManualJournalEntryEvidence,
   manualJournalEntryLifecycleAction: UI_API_ROUTES.LedgerManualJournalEntryLifecycleAction,
+  dailyValuationSchedules: UI_API_ROUTES.LedgerJournalAutomationDailyMarkToMarketSchedules,
+  dailyValuationRunDue: UI_API_ROUTES.LedgerJournalAutomationDailyMarkToMarketRunDue,
+  dailyValuationBatchLifecycle: UI_API_ROUTES.LedgerJournalAutomationDailyMarkToMarketBatchLifecycle,
   accountingReportPackage: UI_API_ROUTES.LedgerReportsAccountingPackage,
   accountingReportPackages: UI_API_ROUTES.LedgerReportsAccountingPackages,
   accountingReportPackageExport: UI_API_ROUTES.LedgerReportsAccountingPackageExport,
@@ -87,6 +98,18 @@ export const WORKSTATION_API_ENDPOINTS = {
   evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
 
+export function workstationIngestionOperationEndpoint(jobId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperation, "jobId", jobId);
+}
+
+export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {
+  return routeWithParam(
+    routeWithParam(WORKSTATION_API_ENDPOINTS.ingestionOperationAction, "jobId", jobId),
+    "action",
+    action
+  );
+}
+
 export const AUTH_API_ENDPOINTS = {
   roles: UI_API_ROUTES.AuthApiRoles,
   roleProfiles: UI_API_ROUTES.AuthApiRoleProfiles,
@@ -106,23 +129,16 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   ledgerMappingWorkbench: "/api/fund-structure/ledger-mapping-view",
   ledgerMappingAssignments: UI_API_ROUTES.FundStructureLedgerMappingAssignments,
   transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview",
-  reportPackWorkflows: UI_API_ROUTES.ReportingPackWorkflows,
-  reportPackWorkflowDeliveries: UI_API_ROUTES.ReportingPackWorkflowDeliveries,
-  reportPackWorkflowDeliveryPackage: UI_API_ROUTES.ReportingPackWorkflowDeliveryPackage,
-  reportPackWorkflowDeliveryFailures: UI_API_ROUTES.ReportingPackWorkflowDeliveryFailures,
-  reportPackDeliveryPortalPackage: UI_API_ROUTES.ReportingPackDeliveryPortalPackage,
-  reportPackPreview: "/api/fund-structure/report-pack-preview",
-  reportPacks: UI_API_ROUTES.FundReportPacks,
   reportingStructuredExport: UI_API_ROUTES.ReportingStructuredExport,
   reportingTemplateDrafts: "/api/fund-structure/reporting/templates/drafts",
   reportingTemplateRender: "/api/fund-structure/reporting/templates/render",
   reportingRuns: UI_API_ROUTES.ReportingRuns,
+  reportingRunReadiness: UI_API_ROUTES.ReportingRunReadiness,
   reportingRunAuditTrail: UI_API_ROUTES.ReportingRunAuditTrail,
   reportingRunReportWriterGrid: UI_API_ROUTES.ReportingRunReportWriterGrid,
   reportingStarterKits: UI_API_ROUTES.ReportingStarterKits,
   reportingStarterKitProvision: UI_API_ROUTES.ReportingStarterKitProvision,
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
-  reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
   reportingScheduleResume: UI_API_ROUTES.ReportingScheduleResume,
   reportingScheduleRunNow: UI_API_ROUTES.ReportingScheduleRunNow
@@ -373,6 +389,7 @@ export const BACKFILL_API_ENDPOINTS = {
   checkpoints: UI_API_ROUTES.BackfillCheckpoints,
   checkpointsResumable: UI_API_ROUTES.BackfillCheckpointsResumable,
   checkpointsValidation: UI_API_ROUTES.BackfillCheckpointsValidation,
+  executions: UI_API_ROUTES.BackfillExecutions,
   progress: UI_API_ROUTES.BackfillProgress,
   run: UI_API_ROUTES.BackfillRun,
   runPreview: UI_API_ROUTES.BackfillRunPreview
@@ -381,6 +398,9 @@ export const BACKFILL_API_ENDPOINTS = {
 export const PROVIDER_API_ENDPOINTS = {
   configure: UI_API_ROUTES.ProviderConfigure,
   status: UI_API_ROUTES.ProviderStatus,
+  catalog: UI_API_ROUTES.ProviderCatalog,
+  rateLimits: UI_API_ROUTES.ProviderRateLimits,
+  health: UI_API_ROUTES.ProviderHealth,
   connections: UI_API_ROUTES.ProviderConnections,
   readiness: UI_API_ROUTES.ProviderReadiness,
   capabilityMatrix: UI_API_ROUTES.ProviderCapabilityMatrix
@@ -441,6 +461,7 @@ export const PROVIDER_INTEGRATION_API_ENDPOINTS = {
 
 export const SYMBOL_API_ENDPOINTS = {
   symbols: UI_API_ROUTES.Symbols,
+  registry: UI_API_ROUTES.CanonicalSymbolRegistry,
   statistics: UI_API_ROUTES.SymbolsStatistics,
   search: UI_API_ROUTES.SymbolsSearch,
   add: UI_API_ROUTES.SymbolsAdd,
@@ -770,18 +791,6 @@ export function workstationOperationsContinuityEndpoint(options: {
   status?: string;
 } = {}): string {
   return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}${queryString(options)}`;
-}
-
-export function reportPackDeliveryPackageEndpoint(reportId: string, attemptId: string, token?: string): string {
-  return `${routeWithParam(
-    routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryPackage, "reportId", reportId),
-    "attemptId",
-    attemptId
-  )}${queryString({ token })}`;
-}
-
-export function reportPackDeliveryPortalPackageEndpoint(packageId: string, token?: string): string {
-  return `${routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage, "packageId", packageId)}${queryString({ token })}`;
 }
 
 export function reportingTemplateSubmitEndpoint(templateName: string, version: number): string {
@@ -1182,14 +1191,6 @@ export function reportPackEvidenceBundleEndpoint(reportId?: string): string {
   return reportId
     ? routeWithParam(UI_API_ROUTES.FundReportPackEvidenceBundle, "reportId", reportId)
     : EXPORT_API_ENDPOINTS.reportPackEvidenceBundle;
-}
-
-export function reportingPackDeliveriesEndpoint(reportId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveries, "reportId", reportId);
-}
-
-export function reportingPackDeliveryFailuresEndpoint(reportId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryFailures, "reportId", reportId);
 }
 
 export function reportingRunAuditTrailEndpoint(runId: string): string {

@@ -921,6 +921,62 @@ public static class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
+        /// <summary>
+        /// Records a reviewer's approve/reject decision for a security's pending operator overrides,
+        /// transitioning the persisted approval status and appending to the durable audit trail.
+        /// Requires the <c>ModifySecurityMaster</c> permission; the reviewer is server-derived from the
+        /// authenticated principal.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns the merged overrides snapshot after the decision is applied, <c>404</c> when
+        /// no overrides exist for the security, or <c>400</c> when the decision is not Approved or
+        /// Rejected.</para>
+        /// </remarks>
+        group.MapPost(UiApiRoutes.SecurityMasterOperatorOverrideDecision, async (
+            Guid securityId,
+            OperatorOverrideDecisionRequest request,
+            HttpContext context,
+            [FromServices] IOperatorOverridesStore store,
+            CancellationToken ct) =>
+        {
+            // The reviewer identity is server-derived from the authenticated principal, never taken
+            // from the request body, so a client cannot attribute a decision to someone else.
+            var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
+            try
+            {
+                var updated = await store
+                    .RecordApprovalDecisionAsync(securityId, decision, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(updated, jsonOptions);
+            }
+            catch (ArgumentException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("No operator overrides exist", StringComparison.Ordinal))
+            {
+                // Expected domain condition: no overlay exists to decide on.
+                return Results.NotFound();
+            }
+            catch (InvalidOperationException exception) when (exception.Message.Contains("not Pending", StringComparison.Ordinal))
+            {
+                // Expected domain condition: the overlay exists but is not in a reviewable (Pending) state.
+                return Results.Conflict(new { error = exception.Message });
+            }
+            // Any other InvalidOperationException (e.g. Security Master not configured) is an operational
+            // failure and is intentionally left to surface as a 500 rather than be masked as a 404.
+        })
+        .WithName("RecordSecurityMasterOperatorOverrideDecision")
+        .Accepts<OperatorOverrideDecisionRequest>("application/json")
+        .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
         // PATCH /api/security-master/equities/{securityId}/preferred-terms
         group.MapMethods("/api/security-master/equities/{securityId:guid}/preferred-terms", [HttpMethods.Patch], async (
             Guid securityId,

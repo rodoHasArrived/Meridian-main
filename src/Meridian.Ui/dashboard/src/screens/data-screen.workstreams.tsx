@@ -1,4 +1,5 @@
 import { ClipboardCopy, Download, Save, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
@@ -13,6 +14,7 @@ import {
   DATA_EXPORT_DETAIL_PANEL_ID,
   type DataOperationsBackfillDetailState,
   type DataOperationsBackfillRow,
+  type BackfillRemediationQueueRow,
   type DataOperationsDetailField,
   type DataOperationsEmptyState,
   type DataOperationsExportDetailState,
@@ -65,6 +67,65 @@ const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = 
     id: "updated",
     label: "Updated",
     render: (backfill) => <span className="font-mono text-xs text-muted-foreground">{backfill.updatedAt}</span>
+  }
+];
+
+const remediationQueueColumns: DenseDataTableColumn<BackfillRemediationQueueRow>[] = [
+  {
+    id: "execution",
+    label: "Execution",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-mono font-semibold text-foreground">{row.executionId}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.symbols}</span>
+      </span>
+    )
+  },
+  {
+    id: "provider",
+    label: "Provider",
+    render: (row) => <span className="font-mono text-xs">{row.provider}</span>
+  },
+  {
+    id: "tier",
+    label: "SLA tier",
+    sortable: true,
+    render: (row) => <Badge variant={row.tierSort === 0 ? "warning" : "outline"}>{row.tier}</Badge>
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <Badge variant={row.status === "Overdue" || row.status === "Failed" ? "danger" : row.status === "Completed" ? "success" : "warning"}>
+        {row.status}
+      </Badge>
+    )
+  },
+  {
+    id: "deadline",
+    label: "Deadline",
+    sortable: true,
+    render: (row) => <span className="font-mono text-xs">{row.deadline}</span>
+  },
+  {
+    id: "ownership",
+    label: "Workflow / owner",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block text-sm">{row.workflow}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.owner}</span>
+      </span>
+    )
+  },
+  {
+    id: "outcome",
+    label: "Outcome / evidence",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block text-sm">{row.outcome}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{row.evidence}</span>
+      </span>
+    )
   }
 ];
 
@@ -143,6 +204,45 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
             emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
           />
         </div>
+        <section aria-labelledby="backfill-remediation-sla-title" className="mt-5 space-y-3 border-t border-border/70 pt-4">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h3 id="backfill-remediation-sla-title" className="font-semibold text-foreground">Remediation SLA queue</h3>
+              <p className="text-xs leading-5 text-muted-foreground">
+                Durable auto-remediation evidence, ordered by typed SLA tier or deadline.
+              </p>
+            </div>
+            {vm.remediationQueueState ? (
+              <div className="text-right text-xs text-muted-foreground">
+                <div>Default provider: <span className="font-mono text-foreground">{vm.remediationQueueState.defaultProvider}</span></div>
+                <div>Observed {vm.remediationQueueState.observedAt}</div>
+              </div>
+            ) : null}
+          </div>
+          {vm.remediationHistoryError ? (
+            <StatusBanner tone="danger" title="Remediation history unavailable" detail={vm.remediationHistoryError} />
+          ) : vm.remediationHistoryLoading ? (
+            <p role="status" className="text-sm text-muted-foreground">Loading durable remediation history…</p>
+          ) : vm.remediationQueueState && vm.remediationQueueState.rows.length > 0 ? (
+            <DenseDataTable
+              columns={remediationQueueColumns}
+              rows={vm.remediationQueueState.rows}
+              getRowId={(row) => row.executionId}
+              getRowAriaLabel={(row) => `${row.symbols}; ${row.tier}; ${row.status}; ${row.deadline}`}
+              emptyText="No auto-remediation SLA evidence is retained."
+              ariaLabel="Backfill remediation SLA queue"
+              caption={vm.remediationQueueState.summary}
+              sort={vm.remediationQueueSort}
+              onToggleSort={vm.toggleRemediationQueueSort}
+              maxVisibleRows={100}
+            />
+          ) : (
+            <EmptyState state={{
+              title: "No remediation SLA evidence",
+              description: "Auto-remediation executions with typed SLA evidence will appear here after a gap repair runs."
+            }} />
+          )}
+        </section>
       </CardContent>
     </section>
   );
@@ -215,91 +315,99 @@ export function DataQueryWorkstream({
             aria-label="SQL statement"
             className="w-full rounded-md border border-border/70 bg-background p-2 font-mono text-sm"
           />
-          <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-            <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Recent queries
-              <select
-                className="min-h-9 rounded-md border border-border/70 bg-background px-2 py-1 text-sm font-normal normal-case tracking-normal text-foreground"
-                aria-label="Recent SQL query history"
-                defaultValue=""
-                onChange={(event) => {
-                  if (event.currentTarget.value) {
-                    queryPanel.loadQuery(event.currentTarget.value);
-                    event.currentTarget.value = "";
-                  }
-                }}
-              >
-                <option value="">Select a recent query</option>
-                {queryPanel.history.map((entry) => (
-                  <option key={`${entry.lastUsedAt}-${entry.sql}`} value={entry.sql}>
-                    {entry.sql}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="grid gap-1">
-              <label
-                htmlFor="data-query-save-name"
-                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
-              >
-                Save query
-              </label>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <input
-                  id="data-query-save-name"
-                  type="text"
-                  value={savedQueryName}
-                  onChange={(event) => setSavedQueryName(event.currentTarget.value)}
-                  placeholder="Query name"
-                  aria-label="Saved SQL query name"
-                  className="min-h-9 flex-1 rounded-md border border-border/70 bg-background px-2 py-1 text-sm text-foreground"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    queryPanel.saveCurrentQuery(savedQueryName);
-                    setSavedQueryName("");
+          <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
+            <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+              Query library
+            </summary>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              Load recent SQL or save the current read-only statement without crowding the editor and run controls.
+            </p>
+            <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+              <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Recent queries
+                <select
+                  className="min-h-9 rounded-md border border-border/70 bg-background px-2 py-1 text-sm font-normal normal-case tracking-normal text-foreground"
+                  aria-label="Recent SQL query history"
+                  defaultValue=""
+                  onChange={(event) => {
+                    if (event.currentTarget.value) {
+                      queryPanel.loadQuery(event.currentTarget.value);
+                      event.currentTarget.value = "";
+                    }
                   }}
-                  disabled={savedQueryName.trim().length === 0 || queryPanel.sql.trim().length === 0}
                 >
-                  <Save className="h-3.5 w-3.5" aria-hidden="true" />
-                  Save
-                </Button>
+                  <option value="">Select a recent query</option>
+                  {queryPanel.history.map((entry) => (
+                    <option key={`${entry.lastUsedAt}-${entry.sql}`} value={entry.sql}>
+                      {entry.sql}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="grid gap-1">
+                <label
+                  htmlFor="data-query-save-name"
+                  className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+                >
+                  Save query
+                </label>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    id="data-query-save-name"
+                    type="text"
+                    value={savedQueryName}
+                    onChange={(event) => setSavedQueryName(event.currentTarget.value)}
+                    placeholder="Query name"
+                    aria-label="Saved SQL query name"
+                    className="min-h-9 flex-1 rounded-md border border-border/70 bg-background px-2 py-1 text-sm text-foreground"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      queryPanel.saveCurrentQuery(savedQueryName);
+                      setSavedQueryName("");
+                    }}
+                    disabled={savedQueryName.trim().length === 0 || queryPanel.sql.trim().length === 0}
+                  >
+                    <Save className="h-3.5 w-3.5" aria-hidden="true" />
+                    Save
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-          {queryPanel.savedQueries.length > 0 ? (
-            <div className="flex flex-wrap gap-2" aria-label="Saved SQL queries">
-              {queryPanel.savedQueries.map((savedQuery) => (
-                <span
-                  key={savedQuery.id}
-                  className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-secondary/20 px-2 py-1"
-                >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => queryPanel.loadQuery(savedQuery.sql)}
-                    aria-label={`Load saved SQL query ${savedQuery.name}`}
+            {queryPanel.savedQueries.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2" aria-label="Saved SQL queries">
+                {queryPanel.savedQueries.map((savedQuery) => (
+                  <span
+                    key={savedQuery.id}
+                    className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-background/40 px-2 py-1"
                   >
-                    {savedQuery.name}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => queryPanel.deleteSavedQuery(savedQuery.id)}
-                    aria-label={`Delete saved SQL query ${savedQuery.name}`}
-                    title={`Delete ${savedQuery.name}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                  </Button>
-                </span>
-              ))}
-            </div>
-          ) : null}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => queryPanel.loadQuery(savedQuery.sql)}
+                      aria-label={`Load saved SQL query ${savedQuery.name}`}
+                    >
+                      {savedQuery.name}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => queryPanel.deleteSavedQuery(savedQuery.id)}
+                      aria-label={`Delete saved SQL query ${savedQuery.name}`}
+                      title={`Delete ${savedQuery.name}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Button>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </details>
           <div className="flex flex-wrap items-center gap-3">
             <Button type="button" onClick={() => void queryPanel.run()} disabled={queryPanel.busy}>
               {queryPanel.busy ? "Running..." : "Run query"}
@@ -480,6 +588,9 @@ function ExportDetailPanel({
       <div className="mt-3 rounded-md border border-border/60 bg-background/45 px-3 py-2">
         <div className="eyebrow-label">Next action</div>
         <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail.actionText}</p>
+        <Button asChild variant="outline" size="sm" className="mt-3">
+          <Link to={detail.actionHref} aria-label={detail.actionAriaLabel}>{detail.actionLabel}</Link>
+        </Button>
       </div>
     </aside>
   );

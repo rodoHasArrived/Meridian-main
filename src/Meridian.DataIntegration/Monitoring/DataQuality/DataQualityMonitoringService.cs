@@ -109,7 +109,7 @@ public sealed class DataQualityMonitoringService : IAsyncDisposable
         Completeness.RecordEvent(symbol, timestamp, "Trade");
 
         // Gap analysis
-        GapAnalyzer.RecordEvent(symbol, "Trade", timestamp, sequence);
+        GapAnalyzer.RecordEvent(symbol, "Trade", timestamp, sequence, provider);
 
         // Sequence tracking
         if (sequence.HasValue)
@@ -153,7 +153,7 @@ public sealed class DataQualityMonitoringService : IAsyncDisposable
             return;
 
         Completeness.RecordEvent(symbol, timestamp, "Quote");
-        GapAnalyzer.RecordEvent(symbol, "Quote", timestamp, null);
+        GapAnalyzer.RecordEvent(symbol, "Quote", timestamp, null, provider);
         AnomalyDetector.ProcessQuote(symbol, timestamp, bidPrice, askPrice, provider);
 
         if (latencyMs.HasValue)

@@ -4,7 +4,8 @@ param(
     [string]$CalibrationInput = "",
     [string]$CandidateKernelVersion = "",
     [string]$BaselineKernelVersion = "default",
-    [switch]$SkipWave1
+    [switch]$SkipWave1,
+    [switch]$PrepareOperatorSignoff
 )
 
 $ErrorActionPreference = "Stop"
@@ -49,7 +50,17 @@ if (-not $SkipWave1) {
 & $packetScript -DateStamp $DateStamp -OutputRoot $OutputRoot -SummaryJsonPath $summaryPath
 if (-not (Test-Path -LiteralPath $signoffPath)) {
     & $signoffScript -OutputPath $signoffPath -PacketPath $packetPath
+    if ($PrepareOperatorSignoff) {
+        Write-Host "Provider validation packet is ready for operator review: $packetPath"
+        Write-Host "Operator sign-off template created: $signoffPath"
+        return
+    }
+
     throw "Operator sign-off template generated at '$signoffPath'. Complete and approve the template, then re-run this script."
+}
+
+if ($PrepareOperatorSignoff) {
+    throw "Operator sign-off already exists at '$signoffPath'. Review or validate it without -PrepareOperatorSignoff."
 }
 
 $signoffReview = & $signoffScript -OutputPath $signoffPath -PacketPath $packetPath -Validate -Json | ConvertFrom-Json

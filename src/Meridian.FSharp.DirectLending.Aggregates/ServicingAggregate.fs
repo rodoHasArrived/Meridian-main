@@ -283,7 +283,7 @@ module internal ServicingAggregate =
 
         { Servicing = updated; AppliedAmount = appliedAmount }
 
-    let postDailyAccrual (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) accrualDate =
+    let postDailyAccrual (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (accrualDate: DateOnly) =
         let annualRate =
             if terms.RateTypeKind = RateTypeKind.Fixed then
                 decimalOrDefault terms.FixedAnnualRate 0m
@@ -296,13 +296,17 @@ module internal ServicingAggregate =
         let annualRate =
             DirectLendingInterop.ApplyRateBounds(terms.EffectiveRateFloor, terms.EffectiveRateCap, annualRate)
 
+        // Use the date-aware day-count helper so Act/Act accrues against the actual
+        // year length of the accrual date (366 in leap years); other conventions
+        // keep their fixed denominators.
         let interestAmount =
             if servicing.Balances.PrincipalOutstanding > 0m then
                 Math.Round(
-                    DirectLendingInterop.CalculateDailyAccrualAmount(
+                    DirectLendingInterop.CalculateDailyAccrualAmountForDate(
                         servicing.Balances.PrincipalOutstanding,
                         annualRate,
-                        int terms.DayCountBasis),
+                        int terms.DayCountBasis,
+                        accrualDate),
                     2,
                     MidpointRounding.AwayFromZero)
             else
@@ -311,10 +315,11 @@ module internal ServicingAggregate =
         let commitmentFeeAmount =
             if terms.CommitmentFeeRate.HasValue then
                 Math.Round(
-                    DirectLendingInterop.CalculateDailyAccrualAmount(
+                    DirectLendingInterop.CalculateDailyAccrualAmountForDate(
                         max 0m (servicing.CurrentCommitment - servicing.TotalDrawn),
                         terms.CommitmentFeeRate.Value,
-                        int terms.DayCountBasis),
+                        int terms.DayCountBasis,
+                        accrualDate),
                     2,
                     MidpointRounding.AwayFromZero)
             else

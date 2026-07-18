@@ -69,10 +69,12 @@ describe("ReportLibraryScreen", () => {
     expect(screen.getByRole("status", { name: "Loading Report Library" })).toBeInTheDocument();
   });
 
-  it("renders the reporting hub with family cards", async () => {
+  it("keeps the library focused on available templates instead of duplicating the reporting cockpit", async () => {
     await renderScreen();
 
-    expect(screen.getByRole("region", { name: "Daily reporting cockpit" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Daily reporting cockpit" })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Available report templates" })).toBeInTheDocument();
+    expect(screen.getByText("Browse standard report catalog")).toBeInTheDocument();
     expect(screen.getAllByText("Financial Statements").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Investor Reporting").length).toBeGreaterThan(0);
   });
@@ -90,5 +92,55 @@ describe("ReportLibraryScreen", () => {
 
     const investorLink = screen.getAllByRole("link", { name: "Run Investor Statement" })[0];
     expect(investorLink).toHaveAttribute("href", "/reporting/run?templateId=investor-statement%3A2.1");
+  });
+
+  it("routes draft templates to builder review instead of offering an unauthorized run", async () => {
+    const draftData: AccountingWorkspaceResponse = {
+      ...data,
+      reporting: {
+        ...data.reporting,
+        templates: [{
+          ...data.reporting.templates![0],
+          lifecycleStatus: "Draft"
+        }],
+        recentRuns: []
+      }
+    };
+
+    renderWithRouter(<ReportLibraryScreen data={draftData} />, { initialEntries: ["/reporting/library"] });
+    await waitForAsyncEffects();
+
+    const reviewLinks = screen.getAllByRole("link", { name: "Review Trial Balance Pack" });
+    expect(reviewLinks.length).toBeGreaterThan(0);
+    for (const link of reviewLinks) {
+      expect(link).toHaveAttribute("href", "/reporting/report-builder?templateId=trial-balance-pack%3A1.0");
+    }
+    expect(screen.queryByRole("link", { name: "Run Trial Balance Pack" })).not.toBeInTheDocument();
+  });
+
+  it("humanizes template and run statuses without presenting a missing as-of date as ready data", async () => {
+    const reviewData: AccountingWorkspaceResponse = {
+      ...data,
+      reporting: {
+        ...data.reporting,
+        templates: [{
+          ...data.reporting.templates![0],
+          lifecycleStatus: "INREVIEW"
+        }],
+        recentRuns: [{
+          ...data.reporting.recentRuns![0],
+          status: "AwaitingApproval",
+          asOfDate: null
+        }]
+      }
+    };
+
+    renderWithRouter(<ReportLibraryScreen data={reviewData} />, { initialEntries: ["/reporting/library"] });
+    await waitForAsyncEffects();
+
+    expect(screen.getByText("In review")).toBeInTheDocument();
+    expect(screen.getByText("Latest: Awaiting approval · No as-of date retained")).toBeInTheDocument();
+    expect(screen.queryByText("INREVIEW")).not.toBeInTheDocument();
+    expect(screen.queryByText(/As of As-of date unavailable/i)).not.toBeInTheDocument();
   });
 });

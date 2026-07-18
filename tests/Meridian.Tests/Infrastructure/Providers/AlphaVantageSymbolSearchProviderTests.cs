@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Domain;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Tests.TestHelpers;
 
@@ -149,15 +150,38 @@ public sealed class AlphaVantageSymbolSearchProviderTests
     }
 
     [Fact]
-    public async Task SearchAsync_WithRateLimitBody_ReturnsEmptyList()
+    public async Task SearchAsync_WithRateLimitBody_ThrowsTypedRateLimitMetadata()
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RateLimitResponse));
         using var httpClient = new HttpClient(handler);
         using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient);
 
-        var results = await provider.SearchAsync("IBM", 10, CancellationToken.None);
+        var act = () => provider.SearchAsync("IBM", 10, CancellationToken.None);
 
-        results.Should().BeEmpty();
+        var exception = await act.Should().ThrowAsync<RateLimitException>();
+        exception.Which.Provider.Should().Be("alphavantage");
+        exception.Which.Symbol.Should().Be("IBM");
+        exception.Which.RetryAfter.Should().Be(TimeSpan.FromMinutes(1));
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithHttp429_ThrowsTypedRateLimitAndPreservesRetryAfter()
+    {
+        using var handler = new StubHttpMessageHandler(_ =>
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(23));
+            return response;
+        });
+        using var httpClient = new HttpClient(handler);
+        using var provider = new AlphaVantageSymbolSearchProvider(ApiKey, httpClient);
+
+        var act = () => provider.SearchAsync("IBM", 10, CancellationToken.None);
+
+        var exception = await act.Should().ThrowAsync<RateLimitException>();
+        exception.Which.Provider.Should().Be("alphavantage");
+        exception.Which.Symbol.Should().Be("IBM");
+        exception.Which.RetryAfter.Should().Be(TimeSpan.FromSeconds(23));
     }
 
     [Fact]

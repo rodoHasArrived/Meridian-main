@@ -768,6 +768,74 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
 };
 
 describe("accounting-screen journal-entry view model", () => {
+  it("keeps editing unavailable when the governed workbench cannot load", async () => {
+    const services = {
+      getWorkbench: vi.fn().mockRejectedValue(new Error("journal workbench offline"))
+    } as unknown as ManualJournalEntryWorkbenchServices;
+
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+
+    await waitFor(() => expect(result.current.errorText).toBeTruthy());
+    expect(result.current.available).toBe(false);
+  });
+
+  it("keeps approval submission fail-closed until the current draft has completed validation", async () => {
+    const readyDraft: ManualJournalEntryDraft = {
+      ...manualJournalDraft,
+      evidenceLinks: ["evidence://manual-je/source-support"],
+      validationIssues: []
+    };
+    const workbench: ManualJournalEntryWorkbench = {
+      ...manualJournalWorkbench,
+      drafts: [readyDraft]
+    };
+    const services: ManualJournalEntryWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(workbench),
+      searchSecurities: vi.fn().mockResolvedValue([]),
+      saveDraft: vi.fn((request) => Promise.resolve(request.draft)),
+      validateDraft: vi.fn((request) => Promise.resolve(request.draft)),
+      submitApproval: vi.fn((request) => Promise.resolve({
+        ...readyDraft,
+        journalEntryId: request.journalEntryId,
+        status: "Submitted" as const,
+        version: request.version + 1
+      })),
+      attachEvidence: vi.fn().mockResolvedValue(readyDraft),
+      applyLifecycleAction: vi.fn()
+    };
+
+    const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
+    await waitFor(() => expect(result.current.draft.journalEntryId).toBe("manual-je-1"));
+
+    expect(result.current.validationIsCurrent).toBe(false);
+    expect(result.current.canSubmit).toBe(false);
+    expect(result.current.submitDisabledReason).toBe("Run Validate on the current draft before approval submission.");
+
+    await act(async () => {
+      await result.current.submit();
+    });
+    expect(services.submitApproval).not.toHaveBeenCalled();
+    expect(result.current.errorText).toBe("Run Validate on the current draft before approval submission.");
+
+    await act(async () => {
+      await result.current.validate();
+    });
+    expect(result.current.validationIsCurrent).toBe(true);
+    expect(result.current.canSubmit).toBe(true);
+
+    act(() => result.current.updateHeader("memo", "Edited after validation"));
+    expect(result.current.validationIsCurrent).toBe(false);
+    expect(result.current.canSubmit).toBe(false);
+
+    await act(async () => {
+      await result.current.validate();
+    });
+    await act(async () => {
+      await result.current.submit();
+    });
+    expect(services.submitApproval).toHaveBeenCalledTimes(1);
+  });
+
   it("builds manual journal line badges, Security Master picks, and evidence attachments", async () => {
     const savedDraft = {
       ...manualJournalDraft,
@@ -1273,7 +1341,8 @@ describe("accounting-screen journal-entry view model", () => {
         ledgerBookId: request.ledgerBookId ?? null,
         version: request.version + 1,
         evidenceLinks: request.evidenceLinks,
-        evidenceAttachments: [request.attachment]
+        evidenceAttachments: [request.attachment],
+        validationIssues: []
       })),
       applyLifecycleAction: vi.fn((request) => Promise.resolve({
         journalEntry: {
@@ -1317,12 +1386,6 @@ describe("accounting-screen journal-entry view model", () => {
     await act(async () => {
       await result.current.save();
     });
-    await act(async () => {
-      await result.current.validate();
-    });
-    await act(async () => {
-      await result.current.submit();
-    });
     act(() => {
       result.current.updateAttachmentDraft({
         displayName: "Book scoped support",
@@ -1332,6 +1395,12 @@ describe("accounting-screen journal-entry view model", () => {
     });
     await act(async () => {
       await result.current.addAttachment();
+    });
+    await act(async () => {
+      await result.current.validate();
+    });
+    await act(async () => {
+      await result.current.submit();
     });
     await act(async () => {
       await result.current.applyLifecycleAction("Approve");

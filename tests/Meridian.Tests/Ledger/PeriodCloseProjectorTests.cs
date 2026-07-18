@@ -135,7 +135,7 @@ public sealed class PeriodCloseProjectorTests
         draft.Should().NotBeNull();
         draft!.IsBalanced.Should().BeTrue();
         draft.Event.Kind.Should().Be(AutomatedJournalEventKind.PeriodCloseClosingEntries);
-        draft.Event.IdempotencyKey.Should().Be("period-close|2026-Q2");
+        draft.Event.IdempotencyKey.Should().MatchRegex("^period-close\\|2026-Q2\\|[0-9a-f]{24}$");
 
         var posted = AutomatedJournalApproval
             .Submit(draft, "controller", CloseAt, "quarter close")
@@ -145,6 +145,38 @@ public sealed class PeriodCloseProjectorTests
         posted.Status.Should().Be(AutomatedJournalApprovalStatus.Posted);
         ledger.GetBalance(LedgerAccounts.RealizedGain).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.RetainedEarnings).Should().Be(1_000m);
+    }
+
+    [Fact]
+    public void BuildDraft_IdempotencyTracksProjectedResidualSoRetriesReuseAndLateDeltasReroll()
+    {
+        var revenue = new LedgerAccount("Dividend Income", LedgerAccountType.Revenue);
+        var firstProjection = PeriodCloseProjector.Project(new PeriodCloseInput(
+            "2026-Q2",
+            CloseAt,
+            [new PeriodCloseAccountBalance(revenue, 300m)],
+            "controller"));
+        var retryProjection = PeriodCloseProjector.Project(new PeriodCloseInput(
+            "2026-Q2",
+            CloseAt.AddHours(2),
+            [new PeriodCloseAccountBalance(revenue, 300m)],
+            "controller"));
+        var lateAdjustmentDelta = PeriodCloseProjector.Project(new PeriodCloseInput(
+            "2026-Q2",
+            CloseAt.AddDays(1),
+            [new PeriodCloseAccountBalance(revenue, 50m)],
+            "controller"));
+
+        var first = PeriodCloseDraftBuilder.BuildDraft(firstProjection)!;
+        var retry = PeriodCloseDraftBuilder.BuildDraft(retryProjection)!;
+        var delta = PeriodCloseDraftBuilder.BuildDraft(lateAdjustmentDelta)!;
+
+        retry.Event.IdempotencyKey.Should().Be(first.Event.IdempotencyKey,
+            "retries over the same residual projection must reuse the retained draft");
+        delta.Event.IdempotencyKey.Should().NotBe(first.Event.IdempotencyKey,
+            "a late adjustment must queue only its new residual closing delta");
+        delta.Metadata.Tags!["close.projectionFingerprint"].Should().NotBe(
+            first.Metadata.Tags!["close.projectionFingerprint"]);
     }
 
     [Fact]

@@ -52,7 +52,22 @@ export interface StatementImportCommitResult {
   evidenceVaultIdentity?: EvidenceVaultIdentity | null;
   evidenceWorkbenchRoute?: string | null;
   reconciliationRoute?: string | null;
+  breakIds?: string[];
+  caseIds?: string[];
+  reconciliationCaseRoutes?: string[];
+  reconciliationCaseLinks?: StatementImportReconciliationCaseLink[];
   nextActions?: string[];
+}
+
+export interface StatementImportReconciliationCaseLink {
+  caseId: string;
+  breakId?: string | null;
+  route: string;
+  label: string;
+  status: string;
+  priority: string;
+  reason: string;
+  suggestedNextAction: string;
 }
 
 export interface StatementFetchSchedule {
@@ -700,6 +715,9 @@ export interface ReportingRunStatusProjection {
   changedLineCount?: number | null;
   addedLineCount?: number | null;
   removedLineCount?: number | null;
+  resolvedTemplate?: VersionedReportTemplateId | null;
+  resolvedParameters?: ReportingRunParameters | null;
+  readiness?: ReportingRunReadiness | null;
 }
 
 export interface ReportingGeneratedReportWriterGrid {
@@ -1016,6 +1034,8 @@ export interface ReportingScheduleDeliveryTarget {
   formats?: GovernanceReportArtifactFormat[] | null;
   deliveryMode?: ReportPackDeliveryMode | null;
   note?: string | null;
+  recipientPrincipalId?: string | null;
+  recipientPrincipalKind?: "User" | "Group" | "Company" | null;
 }
 
 export interface ReportingScheduleDeliveryPlan {
@@ -1130,6 +1150,35 @@ export interface StructuredReportingExportPayload {
   rowLineage?: StructuredReportingExportRowLineage[] | null;
 }
 
+export type ReportingScheduledReleaseHandoffState = "PendingRelease" | "Enqueued";
+
+export interface ReportingScheduledReleaseHandoff {
+  handoffId: string;
+  tenantId: string;
+  companyId: string;
+  scheduleId: string;
+  runId: string;
+  templateId: string;
+  distributionId: string;
+  targetDistributionId: string;
+  transportId: string;
+  recipientPrincipalId: string | null;
+  recipientPrincipalKind?: "User" | "Group" | "Company" | null;
+  destination: string;
+  subject: string;
+  body: string;
+  requestedFormats: GovernanceReportArtifactFormat[] | null;
+  artifactIds: string[] | null;
+  grantLifetimeSeconds: number | null;
+  grantMaxUses: number | null;
+  maxAttempts: number;
+  createdAtUtc: string;
+  state: ReportingScheduledReleaseHandoffState;
+  enqueuedDeliveryJobId: string | null;
+  enqueuedAtUtc: string | null;
+  deliveryTargetsSnapshotHash?: string | null;
+}
+
 export interface ReportingScheduleRecord {
   scheduleId: string;
   templateId: string;
@@ -1150,6 +1199,15 @@ export interface ReportingScheduleRecord {
   datasetSourceId?: string | null;
   brandingThemeId?: string | null;
   brandingThemeOverride?: ReportBrandingTheme | null;
+  template?: VersionedReportTemplateId | null;
+  runParameters?: ReportingRunParameters | null;
+  tenantId?: string | null;
+  companyId?: string | null;
+  accessPolicySnapshot?: ReportAccessPolicy | null;
+  lastReadiness?: ReportingRunReadiness | null;
+  releaseDeliveryHandoffs?: ReportingScheduledReleaseHandoff[] | null;
+  accessPolicySnapshotHash?: string | null;
+  deliveryTargetsSnapshotHash?: string | null;
 }
 
 export interface ReportingScheduleUpsertRequest {
@@ -1167,6 +1225,8 @@ export interface ReportingScheduleUpsertRequest {
   datasetSourceId?: string | null;
   brandingThemeId?: string | null;
   brandingThemeOverride?: ReportBrandingTheme | null;
+  template?: VersionedReportTemplateId | null;
+  runParameters?: ReportingRunParameters | null;
 }
 
 export interface ReportingScheduleRunResult {
@@ -1181,6 +1241,46 @@ export interface ReportingDueScheduleRunResult {
   runs: ReportingScheduleRunResult[];
 }
 
+export interface ReportingStarterSeedSchedule {
+  scheduleId: string;
+  templateId: string;
+  cronExpression: string;
+  cadence: string;
+  description: string;
+  state?: ReportingScheduleRecord["state"] | string;
+  defaultPeriod?: string | null;
+  deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
+}
+
+export interface ReportingStarterKit {
+  kitId: string;
+  archetype: string;
+  displayName: string;
+  description: string;
+  templateIds: string[];
+  defaultLayoutId: string;
+  defaultPeriod: string;
+  seedSchedules: ReportingStarterSeedSchedule[];
+}
+
+export interface ReportingStarterKitState {
+  isProvisioned: boolean;
+  selectedKitId?: string | null;
+  archetype?: string | null;
+  enabledTemplateIds: string[];
+  defaultLayoutId?: string | null;
+  defaultPeriod?: string | null;
+  seedScheduleIds: string[];
+  provisionedAtUtc?: string | null;
+  provisionedBy?: string | null;
+}
+
+export interface ReportingStarterKitProvisionResult {
+  kit: ReportingStarterKit;
+  state: ReportingStarterKitState;
+  seededSchedules: ReportingScheduleRecord[];
+}
+
 export interface ReportingRunRequest {
   templateId: string;
   asOfDate?: string | null;
@@ -1191,6 +1291,69 @@ export interface ReportingRunRequest {
   datasetSourceId?: string | null;
   retryReason?: string | null;
   allowRestatement?: boolean;
+  template?: VersionedReportTemplateId | null;
+  parameters?: ReportingRunParameters | null;
+}
+
+export type ReportingEntityScopeKind = "AllEntities" | "Entity" | "Portfolio" | "Investor";
+export type ReportingAccountingBasis = "Gaap" | "Tax" | "Management" | "Cash" | "Statutory";
+export type ReportingConsolidationLevel = "Fund" | "Entity" | "Portfolio" | "Investor";
+export type ReportingOutputFormat = "Pdf" | "Xlsx" | "Csv" | "EvidenceVault";
+export type ReportingFinality = "Draft" | "Final";
+export type ReportingRunReadinessStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unavailable";
+
+export interface ReportingRunScope {
+  fundProfileId: string;
+  entityScopeKind: ReportingEntityScopeKind;
+  entityId?: string | null;
+  portfolioId?: string | null;
+  investorId?: string | null;
+  dimensions?: import("./workstation-2").LedgerDimensionSet | null;
+}
+
+export interface ReportingLedgerBookSelection {
+  ledgerBookId?: string | null;
+  ledgerBookCode?: string | null;
+}
+
+export interface ReportingRunParameters {
+  scope: ReportingRunScope;
+  periodId: string;
+  asOfDate: string;
+  ledgerBook: ReportingLedgerBookSelection;
+  accountingBasis: ReportingAccountingBasis;
+  presentationCurrency: string;
+  consolidationLevel: ReportingConsolidationLevel;
+  outputFormat: ReportingOutputFormat;
+  finality: ReportingFinality;
+  includeSupportingSchedules: boolean;
+  includeEvidenceAppendix: boolean;
+  templateParameters: Record<string, string>;
+}
+
+export interface ReportingRunReadinessCheck {
+  checkId: string;
+  label: string;
+  status: ReportingRunReadinessStatus;
+  summary: string;
+  issueCount: number;
+  blocksDraft: boolean;
+  blocksFinal: boolean;
+  route?: string | null;
+  evidenceReferences: string[];
+}
+
+export interface ReportingRunReadiness {
+  evaluationId: string;
+  evaluatedAtUtc: string;
+  resolvedTemplate: VersionedReportTemplateId;
+  resolvedParameters: ReportingRunParameters;
+  status: ReportingRunReadinessStatus;
+  canGenerateDraft: boolean;
+  canGenerateFinal: boolean;
+  checks: ReportingRunReadinessCheck[];
+  blockingReasons: string[];
+  evidenceHash: string;
 }
 
 export interface ReportingRunResult {
@@ -1355,6 +1518,8 @@ export interface AccountingReportingSummary {
   brandingThemes?: ReportBrandingTheme[];
   reportWriterDatasetSources?: ReportWriterDatasetSource[];
   dailyWork?: ReportingDailyWorkItem[];
+  starterKits?: ReportingStarterKit[] | null;
+  starterKitState?: ReportingStarterKitState | null;
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];

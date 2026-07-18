@@ -1,13 +1,25 @@
 /* Final cascade for the light-first Institutional Ops system. Keep this after legacy dark rules. */
 
+:root {
+  --mds-workspace-bg: var(--theme-bg-canvas, var(--ws-page-bg));
+  --mds-workspace-surface: var(--theme-bg-light, var(--ws-surface));
+  --mds-workspace-surface-subtle: var(--theme-bg-hover, var(--ws-surface-subtle));
+  --mds-workspace-surface-raised: var(--theme-bg-active, var(--ws-surface-raised));
+  --mds-workspace-border: var(--theme-border, var(--ws-border));
+  --mds-workspace-border-strong: var(--theme-border-strong, var(--ws-border-strong));
+  --mds-workspace-accent: var(--theme-accent, var(--ws-accent));
+  --mds-workspace-text: var(--theme-primary-text, var(--ws-text));
+  --mds-workspace-text-muted: var(--theme-muted-text, var(--ws-text-muted));
+}
+
 body {
-  background: var(--ws-page-bg);
-  color: var(--ws-text);
+  background: var(--mds-workspace-bg, var(--ws-page-bg));
+  color: var(--mds-workspace-text, var(--ws-text));
 }
 
 .workspace-header-shell {
-  background: var(--ws-surface);
-  color: var(--ws-text);
+  background: var(--mds-workspace-surface, var(--ws-surface));
+  color: var(--mds-workspace-text, var(--ws-text));
 }
 
 .workspace-header-shell h1 {
@@ -28,7 +40,7 @@ body {
 .workspace-region {
   border: 1px solid var(--ws-border);
   border-radius: var(--radius-card);
-  background: var(--ws-surface);
+  background: var(--mds-workspace-surface, var(--ws-surface));
   box-shadow: var(--ws-shadow);
 }
 
@@ -48,10 +60,10 @@ body {
 
 .workspace-inline-select select {
   min-height: 32px;
-  border: 1px solid var(--ws-border);
+  border: 1px solid var(--mds-workspace-border, var(--ws-border));
   border-radius: var(--radius-button);
-  background: var(--ws-surface-subtle);
-  color: var(--ws-text);
+  background: var(--mds-workspace-surface-subtle, var(--ws-surface-subtle));
+  color: var(--mds-workspace-text, var(--ws-text));
 }
 
 .data-management-frame {
@@ -66,9 +78,9 @@ body {
   top: 0.75rem;
   display: grid;
   gap: 0.25rem;
-  border: 1px solid var(--ws-border);
+  border: 1px solid var(--mds-workspace-border, var(--ws-border));
   border-radius: var(--radius-card);
-  background: var(--ws-surface);
+  background: var(--mds-workspace-surface, var(--ws-surface));
   padding: 0.625rem;
   box-shadow: var(--ws-shadow);
 }
@@ -76,7 +88,7 @@ body {
 .workspace-directory-rail a {
   border-radius: var(--radius-button);
   padding: 0.375rem 0.5rem;
-  color: var(--ws-text);
+  color: var(--mds-workspace-text, var(--ws-text));
   font-size: 0.75rem;
   text-decoration: none;
 }
@@ -100,7 +112,7 @@ body {
   max-width: 100%;
   align-items: center;
   gap: 0.5rem;
-  color: var(--ws-text-muted);
+  color: var(--mds-workspace-text-muted, var(--ws-text-muted));
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -118,9 +130,9 @@ body {
 .panel-state,
 .workspace-section-subheader,
 .workspace-header-card {
-  border: 1px solid var(--ws-border);
-  background: var(--ws-surface);
-  color: var(--ws-text);
+  border: 1px solid var(--mds-workspace-border, var(--ws-border));
+  background: var(--mds-workspace-surface, var(--ws-surface));
+  color: var(--mds-workspace-text, var(--ws-text));
   box-shadow: var(--ws-shadow);
 }
 
@@ -130,24 +142,24 @@ body {
 .toolbar-chip {
   border-color: var(--ws-border);
   background: var(--ws-surface-subtle);
-  color: var(--ws-text-muted);
+  color: var(--mds-workspace-text-muted, var(--ws-text-muted));
   box-shadow: none;
 }
 
 .panel-state-title,
 .workspace-section-title,
 .workspace-header-card-value {
-  color: var(--ws-text);
+  color: var(--mds-workspace-text, var(--ws-text));
 }
 
 .panel-state-detail,
 .workspace-section-summary {
-  color: var(--ws-text-muted);
+  color: var(--mds-workspace-text-muted, var(--ws-text-muted));
 }
 
 .workspace-header-card:hover {
-  border-color: var(--ws-border-strong);
-  background: var(--ws-surface-raised);
+  border-color: var(--mds-workspace-border-strong, var(--ws-border-strong));
+  background: var(--mds-workspace-surface-raised, var(--ws-surface-raised));
   box-shadow: var(--ws-shadow);
 }
 
@@ -177,21 +189,21 @@ body {
 .security-master-print-sheet,
 .security-master-print-sheet__cell,
 .security-master-print-sheet__section {
-  border-color: var(--ws-border);
-  background: var(--ws-surface);
-  color: var(--ws-text);
+  border-color: var(--mds-workspace-border, var(--ws-border));
+  background: var(--mds-workspace-surface, var(--ws-surface));
+  color: var(--mds-workspace-text, var(--ws-text));
   box-shadow: var(--ws-shadow);
 }
 
 .security-master-print-sheet__eyebrow,
 .security-master-print-sheet__cell span {
-  color: var(--ws-text-muted);
+  color: var(--mds-workspace-text-muted, var(--ws-text-muted));
 }
 
 .security-master-print-sheet__title,
 .security-master-print-sheet__cell strong,
 .security-master-print-sheet__section span {
-  color: var(--ws-text);
+  color: var(--mds-workspace-text, var(--ws-text));
 }
 
 @media (max-width: 1100px) {

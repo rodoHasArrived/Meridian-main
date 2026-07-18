@@ -3119,6 +3119,12 @@ public sealed class ProviderLedgerReconciliationServiceTests
             string updatedBy,
             CancellationToken ct = default) =>
             throw new NotSupportedException();
+
+        public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+            Guid requestedSecurityId,
+            OperatorOverrideDecision decision,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
     }
 
     private sealed class StaticSecurityMasterConflictService(params SecurityMasterConflict[] conflicts)

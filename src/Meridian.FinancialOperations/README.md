@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.FinancialOperations
@@ -261,6 +261,17 @@ can reach ready-for-review certification; close-backed packages also recheck tha
 the close plan book before certification. When `StorageOptions`
 is registered, late-adjustment requests and task-level close sign-off decisions are retained
 through an atomic JSON snapshot under the configured storage root and reproject after restart.
+The final close-plan control is the shared `Post closing entries` gate. After the existing task,
+sign-off, evidence, and version checks pass, the management service projects the current scoped
+revenue/expense residual, queues the deterministic closing-entry draft into the governed workbench,
+and waits for independent submit, approval, and posting. It rechecks that gate at the hard-close
+mutation boundary and finalizes the actual ledger period before publishing the workflow close
+package; an unavailable workbench, an unapproved current draft, a pending reversal, or any residual
+temporary-account balance fails closed. The projection fingerprint makes retries reuse the same
+draft while a late approved adjustment queues only its new closing delta. Governed reopen requires
+human Controller authority plus retained restatement approval evidence, creates or reuses every
+source-linked closing-batch reversal draft before moving the ledger period back to soft close, and
+supports deterministic retry if the first reopen attempt stopped after draft creation.
 Close blocker/evidence reviews are retained in the same close-management snapshot as explicit
 operator review records; they require human origin, notes, scoped close-review/blocker evidence
 that identifies the active issue, target, workflow or period, and selected ledger book, and they do
@@ -442,6 +453,13 @@ Security Master remains the canonical source of instrument identity, Instruments
 own economic projections, and this module owns the governed candidate/approval handoff. These
 optional fields add no Financial Operations persistence, direct ledger-entry input, or alternate
 posting route; the approved immutable `JournalEntry` remains the accounting aggregate.
+For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
+position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
+the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
+drift, event/lineage drift, a missing or mismatched authoritative rule-pack reference, or a
+client-supplied amount mismatch blocks the candidate before approval. Factor detection is anchored
+to the canonical event type as well as projection lineage, so omitting or relabeling a client field
+cannot bypass server recalculation.
 `AccountingPostingCandidatePostService` is the separate append gate for approved generated
 candidates. It requires a configured Postgres-backed `ILedgerJournalStore`, a human-operator action
 origin, retained source-event identity, approval evidence, an aggregate id equal to the target

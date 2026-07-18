@@ -12,6 +12,7 @@ import type {
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
   ClosePeriodPlan,
+  DailyValuationScheduleWorkItem,
   FinancialOperationsCommandCenter,
   MultiAssetCoverageSummary,
   OperationsContinuityWorkflow,
@@ -294,6 +295,7 @@ const closeWorkflow: OperationsContinuityWorkflow = {
 
 const closePeriodPlan: ClosePeriodPlan = {
   closePlanId: "close-plan-alpha-202605",
+  workflowVersion: 19,
   fundProfileId: "fund-alpha",
   ledgerBookId: "book-alpha",
   periodId: "2026-05",
@@ -505,7 +507,58 @@ const closePeriodPlan: ClosePeriodPlan = {
       evidenceLinks: [],
       blockingIssues: []
     }
-  ]
+  ],
+  closingEntriesGate: {
+    gateId: "closing-entries:book-alpha:2026-05",
+    label: "Post closing entries",
+    state: "DraftQueued",
+    isReadyForLock: false,
+    netIncomeRoll: 1500,
+    temporaryAccountBalanceCount: 2,
+    detail: "A closing-entry draft is queued for controller approval and posting.",
+    draftJournalEntryId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+    draftStatus: "Draft",
+    idempotencyKey: "closing-entries:book-alpha:2026-05:v1",
+    balances: [
+      {
+        accountName: "Advisory fee revenue",
+        accountType: "Revenue",
+        balance: 2500,
+        symbol: "ADV-FEE",
+        financialAccountId: "financial-account-revenue",
+        dimensions: {
+          fundId: "fund-alpha",
+          entityId: "entity-alpha",
+          sleeveId: "sleeve-credit",
+          externalGlDimensions: { class: "private-fund" }
+        }
+      },
+      {
+        accountName: "Fund administration expense",
+        accountType: "Expense",
+        balance: -1000,
+        financialAccountId: "financial-account-expense",
+        dimensions: {
+          fundId: "fund-alpha",
+          entityId: "entity-alpha",
+          costCenterId: "fund-operations"
+        }
+      }
+    ],
+    evidenceLinks: ["evidence/closing-entry-preview"],
+    closingBatchJournalEntryIds: ["11111111-2222-3333-4444-555555555555"],
+    reversalDraftJournalEntryIds: ["66666666-7777-8888-9999-aaaaaaaaaaaa"]
+  }
+};
+
+const postedClosePeriodPlan: ClosePeriodPlan = {
+  ...closePeriodPlan,
+  closingEntriesGate: {
+    ...closePeriodPlan.closingEntriesGate!,
+    state: "Posted",
+    isReadyForLock: true,
+    detail: "Closing entries are posted and retained for period lock."
+  }
 };
 
 const accountingReportPackage: AccountingReportPackageBundle = {
@@ -795,10 +848,10 @@ describe("accounting-screen close-cockpit view model", () => {
     const createLateAdjustment = vi.fn(async () => closePeriodPlan);
     const reviewLateAdjustment = vi.fn(async () => closePeriodPlan);
     const signOffCloseTask = vi.fn(async () => closePeriodPlan);
-    const configureClosePlan = vi.fn(async () => closePeriodPlan);
+    const configureClosePlan = vi.fn(async () => postedClosePeriodPlan);
     const lockClosePeriod = vi.fn(async () => ({
       isLocked: true,
-      plan: { ...closePeriodPlan, isPeriodLocked: true },
+      plan: { ...postedClosePeriodPlan, isPeriodLocked: true },
       transition: null,
       issues: []
     }));
@@ -990,6 +1043,36 @@ describe("accounting-screen close-cockpit view model", () => {
         requiredAction: "Retain close-package evidence and lock the period."
       })
     ]));
+    expect(result.current.closingEntriesGate).toMatchObject({
+      gateId: "closing-entries:book-alpha:2026-05",
+      label: "Post closing entries",
+      statusLabel: "Draft queued",
+      statusTone: "warning",
+      isReadyForLock: false,
+      netIncomeRollLabel: "+$1,500.00 USD",
+      temporaryAccountBalanceLabel: "2 temporary-account balances",
+      draftLabel: "Draft aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee | Draft",
+      idempotencyLabel: "Idempotency closing-entries:book-alpha:2026-05:v1",
+      closingBatchLabel: "1 closing batch journal entry: 11111111-2222-3333-4444-555555555555",
+      reversalDraftLabel: "1 reversal draft journal entry: 66666666-7777-8888-9999-aaaaaaaaaaaa",
+      evidenceLabel: "1 evidence link"
+    });
+    expect(result.current.closingEntriesGate?.balances).toEqual([
+      expect.objectContaining({
+        accountLabel: "Advisory fee revenue (ADV-FEE)",
+        accountTypeLabel: "Revenue",
+        balanceLabel: "+$2,500.00 USD",
+        scopeLabel: "Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit | External class: private-fund",
+        financialAccountLabel: "financial-account-revenue"
+      }),
+      expect.objectContaining({
+        accountLabel: "Fund administration expense",
+        accountTypeLabel: "Expense",
+        balanceLabel: "-$1,000.00 USD",
+        scopeLabel: "Fund: fund-alpha | Entity: entity-alpha | Cost center: fund-operations",
+        financialAccountLabel: "financial-account-expense"
+      })
+    ]);
     expect(result.current.evidenceReviewRows).toEqual(expect.arrayContaining([
       expect.objectContaining({
         rowId: "task-evidence-task-nav",
@@ -1161,7 +1244,7 @@ describe("accounting-screen close-cockpit view model", () => {
         label: "Period lock",
         statusLabel: "Open",
         actionId: "lock-period",
-        disabledReason: null,
+        disabledReason: "Closing entries must be Posted or Not required before period lock; current state is Draft queued.",
         tone: "default"
       })
     ]));
@@ -1253,7 +1336,7 @@ describe("accounting-screen close-cockpit view model", () => {
 
     expect(lockClosePeriod).toHaveBeenCalledWith(expect.objectContaining({
       workflowId: "workflow-close-1",
-      expectedWorkflowVersion: closeWorkflow.version,
+      expectedWorkflowVersion: closePeriodPlan.workflowVersion,
       actor: "browser-accounting-controller",
       rationale: "Lock close period 2026-05 after close checklist and report package review.",
       reportPackId: "accounting-report-package-alpha-202605",
@@ -1262,6 +1345,7 @@ describe("accounting-screen close-cockpit view model", () => {
       closePackageManifestId: "close-manifest-2026-05",
       closePackageRetainedManifestRoute: "/api/ledger/reports/accounting-packages/accounting-report-package-alpha-202605/exports/report-export-financial-statements",
       actionOrigin: "HumanOperator",
+      prepareClosingEntriesOnly: false,
       checklistControlApprovals: [
         {
           taskId: "task-nav",
@@ -1328,6 +1412,140 @@ describe("accounting-screen close-cockpit view model", () => {
     expect(reviewLateAdjustment).not.toHaveBeenCalled();
     expect(signOffCloseTask).not.toHaveBeenCalled();
   });
+
+  it("queues required closing entries with the close-plan workflow version and refreshes the gate", async () => {
+    const requiredClosePlan: ClosePeriodPlan = {
+      ...closePeriodPlan,
+      workflowVersion: 27,
+      closingEntriesGate: {
+        ...closePeriodPlan.closingEntriesGate!,
+        state: "Required",
+        isReadyForLock: false,
+        detail: "Non-zero temporary-account balances require closing entries before period lock.",
+        draftJournalEntryId: null,
+        draftStatus: null,
+        closingBatchJournalEntryIds: [],
+        reversalDraftJournalEntryIds: []
+      }
+    };
+    const queuedClosePlan: ClosePeriodPlan = {
+      ...requiredClosePlan,
+      workflowVersion: 28,
+      closingEntriesGate: {
+        ...requiredClosePlan.closingEntriesGate!,
+        state: "DraftQueued",
+        detail: "A closing-entry draft is queued for controller approval and posting."
+      }
+    };
+    const getClosePlan = vi.fn()
+      .mockResolvedValueOnce(requiredClosePlan)
+      .mockResolvedValue(queuedClosePlan);
+    const lockClosePeriod = vi.fn(async () => ({
+      isLocked: false,
+      plan: queuedClosePlan,
+      transition: null,
+      issues: []
+    }));
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan,
+      createLateAdjustment: vi.fn(async () => requiredClosePlan),
+      reviewLateAdjustment: vi.fn(async () => requiredClosePlan),
+      signOffCloseTask: vi.fn(async () => requiredClosePlan),
+      reviewCloseEvidence: vi.fn(async () => requiredClosePlan),
+      configureClosePlan: vi.fn(async () => requiredClosePlan),
+      lockClosePeriod,
+      buildPackage: vi.fn(async () => accountingReportPackage),
+      certifyPackage: vi.fn(async () => accountingReportPackage),
+      getExportManifest: vi.fn(async () => accountingReportExportManifest),
+      listPackages: vi.fn(async () => [accountingReportPackage])
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.closingEntriesGate?.statusLabel).toBe("Required"));
+    expect(result.current.queueClosingEntriesDisabledReason).toBeNull();
+    expect(result.current.lockClosePeriodDisabledReason).toBe("Queue and post closing entries before locking the period.");
+
+    await act(async () => {
+      await result.current.queueClosingEntries();
+    });
+
+    expect(lockClosePeriod).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-close-1",
+      expectedWorkflowVersion: 27,
+      actor: "browser-accounting-controller",
+      rationale: "Prepare closing entries for close period 2026-05 before period lock.",
+      reportPackId: "accounting-report-package-alpha-202605",
+      correlationId: "browser-close-period-closing-entries-workflow-close-1",
+      prepareClosingEntriesOnly: true,
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/closing-entry-preparation/workflow-close-1",
+        "evidence://close-package/workflow/workflow-close-1/period/2026-05/book/book-alpha/closing-entry-preparation"
+      ])
+    }));
+    expect(getClosePlan).toHaveBeenCalledTimes(2);
+    expect(result.current.queueClosingEntriesStatusText).toBe("Queued closing entries for 2026-05; state is Draft queued.");
+    expect(result.current.queueClosingEntriesStatusTone).toBe("success");
+    expect(result.current.closingEntriesGate?.statusLabel).toBe("Draft queued");
+    expect(result.current.queueClosingEntriesDisabledReason).toContain("current state is Draft queued");
+    expect(result.current.lockClosePeriodDisabledReason).toContain("current state is Draft queued");
+  });
+
+  it.each([
+    { state: "Required", isReadyForLock: true, statusLabel: "Required" },
+    { state: "DraftQueued", isReadyForLock: true, statusLabel: "Draft queued" },
+    { state: "Submitted", isReadyForLock: true, statusLabel: "Submitted" },
+    { state: "Approved", isReadyForLock: true, statusLabel: "Approved" },
+    { state: "ReversalQueued", isReadyForLock: true, statusLabel: "Reversal queued" },
+    { state: "Blocked", isReadyForLock: true, statusLabel: "Blocked" },
+    { state: "Unavailable", isReadyForLock: true, statusLabel: "Unavailable" },
+    { state: "Unexpected", isReadyForLock: true, statusLabel: "Unavailable" },
+    { state: "Posted", isReadyForLock: false, statusLabel: "Posted" },
+    { state: "NotRequired", isReadyForLock: false, statusLabel: "Not required" }
+  ])(
+    "keeps hard period lock disabled for gate state $state with readiness $isReadyForLock",
+    async ({ state, isReadyForLock, statusLabel }) => {
+      const intermediateClosePlan: ClosePeriodPlan = {
+        ...closePeriodPlan,
+        closingEntriesGate: {
+          ...closePeriodPlan.closingEntriesGate!,
+          state: state as NonNullable<ClosePeriodPlan["closingEntriesGate"]>["state"],
+          isReadyForLock
+        }
+      };
+      const lockClosePeriod = vi.fn();
+      const services: AccountingCloseReportPackageServices = {
+        getClosePlan: vi.fn(async () => intermediateClosePlan),
+        createLateAdjustment: vi.fn(async () => intermediateClosePlan),
+        reviewLateAdjustment: vi.fn(async () => intermediateClosePlan),
+        signOffCloseTask: vi.fn(async () => intermediateClosePlan),
+        reviewCloseEvidence: vi.fn(async () => intermediateClosePlan),
+        configureClosePlan: vi.fn(async () => intermediateClosePlan),
+        lockClosePeriod,
+        buildPackage: vi.fn(async () => accountingReportPackage),
+        certifyPackage: vi.fn(async () => accountingReportPackage),
+        getExportManifest: vi.fn(async () => accountingReportExportManifest),
+        listPackages: vi.fn(async () => [accountingReportPackage])
+      };
+
+      const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+      await waitFor(() => expect(result.current.closingEntriesGate).not.toBeNull());
+      expect(result.current.closingEntriesGate?.isReadyForLock).toBe(false);
+      expect(result.current.lockClosePeriodDisabledReason).toBe(
+        state === "Required"
+          ? "Queue and post closing entries before locking the period."
+          : `Closing entries must be Posted or Not required before period lock; current state is ${statusLabel}.`
+      );
+
+      await act(async () => {
+        await result.current.lockClosePeriod();
+      });
+
+      expect(lockClosePeriod).not.toHaveBeenCalled();
+      expect(result.current.lockClosePeriodStatusTone).toBe("danger");
+    }
+  );
 
   it("selects retained close setup tasks before retaining dependency and sign-off edits", async () => {
     const multiTaskClosePlan: ClosePeriodPlan = {
@@ -2504,6 +2722,199 @@ describe("accounting-screen close-cockpit view model", () => {
     ]));
   });
 
+  it("gates daily valuation schedule and batch commands from retained typed state", () => {
+    const currentDailyValuationSchedule: DailyValuationScheduleWorkItem = {
+      scheduleId: "daily-fund-alpha",
+      fundProfileId: "fund-alpha",
+      currency: "USD",
+      actor: "valuation-scheduler",
+      ledgerBookId: "11111111-1111-1111-1111-111111111111",
+      periodId: "22222222-2222-2222-2222-222222222222",
+      nextRunAtUtc: "2026-06-02T01:00:00Z",
+      positions: [],
+      policyId: "daily-close-policy",
+      policyName: "Approved daily close marks",
+      valuationMethod: "ClosingPrice",
+      policyApprovedBy: "controller",
+      policyApprovedAtUtc: "2026-05-01T00:00:00Z",
+      reason: "Retained daily close valuation schedule.",
+      isEnabled: true,
+      entityId: "entity-alpha",
+      tenantId: "tenant-alpha",
+      companyId: "company-alpha",
+      state: "DraftReady"
+    };
+    const commandCenter: FinancialOperationsCommandCenter = {
+      generatedAtUtc: "2026-06-01T05:00:00Z",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "11111111-1111-1111-1111-111111111111",
+      fundAccountId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+      periodId: "2026-06",
+      status: "ReviewRequired",
+      isReadyToComplete: false,
+      summary: "Daily valuation drafts await controller approval.",
+      activeItemCount: 1,
+      blockedItemCount: 0,
+      reviewItemCount: 1,
+      metrics: [],
+      queueRows: [],
+      activeWorkflow: null,
+      closeCalendar: null,
+      closeSupportDecision: null,
+      privateCapitalCloseCockpit: {
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "11111111-1111-1111-1111-111111111111",
+        fundAccountId: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+        periodId: "2026-06",
+        entityId: "entity-alpha",
+        projectedAtUtc: "2026-06-01T05:00:00Z",
+        cockpitRoute: "/accounting/close",
+        overallStatus: "ReviewRequired",
+        isReadyToClose: false,
+        readinessScore: 80,
+        workflowCount: 1,
+        fundEventCount: 0,
+        capitalAccountCount: 0,
+        reportOutputCount: 0,
+        deliveredReportOutputCount: 0,
+        readyLaneCount: 0,
+        blockedLaneCount: 1,
+        lanes: [],
+        workflows: [],
+        blockers: [],
+        nextActions: [],
+        liveCapabilities: [],
+        plannedCapabilities: [],
+        dailyValuationStatus: {
+          scheduleId: "daily-fund-alpha",
+          fundProfileId: "fund-alpha",
+          ledgerBookId: "11111111-1111-1111-1111-111111111111",
+          periodId: "2026-06",
+          isConfigured: true,
+          isEnabled: true,
+          nextRunAtUtc: "2026-06-02T01:00:00Z",
+          lastRunAtUtc: "2026-06-01T01:00:00Z",
+          state: "DraftReady",
+          summary: "Two retained valuation drafts are ready.",
+          evidenceLinks: [],
+          blockers: [],
+          journalEntryIds: [
+            "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+            "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
+          ],
+          batchCorrelationId: "daily-valuation:fund-alpha:2026-06-01"
+        }
+      }
+    };
+
+    const state = buildCloseCommandCenterViewState({
+      data: accountingWorkspace,
+      commandCenter,
+      commandCenterLoading: false,
+      commandCenterError: null,
+      workflow: closeWorkflow,
+      workflowLoading: false,
+      workflowError: null,
+      accountingSystemProviders: [accountingSystemProvider],
+      accountingSystemImport: null,
+      accountingSystemReconciliation,
+      multiAssetCoverage,
+      currentDailyValuationSchedule
+    });
+
+    expect(state.actionRows[0]).toMatchObject({
+      id: "daily-valuation-configure",
+      command: "configure-daily-valuation-schedule",
+      disabledReason: "Complete or correct the retained daily valuation batch before reconfiguring its schedule."
+    });
+    expect(state.actionRows[1]).toMatchObject({
+      id: "daily-valuation-run-due",
+      command: "run-due-daily-valuation-schedules",
+      disabledReason: "Run due is available only from Scheduled state; current state is DraftReady."
+    });
+    expect(state.actionRows[2]).toMatchObject({
+      id: "daily-valuation-approve-post",
+      label: "Approve and post 2 valuation drafts",
+      command: "approve-daily-valuation-batch",
+      ariaLabel: "Approve and post the complete retained daily valuation batch"
+    });
+
+    const scheduledCommandCenter: FinancialOperationsCommandCenter = {
+      ...commandCenter,
+      privateCapitalCloseCockpit: {
+        ...commandCenter.privateCapitalCloseCockpit!,
+        dailyValuationStatus: {
+          ...commandCenter.privateCapitalCloseCockpit!.dailyValuationStatus!,
+          state: "Scheduled",
+          summary: "Daily valuation is scheduled.",
+          journalEntryId: null,
+          journalEntryIds: [],
+          batchCorrelationId: null
+        }
+      }
+    };
+    const scheduledState = buildCloseCommandCenterViewState({
+      data: accountingWorkspace,
+      commandCenter: scheduledCommandCenter,
+      commandCenterLoading: false,
+      commandCenterError: null,
+      workflow: closeWorkflow,
+      workflowLoading: false,
+      workflowError: null,
+      accountingSystemProviders: [accountingSystemProvider],
+      accountingSystemImport: null,
+      accountingSystemReconciliation,
+      multiAssetCoverage,
+      currentDailyValuationSchedule: { ...currentDailyValuationSchedule, state: "Scheduled" }
+    });
+    expect(scheduledState.actionRows.slice(0, 2)).toEqual([
+      expect.objectContaining({
+        command: "configure-daily-valuation-schedule",
+        disabledReason: null
+      }),
+      expect.objectContaining({
+        command: "run-due-daily-valuation-schedules",
+        disabledReason: null
+      })
+    ]);
+
+    const blockedCommandCenter: FinancialOperationsCommandCenter = {
+      ...commandCenter,
+      privateCapitalCloseCockpit: {
+        ...commandCenter.privateCapitalCloseCockpit!,
+        dailyValuationStatus: {
+          ...commandCenter.privateCapitalCloseCockpit!.dailyValuationStatus!,
+          state: "Blocked",
+          summary: "One of two valuation drafts posted before a retained blocker stopped the batch.",
+          blockers: ["Draft correction is required."],
+          batchCorrelationId: "daily-valuation:fund-alpha:2026-06-01"
+        }
+      }
+    };
+    const blockedState = buildCloseCommandCenterViewState({
+      data: accountingWorkspace,
+      commandCenter: blockedCommandCenter,
+      commandCenterLoading: false,
+      commandCenterError: null,
+      workflow: closeWorkflow,
+      workflowLoading: false,
+      workflowError: null,
+      accountingSystemProviders: [accountingSystemProvider],
+      accountingSystemImport: null,
+      accountingSystemReconciliation,
+      multiAssetCoverage,
+      currentDailyValuationSchedule: { ...currentDailyValuationSchedule, state: "Blocked" }
+    });
+    expect(blockedState.actionRows[0].disabledReason).toContain("retained daily valuation batch");
+    expect(blockedState.actionRows[1].disabledReason).toContain("current state is Blocked");
+    expect(blockedState.actionRows[2]).toMatchObject({
+      id: "daily-valuation-retry-batch",
+      label: "Correct and retry 2 valuation drafts",
+      command: "retry-daily-valuation-batch",
+      disabledReason: null
+    });
+  });
+
   it("surfaces shared FINOPS queue owner due evidence action and impact metadata", () => {
     const commandCenter: FinancialOperationsCommandCenter = {
       generatedAtUtc: "2026-06-01T05:00:00Z",
@@ -2581,4 +2992,3 @@ describe("accounting-screen close-cockpit view model", () => {
     });
   });
 });
-

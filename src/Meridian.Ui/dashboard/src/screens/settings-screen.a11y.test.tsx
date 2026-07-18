@@ -49,7 +49,7 @@ describe("SettingsScreen accessibility", () => {
     apiMocks.listScopedAccessAssignments.mockImplementation(() => new Promise(() => undefined));
   });
 
-  it("has no basic accessibility violations in the overview/profile task view", async () => {
+  it("has no basic accessibility violations in the Settings task chooser", async () => {
     const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings"]
     });
@@ -58,7 +58,7 @@ describe("SettingsScreen accessibility", () => {
     expect(results.violations).toHaveLength(0);
   });
 
-  it("has no basic accessibility violations in the providers task view", async () => {
+  it("has no basic accessibility violations in the Preferences task view", async () => {
     const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings/preferences"]
     });
@@ -67,9 +67,9 @@ describe("SettingsScreen accessibility", () => {
     expect(results.violations).toHaveLength(0);
   });
 
-  it("has no basic accessibility violations in the operations task view", async () => {
+  it("has no basic accessibility violations in the canonical Accounting Systems task view", async () => {
     const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
-      initialEntries: ["/settings/integrations"]
+      initialEntries: ["/settings/accounting-systems"]
     });
 
     const results = await axe(container);
@@ -79,8 +79,10 @@ describe("SettingsScreen accessibility", () => {
   it.each([
     ["access", "/settings/access"],
     ["providers", "/settings/providers"],
+    ["guided provider setup", "/settings/providers/alpaca/setup"],
+    ["advanced provider controls", "/settings/providers/alpaca/advanced"],
     ["diagnostics", "/settings/diagnostics"],
-    ["feature-coverage", "/settings/feature-coverage"]
+    ["advanced diagnostics", "/settings/diagnostics/advanced"]
   ])("has no basic accessibility violations in the %s route view", async (_view, route) => {
     const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: [route]

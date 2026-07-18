@@ -83,9 +83,9 @@ The repository currently includes **32 concrete provider implementations** plus 
 ### Symbol Search Providers
 | Provider | Class | Path |
 |----------|-------|------|
-| Alpaca | `AlpacaSymbolSearchProviderRefactored` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
+| Alpaca | `AlpacaSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs` |
 | EDGAR | `EdgarSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
-| Finnhub | `FinnhubSymbolSearchProviderRefactored` | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
+| Finnhub | `FinnhubSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs` |
 | OpenFIGI | `OpenFigiClient` | `src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
 | Polygon | `PolygonSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
 | Robinhood | `RobinhoodSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
@@ -209,10 +209,10 @@ The repository currently includes **32 concrete provider implementations** plus 
 ### Symbol Search Providers
 | Provider | Location |
 |----------|----------|
-| Alpaca | `Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
+| Alpaca | `Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProvider.cs` |
 | EDGAR | `Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
 | Polygon | `Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
-| Finnhub | `Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
+| Finnhub | `Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProvider.cs` |
 | OpenFIGI | `Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
 | Robinhood | `Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
 

@@ -70,31 +70,47 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearch), async (HttpContext context) =>
         {
-            return await BuildStrategyPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildStrategyPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationResearch");
+        .WithName("GetWorkstationResearch")
+        .Produces<WorkstationStrategyPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategy), async (HttpContext context) =>
         {
-            return await BuildStrategyPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildStrategyPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationStrategy");
+        .WithName("GetWorkstationStrategy")
+        .Produces<WorkstationStrategyPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationResearchBriefing), async (HttpContext context) =>
         {
             var briefing = await BuildStrategyBriefingAsync(context).ConfigureAwait(false);
-            return Results.Json(ToResearchBriefingDto(briefing), jsonOptions);
+            return briefing is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Json(ToResearchBriefingDto(briefing), jsonOptions);
         })
         .WithName("GetWorkstationResearchBriefing")
-        .Produces<ResearchBriefingDto>(200);
+        .Produces<ResearchBriefingDto>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyBriefing), async (HttpContext context) =>
         {
             var briefing = await BuildStrategyBriefingAsync(context).ConfigureAwait(false);
-            return Results.Json(briefing, jsonOptions);
+            return briefing is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Json(briefing, jsonOptions);
         })
         .WithName("GetWorkstationStrategyBriefing")
-        .Produces<StrategyBriefingDto>(200);
+        .Produces<StrategyBriefingDto>(200)
+        .Produces(503);
 
         // Governed Security Master write surface lives under /api/security-master (not /api/workstation),
         // so it maps its own tenant-scoped group directly on the app.
@@ -108,6 +124,7 @@ public static partial class WorkstationEndpoints
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
+        MapDataOperationsAssuranceEndpoints(group);
         MapStatementConnectorEndpoints(group, jsonOptions);
         MapProviderIntegrationEndpoints(group, jsonOptions);
 
@@ -344,9 +361,15 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTrading), async (Guid? fundAccountId, HttpContext context) =>
         {
-            return await BuildTradingPayloadAsync(context, fundAccountId).ConfigureAwait(false);
+            var payload = await BuildTradingPayloadAsync(context, fundAccountId).ConfigureAwait(false);
+            return payload is null
+                ? WorkstationServiceUnavailable(
+                    "Trading data is unavailable: no execution portfolio state, order manager, or strategy run read service is registered.")
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationTrading");
+        .WithName("GetWorkstationTrading")
+        .Produces<WorkstationTradingPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTradingReadiness), async (Guid? fundAccountId, HttpContext context) =>
         {
@@ -382,15 +405,25 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
-            return await BuildDataPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildDataPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? DataReadServicesUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationDataOperations");
+        .WithName("GetWorkstationDataOperations")
+        .Produces<WorkstationDataPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationData), async (HttpContext context) =>
         {
-            return await BuildDataPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildDataPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? DataReadServicesUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationData");
+        .WithName("GetWorkstationData")
+        .Produces<WorkstationDataPayload>(200)
+        .Produces(503);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationDataQuery), async (DataQueryRequest request, HttpContext context) =>
         {
@@ -438,21 +471,39 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationGovernance), async (HttpContext context) =>
         {
-            return await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationGovernance");
+        .WithName("GetWorkstationGovernance")
+        .Produces<WorkstationAccountingPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationAccounting), async (HttpContext context) =>
         {
-            return await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationAccounting");
+        .WithName("GetWorkstationAccounting")
+        .Produces<WorkstationAccountingPayload>(200)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReporting), async (HttpContext context) =>
         {
-            return await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            var payload = await BuildAccountingPayloadAsync(context).ConfigureAwait(false);
+            return payload is null
+                ? StrategyReadServiceUnavailable()
+                : Results.Ok(payload);
         })
-        .WithName("GetWorkstationReporting");
+        .WithName("GetWorkstationReporting")
+        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.AdminMaintenance)
+        .Produces<WorkstationAccountingPayload>(200)
+        .Produces(401)
+        .Produces(403)
+        .Produces(503);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReportingStructuredExport), (
             string exportId,
@@ -507,10 +558,13 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("GetWorkstationStructuredReportingExport")
+        .RequireAnyPermission(UserPermission.ViewReporting, UserPermission.AdminMaintenance)
         .Produces<StructuredReportingExportPayloadDto>(200)
         .Produces(200, contentType: "application/json")
         .Produces(200, contentType: "text/csv")
         .Produces(200, contentType: WorkstationStructuredXlsxContentType)
+        .Produces(401)
+        .Produces(403)
         .Produces(400)
         .Produces(404);
 
@@ -687,8 +741,17 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Private-capital close cockpit service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var cockpit = await service
-                .GetCockpitAsync(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId, context.RequestAborted)
+                .GetCockpitAsync(
+                    fundProfileId,
+                    ledgerBookId,
+                    fundAccountId,
+                    periodId,
+                    entityId,
+                    context.RequestAborted,
+                    tenantContext.TenantId,
+                    tenantContext.CompanyId)
                 .ConfigureAwait(false);
             return Results.Json(cockpit, jsonOptions);
         })
@@ -2845,29 +2908,15 @@ public static partial class WorkstationEndpoints
         }).ExcludeFromDescription();
     }
 
-    private static string WorkstationSubroute(string route)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(route);
-        return route.StartsWith(WorkstationApiRoutePrefix, StringComparison.Ordinal)
-            ? route[WorkstationApiRoutePrefix.Length..]
-            : route;
-    }
-
-    private static string PortfolioSubroute(string route)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(route);
-        return route.StartsWith(PortfolioApiRoutePrefix, StringComparison.Ordinal)
-            ? route[PortfolioApiRoutePrefix.Length..]
-            : route;
-    }
-
-    // PR-03: returns typed DTO instead of anonymous object
-    private static async Task<WorkstationStrategyPayload> BuildStrategyPayloadAsync(HttpContext context)
+    // PR-03: returns typed DTO instead of anonymous object.
+    // Returns null when the strategy run read service is not registered so the route can
+    // respond 503 instead of serving fabricated fallback data.
+    private static async Task<WorkstationStrategyPayload?> BuildStrategyPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         if (readService is null)
         {
-            return BuildStrategyFallbackPayload();
+            return null;
         }
 
         var runs = (await readService
@@ -2925,12 +2974,14 @@ public static partial class WorkstationEndpoints
             PlotTool: BuildStrategyPlotToolPayload(runs, selectedRunIds: Array.Empty<string>()));
     }
 
-    private static async Task<StrategyBriefingDto> BuildStrategyBriefingAsync(HttpContext context)
+    // Returns null when the strategy run read service is not registered so the route can
+    // respond 503 instead of serving a fabricated briefing.
+    private static async Task<StrategyBriefingDto?> BuildStrategyBriefingAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         if (readService is null)
         {
-            return BuildStrategyBriefingFallback();
+            return null;
         }
 
         var runs = (await readService
@@ -2977,164 +3028,6 @@ public static partial class WorkstationEndpoints
             SavedComparisons: BuildSavedComparisons(runs),
             Alerts: alertItems,
             WhatChanged: BuildWhatChangedItems(runs));
-    }
-
-    private static StrategyBriefingDto BuildStrategyBriefingFallback()
-    {
-        var generatedAt = DateTimeOffset.UtcNow;
-        return new StrategyBriefingDto(
-            Workspace: new StrategyBriefingWorkspaceSummary(
-                TotalRuns: 24,
-                ActiveRuns: 6,
-                PromotionCandidates: 3,
-                PositivePnlRuns: 17,
-                LatestRunId: "run-strategy-001",
-                LatestStrategyName: "Mean Reversion FX",
-                HasLedgerCoverage: true,
-                HasPortfolioCoverage: true,
-                Summary: "Strategy is organized around briefing context first, then run studio drill-ins."),
-            InsightFeed: new InsightFeed(
-                FeedId: "strategy-market-briefing",
-                Title: "Pinned Insights",
-                Summary: "A compact market briefing with pinned Strategy tiles, saved comparisons, and promotion posture.",
-                GeneratedAt: generatedAt,
-                Widgets:
-                [
-                    new InsightWidget(
-                        WidgetId: "insight-meanrev-fx",
-                        Title: "Mean Reversion FX",
-                        Subtitle: "Paper run · Running",
-                        Headline: "+4.2%",
-                        Tone: "success",
-                        Summary: "Primary paper candidate with steady fill quality and stable financing.",
-                        RunId: "run-strategy-001",
-                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-001")),
-                    new InsightWidget(
-                        WidgetId: "insight-index-carry",
-                        Title: "Index Carry Basket",
-                        Subtitle: "Backtest · Completed",
-                        Headline: "+2.8%",
-                        Tone: "default",
-                        Summary: "Pinned chart compares carry spread compression against basket returns.",
-                        RunId: "run-strategy-014",
-                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-014")),
-                    new InsightWidget(
-                        WidgetId: "insight-vol-breakout",
-                        Title: "Volatility Breakout",
-                        Subtitle: "Backtest · Needs review",
-                        Headline: "-0.9%",
-                        Tone: "warning",
-                        Summary: "Transaction-cost preview deteriorated after the most recent parameter sweep.",
-                        RunId: "run-strategy-022",
-                        DrillInRoute: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-022"))
-                ]),
-            Watchlists:
-            [
-                new WorkstationWatchlist(
-                    WatchlistId: "wl-tech",
-                    Name: "Tech Giants",
-                    Symbols: ["AAPL", "MSFT", "NVDA", "AMZN", "META"],
-                    SymbolCount: 5,
-                    IsPinned: true,
-                    SortOrder: 0,
-                    AccentColor: "#4CAF50",
-                    Summary: "Pinned for cross-run spread checks and financing sensitivity."),
-                new WorkstationWatchlist(
-                    WatchlistId: "wl-macro",
-                    Name: "Macro FX",
-                    Symbols: ["EURUSD", "USDJPY", "GBPUSD", "AUDUSD"],
-                    SymbolCount: 4,
-                    IsPinned: true,
-                    SortOrder: 1,
-                    AccentColor: "#2196F3",
-                    Summary: "Monitored for carry baskets and mean-reversion entry timing.")
-            ],
-            RecentRuns:
-            [
-                new StrategyBriefingRun(
-                    RunId: "run-strategy-001",
-                    StrategyName: "Mean Reversion FX",
-                    Mode: StrategyRunMode.Paper,
-                    Status: StrategyRunStatus.Running,
-                    Dataset: "FX Majors",
-                    WindowLabel: "90d",
-                    ReturnLabel: "+4.2%",
-                    SharpeLabel: "1.41",
-                    LastUpdatedLabel: "2m ago",
-                    Notes: "Primary paper candidate with stable fill quality and healthy depth coverage.",
-                    PromotionState: StrategyRunPromotionState.CandidateForLive,
-                    NetPnl: 4200m,
-                    TotalReturn: 0.042m,
-                    FinalEquity: 104200m,
-                    DrillIn: new StrategyRunDrillInLinks(
-                        EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-001"),
-                        Fills: RunRoute(UiApiRoutes.RunsFills, "run-strategy-001"),
-                        Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-strategy-001"),
-                        Ledger: RunRoute(UiApiRoutes.RunsLedger, "run-strategy-001"),
-                        CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-strategy-001"),
-                        Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-strategy-001")))
-            ],
-            SavedComparisons:
-            [
-                new StrategySavedComparison(
-                    ComparisonId: "cmp-meanrev-fx",
-                    StrategyName: "Mean Reversion FX",
-                    ModeSummary: "Backtest -> Paper",
-                    Summary: "Saved compare lane tracks readiness from completed backtest into paper execution.",
-                    AnchorRunId: "run-strategy-001",
-                    Modes:
-                    [
-                        new StrategySavedComparisonMode(
-                            RunId: "run-strategy-001",
-                            Mode: StrategyRunMode.Paper,
-                            Status: StrategyRunStatus.Running,
-                            NetPnl: 4200m,
-                            TotalReturn: 0.042m,
-                            DrillIn: new StrategyRunDrillInLinks(
-                                EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-001"),
-                                Fills: RunRoute(UiApiRoutes.RunsFills, "run-strategy-001"),
-                                Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-strategy-001"),
-                                Ledger: RunRoute(UiApiRoutes.RunsLedger, "run-strategy-001"),
-                                CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-strategy-001"),
-                                Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-strategy-001")))
-                    ])
-            ],
-            Alerts:
-            [
-                new StrategyBriefingAlert(
-                    AlertId: "alert-promotion-review",
-                    Title: "Promotion review due",
-                    Summary: "Mean Reversion FX is running in paper and is queued for live promotion review.",
-                    Tone: "warning",
-                    RunId: "run-strategy-001",
-                    ActionLabel: "Review run"),
-                new StrategyBriefingAlert(
-                    AlertId: "alert-cost-preview",
-                    Title: "Execution costs widened",
-                    Summary: "Volatility Breakout now shows a weaker transaction-cost preview than the prior saved comparison.",
-                    Tone: "default",
-                    RunId: "run-strategy-022",
-                    ActionLabel: "Open comparison")
-            ],
-            WhatChanged:
-            [
-                new StrategyWhatChangedItem(
-                    ChangeId: "change-paper-ready",
-                    Title: "Paper lane updated",
-                    Summary: "Mean Reversion FX stayed profitable and kept full ledger continuity after the latest refresh.",
-                    Category: "paper",
-                    Timestamp: generatedAt.AddMinutes(-2),
-                    RelativeTime: "2m ago",
-                    RunId: "run-strategy-001"),
-                new StrategyWhatChangedItem(
-                    ChangeId: "change-backtest-failed",
-                    Title: "Backtest needs review",
-                    Summary: "Volatility Breakout completed with weaker returns and is now flagged for review.",
-                    Category: "review",
-                    Timestamp: generatedAt.AddMinutes(-18),
-                    RelativeTime: "18m ago",
-                    RunId: "run-strategy-022")
-            ]);
     }
 
     private static ResearchBriefingDto ToResearchBriefingDto(StrategyBriefingDto briefing)
@@ -3215,64 +3108,6 @@ public static partial class WorkstationEndpoints
             CashFlows: links.CashFlows,
             Continuity: links.Continuity);
 
-    // PR-03: returns typed DTO
-    private static WorkstationStrategyPayload BuildStrategyFallbackPayload()
-    {
-        var fallbackCoverage = new WorkstationSecurityCoveragePayload(
-            PortfolioResolved: 0,
-            PortfolioMissing: 0,
-            LedgerResolved: 0,
-            LedgerMissing: 0,
-            HasIssues: false,
-            Tone: "default",
-            Summary: "Security Master coverage not yet evaluated.",
-            ResolvedReferences: Array.Empty<WorkstationSecurityCoverageReferencePayload>(),
-            MissingReferences: Array.Empty<WorkstationSecurityCoverageGapPayload>());
-
-        return new WorkstationStrategyPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("active-runs", "Active Runs", "24", "+8%", "success"),
-                new WorkstationMetricCard("queued-runs", "Queued Promotions", "3", "0%", "default"),
-                new WorkstationMetricCard("review-runs", "Needs Review", "2", "-1%", "warning"),
-                new WorkstationMetricCard("winning-runs", "Positive P&L", "17", "+4%", "default")
-            ],
-            Runs:
-            [
-                new WorkstationStrategyRunCard(
-                    Id: "run-strategy-001",
-                    StrategyName: "Mean Reversion FX",
-                    Engine: "Meridian Native",
-                    Mode: "paper",
-                    Status: "Running",
-                    Dataset: "FX Majors",
-                    Window: "90d",
-                    Pnl: "+4.2%",
-                    Sharpe: "1.41",
-                    LastUpdated: "2m ago",
-                    Notes: "Primary paper candidate with stable fill quality and healthy depth coverage.",
-                    PromotionState: null,
-                    LedgerReference: null,
-                    PortfolioId: null,
-                    NetPnl: 4200m,
-                    TotalReturn: 0.042m,
-                    FinalEquity: 104200m,
-                    SecurityCoverage: fallbackCoverage,
-                    DrillIn: new WorkstationRunDrillInLinks(
-                        EquityCurve: RunRoute(UiApiRoutes.RunsEquityCurve, "run-strategy-001"),
-                        Fills: RunRoute(UiApiRoutes.RunsFills, "run-strategy-001"),
-                        Attribution: RunRoute(UiApiRoutes.RunsAttribution, "run-strategy-001"),
-                        Ledger: null,
-                        CashFlows: RunRoute(UiApiRoutes.PortfolioCashFlows, "run-strategy-001"),
-                        Continuity: RunRoute(UiApiRoutes.RunsContinuity, "run-strategy-001"),
-                        Comparison: UiApiRoutes.RunsCompare))
-            ],
-            Comparisons: Array.Empty<WorkstationModeComparisonGroup>(),
-            Timeline: Array.Empty<WorkstationTimelineCard>(),
-            Workspace: new WorkstationStrategyWorkspaceSummary(1, "run-strategy-001", "Mean Reversion FX", false, false, 0),
-            PlotTool: BuildStrategyFallbackPlotToolPayload());
-    }
-
     private static Task<TradingOperatorReadinessDto> GetTradingOperatorReadinessAsync(
         Guid? fundAccountId,
         HttpContext context)
@@ -3352,7 +3187,9 @@ public static partial class WorkstationEndpoints
         return "Paper gateway not active. Start a paper session to see live position and order data.";
     }
 
-    private static async Task<WorkstationDataPayload> BuildDataPayloadAsync(HttpContext context)
+    // Returns null when neither the strategy run read service nor the configuration store is
+    // registered so the route can respond 503 instead of serving fabricated provider/backfill data.
+    private static async Task<WorkstationDataPayload?> BuildDataPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var configStore = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
@@ -3364,7 +3201,7 @@ public static partial class WorkstationEndpoints
 
         if (readService is null && configStore is null)
         {
-            return BuildDataFallbackPayload(kernelObservability);
+            return null;
         }
 
         var runs = readService is not null
@@ -3580,69 +3417,6 @@ public static partial class WorkstationEndpoints
         }
 
         return true;
-    }
-
-    private static WorkstationDataPayload BuildDataFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
-    {
-        var interactiveBrokers = BuildFallbackDataProviderRecord(
-            providerId: "interactivebrokers",
-            displayName: "Interactive Brokers",
-            status: "Healthy",
-            capability: "Execution + fills",
-            latency: "21ms p50",
-            note: "Paper adapter routing is available.",
-            trustScore: "100%",
-            signalSource: "Provider baseline health snapshot",
-            reasonCode: "HEALTHY_BASELINE",
-            recommendedAction: "Continue monitoring provider health; no DK1 action is required.",
-            gateImpact: "Normal operation");
-        var polygon = BuildFallbackDataProviderRecord(
-            providerId: "polygon",
-            displayName: "Polygon",
-            status: "Healthy",
-            capability: "Streaming equities",
-            latency: "16ms p50",
-            note: "Realtime subscriptions are steady.",
-            trustScore: "100%",
-            signalSource: "Provider baseline health snapshot",
-            reasonCode: "HEALTHY_BASELINE",
-            recommendedAction: "Continue monitoring provider health; no DK1 action is required.",
-            gateImpact: "Normal operation");
-        var databento = BuildFallbackDataProviderRecord(
-            providerId: "databento",
-            displayName: "Databento",
-            status: "Warning",
-            capability: "Historical replay",
-            latency: "69ms p50",
-            note: "Replay queue is elevated but within tolerance.",
-            trustScore: "86%",
-            signalSource: "Latency monitor",
-            reasonCode: "LATENCY_REGRESSION",
-            recommendedAction: "Delay operator promotion actions; review latency trend and compare against baseline window.",
-            gateImpact: "Watch");
-
-        return new WorkstationDataPayload(
-            Metrics:
-            [
-                new WorkstationMetricCard("providers-healthy", "Providers Healthy", "4", "0", "success"),
-                new WorkstationMetricCard("backfills-running", "Backfills Running", "2", "+1", "default"),
-                new WorkstationMetricCard("exports-ready", "Exports Ready", "3", "+1", "success"),
-                new WorkstationMetricCard("ops-review", "Needs Review", "1", "+1", "warning"),
-                new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), FormatKernelJumpAlertDelta(kernelObservability), GetKernelJumpAlertTone(kernelObservability))
-            ],
-            Providers: [interactiveBrokers, polygon, databento],
-            Backfills:
-            [
-                new WorkstationDataBackfillRecord("BF-1038", "US equities / 30d", "Databento", "Running", "58%", "3m ago"),
-                new WorkstationDataBackfillRecord("BF-1040", "FX majors / 14d", "Polygon", "Queued", "0%", "6m ago")
-            ],
-            Exports:
-            [
-                new WorkstationDataExportRecord("EX-2196", "python-pandas", "strategy pack", "Ready", "118k", "7m ago"),
-                new WorkstationDataExportRecord("EX-2198", "postgresql", "ops warehouse", "Attention", "42k", "9m ago")
-            ],
-            UploadTemplates: BuildDataUploadTemplateCatalog(),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
     // PR-03: returns typed DTO instead of anonymous object
@@ -3865,16 +3639,19 @@ public static partial class WorkstationEndpoints
         return await service.GetOperationsAsync(securityId, context.RequestAborted).ConfigureAwait(false);
     }
 
-    private static async Task<WorkstationAccountingPayload> BuildAccountingPayloadAsync(HttpContext context)
+    // Returns null when the strategy run read service is not registered so the route can
+    // respond 503 instead of serving fabricated reconciliation/cash-flow data.
+    private static async Task<WorkstationAccountingPayload?> BuildAccountingPayloadAsync(HttpContext context)
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
         var requestedLedgerBookId = ParseOptionalGuid(context.Request.Query["ledgerBookId"].FirstOrDefault());
-        var manualJournalWorkbench = await BuildManualJournalWorkbenchPayloadAsync(context).ConfigureAwait(false);
         if (readService is null)
         {
-            return BuildAccountingFallbackPayload(kernelObservability, manualJournalWorkbench, requestedLedgerBookId);
+            return null;
         }
+
+        var manualJournalWorkbench = await BuildManualJournalWorkbenchPayloadAsync(context).ConfigureAwait(false);
 
         var allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
         var runs = allRuns.Take(6).ToArray();
@@ -3968,186 +3745,6 @@ public static partial class WorkstationEndpoints
         return await service
             .GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted, tenantContext.TenantId, tenantContext.CompanyId)
             .ConfigureAwait(false);
-    }
-
-    // PR-03: returns typed DTO
-    private static WorkstationAccountingPayload BuildAccountingFallbackPayload(
-        KernelObservabilitySnapshot? kernelObservability = null,
-        ManualJournalEntryWorkbenchDto? manualJournalWorkbench = null,
-        Guid? requestedLedgerBookId = null)
-    {
-        if (requestedLedgerBookId.HasValue)
-        {
-            var scopedReporting = BuildReportingPayload();
-            return new WorkstationAccountingPayload(
-                Metrics:
-                [
-                    new WorkstationMetricCard("open-breaks", "Open Breaks", "0", "0%", "success"),
-                    new WorkstationMetricCard("timing-drift", "Timing Drift", "0", "0%", "default"),
-                    new WorkstationMetricCard("security-gaps", "Security Gaps", "0", "0%", "success"),
-                    new WorkstationMetricCard("audit-ready", "Audit Ready", "0", "0%", "default"),
-                    new WorkstationMetricCard("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
-                ],
-                ReconciliationQueue: Array.Empty<WorkstationAccountingRunRecord>(),
-                BreakQueue: Array.Empty<ReconciliationBreakQueueItem>(),
-                Workspace: new WorkstationAccountingWorkspaceSummary(0, 0, 0, 0, 0),
-                CashFlow: BuildAccountingWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
-                Reporting: scopedReporting,
-                ControlCenter: BuildAccountingControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), scopedReporting),
-                KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
-                ManualJournalWorkbench: manualJournalWorkbench);
-        }
-
-        var metricsCards = new WorkstationMetricCard[]
-        {
-            new("open-breaks", "Open Breaks", "4", "0%", "warning"),
-            new("timing-drift", "Timing Drift", "1", "0%", "warning"),
-            new("security-gaps", "Security Gaps", "2", "0%", "warning"),
-            new("audit-ready", "Audit Ready", "9", "0%", "success"),
-            new("kernel-critical-jumps", "Kernel Jump Alerts", GetKernelActiveAlertCount(kernelObservability).ToString(CultureInfo.InvariantCulture), "0%", GetKernelJumpAlertTone(kernelObservability))
-        };
-        var fallbackSecurityCoverage = new WorkstationSecurityCoveragePayload(
-            PortfolioResolved: 14,
-            PortfolioMissing: 1,
-            LedgerResolved: 12,
-            LedgerMissing: 1,
-            HasIssues: true,
-            Tone: "warning",
-            Summary: "26 references mapped, 2 unresolved.",
-            ResolvedReferences:
-            [
-                new WorkstationSecurityCoverageReferencePayload(
-                    Source: "portfolio",
-                    Symbol: "AAPL",
-                    AccountName: null,
-                    SecurityId: "security-aapl",
-                    DisplayName: "Apple Inc.",
-                    AssetClass: "Equity",
-                    SubType: null,
-                    Currency: "USD",
-                    Status: "Active",
-                    PrimaryIdentifier: "AAPL",
-                    CoverageStatus: "Resolved",
-                    CoverageReason: null,
-                    MatchedIdentifierKind: "Ticker",
-                    MatchedIdentifierValue: "AAPL",
-                    MatchedProvider: null)
-            ],
-            MissingReferences:
-            [
-                new WorkstationSecurityCoverageGapPayload(
-                    Source: "portfolio",
-                    Symbol: "XYZ",
-                    AccountName: null,
-                    Reason: "Portfolio position is missing a Security Master match."),
-                new WorkstationSecurityCoverageGapPayload(
-                    Source: "ledger",
-                    Symbol: "XYZ",
-                    AccountName: "Securities",
-                    Reason: "Ledger coverage is missing a Security Master match.")
-            ]);
-        var reconciliationQueue = new WorkstationAccountingRunRecord[]
-        {
-            new(
-                RunId: "gov-run-001",
-                StrategyName: "Global Macro Overlay",
-                Mode: "paper",
-                Status: "Completed",
-                LastUpdated: "12m ago",
-                AuditReference: "audit-gov-run-001",
-                LedgerReference: null,
-                PortfolioId: null,
-                BreakCount: 2,
-                OpenBreakCount: 2,
-                ReconciliationStatus: "BreaksOpen",
-                Governance: new WorkstationAccountingRunGovernancePayload(
-                    HasAuditTrail: true,
-                    HasPortfolio: true,
-                    HasLedger: true,
-                    DatasetReference: null,
-                    FeedReference: null),
-                SecurityCoverage: fallbackSecurityCoverage,
-                CashFlow: new WorkstationAccountingRunCashFlowPayload(
-                    CashBalance: 1_250_000m,
-                    LedgerCashBalance: 1_247_500m,
-                    CashVariance: -2_500m,
-                    Financing: 12_500m,
-                    RealizedPnl: 42_000m,
-                    UnrealizedPnl: 18_000m,
-                    JournalEntryCount: 24,
-                    Tone: "warning",
-                    Summary: "Cash and ledger balances diverge and should be reviewed."),
-                LatestReconciliation: new WorkstationAccountingRunReconciliationPayload(
-                    ReconciliationRunId: null,
-                    BreakCount: 2,
-                    OpenBreakCount: 2,
-                    MatchCount: 0,
-                    HasTimingDrift: false,
-                    SecurityIssueCount: 2,
-                    HasSecurityCoverageIssues: true,
-                    LastUpdated: "15m ago",
-                    Tone: "warning"),
-                KernelObservability: BuildKernelObservabilityPayload(kernelObservability))
-        };
-        var breakQueue = new ReconciliationBreakQueueItem[]
-        {
-            new ReconciliationBreakQueueItem(
-                BreakId: "BRK-gov-run-001-1",
-                RunId: "gov-run-001",
-                StrategyName: "Global Macro Overlay",
-                Category: ReconciliationBreakCategory.AmountMismatch,
-                Status: ReconciliationBreakQueueStatus.Open,
-                Variance: 2500m,
-                Reason: "Cash variance exceeds configured tolerance.",
-                AssignedTo: null,
-                DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-18),
-                Severity: ReconciliationBreakSeverity.Critical,
-                ExceptionRoute: "accounting-variance-escalation",
-                ToleranceProfileId: "critical-zero-tolerance",
-                ToleranceBand: 0m,
-                RequiredSignoffRole: "Accounting sign-off",
-                SignoffStatus: "pending-signoff"),
-            new ReconciliationBreakQueueItem(
-                BreakId: "BRK-gov-run-001-2",
-                RunId: "gov-run-001",
-                StrategyName: "Global Macro Overlay",
-                Category: ReconciliationBreakCategory.ClassificationGap,
-                Status: ReconciliationBreakQueueStatus.InReview,
-                Variance: 0m,
-                Reason: "Security Master coverage is missing for XYZ.",
-                AssignedTo: "ops.gov",
-                DetectedAt: DateTimeOffset.UtcNow.AddMinutes(-16),
-                LastUpdatedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                ReviewedBy: "ops.gov",
-                ReviewedAt: DateTimeOffset.UtcNow.AddMinutes(-8),
-                ResolutionNote: "Investigating ticker reclassification.",
-                Severity: ReconciliationBreakSeverity.Medium,
-                ExceptionRoute: "security-master-accounting-review",
-                ToleranceProfileId: "coverage-classification-review",
-                ToleranceBand: 0m,
-                RequiredSignoffRole: "Accounting analyst",
-                SignoffStatus: "in-review")
-        };
-        var reporting = BuildReportingPayload();
-        return new WorkstationAccountingPayload(
-            Metrics: metricsCards,
-            ReconciliationQueue: reconciliationQueue,
-            BreakQueue: breakQueue,
-            Workspace: new WorkstationAccountingWorkspaceSummary(12, 9, 10, 4, 2),
-            CashFlow: new WorkstationAccountingCashFlowSummaryPayload(
-                TotalCash: 2_450_000m,
-                TotalLedgerCash: 2_447_500m,
-                NetVariance: -2_500m,
-                TotalFinancing: 12_500m,
-                RunsWithCashSignals: 9,
-                RunsWithCashVariance: 1,
-                Tone: "warning",
-                Summary: "Cash-flow coverage is available for 9 runs; 1 run needs variance review."),
-            Reporting: reporting,
-            ControlCenter: BuildAccountingControlCenterPayload(breakQueue, reporting),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
-            ManualJournalWorkbench: manualJournalWorkbench);
     }
 
     private static string ResolveModeVariant(StrategyRunMode? mode)
@@ -4294,11 +3891,14 @@ public static partial class WorkstationEndpoints
         var actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
             ? resolvedActor
             : null;
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         return new ReportAccessQueryContext(
             ActorPrincipalId: actor,
             GroupPrincipalIds: EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
             CompanyId: EndpointAuthorization.ResolveCompanyId(context),
-            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
+            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance),
+            TenantId: tenant.TenantId,
+            RequireBoundScope: true);
     }
 
     private static WorkstationAccountingControlCenterPayload BuildAccountingControlCenterPayload(

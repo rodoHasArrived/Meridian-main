@@ -10,7 +10,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 ## Audience Paths
 
 - **Start first:** [Start](../start/README.md)
-- **Product context:** [Product](../product/README.md), including the [Meridian Design Document (Draft v1.0)](../product/meridian-design-document.md)
+- **Product context:** [Product](../product/README.md), including the [Meridian Design Document](../product/meridian-design-document.md)
 - **AI policy:** [AI assistant contract](../ai/assistant-workflow-contract.md)
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
@@ -110,6 +110,34 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
+
+### PostgreSQL schema control
+
+SQL migrations remain the authoritative physical schema. The schema-control workflow applies every
+registered migration module to disposable PostgreSQL 16, extracts PostgreSQL-specific catalog
+metadata, inventories public C# DTOs and related data objects, evaluates database policies, and
+checks the generated manifests and Mermaid diagrams for drift.
+
+```powershell
+# Local, database-free migration inventory and safety checks
+python build/scripts/schema-control.py inventory --base-ref origin/main
+
+# Rebuild and verify against a disposable PostgreSQL database
+python -m pip install --requirement tools/schema_control/requirements.txt
+python build/scripts/schema-control.py verify `
+  --database-url "postgresql://meridian:meridian@localhost:5432/meridian_schema_control" `
+  --base-ref origin/main
+
+# Generate a hosted snapshot artifact for review
+gh workflow run schema-control.yml --ref <branch> -f mode=snapshot
+```
+
+Never point `snapshot` or `verify` at a shared or production database. The workflow's check mode is
+read-only with respect to the repository and fails when `database/manifest/**` or
+`docs/generated/database/**` is stale. Review a hosted snapshot before using `promote`; the tool
+does not infer DDL from DTOs or mutate production state. See the
+[schema-control guide](../../tools/schema_control/README.md) and the
+[generated database catalog](../generated/database/README.md).
 
 ### Browser-workstation slices
 

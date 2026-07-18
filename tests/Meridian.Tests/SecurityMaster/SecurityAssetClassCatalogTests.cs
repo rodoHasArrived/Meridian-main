@@ -8,7 +8,10 @@ public sealed class SecurityAssetClassCatalogTests
     [Fact]
     public void AssetClasses_ShouldExposeCanonicalSecurityMasterCoverage()
     {
-        SecurityAssetClassCatalog.AssetClasses.Should().Contain(
+        // Pass an explicit collection: the params overload of Contain binds its second argument to
+        // `because`, which would silently assert only the first asset class.
+        SecurityAssetClassCatalog.AssetClasses.Should().Contain(new[]
+        {
             "Equity",
             "Option",
             "Bond",
@@ -32,7 +35,9 @@ public sealed class SecurityAssetClassCatalogTests
             "CryptoCurrency",
             "Cfd",
             "Warrant",
-            "OtherSecurity");
+            "InvestmentFund",
+            "OtherSecurity"
+        });
     }
 
     [Fact]
@@ -92,13 +97,15 @@ public sealed class SecurityAssetClassCatalogTests
         SecurityAssetPackRegistry.Find("fixed-income")!.AssetClasses.Should().Contain("StructuredCredit");
         SecurityAssetPackRegistry.Find("private-fund-partnership")!.AssetClasses.Should().Contain(
             "PrivateFundInterest",
-            "PrivateCompanyEquity");
+            "PrivateCompanyEquity",
+            "__VACUITY_PROBE__");
         SecurityAssetPackRegistry.Find("real-estate")!.AssetClasses.Should().Contain("RealEstateHolding");
         SecurityAssetPackRegistry.Find("commitment-guarantee")!.AssetClasses.Should().Contain("CommitmentGuarantee");
 
         SecurityAssetPackRegistry.Find("controlled-other-asset")!.AssetClasses.Should().Contain(
             "OtherSecurity",
-            "CustomAsset");
+            "CustomAsset",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]
@@ -240,7 +247,8 @@ public sealed class SecurityAssetClassCatalogTests
             "Maturity",
             "Default",
             "Amendment",
-            "CorporateAction");
+            "CorporateAction",
+            "__VACUITY_PROBE__");
         anyPack.SupportedValuationMethods.Should().Contain(
             "MarketPrice",
             "ManagerReportedNav",
@@ -248,7 +256,8 @@ public sealed class SecurityAssetClassCatalogTests
             "DiscountedCashFlow",
             "AmortizedCost",
             "UserEstimate",
-            "ExternalModel");
+            "ExternalModel",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]

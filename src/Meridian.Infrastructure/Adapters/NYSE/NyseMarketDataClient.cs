@@ -20,7 +20,10 @@ namespace Meridian.Infrastructure.Adapters.NYSE;
 /// </summary>
 [DataSource("nyse-streaming", "NYSE Streaming", Infrastructure.DataSources.DataSourceType.Realtime, DataSourceCategory.Exchange,
     Priority = 5, Description = "Unified NYSE streaming client backed by NYSEDataSource")]
-public sealed class NyseMarketDataClient : IMarketDataClient, IProviderConnectionDiagnosticsSource
+public sealed class NyseMarketDataClient :
+    IMarketDataClient,
+    IProviderConnectionDiagnosticsSource,
+    IProviderRateLimitDiagnosticsSource
 {
     private readonly NYSEDataSource _source;
     private readonly TradeDataCollector _tradeCollector;
@@ -95,6 +98,10 @@ public sealed class NyseMarketDataClient : IMarketDataClient, IProviderConnectio
     /// <inheritdoc/>
     public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
         => _source.GetConnectionDiagnosticsSnapshot();
+
+    /// <inheritdoc/>
+    public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
+        => _source.GetStreamingRateLimitDiagnosticsSnapshot();
 
     public Task ConnectAsync(CancellationToken ct = default)
         => _source.ConnectAsync(ct);

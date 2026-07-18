@@ -28,6 +28,27 @@ public enum AutoRemediationTriggerSource
 }
 
 /// <summary>
+/// Shared application boundary for explicit, contextual data-quality gap remediation.
+/// </summary>
+public interface IDataQualityGapRemediationService
+{
+    Task<AutoGapRemediationRequestResult> RequestDataQualityGapAsync(
+        QualityDataGap gap,
+        string? provider = null,
+        CancellationToken ct = default);
+}
+
+/// <summary>
+/// Truthful result of a completed or skipped contextual remediation request.
+/// </summary>
+public sealed record AutoGapRemediationRequestResult(
+    AutoRemediationOutcome Outcome,
+    string Provider,
+    DateOnly From,
+    DateOnly To,
+    string IdempotencyKey);
+
+/// <summary>
 /// Guardrail policy for automatic gap remediation.
 /// </summary>
 /// <param name="MinimumGapDuration">
@@ -264,7 +285,7 @@ internal sealed class AutoRemediationState
 /// Coordinates automatic data-gap remediation requests from quality/gap signals.
 /// Applies guardrails and executes through the backfill coordinator.
 /// </summary>
-public sealed class AutoGapRemediationService : IDisposable
+public sealed class AutoGapRemediationService : IDataQualityGapRemediationService, IDisposable
 {
     // Synchronization model (see issue: mixed lock + SemaphoreSlim on shared state):
     //   * _idempotency + the per-entry lock(state): guard the read-modify-write of a single
@@ -396,13 +417,52 @@ public sealed class AutoGapRemediationService : IDisposable
             [gap.Symbol],
             from,
             to,
-            provider ?? _policy.DefaultProvider,
+            provider ?? gap.Provider ?? _policy.DefaultProvider,
             AutoRemediationTriggerSource.DataQualityGap,
             $"gap:{gap.Severity}:{gap.Duration}",
             (int)Math.Max(gap.EstimatedMissedEvents, 1),
             gap.Severity.ToString(),
             downstreamWorkflow: null,
             ct: ct);
+    }
+
+    /// <summary>
+    /// Executes the same guarded quality-gap path used by event-driven remediation and reports the
+    /// observed outcome to an interactive caller. Existing fire-and-forget integrations continue
+    /// to use <see cref="HandleDataQualityGapAsync"/> unchanged.
+    /// </summary>
+    public async Task<AutoGapRemediationRequestResult> RequestDataQualityGapAsync(
+        QualityDataGap gap,
+        string? provider = null,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(gap);
+
+        var normalizedProvider = NormalizeProvider(provider ?? gap.Provider);
+        var from = DateOnly.FromDateTime(gap.GapStart.UtcDateTime);
+        var to = DateOnly.FromDateTime(gap.GapEnd.UtcDateTime);
+        var idempotencyKey = BuildIdempotencyKey(
+            [gap.Symbol.Trim().ToUpperInvariant()],
+            normalizedProvider,
+            from,
+            to);
+
+        if (gap.Duration < _policy.MinimumGapDuration || gap.EstimatedMissedEvents < _policy.MinimumGapSize)
+        {
+            return new AutoGapRemediationRequestResult(
+                AutoRemediationOutcome.Skipped,
+                normalizedProvider,
+                from,
+                to,
+                idempotencyKey);
+        }
+
+        await HandleDataQualityGapAsync(gap, normalizedProvider, ct).ConfigureAwait(false);
+        var outcome = _idempotency.TryGetValue(idempotencyKey, out var state)
+            ? ReadOutcome(state)
+            : AutoRemediationOutcome.Skipped;
+
+        return new AutoGapRemediationRequestResult(outcome, normalizedProvider, from, to, idempotencyKey);
     }
 
     public async Task HandleGapAnalysisResultAsync(StorageGapAnalysisResult result, string? provider = null, CancellationToken ct = default)
@@ -653,6 +713,12 @@ public sealed class AutoGapRemediationService : IDisposable
                     _idempotency.TryRemove(idempotencyKey, out _);
                 }
             }
+            finally
+            {
+                // AddExecution persisted the initial Running row. Persist the same mutated object
+                // again after every terminal path so outcome/SLA evidence survives restart.
+                _history.UpdateExecution(execution);
+            }
         }
         finally
         {
@@ -701,6 +767,14 @@ public sealed class AutoGapRemediationService : IDisposable
         lock (state)
         {
             state.LastOutcome = outcome;
+        }
+    }
+
+    private static AutoRemediationOutcome ReadOutcome(AutoRemediationState state)
+    {
+        lock (state)
+        {
+            return state.LastOutcome;
         }
     }
 

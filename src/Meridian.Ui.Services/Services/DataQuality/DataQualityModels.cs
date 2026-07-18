@@ -1,107 +1,14 @@
 using System;
 using System.Collections.Generic;
+using Meridian.Contracts.Api.Quality;
 
 namespace Meridian.Ui.Services.DataQuality;
 
-public sealed class QualityDashboardResponse
-{
-    public QualityDashboardMetricsResponse? RealTimeMetrics { get; set; }
-    public QualityCompletenessStatsResponse? CompletenessStats { get; set; }
-    public QualityGapStatsResponse? GapStats { get; set; }
-    public QualitySequenceStatsResponse? SequenceStats { get; set; }
-    public QualityAnomalyStatsResponse? AnomalyStats { get; set; }
-    public List<QualityAnomalyResponse> RecentAnomalies { get; set; } = new();
-}
-
-public sealed class QualityDashboardMetricsResponse
-{
-    public double OverallHealthScore { get; set; }
-    public double AverageLatencyMs { get; set; }
-    public List<QualitySymbolHealthResponse> SymbolHealth { get; set; } = new();
-}
-
-public sealed class QualitySymbolHealthResponse
-{
-    public string Symbol { get; set; } = string.Empty;
-    public int State { get; set; }
-    public double Score { get; set; }
-    public DateTimeOffset LastEvent { get; set; }
-    public List<string> ActiveIssues { get; set; } = new();
-}
-
-public sealed class QualityCompletenessStatsResponse
-{
-    public double AverageScore { get; set; }
-    public Dictionary<string, int> GradeDistribution { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-    public DateTimeOffset CalculatedAt { get; set; }
-}
-
-public sealed class QualityGapStatsResponse
-{
-    public int TotalGaps { get; set; }
-}
-
-public sealed class QualitySequenceStatsResponse
-{
-    public long TotalErrors { get; set; }
-}
-
-public sealed class QualityAnomalyStatsResponse
-{
-    public int UnacknowledgedCount { get; set; }
-    public long TotalAnomalies { get; set; }
-    public Dictionary<string, int> AnomaliesByType { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-}
-
-public sealed class QualityGapResponse
-{
-    public string Symbol { get; set; } = string.Empty;
-    public DateTimeOffset GapStart { get; set; }
-    public DateTimeOffset GapEnd { get; set; }
-    public long EstimatedMissedEvents { get; set; }
-}
-
-public sealed class QualityAnomalyResponse
-{
-    public string Id { get; set; } = string.Empty;
-    public string Symbol { get; set; } = string.Empty;
-    public int Type { get; set; }
-    public int Severity { get; set; }
-    public string Description { get; set; } = string.Empty;
-    public bool IsAcknowledged { get; set; }
-    public DateTimeOffset DetectedAt { get; set; }
-}
-
-public sealed class QualityLatencyStatisticsResponse
-{
-    public double GlobalMeanMs { get; set; }
-    public double GlobalP50Ms { get; set; }
-    public double GlobalP90Ms { get; set; }
-    public double GlobalP95Ms { get; set; }
-    public double GlobalP99Ms { get; set; }
-}
-
-public sealed class QualityProviderComparisonResponse
-{
-    public string Symbol { get; set; } = string.Empty;
-    public List<QualityProviderComparisonEntryResponse> Providers { get; set; } = new();
-}
-
-public sealed class QualityProviderComparisonEntryResponse
-{
-    public string Provider { get; set; } = string.Empty;
-    public double Completeness { get; set; }
-    public double AverageLatencyMs { get; set; }
-    public string LastDataAge { get; set; } = string.Empty;
-}
-
-public sealed class QualityActionResponse
-{
-    public bool Acknowledged { get; set; }
-}
-
 public sealed class DataQualityPresentationSnapshot
 {
+    public bool IsAvailable { get; init; }
+    public bool IsPartial { get; init; }
+    public string DashboardVersion { get; init; } = string.Empty;
     public double OverallScore { get; init; }
     public string OverallScoreText { get; init; } = "--";
     public string OverallGradeText { get; init; } = "--";
@@ -150,6 +57,12 @@ public sealed class DataQualitySymbolPresentation
     public string Issues { get; init; } = string.Empty;
     public DateTimeOffset LastUpdate { get; init; }
     public string LastUpdateFormatted { get; init; } = string.Empty;
+    public string ExpectedEventsText { get; init; } = "--";
+    public int GapCount { get; init; }
+    public int AnomalyCount { get; init; }
+    public IReadOnlyList<QualityComponentResponse> Components { get; init; } = Array.Empty<QualityComponentResponse>();
+    public IReadOnlyList<QualityProviderFreshnessResponse> ProviderFreshness { get; init; } = Array.Empty<QualityProviderFreshnessResponse>();
+    public IReadOnlyList<string> IssueDetails { get; init; } = Array.Empty<string>();
 }
 
 public sealed class DataQualityGapPresentation
@@ -158,6 +71,10 @@ public sealed class DataQualityGapPresentation
     public string Symbol { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
     public string Duration { get; init; } = string.Empty;
+    public string DashboardVersion { get; init; } = string.Empty;
+    public string? Provider { get; init; }
+    public bool CanRepair { get; init; }
+    public string? DisabledReason { get; init; }
 }
 
 public sealed class DataQualityAlertPresentation

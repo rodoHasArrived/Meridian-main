@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Workstation;
-using Meridian.Storage.Archival;
+using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -50,25 +50,35 @@ public sealed class InMemoryAccountingProductionCertificationProfileStore : IAcc
         => FileAccountingProductionCertificationProfileStore.BuildKey(tenantId, companyId, fundProfileId, ledgerBookId);
 }
 
-public sealed class FileAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
+public sealed class FileAccountingProductionCertificationProfileStore :
+    JsonFileSnapshotStore<FileAccountingProductionCertificationProfileStore.AccountingProductionCertificationProfileSnapshot>,
+    IAccountingProductionCertificationProfileStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
 
-    private readonly string _snapshotPath;
     private readonly ILogger<FileAccountingProductionCertificationProfileStore> _logger;
-    private readonly SemaphoreSlim _gate = new(1, 1);
 
     public FileAccountingProductionCertificationProfileStore(
         string snapshotPath,
         ILogger<FileAccountingProductionCertificationProfileStore> logger)
+        : base(
+            string.IsNullOrWhiteSpace(snapshotPath)
+                ? throw new ArgumentException("Accounting production certification profile snapshot path is required.", nameof(snapshotPath))
+                : snapshotPath,
+            JsonOptions)
     {
-        _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
-            ? throw new ArgumentException("Accounting production certification profile snapshot path is required.", nameof(snapshotPath))
-            : snapshotPath;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    protected override AccountingProductionCertificationProfileSnapshot CreateEmptySnapshot() => new([]);
+
+    protected override AccountingProductionCertificationProfileSnapshot HandleCorruptSnapshot(JsonException exception)
+    {
+        _logger.LogWarning(exception, "Failed to read accounting production certification profile snapshot {SnapshotPath}", SnapshotPath);
+        return new AccountingProductionCertificationProfileSnapshot([]);
     }
 
     public async Task<AccountingProductionCertificationProfileDto?> GetAsync(
@@ -84,9 +94,10 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
             return null;
         }
 
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Profiles.FirstOrDefault(profile =>
-            string.Equals(BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId), key, StringComparison.OrdinalIgnoreCase));
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Profiles.FirstOrDefault(profile =>
+                string.Equals(BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId), key, StringComparison.OrdinalIgnoreCase)),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingProductionCertificationProfileDto> UpsertAsync(
@@ -94,33 +105,21 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         CancellationToken ct = default)
     {
         var profile = NormalizeProfile(request);
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-            var key = BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId);
-            var profiles = snapshot.Profiles
-                .Where(item => !string.Equals(BuildKey(item.TenantId, item.CompanyId, item.FundProfileId, item.LedgerBookId), key, StringComparison.OrdinalIgnoreCase))
-                .Append(profile)
-                .OrderBy(static item => item.TenantId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.CompanyId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(static item => item.LedgerBookId?.ToString("D") ?? string.Empty, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-            var json = JsonSerializer.Serialize(new AccountingProductionCertificationProfileSnapshot(profiles), JsonOptions);
-            var directory = Path.GetDirectoryName(_snapshotPath);
-            if (!string.IsNullOrWhiteSpace(directory))
+        return await UpdateSnapshotAsync(
+            snapshot =>
             {
-                Directory.CreateDirectory(directory);
-            }
-
-            await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
-            return profile;
-        }
-        finally
-        {
-            _gate.Release();
-        }
+                var key = BuildKey(profile.TenantId, profile.CompanyId, profile.FundProfileId, profile.LedgerBookId);
+                var profiles = snapshot.Profiles
+                    .Where(item => !string.Equals(BuildKey(item.TenantId, item.CompanyId, item.FundProfileId, item.LedgerBookId), key, StringComparison.OrdinalIgnoreCase))
+                    .Append(profile)
+                    .OrderBy(static item => item.TenantId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static item => item.CompanyId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static item => item.LedgerBookId?.ToString("D") ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                return (new AccountingProductionCertificationProfileSnapshot(profiles), profile);
+            },
+            ct).ConfigureAwait(false);
     }
 
     internal static AccountingProductionCertificationProfileDto NormalizeProfile(
@@ -264,41 +263,6 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         return tenant is null || company is null || fund is null
             ? string.Empty
             : $"{tenant}|{company}|{fund}|{ledgerBookId?.ToString("D") ?? "fund"}";
-    }
-
-    private async Task<AccountingProductionCertificationProfileSnapshot> ReadSnapshotAsync(CancellationToken ct)
-    {
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            return await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    private async Task<AccountingProductionCertificationProfileSnapshot> ReadSnapshotWithoutLockAsync(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
-        {
-            return new AccountingProductionCertificationProfileSnapshot([]);
-        }
-
-        try
-        {
-            await using var stream = File.OpenRead(_snapshotPath);
-            return await JsonSerializer
-                .DeserializeAsync<AccountingProductionCertificationProfileSnapshot>(stream, JsonOptions, ct)
-                .ConfigureAwait(false) ?? new AccountingProductionCertificationProfileSnapshot([]);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "Failed to read accounting production certification profile snapshot {SnapshotPath}", _snapshotPath);
-            return new AccountingProductionCertificationProfileSnapshot([]);
-        }
     }
 
     private static string RequireText(string? value, string label)
@@ -714,6 +678,6 @@ public sealed class FileAccountingProductionCertificationProfileStore : IAccount
         }
     }
 
-    private sealed record AccountingProductionCertificationProfileSnapshot(
+    public sealed record AccountingProductionCertificationProfileSnapshot(
         IReadOnlyList<AccountingProductionCertificationProfileDto> Profiles);
 }

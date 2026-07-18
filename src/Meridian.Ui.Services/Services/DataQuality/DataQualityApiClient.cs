@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services.Services;
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Api.Quality;
 
 namespace Meridian.Ui.Services.DataQuality;
 
@@ -12,9 +14,6 @@ namespace Meridian.Ui.Services.DataQuality;
 /// </summary>
 public sealed class DataQualityApiClient : DataQualityServiceBase, IDataQualityApiClient
 {
-    private const string QualityGapRepairRoute = "/api/quality/gaps/{0}/repair";
-    private const string QualityRepairAllGapsRoute = "/api/quality/gaps/repair-all";
-
     private readonly ApiClientService _apiClient;
 
     public DataQualityApiClient(ApiClientService apiClient)
@@ -40,36 +39,30 @@ public sealed class DataQualityApiClient : DataQualityServiceBase, IDataQualityA
     public Task<QualityLatencyStatisticsResponse?> GetLatencyStatisticsAsync(CancellationToken ct = default)
         => GetAsync<QualityLatencyStatisticsResponse>(UiApiRoutes.QualityLatencyStatistics, ct);
 
-    public Task<QualityProviderComparisonResponse?> GetProviderComparisonAsync(string symbol, CancellationToken ct = default)
-        => GetAsync<QualityProviderComparisonResponse>(
+    public Task<QualityComparisonResponse?> GetProviderComparisonAsync(string symbol, CancellationToken ct = default)
+        => GetAsync<QualityComparisonResponse>(
             UiApiRoutes.WithParam(UiApiRoutes.QualityComparison, "symbol", symbol),
             ct);
 
     public async Task<bool> AcknowledgeAnomalyAsync(string anomalyId, CancellationToken ct = default)
     {
-        var (success, _) = await PostWithResponseAsync<QualityActionResponse>(
+        var (success, _) = await PostWithResponseAsync<QualityAnomalyAcknowledgementResponse>(
             UiApiRoutes.WithParam(UiApiRoutes.QualityAnomaliesAcknowledge, "anomalyId", anomalyId),
             null,
             ct);
         return success;
     }
 
-    public async Task<bool> RepairGapAsync(string gapId, CancellationToken ct = default)
+    public async Task<QualityGapRemediationResponse?> RepairGapAsync(
+        string symbol,
+        QualityGapRemediationRequest request,
+        CancellationToken ct = default)
     {
-        var response = await _apiClient.PostWithResponseAsync<QualityActionResponse>(
-            string.Format(QualityGapRepairRoute, Uri.EscapeDataString(gapId)),
-            null,
+        var response = await _apiClient.PostWithResponseAsync<QualityGapRemediationResponse>(
+            UiApiRoutes.WithParam(UiApiRoutes.QualityGapsBySymbol, "symbol", symbol),
+            request,
             ct);
-        return response.Success;
-    }
-
-    public async Task<bool> RepairAllGapsAsync(CancellationToken ct = default)
-    {
-        var response = await _apiClient.PostWithResponseAsync<QualityActionResponse>(
-            QualityRepairAllGapsRoute,
-            null,
-            ct);
-        return response.Success;
+        return response.Success ? response.Data : null;
     }
 
     protected override Task<T?> GetAsync<T>(string endpoint, CancellationToken ct) where T : class

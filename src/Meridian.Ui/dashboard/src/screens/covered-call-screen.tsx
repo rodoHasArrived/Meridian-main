@@ -1,5 +1,5 @@
 import { AlertCircle, ArrowLeft, ArrowRight, CircleX, FileText, Info, Layers, LineChart, Play, RotateCw, SlidersHorizontal } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -273,6 +273,17 @@ function StageStepper({
 }
 
 function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const basicGroups = vm.formFieldGroups.slice(0, 5);
+  const advancedGroups = vm.formFieldGroups.slice(5);
+  const hasAdvancedError = advancedGroups.some((group) => group.fields.some((field) => field.invalid));
+
+  useEffect(() => {
+    if (hasAdvancedError) {
+      setAdvancedOpen(true);
+    }
+  }, [hasAdvancedError]);
+
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
       <Card>
@@ -281,13 +292,46 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
           <CardDescription>Conservative defaults follow the strategy's documented values.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {vm.formFieldGroups.map((group) => (
+          <div className="eyebrow-label">Basic setup</div>
+          {basicGroups.map((group) => (
             <div key={group.id} className={group.columns === 2 ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
               {group.fields.map((field) => (
                 <CoveredCallFormField key={field.key} vm={vm} field={field} />
               ))}
             </div>
           ))}
+
+          <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-foreground">Advanced controls</div>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Liquidity, scoring, exit, dividend, funding, and run-label controls retain conservative defaults.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-expanded={advancedOpen}
+                aria-controls="covered-call-advanced-parameters"
+                onClick={() => setAdvancedOpen((current) => !current)}
+              >
+                {advancedOpen ? "Hide advanced controls" : "Show advanced controls"}
+              </Button>
+            </div>
+            {advancedOpen ? (
+              <div id="covered-call-advanced-parameters" className="mt-4 space-y-3">
+                {advancedGroups.map((group) => (
+                  <div key={group.id} className={group.columns === 2 ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
+                    {group.fields.map((field) => (
+                      <CoveredCallFormField key={field.key} vm={vm} field={field} />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
 
           <div className="flex items-center gap-2 pt-2">
             <Button

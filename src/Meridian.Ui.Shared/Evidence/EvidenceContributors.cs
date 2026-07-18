@@ -564,26 +564,12 @@ public sealed class ReportPackEvidenceContributor : IEvidenceContributor
         IServiceProvider services,
         Guid reportId,
         int limit)
-    {
-        var service = services.GetService<ReportPackDeliveryService>();
-        if (service is not null)
-        {
-            return service.GetHistory(reportId, limit);
-        }
-
-        var store = services.GetService<IReportPackDeliveryRecordStore>();
-        if (store is null)
-        {
-            return [];
-        }
-
-        return store.Load()
+        => ReportingDeliveryReadModelSecurity.ListVisibleAttempts(services, limit).Attempts
             .Where(attempt => attempt.ReportId == reportId)
             .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
             .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
             .Take(Math.Clamp(limit, 1, 500))
             .ToArray();
-    }
 
     private static EvidenceStatusDto MapDeliveryAttemptStatus(ReportPackDeliveryStateDto state)
         => state switch
@@ -704,8 +690,8 @@ public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
                     $"{packageId}:manifest",
                     "delivery-package-manifest",
                     context.Subject,
-                    path: null,
-                    route: package.SecureLink,
+                    path: string.IsNullOrWhiteSpace(package.SecureLink) ? package.RetainedManifestPath : null,
+                    route: string.IsNullOrWhiteSpace(package.SecureLink) ? null : package.SecureLink,
                     generatedAt: package.CreatedAtUtc,
                     hash: package.PublicationEvidenceHash,
                     retained: !string.IsNullOrWhiteSpace(package.SecureLink))
@@ -886,26 +872,7 @@ public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
     private static (IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts, bool SourceAvailable) ListDeliveryAttempts(
         IServiceProvider services,
         int limit)
-    {
-        var service = services.GetService<ReportPackDeliveryService>();
-        if (service is not null)
-        {
-            return (service.ListAttempts(limit), true);
-        }
-
-        var store = services.GetService<IReportPackDeliveryRecordStore>();
-        if (store is null)
-        {
-            return ([], false);
-        }
-
-        return (store.Load()
-            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
-            .ThenBy(static attempt => attempt.ReportId)
-            .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
-            .Take(Math.Clamp(limit, 1, 500))
-            .ToArray(), true);
-    }
+        => ReportingDeliveryReadModelSecurity.ListVisibleAttempts(services, limit);
 
     private static ReportPackDeliveryAttemptDto? ResolveDeliveryAttempt(
         IReadOnlyList<ReportPackDeliveryAttemptDto> attempts,
@@ -1050,7 +1017,7 @@ public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
             $"{nodeId}:package-manifest",
             "audit-manifest",
             subject,
-            path: null,
+            path: string.IsNullOrWhiteSpace(packageRoute) ? package.RetainedManifestPath : null,
             route: string.IsNullOrWhiteSpace(packageRoute) ? null : packageRoute,
             generatedAt: packet?.DeliveredAtUtc ?? package.CreatedAtUtc,
             hash: package.PublicationEvidenceHash,

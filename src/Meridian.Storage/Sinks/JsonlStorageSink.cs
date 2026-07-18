@@ -39,13 +39,6 @@ public sealed class JsonlBatchOptions
     public bool Enabled { get; init; } = true;
 
     /// <summary>
-    /// Retained for configuration compatibility.
-    /// The direct-stream writer no longer pre-serializes batches into strings, so this
-    /// threshold is not used to switch between sequential and parallel string creation.
-    /// </summary>
-    public int ParallelSerializationThreshold { get; init; } = 5000;
-
-    /// <summary>
     /// Default options with batching enabled.
     /// </summary>
     public static JsonlBatchOptions Default => new();
@@ -56,8 +49,7 @@ public sealed class JsonlBatchOptions
     public static JsonlBatchOptions HighThroughput => new()
     {
         BatchSize = 5000,
-        FlushInterval = TimeSpan.FromSeconds(10),
-        ParallelSerializationThreshold = 5000
+        FlushInterval = TimeSpan.FromSeconds(10)
     };
 
     /// <summary>
@@ -66,8 +58,7 @@ public sealed class JsonlBatchOptions
     public static JsonlBatchOptions LowLatency => new()
     {
         BatchSize = 100,
-        FlushInterval = TimeSpan.FromSeconds(1),
-        ParallelSerializationThreshold = 5000
+        FlushInterval = TimeSpan.FromSeconds(1)
     };
 
     /// <summary>
@@ -222,7 +213,24 @@ public sealed class JsonlStorageSink : IStorageSink
         // Flush if buffer is full
         if (buffer.ShouldFlush(_batchOptions.BatchSize))
         {
+            await FlushBufferUnderGateAsync(path, buffer, ct).ConfigureAwait(false);
+        }
+    }
+
+    // Size-triggered flushes must hold the same _flushGate as the periodic and disposal
+    // flush paths. EventBuffer.DrainAll hands back its internal swap-buffer, which the next
+    // DrainAll clears and reuses; without the gate a concurrent periodic/size flush could
+    // clear the very list an in-flight WriteBatchAsync is still reading.
+    private async Task FlushBufferUnderGateAsync(string path, MarketEventBuffer buffer, CancellationToken ct)
+    {
+        await _flushGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
             await FlushBufferAsync(path, buffer, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _flushGate.Release();
         }
     }
 
@@ -349,7 +357,13 @@ public sealed class JsonlStorageSink : IStorageSink
         {
             try
             {
-                await _flushGate.WaitAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                // Wait for the gate without a timeout: once _disposed is set and the timers are
+                // disposed, AppendAsync throws so no new flush can start — the gate is only ever
+                // held by an in-flight flush that will complete. Waiting unbounded (as
+                // WriterState.DisposeAsync already does) guarantees the final flush runs instead of
+                // timing out and then clearing _buffers with still-unwritten events. Release lives
+                // in the inner finally so a semaphore that was never acquired is never released.
+                await _flushGate.WaitAsync().ConfigureAwait(false);
                 try
                 {
                     await FlushBufferedBatchesUnderGateAsync(CancellationToken.None).ConfigureAwait(false);

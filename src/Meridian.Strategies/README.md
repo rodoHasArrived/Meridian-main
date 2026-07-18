@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-12
 ---
 
 # src/Meridian.Strategies
@@ -61,6 +61,18 @@ evidence so accounting operations can route principal-paydown blockers precisely
 Security Master adapter preserves mortgage-backed, asset-backed, and amortizing-loan asset classes
 when normalizing economic definitions so factor paydowns stay principal events instead of being
 collapsed into generic unsupported instruments.
+External-statement input is an optional reconciliation source. When no provider is configured, the
+production-safe null source contributes no statement rows; retained reconciliation run storage and
+the configured portfolio, ledger, and banking inputs remain authoritative.
+Factor rows retain their evidence link and source-content hash, and the Security Master accounting
+event service delegates factor math and deterministic event identity to Instruments
+`FactorPaydownProjectionService`. Reconciliation run ids no longer participate in factor event
+identity; missing factor evidence blocks the expected event instead of producing an unverifiable
+posting preview.
+For factor-bearing definitions, the production source adapter resolves a single effective Asset
+Operations book position by Security Master identity and account, carries its durable id/version,
+and fails the factor event closed when that position cannot be resolved. Multiple factor rows advance
+their expected position versions sequentially instead of reusing one optimistic-concurrency token.
 `GovernanceExceptionService` classifies ledger reconciliation breaks into strategy-governance
 exception severities and dashboard projections from this module instead of the Application layer.
 The shared reconciliation break queue also enforces v0.18 reviewed-automation boundaries: assistant

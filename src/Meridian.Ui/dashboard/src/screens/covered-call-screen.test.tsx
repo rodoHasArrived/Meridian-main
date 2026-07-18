@@ -288,6 +288,12 @@ describe("CoveredCallScreen", () => {
 
     renderCoveredCallScreen();
 
+    expect(screen.queryByLabelText("Scoring mode")).not.toBeInTheDocument();
+    const advancedToggle = screen.getByRole("button", { name: "Show advanced controls" });
+    expect(advancedToggle).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(advancedToggle);
+    expect(screen.getByRole("button", { name: "Hide advanced controls" })).toHaveAttribute("aria-expanded", "true");
+
     const scoringMode = screen.getByLabelText("Scoring mode");
     const depthBonusWeight = screen.getByLabelText("Depth bonus weight");
 

@@ -63,6 +63,14 @@ public static class UiApiRoutes
     public const string IngestionJobById = "/api/ingestion/jobs/{jobId}";
     public const string IngestionJobTransition = "/api/ingestion/jobs/{jobId}/transition";
 
+    // Governed Data workspace operations and assurance endpoints
+    public const string WorkstationIngestionOperations = "/api/workstation/data/ingestion-operations";
+    public const string WorkstationIngestionOperationById = "/api/workstation/data/ingestion-operations/{jobId}";
+    public const string WorkstationIngestionOperationAction = "/api/workstation/data/ingestion-operations/{jobId}/actions/{action}";
+    public const string WorkstationStorageAssurance = "/api/workstation/data/storage-assurance";
+    public const string WorkstationStorageMaintenancePreview = "/api/workstation/data/storage-assurance/actions/preview";
+    public const string WorkstationStorageMaintenanceExecute = "/api/workstation/data/storage-assurance/actions/execute";
+
     // Backfill provider metadata and status endpoints
     public const string BackfillProviderMetadata = "/api/backfill/providers/metadata";
     public const string BackfillProviderStatuses = "/api/backfill/providers/statuses";
@@ -160,6 +168,7 @@ public static class UiApiRoutes
     public const string SymbolsSearch = "/api/symbols/search";
     public const string SymbolsBatch = "/api/symbols/batch";
     public const string SymbolMappings = "/api/symbols/mappings";
+    public const string CanonicalSymbolRegistry = "/api/symbols/registry";
 
     // Catalog search and discovery endpoints
     public const string CatalogSearch = "/api/catalog/search";
@@ -354,6 +363,7 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
     public const string SecurityMasterCoverageDraft = "/api/security-master/coverage/draft/{symbol}";
     public const string SecurityMasterOperatorOverrides = "/api/security-master/{securityId:guid}/operator-overrides";
+    public const string SecurityMasterOperatorOverrideDecision = "/api/security-master/{securityId:guid}/operator-overrides/decision";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
 
@@ -616,6 +626,8 @@ public static class UiApiRoutes
     public const string WorkstationDataReplacementCost = "/api/workstation/data/replacement-cost";
     public const string WorkstationDataUploadTemplates = "/api/workstation/data/uploads/templates";
     public const string WorkstationDataUploadPreview = "/api/workstation/data/uploads/preview";
+    public const string WorkstationDataUploadWorkbook = "/api/workstation/data/uploads/templates/workbook";
+    public const string WorkstationDataUploadWorkbookPreview = "/api/workstation/data/uploads/workbook/preview";
     public const string WorkstationBankStatementImport = "/api/workstation/data/uploads/bank-statements/import";
     public const string WorkstationProviderIntegrationTemplates = "/api/workstation/provider-integrations/templates";
     public const string WorkstationProviderIntegrationTemplateById = "/api/workstation/provider-integrations/templates/{manifestId}";
@@ -785,6 +797,7 @@ public static class UiApiRoutes
     public const string LedgerCloseManagementTaskSignOffs = "/api/ledger/close-management/task-signoffs";
     public const string LedgerCloseManagementEvidenceReview = "/api/ledger/close-management/evidence-review";
     public const string LedgerCloseManagementPeriodLock = "/api/ledger/close-management/period-lock";
+    public const string LedgerCloseManagementPeriodReopen = "/api/ledger/close-management/period-reopen";
     public const string LedgerManualJournalEntryWorkbench = "/api/ledger/journal-entry-workbench";
     public const string LedgerPrivateCapitalActivity = "/api/ledger/private-capital/activity";
     public const string LedgerPrivateCapitalFundEventRecord = "/api/ledger/private-capital/fund-event-record";
@@ -800,6 +813,12 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationDividendIntake = "/api/ledger/journal-automation/dividend-intake";
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
+    public const string LedgerJournalAutomationDailyMarkToMarketSchedules = "/api/ledger/journal-automation/daily-mark-to-market-schedules";
+    public const string LedgerJournalAutomationDailyMarkToMarketRunDue = "/api/ledger/journal-automation/daily-mark-to-market-run-due";
+    public const string LedgerJournalAutomationDailyMarkToMarketBatchLifecycle = "/api/ledger/journal-automation/daily-mark-to-market-batch-lifecycle";
+    public const string LedgerJournalAutomationMonthlySchedules = "/api/ledger/journal-automation/monthly-schedules";
+    public const string LedgerJournalAutomationMonthlyRunDue = "/api/ledger/journal-automation/monthly-schedules/run-due";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
     public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";
@@ -871,9 +890,32 @@ public static class UiApiRoutes
     public const string ReportingPackDeliveryPortalPackage = "/portal/reporting/packages/{packageId}";
     public const string ReportingStructuredExport = "/api/fund-structure/reporting/structured-exports/{exportId}";
     public const string ReportingRuns = "/api/fund-structure/reporting/runs";
+    public const string ReportingRunReadiness = "/api/fund-structure/reporting/runs/readiness";
+    public const string ReportingGovernedRun = "/api/fund-structure/reporting/runs/{runId}";
+    public const string ReportingGovernedSeries = "/api/fund-structure/reporting/runs/series/{seriesId}";
+    public const string ReportingGovernedRunCreate = "/api/fund-structure/reporting/runs/{runId}/govern";
+    public const string ReportingGovernedRunValidate = "/api/fund-structure/reporting/runs/{runId}/validate";
+    public const string ReportingGovernedRunSubmit = "/api/fund-structure/reporting/runs/{runId}/submit";
+    public const string ReportingGovernedRunApprove = "/api/fund-structure/reporting/runs/{runId}/approve";
+    public const string ReportingGovernedRunRelease = "/api/fund-structure/reporting/runs/{runId}/release";
+    public const string ReportingGovernedRunRestatementRequests = "/api/fund-structure/reporting/runs/{runId}/restatement-requests";
+    public const string ReportingGovernedRestatement = "/api/fund-structure/reporting/runs/restatement-requests/{requestId}";
+    public const string ReportingGovernedRestatementApprove = "/api/fund-structure/reporting/runs/restatement-requests/{requestId}/approve";
     public const string ReportingRunAuditTrail = "/api/fund-structure/reporting/runs/{runId}/audit";
     public const string ReportingRunStream = "/api/fund-structure/reporting/runs/{runId}/stream";
     public const string ReportingRunReportWriterGrid = "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}";
+    public const string ReportingDistributionQueueDelivery = "/api/fund-structure/reporting/distribution/deliveries";
+    public const string ReportingDistributionDelivery = "/api/fund-structure/reporting/distribution/deliveries/{jobId}";
+    public const string ReportingDistributionPackageDeliveries = "/api/fund-structure/reporting/distribution/packages/{runId}/deliveries";
+    public const string ReportingDistributionTransports = "/api/fund-structure/reporting/distribution/transports";
+    public const string ReportingDistributionProviderReceipt = "/hooks/reporting/distribution/{transportId}/deliveries/{jobId}/receipts";
+    public const string ReportingDistributionIssueAccessGrant = "/api/fund-structure/reporting/distribution/access-grants";
+    public const string ReportingDistributionAccessGrant = "/api/fund-structure/reporting/distribution/access-grants/{grantId}";
+    public const string ReportingDistributionPackageAccessGrants = "/api/fund-structure/reporting/distribution/packages/{runId}/access-grants";
+    public const string ReportingDistributionRevokeAccessGrant = "/api/fund-structure/reporting/distribution/access-grants/{grantId}/revoke";
+    public const string ReportingDistributionArtifactDownload = "/api/fund-structure/reporting/distribution/packages/{runId}/artifacts/{artifactId}";
+    public const string ReportingDistributionPortalPackage = "/portal/reporting/secure/packages/{runId}";
+    public const string ReportingDistributionExchangeAccessGrant = "/portal/reporting/access-grants/{grantId}/exchange";
     public const string ReportingStarterKits = "/api/fund-structure/reporting/starter-kits";
     public const string ReportingStarterKitProvision = "/api/fund-structure/reporting/starter-kits/{kitId}/provision";
     public const string ReportingSchedules = "/api/fund-structure/reporting/schedules";

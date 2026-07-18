@@ -2,8 +2,10 @@ using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Serilog;
 
 namespace Meridian.Storage.Services;
 
@@ -12,6 +14,7 @@ namespace Meridian.Storage.Services;
 /// </summary>
 public sealed class FileMaintenanceService : IFileMaintenanceService
 {
+    private readonly ILogger _log = LoggingSetup.ForContext<FileMaintenanceService>();
     private readonly StorageOptions _options;
     private readonly ISourceRegistry? _sourceRegistry;
     private static readonly string[] DataExtensions = { ".jsonl", ".jsonl.gz", ".jsonl.zst", ".jsonl.lz4", ".jsonl.br", ".parquet" };
@@ -245,14 +248,24 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                         {
                             try
                             { file.Delete(); }
-                            catch (IOException) { /* File may be in use */ }
+                            catch (IOException ex)
+                            {
+                                // A source file survived the merge. It must be surfaced: on replay the
+                                // merged file and the undeleted original both contribute the same
+                                // events, producing duplicates. Log it rather than swallowing it.
+                                _log.Warning(
+                                    ex,
+                                    "Failed to delete merged-source file {FilePath} after defragmentation; duplicate events may appear on replay",
+                                    file.FullName);
+                            }
                         }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Skip this group on error
+                // Skip this group on error, but record why rather than dropping it silently.
+                _log.Warning(ex, "Defragmentation failed for a file group of {FileCount} files; skipping the group", filesToMerge.Count);
                 bytesAfter += filesToMerge.Sum(f => f.Length);
             }
         }
@@ -306,16 +319,20 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             var checksumFile = file.FullName + ".sha256";
             if (File.Exists(checksumFile))
             {
-                var expectedChecksum = await File.ReadAllTextAsync(checksumFile, ct);
+                // Sidecars are written by AtomicFileWriter in sha256sum format
+                // ("{checksum}  {filename}"), so only the first token is the hash.
+                var expectedChecksum = (await File.ReadAllTextAsync(checksumFile, ct))
+                    .Split(' ', 2)[0]
+                    .Trim();
                 var actualChecksum = await ComputeChecksumAsync(file.FullName, ct);
 
-                if (!string.Equals(expectedChecksum.Trim(), actualChecksum, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(expectedChecksum, actualChecksum, StringComparison.OrdinalIgnoreCase))
                 {
                     issues.Add(new HealthIssue(
                         Severity: IssueSeverity.Critical,
                         Type: IssueType.ChecksumMismatch,
                         Path: file.FullName,
-                        ExpectedChecksum: expectedChecksum.Trim(),
+                        ExpectedChecksum: expectedChecksum,
                         ActualChecksum: actualChecksum,
                         RecommendedAction: "restore_from_backup",
                         AutoRepairable: true
@@ -494,14 +511,22 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
 
     private Task<bool> RebuildIndexAsync(string filePath, CancellationToken ct)
     {
-        // Index rebuilding would regenerate manifest files
-        return Task.FromResult(true);
+        // Index rebuilding is not implemented. Return false rather than a fake success so it is
+        // not counted as a repair — reporting "repaired" for a no-op masked real health issues.
+        _log.Warning(
+            "RebuildIndex repair requested for {FilePath} but is not implemented; reporting no repair",
+            filePath);
+        return Task.FromResult(false);
     }
 
     private Task<bool> MergeFragmentsAsync(string filePath, CancellationToken ct)
     {
-        // Fragment merging handled by defragmentation
-        return Task.FromResult(true);
+        // Fragment merging is performed by DefragmentAsync, not by this per-file repair strategy.
+        // Return false rather than a fake success so it is not counted as a repair here.
+        _log.Warning(
+            "MergeFragments repair requested for {FilePath}; fragment merging is handled by defragmentation, reporting no repair",
+            filePath);
+        return Task.FromResult(false);
     }
 
     private async Task<bool> RecompressAsync(string filePath, CancellationToken ct)

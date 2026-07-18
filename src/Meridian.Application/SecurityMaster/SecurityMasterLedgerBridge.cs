@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
 using DomainLedger = Meridian.Ledger.Ledger;
@@ -30,7 +31,8 @@ public interface ISecurityMasterLedgerBridge
 public sealed record CorporateActionLedgerPostingContext(
     decimal PositionQuantity = 0m,
     decimal WithholdingTaxRate = 0m,
-    string? FinancialAccountId = null);
+    string? FinancialAccountId = null,
+    bool AutoReverseSupersededPostings = false);
 
 /// <summary>
 /// Default implementation of <see cref="ISecurityMasterLedgerBridge"/>.
@@ -39,13 +41,16 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
 {
     private readonly ISecurityMasterQueryService _queryService;
     private readonly ILogger<SecurityMasterLedgerBridge> _logger;
+    private readonly IFactorPaydownProjectionService _factorPaydownProjector;
 
     public SecurityMasterLedgerBridge(
         ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterLedgerBridge> logger)
+        ILogger<SecurityMasterLedgerBridge> logger,
+        IFactorPaydownProjectionService? factorPaydownProjector = null)
     {
         _queryService = queryService;
         _logger = logger;
+        _factorPaydownProjector = factorPaydownProjector ?? new FactorPaydownProjectionService();
     }
 
     /// <inheritdoc />
@@ -87,15 +92,22 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         {
             var action = state.Effective;
 
-            // Superseded chains: an amendment or cancellation whose original was already
-            // posted needs a correcting entry through the governed restatement path, not a
-            // silent repost — the bridge never double-books a corporate action.
+            // Superseded chains: an amendment or cancellation whose original was already posted
+            // needs a correcting entry, never a silent repost. By default corrections defer to the
+            // governed restatement path; when AutoReverseSupersededPostings is enabled the bridge
+            // books the reversal itself (and rebooks amended terms by falling through to post below).
             var priorPosted = state.Timeline.Count > 1 || state.IsCancelled
                 ? state.Timeline.Any(prior => prior.CorpActId != action.CorpActId && existingIds.Contains(prior.CorpActId))
                 : false;
+
+            if (priorPosted && postingContext.AutoReverseSupersededPostings)
+            {
+                posted += ReverseSupersededPostings(ledger, state, existingIds, normalizedTicker);
+            }
+
             if (state.IsCancelled)
             {
-                if (priorPosted)
+                if (priorPosted && !postingContext.AutoReverseSupersededPostings)
                 {
                     _logger.LogWarning(
                         "SecurityMasterLedgerBridge: corporate action {CorporateActionId} for {Ticker} was cancelled after a prior posting; reversal requires the governed restatement path.",
@@ -108,7 +120,7 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
             if (existingIds.Contains(action.CorpActId))
                 continue;
 
-            if (priorPosted)
+            if (priorPosted && !postingContext.AutoReverseSupersededPostings)
             {
                 _logger.LogWarning(
                     "SecurityMasterLedgerBridge: corporate action {CorporateActionId} for {Ticker} was amended after a prior posting; correction requires the governed restatement path.",
@@ -177,7 +189,18 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     break;
 
                 case CorporateActionLedgerPostingKind.FactorPaydown when action.DistributionRatio.HasValue:
-                    PostFactorPaydown(ledger, action, normalizedTicker, ts, meta);
+                    var projection = ProjectFactorPaydown(action, normalizedTicker, postingContext, ts);
+                    if (!projection.ProducesPostingCandidate)
+                    {
+                        _logger.LogWarning(
+                            "SecurityMasterLedgerBridge skipped factor paydown {CorporateActionId} for {Ticker}: {Issues}",
+                            action.CorpActId,
+                            normalizedTicker,
+                            string.Join("; ", projection.Issues.Select(static issue => issue.Message)));
+                        break;
+                    }
+
+                    PostFactorPaydown(ledger, action, normalizedTicker, ts, meta, projection.PrincipalPaydown!.Value);
                     posted++;
                     break;
 
@@ -206,6 +229,65 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Books balanced reversing entries for every posting of the superseded actions in this
+    /// state's timeline. A corporate action is posted as a primary journal keyed by its
+    /// <see cref="CorporateActionDto.CorpActId"/> plus optional derived withholding/receipt
+    /// journals; each posted journal is reversed under a deterministic <c>reversal</c> id, so
+    /// re-running the sync never double-reverses.
+    /// </summary>
+    private int ReverseSupersededPostings(
+        DomainLedger ledger,
+        CorporateActionEffectiveState state,
+        HashSet<Guid> existingIds,
+        string ticker)
+    {
+        var reversed = 0;
+
+        // The correction is booked at the superseding action's effective date, not backdated into
+        // the original event's period — a reversal was not known until the amendment/cancellation
+        // arrived, so as-of balances and journal-range queries must not see it before that date.
+        var correctionTimestamp = ToUtcStartOfDay(state.Effective.ExDate);
+
+        // Only a handful of journals are ever looked up here (the superseded chain's primary plus
+        // derived withholding/receipt postings), so a direct scan avoids materializing a dictionary
+        // of the whole ledger on every superseded action.
+        foreach (var prior in state.Timeline)
+        {
+            if (prior.CorpActId == state.Effective.CorpActId || !existingIds.Contains(prior.CorpActId))
+                continue;
+
+            foreach (var originalId in EnumeratePostedJournalIds(prior.CorpActId))
+            {
+                var original = ledger.Journal.FirstOrDefault(journal => journal.JournalEntryId == originalId);
+                if (original is null)
+                    continue;
+
+                var reversalId = DeriveJournalId(originalId, "reversal");
+                if (!existingIds.Add(reversalId))
+                    continue; // already reversed on a prior sync
+
+                var reason = $"Superseded by {state.Effective.CorpActId:D} ({state.LifecycleState})";
+                ledger.Post(LedgerJournalReversal.Reverse(original, reversalId, correctionTimestamp, reason));
+                reversed++;
+            }
+        }
+
+        if (reversed > 0)
+            _logger.LogInformation(
+                "SecurityMasterLedgerBridge auto-reversed {Count} superseded posting(s) for {Ticker} ahead of {CorporateActionId}.",
+                reversed, ticker, state.Effective.CorpActId);
+
+        return reversed;
+    }
+
+    private static IEnumerable<Guid> EnumeratePostedJournalIds(Guid corporateActionId)
+    {
+        yield return corporateActionId;
+        yield return DeriveJournalId(corporateActionId, "withholding");
+        yield return DeriveJournalId(corporateActionId, "receipt");
+    }
 
     private static void PostDividendDeclaration(
         DomainLedger ledger,
@@ -360,10 +442,10 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         CorporateActionDto action,
         string ticker,
         DateTimeOffset ts,
-        JournalEntryMetadata meta)
+        JournalEntryMetadata meta,
+        decimal amount)
     {
-        var amount = action.DistributionRatio!.Value;
-        var description = $"Principal paydown {ticker} ex {action.ExDate:yyyy-MM-dd} factor delta {amount:N6}";
+        var description = $"Principal paydown {ticker} ex {action.ExDate:yyyy-MM-dd} factor delta {action.DistributionRatio!.Value:N6}";
 
         var entry = new JournalEntry(
             action.CorpActId,
@@ -378,6 +460,45 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
             meta);
 
         ledger.Post(entry);
+    }
+
+    private FactorPaydownProjectionResult ProjectFactorPaydown(
+        CorporateActionDto action,
+        string ticker,
+        CorporateActionLedgerPostingContext context,
+        DateTimeOffset occurredAtUtc)
+    {
+        var factorDelta = action.DistributionRatio!.Value;
+        var positionId = DeriveJournalId(action.SecurityId, $"factor-position:{ticker}");
+        return _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
+            action.SecurityId,
+            positionId,
+            PositionVersion: 1,
+            ExpectedPositionVersion: 1,
+            HeldFace: context.PositionQuantity,
+            PriorFactor: 1m,
+            CurrentFactor: 1m - factorDelta,
+            Currency: action.Currency ?? string.Empty,
+            EffectiveDate: action.ExDate,
+            OccurredAtUtc: occurredAtUtc,
+            SourceDomain: "SecurityMaster",
+            SourceEntityId: action.CorpActId.ToString("D"),
+            SourceContentHash: HashCorporateAction(action),
+            EvidenceLinks: [$"security-master://corporate-actions/{action.CorpActId:D}"]));
+    }
+
+    private static string HashCorporateAction(CorporateActionDto action)
+    {
+        var source = string.Join(
+            '|',
+            action.CorpActId.ToString("N"),
+            action.SecurityId.ToString("N"),
+            action.EventType,
+            action.ExDate.ToString("yyyy-MM-dd"),
+            action.DistributionRatio?.ToString("G29", System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            action.Currency ?? string.Empty,
+            action.LifecycleState ?? string.Empty);
+        return $"sha256:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source))).ToLowerInvariant()}";
     }
 
     private static void PostRedemptionMemo(

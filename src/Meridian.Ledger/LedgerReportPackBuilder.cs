@@ -64,7 +64,7 @@ public static class LedgerReportPackBuilder
         IReadOnlyList<LedgerTaxLotReliefProjection> projections)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate,QuantityRelieved,UnitCost,Proceeds,CostBasis,RealizedGainOrLoss");
+        builder.AppendLine("SaleDate,AccountName,Symbol,FinancialAccountId,ReliefMethod,LotId,AcquiredDate,QuantityRelieved,UnitCost,Proceeds,CostBasis,RealizedGainOrLoss,DisallowedWashSaleLoss,RecognizedGainOrLoss");
 
         foreach (var projection in projections
             .OrderBy(static projection => projection.Input.SaleDate)
@@ -72,12 +72,49 @@ public static class LedgerReportPackBuilder
             .ThenBy(static projection => projection.Input.Account.Symbol ?? string.Empty, StringComparer.Ordinal)
             .ThenBy(static projection => projection.Input.FinancialAccountId ?? string.Empty, StringComparer.Ordinal))
         {
-            foreach (var selection in projection.Selections
+            var orderedSelections = projection.Selections
                 .OrderBy(static selection => selection.Lot.AcquiredDate)
-                .ThenBy(static selection => selection.Lot.LotId, StringComparer.Ordinal))
+                .ThenBy(static selection => selection.Lot.LotId, StringComparer.Ordinal)
+                .ToList();
+
+            // A wash sale defers part of the loss; the ledger recognized only the allowed portion.
+            // Spread the disallowed amount across the relieved lots by quantity so each row's
+            // recognized gain/loss nets to what was actually booked (residual on the final row),
+            // instead of the export overstating the current-period realized loss.
+            var disallowedTotal = projection.WashSale?.DisallowedLoss ?? 0m;
+            var totalQuantity = orderedSelections.Sum(static selection => selection.QuantityRelieved);
+            var allocatedDisallowed = 0m;
+
+            for (var index = 0; index < orderedSelections.Count; index++)
             {
+                var selection = orderedSelections[index];
                 var proceeds = RoundCurrency(selection.QuantityRelieved * projection.Input.SalePrice);
                 var realizedGainOrLoss = proceeds - selection.CostBasis;
+
+                decimal disallowed;
+                if (disallowedTotal == 0m)
+                {
+                    disallowed = 0m;
+                }
+                else if (index == orderedSelections.Count - 1)
+                {
+                    disallowed = disallowedTotal - allocatedDisallowed;
+                }
+                else
+                {
+                    // Cap each row at the remaining unallocated amount so accumulated rounding on
+                    // earlier rows can never push the final row's residual negative (matches the
+                    // projector's DistributeBasisIncreases).
+                    var remaining = disallowedTotal - allocatedDisallowed;
+                    disallowed = totalQuantity == 0m
+                        ? 0m
+                        : Math.Min(remaining, RoundCurrency(disallowedTotal * (selection.QuantityRelieved / totalQuantity)));
+                    allocatedDisallowed += disallowed;
+                }
+
+                // Disallowed loss is a positive amount that reduces the recognized loss (a realized
+                // loss is negative, so adding the deferred portion moves it toward zero).
+                var recognizedGainOrLoss = realizedGainOrLoss + disallowed;
 
                 builder.Append(projection.Input.SaleDate.ToString("O", CultureInfo.InvariantCulture));
                 builder.Append(',');
@@ -101,7 +138,11 @@ public static class LedgerReportPackBuilder
                 builder.Append(',');
                 builder.Append(FormatDecimal(selection.CostBasis));
                 builder.Append(',');
-                builder.AppendLine(FormatDecimal(realizedGainOrLoss));
+                builder.Append(FormatDecimal(realizedGainOrLoss));
+                builder.Append(',');
+                builder.Append(FormatDecimal(disallowed));
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(recognizedGainOrLoss));
             }
         }
 

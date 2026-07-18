@@ -63,12 +63,28 @@ describe("ReportingHub", () => {
 
     render(<ReportingHub model={model} />);
 
-    const familyHealth = screen.getByRole("region", { name: "Report family health" });
+    const familyHealth = screen.getByRole("region", { name: "Report family organizer" });
     expect(within(familyHealth).getByRole("columnheader", { name: "Family" })).toBeInTheDocument();
-    expect(within(familyHealth).getByText("Investor statements")).toBeInTheDocument();
-    expect(within(familyHealth).getByRole("link", { name: "Open latest output for Investor statements" })).toHaveAttribute(
+    expect(within(familyHealth).getByText("Investor Statements")).toBeInTheDocument();
+    expect(within(familyHealth).getByRole("link", { name: "Open latest output for Investor Statements" })).toHaveAttribute(
       "href",
       "/reporting/runs/run-1"
     );
+  });
+
+  it("does not present family setup work as a successful empty queue", () => {
+    const model = buildReportingHubModel([], [{
+      templateName: "draft-pack",
+      name: "Draft Pack",
+      family: "CustomReport",
+      canRunOnDemand: false
+    }]);
+
+    render(<ReportingHub model={model} />);
+
+    const summaryBadges = screen.getAllByText("No urgent work queued · 1 report family needs setup or review");
+    expect(summaryBadges.some((badge) => badge.classList.contains("border-warning/35"))).toBe(true);
+    expect(screen.getByText("No dedicated daily work items are loaded. 1 report family still needs review in the organizer below.")).toBeInTheDocument();
+    expect(screen.queryByText(/No due packages, approvals/i)).not.toBeInTheDocument();
   });
 });

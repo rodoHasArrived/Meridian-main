@@ -74,13 +74,124 @@ public interface ILedgerJournalStore
             new NotSupportedException("This ledger journal store does not support tax-lot persistence."));
 }
 
-public interface ITransactionalLedgerJournalStore : ILedgerJournalStore
+public interface IAtomicLedgerPeriodCloseStore
+{
+    /// <summary>
+    /// Hard-closes a retained period only after rechecking revenue and expense balances while
+    /// holding the same exclusion boundary used by journal appends. The balance guard, period
+    /// CAS, and close-event insert must commit or roll back together.
+    /// </summary>
+    Task<LedgerAccountingPeriod> SaveHardClosedPeriodAsync(
+        LedgerAccountingPeriod period,
+        long expectedVersion,
+        PeriodCloseEventRecord closeEvent,
+        CancellationToken ct = default);
+}
+
+public interface ITransactionalLedgerJournalStore :
+    ILedgerJournalStore,
+    IAtomicLedgerPeriodCloseStore
 {
     Task AppendAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
         CancellationToken ct = default);
+}
+
+/// <summary>
+/// Optional optimized lookup for every retained journal that collides with a proposed posting
+/// identity. Journal-entry and command identifiers are global identities; source-event and
+/// idempotency identities are scoped to the accounting aggregate.
+/// </summary>
+public interface ILedgerPostingIdentityCollisionLookup
+{
+    Task<IReadOnlyList<LedgerJournalEntryRecord>> FindPostingIdentityCollisionsAsync(
+        LedgerPostingIdentity identity,
+        CancellationToken ct = default);
+}
+
+public sealed record LedgerPostingIdentity(
+    Guid JournalEntryId,
+    Guid AggregateId,
+    Guid? CommandId,
+    Guid? SourceEventId,
+    string? IdempotencyKey)
+{
+    public static LedgerPostingIdentity FromWrite(LedgerJournalEntryWrite write)
+    {
+        ArgumentNullException.ThrowIfNull(write);
+        ArgumentNullException.ThrowIfNull(write.Entry);
+
+        return new LedgerPostingIdentity(
+            write.Entry.JournalEntryId,
+            write.AggregateId,
+            write.CommandId,
+            write.SourceEventId,
+            NormalizeOptional(write.Entry.Metadata.IdempotencyKey));
+    }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+
+/// <summary>
+/// Compatibility lookup for journal stores that predate the optimized collision contract.
+/// Aggregate reads still enforce all aggregate-scoped identities and any global identity retained
+/// by that aggregate. Durable stores should implement <see cref="ILedgerPostingIdentityCollisionLookup"/>
+/// so journal-entry and command identities are checked across every aggregate efficiently.
+/// </summary>
+public static class LedgerPostingIdentityCollisionLookupExtensions
+{
+    public static async Task<IReadOnlyList<LedgerJournalEntryRecord>> FindPostingIdentityCollisionsAsync(
+        this ILedgerJournalStore store,
+        LedgerPostingIdentity identity,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(store);
+        ArgumentNullException.ThrowIfNull(identity);
+        if (identity.JournalEntryId == Guid.Empty)
+            throw new ArgumentException("Journal entry id is required.", nameof(identity));
+        if (identity.AggregateId == Guid.Empty)
+            throw new ArgumentException("Aggregate id is required.", nameof(identity));
+
+        if (store is ILedgerPostingIdentityCollisionLookup optimized)
+        {
+            return await optimized
+                .FindPostingIdentityCollisionsAsync(identity, ct)
+                .ConfigureAwait(false);
+        }
+
+        var retained = await store
+            .GetByAggregateAsync(identity.AggregateId, ct)
+            .ConfigureAwait(false);
+        return retained
+            .Where(record => IsCollision(record, identity))
+            .ToArray();
+    }
+
+    internal static bool IsCollision(
+        LedgerJournalEntryRecord record,
+        LedgerPostingIdentity identity)
+    {
+        if (record.Entry.JournalEntryId == identity.JournalEntryId)
+            return true;
+
+        if (identity.CommandId.HasValue && record.CommandId == identity.CommandId)
+            return true;
+
+        if (record.AggregateId != identity.AggregateId)
+            return false;
+
+        if (identity.SourceEventId.HasValue && record.SourceEventId == identity.SourceEventId)
+            return true;
+
+        return identity.IdempotencyKey is not null
+            && string.Equals(
+                record.Entry.Metadata.IdempotencyKey?.Trim(),
+                identity.IdempotencyKey,
+                StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 public sealed record LedgerJournalEntryWrite(

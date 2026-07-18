@@ -3,35 +3,23 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Instruments.FixedIncome;
 
-public sealed class BondProjectionService : IBondReferenceService
+public sealed class BondProjectionService
+    : InstrumentProjectionServiceBase<BondProjectionRow, BondReferenceDto>, IBondReferenceService
 {
-    private readonly ISecurityMasterStore _securityMasterStore;
     private readonly IBondReferenceProjectionStore _projectionStore;
 
     public BondProjectionService(
         ISecurityMasterStore securityMasterStore,
         IBondReferenceProjectionStore projectionStore)
+        : base(securityMasterStore)
     {
-        _securityMasterStore = securityMasterStore;
         _projectionStore = projectionStore;
     }
 
-    public async Task<BondReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default)
-    {
-        var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
-        if (security is null || !string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
+    protected override string AssetClass => "Bond";
 
-        var projection = await _projectionStore.GetBondAsync(securityId, ct).ConfigureAwait(false);
-        if (projection is null)
-        {
-            return null;
-        }
-
-        return MapReference(projection);
-    }
+    protected override Task<BondProjectionRow?> FetchRowAsync(Guid securityId, CancellationToken ct)
+        => _projectionStore.GetBondAsync(securityId, ct);
 
     public async Task<BondLifecycleDto?> GetLifecycleAsync(Guid securityId, CancellationToken ct = default)
     {
@@ -104,13 +92,13 @@ public sealed class BondProjectionService : IBondReferenceService
         foreach (var projection in projections)
         {
             ct.ThrowIfCancellationRequested();
-            results.Add(MapReference(projection));
+            results.Add(MapRow(projection));
         }
 
         return results;
     }
 
-    private static BondReferenceDto MapReference(BondProjectionRow projection)
+    protected override BondReferenceDto MapRow(BondProjectionRow projection)
         => new(
             projection.SecurityId,
             projection.DisplayName,

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-15
 ---
 
 # src/Meridian.Storage
@@ -66,6 +66,15 @@ lookup paths, and evidence trails those layers rely on.
   cash-reconciliation audit packages. `FundStructure` owns the local JSON and in-memory
   fund-structure state stores, while PostgreSQL fund-structure service persistence stays in the
   storage-backed rows and migrations.
+- `Reporting/` - tenant-bound PostgreSQL storage for immutable report bytes and catalogs, governed
+  revisions, restatement requests, exact close/reconciliation receipts, append-only lifecycle and
+  access audit chains, opaque access-grant state, durable delivery jobs, and provider receipts.
+  Reporting migrations share a schema-scoped advisory lock and checksummed migration ledger;
+  immutable rows and authority/payload fields are guarded against update or deletion. The store uses
+  `MERIDIAN_REPORTING_CONNECTION_STRING` with the intentional ledger-connection fallback and
+  `MERIDIAN_REPORTING_SCHEMA` (default `reporting`); certified run and schedule/handoff snapshots
+  remain separate integrity-validated files under the resolved `DataRoot` and must be recovered as
+  part of the same reporting state set.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
   tiering, and scheduled cleanup.
 
@@ -142,6 +151,14 @@ Ledger period close writes also fail closed for reviewed automation. `PostgresLe
 rejects assistant or automation-origin close requests before saving the period status, period-close
 event, or operator inbox sign-off work item so period locks remain human-approved accounting
 records.
+Hard close additionally hydrates the period journal and refuses the status mutation while any
+dimension-scoped Revenue or Expense balance remains non-zero. Closing-entry projection and approval
+stay in the shared workbench; Storage owns the final invariant at the durable period boundary.
+Governed restatement can move only a hard-closed period back to soft close, and only for a human
+Controller or Fund Controller command with a reason, approval reference, and one retained evidence
+artifact that identifies the period, ledger book, reversal/restatement intent, and approval. The
+reopen event retains the prior status and clears the hard-close timestamp so subsequent writes still
+flow through the existing soft-close adjustment approval guard.
 
 Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
 schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
@@ -181,6 +198,10 @@ or export consumers.
 `journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
 journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate
 schema, or new route is introduced.
+Approved typed posting commands stamp command, approval, source-event, Security Master, book
+position, projection model/run/event, and selected rule-pack/rule identities into normalized journal
+metadata while retaining typed evidence and line dimensions. Conflicting pre-existing command-owned
+tags fail before append.
 `LedgerJournalStoreHydrationExtensions` rebuilds an in-memory `Meridian.Ledger.Ledger` from that
 durable journal-read seam, including an as-of helper that scopes by ledger book and upper occurrence
 timestamp so restart, close, and reporting projections can hydrate from the stored spine before
@@ -225,6 +246,34 @@ Master storage.
 Security Master continues to own canonical security identity; Asset Operations records consume that
 identity, and Storage preserves each module's records without introducing a parent Instrument Master
 or reversing the dependency into Reference Data.
+`002_instrument_position_projections.sql` adds Security Master-keyed role and book-position payloads
+plus append-only position economic-state history. `IInstrumentPositionProjectionStore` exposes
+unfiltered security history, effective-dated security/book lookup, position lookup, and a
+transactional compare-and-swap write without exposing a ledger-balance API. Its PostgreSQL and
+in-memory implementations apply the same missing-role, date-window, overlap, cross-book, owner,
+dimension, provenance, stale-version, identity, state-version, lineage, approval, and replay guards.
+Composition binds both Asset Operations projection interfaces to the PostgreSQL store when its
+connection is configured and only registers the in-memory fallback when that durable store is
+absent. The compatibility aggregate command derives the
+persisted version inside the same serializable write while preserving the legacy ability to import a
+strictly newer sparse version; exact `ExpectedVersion` compare-and-swap remains exclusive to the
+dedicated store. New dedicated writes require retained event provenance and evidence. PostgreSQL
+takes deterministic scope locks before row locks so concurrent writers cannot both establish
+overlapping active positions or lose a same-position update; multi-statement reads use a repeatable
+snapshot so position and economic-state versions cannot tear. The in-memory implementation retains
+the same approval evidence, defensively clones caller-owned payload graphs, and preserves the first
+approval on idempotent replay.
+
+`003_instrument_position_projection_guards.sql` normalizes approval rationale, source provenance,
+book/owner scope, and projection lineage identifiers used by those guarded queries. Existing
+aggregate writes preserve typed collections when older callers send default-empty fields; existing
+Security Master, direct-lending, portfolio, fund-account, and asset-family rows are not backfilled or
+migrated. Economic-state payloads retain their matching typed lineage, allowing every append-only
+factor event to survive a later current-position update. Role and position identities cannot move
+across Security Master, owner, role, or ledger-book boundaries, state versions cannot be replaced,
+and idempotent replay preserves the original approval actor, reference, rationale, and timestamp.
+Asset Operations migrations run under a schema-scoped advisory lock and a checksummed migration
+ledger, preventing concurrent first-start races and repeated DDL/history rewrites after restart.
 
 Fund-structure local-first persistence uses Storage-owned state stores. The JSON-backed store writes
 complete snapshots through `AtomicFileWriter`, and the in-memory store preserves the same snapshot
@@ -261,6 +310,19 @@ configuration scope, and chart/template/rule/test-case child rows use the same c
 Audit reads filter by retained `tenant_id` and `company_id` when shared endpoints supply
 authenticated tenant/company context, keeping Postgres-backed Rules Studio audit history isolated
 across tenant/company boundaries.
+
+Governed reporting persistence stores each series revision under its immutable tenant and scope
+identity while lifecycle state advances through compare-and-swap aggregate versions. State payloads
+retain a SHA-256 checksum and are hydrated only when their indexed identity, tenant, lifecycle
+state, and checksum agree. Lifecycle audit events are appended in the same serializable transaction;
+database triggers require contiguous versions and the retained previous hash, and reject later
+updates or deletes. Restatement approval updates the request and creates the next report revision in
+one transaction, so a failed revision insert cannot leave an approved request without its draft.
+Reporting delivery persistence also keeps run and package identity separately, lists grants and
+receipt-bearing jobs only through exact tenant/package keys, and prevents authority, recipient,
+provider-message, access-grant, lifecycle, and receipt evidence from being replaced or moved
+backwards. Retry claims use leased skip-locked rows, while terminal provider and audited-download
+receipts append without overwriting prior evidence.
 
 ## Glossary
 
@@ -347,4 +409,7 @@ Route durable writes through WAL or atomic file helpers. Avoid direct unguarded 
 
 - `docs/architecture/module-map.md`
 - `docs/development/build-observability.md`
+- `docs/reference/accounting-report-packs.md`
+- `docs/reference/database-schema.md`
+- `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-roadmap-traceability.md`

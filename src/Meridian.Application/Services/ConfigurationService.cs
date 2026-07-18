@@ -38,7 +38,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     private readonly AutoConfigurationService _autoConfig;
     private readonly ProviderCredentialResolver _credentialResolver;
     private readonly ConfigurationPipeline _pipeline;
-    private readonly IBestOfBreedProviderSelector? _providerSelector;
+    private readonly Func<IBestOfBreedProviderSelector?> _providerSelectorAccessor;
     private readonly Func<bool> _ibGatewayAvailabilityProbe;
     private ConfigWatcher? _watcher;
 
@@ -48,7 +48,8 @@ public sealed class ConfigurationService : IAsyncDisposable
         AutoConfigurationService? autoConfig = null,
         ProviderCredentialResolver? credentialResolver = null,
         IBestOfBreedProviderSelector? providerSelector = null,
-        Func<bool>? ibGatewayAvailabilityProbe = null)
+        Func<bool>? ibGatewayAvailabilityProbe = null,
+        Func<IBestOfBreedProviderSelector?>? providerSelectorAccessor = null)
     {
         _log = log ?? LoggingSetup.ForContext<ConfigurationService>();
         _wizard = wizard ?? new ConfigurationWizard();
@@ -56,7 +57,7 @@ public sealed class ConfigurationService : IAsyncDisposable
         _credentialResolver = credentialResolver ?? new ProviderCredentialResolver(_log);
         _ibGatewayAvailabilityProbe = ibGatewayAvailabilityProbe ?? IsIBGatewayAvailable;
         _pipeline = new ConfigurationPipeline(_log, _credentialResolver, _ibGatewayAvailabilityProbe);
-        _providerSelector = providerSelector;
+        _providerSelectorAccessor = providerSelectorAccessor ?? (() => providerSelector);
     }
 
     /// <summary>
@@ -123,17 +124,16 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// </summary>
     public DetectedProvider? GetBestRealTimeProvider()
     {
-        var eligibleProviders = GetProvidersByCapability("RealTime")
-            .Where(p => p.HasCredentials)
-            .ToList();
+        var eligibleProviders = GetEligibleRealTimeProviders();
 
         if (eligibleProviders.Count == 0)
             return null;
 
-        if (_providerSelector is null)
+        var providerSelector = _providerSelectorAccessor();
+        if (providerSelector is null)
             return eligibleProviders.OrderBy(static p => p.SuggestedPriority).FirstOrDefault();
 
-        var selection = _providerSelector.SelectAsync(
+        var selection = providerSelector.SelectAsync(
                 new ProviderRouteContext(ProviderCapabilityKind.RealtimeMarketData))
             .ConfigureAwait(false)
             .GetAwaiter()
@@ -149,6 +149,21 @@ public sealed class ConfigurationService : IAsyncDisposable
                    string.Equals(provider.DisplayName, selected.ConnectionId, StringComparison.OrdinalIgnoreCase))
                ?? eligibleProviders.OrderBy(static p => p.SuggestedPriority).FirstOrDefault();
     }
+
+    /// <summary>
+    /// Selects the best credentialed provider from static detection data only. Configuration
+    /// self-healing runs while the provider registry may still be under construction, so it must
+    /// not enter the runtime routing graph whose catalog depends on that registry.
+    /// </summary>
+    private DetectedProvider? GetBestDetectedRealTimeProvider()
+        => GetEligibleRealTimeProviders()
+            .OrderBy(static provider => provider.SuggestedPriority)
+            .FirstOrDefault();
+
+    private List<DetectedProvider> GetEligibleRealTimeProviders()
+        => GetProvidersByCapability("RealTime")
+            .Where(static provider => provider.HasCredentials)
+            .ToList();
 
     /// <summary>
     /// Gets available providers for historical data backfill.
@@ -328,7 +343,7 @@ public sealed class ConfigurationService : IAsyncDisposable
             strictness,
             _credentialResolver,
             _ibGatewayAvailabilityProbe,
-            GetBestRealTimeProvider);
+            GetBestDetectedRealTimeProvider);
 
         _log.Information("Self-healing applied {FixCount} fixes, {WarningCount} warnings",
             result.Applied.Count, result.Warnings.Count);

@@ -64,6 +64,10 @@ public static class HealthEndpoints
                     diagnosticsByProviderId,
                     p.Name,
                     p.DisplayName);
+                var connectionState = ProviderExtendedEndpoints.ResolveConnectionState(
+                    p.IsEnabled,
+                    diagnostics?.LifecycleState,
+                    diagnostics?.IsConnected);
 
                 return new
                 {
@@ -72,7 +76,11 @@ public static class HealthEndpoints
                     type = p.ProviderType.ToString(),
                     priority = p.Priority,
                     isEnabled = p.IsEnabled,
-                    isConnected = diagnostics?.IsConnected ?? p.IsEnabled,
+                    isConnected = ProviderExtendedEndpoints.ResolveIsConnected(
+                        p.IsEnabled,
+                        diagnostics?.IsConnected),
+                    connectionState,
+                    diagnosticsAvailable = diagnostics is not null,
                     lifecycleState = diagnostics?.LifecycleState,
                     webSocketState = diagnostics?.WebSocketState,
                     isReconnecting = diagnostics?.IsReconnecting,
@@ -107,6 +115,10 @@ public static class HealthEndpoints
                 ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry),
                 info.Name,
                 info.DisplayName);
+            var connectionState = ProviderExtendedEndpoints.ResolveConnectionState(
+                info.IsEnabled,
+                diagnostics?.LifecycleState,
+                diagnostics?.IsConnected);
 
             return Results.Json(new
             {
@@ -115,7 +127,11 @@ public static class HealthEndpoints
                 type = info.ProviderType.ToString(),
                 priority = info.Priority,
                 isEnabled = info.IsEnabled,
-                isConnected = diagnostics?.IsConnected ?? info.IsEnabled,
+                isConnected = ProviderExtendedEndpoints.ResolveIsConnected(
+                    info.IsEnabled,
+                    diagnostics?.IsConnected),
+                connectionState,
+                diagnosticsAvailable = diagnostics is not null,
                 lifecycleState = diagnostics?.LifecycleState,
                 webSocketState = diagnostics?.WebSocketState,
                 isReconnecting = diagnostics?.IsReconnecting,
@@ -212,16 +228,28 @@ public static class HealthEndpoints
             if (info is null)
                 return Results.NotFound(new { error = $"Provider '{provider}' not found" });
 
+            var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+                ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry),
+                info.Name,
+                info.DisplayName);
+
             return Results.Json(new
             {
                 provider = info.Name,
                 isEnabled = info.IsEnabled,
-                reachable = info.IsEnabled,
+                reachable = ProviderExtendedEndpoints.ResolveIsConnected(
+                    info.IsEnabled,
+                    diagnostics?.IsConnected),
+                connectionState = ProviderExtendedEndpoints.ResolveConnectionState(
+                    info.IsEnabled,
+                    diagnostics?.LifecycleState,
+                    diagnostics?.IsConnected),
+                diagnosticsAvailable = diagnostics is not null,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
         .WithName("TestHealthProvider")
-        .WithDescription("Tests connectivity to a specific provider and returns reachability status.")
+        .WithDescription("Returns current runtime connectivity diagnostics for a specific provider; reachability is null when no probe exists.")
         .Produces(200)
         .Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

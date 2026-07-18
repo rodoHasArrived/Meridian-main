@@ -70,8 +70,8 @@ public sealed class SymbolSearchService : IDisposable
         try
         {
             // Initialize providers in priority order
-            _providers.Add(new AlpacaSymbolSearchProviderRefactored());
-            _providers.Add(new FinnhubSymbolSearchProviderRefactored());
+            _providers.Add(new AlpacaSymbolSearchProvider());
+            _providers.Add(new FinnhubSymbolSearchProvider());
             _providers.Add(new PolygonSymbolSearchProvider());
         }
         catch (Exception ex)

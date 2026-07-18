@@ -280,6 +280,7 @@ public partial class DataQualityPage : Page
                 DataQualityVisualTones.Success => new SolidColorBrush(Color.FromArgb(200, 63, 185, 80)),
                 DataQualityVisualTones.Info => new SolidColorBrush(Color.FromArgb(200, 78, 201, 176)),
                 DataQualityVisualTones.Warning => new SolidColorBrush(Color.FromArgb(200, 227, 179, 65)),
+                DataQualityVisualTones.Muted => new SolidColorBrush(Color.FromArgb(120, 139, 148, 158)),
                 _ => new SolidColorBrush(Color.FromArgb(200, 244, 67, 54))
             };
             heatmapCells[i].ToolTip = cell.Tooltip;

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Execution.Events;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
@@ -40,6 +41,15 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(MarginAccountType))]
 [JsonSerializable(typeof(ExecutionAuditEntry))]
 [JsonSerializable(typeof(List<ExecutionAuditEntry>))]
+[JsonSerializable(typeof(TradeExecutedEvent))]
+[JsonSerializable(typeof(TradeFillPendingWalPayload))]
+[JsonSerializable(typeof(TradeFillStatusWalPayload))]
+[JsonSerializable(typeof(TradeFillPostingSnapshot))]
+[JsonSerializable(typeof(TradeFillPostingSnapshotItem))]
+[JsonSerializable(typeof(List<TradeFillPostingSnapshotItem>))]
+[JsonSerializable(typeof(RetainedTradeFillHandoffFailure))]
+[JsonSerializable(typeof(List<RetainedTradeFillHandoffFailure>))]
+[JsonSerializable(typeof(TradeFillHandoffFailureSnapshot))]
 [JsonSerializable(typeof(Dictionary<string, string>))]
 [JsonSerializable(typeof(Dictionary<string, decimal>))]
 [JsonSerializable(typeof(ExecutionCircuitBreakerState))]

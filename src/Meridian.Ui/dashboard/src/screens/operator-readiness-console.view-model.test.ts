@@ -474,6 +474,25 @@ describe("operator readiness console view model", () => {
     }));
   });
 
+  it("reports the dedicated trading-readiness source when the workspace trading payload is absent", () => {
+    const state = buildOperatorReadinessConsoleState({
+      strategy: null,
+      trading: null,
+      data: null,
+      accounting: null,
+      reporting: null,
+      tradingReadiness: readiness,
+      operatorInbox: null,
+      inboxLoading: false,
+      inboxError: null
+    });
+
+    expect(state.apiSources.find((source) => source.id === "trading-readiness")).toMatchObject({
+      status: "Review required",
+      level: "review"
+    });
+  });
+
   it("surfaces broker execution reconciliation as a live-readiness checkpoint and work item", () => {
     const brokerWorkItem: OperatorWorkItem = {
       workItemId: "broker-execution-reconciliation-alpaca",

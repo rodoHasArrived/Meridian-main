@@ -5,8 +5,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FreshnessChip } from "@/components/ui/freshness-chip";
-import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { buildFreshnessChipViewModel, freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
 import type { RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import {
   FinancialRecordExplorerShell,
@@ -15,6 +15,7 @@ import {
   type FinancialRecordExplorerScopeItem,
   type FinancialRecordExplorerSummaryItem
 } from "@/components/meridian/financial-record-explorer";
+import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
@@ -40,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import {
+  buildPortfolioExplorerPresentation,
   resolveBrokerageAccountFilterKeyCommand,
   type PortfolioBrokerageAccountRow,
   type PortfolioBrokeragePositionRow,
@@ -356,6 +358,13 @@ export function PortfolioScreen({
     selectedRunDrillIn,
     pathname: location.pathname
   });
+  const portfolioExplorerPresentation = useMemo(
+    () => buildPortfolioExplorerPresentation(portfolioExplorer, {
+      sourceLabel: vm.positionSourceLabel,
+      runLabel: vm.selectedRun?.title ?? "Linked strategy run"
+    }),
+    [portfolioExplorer, vm.positionSourceLabel, vm.selectedRun?.title]
+  );
 
   useEffect(() => {
     if (!shouldFocusBrokerageAccount.current) {
@@ -535,13 +544,52 @@ export function PortfolioScreen({
           id: "portfolio-coverage-evidence",
           label: "Coverage proof",
           href: vm.multiAssetCoveragePanel.evidenceRoute,
-          ariaLabel: `Open coverage endpoint ${vm.multiAssetCoveragePanel.evidenceRouteLabel}`
+          ariaLabel: "Open portfolio coverage proof"
         }
       : {
           id: "portfolio-coverage-evidence-empty",
           label: "Coverage proof unavailable"
         }
   ];
+  const hasRefreshEvidence = Boolean(
+    refreshStatus && (refreshStatus.lastSucceededAt || refreshStatus.inFlight || refreshStatus.phase === "failed")
+  );
+  const freshnessVm = hasRefreshEvidence && refreshStatus
+    ? buildFreshnessChipViewModel({
+        ...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace"),
+        now: Date.now()
+      })
+    : brokeragePortfolio?.asOf
+      ? buildFreshnessChipViewModel({
+          timestamp: brokeragePortfolio.asOf,
+          staleBudgetMs: PORTFOLIO_FRESHNESS_BUDGET_MS,
+          now: Date.now(),
+          label: "Brokerage portfolio snapshot",
+          detail: "Latest brokerage portfolio snapshot"
+        })
+      : null;
+  const heartbeat = portfolio?.brokerage.lastHeartbeat ?? trading?.brokerage.lastHeartbeat ?? null;
+  const freshnessTone: OperationalTrustTone = freshnessVm?.state === "failing"
+    ? "blocked"
+    : freshnessVm?.state === "aging"
+      ? "review"
+      : freshnessVm?.state === "fresh" || freshnessVm?.state === "live"
+        ? "ready"
+        : heartbeat
+          ? "ready"
+          : "unknown";
+  const completenessTone: OperationalTrustTone = vm.hasPositions && vm.hasRuns
+    ? "ready"
+    : vm.hasPositions || vm.hasRuns
+      ? "review"
+      : "blocked";
+  const workflowBlocker = vm.workflowTaskPanel && vm.workflowTaskPanel.statusTone !== "success"
+    ? {
+        value: vm.workflowTaskPanel.statusLabel,
+        detail: vm.workflowTaskPanel.selectedSummary,
+        tone: vm.workflowTaskPanel.statusTone === "danger" ? "blocked" as const : "review" as const
+      }
+    : undefined;
 
   return (
     <div className="space-y-5">
@@ -564,11 +612,6 @@ export function PortfolioScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {refreshStatus ? (
-            <FreshnessChip
-              {...freshnessInputFromLifecycle(refreshStatus, PORTFOLIO_FRESHNESS_BUDGET_MS, "Portfolio workspace")}
-            />
-          ) : null}
           <Button asChild variant="outline" size="sm">
             <Link
               to={WORKSTATION_ROUTE_CATALOG.portfolioCashLadder}
@@ -592,6 +635,37 @@ export function PortfolioScreen({
           />
         </div>
       </section>
+
+      <OperationalTrustSummary
+        label="Portfolio data confidence"
+        source={{
+          value: vm.positionSourceLabel,
+          detail: "Holdings source used by this route",
+          tone: vm.positionSourceLabel === "Unavailable" ? "blocked" : "ready"
+        }}
+        scope={{
+          value: vm.selectedBrokerageAccount.title,
+          detail: routeView === "brokerage-sync" ? "Selected brokerage account" : "Current portfolio account scope",
+          tone: vm.selectedBrokerageAccount.statusTone === "danger"
+            ? "blocked"
+            : vm.selectedBrokerageAccount.statusTone === "warning"
+              ? "review"
+              : vm.selectedBrokerageAccount.statusTone === "success"
+                ? "ready"
+                : "unknown"
+        }}
+        freshness={{
+          value: freshnessVm?.text ?? heartbeat ?? "Unavailable",
+          detail: freshnessVm?.title ?? (heartbeat ? "Latest brokerage heartbeat" : "Latest loaded portfolio evidence"),
+          tone: freshnessTone
+        }}
+        completeness={{
+          value: `${vm.positionCountLabel} · ${vm.runCountLabel}`,
+          detail: "Holdings and run evidence loaded",
+          tone: completenessTone
+        }}
+        blocker={workflowBlocker}
+      />
 
       {vm.workflowTaskPanel ? (
         <section
@@ -645,9 +719,12 @@ export function PortfolioScreen({
                 </div>
               ))}
             </dl>
-            <div className="rounded-lg border border-border/70 bg-background/20 p-3">
-              <div className="eyebrow-label">Backend sources</div>
-              <div className="mt-3 grid gap-2">
+            <TechnicalDetails
+              label="Technical source health"
+              description="Endpoint contracts supporting this workflow."
+              className="h-fit"
+            >
+              <div className="grid gap-2">
                 {vm.workflowTaskPanel.backendLinks.map((link) => (
                   <a
                     key={link.id}
@@ -662,7 +739,7 @@ export function PortfolioScreen({
                   </a>
                 ))}
               </div>
-            </div>
+            </TechnicalDetails>
           </div>
         </section>
       ) : null}
@@ -811,9 +888,14 @@ export function PortfolioScreen({
                 ))}
               </div>
             ) : null}
-            <a href={vm.multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
-              Open coverage endpoint: {vm.multiAssetCoveragePanel.evidenceRouteLabel}
-            </a>
+            <TechnicalDetails
+              label="Coverage source details"
+              description="Technical route for the retained multi-asset coverage evidence."
+            >
+              <a href={vm.multiAssetCoveragePanel.evidenceRoute} className="text-xs font-medium text-primary hover:underline">
+                Open coverage endpoint: {vm.multiAssetCoveragePanel.evidenceRouteLabel}
+              </a>
+            </TechnicalDetails>
           </CardContent>
         </Card>
       ) : null}
@@ -1035,6 +1117,27 @@ export function PortfolioScreen({
                         </div>
                       ))}
                     </dl>
+                    {vm.selectedBrokeragePosition.technicalFields.length > 0 ? (
+                      <TechnicalDetails
+                        label="Technical position identity"
+                        description="Stable provider identifiers used for audit and support workflows."
+                        className="mt-4"
+                      >
+                        <dl className="grid gap-2">
+                          {vm.selectedBrokeragePosition.technicalFields.map((field) => (
+                            <div
+                              key={field.label}
+                              className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                            >
+                              <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                              <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                                {field.value}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </TechnicalDetails>
+                    ) : null}
                   </>
                 ) : (
                   <div role="status" className="text-sm leading-6 text-muted-foreground">
@@ -1075,7 +1178,7 @@ export function PortfolioScreen({
         summaryItems={financialRecordExplorerSummaryItems}
         appliedFilters={financialRecordExplorerAppliedFilters}
         actions={financialRecordExplorerActions}
-        explorer={portfolioExplorer}
+        explorer={portfolioExplorerPresentation}
         onSaveView={savePortfolioExplorerView}
       >
         {showOverview ? (
@@ -1346,13 +1449,28 @@ export function PortfolioScreen({
                         <div className="min-w-0">
                           <div className="eyebrow-label">{vm.selectedRun.statusTitle}</div>
                           <h3 className="mt-2 text-base font-semibold text-foreground">{vm.selectedRun.title}</h3>
-                          <p className="mt-1 break-words font-mono text-xs text-muted-foreground">
-                            {vm.selectedRun.subtitle}
-                          </p>
                         </div>
                         <Badge variant={vm.selectedRun.statusBadgeVariant}>{vm.selectedRun.statusBadgeLabel}</Badge>
                       </div>
                       <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.selectedRun.statusDetail}</p>
+                      <TechnicalDetails label="Audit details" className="mt-4">
+                        <p className="break-words font-mono text-xs text-muted-foreground">
+                          {vm.selectedRun.subtitle}
+                        </p>
+                        <dl className="mt-3 grid gap-2">
+                          {vm.selectedRun.fields.map((field) => (
+                            <div
+                              key={field.label}
+                              className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
+                            >
+                              <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                              <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
+                                {field.value}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </TechnicalDetails>
                       <div className="mt-4">
                         <Button asChild size="sm" variant="outline">
                           <Link to={vm.selectedRun.evidenceAction.href} aria-label={vm.selectedRun.evidenceAction.ariaLabel}>
@@ -1361,19 +1479,6 @@ export function PortfolioScreen({
                           </Link>
                         </Button>
                       </div>
-                      <dl className="mt-4 grid gap-2">
-                        {vm.selectedRun.fields.map((field) => (
-                          <div
-                            key={field.label}
-                            className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                          >
-                            <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                            <dd className={cn("text-right font-mono text-xs", detailFieldToneClass[field.tone])}>
-                              {field.value}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
                     </>
                   ) : (
                     <div role="status" className="text-sm leading-6 text-muted-foreground">

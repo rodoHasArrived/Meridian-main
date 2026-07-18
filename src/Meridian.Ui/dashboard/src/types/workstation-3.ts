@@ -345,6 +345,7 @@ export interface LockClosePeriodRequest {
   closePackageManifestId?: string | null;
   closePackageRetainedManifestRoute?: string | null;
   actionOrigin?: OperationsActionOrigin | null;
+  prepareClosingEntriesOnly?: boolean;
 }
 
 export interface ClosePeriodLockResult {
@@ -365,8 +366,46 @@ export interface CloseOperatingCoverageItem {
   blockingIssues?: AccountingConfigurationValidationIssue[] | null;
 }
 
+export type ClosePostingGateState =
+  | "Unavailable"
+  | "NotRequired"
+  | "Required"
+  | "DraftQueued"
+  | "Submitted"
+  | "Approved"
+  | "Posted"
+  | "ReversalQueued"
+  | "Blocked";
+
+export interface ClosePostingBalance {
+  accountName: string;
+  accountType: string;
+  balance: number;
+  symbol?: string | null;
+  financialAccountId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+}
+
+export interface ClosePostingGate {
+  gateId: string;
+  label: string;
+  state: ClosePostingGateState;
+  isReadyForLock: boolean;
+  netIncomeRoll: number;
+  temporaryAccountBalanceCount: number;
+  detail: string;
+  draftJournalEntryId?: string | null;
+  draftStatus?: ManualJournalEntryStatus | null;
+  idempotencyKey?: string | null;
+  balances?: ClosePostingBalance[] | null;
+  evidenceLinks?: string[] | null;
+  closingBatchJournalEntryIds?: string[] | null;
+  reversalDraftJournalEntryIds?: string[] | null;
+}
+
 export interface ClosePeriodPlan {
   closePlanId: string;
+  workflowVersion?: number | null;
   fundProfileId: string;
   ledgerBookId: string | null;
   periodId: string;
@@ -382,6 +421,7 @@ export interface ClosePeriodPlan {
   configuration?: ClosePeriodPlanConfiguration | null;
   evidenceReviews?: CloseEvidenceReview[] | null;
   operatingCoverage?: CloseOperatingCoverageItem[] | null;
+  closingEntriesGate?: ClosePostingGate | null;
 }
 
 export interface ReportCertification {
@@ -1089,6 +1129,9 @@ export interface DataUploadTemplateCatalog {
   acceptedFileExtensions: string[];
   maxPreviewRows: number;
   maxFileBytes: number;
+  workbookFileName?: string | null;
+  workbookAcceptedFileExtensions?: string[] | null;
+  workbookMaxFileBytes?: number;
 }
 
 export interface DataUploadValidationIssue {
@@ -1096,6 +1139,37 @@ export interface DataUploadValidationIssue {
   field: string;
   message: string;
   rowNumber: number | null;
+  sheetName?: string | null;
+  cellReference?: string | null;
+}
+
+export interface DataUploadWorkbookSheetPreview {
+  sheetName: string;
+  templateId: string | null;
+  templateLabel: string | null;
+  dataDomain: string | null;
+  parsedRowCount: number;
+  previewRowCount: number;
+  headers: string[];
+  previewRows: Record<string, string>[];
+  issues: DataUploadValidationIssue[];
+  status: "ReadyForReview" | "NeedsRepair" | "Empty" | string;
+}
+
+export interface DataUploadWorkbookPreviewResult {
+  uploadId: string;
+  fileName: string;
+  fileSizeBytes: number;
+  contentType: string;
+  uploadedBy: string;
+  uploadedAtUtc: string;
+  retainedPath: string;
+  sheetCount: number;
+  totalParsedRowCount: number;
+  sheets: DataUploadWorkbookSheetPreview[];
+  crossSheetIssues: DataUploadValidationIssue[];
+  status: "ReadyForReview" | "NeedsSchemaRepair" | string;
+  nextAction: string;
 }
 
 export interface DataUploadPreviewResult {

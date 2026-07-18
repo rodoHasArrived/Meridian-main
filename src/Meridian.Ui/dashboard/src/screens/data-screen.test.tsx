@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
+import * as dataOpsApi from "@/lib/api/data-operations-assurance.api";
 import * as plaidLink from "@/lib/plaid-link";
 import { DataScreen } from "@/screens/data-screen";
 import {
@@ -245,13 +246,20 @@ describe("DataScreen", () => {
   it("renders provider setup and status on the provider route", () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
-    expect(screen.getByText("Upload data template")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Data upload template" })).toHaveValue("trade-data");
-    expect(screen.getByRole("link", { name: "Download Trade data CSV template" }))
-      .toHaveAttribute("download", "meridian-trade-data-template.csv");
+    expect(screen.queryByText("Upload data template")).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Data upload template" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Provider route focus" })).toBeInTheDocument();
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
-    expect(screen.getByLabelText("Provider management scan band")).toHaveTextContent("Connection Health");
+    const providerScanBand = screen.getByLabelText("Provider management scan band");
+    expect(providerScanBand).toHaveTextContent("Connection Health");
+    expect(within(providerScanBand).getByText("Keep provider active. No gate impact."))
+      .toHaveClass("break-words");
+    expect(within(providerScanBand).getByText("Keep provider active. No gate impact."))
+      .not.toHaveClass("line-clamp-1");
+    expect(within(providerScanBand).getByText("Keep provider active."))
+      .toHaveClass("break-words");
+    expect(within(providerScanBand).getByText("Keep provider active."))
+      .not.toHaveClass("truncate");
     expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
     const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
     expect(providerRow).toHaveAttribute("aria-selected", "true");
@@ -263,8 +271,11 @@ describe("DataScreen", () => {
     expect(within(providerDetail).getByText("Trust score")).toBeInTheDocument();
     expect(within(providerDetail).getByText("98%")).toBeInTheDocument();
     expect(within(providerDetail).getByText("Keep provider active.")).toBeInTheDocument();
-    expect(within(providerDetail).getByText("Reason: TRUST_OK")).toBeInTheDocument();
+    expect(within(providerDetail).getByText("Reason: Trust OK")).toBeInTheDocument();
     expect(within(providerDetail).getByText("Gate: No gate impact")).toBeInTheDocument();
+    const systemDetails = within(providerDetail).getByText("System details").closest("details");
+    expect(systemDetails).not.toHaveAttribute("open");
+    expect(within(systemDetails as HTMLDetailsElement).getByText("TRUST_OK")).toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Backfill queue" })).not.toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Recent exports" })).not.toBeInTheDocument();
   });
@@ -279,6 +290,7 @@ describe("DataScreen", () => {
     expect(backfillDetail).toHaveAttribute("id", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(within(backfillDetail).getByText("US equities / 30d")).toBeInTheDocument();
     expect(within(backfillDetail).getByText(/Replay is currently advancing/i)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Backfill route focus" })).not.toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
 
     backfills.unmount();
@@ -297,9 +309,62 @@ describe("DataScreen", () => {
     expect(within(exportDetail).getByText("strategy pack")).toBeInTheDocument();
     expect(within(exportDetail).queryByText("research pack")).not.toBeInTheDocument();
     expect(within(exportDetail).getByText("Next action")).toBeInTheDocument();
+    expect(within(exportDetail).getByRole("link", { name: "Open Reporting exports for EX-2201" }))
+      .toHaveAttribute("href", "/reporting/exports?exportId=EX-2201");
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Backfill queue" })).not.toBeInTheDocument();
+  });
+
+  it("renders ingestion operations and storage assurance workstreams on their own routes", async () => {
+    vi.spyOn(dataOpsApi, "getIngestionOperations").mockResolvedValue({
+      generatedAt: "2026-07-14T18:00:00Z",
+      summary: { total: 1, queued: 0, running: 1, paused: 0, failed: 0, completed: 0, cancelled: 0, resumable: 1 },
+      providers: ["databento"],
+      jobs: [{
+        jobId: "ING-4102",
+        workloadType: "Historical backfill",
+        state: "Running",
+        provider: "databento",
+        symbols: ["AAPL"],
+        createdAt: "2026-07-14T16:40:00Z",
+        startedAt: "2026-07-14T16:41:00Z",
+        completedAt: null,
+        progressPercent: 62.5,
+        isResumable: true,
+        attemptCount: 1,
+        maxRetries: 3,
+        nextRetryAt: null,
+        errorMessage: null,
+        evidenceRoute: "/data/evidence?subjectId=ING-4102",
+        actions: [{ action: "pause", label: "Pause", enabled: true, disabledReason: null }]
+      }]
+    });
+    vi.spyOn(dataOpsApi, "getStorageAssurance").mockResolvedValue({
+      generatedAt: "2026-07-14T18:00:00Z",
+      health: { status: "Healthy", rootLabel: "meridian-data", totalBytes: 2048, fileCount: 2, readable: true, writable: true, orphanCount: 0, temporaryFileCount: 1, message: null },
+      quality: { status: "Available", filesAnalyzed: 2, averageScore: 0.98, lowQualityFileCount: 0, recommendations: [], message: null },
+      canonicalization: { enabled: true, version: 2, eventsTotal: 100, successTotal: 99, softFailTotal: 1, hardFailTotal: 0, matchRatePercent: 99, providers: [] },
+      capacity: { usedBytes: 2048, availableBytes: 4096, usedPercent: 33.3, estimatedDaysRemaining: null, status: "Healthy" },
+      tiers: [],
+      alerts: [],
+      permissions: { canView: true, canRunQualityCheck: true, canMigrate: true, canDelete: true }
+    });
+
+    const operations = renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/operations"] });
+
+    expect(await screen.findByText("Ingestion Operations Center")).toBeInTheDocument();
+    expect(await screen.findByText("ING-4102")).toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Backfill queue" })).not.toBeInTheDocument();
+
+    operations.unmount();
+
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/assurance"] });
+
+    expect(await screen.findByText("Storage & Data Assurance")).toBeInTheDocument();
+    expect(screen.getByText("Assurance signals")).toBeInTheDocument();
+    expect(screen.getByText("Guarded maintenance")).toBeInTheDocument();
   });
 
   it("runs SQL queries with paged results and export actions", async () => {
@@ -330,6 +395,20 @@ describe("DataScreen", () => {
     await user.click(screen.getByRole("button", { name: "Page 2" }));
 
     expect(screen.getByText("SYM101")).toBeInTheDocument();
+  });
+
+  it("keeps the SQL query library secondary until requested", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/query"] });
+
+    const disclosure = screen.getByText("Query library").closest("details");
+    expect(disclosure).not.toHaveAttribute("open");
+
+    await user.click(screen.getByText("Query library"));
+
+    expect(disclosure).toHaveAttribute("open");
+    expect(screen.getByRole("textbox", { name: "Saved SQL query name" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Recent SQL query history" })).toBeInTheDocument();
   });
 
   it("has no basic accessibility violations on the provider-management route", async () => {
@@ -368,7 +447,13 @@ describe("DataScreen", () => {
       "trade_id,trade_date,account_code,symbol\nTRD-1,2026-06-01,FUND-A,AAPL\n"
     ], "trades.csv", { type: "text/csv" });
 
-    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/import"] });
+
+    expect(screen.getByRole("region", { name: "Data import route focus" })).toBeInTheDocument();
+    expect(screen.getByText("Upload data template")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Data upload template" })).toHaveValue("trade-data");
+    expect(screen.getByRole("link", { name: "Download Trade data CSV template" }))
+      .toHaveAttribute("download", "meridian-trade-data-template.csv");
 
     await user.upload(screen.getByLabelText("Upload Trade data CSV file for preview"), file);
 
@@ -388,21 +473,26 @@ describe("DataScreen", () => {
 
   it("renders shared provider readiness and the next action for each provider", async () => {
     const user = userEvent.setup();
-    renderWithRouter(
+    const { container } = renderWithRouter(
       <DataScreen data={data} providerConnections={[polygonConnection]} providerReadiness={providerReadiness} />,
       { initialEntries: ["/data/providers"] }
     );
 
+    expect(container.querySelector(".data-provider-table-detail-layout")).toHaveClass("workspace-table-stack");
     expect(screen.getByText(/1 provider blocks dependent workflows/i)).toBeInTheDocument();
     expect(screen.getByText(/Next action: Repair Plaid credentials/i)).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Credential posture" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Trust / last good" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Next Action" })).toBeInTheDocument();
     const plaidRow = screen.getByRole("row", { name: /Inspect provider Plaid/i });
     expect(plaidRow).toHaveClass("bg-danger/5");
     expect(within(plaidRow).getByText("Blocked")).toBeInTheDocument();
-    expect(within(plaidRow).getByText("Open setup")).toBeInTheDocument();
-    await user.click(screen.getByRole("tab", { name: "Credentials" }));
+    expect(within(plaidRow).getByText("Open setup")).toHaveClass("whitespace-nowrap");
     const plaidDetail = screen.getByRole("region", { name: /provider detail for Plaid/i });
+    expect(plaidDetail).toHaveTextContent("Reason: Readiness blocked");
+    expect(within(plaidDetail).getByText("READINESS_BLOCKED").closest("details")).not.toHaveAttribute("open");
+    await user.click(screen.getByRole("tab", { name: "Credentials" }));
     expect(plaidDetail).toHaveTextContent("Client ID");
     expect(plaidDetail).toHaveTextContent("Required field");
     expect(plaidDetail).toHaveTextContent("Secret");
@@ -474,7 +564,9 @@ describe("DataScreen", () => {
     expect(databentoProvider).toHaveAttribute("aria-expanded", "true");
     expect(polygonProvider).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("region", { name: /provider detail for Databento/i })).toHaveTextContent("Route fresh requests");
-    expect(screen.getByRole("region", { name: /provider detail for Databento/i })).toHaveTextContent("Reason: LATENCY_ELEVATED");
+    const databentoDetail = screen.getByRole("region", { name: /provider detail for Databento/i });
+    expect(databentoDetail).toHaveTextContent("Reason: Latency elevated");
+    expect(within(databentoDetail).getByText("LATENCY_ELEVATED").closest("details")).not.toHaveAttribute("open");
   });
 
   it("runs provider verification from the selected provider diagnostics tab", async () => {
@@ -589,7 +681,7 @@ describe("DataScreen", () => {
     expect(screen.getByRole("link", { name: "Validate live quotes after configuring Alpaca" }))
       .toHaveAttribute("href", "/data/quotes?symbol=AAPL");
     expect(screen.getByRole("link", { name: "Preview a historical backfill after configuring Alpaca" }))
-      .toHaveAttribute("href", "/data/backfills");
+      .toHaveAttribute("href", "/data/operations");
     expect(screen.getByRole("link", { name: "Check Trading readiness after configuring Alpaca" }))
       .toHaveAttribute("href", "/trading/readiness");
     await waitFor(() => expect(refreshProviderRouting).toHaveBeenCalledTimes(1));
@@ -815,17 +907,22 @@ describe("DataScreen", () => {
     });
   });
 
-  it("adapts the hero copy for deep-link routes", () => {
+  it("adapts the hero copy for deep-link routes without duplicating selected backfill detail", () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
-    expect(screen.getByText("Backfill queue focus")).toBeInTheDocument();
-    expect(screen.getByText("Backfill Detail")).toBeInTheDocument();
-    expect(screen.getAllByText(/Replay is currently advancing/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: "Backfill queue", level: 2 })).toBeInTheDocument();
+    expect(screen.getByText("Selected Backfill")).toBeInTheDocument();
+    expect(screen.getByText(/Replay is currently advancing/)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Backfill route focus" })).not.toBeInTheDocument();
   });
 
   it("keeps the old static Security Master workbench out of the Data route", () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
 
+    expect(screen.getByRole("heading", { name: "Choose the next Data task" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Import retained files" })).toHaveAttribute("href", "/data/import");
+    expect(screen.getByRole("link", { name: "Open Provider connections" })).toHaveAttribute("href", "/data/providers");
+    expect(screen.queryByRole("treegrid", { name: "Provider health" })).not.toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: /search securities/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /show overview/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Security Master command deck")).not.toBeInTheDocument();
@@ -1053,10 +1150,38 @@ describe("DataScreen", () => {
     };
 
     const mockProgress: BackfillProgressResponse = {
-      active: false,
-      provider: null,
-      symbols: [],
-      message: null
+      isActive: false,
+      providerProgress: {
+        symbols: {
+          MSFT: {
+            symbol: "MSFT",
+            rangeStart: "2024-01-01",
+            rangeEnd: "2024-01-31",
+            totalDays: 31,
+            completedDays: 31,
+            percentComplete: 100,
+            isCompleted: true,
+            isFailed: false,
+            isSkipped: false,
+            currentProvider: "polygon",
+            currentStatus: "Completed",
+            providerAttempt: 1,
+            retryRound: 0,
+            operation: "daily-bars",
+            attemptStartedAt: "2024-01-31T10:00:00Z",
+            lastUpdatedAt: "2024-01-31T10:00:05Z",
+            error: null
+          }
+        },
+        recentProviderAttempts: [],
+        overallPercentComplete: 100,
+        totalSymbols: 1,
+        completedSymbols: 1,
+        failedSymbols: 0,
+        droppedProviderNotifications: 0,
+        timestamp: "2024-01-31T10:00:05Z"
+      },
+      timestamp: "2024-01-31T10:00:05Z"
     };
 
     vi.spyOn(api, "previewBackfill").mockResolvedValueOnce(mockPreview);
@@ -1079,6 +1204,12 @@ describe("DataScreen", () => {
       expect(resultStatus).toHaveTextContent("MSFT");
       expect(resultStatus).toHaveTextContent("512");
     });
+    const progressStatus = screen.getByRole("status", { name: /live backfill provider progress/i });
+    expect(progressStatus).toHaveTextContent("Final provider progress");
+    expect(progressStatus).toHaveTextContent("MSFT");
+    expect(progressStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
+    expect(progressStatus).toHaveTextContent("polygon");
+    expect(screen.getByRole("progressbar", { name: "Overall backfill progress" })).toHaveAttribute("aria-valuenow", "100");
   });
 
   it("shows an error banner when previewBackfill rejects", async () => {

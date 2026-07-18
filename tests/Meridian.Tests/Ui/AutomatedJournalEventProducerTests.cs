@@ -1,8 +1,13 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.AccountingClose;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 using Xunit;
@@ -40,15 +45,27 @@ public sealed class AutomatedJournalEventProducerTests
 
         production.Skipped.Should().BeEmpty();
         production.Events.Should().HaveCount(2);
+        var partnershipProjection = PartnershipInvestorAccountingProjector.Project(
+            new PartnershipInvestorAllocationInput(
+                "fund-alpha",
+                "2026-Q2",
+                AsOf,
+                BeginningNav: 1_000_000m,
+                EndingNavBeforeFees: 1_100_000m,
+                HighWaterMark: 1_050_000m,
+                ManagementFeeRate: 0.02m,
+                PerformanceFeeRate: 0.20m,
+                [new PartnershipInvestor("fund-alpha-investor", "Fund Alpha investor", 1m)]));
 
         var management = production.Events.Single(e => e.Kind == AutomatedJournalEventKind.ManagementFeeAccrued);
-        management.Amount.Should().Be(20_000m, "management fee is the period rate applied to beginning NAV");
+        management.Amount.Should().Be(partnershipProjection.ManagementFee,
+            "the scheduler and partnership projector must use one management-fee convention");
         management.Symbol.Should().Be("fund-alpha", "the draft projector normalizes symbols downstream");
         management.IdempotencyKey.Should().Be("mgmt-fee|fund-alpha|2026-Q2");
 
         var performance = production.Events.Single(e => e.Kind == AutomatedJournalEventKind.PerformanceFeeAccrued);
-        performance.Amount.Should().Be(6_000m,
-            "performance fee applies to the high-water excess net of the management fee: 20% × (1,100,000 − 1,050,000 − 20,000)");
+        performance.Amount.Should().Be(partnershipProjection.PerformanceFee,
+            "the scheduler and partnership projector must use the same high-water-mark excess net of management fees");
         performance.IdempotencyKey.Should().Be("perf-fee|fund-alpha|2026-Q2");
     }
 
@@ -111,6 +128,7 @@ public sealed class AutomatedJournalEventProducerTests
 
         var production = await producer.ProduceAsync(new CorporateActionDividendRequest(
             [new DividendAccrualPosition("AAPL", Quantity: 400m)],
+            Currency: "USD",
             WindowStart: new DateOnly(2026, 07, 01),
             WindowEnd: new DateOnly(2026, 07, 31),
             AsOf));
@@ -141,6 +159,7 @@ public sealed class AutomatedJournalEventProducerTests
                 new DividendAccrualPosition("UNKNOWN", 10m),
                 new DividendAccrualPosition("AAPL", 100m)
             ],
+            "USD",
             new DateOnly(2026, 07, 01),
             new DateOnly(2026, 07, 31),
             AsOf));
@@ -160,6 +179,7 @@ public sealed class AutomatedJournalEventProducerTests
 
         var production = await producer.ProduceAsync(new CorporateActionDividendRequest(
             [new DividendAccrualPosition("AAPL", Quantity: 400m)],
+            "USD",
             new DateOnly(2026, 07, 01),
             new DateOnly(2026, 07, 31),
             AsOf,
@@ -192,11 +212,37 @@ public sealed class AutomatedJournalEventProducerTests
 
         var production = await producer.ProduceAsync(new CorporateActionDividendRequest(
             [new DividendAccrualPosition("AAPL", 400m)],
+            "USD",
             new DateOnly(2026, 07, 01),
             new DateOnly(2026, 07, 31),
             AsOf));
 
         production.Events.Should().OnlyContain(e => e.Kind == AutomatedJournalEventKind.DividendDeclared);
+    }
+
+    [Fact]
+    public async Task DividendProducer_MismatchedCorporateActionCurrency_IsSkippedExactly()
+    {
+        var dividend = DividendAction(AaplSecurityId, new DateOnly(2026, 07, 02), 0.26m) with
+        {
+            Currency = "EUR"
+        };
+        var securityMaster = new FakeSecurityMasterQueryService(
+            tickerToSecurityId: new Dictionary<string, Guid> { ["AAPL"] = AaplSecurityId },
+            corporateActions: [dividend]);
+        var producer = new CorporateActionDividendEventProducer(securityMaster);
+
+        var production = await producer.ProduceAsync(new CorporateActionDividendRequest(
+            [new DividendAccrualPosition("AAPL", 400m)],
+            "USD",
+            new DateOnly(2026, 07, 01),
+            new DateOnly(2026, 07, 31),
+            AsOf));
+
+        production.Events.Should().BeEmpty();
+        production.Skipped.Should().ContainSingle().Which.Reason
+            .Contains("currency", StringComparison.OrdinalIgnoreCase)
+            .Should().BeTrue();
     }
 
     [Fact]
@@ -209,6 +255,7 @@ public sealed class AutomatedJournalEventProducerTests
 
         var act = () => producer.ProduceAsync(new CorporateActionDividendRequest(
             [new DividendAccrualPosition("AAPL", 400m)],
+            "USD",
             new DateOnly(2026, 07, 01),
             new DateOnly(2026, 07, 31),
             AsOf,
@@ -224,8 +271,13 @@ public sealed class AutomatedJournalEventProducerTests
     [Fact]
     public async Task Runner_FeeAccrual_LandsDraftsInWorkbenchQueue()
     {
-        var fixture = CreateIntakeFixture();
-        var runner = new AutomatedJournalIntakeRunner(fixture.Intake, new FeeScheduleAccrualEventProducer());
+        var fixture = CreateIntakeFixture(tenantId: "tenant-alpha", companyId: "company-alpha");
+        var resolver = new StubCapitalAccountReconciliationResolver(FeeReconciliation());
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            capitalAccountReconciliationResolver: resolver,
+            timeProvider: new FixedTimeProvider(AsOf));
 
         var result = await runner.RunFeeAccrualIntakeAsync(new RunFeeAccrualDraftIntakeRequest(
             FundProfileId: "fund-alpha",
@@ -238,14 +290,92 @@ public sealed class AutomatedJournalEventProducerTests
             ManagementFeeRate: 0.02m,
             PerformanceFeeRate: 0.20m,
             LedgerBookId: BookId,
-            EntityId: "entity-alpha"));
+            EntityId: "entity-alpha",
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha",
+            EvidenceLinks: ["evidence://client/forged-ready-assertion"],
+            EvidenceRetainedAtUtc: AsOf,
+            CapitalAccountReconciliation: FeeReconciliation(confidence: 0.01m)));
 
         result.ProducerSkips.Should().BeEmpty();
         result.Intake.Created.Should().HaveCount(2);
         result.Intake.Created.Should().OnlyContain(draft => draft.Status == ManualJournalEntryStatusDto.Draft);
+        result.Intake.Created.Should().OnlyContain(draft =>
+            !draft.EvidenceLinks.Contains("evidence://client/forged-ready-assertion"));
+        resolver.Scopes.Should().ContainSingle().Which.Should().Be(new AutomatedJournalCapitalAccountReconciliationScope(
+            "tenant-alpha",
+            "company-alpha",
+            "fund-alpha",
+            BookId,
+            "entity-alpha",
+            "2026-Q2",
+            "USD",
+            AsOf));
+        result.EvidenceAssessments.Values.Should().OnlyContain(assessment =>
+            assessment.ConfidenceScore == 0.98m &&
+            assessment.EvidenceLinks.Contains("evidence://capital-accounts/fund-alpha/2026-Q2/v42"));
 
-        var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        var workbench = await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha");
         workbench.Drafts.Should().HaveCount(2, "fee accrual drafts must be visible in the close cockpit's queue");
+    }
+
+    [Fact]
+    public async Task Runner_FeeAccrual_WithoutReviewedCapitalAccountEvidence_FailsClosed()
+    {
+        var fixture = CreateIntakeFixture(tenantId: "tenant-alpha", companyId: "company-alpha");
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            timeProvider: new FixedTimeProvider(AsOf));
+
+        var result = await runner.RunFeeAccrualIntakeAsync(FeeIntakeRequest() with
+        {
+            CapitalAccountReconciliation = FeeReconciliation()
+        });
+
+        result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        result.ReadinessBlockers.Should().Contain(item =>
+            item.Contains("source is unavailable", StringComparison.OrdinalIgnoreCase));
+        result.Intake.Created.Should().BeEmpty();
+        (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Runner_FeeAccrual_ClientCannotLowerServerConfidenceOrVarianceBounds()
+    {
+        var fixture = CreateIntakeFixture(tenantId: "tenant-alpha", companyId: "company-alpha");
+        var resolver = new StubCapitalAccountReconciliationResolver(FeeReconciliation(confidence: 0.80m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            capitalAccountReconciliationResolver: resolver,
+            timeProvider: new FixedTimeProvider(AsOf));
+
+        var lowConfidence = await runner.RunFeeAccrualIntakeAsync(FeeIntakeRequest() with
+        {
+            CapitalAccountReconciliation = FeeReconciliation(),
+            MinimumCapitalAccountConfidence = 0m
+        });
+        resolver.Reconciliation = FeeReconciliation(
+            maximumVarianceTolerance: 100m,
+            capitalAccountOpeningBalance: 999_999.98m);
+        var looseTolerance = await runner.RunFeeAccrualIntakeAsync(FeeIntakeRequest() with
+        {
+            CapitalAccountReconciliation = FeeReconciliation()
+        });
+
+        lowConfidence.Readiness.Should().Be(AutomatedJournalIntakeReadiness.NeedsInvestigation);
+        lowConfidence.ReadinessBlockers.Should().Contain(item =>
+            item.Contains("server-governed", StringComparison.OrdinalIgnoreCase) &&
+            item.Contains("90", StringComparison.Ordinal) &&
+            item.Contains("threshold", StringComparison.OrdinalIgnoreCase));
+        looseTolerance.Readiness.Should().Be(AutomatedJournalIntakeReadiness.NeedsInvestigation);
+        looseTolerance.ReadinessBlockers.Should().Contain(item =>
+            item.Contains("server-governed tolerance 0.01", StringComparison.OrdinalIgnoreCase));
+        (await fixture.Workbench.GetWorkbenchAsync(
+            "fund-alpha", BookId, tenantId: "tenant-alpha", companyId: "company-alpha")).Drafts.Should().BeEmpty();
     }
 
     [Fact]
@@ -298,12 +428,18 @@ public sealed class AutomatedJournalEventProducerTests
     // -------------------------------------------------------------------------
 
     private static readonly Guid BookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private static readonly Guid FundAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
     private sealed record IntakeFixture(
         AutomatedJournalDraftIntakeService Intake,
-        IManualJournalEntryWorkbenchService Workbench);
+        IManualJournalEntryWorkbenchService Workbench,
+        IManualJournalEntryDraftStore DraftStore);
 
-    private static IntakeFixture CreateIntakeFixture()
+    private static IntakeFixture CreateIntakeFixture(
+        ILedgerJournalStore? journalStore = null,
+        IManualJournalEntryDraftStore? retainedDraftStore = null,
+        string? tenantId = null,
+        string? companyId = null)
     {
         var configurationStore = new InMemoryAccountingConfigurationStore();
         configurationStore.SaveAsync(new AccountingConfigurationWorkspaceDto(
@@ -327,19 +463,66 @@ public sealed class AutomatedJournalEventProducerTests
             JournalTemplates: [],
             PostingRules: [],
             ValidationIssues: [],
-            AuditTrail: [])).GetAwaiter().GetResult();
+            AuditTrail: [],
+            TenantId: tenantId,
+            CompanyId: companyId)).GetAwaiter().GetResult();
 
         var configurationService = new AccountingConfigurationService(
             configurationStore,
             new InMemoryAccountingActionAuditStore());
-        var draftStore = new InMemoryManualJournalEntryDraftStore();
+        var draftStore = retainedDraftStore ?? new InMemoryManualJournalEntryDraftStore();
         var workbench = new ManualJournalEntryWorkbenchService(
             draftStore,
             configurationService,
-            new InMemoryAccountingActionAuditStore());
+            new InMemoryAccountingActionAuditStore(),
+            journalStore: journalStore);
         return new IntakeFixture(
             new AutomatedJournalDraftIntakeService(workbench, draftStore, configurationService),
-            workbench);
+            workbench,
+            draftStore);
+    }
+
+    private sealed class FailOnceCorrectionDraftStore : IManualJournalEntryDraftStore
+    {
+        private readonly InMemoryManualJournalEntryDraftStore _inner = new();
+
+        public bool FailNextBatch { get; set; }
+
+        public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
+            => _inner.ListFundProfileIdsAsync(ct);
+
+        public Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
+            string fundProfileId,
+            Guid? ledgerBookId = null,
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
+            => _inner.ListAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId);
+
+        public Task<ManualJournalEntryDraftDto?> GetAsync(
+            string fundProfileId,
+            Guid journalEntryId,
+            CancellationToken ct = default,
+            string? tenantId = null,
+            string? companyId = null)
+            => _inner.GetAsync(fundProfileId, journalEntryId, ct, tenantId, companyId);
+
+        public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default)
+            => _inner.SaveAsync(draft, ct);
+
+        public Task SaveBatchAsync(
+            IReadOnlyList<ManualJournalEntryDraftDto> drafts,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (FailNextBatch)
+            {
+                FailNextBatch = false;
+                throw new IOException("Injected closing-reversal batch failure.");
+            }
+
+            return _inner.SaveBatchAsync(drafts, ct);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -388,6 +571,15 @@ public sealed class AutomatedJournalEventProducerTests
             Version: 1);
 
         var service = Substitute.For<ILedgerBookService>();
+        service.GetBookAsync(ledgerBookId, Arg.Any<CancellationToken>()).Returns(new LedgerBookDto(
+            ledgerBookId,
+            "fund-alpha",
+            FundAccountId,
+            FundStructureNodeKindDto.Account,
+            "Fund Alpha primary ledger",
+            "USD",
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow));
         service.GetPeriodSummaryAsync(ClosedPeriodId, Arg.Any<CancellationToken>()).Returns(summary);
         service.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
             .Returns(new[] { period });
@@ -400,6 +592,29 @@ public sealed class AutomatedJournalEventProducerTests
         => new(accountName, accountType, Symbol: symbol, FinancialAccountId: financialAccountId,
             DebitTotal: debits, CreditTotal: credits, Balance: balance, EntryCount: 1,
             Dimensions: dimensions);
+
+    private static ILedgerBookService LedgerBookServiceWithHardClosedPeriod(
+        params LedgerPeriodTrialBalanceLineDto[] trialBalance)
+    {
+        var service = LedgerBookServiceWithClosedPeriod(trialBalance);
+        service.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(
+            [
+                new LedgerPeriodDto(
+                    ClosedPeriodId,
+                    BookId,
+                    2026,
+                    6,
+                    "2026-06",
+                    new DateOnly(2026, 6, 1),
+                    PeriodEndDate,
+                    LedgerPeriodStatusDto.HardClosed,
+                    new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+                    AsOf,
+                    2)
+            ]);
+        return service;
+    }
 
     [Fact]
     public async Task Runner_PeriodCloseIntake_PreservesAccountSymbolAndFinancialAccountScope()
@@ -591,6 +806,486 @@ public sealed class AutomatedJournalEventProducerTests
         result.Intake.Skipped.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task Runner_PeriodCloseIntake_HardClosedPeriod_AllowsPreviewButRejectsDraftMutation()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithHardClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            ledgerBookService: bookService);
+        var request = new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha",
+            "USD",
+            "fund-controller",
+            ClosedPeriodId,
+            BookId);
+
+        var preview = await runner.PreviewPeriodCloseAsync(request);
+        var mutate = () => runner.RunPeriodCloseIntakeAsync(request);
+
+        preview.Draft.Should().NotBeNull("hard-closed periods remain available for read-only close review");
+        await mutate.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*must be soft-closed*current status is HardClosed*");
+        var workbench = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        workbench.Drafts.Should().BeEmpty("a hard-closed period must never acquire a new closing draft");
+    }
+
+    [Fact]
+    public async Task ClosePostingBridge_FinalizeHardClose_RechecksGateAndLeavesNonReadyPeriodSoftClosed()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+        var bridge = new AccountingClosePostingWorkbenchBridge(
+            runner,
+            fixture.Workbench,
+            (IManualJournalEntryLifecycleService)fixture.Workbench,
+            bookService);
+        var context = new AccountingClosePostingContext(
+            Guid.NewGuid(), FundAccountId, BookId, "2026-06", "USD");
+        var command = new AccountingClosePostingCommand(
+            "fund-controller",
+            "Finalize the retained close package.",
+            [$"evidence://period/{ClosedPeriodId:D}/book/{BookId:D}/approval/close"],
+            OperationsActionOriginDto.HumanOperator,
+            Role: "Fund Controller");
+
+        var act = () => bridge.FinalizeHardCloseAsync(context, command);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*cannot be hard-closed*closing-entry gate is Required*");
+        await bookService.DidNotReceive().ClosePeriodAsync(
+            Arg.Any<Guid>(),
+            Arg.Any<CloseLedgerPeriodRequest>(),
+            Arg.Any<CancellationToken>());
+        var retained = await bookService.ListPeriodsAsync(
+            new LedgerPeriodQuery(LedgerBookId: BookId));
+        retained.Should().ContainSingle().Which.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
+    }
+
+    [Fact]
+    public async Task ClosePostingBridge_FinalizeHardClose_CloseLocksPostedClosingBatchAndRetryConverges()
+    {
+        var journalPeriod = new LedgerAccountingPeriod(
+            ClosedPeriodId,
+            BookId,
+            2026,
+            6,
+            "2026-06",
+            new DateOnly(2026, 6, 1),
+            PeriodEndDate,
+            "SoftClosed",
+            new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            null,
+            1);
+        var journalBook = new LedgerBookRecord(
+            BookId,
+            "fund-alpha",
+            FundAccountId,
+            FundStructureNodeKindDto.Account,
+            "Fund Alpha primary ledger",
+            "USD",
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow);
+        var journalStore = Substitute.For<ILedgerJournalStore>();
+        journalStore.GetLedgerBookAsync(BookId, Arg.Any<CancellationToken>())
+            .Returns(journalBook);
+        journalStore.ListLedgerBooksAsync(
+                Arg.Any<string?>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<FundStructureNodeKindDto?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new[] { journalBook });
+        journalStore.GetPeriodAsync(ClosedPeriodId, Arg.Any<CancellationToken>())
+            .Returns(_ => journalPeriod);
+        journalStore.ListPeriodsAsync(
+                Arg.Any<Guid?>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => new[] { journalPeriod });
+        journalStore.GetByPeriodAsync(ClosedPeriodId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<LedgerJournalEntryRecord>());
+        var fixture = CreateIntakeFixture(journalStore);
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var currentPeriod = (await bookService.ListPeriodsAsync(
+            new LedgerPeriodQuery(LedgerBookId: BookId))).Single();
+        var currentSummary = (await bookService.GetPeriodSummaryAsync(ClosedPeriodId))!;
+        bookService.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(_ => new[] { currentPeriod });
+        bookService.GetPeriodSummaryAsync(ClosedPeriodId, Arg.Any<CancellationToken>())
+            .Returns(_ => currentSummary);
+        bookService.ClosePeriodAsync(
+                ClosedPeriodId,
+                Arg.Any<CloseLedgerPeriodRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                currentPeriod = currentPeriod with
+                {
+                    Status = LedgerPeriodStatusDto.HardClosed,
+                    ClosedAt = AsOf,
+                    Version = currentPeriod.Version + 1
+                };
+                journalPeriod = journalPeriod with
+                {
+                    Status = "HardClosed",
+                    ClosedAt = AsOf,
+                    Version = journalPeriod.Version + 1
+                };
+                return new LedgerPeriodCloseResultDto(currentPeriod, currentSummary, null!);
+            });
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            ledgerBookService: bookService);
+        var intake = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha",
+            "USD",
+            "close-preparer",
+            ClosedPeriodId,
+            BookId,
+            EntityId: "entity-alpha"));
+        var created = intake.Intake.Created.Should().ContainSingle().Subject;
+        var posted = created with
+        {
+            Status = ManualJournalEntryStatusDto.Posted,
+            PostedAtUtc = AsOf,
+            PostedBy = "posting-controller",
+            UpdatedAtUtc = AsOf,
+            Version = created.Version + 1,
+            EvidenceLinks = [$"evidence://period/{ClosedPeriodId:D}/book/{BookId:D}/approval/close"]
+        };
+        await fixture.DraftStore.SaveAsync(posted);
+        var zeroBalance = TrialBalanceLine("Cash", "Asset", 500m, 0m, 500m);
+        currentSummary = currentSummary with
+        {
+            TrialBalance = [zeroBalance],
+            TotalDebits = zeroBalance.DebitTotal,
+            TotalCredits = zeroBalance.CreditTotal,
+            NetIncome = 0m
+        };
+        var bridge = new AccountingClosePostingWorkbenchBridge(
+            runner,
+            fixture.Workbench,
+            (IManualJournalEntryLifecycleService)fixture.Workbench,
+            bookService);
+        var context = new AccountingClosePostingContext(
+            Guid.NewGuid(),
+            FundAccountId,
+            BookId,
+            ClosedPeriodId.ToString("D"),
+            "USD");
+        var command = new AccountingClosePostingCommand(
+            "fund-controller",
+            "Finalize the retained close package and lock its posted closing batch.",
+            [$"evidence://period/{ClosedPeriodId:D}/book/{BookId:D}/approval/close"],
+            OperationsActionOriginDto.HumanOperator,
+            Role: "Fund Controller",
+            CorrelationId: "hard-close-2026-06");
+
+        var closed = await bridge.FinalizeHardCloseAsync(context, command);
+        var retry = await bridge.FinalizeHardCloseAsync(context, command);
+
+        closed.Status.Should().Be(LedgerPeriodStatusDto.HardClosed);
+        retry.Should().Be(closed);
+        await bookService.Received(1).ClosePeriodAsync(
+            ClosedPeriodId,
+            Arg.Is<CloseLedgerPeriodRequest>(request =>
+                request.CloseKind == LedgerPeriodCloseKindDto.HardClose &&
+                request.ClosedBy == "fund-controller"),
+            Arg.Any<CancellationToken>());
+        var retained = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        var closeLocked = retained.Drafts.Should().ContainSingle(draft =>
+            draft.JournalEntryId == posted.JournalEntryId).Subject;
+        closeLocked.Status.Should().Be(ManualJournalEntryStatusDto.CloseLocked);
+        closeLocked.CloseLockedBy.Should().Be("fund-controller");
+        closeLocked.ClosedLockedAtUtc.Should().NotBeNull();
+        closeLocked.LifecycleTransitions.Should().ContainSingle(transition =>
+            transition.Action == JournalEntryLifecycleActionDto.LockAfterClose &&
+            transition.FromStatus == ManualJournalEntryStatusDto.Posted &&
+            transition.ToStatus == ManualJournalEntryStatusDto.CloseLocked &&
+            transition.CorrelationId == "hard-close-2026-06" &&
+            transition.EvidenceLinks.Any(link =>
+                link.Contains("accounting-close/period-lock", StringComparison.OrdinalIgnoreCase) &&
+                link.Contains(posted.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Fact]
+    public async Task ClosePostingBridge_CloseLockedReopenRetry_ReleasesThroughReceiptAndRejectsDifferentCorrelation()
+    {
+        var journalPeriod = new LedgerAccountingPeriod(
+            ClosedPeriodId,
+            BookId,
+            2026,
+            6,
+            "2026-06",
+            new DateOnly(2026, 6, 1),
+            PeriodEndDate,
+            "SoftClosed",
+            new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+            null,
+            1);
+        var journalBook = new LedgerBookRecord(
+            BookId,
+            "fund-alpha",
+            FundAccountId,
+            FundStructureNodeKindDto.Account,
+            "Fund Alpha primary ledger",
+            "USD",
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow);
+        var journalStore = Substitute.For<ILedgerJournalStore>();
+        journalStore.GetLedgerBookAsync(BookId, Arg.Any<CancellationToken>())
+            .Returns(journalBook);
+        journalStore.ListLedgerBooksAsync(
+                Arg.Any<string?>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<FundStructureNodeKindDto?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(new[] { journalBook });
+        journalStore.GetPeriodAsync(ClosedPeriodId, Arg.Any<CancellationToken>())
+            .Returns(_ => journalPeriod);
+        journalStore.ListPeriodsAsync(
+                Arg.Any<Guid?>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<Guid?>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => new[] { journalPeriod });
+        journalStore.GetByPeriodAsync(ClosedPeriodId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<LedgerJournalEntryRecord>());
+        var faultingDraftStore = new FailOnceCorrectionDraftStore();
+        var fixture = CreateIntakeFixture(journalStore, faultingDraftStore);
+        var bookService = LedgerBookServiceWithClosedPeriod(
+            TrialBalanceLine("Dividend Income", "Revenue", 0m, 300m, 300m));
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake, new FeeScheduleAccrualEventProducer(), ledgerBookService: bookService);
+        const string approvalReference = "reopen-approval-42";
+        var evidence =
+            $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{BookId:D}/{ClosedPeriodId:D}/{approvalReference}";
+        var supportEvidence =
+            $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{BookId:D}/{ClosedPeriodId:D}/support-package";
+        var intake = await runner.RunPeriodCloseIntakeAsync(new RunPeriodCloseDraftIntakeRequest(
+            "fund-alpha", "USD", "close-preparer", ClosedPeriodId, BookId, EntityId: "entity-alpha"));
+        var created = intake.Intake.Created.Should().ContainSingle().Subject;
+        var postedClosingBatch = created with
+        {
+            Status = ManualJournalEntryStatusDto.CloseLocked,
+            UpdatedAtUtc = AsOf,
+            Version = created.Version + 1,
+            PostedAtUtc = AsOf,
+            PostedBy = "fund-controller",
+            ClosedLockedAtUtc = AsOf,
+            CloseLockedBy = "close-controller",
+            EvidenceLinks = [evidence, supportEvidence]
+        };
+        await fixture.DraftStore.SaveAsync(postedClosingBatch);
+
+        var currentPeriod = (await bookService.ListPeriodsAsync(
+            new LedgerPeriodQuery(LedgerBookId: BookId))).Single() with
+        {
+            Status = LedgerPeriodStatusDto.HardClosed,
+            ClosedAt = AsOf
+        };
+        journalPeriod = journalPeriod with
+        {
+            Status = "HardClosed",
+            ClosedAt = AsOf,
+            Version = currentPeriod.Version
+        };
+        bookService.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(_ => new[] { currentPeriod });
+        bookService.ReopenPeriodAsync(
+                ClosedPeriodId,
+                Arg.Any<ReopenLedgerPeriodRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var request = callInfo.Arg<ReopenLedgerPeriodRequest>();
+                var priorStatus = currentPeriod.Status.ToString();
+                currentPeriod = currentPeriod with
+                {
+                    Status = LedgerPeriodStatusDto.SoftClosed,
+                    ClosedAt = null,
+                    Version = currentPeriod.Version + 1
+                };
+                journalPeriod = journalPeriod with
+                {
+                    Status = "SoftClosed",
+                    ClosedAt = null,
+                    Version = currentPeriod.Version
+                };
+                return new LedgerPeriodReopenResultDto(
+                    currentPeriod,
+                    priorStatus,
+                    request.ReopenedBy,
+                    AsOf,
+                    request.ApprovalReference,
+                    request.EvidenceLinks);
+            });
+        var bridge = new AccountingClosePostingWorkbenchBridge(
+            runner,
+            fixture.Workbench,
+            (IManualJournalEntryLifecycleService)fixture.Workbench,
+            bookService);
+        var context = new AccountingClosePostingContext(
+            Guid.NewGuid(), FundAccountId, BookId, ClosedPeriodId.ToString("D"), "USD");
+        var command = new AccountingClosePostingCommand(
+            "fund-controller",
+            "Reopen the period for a governed restatement.",
+            [evidence, supportEvidence],
+            OperationsActionOriginDto.HumanOperator,
+            Role: "Fund Controller",
+            ApprovalReference: approvalReference,
+            CorrelationId: "reopen-correlation-42");
+
+        faultingDraftStore.FailNextBatch = true;
+        var interrupted = () => bridge.ReopenAndQueueClosingReversalsAsync(context, command);
+
+        await interrupted.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*was reopened under a retained governed intent*Retry the exact reopen command*");
+        currentPeriod.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
+        var afterInterruptedAttempt = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        afterInterruptedAttempt.Drafts.Should().ContainSingle(draft =>
+            draft.JournalEntryId == postedClosingBatch.JournalEntryId &&
+            draft.Status == ManualJournalEntryStatusDto.CloseLocked);
+        afterInterruptedAttempt.Drafts.Should().NotContain(draft =>
+            draft.ReversalOfJournalEntryId == postedClosingBatch.JournalEntryId);
+
+        var first = await bridge.ReopenAndQueueClosingReversalsAsync(context, command);
+        var retry = await bridge.ReopenAndQueueClosingReversalsAsync(context, command);
+        var differentCorrelation = () => bridge.ReopenAndQueueClosingReversalsAsync(
+            context,
+            command with { CorrelationId = "reopen-correlation-different" });
+        var reducedEvidenceReplay = () => bridge.ReopenAndQueueClosingReversalsAsync(
+            context,
+            command with { EvidenceLinks = [evidence] });
+
+        first.State.Should().Be(ClosePostingGateStateDto.ReversalQueued);
+        retry.ReversalDraftJournalEntryIds.Should().Equal(first.ReversalDraftJournalEntryIds);
+        first.ClosingBatchJournalEntryIds.Should().ContainSingle()
+            .Which.Should().Be(postedClosingBatch.JournalEntryId);
+        first.ReversalDraftJournalEntryIds.Should().ContainSingle();
+        await reducedEvidenceReplay.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*do not match this reopen actor, correlation, reason, and evidence*");
+        await differentCorrelation.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*do not match this reopen actor, correlation, reason, and evidence*");
+        await bookService.Received(1).ReopenPeriodAsync(
+            ClosedPeriodId,
+            Arg.Any<ReopenLedgerPeriodRequest>(),
+            Arg.Any<CancellationToken>());
+        var retained = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        retained.Drafts.Count(draft =>
+                draft.ReversalOfJournalEntryId == postedClosingBatch.JournalEntryId)
+            .Should().Be(1, "retries and rejected correlations must reuse the retained reversal draft");
+        retained.Drafts.Should().ContainSingle(draft =>
+            draft.JournalEntryId == postedClosingBatch.JournalEntryId &&
+            draft.Status == ManualJournalEntryStatusDto.Reversed &&
+            draft.LifecycleTransitions.Any(transition =>
+                transition.Action == JournalEntryLifecycleActionDto.Reverse &&
+                transition.FromStatus == ManualJournalEntryStatusDto.CloseLocked));
+    }
+
+    [Fact]
+    public async Task ClosePostingBridge_ZeroBalanceReopen_RetainsExactReceiptAcrossRetry()
+    {
+        var fixture = CreateIntakeFixture();
+        var bookService = LedgerBookServiceWithHardClosedPeriod(
+            TrialBalanceLine("Cash", "Asset", 500m, 0m, 500m));
+        var currentPeriod = (await bookService.ListPeriodsAsync(
+            new LedgerPeriodQuery(LedgerBookId: BookId))).Single();
+        bookService.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(_ => new[] { currentPeriod });
+        bookService.ReopenPeriodAsync(
+                ClosedPeriodId,
+                Arg.Any<ReopenLedgerPeriodRequest>(),
+                Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var request = callInfo.Arg<ReopenLedgerPeriodRequest>();
+                currentPeriod = currentPeriod with
+                {
+                    Status = LedgerPeriodStatusDto.SoftClosed,
+                    ClosedAt = null,
+                    Version = currentPeriod.Version + 1
+                };
+                return new LedgerPeriodReopenResultDto(
+                    currentPeriod,
+                    LedgerPeriodStatusDto.HardClosed.ToString(),
+                    request.ReopenedBy,
+                    AsOf,
+                    request.ApprovalReference,
+                    request.EvidenceLinks);
+            });
+        var runner = new AutomatedJournalIntakeRunner(
+            fixture.Intake,
+            new FeeScheduleAccrualEventProducer(),
+            ledgerBookService: bookService);
+        var bridge = new AccountingClosePostingWorkbenchBridge(
+            runner,
+            fixture.Workbench,
+            (IManualJournalEntryLifecycleService)fixture.Workbench,
+            bookService);
+        var workflowId = Guid.NewGuid();
+        var context = new AccountingClosePostingContext(
+            workflowId,
+            FundAccountId,
+            BookId,
+            ClosedPeriodId.ToString("D"),
+            "USD");
+        const string approvalReference = "zero-balance-reopen-approval";
+        var evidence =
+            $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{BookId:D}/{ClosedPeriodId:D}/{approvalReference}";
+        var command = new AccountingClosePostingCommand(
+            "fund-controller",
+            "Reopen the zero-balance period for a governed restatement.",
+            [evidence],
+            OperationsActionOriginDto.HumanOperator,
+            Role: "Fund Controller",
+            ApprovalReference: approvalReference,
+            CorrelationId: "zero-balance-reopen-correlation");
+
+        var first = await bridge.ReopenAndQueueClosingReversalsAsync(context, command);
+        var retry = await bridge.ReopenAndQueueClosingReversalsAsync(context, command);
+        var changedReason = () => bridge.ReopenAndQueueClosingReversalsAsync(
+            context,
+            command with { Reason = "Changed reopen reason." });
+        var changedEvidence = () => bridge.ReopenAndQueueClosingReversalsAsync(
+            context,
+            command with
+            {
+                EvidenceLinks =
+                [
+                    evidence,
+                    $"/api/workstation/evidence/subjects/accounting-record/reversal/ledger-book/{BookId:D}/{ClosedPeriodId:D}/changed"
+                ]
+            });
+
+        first.State.Should().Be(ClosePostingGateStateDto.NotRequired);
+        retry.State.Should().Be(ClosePostingGateStateDto.NotRequired);
+        await changedReason.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*retained governed reopen intent does not match*");
+        await changedEvidence.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*retained governed reopen intent does not match*");
+        await bookService.Received(1).ReopenPeriodAsync(
+            ClosedPeriodId,
+            Arg.Any<ReopenLedgerPeriodRequest>(),
+            Arg.Any<CancellationToken>());
+        var retained = await fixture.Workbench.GetWorkbenchAsync("fund-alpha", BookId);
+        retained.AuditTrail.Should().ContainSingle(item =>
+            item.Action.StartsWith($"GovernedLedgerPeriodReopen:{ClosedPeriodId:D}:", StringComparison.Ordinal) &&
+            item.CorrelationId == command.CorrelationId &&
+            !string.IsNullOrWhiteSpace(item.AfterHash));
+    }
+
     private static ChartOfAccountsNodeDto Node(string path, string name, string type)
         => new(NodeId: path, Path: path, AccountName: name, AccountType: type);
 
@@ -610,6 +1305,76 @@ public sealed class AutomatedJournalEventProducerTests
             ExchangeRatio: null,
             SubscriptionPricePerShare: null,
             RightsPerShare: null);
+
+    private static RunFeeAccrualDraftIntakeRequest FeeIntakeRequest()
+        => new(
+            FundProfileId: "fund-alpha",
+            Currency: "USD",
+            Actor: "automated-journal",
+            PeriodId: "2026-Q2",
+            BeginningNav: 1_000_000m,
+            EndingNavBeforeFees: 1_100_000m,
+            HighWaterMark: 1_050_000m,
+            ManagementFeeRate: 0.02m,
+            PerformanceFeeRate: 0.20m,
+            LedgerBookId: BookId,
+            EntityId: "entity-alpha",
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha",
+            EvidenceRetainedAtUtc: AsOf);
+
+    private static AutomatedJournalCapitalAccountReconciliationDto FeeReconciliation(
+        decimal confidence = 0.98m,
+        decimal maximumVarianceTolerance = 0m,
+        decimal capitalAccountOpeningBalance = 1_000_000m)
+        => new(
+            ReconciliationId: "capital-tie-out-2026-q2",
+            PeriodId: "2026-Q2",
+            Currency: "USD",
+            ReconciledBeginningNav: 1_000_000m,
+            ReconciledEndingNavBeforeFees: 1_100_000m,
+            ReconciledHighWaterMark: 1_050_000m,
+            CapitalAccountOpeningBalance: capitalAccountOpeningBalance,
+            CapitalAccountEndingBalanceBeforeFees: 1_100_000m,
+            CapitalAccountHighWaterMark: 1_050_000m,
+            MaximumVarianceTolerance: maximumVarianceTolerance,
+            ConfidenceScore: confidence,
+            IsReconciled: true,
+            SourceVersion: "capital-ledger:v42",
+            ReviewedBy: "fund-controller",
+            ReviewedAtUtc: AsOf.AddMinutes(-5),
+            EvidenceLinks:
+            [
+                new OperationsEvidenceLinkDto(
+                    "capital-tie-out-2026-q2",
+                    "Reviewed capital-account reconciliation",
+                    "evidence://capital-accounts/fund-alpha/2026-Q2/v42",
+                    "capital-account-subledger",
+                    AsOf.AddMinutes(-5))
+            ]);
+
+    private sealed class StubCapitalAccountReconciliationResolver(
+        AutomatedJournalCapitalAccountReconciliationDto? reconciliation)
+        : IAutomatedJournalCapitalAccountReconciliationResolver
+    {
+        public AutomatedJournalCapitalAccountReconciliationDto? Reconciliation { get; set; } = reconciliation;
+
+        public List<AutomatedJournalCapitalAccountReconciliationScope> Scopes { get; } = [];
+
+        public Task<AutomatedJournalCapitalAccountReconciliationDto?> ResolveAsync(
+            AutomatedJournalCapitalAccountReconciliationScope scope,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            Scopes.Add(scope);
+            return Task.FromResult(Reconciliation);
+        }
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utcNow;
+    }
 
     private sealed class FakeSecurityMasterQueryService : ISecurityMasterQueryService
     {
@@ -644,6 +1409,9 @@ public sealed class AutomatedJournalEventProducerTests
             => Task.FromResult(Detail(securityId));
 
         public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
+            => Task.FromResult(Detail(securityId));
+
+        public Task<SecurityDetailDto?> GetRecordedByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
             => Task.FromResult(Detail(securityId));
 
         public Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)

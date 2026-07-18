@@ -85,6 +85,15 @@ public sealed class InMemoryFundAccountServiceContractTests : FundAccountService
     public Task ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun() => ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun_Core();
 
     [Fact]
+    public Task ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak() => ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak_Core();
+
+    [Fact]
+    public Task ReconcileAccountAsync_SnapshotWithoutIndependentEvidence_ReportsUnverifiedNotMatched() => ReconcileAccountAsync_SnapshotWithoutIndependentEvidence_ReportsUnverifiedNotMatched_Core();
+
+    [Fact]
+    public Task ReconcileAccountAsync_PositionCountDivergingFromDeclaredLineCount_ProducesPositionBreak() => ReconcileAccountAsync_PositionCountDivergingFromDeclaredLineCount_ProducesPositionBreak_Core();
+
+    [Fact]
     public Task ReconcileAccountAsync_DivergentBrokerageSyncCash_ProducesContinuityBreak() => ReconcileAccountAsync_DivergentBrokerageSyncCash_ProducesContinuityBreak_Core();
 
     [Fact]

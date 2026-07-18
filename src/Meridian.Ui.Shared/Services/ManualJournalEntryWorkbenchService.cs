@@ -23,6 +23,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     private readonly IAccountingActionAuditStore _auditStore;
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly ILedgerJournalStore? _journalStore;
+    private readonly IGovernedLedgerPostingTarget? _postingTarget;
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
     private readonly IBankTransactionSource? _bankTransactionSource;
 
@@ -33,13 +34,15 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ISecurityMasterQueryService? securityMasterQueryService = null,
         ILedgerJournalStore? journalStore = null,
         ReportPackWorkflowService? reportPackWorkflowService = null,
-        IBankTransactionSource? bankTransactionSource = null)
+        IBankTransactionSource? bankTransactionSource = null,
+        IGovernedLedgerPostingTarget? postingTarget = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _securityMasterQueryService = securityMasterQueryService;
         _journalStore = journalStore;
+        _postingTarget = postingTarget;
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
     }
@@ -251,13 +254,25 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
         EnsurePeriodUnlocked(request.PeriodIsLocked, "save manual journal entry drafts");
+        var requestedTenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId);
+        var requestedCompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId);
+        var existing = await _draftStore.GetAsync(
+            request.Draft.FundProfileId,
+            request.Draft.JournalEntryId,
+            ct,
+            requestedTenantId,
+            requestedCompanyId).ConfigureAwait(false);
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft with
         {
-            TenantId = NormalizeOptional(request.TenantId) ?? NormalizeOptional(request.Draft.TenantId),
-            CompanyId = NormalizeOptional(request.CompanyId) ?? NormalizeOptional(request.Draft.CompanyId)
+            TenantId = requestedTenantId,
+            CompanyId = requestedCompanyId,
+            // Automated evidence grades are server-produced accounting-control facts. A browser or
+            // WPF resave may edit the draft, but cannot clear, replace, or upgrade the retained grade.
+            AutomationEvidenceAssessment = existing is null
+                ? request.Draft.AutomationEvidenceAssessment
+                : existing.AutomationEvidenceAssessment
         }, allowIncomplete: true, ct).ConfigureAwait(false);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
-        var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct, normalizedDraft.TenantId, normalizedDraft.CompanyId).ConfigureAwait(false);
         if (existing is not null)
         {
             EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing);
@@ -464,9 +479,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct, request.TenantId, request.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, draft);
+        var serverPeriodIsHardClosed = await ResolveAuthoritativeHardClosedPeriodAsync(draft, ct)
+            .ConfigureAwait(false);
         var idempotent = await TryBuildIdempotentLifecycleResultAsync(fundProfileId, draft, request, ct).ConfigureAwait(false);
         if (idempotent is not null)
         {
+            if (request.Action == JournalEntryLifecycleActionDto.LockAfterClose)
+            {
+                RequireAuthoritativeHardClosedPeriod(request, serverPeriodIsHardClosed);
+            }
+
             return idempotent;
         }
 
@@ -475,7 +497,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             throw new InvalidOperationException("Manual journal entry draft version is stale.");
         }
 
-        if (request.PeriodIsLocked &&
+        // The caller flag is deny-side only. It can conservatively block mutations, but the
+        // server-owned ledger period is the sole authority that can grant LockAfterClose.
+        var periodIsLocked = request.PeriodIsLocked || serverPeriodIsHardClosed;
+        if (periodIsLocked &&
             request.Action is not (JournalEntryLifecycleActionDto.Validate or JournalEntryLifecycleActionDto.LockAfterClose))
         {
             throw new InvalidOperationException("Manual journal entry lifecycle action is blocked because the accounting period is locked after close.");
@@ -485,7 +510,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             draft,
             allowIncomplete: false,
             ct,
-            periodIsLocked: request.PeriodIsLocked).ConfigureAwait(false);
+            periodIsLocked: periodIsLocked && request.Action != JournalEntryLifecycleActionDto.LockAfterClose,
+            allowHardClosedCloseLock: request.Action == JournalEntryLifecycleActionDto.LockAfterClose &&
+                                      serverPeriodIsHardClosed).ConfigureAwait(false);
         var now = DateTimeOffset.UtcNow;
         return request.Action switch
         {
@@ -525,7 +552,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ct).ConfigureAwait(false),
             JournalEntryLifecycleActionDto.LockAfterClose => await ApplyStatusTransitionAsync(
                 RequireStatus(validated, ManualJournalEntryStatusDto.Posted, request.Action),
-                RequireCloseLockLifecycleEvidence(RequirePostingLifecycleNotes(request), validated),
+                RequireAuthoritativeHardClosedPeriod(
+                    RequireCloseLockLifecycleEvidence(RequirePostingLifecycleNotes(request), validated),
+                    serverPeriodIsHardClosed),
                 ManualJournalEntryStatusDto.CloseLocked,
                 "manual-je.lock-after-close",
                 now,
@@ -547,6 +576,25 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ct).ConfigureAwait(false),
             _ => throw new ArgumentOutOfRangeException(nameof(request), "Unsupported journal entry lifecycle action.")
         };
+    }
+
+    private async Task<bool> ResolveAuthoritativeHardClosedPeriodAsync(
+        ManualJournalEntryDraftDto draft,
+        CancellationToken ct)
+    {
+        if (_journalStore is null ||
+            draft.LedgerBookId is not { } ledgerBookId ||
+            string.IsNullOrWhiteSpace(draft.PeriodId) ||
+            !Guid.TryParse(draft.PeriodId, out var periodId))
+        {
+            return false;
+        }
+
+        var period = await _journalStore.GetPeriodAsync(periodId, ct).ConfigureAwait(false);
+        return period is not null &&
+               period.PeriodId == periodId &&
+               period.LedgerBookId == ledgerBookId &&
+               string.Equals(period.Status, "HardClosed", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<JournalEntryLifecycleActionResultDto> ApplySubmitLifecycleActionAsync(
@@ -652,7 +700,14 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 ct)
             .ConfigureAwait(false);
 
-        await journalStore.AppendAsync(write, ct).ConfigureAwait(false);
+        if (_postingTarget is not null)
+        {
+            await _postingTarget.PostAsync(write, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            await journalStore.AppendAsync(write, ct).ConfigureAwait(false);
+        }
 
         var transition = BuildTransition(draft.Status, ManualJournalEntryStatusDto.Posted, request, recordedAtUtc);
         var next = draft with
@@ -699,6 +754,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var timestamp = ToAccountingTimestamp(draft.AccountingDate);
         var description = NormalizeOptional(draft.Memo) ?? $"Manual journal entry {draft.JournalEntryId:D}";
+        var securityLineage = await ResolveSecurityMasterPostingLineageAsync(draft, chartByPath, ct)
+            .ConfigureAwait(false);
         var lines = new List<LedgerEntry>(draft.Lines.Count);
 
         foreach (var line in draft.Lines)
@@ -739,7 +796,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             timestamp,
             description,
             lines,
-            BuildManualJournalEntryMetadata(draft, postingCommand, evidenceLinks, recordedAtUtc));
+            BuildManualJournalEntryMetadata(draft, postingCommand, evidenceLinks, recordedAtUtc, securityLineage));
 
         return new LedgerJournalEntryWrite(
             entry,
@@ -755,6 +812,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             postingCommand.SourceEventId,
             postingCommand.SourceJournalEntryId,
             BuildManualPostingKind(draft),
+            AdjustmentApproval: BuildManualAdjustmentApproval(draft, postingCommand, evidenceLinks, recordedAtUtc),
             PostingCommand: postingCommand,
             LedgerBookId: ledgerBook.LedgerBookId);
     }
@@ -816,7 +874,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ManualJournalEntryDraftDto draft,
         AccountingPostingCommandDto postingCommand,
         IReadOnlyList<string> evidenceLinks,
-        DateTimeOffset recordedAtUtc)
+        DateTimeOffset recordedAtUtc,
+        ManualJournalSecurityMasterLineage? securityLineage)
     {
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
@@ -829,6 +888,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AddMetadataTag(tags, "companyId", draft.CompanyId);
         AddMetadataTag(tags, "sourceEventId", postingCommand.SourceEventId?.ToString("D"));
         AddMetadataTag(tags, "sourceJournalEntryId", postingCommand.SourceJournalEntryId?.ToString("D"));
+        AddMetadataTag(tags, "securityMasterProvenance", securityLineage?.Provenance);
+        AddMetadataTag(tags, "securityMasterLineage", securityLineage?.Lineage);
         if (evidenceLinks.Count > 0)
         {
             tags["evidenceLinks"] = string.Join("|", evidenceLinks);
@@ -836,8 +897,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
 
         return new JournalEntryMetadata(
             ActivityType: "ManualJournalEntry",
+            Symbol: securityLineage?.Symbol,
+            SecurityId: securityLineage?.SecurityId,
             ProjectId: NormalizeOptional(draft.FundProfileId),
             LedgerBook: draft.LedgerBookId?.ToString("D"),
+            FinancialAccountId: securityLineage?.FinancialAccountId,
             EffectiveDate: postingCommand.TreasuryContext?.EffectiveDate ?? draft.AccountingDate,
             IdempotencyKey: postingCommand.IdempotencyKey,
             FundEventId: NormalizeOptional(postingCommand.TreasuryContext?.FundEventId),
@@ -856,6 +920,116 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 RetainedBy: NormalizeOptional(draft.PostedBy) ?? "manual-journal-entry-workbench",
                 SubjectId: draft.JournalEntryId.ToString("D"))).ToArray());
     }
+
+    private async Task<ManualJournalSecurityMasterLineage?> ResolveSecurityMasterPostingLineageAsync(
+        ManualJournalEntryDraftDto draft,
+        IReadOnlyDictionary<string, ChartOfAccountsNodeDto> chartByPath,
+        CancellationToken ct)
+    {
+        var instrumentLines = draft.Lines
+            .Select(line => (Line: line, Account: chartByPath.GetValueOrDefault(line.AccountPath)))
+            .Where(static item =>
+                item.Line.SecurityId.HasValue ||
+                item.Line.Dimensions?.InstrumentId.HasValue == true ||
+                !string.IsNullOrWhiteSpace(item.Line.LedgerAccountSymbol) ||
+                !string.IsNullOrWhiteSpace(item.Account?.Symbol))
+            .ToArray();
+        if (instrumentLines.Length == 0)
+            return null;
+
+        var securityIds = instrumentLines
+            .Select(static item => item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId)
+            .Where(static value => value.HasValue && value.Value != Guid.Empty)
+            .Select(static value => value!.Value)
+            .Distinct()
+            .ToArray();
+        if (securityIds.Length != 1)
+        {
+            throw new InvalidOperationException(
+                securityIds.Length == 0
+                    ? "Instrument-bearing manual journal lines require a resolved Security Master security id before posting."
+                    : "Manual journal entries must be split by Security Master security id before posting.");
+        }
+
+        if (_securityMasterQueryService is null)
+        {
+            throw new InvalidOperationException(
+                "Instrument-bearing manual journal posting requires an authoritative Security Master query service.");
+        }
+
+        var securityId = securityIds[0];
+        var asOfUtc = new DateTimeOffset(draft.AccountingDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var security = await _securityMasterQueryService.GetByIdAsOfAsync(securityId, asOfUtc, ct).ConfigureAwait(false)
+                       ?? await _securityMasterQueryService.GetByIdAsync(securityId, ct).ConfigureAwait(false)
+                       ?? throw new InvalidOperationException(
+                           $"Security Master security '{securityId:D}' was not found at posting time.");
+        if (security.Status != SecurityStatusDto.Active)
+        {
+            throw new InvalidOperationException(
+                $"Security Master security '{securityId:D}' is {security.Status}; only active securities can be posted.");
+        }
+
+        if (!string.Equals(security.Currency?.Trim(), draft.Currency?.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Security Master security '{securityId:D}' currency '{security.Currency}' does not match journal base currency '{draft.Currency}'; governed FX translation is required.");
+        }
+
+        var symbols = instrumentLines
+            .Select(static item => NormalizeOptional(item.Line.LedgerAccountSymbol) ?? NormalizeOptional(item.Account?.Symbol))
+            .Where(static value => value is not null)
+            .Select(static value => value!.ToUpperInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (symbols.Length != 1)
+        {
+            throw new InvalidOperationException(
+                symbols.Length == 0
+                    ? $"Security Master security '{securityId:D}' requires one instrument symbol before posting."
+                    : "Manual journal entries with multiple instrument symbols must be split before posting.");
+        }
+
+        var symbol = symbols[0];
+        if (!SecurityMasterRecordContainsSymbol(security, symbol))
+        {
+            throw new InvalidOperationException(
+                $"Instrument symbol '{symbol}' does not match authoritative Security Master record '{securityId:D}'.");
+        }
+
+        var securityIdToken = securityId.ToString("N");
+        var provenance = $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{security.Status};version:{security.Version};currency:{security.Currency.Trim().ToUpperInvariant()}";
+        var lineage = string.Join(
+            '|',
+            instrumentLines.Select(item =>
+                $"{symbol}:{securityIdToken}:ledger-map:manual-journal:{symbol}:{securityIdToken}:{Uri.EscapeDataString(item.Line.AccountPath)}:sm-approval:security-master-active:{securityIdToken}:security-status:{security.Status}:{provenance}"));
+        var financialAccounts = instrumentLines
+            .Select(static item => NormalizeOptional(item.Line.LedgerAccountFinancialAccountId))
+            .Where(static value => value is not null)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new ManualJournalSecurityMasterLineage(
+            securityId,
+            symbol,
+            financialAccounts.Length == 1 ? financialAccounts[0] : null,
+            provenance,
+            lineage);
+    }
+
+    private static bool SecurityMasterRecordContainsSymbol(SecurityDetailDto security, string symbol)
+        => string.Equals(security.DisplayName?.Trim(), symbol, StringComparison.OrdinalIgnoreCase) ||
+           security.Identifiers.Any(identifier =>
+               string.Equals(identifier.Value?.Trim(), symbol, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(identifier.NormalizedValue?.Trim(), symbol, StringComparison.OrdinalIgnoreCase)) ||
+           security.Aliases.Any(alias =>
+               alias.IsEnabled && string.Equals(alias.AliasValue?.Trim(), symbol, StringComparison.OrdinalIgnoreCase));
+
+    private sealed record ManualJournalSecurityMasterLineage(
+        Guid SecurityId,
+        string Symbol,
+        string? FinancialAccountId,
+        string Provenance,
+        string Lineage);
 
     private static AccountingPostingIntentDto BuildManualPostingIntent(ManualJournalEntryDraftDto draft)
     {
@@ -878,6 +1052,38 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             : draft.ReversalOfJournalEntryId.HasValue || draft.RebookedFromJournalEntryId.HasValue
                 ? LedgerPostingKindDto.Adjustment
                 : LedgerPostingKindDto.Originating;
+
+    private static LedgerAdjustmentApprovalMetadataDto? BuildManualAdjustmentApproval(
+        ManualJournalEntryDraftDto draft,
+        AccountingPostingCommandDto postingCommand,
+        IReadOnlyList<string> evidenceLinks,
+        DateTimeOffset recordedAtUtc)
+    {
+        if (!draft.ReversalOfJournalEntryId.HasValue && !draft.RebookedFromJournalEntryId.HasValue)
+        {
+            return null;
+        }
+
+        var approvalId = NormalizeOptional(draft.ApprovalId)
+            ?? throw new InvalidOperationException("Correction posting requires a retained approval id.");
+        var approvedBy = NormalizeOptional(draft.ApprovedBy)
+            ?? throw new InvalidOperationException("Correction posting requires a retained approving actor.");
+        var approvedAt = draft.ApprovedAtUtc
+            ?? throw new InvalidOperationException("Correction posting requires a retained approval timestamp.");
+        var sourceJournalEntryId = postingCommand.SourceJournalEntryId
+            ?? throw new InvalidOperationException("Correction posting requires source journal-entry lineage.");
+        var evidenceLink = evidenceLinks.FirstOrDefault();
+
+        return new LedgerAdjustmentApprovalMetadataDto(
+            approvalId,
+            LedgerAdjustmentApprovalStatusDto.Approved,
+            approvedBy,
+            approvedAt,
+            draft.ReversalOfJournalEntryId.HasValue ? "period-close-reversal" : "governed-rebook",
+            GovernanceCaseId: $"journal-correction:{sourceJournalEntryId:D}",
+            EvidenceLink: evidenceLink,
+            Notes: $"Governed correction approved before posting at {recordedAtUtc:O}.");
+    }
 
     private static AccountingPostingEvidenceKindDto ClassifyManualPostingEvidence(string evidenceLink)
     {
@@ -1093,8 +1299,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             throw new InvalidOperationException("Manual journal reversal and rebook actions cannot transition the posted entry while the generated correction draft has critical validation issues.");
         }
 
-        await _draftStore.SaveAsync(corrected, ct).ConfigureAwait(false);
-        await _draftStore.SaveAsync(correction, ct).ConfigureAwait(false);
+        // The source transition and its source-linked correction are one accounting mutation.
+        // Retaining either draft without the other creates an unrecoverable workbench state, so
+        // stores must publish both together or leave the prior source unchanged.
+        await _draftStore.SaveBatchAsync([corrected, correction], ct).ConfigureAwait(false);
         await AppendAuditAsync(corrected, reverseSides ? "manual-je.reverse" : "manual-je.rebook", request.Actor, request.CorrelationId, corrected.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         await AppendAuditAsync(correction, auditAction, request.Actor, request.CorrelationId, correction.EvidenceLinks, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
         return new JournalEntryLifecycleActionResultDto(corrected, transition, [correction]);

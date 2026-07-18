@@ -15,6 +15,7 @@ using Meridian.Contracts.Configuration;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
 using Meridian.Execution;
+using Meridian.Execution.Events;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -24,6 +25,7 @@ using Meridian.QuantScript;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Services.Services.Integrations;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
@@ -65,6 +67,7 @@ public sealed class UiServer : IAsyncDisposable
     /// <param name="configPath">Path to the configuration file.</param>
     /// <param name="port">HTTP port to listen on.</param>
     /// <param name="lifecycle">Optional process lifecycle coordinator used by local shutdown endpoints.</param>
+    /// <param name="apiHostOptions">Optional pre-resolved host options; when omitted they are read from configuration.</param>
     public UiServer(
         string configPath,
         int port = 8080,
@@ -114,11 +117,49 @@ public sealed class UiServer : IAsyncDisposable
             });
         }
 
+        // ADR-019: declare the typed deployment posture before feature composition so the
+        // production registration policy and the host resolve the same production answer.
+        builder.Services.DeclareMeridianDeploymentPosture(_apiHostOptions.ToDeploymentPosture());
+
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
         builder.Services.AddMarketDataServices(compositionOptions);
         builder.Services.AddMutationRateLimiter();
         builder.Services.AddSingleton(_lifecycle);
+
+        var tradeFillPostingOptions = builder.Configuration
+            .GetSection(TradeFillLedgerPostingHostOptions.SectionKey)
+            .Get<TradeFillLedgerPostingHostOptions>()
+            ?? new TradeFillLedgerPostingHostOptions();
+        if (tradeFillPostingOptions.Enabled)
+        {
+            if (!LedgerStartup.IsConfigured())
+            {
+                throw new InvalidOperationException(
+                    $"{TradeFillLedgerPostingHostOptions.SectionKey}:Enabled requires {LedgerStartup.ConnectionStringVariable} so accepted fills have an authoritative ledger target.");
+            }
+
+            var postingContext = tradeFillPostingOptions.BuildContext();
+            var tradeFillStoreRoot = Path.Combine(resolvedDataRoot, "execution", "trade-fill-ledger");
+            builder.Services.AddTradeFillLedgerPosting(
+                postingContext,
+                sp => new GovernedTradeFillLedgerPostingTarget(
+                    sp.GetRequiredService<IGovernedLedgerPostingTarget>(),
+                    sp.GetRequiredService<ILedgerJournalStore>()),
+                sp => new WalTradeFillPostingStore(
+                    new TradeFillPostingStoreOptions(tradeFillStoreRoot, postingContext),
+                    sp.GetRequiredService<ILogger<WalTradeFillPostingStore>>()),
+                _ => new AtomicTradeFillHandoffFailureStore(
+                    new TradeFillHandoffFailureStoreOptions(
+                        tradeFillStoreRoot,
+                        postingContext)),
+                configure: options =>
+                {
+                    options.ChannelCapacity = tradeFillPostingOptions.ChannelCapacity;
+                    options.DrainTimeout = tradeFillPostingOptions.DrainTimeout;
+                    options.CancellationTimeout = tradeFillPostingOptions.CancellationTimeout;
+                });
+        }
 
         builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
         builder.Services.AddWorkstationSharedServices();
@@ -162,7 +203,11 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
         builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
-        builder.Services.AddSingleton<Meridian.Audit.Compliance.ImmutableAuditLogService>();
+        // Durable, tamper-evident compliance audit log — persisted so events survive a restart
+        // (an in-memory-only log would silently lose all compliance history).
+        builder.Services.AddSingleton(
+            new Meridian.Audit.Compliance.ImmutableAuditLogService(
+                Path.Combine(resolvedDataRoot, "compliance", "audit", "audit-log.jsonl")));
         builder.Services.AddSingleton<AccessReviewService>();
 
         // Execution layer — paper trading gateway wired for cockpit endpoints
@@ -183,6 +228,11 @@ public sealed class UiServer : IAsyncDisposable
                 options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()));
         builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
         builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
+        // Production IPositionTracker projection over the live portfolio state. Gives the
+        // safety-critical risk rules (PositionLimitRule, DrawdownCircuitBreaker) a real backing
+        // instead of leaving IPositionTracker without any non-test implementation.
+        builder.Services.AddSingleton<IPositionTracker>(sp =>
+            new PortfolioStatePositionTracker(sp.GetRequiredService<IPortfolioState>()));
         builder.Services.AddSingleton<IOrderManager>(sp =>
         {
             var gateway = sp.GetRequiredService<IExecutionGateway>();
@@ -197,7 +247,9 @@ public sealed class UiServer : IAsyncDisposable
                 auditTrail: sp.GetService<ExecutionAuditTrailService>(),
                 portfolioState: portfolio,
                 sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
-                options: sp.GetRequiredService<OrderManagementSystemOptions>());
+                options: sp.GetRequiredService<OrderManagementSystemOptions>(),
+                tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
+                tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(
@@ -460,7 +512,10 @@ public sealed class UiServer : IAsyncDisposable
         if (!IsAuthenticationRequired(environment))
             return;
 
-        if (apiHostOptions.AllowInsecureTransportForReverseProxy || HasHttpsBinding(apiHostOptions.Urls))
+        if (apiHostOptions.AllowInsecureTransportForReverseProxy ||
+            HasHttpsBinding(apiHostOptions.Urls) ||
+            apiHostOptions.DeploymentMode == MeridianApiDeploymentMode.LocalWorkstation &&
+            HasOnlyLoopbackHttpBindings(apiHostOptions.Urls))
             return;
 
         throw new InvalidOperationException(
@@ -493,6 +548,25 @@ public sealed class UiServer : IAsyncDisposable
         }
 
         return false;
+    }
+
+    private static bool HasOnlyLoopbackHttpBindings(IEnumerable<string> configuredUrls)
+    {
+        var hasBinding = false;
+
+        foreach (var url in configuredUrls)
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed) ||
+                !parsed.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                !parsed.IsLoopback)
+            {
+                return false;
+            }
+
+            hasBinding = true;
+        }
+
+        return hasBinding;
     }
 
     internal static string ResolvePersistentDataRoot(string configPath)

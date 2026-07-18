@@ -495,6 +495,12 @@ public abstract class FundAccountServiceContractTests
         var account = await service.CreateAccountAsync(MakeCustodyRequest(), cts.Token);
         var asOf = Today();
         await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, asOf, 50000m), cts.Token);
+        // Independent cash evidence: the bank statement closing balance agrees with the snapshot.
+        var bankBatchId = Guid.NewGuid();
+        await service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            bankBatchId, account.AccountId, asOf, "JPM", Notes: null,
+            Lines: new[] { MakeBankLine(bankBatchId, account.AccountId, asOf, amount: 1000m) with { ClosingBalance = 50000m } },
+            LoadedBy: "ops"), cts.Token);
         await service.IngestCustodianStatementAsync(
             MakeCustodianStatementRequest(account.AccountId, asOf, lineCount: 1), cts.Token);
 
@@ -511,6 +517,100 @@ public abstract class FundAccountServiceContractTests
         var results = await service.GetReconciliationResultsAsync(run.ReconciliationRunId, cts.Token);
         results.Should().HaveCount(2).And.OnlyContain(r => r.IsMatch);
         results.Select(r => r.Category).Should().BeEquivalentTo(new[] { "Cash", "Positions" });
+        var cash = results.Single(r => r.Category == "Cash");
+        cash.ExpectedAmount.Should().Be(50000m, "the expected side is the internally recorded snapshot balance");
+        cash.ActualAmount.Should().Be(50000m, "the actual side is the independent bank statement closing balance");
+        var positions = results.Single(r => r.Category == "Positions");
+        positions.ExpectedAmount.Should().Be(1m, "the expected side is the custodian statement's declared line count");
+        positions.ActualAmount.Should().Be(1m, "the actual side is the persisted position record count");
+    }
+
+    protected async Task ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak_Core()
+    {
+        var service = CreateService();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var account = await service.CreateAccountAsync(MakeBankRequest(), cts.Token);
+        var asOf = Today();
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, asOf, 50000m), cts.Token);
+        var batchId = Guid.NewGuid();
+        await service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, account.AccountId, asOf, "JPM", Notes: null,
+            Lines: new[] { MakeBankLine(batchId, account.AccountId, asOf, amount: -1000m) with { ClosingBalance = 49000m } },
+            LoadedBy: "ops"), cts.Token);
+
+        var run = await service.ReconcileAccountAsync(
+            new ReconcileAccountRequest(account.AccountId, asOf, "ops"), cts.Token);
+
+        run.Status.Should().Be("Breaks");
+        run.TotalBreaks.Should().Be(1);
+        run.BreakAmountTotal.Should().Be(1000m,
+            "a $1,000 divergence between the recorded balance and the bank statement is a money-integrity break");
+        var results = await service.GetReconciliationResultsAsync(run.ReconciliationRunId, cts.Token);
+        var cash = results.Single(r => r.CheckLabel == "CashBalance");
+        cash.IsMatch.Should().BeFalse();
+        cash.Status.Should().Be("Break");
+        cash.ExpectedAmount.Should().Be(50000m);
+        cash.ActualAmount.Should().Be(49000m);
+        cash.Variance.Should().Be(-1000m);
+        (await service.GetOpenCashBreaksAsync(account.AccountId, cts.Token)).Should().ContainSingle(
+            "a genuine cash disagreement must surface on the cash break queue");
+    }
+
+    protected async Task ReconcileAccountAsync_SnapshotWithoutIndependentEvidence_ReportsUnverifiedNotMatched_Core()
+    {
+        var service = CreateService();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var account = await service.CreateAccountAsync(MakeCustodyRequest(), cts.Token);
+        var asOf = Today();
+        await service.RecordBalanceSnapshotAsync(MakeSnapshotRequest(account.AccountId, asOf, 50000m), cts.Token);
+
+        var run = await service.ReconcileAccountAsync(
+            new ReconcileAccountRequest(account.AccountId, asOf, "ops"), cts.Token);
+
+        run.Status.Should().Be("Unverified",
+            "a snapshot with no independent counterpart must never reconcile as Matched");
+        run.TotalChecks.Should().Be(1);
+        run.TotalMatched.Should().Be(0);
+        run.TotalBreaks.Should().Be(0, "an unverified check is not a break: nothing was compared");
+        var results = await service.GetReconciliationResultsAsync(run.ReconciliationRunId, cts.Token);
+        var cash = results.Single(r => r.CheckLabel == "CashBalance");
+        cash.IsMatch.Should().BeFalse();
+        cash.Status.Should().Be("Unverified");
+        cash.ExpectedAmount.Should().Be(50000m);
+        cash.ActualAmount.Should().BeNull();
+        cash.Variance.Should().BeNull();
+        cash.Reason.Should().Contain("No independent source");
+        (await service.GetOpenCashBreaksAsync(account.AccountId, cts.Token)).Should().BeEmpty(
+            "unverified checks stay off the break queues");
+    }
+
+    protected async Task ReconcileAccountAsync_PositionCountDivergingFromDeclaredLineCount_ProducesPositionBreak_Core()
+    {
+        var service = CreateService();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var account = await service.CreateAccountAsync(MakeCustodyRequest(), cts.Token);
+        var asOf = Today();
+        // Two single-line statements for the same as-of date leave two persisted position
+        // lines, while the latest statement declares only one — whichever ingested last.
+        await service.IngestCustodianStatementAsync(
+            MakeCustodianStatementRequest(account.AccountId, asOf, lineCount: 1), cts.Token);
+        var second = MakeCustodianStatementRequest(account.AccountId, asOf, lineCount: 1);
+        second = second with { Lines = new[] { second.Lines[0] with { Identifier = "US5949181045" } } };
+        await service.IngestCustodianStatementAsync(second, cts.Token);
+
+        var run = await service.ReconcileAccountAsync(
+            new ReconcileAccountRequest(account.AccountId, asOf, "ops"), cts.Token);
+
+        run.Status.Should().Be("Breaks");
+        var results = await service.GetReconciliationResultsAsync(run.ReconciliationRunId, cts.Token);
+        var positionCheck = results.Single(r => r.Category == "Positions");
+        positionCheck.IsMatch.Should().BeFalse();
+        positionCheck.Status.Should().Be("Break");
+        positionCheck.ExpectedAmount.Should().Be(1m, "the latest custodian statement declared one line");
+        positionCheck.ActualAmount.Should().Be(2m, "two position lines are persisted for the as-of date");
+        positionCheck.Variance.Should().Be(1m);
+        (await service.GetOpenPositionBreaksAsync(account.AccountId, cts.Token)).Should().ContainSingle(
+            "a position-count disagreement must surface on the position break queue");
     }
 
     protected async Task ReconcileAccountAsync_DivergentBrokerageSyncCash_ProducesContinuityBreak_Core()

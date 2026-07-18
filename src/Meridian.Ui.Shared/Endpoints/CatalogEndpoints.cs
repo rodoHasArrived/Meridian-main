@@ -92,7 +92,7 @@ public static class CatalogEndpoints
                 Descending: true
             );
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var result = await searchService.SearchFilesAsync(query, ct);
                 return Results.Json(new
@@ -119,12 +119,7 @@ public static class CatalogEndpoints
                         qualityScore = f.QualityScore
                     })
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Catalog search failed.");
-                return Results.Problem("Catalog search failed.");
-            }
+            }, "Catalog search failed.", logger);
         })
         .WithName("CatalogSearch")
         .Produces(200);
@@ -137,7 +132,7 @@ public static class CatalogEndpoints
             if (searchService is null)
                 return Results.Json(new { message = "Storage search not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
                 return Results.Json(new
@@ -155,12 +150,7 @@ public static class CatalogEndpoints
                         sources = s.Sources
                     })
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to list catalog symbols.");
-                return Results.Problem("Failed to list catalog symbols.");
-            }
+            }, "Failed to list catalog symbols.", logger);
         })
         .WithName("CatalogSymbols")
         .Produces(200);
@@ -184,7 +174,7 @@ public static class CatalogEndpoints
                 ? symbolFilter.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 : null;
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 // Fetch all matching file metadata to build day-by-day coverage
                 var query = new FileSearchQuery(
@@ -233,12 +223,7 @@ public static class CatalogEndpoints
                     filter = new { symbols, from, to },
                     timeline
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to build catalog timeline.");
-                return Results.Problem("Failed to build catalog timeline.");
-            }
+            }, "Failed to build catalog timeline.", logger);
         })
         .WithName("CatalogTimeline")
         .Produces(200);
@@ -251,7 +236,7 @@ public static class CatalogEndpoints
             if (searchService is null)
                 return Results.Json(new { message = "Storage search not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var catalog = await searchService.DiscoverAsync(new DiscoveryQuery(), ct);
                 return Results.Json(new
@@ -276,12 +261,7 @@ public static class CatalogEndpoints
                         totalEvents = s.TotalEvents
                     })
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to build catalog coverage summary.");
-                return Results.Problem("Failed to build catalog coverage summary.");
-            }
+            }, "Failed to build catalog coverage summary.", logger);
         })
         .WithName("CatalogCoverage")
         .Produces(200);

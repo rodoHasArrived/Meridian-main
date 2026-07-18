@@ -190,6 +190,8 @@ public static class UiEndpoints
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapReportingGovernanceEndpoints(jsonOptions);
+        app.MapSecureReportingDistributionEndpoints();
         app.MapReportingRunStreamEndpoints(jsonOptions);
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
@@ -237,9 +239,11 @@ public static class UiEndpoints
 
         // Authentication endpoints (login page, login API, logout API)
         app.MapAuthEndpoints();
+        app.MapInitialAccountBootstrapEndpoints();
 
         // React workstation shell and bootstrap data
         app.MapWorkstationEndpoints(jsonOptions);
+        app.MapFirstRunEndpoints();
         app.MapEvidenceEndpoints(jsonOptions);
 
         // Paper trading cockpit endpoints

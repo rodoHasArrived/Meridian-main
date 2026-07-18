@@ -72,8 +72,9 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
 
     private int _disposed;
 
-    // Spin-wait microseconds between empty drain cycles.
-    private const int EmptySpinUs = 100;
+    // A real delay is required here: Task.Yield() and Task.Delay(0) keep the
+    // elevated-priority consumers runnable and can starve small CI/desktop hosts.
+    private const int EmptyPollDelayMilliseconds = 1;
 
     /// <summary>
     /// Creates a <see cref="DualPathEventPipeline"/> that wraps an existing
@@ -361,8 +362,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
 
                 if (drained == 0)
                 {
-                    // Nothing to do — yield briefly to avoid spinning at 100 % CPU.
-                    await Task.Yield();
+                    await Task.Delay(EmptyPollDelayMilliseconds, ct).ConfigureAwait(false);
                     continue;
                 }
 
@@ -399,7 +399,7 @@ public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressure
 
                 if (drained == 0)
                 {
-                    await Task.Delay(0, ct).ConfigureAwait(false);
+                    await Task.Delay(EmptyPollDelayMilliseconds, ct).ConfigureAwait(false);
                     continue;
                 }
 

@@ -44,6 +44,23 @@ public sealed class AutomatedJournalPostingTargetTests
             .WithMessage("*Period id is required*");
     }
 
+    [Fact]
+    public void PostedApproval_CannotBeConvertedBackIntoAnAppendableJournalEntry()
+    {
+        var approval = ApprovedFeeDraft();
+        var posted = approval.PostTo(
+            new Meridian.Ledger.Ledger(),
+            "controller",
+            AsOf,
+            "posted",
+            ["/evidence/fees/2026-Q2"]);
+
+        Action act = () => posted.ToJournalEntry();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Only approved automated journal drafts can be converted*");
+    }
+
     private static AutomatedJournalApproval ApprovedFeeDraft()
     {
         var draft = AutomatedJournalDraftProjector.Project(new AutomatedJournalEvent(

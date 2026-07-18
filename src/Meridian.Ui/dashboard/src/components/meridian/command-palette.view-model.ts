@@ -210,6 +210,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
   },
   {
+    id: "accounting-external-gl-reconciliation",
+    label: "External GL reconciliation",
+    description: "Compare Meridian balances with the connected accounting system and prepare governed posting or export work.",
+    route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation
+  },
+  {
     id: "accounting-security-master",
     label: "Security Master",
     description: "Review reference-data coverage, identifier conflicts, and trusted instruments.",
@@ -258,6 +264,12 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall
   },
   {
+    id: "data-import",
+    label: "Import data",
+    description: "Load a file, preview its records, and validate the import before committing it to a governed data workflow.",
+    route: WORKSTATION_ROUTE_CATALOG.dataImport
+  },
+  {
     id: "data-providers",
     label: "Providers",
     description: "Review provider catalog, onboarding posture, connection health, and routing evidence.",
@@ -285,13 +297,13 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
     id: "data-backfills",
     label: "Backfill queues",
     description: "Preview, trigger, and review historical data backfill jobs.",
-    route: WORKSTATION_ROUTE_CATALOG.dataBackfills
+    route: WORKSTATION_ROUTE_CATALOG.dataOperations
   },
   {
-    id: "settings-integrations",
-    label: "Alpaca provider setup",
-    description: "Repair paper credentials, service acknowledgements, and broker connection readiness.",
-    route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup
+    id: "settings-provider-setup",
+    label: "Alpaca guided setup",
+    description: "Configure and verify paper credentials before reviewing advanced runtime evidence.",
+    route: WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderGuidedSetup
   }
 ];
 

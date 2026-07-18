@@ -869,12 +869,12 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
     expect(result.current.ledgerBookSummaryLabel).toBe("1 ledger book registered | selected Primary book.");
     expect(result.current.ledgerBookRows).toEqual([
       expect.objectContaining({
-        id: "book-primary",
+        id: "Selected ledger book",
         title: "Primary book",
         statusLabel: "Selected",
         subtitle: "Gaap basis | USD",
-        policyLabel: "policy-gaap/2026.06",
-        scopeLabel: "fund-alpha / Entity entity-master",
+        policyLabel: "Gaap policy | version 2026.06",
+        scopeLabel: "Entity scope",
         updatedLabel: "Updated 2026-06-30",
         tone: "success"
       })
@@ -2231,8 +2231,19 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
       tone: "success"
     })));
     expect(result.current.createLedgerBookStatusText).toBe("Created Alpha Fund primary book.");
-    expect(result.current.activateDisabledReason).toBeNull();
-    expect(result.current.canActivate).toBe(true);
+    expect(result.current.setupReadinessRows[1]).toEqual(expect.objectContaining({
+      id: "activation-readiness",
+      value: "Unavailable",
+      tone: "danger",
+      detail: "Production readiness could not be verified. Refresh the assessment before activation."
+    }));
+    expect(result.current.activateDisabledReason).toBe("Refresh production readiness successfully before activation.");
+    expect(result.current.canActivate).toBe(false);
+
+    await act(async () => {
+      await result.current.activate();
+    });
+    expect(services.activate).not.toHaveBeenCalled();
   });
 
 });

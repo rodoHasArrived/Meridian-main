@@ -48,6 +48,22 @@ public interface ISymbolRegistryService
     Task AddProviderMappingAsync(string canonical, string provider, string providerSymbol, CancellationToken ct = default);
 
     /// <summary>
+    /// Adds a provider mapping with provenance and merge precedence.
+    /// </summary>
+    Task AddProviderMappingAsync(
+        string canonical,
+        string provider,
+        string providerSymbol,
+        string source,
+        bool isOverride,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Removes a provider mapping without removing the canonical security entry.
+    /// </summary>
+    Task<bool> RemoveProviderMappingAsync(string canonical, string provider, CancellationToken ct = default);
+
+    /// <summary>
     /// Gets all symbols.
     /// </summary>
     IEnumerable<SymbolRegistryEntry> GetAllSymbols();
@@ -56,6 +72,17 @@ public interface ISymbolRegistryService
     /// Gets symbols by asset class.
     /// </summary>
     IEnumerable<SymbolRegistryEntry> GetSymbolsByAssetClass(string assetClass);
+
+    /// <summary>
+    /// Gets the retained fingerprint for a completed registry migration while holding the
+    /// registry mutation gate.
+    /// </summary>
+    Task<string?> GetMigrationMarkerAsync(string migrationId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Persists a registry migration fingerprint while holding the registry mutation gate.
+    /// </summary>
+    Task SetMigrationMarkerAsync(string migrationId, string fingerprint, CancellationToken ct = default);
 
     /// <summary>
     /// Saves the registry to disk.

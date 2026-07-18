@@ -4,6 +4,7 @@ using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
+using Meridian.ProviderSdk;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -265,7 +266,7 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
 /// <summary>
 /// Optional interface for providers that can report their rate limit status.
 /// </summary>
-public interface IRateLimitAwareProvider
+public interface IRateLimitAwareProvider : IProviderRateLimitDiagnosticsSource
 {
     /// <summary>
     /// Get current rate limit usage information.
@@ -276,6 +277,24 @@ public interface IRateLimitAwareProvider
     /// Event raised when the provider hits a rate limit.
     /// </summary>
     event Action<RateLimitInfo>? OnRateLimitHit;
+
+    /// <inheritdoc />
+    ProviderRateLimitDiagnosticSnapshot IProviderRateLimitDiagnosticsSource.GetRateLimitDiagnosticsSnapshot()
+    {
+        var observedAt = DateTimeOffset.UtcNow;
+        var info = GetRateLimitInfo();
+        return new ProviderRateLimitDiagnosticSnapshot(
+            info.ProviderName,
+            ProviderRateLimitSurfaces.Historical,
+            observedAt,
+            info.RequestsMade,
+            info.MaxRequests,
+            info.Window,
+            info.IsLimited,
+            info.ResetsAt,
+            info.UsageRatio,
+            info.IsLimited ? "provider-response" : null);
+    }
 }
 
 /// <summary>
@@ -321,11 +340,23 @@ public sealed record ProviderBackfillProgress(
     int CurrentSymbolIndex,
     DateTimeOffset StartedAt,
     string? CurrentStatus = null,
-    string? Error = null
+    string? Error = null,
+    DateOnly? RangeStart = null,
+    DateOnly? RangeEnd = null,
+    int ProviderAttempt = 0,
+    int RetryRound = 0,
+    string? Operation = null,
+    DateTimeOffset? ObservedAt = null
 )
 {
     public double PercentComplete => TotalSymbols > 0 ? (CurrentSymbolIndex * 100.0) / TotalSymbols : 0;
     public TimeSpan Elapsed => DateTimeOffset.UtcNow - StartedAt;
+
+    /// <summary>
+    /// Stable observation time for transport and API projections. Older callers that do not
+    /// populate the additive field retain the request start time as a deterministic fallback.
+    /// </summary>
+    public DateTimeOffset EffectiveObservedAt => ObservedAt ?? StartedAt;
 }
 
 /// <summary>

@@ -44,12 +44,23 @@ DATA_SOURCES = [
     "src/**/*.cs endpoint mappings",
     "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Contracts/Workstation/*.cs",
-    "docs/**/*.md",
+    "docs/**/*.md (excluding generated report roots)",
 ]
+
+# Generated reports live under these roots and echo route paths and contract names verbatim —
+# including this dashboard's own markdown, which lists every endpoint it scans. Treating them as
+# documentation creates a feedback loop: an endpoint counts as documented purely because a prior
+# run wrote it into a report. That inflates coverage toward 100% and leaves the artifact unable to
+# converge, since each run's output changes the next run's input.
+GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
 
 
 def _should_skip(path: Path) -> bool:
     return any(part in EXCLUDE_DIRS for part in path.parts)
+
+
+def _path_sort_key(path: Path) -> tuple[tuple[str, str], ...]:
+    return tuple((part.casefold(), part) for part in path.parts)
 
 
 def _iter_files(root_dir: Path, suffix: str) -> list[Path]:
@@ -63,7 +74,7 @@ def _iter_files(root_dir: Path, suffix: str) -> list[Path]:
         for name in files:
             if name.endswith(suffix):
                 results.append(current_path / name)
-    return sorted(results)
+    return sorted(results, key=_path_sort_key)
 
 
 def _rel(root: Path, path: Path) -> str:
@@ -144,7 +155,7 @@ def _scan_workstation_contracts(root: Path) -> list[dict[str, object]]:
     if not contracts_dir.is_dir():
         return contracts
 
-    for file_path in sorted(contracts_dir.glob("*.cs")):
+    for file_path in sorted(contracts_dir.glob("*.cs"), key=_path_sort_key):
         text = _read_text(file_path)
         for match in PUBLIC_CONTRACT_RE.finditer(text):
             contracts.append(
@@ -157,6 +168,14 @@ def _scan_workstation_contracts(root: Path) -> list[dict[str, object]]:
     return contracts
 
 
+def _is_generated_doc(root: Path, path: Path) -> bool:
+    relative = _rel(root, path)
+    return any(
+        relative == generated_root or relative.startswith(generated_root + "/")
+        for generated_root in GENERATED_DOC_ROOTS
+    )
+
+
 def _load_docs_text(root: Path) -> str:
     docs_dir = root / "docs"
     if not docs_dir.is_dir():
@@ -164,6 +183,8 @@ def _load_docs_text(root: Path) -> str:
 
     chunks: list[str] = []
     for path in _iter_files(docs_dir, ".md"):
+        if _is_generated_doc(root, path):
+            continue
         chunks.append(_read_text(path))
     normalized = "\n".join(chunks)
     return ROUTE_CONSTRAINT_RE.sub(r"{\1}", normalized).casefold()

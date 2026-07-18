@@ -1,9 +1,8 @@
-import { AlertCircle, BookCheck, Briefcase, CheckCircle2, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, TrendingUp, UserCheck, WalletCards, X } from "lucide-react";
+import { BookCheck, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
@@ -13,37 +12,56 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
 import { ReconciliationComparisonPanel, TrialBalanceTable } from "@/components/accounting";
 import {
+  approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
   certifyAccountingSystemExportPackage,
+  configureDailyValuationSchedule,
   createAccountingSystemExportPackage,
   getAccountingSystemExportPackageManifest,
   getAccountingSystemMappingProfiles,
   getAccountingSystemProviders,
   getFinancialOperationsCommandCenter,
+  getPrivateCapitalCloseCockpit,
   getLatestAccountingSystemImport,
   getLatestAccountingSystemReconciliation,
   getFinancialRecordExplorer,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
   listAccountingSystemExportPackages,
+  listDailyValuationSchedules,
   previewAccountingSystemImport,
   rejectOperationsContinuityWorkflow,
+  runDueDailyValuationSchedules,
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
+import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
 import { AccountingTaskModeLauncher } from "@/screens/accounting-screen.task-modes";
+import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
+import {
+  InstrumentPassportPanel,
+  ReferenceDataWorkbenchPanel,
+  SecurityOpenLotReadModelPanel,
+} from "@/screens/accounting-screen.security-master-detail-panels";
 import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
+import {
+  OperationalExceptionWorkbenchPanel,
+  ReconciliationQueueSummaryCard,
+  TradingParametersPanel,
+  reconciliationQueueColumns,
+} from "@/screens/accounting-screen.operations-panels";
 import {
   ChartAccountPathBuilder,
   ConfigureActivationRail,
@@ -74,31 +92,17 @@ import {
 } from "@/screens/accounting-screen.view-model";
 import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-model";
 import type {
-  CalibrationProfileRowViewModel,
-  CalibrationSummaryViewModel,
   AccountingConfigurationViewModel,
   AccountingRulesStudioPromotionReadinessViewModel,
-  CapitalAccountWorkbenchViewModel,
   ManualJournalEntryWorkbenchViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
-  ReconciliationQueuePanelViewState,
-  ReconciliationQueueRunRowViewModel,
   ReconciliationStatementRunRowViewModel,
-  ReconciliationQueueRunTone,
   ReconciliationBreakDetailViewModel,
   ReconciliationDetailActionsViewModel,
   CloseCommandCenterViewState,
-  OperationalExceptionWorkbenchViewState,
-  SecurityOpenLotReadModelViewState,
-  SecurityOpenLotRowViewModel,
-  ReferenceDataEndpointRowViewModel,
-  ReferenceDataWorkbenchViewState,
   SecuritySearchResultRowViewModel,
-  TradingParametersViewState,
-  InstrumentPassportViewState,
-  InstrumentPassportProviderConfidenceRowViewModel
 } from "@/screens/accounting-screen.view-model";
 import type {
   AccountingSystemImportDetail,
@@ -110,6 +114,7 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  DailyValuationScheduleWorkItem,
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialOperationsCommandCenter,
@@ -118,15 +123,15 @@ import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsTimelineEntry,
+  PrivateCapitalCloseCockpit,
 } from "@/types";
 import {
   approvalBlockedReason,
   approvalEvidenceSummary,
   approvalNextAction,
-  approvalQueueStatusLabel,
-  approvalQueueStatusTone,
   approvalSignerLabel,
-  approvalStatusTone,
+  approvalWorkflowStatusLabel,
+  approvalWorkflowStatusTone,
   buildApprovalActionDisabledReason,
   formatApprovalDate,
   formatApprovalError,
@@ -159,104 +164,12 @@ function buildSecurityMasterDrillInSearch(search: string, tabId: SecurityMasterD
   return serialized ? `?${serialized}` : "";
 }
 
-const calibrationProfileColumns: DenseDataTableColumn<CalibrationProfileRowViewModel>[] = [
-  {
-    id: "profile",
-    label: "Profile",
-    render: (row) => <span className="font-mono text-foreground">{row.toleranceProfileId}</span>
-  },
-  {
-    id: "route",
-    label: "Route",
-    render: (row) => <span className="text-muted-foreground">{row.exceptionRoute}</span>
-  },
-  {
-    id: "severity",
-    label: "Severity",
-    render: (row) => <span className={cn("font-mono", calibrationSeverityClass(row.highestSeverity))}>{row.highestSeverity}</span>
-  },
-  {
-    id: "open",
-    label: "Open",
-    align: "right",
-    render: (row) => <span className={cn("font-mono tabular-nums", row.openBreakCount > 0 ? "text-warning" : "text-foreground")}>{row.openBreakCount}</span>
-  },
-  {
-    id: "in-review",
-    label: "Review",
-    align: "right",
-    render: (row) => <span className="font-mono tabular-nums text-foreground">{row.inReviewBreakCount}</span>
-  },
-  {
-    id: "pending-signoff",
-    label: "Sign-off",
-    align: "right",
-    render: (row) => (
-      <span className={cn("font-mono tabular-nums", row.pendingSignoffCount > 0 ? "text-warning" : "text-foreground")}>
-        {row.pendingSignoffCount}
-      </span>
-    )
-  },
-  {
-    id: "tolerance",
-    label: "Tolerance",
-    align: "right",
-    render: (row) => <span className="font-mono text-muted-foreground">{row.maxToleranceBandLabel}</span>
-  },
-  {
-    id: "updated",
-    label: "Updated",
-    render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span>
-  }
-];
-
-const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
-  muted: "text-muted-foreground",
-  warning: "text-warning",
-  success: "text-success",
-  primary: "text-primary"
-};
-
-function calibrationSeverityClass(severity: string): string {
-  const normalized = severity.trim().toLowerCase();
-  if (normalized === "critical") {
-    return "text-danger";
-  }
-
-  if (normalized === "warning" || normalized === "warn") {
-    return "text-warning";
-  }
-
-  return "text-foreground";
+function resolveExplorerSecurityId(recordId: string): string | null {
+  const [recordType, securityId, ...extraSegments] = recordId.split(":");
+  return (recordType === "security" || recordType === "security-instrument") && securityId && extraSegments.length === 0
+    ? securityId
+    : null;
 }
-
-const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueueRunRowViewModel>[] = [
-  {
-    id: "run",
-    label: "Run",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.strategyName}</span>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.runId}</span>
-      </span>
-    )
-  },
-  { id: "mode", label: "Mode", render: (row) => <span className="font-mono uppercase text-muted-foreground">{row.modeLabel}</span> },
-  { id: "status", label: "Status", render: (row) => row.runStatusLabel },
-  { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
-  { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.openBreakLabel}</span> },
-  {
-    id: "reconciliation",
-    label: "Reconciliation",
-    render: (row) => (
-      <span className={cn("font-mono text-xs uppercase tracking-[0.14em]", reconciliationQueueToneClass[row.reconciliationTone])}>
-        {row.reconciliationStatusLabel}
-      </span>
-    )
-  },
-  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedLabel}</span> }
-];
-
 
 const reconciliationStatementRunColumns: DenseDataTableColumn<ReconciliationStatementRunRowViewModel>[] = [
   { id: "brokerCustodian", label: "Broker/Custodian", render: (row) => <span title={row.unavailableReason ?? undefined}>{row.brokerCustodianLabel}</span> },
@@ -277,7 +190,7 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.strategyName}</span>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.breakId}</span>
+        <span className="mt-1 block text-[11px] text-muted-foreground">{row.financeLabel}</span>
       </span>
     )
   },
@@ -320,53 +233,6 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
   { id: "amount", label: "Amount", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.amountLabel}</span> }
 ];
 
-const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[] = [
-  {
-    id: "lot",
-    label: "Lot",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.lotId}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.runId}</span>
-      </span>
-    )
-  },
-  { id: "scope", label: "Scope", render: (row) => <span className="text-muted-foreground">{row.scopeLabel}</span> },
-  { id: "tradeDate", label: "Trade", render: (row) => <span className="font-mono text-muted-foreground">{row.tradeDateLabel}</span> },
-  { id: "quantity", label: "Quantity", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.quantityLabel}</span> },
-  { id: "face", label: "Face", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.faceLabel}</span> },
-  { id: "factor", label: "Factor adj.", align: "right", render: (row) => <span className="font-mono tabular-nums text-muted-foreground">{row.factorAdjustedLabel}</span> },
-  { id: "cost", label: "Cost", align: "right", render: (row) => <span className="font-mono tabular-nums text-foreground">{row.costBasisLabel}</span> },
-  {
-    id: "pnl",
-    label: "Unrealized",
-    align: "right",
-    render: (row) => (
-      <span className={cn("font-mono tabular-nums", row.unrealizedPnl !== null && row.unrealizedPnl < 0 ? "text-danger" : "text-muted-foreground")}>
-        {row.unrealizedPnlLabel}
-      </span>
-    )
-  },
-  { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone}>{row.statusLabel}</Badge> }
-];
-
-const referenceDataEndpointColumns: DenseDataTableColumn<ReferenceDataEndpointRowViewModel>[] = [
-  {
-    id: "endpoint",
-    label: "Data source",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block text-xs text-muted-foreground">{row.displaySummary}</span>
-      </span>
-    )
-  },
-  { id: "family", label: "Family", render: (row) => <span className="text-muted-foreground">{row.familyLabel}</span> },
-  { id: "method", label: "Access", render: (row) => <span className="text-xs text-foreground">{row.accessLabel}</span> },
-  { id: "payload", label: "Records", align: "right", render: (row) => <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.countLabel}</span> },
-  { id: "latency", label: "Latency", align: "right", render: (row) => <span className="font-mono text-xs tabular-nums text-muted-foreground">{row.latencyLabel}</span> },
-  { id: "status", label: "Status", render: (row) => <Badge variant={row.statusBadgeVariant} dot>{row.statusLabel}</Badge> }
-];
 const accountingSystemStatusVariant = {
   Matched: "success",
   Variance: "warning",
@@ -380,6 +246,111 @@ const accountingSystemEvidencePackageVariant = {
   ReviewRequired: "warning",
   Missing: "danger"
 } as const;
+
+const externalGlStateLabels: Record<string, string> = {
+  available: "Available",
+  blocked: "Blocked",
+  certified: "Certified",
+  disabled: "Disabled",
+  draft: "Draft",
+  failed: "Failed",
+  imported: "Imported",
+  matched: "Matched",
+  missing: "Missing",
+  missingevidence: "Evidence missing",
+  missingexternal: "Missing from external GL",
+  missingmeridian: "Missing from Meridian",
+  notstarted: "Not started",
+  planned: "Planned",
+  previewed: "Previewed",
+  ready: "Ready",
+  readyforreview: "Ready for review",
+  rejected: "Rejected",
+  reviewrequired: "Review required",
+  superseded: "Superseded",
+  variance: "Amount variance"
+};
+
+function presentExternalGlState(value: string | null | undefined, fallback = "Not available"): string {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+
+  const normalized = trimmed.replace(/[^a-z0-9]+/gi, "").toLowerCase();
+  if (externalGlStateLabels[normalized]) {
+    return externalGlStateLabels[normalized];
+  }
+
+  const words = trimmed
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : fallback;
+}
+
+function presentExternalGlProviderName(displayName: string): string {
+  return displayName.replace(/\s+fixture\b/gi, " import");
+}
+
+function presentExternalGlProviderEvidenceLabel(displayName: string): string {
+  return /\s+fixture\b/i.test(displayName)
+    ? `Imported ${displayName.replace(/\s+fixture\b/gi, "")} evidence`
+    : `${presentExternalGlProviderName(displayName)} evidence`;
+}
+
+function presentExternalGlProviderStatus(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  if (normalized.includes("fixture") && normalized.includes("import")) {
+    return "Read-only import ready";
+  }
+  if (normalized.includes("oauth") && normalized.includes("planned")) {
+    return "Direct connection unavailable";
+  }
+  return presentExternalGlState(value);
+}
+
+function formatExternalGlPeriodRange(start: string, end: string): string {
+  return `${formatExternalGlPeriodDate(start)} – ${formatExternalGlPeriodDate(end)}`;
+}
+
+function formatExternalGlPeriodDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(date);
+}
+
+function formatExternalGlTimestamp(value: string | null | undefined): string {
+  if (!value) {
+    return "not recorded";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+    timeZoneName: "short"
+  }).format(date);
+}
 
 function AccountingSystemReconciliationPanel({
   providers,
@@ -432,10 +403,22 @@ function AccountingSystemReconciliationPanel({
   const statementBalance = reconciliation ? reconciliation.totalExternalDebits - reconciliation.totalExternalCredits : 0;
   const ledgerBalance = reconciliation ? reconciliation.totalMeridianDebits - reconciliation.totalMeridianCredits : 0;
   const varianceBalance = statementBalance - ledgerBalance;
+  const reconciliationCleared = Boolean(reconciliation && varianceBalance === 0 && reconciliation.breakCount === 0);
   const exportSafeguards = reconciliation
     ? buildExternalGlExportSafeguards(reconciliation, selectedMappingProfile, exportPackage, exportManifest)
     : [];
   const retainedExportPackages = exportPackages.slice(0, 5);
+  const reconciliationEvidenceReferences = reconciliation
+    ? Array.from(new Set([
+        ...reconciliation.evidenceReferences,
+        ...reconciliation.rows.flatMap((row) => [
+          row.evidenceRef,
+          ...(row.externalEvidenceReferences ?? []),
+          ...(row.meridianEvidenceReferences ?? []),
+          ...(row.evidenceReferences ?? [])
+        ])
+      ].filter((reference): reference is string => Boolean(reference))))
+    : [];
   const exportDisabledReason = !reconciliation
     ? "Load external GL reconciliation before creating an export package."
     : !selectedMappingProfile
@@ -447,7 +430,7 @@ function AccountingSystemReconciliationPanel({
     : certificationState === "Certified"
       ? "This external GL export package is already certified."
       : certificationState !== "ReadyForReview"
-        ? `Certification requires Ready for review state; current state is ${certificationState ?? "missing"}.`
+        ? `Certification requires Ready for review state; current state is ${presentExternalGlState(certificationState, "missing")}.`
         : exportPackage.validationIssues.some((issue) => issue.severity === "Critical")
           ? "Critical export package validation issues must be cleared before certification."
           : "";
@@ -460,18 +443,20 @@ function AccountingSystemReconciliationPanel({
             <div className="eyebrow-label">External GL reconciliation</div>
             <CardTitle className="mt-2 flex items-center gap-2 text-base">
               <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              {activeProvider ? `${activeProvider.displayName} evidence` : "External GL evidence"}
+              {activeProvider ? presentExternalGlProviderEvidenceLabel(activeProvider.displayName) : "External GL evidence"}
             </CardTitle>
             <CardDescription className="mt-2">
               External accounting-system records are imported as read-only evidence against Meridian-owned ledger truth; posting back to the external GL remains disabled.
             </CardDescription>
             {selectedCompanyLabel ? (
-              <div className="mt-2 text-xs text-muted-foreground">Selected company: {selectedCompanyLabel}</div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                Selected company: {activeProvider?.connection?.companyName ?? "Connected company"}
+              </div>
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {activeProvider ? <Badge variant="success">{activeProvider.statusLabel}</Badge> : null}
-            {quickBooksProvider && quickBooksProvider !== activeProvider ? <Badge variant="outline">{quickBooksProvider.statusLabel}</Badge> : null}
+            {activeProvider ? <Badge variant="success">{presentExternalGlProviderStatus(activeProvider.statusLabel)}</Badge> : null}
+            {quickBooksProvider && quickBooksProvider !== activeProvider ? <Badge variant="outline">{presentExternalGlProviderStatus(quickBooksProvider.statusLabel)}</Badge> : null}
             <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading} busy={loading} busyLabel="Refreshing GL evidence">
               <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
               Refresh
@@ -484,7 +469,7 @@ function AccountingSystemReconciliationPanel({
           <StatusBanner tone="danger" role="alert" title={error} />
         ) : null}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <AccountingValue label="Import state" value={importDetail?.summary.state ?? (loading ? "Loading" : "Not loaded")} />
+          <AccountingValue label="Import state" value={presentExternalGlState(importDetail?.summary.state, loading ? "Loading" : "Not loaded")} />
           <AccountingValue label="Trial balance lines" value={String(importDetail?.summary.trialBalanceLineCount ?? 0)} />
           <AccountingValue label="Matched rows" value={String(reconciliation?.matchedCount ?? 0)} />
           <AccountingValue label="Break rows" value={String(reconciliation?.breakCount ?? 0)} />
@@ -511,7 +496,9 @@ function AccountingSystemReconciliationPanel({
                     provider.supportsTrialBalance ? "trial balance" : null
                   ].filter((item): item is string => Boolean(item));
                   const connectionLabel = provider.connection?.statusLabel
-                    ?? (provider.requiresCredentials ? "Credentials required" : "No credentials required");
+                    ?? (provider.state === "Planned"
+                      ? "Direct connection unavailable"
+                      : provider.requiresCredentials ? "Credentials required" : "No credentials required");
                   const postingLabel = provider.supportsPosting
                     ? "Posting gated by export certification"
                     : "Live posting disabled";
@@ -529,12 +516,11 @@ function AccountingSystemReconciliationPanel({
                       )}
                     >
                       <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{provider.displayName}</div>
-                        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{provider.providerId}</div>
+                        <div className="font-semibold text-foreground">{presentExternalGlProviderName(provider.displayName)}</div>
                       </td>
                       <td className="px-3 py-2">
                         <Badge variant={provider.state === "Available" ? "success" : provider.state === "Planned" ? "outline" : "warning"}>
-                          {provider.state}
+                          {presentExternalGlState(provider.state)}
                         </Badge>
                       </td>
                       <td className="px-3 py-2 text-xs text-muted-foreground">{connectionLabel}</td>
@@ -549,6 +535,19 @@ function AccountingSystemReconciliationPanel({
                 })}
               </tbody>
             </table>
+            <TechnicalDetails label="Provider identifiers" className="m-3">
+              <dl className="grid gap-3 text-xs sm:grid-cols-2">
+                {providers.slice(0, 6).map((provider) => (
+                  <div key={provider.providerId}>
+                    <dt className="font-semibold text-foreground">{presentExternalGlProviderName(provider.displayName)}</dt>
+                    <dd className="mt-1 break-all font-mono text-muted-foreground">Provider: {provider.providerId}</dd>
+                    {provider.connection?.companyId ? (
+                      <dd className="mt-1 break-all font-mono text-muted-foreground">Company: {provider.connection.companyId}</dd>
+                    ) : null}
+                  </div>
+                ))}
+              </dl>
+            </TechnicalDetails>
           </div>
         ) : null}
         {mappingProfiles.length > 0 ? (
@@ -581,19 +580,33 @@ function AccountingSystemReconciliationPanel({
                     >
                       <td className="px-3 py-2">
                         <div className="font-semibold text-foreground">{profile.displayName}</div>
-                        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{profile.profileId}</div>
                       </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{profile.providerId}</td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">
+                        {presentExternalGlProviderName(providers.find((provider) => provider.providerId === profile.providerId)?.displayName ?? "External GL provider")}
+                      </td>
                       <td className="px-3 py-2 text-right font-mono text-xs text-foreground">{accountMappingCount}</td>
                       <td className="px-3 py-2 text-right font-mono text-xs text-foreground">{`${profile.dimensionMappings.length}/${externalDimensionCount}`}</td>
                       <td className="px-3 py-2">
-                        <Badge variant={profile.certificationState === "Certified" ? "success" : "warning"}>{profile.certificationState}</Badge>
+                        <Badge variant={profile.certificationState === "Certified" ? "success" : "warning"}>
+                          {presentExternalGlState(profile.certificationState)}
+                        </Badge>
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+            <TechnicalDetails label="Mapping profile identifiers" className="m-3">
+              <dl className="grid gap-3 text-xs sm:grid-cols-2">
+                {mappingProfiles.slice(0, 4).map((profile) => (
+                  <div key={profile.profileId}>
+                    <dt className="font-semibold text-foreground">{profile.displayName}</dt>
+                    <dd className="mt-1 break-all font-mono text-muted-foreground">Profile: {profile.profileId}</dd>
+                    <dd className="mt-1 break-all font-mono text-muted-foreground">Provider: {profile.providerId}</dd>
+                  </div>
+                ))}
+              </dl>
+            </TechnicalDetails>
           </div>
         ) : (
           <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
@@ -601,8 +614,8 @@ function AccountingSystemReconciliationPanel({
           </p>
         )}
         {reconciliation ? (
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_19rem]">
-            <div className="h-fit overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-sm">
+          <div className="grid min-w-0 gap-3 2xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.34fr)]">
+            <div className="h-fit min-w-0 overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-sm">
               <div className="border-b border-border/70 bg-secondary/35 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -638,7 +651,7 @@ function AccountingSystemReconciliationPanel({
                         >
                           <td className={cn("border-l-4 px-4 py-3", isMatched ? "border-l-success" : "border-l-warning")}>
                             <div className="font-semibold text-foreground">{row.accountName}</div>
-                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{row.accountCode} · {row.evidenceRef}</div>
+                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{row.accountCode}</div>
                           </td>
                           <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
                             {formatGlAmount(row.externalDebit - row.externalCredit, row.currency)}
@@ -651,7 +664,7 @@ function AccountingSystemReconciliationPanel({
                             {formatGlAmount(row.meridianDebit - row.meridianCredit, row.currency)}
                           </td>
                           <td className="px-4 py-3">
-                            <Badge variant={accountingSystemStatusVariant[row.status]}>{row.status}</Badge>
+                            <Badge variant={accountingSystemStatusVariant[row.status]}>{presentExternalGlState(row.status)}</Badge>
                           </td>
                         </tr>
                       );
@@ -659,12 +672,38 @@ function AccountingSystemReconciliationPanel({
                   </tbody>
                 </table>
               </div>
+              <TechnicalDetails label="Reconciliation technical details" className="m-3">
+                <dl className="grid gap-3 text-xs sm:grid-cols-2">
+                  <div>
+                    <dt className="font-semibold text-foreground">Reconciliation</dt>
+                    <dd className="mt-1 break-all font-mono text-muted-foreground">{reconciliation.reconciliationId}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-foreground">Import</dt>
+                    <dd className="mt-1 break-all font-mono text-muted-foreground">{reconciliation.importId}</dd>
+                  </div>
+                </dl>
+                {reconciliationEvidenceReferences.length > 0 ? (
+                  <div className="mt-3">
+                    <div className="font-semibold text-foreground">Evidence references</div>
+                    <ul className="mt-1 space-y-1">
+                      {reconciliationEvidenceReferences.map((reference) => (
+                        <li key={reference} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </TechnicalDetails>
               <div className="grid gap-3 border-t border-border/80 bg-secondary/30 px-4 py-3 text-sm sm:grid-cols-[1fr_1fr_auto]">
                 <AccountingValue label="Statement balance" value={formatGlAmount(statementBalance, rows[0]?.currency ?? "USD")} />
                 <AccountingValue label="Ledger balance" value={formatGlAmount(ledgerBalance, rows[0]?.currency ?? "USD")} />
                 <div className="flex items-center justify-start sm:justify-end">
-                  <Badge variant={varianceBalance === 0 ? "success" : "warning"} dot>
-                    {varianceBalance === 0 ? "Balanced" : `Out by ${formatGlAmount(Math.abs(varianceBalance), rows[0]?.currency ?? "USD")}`}
+                  <Badge variant={reconciliationCleared ? "success" : "warning"} dot>
+                    {reconciliationCleared
+                      ? "Balanced"
+                      : reconciliation.breakCount > 0
+                        ? `${reconciliation.breakCount} open break${reconciliation.breakCount === 1 ? "" : "s"}`
+                        : `Out by ${formatGlAmount(Math.abs(varianceBalance), rows[0]?.currency ?? "USD")}`}
                   </Badge>
                 </div>
               </div>
@@ -732,9 +771,9 @@ function AccountingSystemReconciliationPanel({
                 <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2" aria-label="External GL export package">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="truncate text-xs font-semibold text-foreground">{exportPackage.exportPackageId}</div>
+                      <div className="text-xs font-semibold text-foreground">Guarded export package</div>
                       <div className="mt-1 text-[11px] text-muted-foreground">
-                        {exportPackage.periodStart}{" -> "}{exportPackage.periodEnd}
+                        {formatExternalGlPeriodRange(exportPackage.periodStart, exportPackage.periodEnd)}
                       </div>
                     </div>
                     <Badge variant={exportPackage.postingEnabled ? "success" : "warning"}>
@@ -743,13 +782,13 @@ function AccountingSystemReconciliationPanel({
                   </div>
                   <p className="mt-2 text-[11px] leading-4 text-muted-foreground">{exportPackage.postingDisabledReason}</p>
                   <div className="mt-2 grid gap-2">
-                    <AccountingValue label="Certification" value={exportPackage.certification?.state ?? "Not certified"} />
+                    <AccountingValue label="Certification" value={presentExternalGlState(exportPackage.certification?.state, "Not certified")} />
                     <AccountingValue label="Evidence" value={String(exportPackage.evidenceLinks.length)} />
                     <AccountingValue label="Validation issues" value={String(exportPackage.validationIssues.length)} />
-                    <AccountingValue label="Manifest hash" value={exportManifest?.contentHash.slice(0, 12) ?? "Not loaded"} />
                     <AccountingValue label="Manifest lines" value={String(exportManifest?.generatedLines.length ?? exportPackage.generatedLines?.length ?? 0)} />
                     <AccountingValue label="External posting" value={exportManifest?.externalPostingAllowed === false ? "Disabled" : "Not allowed"} />
                   </div>
+                  <ExternalGlExportPackageTechnicalDetails exportPackage={exportPackage} exportManifest={exportManifest} />
                 </div>
               ) : null}
               <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2" aria-label="External GL export package history">
@@ -768,13 +807,13 @@ function AccountingSystemReconciliationPanel({
                       <div key={packageRow.exportPackageId} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <div className="truncate font-semibold text-foreground">{packageRow.exportPackageId}</div>
+                            <div className="font-semibold text-foreground">Guarded export package</div>
                             <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                              {packageRow.periodStart}{" -> "}{packageRow.periodEnd} | {formatApprovalDate(packageRow.createdAtUtc)}
+                              {formatExternalGlPeriodRange(packageRow.periodStart, packageRow.periodEnd)} | Created {formatExternalGlTimestamp(packageRow.createdAtUtc)}
                             </div>
                           </div>
                           <Badge variant={packageRow.certification?.state === "Certified" ? "success" : packageRow.certification?.state === "ReadyForReview" ? "warning" : "outline"}>
-                            {packageRow.certification?.state ?? "Uncertified"}
+                            {presentExternalGlState(packageRow.certification?.state, "Uncertified")}
                           </Badge>
                         </div>
                         <div className="mt-1 grid gap-1 sm:grid-cols-3">
@@ -782,6 +821,7 @@ function AccountingSystemReconciliationPanel({
                           <AccountingValue label="Issues" value={String(packageRow.validationIssues.length)} />
                           <AccountingValue label="Posting" value={packageRow.postingEnabled ? "Enabled" : "Disabled"} />
                         </div>
+                        <ExternalGlExportPackageTechnicalDetails exportPackage={packageRow} exportManifest={null} />
                       </div>
                     ))}
                   </div>
@@ -798,11 +838,11 @@ function AccountingSystemReconciliationPanel({
                   ))}
                 </div>
               ) : (
-                <div className="mt-3 space-y-1" aria-label="External GL evidence references">
-                  {reconciliation.evidenceReferences.map((evidence) => (
-                    <div key={evidence} className="truncate font-mono text-[11px] text-muted-foreground">{evidence}</div>
-                  ))}
-                </div>
+                <p className="mt-3 rounded-md border border-border/70 bg-background/50 px-2.5 py-2 text-xs text-muted-foreground">
+                  {reconciliationEvidenceReferences.length > 0
+                    ? `${reconciliationEvidenceReferences.length} technical evidence reference${reconciliationEvidenceReferences.length === 1 ? " is" : "s are"} retained in reconciliation details.`
+                    : "No reconciliation evidence references are retained for this scope."}
+                </p>
               )}
             </div>
           </div>
@@ -813,6 +853,67 @@ function AccountingSystemReconciliationPanel({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function ExternalGlExportPackageTechnicalDetails({
+  exportPackage,
+  exportManifest
+}: {
+  exportPackage: ExternalGlExportPackage;
+  exportManifest: ExternalGlExportPackageManifest | null;
+}) {
+  return (
+    <TechnicalDetails label="Export package technical details" className="mt-2">
+      <dl className="grid gap-3 text-xs sm:grid-cols-2">
+        <div>
+          <dt className="font-semibold text-foreground">Package identifier</dt>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.exportPackageId}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold text-foreground">Provider identifier</dt>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.providerId}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold text-foreground">Fund profile</dt>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.fundProfileId}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold text-foreground">Ledger book</dt>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.ledgerBookId ?? "Not assigned"}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold text-foreground">Mapping profile</dt>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.mappingProfileId ?? "Not retained"}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold text-foreground">Reconciliation</dt>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.reconciliationId ?? "Not retained"}</dd>
+        </div>
+        {exportManifest ? (
+          <>
+            <div>
+              <dt className="font-semibold text-foreground">Manifest file</dt>
+              <dd className="mt-1 break-all font-mono text-muted-foreground">{exportManifest.fileName}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">Manifest hash</dt>
+              <dd className="mt-1 break-all font-mono text-muted-foreground">{exportManifest.contentHash}</dd>
+            </div>
+          </>
+        ) : null}
+      </dl>
+      {exportPackage.evidenceLinks.length > 0 ? (
+        <div className="mt-3">
+          <div className="font-semibold text-foreground">Evidence references</div>
+          <ul className="mt-1 space-y-1">
+            {exportPackage.evidenceLinks.map((reference) => (
+              <li key={reference} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </TechnicalDetails>
   );
 }
 
@@ -828,9 +929,13 @@ function AccountingSystemEvidencePackageRow({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="truncate text-xs font-semibold text-foreground">{evidencePackage.label}</div>
-          <div className="mt-1 text-[11px] text-muted-foreground">{evidencePackage.evidenceReferenceCount} retained evidence ref(s)</div>
+          <div className="mt-1 text-[11px] text-muted-foreground">
+            {evidencePackage.evidenceReferenceCount} retained evidence item{evidencePackage.evidenceReferenceCount === 1 ? "" : "s"}
+          </div>
         </div>
-        <Badge variant={accountingSystemEvidencePackageVariant[evidencePackage.status]}>{evidencePackage.status}</Badge>
+        <Badge variant={accountingSystemEvidencePackageVariant[evidencePackage.status]}>
+          {presentExternalGlState(evidencePackage.status)}
+        </Badge>
       </div>
       {requiredActions.length > 0 ? (
         <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] leading-4 text-muted-foreground">
@@ -838,9 +943,25 @@ function AccountingSystemEvidencePackageRow({
             <li key={action}>{action}</li>
           ))}
         </ul>
-      ) : evidencePackage.evidenceReferences[0] ? (
-        <div className="mt-2 truncate font-mono text-[11px] text-muted-foreground">{evidencePackage.evidenceReferences[0]}</div>
+      ) : evidencePackage.evidenceReferenceCount > 0 ? (
+        <p className="mt-2 text-[11px] leading-4 text-muted-foreground">Evidence is retained and ready for operator review.</p>
       ) : null}
+      <TechnicalDetails label="Evidence package technical details" className="mt-2">
+        <dl className="text-xs">
+          <dt className="font-semibold text-foreground">Package identifier</dt>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{evidencePackage.packageId}</dd>
+        </dl>
+        {evidencePackage.evidenceReferences.length > 0 ? (
+          <div className="mt-3">
+            <div className="font-semibold text-foreground">Evidence references</div>
+            <ul className="mt-1 space-y-1">
+              {evidencePackage.evidenceReferences.map((reference) => (
+                <li key={reference} className="break-all font-mono text-xs text-muted-foreground">{reference}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </TechnicalDetails>
     </div>
   );
 }
@@ -854,7 +975,6 @@ function buildExternalGlExportSafeguards(
   const criticalIssueCount = exportPackage?.validationIssues.filter((issue) => issue.severity === "Critical").length ?? 0;
   const mappingCertified = mappingProfile?.certificationState === "Certified";
   const manifestLineCount = exportManifest?.generatedLines.length ?? exportPackage?.generatedLines?.length ?? 0;
-  const manifestHash = exportManifest?.contentHash ? exportManifest.contentHash.slice(0, 12) : "Not loaded";
   const externalPostingAllowed = exportManifest?.externalPostingAllowed === true || exportPackage?.postingEnabled === true;
 
   return [
@@ -870,7 +990,7 @@ function buildExternalGlExportSafeguards(
     {
       id: "mapping-certification",
       label: "Certified mapping profile",
-      value: mappingProfile?.certificationState ?? "Missing",
+      value: presentExternalGlState(mappingProfile?.certificationState, "Missing"),
       detail: mappingProfile
         ? `${mappingProfile.displayName} maps ${Object.keys(mappingProfile.accountMappings).length} account(s) and ${mappingProfile.dimensionMappings.length} dimension set(s).`
         : "A retained account and dimension mapping profile is required before export.",
@@ -890,7 +1010,7 @@ function buildExternalGlExportSafeguards(
     {
       id: "manifest-control",
       label: "Controlled export manifest",
-      value: manifestHash,
+      value: exportManifest ? "Retained" : "Not loaded",
       detail: `${manifestLineCount} generated mapped export line(s) retained for review.`,
       tone: exportManifest ? "success" : "outline"
     },
@@ -916,7 +1036,15 @@ function mergeExternalGlExportPackage(
   return [nextPackage, ...remaining].sort((left, right) => right.createdAtUtc.localeCompare(left.createdAtUtc));
 }
 
-function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fundAccountId?: string; ledgerBookId?: string; periodId?: string; status?: string } {
+interface CloseWorkflowQuery {
+  fundProfileId?: string;
+  fundAccountId?: string;
+  ledgerBookId?: string;
+  periodId?: string;
+  status?: string;
+}
+
+function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
   const params = new URLSearchParams(search);
   return {
     fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
@@ -925,6 +1053,32 @@ function parseCloseWorkflowQuery(search: string): { fundProfileId?: string; fund
     periodId: normalizeOptionalQueryValue(params.get("periodId")),
     status: normalizeOptionalQueryValue(params.get("workflowStatus"))
   };
+}
+
+function selectCurrentDailyValuationSchedule(
+  schedules: DailyValuationScheduleWorkItem[],
+  status: PrivateCapitalCloseCockpit["dailyValuationStatus"] | null | undefined,
+  query: CloseWorkflowQuery
+): DailyValuationScheduleWorkItem | null {
+  const expectedScheduleId = status?.scheduleId?.trim() || null;
+  const expectedFundProfileId = status?.fundProfileId?.trim() || query.fundProfileId || null;
+  const expectedLedgerBookId = status?.ledgerBookId?.trim() || query.ledgerBookId || null;
+  const expectedPeriodId = status?.periodId?.trim() || query.periodId || null;
+  const expectedEntityId = status?.entityId?.trim() || null;
+  const expectedTenantId = status?.tenantId?.trim() || null;
+  const expectedCompanyId = status?.companyId?.trim() || null;
+  const matches = (actual: string | null | undefined, expected: string | null) =>
+    !expected || actual?.trim().localeCompare(expected, undefined, { sensitivity: "accent" }) === 0;
+
+  return schedules.find((schedule) =>
+    matches(schedule.scheduleId, expectedScheduleId) &&
+    matches(schedule.fundProfileId, expectedFundProfileId) &&
+    matches(schedule.ledgerBookId, expectedLedgerBookId) &&
+    matches(schedule.periodId, expectedPeriodId) &&
+    matches(schedule.entityId, expectedEntityId) &&
+    matches(schedule.tenantId, expectedTenantId) &&
+    matches(schedule.companyId, expectedCompanyId)
+  ) ?? null;
 }
 
 function normalizeOptionalQueryValue(value: string | null): string | undefined {
@@ -1133,9 +1287,12 @@ function AccountingApprovalsWorkstream() {
                         >
                           <td className="px-3 py-2">
                             <span className="block font-semibold text-foreground">{workflow.periodId}</span>
-                            <span className="block font-mono text-[11px] text-muted-foreground">{workflow.workflowId}</span>
                           </td>
-                          <td className="px-3 py-2"><Badge variant={approvalQueueStatusTone(workflow)}>{approvalQueueStatusLabel(workflow)}</Badge></td>
+                          <td className="px-3 py-2">
+                            <Badge variant={approvalWorkflowStatusTone(workflow, detail)}>
+                              {approvalWorkflowStatusLabel(workflow, detail)}
+                            </Badge>
+                          </td>
                           <td className="px-3 py-2 text-muted-foreground">{approvalSignerLabel(detail?.workflowId === workflow.workflowId ? detail.approvals : [])}</td>
                           <td className="px-3 py-2 text-muted-foreground">{approvalEvidenceSummary(detail?.workflowId === workflow.workflowId ? detail : null)}</td>
                           <td className="px-3 py-2 font-mono text-muted-foreground">{formatApprovalDate(workflow.updatedAtUtc)}</td>
@@ -1154,9 +1311,13 @@ function AccountingApprovalsWorkstream() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle className="text-base">Selected item detail</CardTitle>
-                <CardDescription>{selectedWorkflow ? `${selectedWorkflow.periodId} / ${selectedWorkflow.fundAccountId}` : "Select an approval queue row."}</CardDescription>
+                <CardDescription>{selectedWorkflow ? `${selectedWorkflow.periodId} close workflow` : "Select an approval queue row."}</CardDescription>
               </div>
-              {selectedApproval ? <Badge variant={approvalStatusTone(selectedApproval.status)}>{selectedApproval.status}</Badge> : null}
+              {selectedWorkflow ? (
+                <Badge variant={approvalWorkflowStatusTone(selectedWorkflow, detail)}>
+                  {approvalWorkflowStatusLabel(selectedWorkflow, detail)}
+                </Badge>
+              ) : null}
             </div>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
@@ -1165,12 +1326,20 @@ function AccountingApprovalsWorkstream() {
             {actionError ? <StatusBanner tone="danger" role="alert" title={actionError} /> : null}
             {selectedWorkflow ? (
               <>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <AccountingValue label="Workflow" value={selectedWorkflow.workflowId} />
-                  <AccountingValue label="Approval ID" value={selectedApproval?.approvalId ?? requestedApprovalId ?? "No approval row"} />
+                <div className="grid gap-2">
+                  <AccountingValue label="Period" value={selectedWorkflow.periodId} />
+                  <AccountingValue label="Workflow state" value={approvalWorkflowStatusLabel(selectedWorkflow, detail)} />
+                  <AccountingValue label="Approval decision" value={selectedApproval ? splitApprovalWords(selectedApproval.status) : "Not submitted"} />
                   <AccountingValue label="Required signers" value={approvalSignerLabel(detail?.approvals ?? [])} />
                   <AccountingValue label="Missing evidence" value={missingApprovalEvidenceLabel(detail)} />
                 </div>
+                <TechnicalDetails label="Workflow identifiers">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <AccountingValue label="Workflow" value={selectedWorkflow.workflowId} />
+                    <AccountingValue label="Approval ID" value={selectedApproval?.approvalId ?? requestedApprovalId ?? "Not yet created"} />
+                    <AccountingValue label="Fund account" value={selectedWorkflow.fundAccountId} />
+                  </div>
+                </TechnicalDetails>
                 <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
                   <div className="text-xs font-semibold uppercase text-muted-foreground">Why blocked</div>
                   <p className="mt-2 leading-6 text-muted-foreground">{approvalBlockedReason(detail)}</p>
@@ -1235,11 +1404,14 @@ function ApprovalTimelineRow({ entry }: { entry: OperationsTimelineEntry }) {
         <span className="font-mono text-[11px] text-muted-foreground">{formatApprovalDate(entry.occurredAtUtc)}</span>
       </div>
       <p className="mt-1 text-muted-foreground">{entry.rationale || `${splitApprovalWords(entry.fromState)} -> ${splitApprovalWords(entry.toState)}`}</p>
-      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-        <span>Actor: {entry.actor || "unknown"}</span>
-        <span>Hash: {entry.currentHash || "pending"}</span>
-        <span>Evidence: {entry.references.length}</span>
-      </div>
+      <div className="mt-2 text-[11px] text-muted-foreground">Evidence: {entry.references.length}</div>
+      <TechnicalDetails label="Audit metadata" className="mt-2">
+        <div className="grid gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">
+          <span>Actor: {entry.actor || "unknown"}</span>
+          <span className="break-all">Hash: {entry.currentHash || "pending"}</span>
+          <span className="break-all sm:col-span-2">Audit ID: {entry.auditId}</span>
+        </div>
+      </TechnicalDetails>
     </div>
   );
 }
@@ -1379,7 +1551,7 @@ function AccountingCaseWorkbench({
             {selectedBreakDetail ? (
               <>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {selectedBreakDetail.fields.slice(0, 6).map((field) => (
+                  {selectedBreakDetail.fields.filter((field) => field.label !== "Run").slice(0, 6).map((field) => (
                     <AccountingValue key={field.label} label={field.label} value={field.value} />
                   ))}
                 </div>
@@ -1417,9 +1589,9 @@ function AccountingCaseWorkbench({
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <div className="grid gap-2">
-              <AccountingValue label="Evidence summary" value={selectedBlocker?.evidenceLabel ?? selectedBreakDetail?.subtitle ?? "Select a case"} />
-              <AccountingValue label="Stored support" value={detailActions ? "Evidence packet available" : selectedBlocker?.evidenceLabel ?? "No stored support selected"} />
-              <AccountingValue label="Affected reports" value={selectedBlocker?.impactLabel ?? "Close and reconciliation"} />
+              <AccountingValue label="Evidence status" value={selectedBlocker?.evidenceLabel ?? selectedBreakDetail?.subtitle ?? "Select a case"} />
+              <AccountingValue label="Evidence workspace" value={detailActions ? "Packet available for review" : selectedBlocker?.evidenceLabel ?? "No stored support selected"} />
+              <AccountingValue label="Affected output" value={selectedBlocker?.impactLabel ?? "Close and reconciliation"} />
             </div>
             <div className="flex flex-wrap gap-2">
               {selectedBreak?.canAssign ? (
@@ -1450,15 +1622,15 @@ function AccountingCaseWorkbench({
                 </Button>
               ) : null}
             </div>
-            <details className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <summary className="cursor-pointer text-xs font-semibold uppercase text-muted-foreground">Audit details</summary>
-              <div className="mt-3 grid gap-2" role="group" aria-label="Audit detail values">
+            <TechnicalDetails label="Audit details">
+              <div className="grid gap-2" role="group" aria-label="Audit detail values">
                 <AccountingValue label="Case ID" value={selectedBreak?.breakId ?? selectedBlocker?.id ?? "No case"} />
+                <AccountingValue label="Run reference" value={selectedBreak?.runId ?? "No run selected"} />
                 <AccountingValue label="Route" value={selectedBreakDetail?.routingActionHref ?? selectedBlocker?.href ?? "No route"} />
                 <AccountingValue label="Raw category" value={selectedBreakDetail?.rawCategoryLabel ?? "No category"} />
                 <AccountingValue label="Audit packet" value={detailActions?.auditPacketLabel ?? "Open after selecting a break"} />
               </div>
-            </details>
+            </TechnicalDetails>
           </CardContent>
         </Card>
       </div>
@@ -1482,6 +1654,20 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation);
+  const selectedBreakPrimaryFields = reconciliation.selectedDetail?.fields.filter((field) => [
+    "Variance",
+    "Owner",
+    "Detected",
+    "Updated",
+    "Urgency",
+    "Required sign-off",
+    "Decision note",
+    "Comments",
+    "Evidence links"
+  ].includes(field.label)) ?? [];
+  const selectedBreakTechnicalFields = reconciliation.selectedDetail?.fields.filter((field) => (
+    !selectedBreakPrimaryFields.includes(field)
+  )) ?? [];
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const selectedReconciliationDetail = reconciliation.detailView;
@@ -1489,10 +1675,16 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const selectedReconciliationOpenBreakTone = (selectedReconciliation?.openBreakCount ?? 0) === 0 ? "success" : "warning";
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
-  const configuration = useAccountingConfigurationViewModel();
+  const configuration = useAccountingConfigurationViewModel(undefined, sectionVisibility.showConfiguration);
   const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
+  const selectSecurityFromExplorer = useCallback((recordId: string) => {
+    const securityId = resolveExplorerSecurityId(recordId);
+    if (securityId && securityId !== securityMaster.selectedSecurityId) {
+      securityMaster.selectSecurity(securityId);
+    }
+  }, [securityMaster.selectSecurity, securityMaster.selectedSecurityId]);
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
   const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
   const [accountingSystemMappingProfiles, setAccountingSystemMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);
@@ -1508,12 +1700,81 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [financialOperationsCommandCenter, setFinancialOperationsCommandCenter] = useState<FinancialOperationsCommandCenter | null>(null);
   const [financialOperationsCommandCenterLoading, setFinancialOperationsCommandCenterLoading] = useState(false);
   const [financialOperationsCommandCenterError, setFinancialOperationsCommandCenterError] = useState<string | null>(null);
+  const [privateCapitalCloseCockpit, setPrivateCapitalCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
+  const [dailyValuationSchedules, setDailyValuationSchedules] = useState<DailyValuationScheduleWorkItem[]>([]);
+  const [activeDailyValuationCommand, setActiveDailyValuationCommand] = useState<NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]> | null>(null);
+  const [dailyValuationBatchStatusText, setDailyValuationBatchStatusText] = useState<string | null>(null);
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
   const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorerDto | null>(null);
+  const securityInstrumentExplorerView = useMemo(() => {
+    if (!securityInstrumentExplorer) {
+      return null;
+    }
+
+    const openConflictCount = securityMaster.openConflictCount;
+    const conflictTone = openConflictCount > 0 ? "Warning" as const : "Success" as const;
+    const coveragePosture = securityMaster.pageView.coveragePosture;
+    const coverageTone = coveragePosture.tone === "success"
+      ? "Success" as const
+      : coveragePosture.tone === "warning"
+        ? "Warning" as const
+        : "Default" as const;
+    const hasCoverageSummary = securityInstrumentExplorer.summaryItems.some((item) => item.label.toLowerCase().includes("coverage"));
+    const hasConflictSummary = securityInstrumentExplorer.summaryItems.some((item) => item.label.toLowerCase().includes("conflict"));
+    const hasConflictFilter = securityInstrumentExplorer.filters.some((filter) => filter.label.toLowerCase().includes("conflict"));
+    return {
+      ...securityInstrumentExplorer,
+      sourceState: /fixture|no-host/i.test(securityInstrumentExplorer.sourceState)
+        ? "Demo data: Security Master instrument coverage is loaded for review."
+        : securityInstrumentExplorer.sourceState,
+      scopeItems: securityInstrumentExplorer.scopeItems.map((item) => (
+        item.label.toLowerCase() === "source"
+          ? { ...item, value: "Security Master" }
+          : item
+      )),
+      summaryItems: [
+        ...securityInstrumentExplorer.summaryItems.map((item) => (
+          item.label.toLowerCase().includes("coverage")
+            ? { ...item, value: coveragePosture.label, detail: coveragePosture.detail, tone: coverageTone }
+            : item.label.toLowerCase().includes("conflict")
+            ? { ...item, value: openConflictCount.toLocaleString(), tone: conflictTone }
+            : item
+        )),
+        ...(hasCoverageSummary ? [] : [{
+          label: "Coverage",
+          value: coveragePosture.label,
+          detail: coveragePosture.detail,
+          tone: coverageTone
+        }]),
+        ...(hasConflictSummary ? [] : [{
+          label: "Open conflicts",
+          value: openConflictCount.toLocaleString(),
+          detail: openConflictCount > 0 ? "Identifier conflicts require operator review." : "No open identifier conflicts.",
+          tone: conflictTone
+        }])
+      ],
+      filters: [
+        ...securityInstrumentExplorer.filters.map((filter) => (
+          filter.label.toLowerCase().includes("conflict")
+            ? { ...filter, value: `${openConflictCount} open`, tone: conflictTone }
+            : filter
+        )),
+        ...(hasConflictFilter ? [] : [{
+          filterId: "identifier-conflicts",
+          label: "Conflicts",
+          value: `${openConflictCount} open`,
+          operator: "equals",
+          tone: conflictTone
+        }])
+      ]
+    };
+  }, [securityInstrumentExplorer, securityMaster.openConflictCount, securityMaster.pageView.coveragePosture]);
   const identity = securityMaster.identityView;
+  const identityPrimaryFields = identity?.summaryFields.filter((field) => field.label === "Asset class" || field.label === "Effective") ?? [];
+  const identityTechnicalFields = identity?.summaryFields.filter((field) => !identityPrimaryFields.includes(field)) ?? [];
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
     : null;
@@ -1609,29 +1870,46 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     : null;
 
   useEffect(() => {
+    if (!sectionVisibility.showLedgerExplorer) {
+      return;
+    }
+
     let cancelled = false;
-
-    void Promise.allSettled([
-      getFinancialRecordExplorer("ledger"),
-      getFinancialRecordExplorer("security-instrument")
-    ]).then(([ledgerResult, securityResult]) => {
-      if (cancelled) {
-        return;
+    void getFinancialRecordExplorer("ledger").then((explorer) => {
+      if (!cancelled) {
+        setLedgerExplorer(explorer);
       }
-
-      if (ledgerResult.status === "fulfilled") {
-        setLedgerExplorer(ledgerResult.value);
-      }
-
-      if (securityResult.status === "fulfilled") {
-        setSecurityInstrumentExplorer(securityResult.value);
+    }).catch(() => {
+      if (!cancelled) {
+        setLedgerExplorer(null);
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [sectionVisibility.showLedgerExplorer]);
+
+  useEffect(() => {
+    if (!sectionVisibility.showSecurityMaster) {
+      return;
+    }
+
+    let cancelled = false;
+    void getFinancialRecordExplorer("security-instrument").then((explorer) => {
+      if (!cancelled) {
+        setSecurityInstrumentExplorer(explorer);
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setSecurityInstrumentExplorer(null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sectionVisibility.showSecurityMaster]);
 
   async function saveAccountingExplorerView(
     explorerId: "ledger" | "security-instrument",
@@ -1735,8 +2013,12 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   };
 
   useEffect(() => {
+    if (!sectionVisibility.showExternalGl) {
+      return;
+    }
+
     void refreshAccountingSystem(false);
-  }, []);
+  }, [sectionVisibility.showExternalGl]);
 
   const createExternalGlExportPackage = async () => {
     if (!accountingSystemReconciliation) {
@@ -1783,7 +2065,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       setAccountingSystemExportPackage(exportPackage);
       setAccountingSystemExportPackages((packages) => mergeExternalGlExportPackage(packages, exportPackage));
       setAccountingSystemExportManifest(manifest);
-      setAccountingSystemActionMessage(`Export package ${exportPackage.exportPackageId} created as a guarded artifact.`);
+      setAccountingSystemActionMessage("Guarded export package created. Its identifier is available in technical details.");
       setAccountingSystemActionTone(exportPackage.validationIssues.length > 0 ? "warning" : "success");
     } catch (error) {
       setAccountingSystemActionMessage(formatApprovalError(error, "External GL export package could not be created."));
@@ -1820,7 +2102,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       setAccountingSystemExportPackage(certified);
       setAccountingSystemExportPackages((packages) => mergeExternalGlExportPackage(packages, certified));
       setAccountingSystemExportManifest(manifest);
-      setAccountingSystemActionMessage(`Certified external GL export package ${certified.exportPackageId}.`);
+      setAccountingSystemActionMessage("External GL export package certified.");
       setAccountingSystemActionTone("success");
     } catch (error) {
       setAccountingSystemActionMessage(formatApprovalError(error, "External GL export package could not be certified."));
@@ -1834,6 +2116,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     if (!data) {
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
+      setPrivateCapitalCloseCockpit(null);
+      setDailyValuationSchedules([]);
       return;
     }
 
@@ -1842,17 +2126,24 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     setCloseWorkflowError(null);
     setFinancialOperationsCommandCenterError(null);
     try {
-      const [commandCenter, rows] = await Promise.all([
+      const [commandCenter, closeCockpit, rows, schedules] = await Promise.all([
         getFinancialOperationsCommandCenter(closeWorkflowQuery).catch(err => {
           setFinancialOperationsCommandCenterError(formatApprovalError(err, "Financial Operations command center could not be loaded."));
+          return null;
+        }),
+        getPrivateCapitalCloseCockpit(closeWorkflowQuery).catch(err => {
+          setFinancialOperationsCommandCenterError(formatApprovalError(err, "Private-capital close cockpit could not be loaded."));
           return null;
         }),
         getOperationsContinuityWorkflows(closeWorkflowQuery).catch(err => {
           setCloseWorkflowError(formatApprovalError(err, "Close workflow detail could not be loaded."));
           return [];
-        })
+        }),
+        listDailyValuationSchedules().catch(() => [])
       ]);
       setFinancialOperationsCommandCenter(commandCenter);
+      setPrivateCapitalCloseCockpit(closeCockpit);
+      setDailyValuationSchedules(schedules);
       const selected = selectCloseWorkflowSummary(rows, closeWorkflowQuery);
       if (!selected) {
         setCloseWorkflow(null);
@@ -1864,6 +2155,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     } catch (error) {
       setCloseWorkflow(null);
       setFinancialOperationsCommandCenter(null);
+      setPrivateCapitalCloseCockpit(null);
+      setDailyValuationSchedules([]);
       setCloseWorkflowError(formatApprovalError(error, "Close workflow detail could not be loaded."));
     } finally {
       setCloseWorkflowLoading(false);
@@ -1871,42 +2164,119 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     }
   };
 
-  useEffect(() => {
-    void refreshCloseWorkflow();
-  }, [data, closeWorkflowQuery]);
+  const effectiveDailyValuationStatus = privateCapitalCloseCockpit?.dailyValuationStatus
+    ?? financialOperationsCommandCenter?.privateCapitalCloseCockpit?.dailyValuationStatus
+    ?? null;
+  const currentDailyValuationSchedule = useMemo(
+    () => selectCurrentDailyValuationSchedule(dailyValuationSchedules, effectiveDailyValuationStatus, closeWorkflowQuery),
+    [closeWorkflowQuery, dailyValuationSchedules, effectiveDailyValuationStatus]
+  );
 
-  const refreshFinancialOperationsCommandCenter = async () => {
-    if (!data) {
-      setFinancialOperationsCommandCenter(null);
+  const runCloseCommand = async (
+    command: NonNullable<CloseCommandCenterViewState["actionRows"][number]["command"]>
+  ) => {
+    const status = effectiveDailyValuationStatus;
+    const hasRetainedBatch = Boolean(status?.batchCorrelationId) && (status?.journalEntryIds.length ?? 0) > 0;
+    if (command === "configure-daily-valuation-schedule" && !currentDailyValuationSchedule) {
+      setDailyValuationBatchStatusText("No server-retained daily valuation schedule is loaded for this close scope.");
+      return;
+    }
+    if (command === "configure-daily-valuation-schedule" &&
+        (status?.state === "Running" || status?.state === "DraftReady" ||
+          (status?.state === "Blocked" && hasRetainedBatch))) {
+      setDailyValuationBatchStatusText("Complete or correct the retained daily valuation batch before reconfiguring its schedule.");
+      return;
+    }
+    if (command === "run-due-daily-valuation-schedules" &&
+        (!currentDailyValuationSchedule || !status?.isConfigured || !status.isEnabled || status.state !== "Scheduled")) {
+      setDailyValuationBatchStatusText("The current close scope does not have an enabled Scheduled daily valuation configuration.");
+      return;
+    }
+    if ((command === "approve-daily-valuation-batch" && status?.state !== "DraftReady") ||
+        (command === "retry-daily-valuation-batch" && (status?.state !== "Blocked" || !hasRetainedBatch)) ||
+        ((command === "approve-daily-valuation-batch" || command === "retry-daily-valuation-batch") &&
+          (!status?.scheduleId || !status.fundProfileId || status.journalEntryIds.length === 0))) {
+      setDailyValuationBatchStatusText("No retained daily valuation batch is available for this command.");
       return;
     }
 
-    setFinancialOperationsCommandCenterLoading(true);
-    setFinancialOperationsCommandCenterError(null);
+    setActiveDailyValuationCommand(command);
+    setDailyValuationBatchStatusText(null);
     try {
-      const commandCenter = await getFinancialOperationsCommandCenter({
-        fundProfileId: closeWorkflowQuery.fundProfileId,
-        ledgerBookId: closeWorkflowQuery.ledgerBookId,
-        fundAccountId: closeWorkflowQuery.fundAccountId,
-        periodId: closeWorkflowQuery.periodId
+      if (command === "configure-daily-valuation-schedule") {
+        const configured = await configureDailyValuationSchedule({
+          ...currentDailyValuationSchedule!,
+          actor: "close-cockpit-operator"
+        });
+        setDailyValuationBatchStatusText(
+          `Configured daily valuation schedule ${configured.scheduleId} for ${configured.nextRunAtUtc}.`
+        );
+        await refreshCloseWorkflow();
+        return;
+      }
+
+      if (command === "run-due-daily-valuation-schedules") {
+        const result = await runDueDailyValuationSchedules();
+        const currentRun = result.runs.find((run) => run.scheduleId === currentDailyValuationSchedule!.scheduleId);
+        setDailyValuationBatchStatusText(currentRun
+          ? `Daily valuation schedule ${currentRun.scheduleId} finished in ${currentRun.state}: ${currentRun.summary}`
+          : result.runs.length > 0
+            ? `Ran ${result.runs.length} due daily valuation schedule(s); the current schedule was not due.`
+            : "No daily valuation schedules were due for the current tenant scope.");
+        await refreshCloseWorkflow();
+        return;
+      }
+
+      const isRetry = command === "retry-daily-valuation-batch";
+      const result = await approveAndPostDailyValuationBatch({
+        scheduleId: status!.scheduleId!,
+        fundProfileId: status!.fundProfileId!,
+        actor: "close-cockpit-operator",
+        notes: isRetry
+          ? "Retried the incomplete retained daily valuation batch from the controller close cockpit."
+          : "Approved the complete retained daily valuation batch from the controller close cockpit.",
+        evidenceLinks: status!.evidenceLinks
+          .map((link) => link.route)
+          .filter((route): route is string => Boolean(route)),
+        tenantId: status!.tenantId ?? null,
+        companyId: status!.companyId ?? null
       });
-      setFinancialOperationsCommandCenter(commandCenter);
+      setDailyValuationBatchStatusText(result.isComplete
+        ? `${isRetry ? "Retried and posted" : "Posted"} all ${result.postedJournalEntryIds.length} daily valuation drafts in batch ${result.batchCorrelationId}.`
+        : `Daily valuation batch ${isRetry ? "retry " : ""}remains blocked: ${result.blockers.join(" ")}`);
+      await refreshCloseWorkflow();
     } catch (error) {
-      setFinancialOperationsCommandCenter(null);
-      setFinancialOperationsCommandCenterError(formatApprovalError(error, "Financial Operations command center could not be loaded."));
+      const fallback = command === "configure-daily-valuation-schedule"
+        ? "Daily valuation schedule could not be configured."
+        : command === "run-due-daily-valuation-schedules"
+          ? "Due daily valuation schedules could not be run."
+          : command === "retry-daily-valuation-batch"
+            ? "Daily valuation batch correction and retry could not complete."
+            : "Daily valuation batch could not be approved and posted.";
+      setDailyValuationBatchStatusText(formatApprovalError(error, fallback));
     } finally {
-      setFinancialOperationsCommandCenterLoading(false);
+      setActiveDailyValuationCommand(null);
     }
   };
 
   useEffect(() => {
-    void refreshFinancialOperationsCommandCenter();
-  }, [data, closeWorkflowQuery]);
+    if (!sectionVisibility.showCloseCockpitLanding && !sectionVisibility.showWorkflowDetails) {
+      return;
+    }
+
+    void refreshCloseWorkflow();
+  }, [closeWorkflowQuery, data, sectionVisibility.showCloseCockpitLanding, sectionVisibility.showWorkflowDetails]);
 
   const closeCommandCenter = useMemo(
     () => data ? buildCloseCommandCenterViewState({
       data,
-      commandCenter: financialOperationsCommandCenter,
+      commandCenter: financialOperationsCommandCenter
+        ? {
+          ...financialOperationsCommandCenter,
+          privateCapitalCloseCockpit: privateCapitalCloseCockpit
+            ?? financialOperationsCommandCenter.privateCapitalCloseCockpit
+        }
+        : null,
       commandCenterLoading: financialOperationsCommandCenterLoading,
       commandCenterError: financialOperationsCommandCenterError,
       workflow: closeWorkflow,
@@ -1915,7 +2285,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       accountingSystemProviders,
       accountingSystemImport,
       accountingSystemReconciliation,
-      multiAssetCoverage
+      multiAssetCoverage,
+      currentDailyValuationSchedule
     }) : null,
     [
       accountingSystemImport,
@@ -1928,7 +2299,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       financialOperationsCommandCenter,
       financialOperationsCommandCenterError,
       financialOperationsCommandCenterLoading,
-      multiAssetCoverage
+      multiAssetCoverage,
+      privateCapitalCloseCockpit,
+      currentDailyValuationSchedule
     ]
   );
   const closeReportPackage = useAccountingCloseReportPackageViewModel(closeWorkflow);
@@ -2033,22 +2406,35 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               resolveDialog.open(breakId, "Dismissed");
             }}
           />
-          <details className="panel-surface rounded-lg border border-border/70 px-4 py-3">
-            <summary className="cursor-pointer text-sm font-semibold text-foreground">System details</summary>
-            <div className="mt-4 space-y-4">
+          <TechnicalDetails label="System details" className="panel-surface">
+            <div className="space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
-              {closeCommandCenter ? <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} /> : null}
+              {closeCommandCenter ? (
+                <CloseCommandCenterPanel
+                  view={closeCommandCenter}
+                  onRefresh={() => void refreshCloseWorkflow()}
+                  onCommand={(command) => void runCloseCommand(command)}
+                  activeCommand={activeDailyValuationCommand}
+                  commandStatusText={dailyValuationBatchStatusText}
+                />
+              ) : null}
               <AccountingCloseReportPackagePanel view={closeReportPackage} />
               <AccountingTaskModeLauncher />
             </div>
-          </details>
+          </TechnicalDetails>
         </>
       ) : (
         <>
       {sectionVisibility.showWorkflowDetails && workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 
       {sectionVisibility.showWorkflowDetails && closeCommandCenter ? (
-        <CloseCommandCenterPanel view={closeCommandCenter} onRefresh={() => void refreshCloseWorkflow()} />
+        <CloseCommandCenterPanel
+          view={closeCommandCenter}
+          onRefresh={() => void refreshCloseWorkflow()}
+          onCommand={(command) => void runCloseCommand(command)}
+          activeCommand={activeDailyValuationCommand}
+          commandStatusText={dailyValuationBatchStatusText}
+        />
       ) : null}
 
       {sectionVisibility.showWorkflowDetails ? <AccountingCloseReportPackagePanel view={closeReportPackage} /> : null}
@@ -3042,8 +3428,9 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               ariaLabel: securityMaster.selectedSecurityId ? "Open selected Security Master record detail" : undefined
             }
           ]}
-          explorer={securityInstrumentExplorer}
+          explorer={securityInstrumentExplorerView}
           onSaveView={(request) => saveAccountingExplorerView("security-instrument", request)}
+          onSelectRecord={selectSecurityFromExplorer}
         >
         <section className="space-y-6">
           <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>
@@ -3350,9 +3737,21 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                         subtitle={identity.subtitle}
                         description={identity.description}
                         status={<Badge variant={identity.statusBadgeVariant} dot>{identity.statusLabel}</Badge>}
-                        fields={identity.summaryFields}
+                        fields={identityPrimaryFields}
                         ariaLabel={identity.ariaLabel}
                       />
+                      {identityTechnicalFields.length > 0 ? (
+                        <TechnicalDetails
+                          label="Identity record references"
+                          description="Stable Security Master identity and version references for audit and support use."
+                        >
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            {identityTechnicalFields.map((field) => (
+                              <AccountingValue key={field.label} label={field.label} value={field.value} />
+                            ))}
+                          </div>
+                        </TechnicalDetails>
+                      ) : null}
                       <ToolbarStrip
                         ariaLabel="Security identity detail context"
                         items={[
@@ -3535,7 +3934,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                     subtitle={reconciliation.selectedDetail.subtitle}
                     description={reconciliation.selectedDetail.description}
                     ariaLabel={reconciliation.selectedDetail.ariaLabel}
-                    fields={reconciliation.selectedDetail.fields}
+                    fields={selectedBreakPrimaryFields}
                     status={<Badge variant={reconciliation.selectedDetail.statusBadgeVariant}>{reconciliation.selectedDetail.statusLabel}</Badge>}
                   />
                 ) : (
@@ -3549,6 +3948,19 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   </section>
                 )}
               </div>
+              {reconciliation.selectedDetail && selectedBreakTechnicalFields.length > 0 ? (
+                <TechnicalDetails
+                  label="Break metadata"
+                  description="Identifiers, routing metadata, policy values, and retained explanation detail for audit and support use."
+                >
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    <AccountingValue label="Break ID" value={reconciliation.selectedBreakId ?? "Not retained"} />
+                    {selectedBreakTechnicalFields.map((field) => (
+                      <AccountingValue key={field.label} label={field.label} value={field.value} />
+                    ))}
+                  </div>
+                </TechnicalDetails>
+              ) : null}
               {reconciliation.selectedDetail?.analysisText ? (
                 <div className="rounded-md border border-border/50 bg-secondary/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
                   <span className="font-medium text-foreground">Analysis: </span>
@@ -3619,7 +4031,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             </CardContent>
           </Card>
 
-          <CalibrationSummaryPanel view={reconciliation.calibrationView} />
+          <CalibrationSummaryPanel view={reconciliation.calibrationView} compact={workstream === "exceptions"} />
         </section>
           </div>
         </details>
@@ -3628,121 +4040,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </>
       )}
     </div>
-  );
-}
-
-function CalibrationSummaryPanel({ view }: { view: CalibrationSummaryViewModel }) {
-  const StatusIcon = view.statusIcon === "check" ? CheckCircle2 : AlertCircle;
-
-  return (
-    <Card id="accounting-history" className="panel-surface">
-      <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <BookCheck className="h-4 w-4 text-primary" />
-            Calibration summary
-          </CardTitle>
-          <CardDescription>Tolerance profile health, break trend, auto-match rate, and T+0 closure rate across active reconciliation routes.</CardDescription>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={view.refresh}
-          disabled={view.refreshCommand.disabled}
-          disabledReason={view.refreshCommand.disabledReason}
-          aria-label={view.refreshCommand.ariaLabel}
-          className="shrink-0"
-        >
-          <RefreshCcw className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
-          {view.refreshCommand.label}
-        </Button>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && (
-          <>
-            <div className={cn("flex items-center gap-3 rounded-lg border px-4 py-3", view.statusBannerClassName)}>
-              <StatusIcon aria-hidden="true" className={cn("size-4 shrink-0", view.statusTextClassName)} />
-              <div className="flex-1 min-w-0">
-                <span className={cn("text-sm font-semibold", view.statusTextClassName)}>{view.statusLabel}</span>
-                {view.summary && <p className="mt-0.5 text-xs text-muted-foreground">{view.summary}</p>}
-              </div>
-              <span className="shrink-0 font-mono text-xs text-muted-foreground">as of {view.asOfLabel}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-9">
-              {view.metricRows.map((metric) => (
-                <div
-                  key={metric.id}
-                  role="group"
-                  aria-label={metric.ariaLabel}
-                  className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2 text-center"
-                >
-                  <div className="text-xs text-muted-foreground">{metric.label}</div>
-                  <div className={cn("mt-1 font-mono text-lg font-semibold tabular-nums", metric.tone === "warning" ? "text-warning" : "text-foreground")}>
-                    {metric.value}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
-              {view.hasProfiles ? (
-                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-                  <DenseDataTable
-                    columns={calibrationProfileColumns}
-                    rows={view.profileRows}
-                    getRowId={(row) => row.toleranceProfileId}
-                    getRowAriaLabel={(row) => row.ariaLabel}
-                    getRowSelectAriaLabel={(row) => row.selectAriaLabel}
-                    getRowAriaControls={(row) => row.detailPanelId}
-                    getRowAriaExpanded={(row) => row.isSelected}
-                    selectedRowId={view.selectedProfileId}
-                    onRowSelect={(row) => view.selectProfile(row.toleranceProfileId)}
-                    emptyText={view.emptyText}
-                    ariaLabel={view.tableAriaLabel}
-                  />
-                  <div id={view.detailPanelId} aria-live="polite">
-                    {view.selectedProfile ? (
-                      <EntitySummary
-                        eyebrow="Tolerance profile"
-                        title={view.selectedProfile.title}
-                        subtitle={view.selectedProfile.subtitle}
-                        description={view.selectedProfile.description}
-                        status={<Badge variant={view.selectedProfile.statusTone} dot>{view.selectedProfile.statusLabel}</Badge>}
-                        fields={view.selectedProfile.fields}
-                        ariaLabel={view.selectedProfile.ariaLabel}
-                      />
-                    ) : (
-                      <div role="status" className="rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 text-sm text-muted-foreground">
-                        Select a tolerance profile to inspect its calibration posture.
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-                  {view.emptyText}
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
   );
 }
 
@@ -3825,559 +4122,6 @@ function CorporateActionsPanel({
   );
 }
 
-function ReferenceDataWorkbenchPanel({
-  view,
-  onSelect
-}: {
-  view: ReferenceDataWorkbenchViewState;
-  onSelect: (rowId: string) => void;
-}) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Network className="h-4 w-4 text-primary" aria-hidden="true" />
-              {view.title}
-            </CardTitle>
-            <CardDescription className="mt-2">{view.description}</CardDescription>
-          </div>
-          <div className="min-w-0 lg:max-w-[32rem]">
-            <ToolbarStrip
-              ariaLabel="Reference data source coverage metrics"
-              items={view.metrics.map((metric) => ({
-                id: metric.id,
-                label: metric.label,
-                value: metric.value,
-                active: metric.tone === "success" || metric.tone === "warning" || metric.tone === "danger"
-              }))}
-            />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && (
-          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.4fr)_minmax(22rem,0.6fr)]">
-            <DenseDataTable
-              columns={referenceDataEndpointColumns}
-              rows={view.rows}
-              getRowId={(row) => row.rowId}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
-              getRowAriaControls={(row) => row.detailPanelId}
-              getRowAriaExpanded={(row) => row.isExpanded}
-              onRowSelect={(row) => onSelect(row.rowId)}
-              selectedRowId={view.selectedRowId}
-              emptyText={view.emptyText}
-              ariaLabel={view.tableLabel}
-              caption={view.tableCaption}
-            />
-            <div id={view.detailPanelId} data-selected-source="Selected from reference endpoints" className="row-detail-panel h-fit min-w-0">
-              {view.selectedDetail ? (
-                <div className="space-y-4">
-                  <EntitySummary
-                    eyebrow={view.selectedDetail.eyebrow}
-                    title={view.selectedDetail.title}
-                    subtitle={view.selectedDetail.subtitle}
-                    description={view.selectedDetail.description}
-                    ariaLabel={view.selectedDetail.ariaLabel}
-                    status={<Badge variant={view.selectedDetail.statusBadgeVariant} dot>{view.selectedDetail.statusLabel}</Badge>}
-                    fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
-                  />
-                  {view.selectedDetail.responsePreview ? (
-                    <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-[11px] leading-5 text-muted-foreground">
-                      {view.selectedDetail.responsePreview}
-                    </pre>
-                  ) : null}
-                  {view.selectedDetail.errorSummary ? (
-                    <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                      <div>{view.selectedDetail.errorSummary}</div>
-                      {view.selectedDetail.errorDetails.length > 0 ? (
-                        <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                          {view.selectedDetail.errorDetails.map((detail) => (
-                            <li key={detail}>{detail}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                  <div className="eyebrow-label">Reference data detail</div>
-                  <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function SecurityOpenLotReadModelPanel({
-  view,
-  onSelect
-}: {
-  view: SecurityOpenLotReadModelViewState;
-  onSelect: (rowId: string) => void;
-}) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Briefcase className="h-4 w-4 text-primary" aria-hidden="true" />
-              {view.title}
-            </CardTitle>
-            <CardDescription className="mt-2">
-              {view.description}
-              {view.asOfLabel !== "—" ? <> As of {view.asOfLabel}.</> : null}
-            </CardDescription>
-          </div>
-          <div className="min-w-0 lg:max-w-[28rem]">
-            <ToolbarStrip ariaLabel={view.toolbarAriaLabel} items={view.toolbarItems} />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && (
-          <>
-            <p className="text-sm leading-6 text-muted-foreground">{view.summary}</p>
-            <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
-              <DenseDataTable
-                columns={securityOpenLotColumns}
-                rows={view.rows}
-                getRowId={(row) => row.rowId}
-                getRowAriaLabel={(row) => row.ariaLabel}
-                getRowSelectAriaLabel={(row) => row.selectAriaLabel}
-                getRowAriaControls={(row) => row.detailPanelId}
-                getRowAriaExpanded={(row) => row.isExpanded}
-                onRowSelect={(row) => onSelect(row.rowId)}
-                selectedRowId={view.selectedRowId}
-                emptyText={view.emptyText}
-                ariaLabel={view.tableLabel}
-                caption={view.tableCaption}
-              />
-              <div id={view.detailPanelId} data-selected-source="Selected from open lots" className="row-detail-panel h-fit min-w-0">
-                {view.selectedDetail ? (
-                  <EntitySummary
-                    eyebrow={view.selectedDetail.eyebrow}
-                    title={view.selectedDetail.title}
-                    subtitle={view.selectedDetail.subtitle}
-                    description={view.selectedDetail.description}
-                    ariaLabel={view.selectedDetail.ariaLabel}
-                    status={<Badge variant={view.selectedDetail.statusTone}>{view.selectedDetail.statusLabel}</Badge>}
-                    fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
-                  />
-                ) : (
-                  <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                    <div className="eyebrow-label">Open lot detail</div>
-                    <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-const instrumentPassportProviderColumns: DenseDataTableColumn<InstrumentPassportProviderConfidenceRowViewModel>[] = [
-  {
-    id: "provider",
-    label: "Provider",
-    render: (row) => <span className="font-medium text-foreground">{row.providerLabel}</span>
-  },
-  {
-    id: "symbol",
-    label: "Symbol",
-    render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.symbolLabel}</span>
-  },
-  {
-    id: "confidence",
-    label: "Confidence",
-    align: "right",
-    render: (row) => <span className="font-mono text-xs tabular-nums text-foreground">{row.confidenceLabel}</span>
-  },
-  {
-    id: "freshness",
-    label: "Freshness",
-    render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.freshnessLabel}</span>
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => <Badge variant={row.statusTone} dot>{row.statusLabel}</Badge>
-  }
-];
-
-function InstrumentPassportPanel({ view }: { view: InstrumentPassportViewState }) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              {view.title}
-            </CardTitle>
-            <CardDescription className="mt-2">{view.description}</CardDescription>
-          </div>
-          <Badge variant={view.statusBadgeVariant} dot className="w-fit shrink-0">
-            {view.statusLabel}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <span className="sr-only" aria-live="polite">{view.statusAnnouncement}</span>
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && (
-          <>
-          <div className="grid gap-4 2xl:grid-cols-[minmax(20rem,0.65fr)_minmax(0,1.35fr)]">
-            <EntitySummary
-              eyebrow="Passport summary"
-              title={view.securityId}
-              subtitle="Identifiers, trust, pricing, and usage"
-              description="Instrument passport evidence for the selected Security Master record."
-              ariaLabel={`Instrument passport summary for ${view.securityId}`}
-              status={<Badge variant={view.statusBadgeVariant} dot>{view.statusLabel}</Badge>}
-              fields={view.fields.map((field) => ({ label: field.label, value: field.value }))}
-            />
-            <DenseDataTable
-              columns={instrumentPassportProviderColumns}
-              rows={view.providerRows}
-              getRowId={(row) => row.rowId}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              emptyText={view.providerEmptyText}
-              ariaLabel={view.providerTableLabel}
-              caption={view.providerTableCaption}
-            />
-          </div>
-          <section className="space-y-3" aria-label={view.operationsWorkbenchTitle}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-foreground">{view.operationsWorkbenchTitle}</h3>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">{view.operationsWorkbenchSummary}</p>
-              </div>
-              <Badge variant={view.operationsWorkbenchStatusBadgeVariant} dot className="w-fit shrink-0">
-                {view.operationsWorkbenchStatusLabel}
-              </Badge>
-            </div>
-            {view.operationsReadiness.length > 0 ? (
-              <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5" role="list" aria-label="Operations readiness">
-                {view.operationsReadiness.map((item) => (
-                  <div key={item.readinessId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" role="listitem">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-xs font-semibold text-foreground">{item.label}</span>
-                      <Badge variant={item.statusBadgeVariant}>{item.statusLabel}</Badge>
-                    </div>
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.summary}</p>
-                    <div className="mt-2 flex flex-wrap gap-2 font-mono text-[11px] text-muted-foreground">
-                      <span>{item.evidenceLabel}</span>
-                      <span>{item.blockerLabel}</span>
-                    </div>
-                    {item.isReady ? null : (
-                      <p className="mt-2 text-xs leading-5 text-warning">{item.nextAction}</p>
-                    )}
-                    {item.route ? (
-                      <Button asChild variant="ghost" size="sm" className="mt-2 h-7 px-2 text-xs">
-                        <Link to={item.route} aria-label={`Follow next action for ${item.label}`}>
-                          Follow
-                        </Link>
-                      </Button>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            ) : null}
-            {view.operationsPanels.length > 0 ? (
-              <div className="grid gap-3 xl:grid-cols-2" role="list" aria-label="Security Master operations workbench panels">
-                {view.operationsPanels.map((panel) => (
-                  <section key={panel.panelId} className="rounded-md border border-border/70 bg-background/35 p-3" role="listitem" aria-label={panel.title}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h4 className="text-sm font-semibold text-foreground">{panel.title}</h4>
-                        <p className="mt-1 text-xs leading-5 text-muted-foreground">{panel.summary}</p>
-                      </div>
-                      <Badge variant={panel.statusBadgeVariant}>{panel.statusLabel}</Badge>
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      {panel.items.map((item) => (
-                        <div key={item.itemId} className="grid gap-2 rounded-md border border-border/50 bg-secondary/15 px-3 py-2 lg:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)]">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-xs font-semibold text-foreground">{item.label}</span>
-                              <Badge variant={item.statusBadgeVariant}>{item.statusLabel}</Badge>
-                            </div>
-                            <div className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{item.value}</div>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                            <div className="mt-1 flex flex-wrap gap-2 font-mono text-[11px] text-muted-foreground">
-                              <span>{item.evidenceLabel}</span>
-                              <span>{item.blockerLabel}</span>
-                            </div>
-                            {item.route ? (
-                              <Button asChild variant="ghost" size="sm" className="mt-2 h-7 px-2 text-xs">
-                                <Link to={item.route} aria-label={`Follow handoff action ${item.label}`}>
-                                  Follow
-                                </Link>
-                              </Button>
-                            ) : null}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
-            ) : null}
-          </section>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-function TradingParametersPanel({ view }: { view: TradingParametersViewState }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          Trading parameters
-        </CardTitle>
-        <CardDescription>
-          Lot size, tick size, margin, and circuit-breaker constraints
-          {view.securityId ? <> for <span className="font-mono">{view.securityId}</span></> : null}
-          {view.asOfLabel !== "—" ? <> as of {view.asOfLabel}</> : null}.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {view.loadingText && <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p>}
-        {view.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            <div>{view.errorText}</div>
-            {view.errorDetails.length > 0 ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                {view.errorDetails.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        )}
-        {!view.loadingText && !view.errorText && view.fields.length === 0 && (
-          <p className="text-sm text-muted-foreground">No trading parameters available for this security.</p>
-        )}
-        {view.fields.length > 0 && (
-          <dl className="grid gap-2">
-            {view.fields.map((field) => (
-              <div key={field.label} className="grid min-w-0 grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-                <dt className="min-w-0 text-xs text-muted-foreground">{field.label}</dt>
-                <dd className={cn(
-                  "min-w-0 break-words text-right font-mono text-xs",
-                  field.tone === "warning" ? "text-warning" : "text-foreground"
-                )}>
-                  {field.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function ReconciliationQueueSummaryCard({ view }: { view: ReconciliationQueuePanelViewState }) {
-  return (
-    <Card className="panel-surface">
-      <CardHeader>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-              {view.overviewTitle}
-            </CardTitle>
-            <CardDescription className="mt-2">{view.overviewDescription}</CardDescription>
-          </div>
-          <Button asChild variant="outline" size="sm" className="w-fit shrink-0">
-            <Link to={view.overviewActionHref} aria-label={view.overviewActionAriaLabel}>
-              {view.overviewActionLabel}
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <DenseDataTable
-          columns={reconciliationQueueColumns}
-          rows={view.rows}
-          getRowId={(row) => row.runId}
-          getRowAriaLabel={(row) => row.ariaLabel}
-          emptyText={view.emptyText}
-          ariaLabel={view.listLabel}
-          caption={view.overviewCaption}
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-
-function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExceptionWorkbenchViewState }) {
-  return (
-    <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Exceptions</p>
-          <h3 id="accounting-exceptions-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link to={view.reconciliationHref}>Reconciliation queue</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link to={view.approvalsHref}>Approval gate</Link>
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {view.metricRows.map((metric) => (
-          <MetricSnapshotCard
-            key={metric.id}
-            id={metric.id}
-            label={metric.label}
-            value={metric.value}
-            delta={metric.detail}
-            tone={metric.tone}
-          />
-        ))}
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <Card className="panel-surface" role="region" aria-label="Unified operational exception queue">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
-              Case queue
-            </CardTitle>
-            <CardDescription>Reconciliation exceptions with owner, SLA, comments, and audit evidence counts.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {view.cases.length > 0 ? (
-              <div role="list" className="space-y-2" aria-label="Operational exception cases">
-                {view.cases.map((item) => (
-                  <div key={item.id} role="listitem" aria-label={item.ariaLabel} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground">{item.title}</div>
-                        <div className="mt-1 break-words text-xs leading-5 text-muted-foreground">{item.subtitle}</div>
-                      </div>
-                      <Badge variant={item.statusTone}>{item.statusLabel}</Badge>
-                    </div>
-                    <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4">
-                      <span>Owner: {item.ownerLabel}</span>
-                      <span>SLA: {item.slaLabel}</span>
-                      <span>{item.commentLabel}</span>
-                      <span>{item.auditLabel}</span>
-                    </div>
-                    <Button asChild size="sm" variant="ghost" className="mt-3">
-                      <Link to={item.routeHref}>{item.routeLabel}</Link>
-                    </Button>
-                    <details className="mt-3 rounded-md border border-border/70 bg-background/45 px-3 py-2">
-                      <summary className="cursor-pointer text-xs font-semibold uppercase text-muted-foreground">Audit details</summary>
-                      <dl className="mt-3 grid gap-2 text-xs text-muted-foreground">
-                        <AccountingValue label="Case ID" value={item.id} />
-                        <AccountingValue label="Raw category" value={item.rawCategoryLabel} />
-                      </dl>
-                    </details>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                {view.emptyText}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface" role="region" aria-label="Exception workflow handoffs">
-          <CardHeader>
-            <CardTitle className="text-base">Workflow handoffs</CardTitle>
-            <CardDescription>Resolution work stays connected to approval, audit, and retained evidence paths.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button asChild variant="secondary" className="w-full justify-start">
-              <Link to={view.reconciliationHref}>Open break queue</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.approvalsHref}>Review approval blockers</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.evidenceHref}>Open exception evidence packet</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.auditHref}>Open audit timeline</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-}
-
 function AccountingHighlight({
   icon: Icon,
   title,
@@ -4396,311 +4140,6 @@ function AccountingHighlight({
   );
 }
 
-function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
-  return (
-    <Card className="panel-surface" role="region" aria-labelledby="capital-account-workbench-heading">
-      <CardHeader>
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Private capital</p>
-            <CardTitle id="capital-account-workbench-heading" className="text-base">{view.title}</CardTitle>
-            <CardDescription>{view.description}</CardDescription>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
-            <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
-              <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              Refresh
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {view.errorText ? (
-          <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-            {view.errorText}
-          </div>
-        ) : null}
-
-        <div className="flex flex-wrap gap-2">
-          <AccountingChip label="Projected" value={view.projectedAtLabel} />
-          <AccountingChip label="Route" value={view.workbenchRouteLabel} />
-        </div>
-        <p className="text-sm leading-6 text-muted-foreground">{view.statusReason}</p>
-
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {view.summaryCards.map((metric) => (
-            <MetricSnapshotCard
-              key={metric.id}
-              id={metric.id}
-              label={metric.label}
-              value={metric.value}
-              delta={metric.detail}
-              tone={metric.tone}
-            />
-          ))}
-        </div>
-
-        {view.investorAccounts.length === 0 && !view.loading ? (
-          <div role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm text-muted-foreground">
-            {view.emptyText}
-          </div>
-        ) : null}
-
-        {view.fundEventCommandRows.length > 0 ? (
-          <section className="space-y-2" aria-labelledby="capital-account-fund-event-command-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-fund-event-command-heading" className="text-sm font-semibold text-foreground">Fund-event command centers</h4>
-              <Badge variant="outline">{view.fundEventCommandRows.length.toLocaleString()} events</Badge>
-            </div>
-            <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Fund event</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Routes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.fundEventCommandRows.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60 align-top">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.title}</div>
-                        <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.memoLabel}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.netActivityLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.readinessReasonLabel}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.nextActionLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                        <div>{row.evidenceLabel}</div>
-                        <div className="mt-1">{row.subledgerLabel}</div>
-                        <div className="mt-1">{row.ledgerImpactLabel}</div>
-                        <div className="mt-1">{row.reportOutputLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <a
-                          className="block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={row.commandCenterRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open capital-account fund-event command center for ${row.title}`}
-                        >
-                          {row.commandCenterRouteLabel}
-                        </a>
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={row.activityRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open capital-account fund-event activity for ${row.title}`}
-                        >
-                          {row.activityRouteLabel}
-                        </a>
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={row.evidenceRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open capital-account fund-event evidence for ${row.title}`}
-                        >
-                          {row.evidenceRouteLabel}
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        ) : null}
-
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-          <section className="space-y-2" aria-labelledby="capital-account-investor-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-investor-heading" className="text-sm font-semibold text-foreground">Investor capital accounts</h4>
-              <Badge variant="outline">{view.investorAccounts.length.toLocaleString()} rows</Badge>
-            </div>
-            <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[880px] text-sm">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Account</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-right">Net</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Cash support</th>
-                    <th className="px-3 py-2 text-left">Route</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.investorAccounts.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.title}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.eventLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono tabular-nums">
-                        <div className="text-foreground">{row.netActivityLabel}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.rollForwardLabel}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{row.activityMixLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{row.evidenceLabel}</td>
-                      <td className="px-3 py-2 text-xs">
-                        <Badge variant={row.paymentEvidenceTone}>{row.paymentEvidenceLabel}</Badge>
-                        <div className="mt-1 text-muted-foreground">{row.paymentEvidenceSummaryLabel}</div>
-                        <div className="mt-1 text-muted-foreground">{row.paymentEvidenceRequiredLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <a href={row.routeLabel} className="break-all font-mono text-[11px] text-primary hover:underline">
-                          {row.routeLabel}
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section className="space-y-2" aria-labelledby="capital-account-allocation-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-allocation-heading" className="text-sm font-semibold text-foreground">Allocation rules</h4>
-              <Badge variant="outline">{view.allocationRules.length.toLocaleString()} checks</Badge>
-            </div>
-            <div className="grid gap-2">
-              {view.allocationRules.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{row.label}</div>
-                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.accountLabel}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.reason}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.basis}</p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                    <AccountingChip label="Evidence" value={row.evidenceLabel} />
-                    <AccountingChip label="Required" value={row.requiredLabel} />
-                    <AccountingChip label="Policy" value={row.policyLabel} />
-                    <AccountingChip label="Effective" value={row.effectiveWindowLabel} />
-                    <AccountingChip label="Approval" value={row.approvalLabel} />
-                    <AccountingChip label="Inputs" value={row.inputSummaryLabel} />
-                    <AccountingChip label="Fund events" value={row.relatedFundEventLabel} />
-                  </div>
-                  <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{row.formulaLabel}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.traceLabel}</p>
-                  {row.routeLabel !== "No route" ? (
-                    <a href={row.routeLabel} className="mt-2 block break-all font-mono text-[11px] text-primary hover:underline">
-                      {row.routeLabel}
-                    </a>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className="grid gap-4 xl:grid-cols-2">
-          <section className="space-y-2" aria-labelledby="capital-account-statement-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-statement-heading" className="text-sm font-semibold text-foreground">Statement lineage</h4>
-              <Badge variant="outline">{view.statementLineage.length.toLocaleString()} statements</Badge>
-            </div>
-            <div className="grid gap-2">
-              {view.statementLineage.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{row.title}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  </div>
-                  <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                    <span>{row.publicationLabel}</span>
-                    <span>{row.provenanceLabel}</span>
-                    <span>{row.restatementLabel}</span>
-                    <span className="break-all font-mono text-[11px]">{row.manifestLabel}</span>
-                  </div>
-                  {row.changedLineRows.length > 0 ? (
-                    <ul className="mt-2 grid gap-1 text-xs text-muted-foreground" aria-label={`${row.title} restatement changed lines`}>
-                      {row.changedLineRows.map((line) => (
-                        <li key={line.id} className="rounded-sm border border-border/60 px-2 py-1">
-                          <span className="break-all font-mono text-[11px]">{line.lineKey}</span>
-                          <span className="mx-2">{line.valueLabel}</span>
-                          <span>{line.evidenceLabel}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  <a href={row.routeLabel} className="mt-2 block break-all font-mono text-[11px] text-primary hover:underline">
-                    {row.routeLabel}
-                  </a>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="space-y-2" aria-labelledby="capital-account-audit-heading">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h4 id="capital-account-audit-heading" className="text-sm font-semibold text-foreground">Audit drill-through</h4>
-              <Badge variant="outline">{view.auditDrillThroughs.length.toLocaleString()} targets</Badge>
-            </div>
-            <div className="grid gap-2">
-              {view.auditDrillThroughs.map((row) => (
-                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{row.title}</div>
-                      <div className="mt-1 text-xs uppercase text-muted-foreground">{row.kind}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.summary}</p>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                    <AccountingChip label="Evidence" value={row.evidenceLabel} />
-                    <AccountingChip label="Related" value={row.relatedLabel} />
-                  </div>
-                  {row.routeLabel !== "No route" ? (
-                    <a href={row.routeLabel} className="mt-2 block break-all font-mono text-[11px] text-primary hover:underline">
-                      {row.routeLabel}
-                    </a>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-md border border-success/30 bg-success/10 px-3 py-3">
-            <div className="text-xs font-semibold uppercase text-success">Live in v0.18 slice</div>
-            <ul className="mt-2 grid gap-1 text-sm text-foreground">
-              {view.liveCapabilities.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </div>
-          <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-            <div className="text-xs font-semibold uppercase text-muted-foreground">Still planned</div>
-            <ul className="mt-2 grid gap-1 text-sm text-muted-foreground">
-              {view.plannedCapabilities.map((item) => <li key={item}>{item}</li>)}
-            </ul>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: ManualJournalEntryWorkbenchViewModel["privateCapitalActivity"] }) {
   return (
@@ -5407,8 +4846,45 @@ function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalE
 }
 
 function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWorkbenchViewModel }) {
+  if (!view.available) {
+    return (
+      <section className="workspace-section-band" aria-labelledby="manual-je-heading">
+        <div className="workspace-section-subheader">
+          <div className="min-w-0">
+            <p className="eyebrow-label">Manual journal entries</p>
+            <h3 id="manual-je-heading" className="workspace-section-title">{view.title}</h3>
+            <p className="workspace-section-summary">{view.description}</p>
+          </div>
+        </div>
+        <StatusBanner
+          role={view.errorText ? "alert" : "status"}
+          tone={view.errorText ? "danger" : "info"}
+          title={view.errorText ? "Journal workbench unavailable" : "Loading journal workbench"}
+          detail={view.errorText ?? "Loading the chart of accounts, governed draft state, validation rules, and retained evidence before editing is enabled."}
+        />
+        <div>
+          <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
+            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+            {view.loading ? "Loading" : "Retry"}
+          </Button>
+        </div>
+      </section>
+    );
+  }
+
   const selectedLine = view.draft.lines.find((line) => line.lineId === view.selectedLineId) ?? view.draft.lines[0] ?? null;
   const nextLineSide = view.draft.totalDebits <= view.draft.totalCredits ? "Debit" : "Credit";
+  const evidenceAttachments = view.draft.evidenceAttachments ?? [];
+  const attachmentUris = new Set(evidenceAttachments.map((attachment) => attachment.uri));
+  const retainedEvidenceLinks = Array.from(new Set(view.draft.evidenceLinks ?? []))
+    .filter((link) => link.trim().length > 0 && !attachmentUris.has(link));
+  const evidenceCount = new Set([
+    ...evidenceAttachments.map((attachment) => attachment.uri),
+    ...retainedEvidenceLinks
+  ]).size;
+  const selectedAccountLabel = selectedLine
+    ? view.accountOptions.find((option) => option.value === selectedLine.accountPath)?.label ?? "Not selected"
+    : "Not selected";
 
   return (
     <section className="workspace-section-band" aria-labelledby="manual-je-heading">
@@ -5509,11 +4985,10 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                 />
               </label>
               <label>
-                <span>Reference</span>
+                <span>Prepared by</span>
                 <input
                   readOnly
-                  className="font-mono"
-                  value={view.draft.journalEntryId}
+                  value={view.draft.preparedBy || "Current operator"}
                 />
               </label>
               <label className="md:col-span-2 xl:col-span-1">
@@ -5536,6 +5011,18 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                 <input className="font-mono" value={view.draft.currency} onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())} />
               </label>
             </div>
+
+            <TechnicalDetails
+              label="Journal system details"
+              className="mt-3"
+              description="Identifiers and ledger scope used for audit and support follow-up."
+            >
+              <dl className="grid gap-3 text-xs sm:grid-cols-2 xl:grid-cols-3">
+                <div><dt className="text-muted-foreground">Journal reference</dt><dd className="mt-1 break-all font-mono text-foreground">{view.draft.journalEntryId}</dd></div>
+                <div><dt className="text-muted-foreground">Ledger book</dt><dd className="mt-1 break-all font-mono text-foreground">{view.draft.ledgerBookId ?? "Default ledger book"}</dd></div>
+                <div><dt className="text-muted-foreground">Record version</dt><dd className="mt-1 font-mono text-foreground">{view.draft.version}</dd></div>
+              </dl>
+            </TechnicalDetails>
 
             <div className="accounting-journal-table-wrap">
               <table className="accounting-journal-table">
@@ -5694,8 +5181,8 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                   <h4 className="text-sm font-semibold text-foreground">Source evidence</h4>
                   <p className="text-xs text-muted-foreground">Attach source support before approval submission.</p>
                 </div>
-                <Badge variant={(view.draft.evidenceAttachments?.length ?? 0) > 0 ? "success" : "warning"} dot>
-                  {(view.draft.evidenceAttachments?.length ?? 0)} attached
+                <Badge variant={evidenceCount > 0 ? "success" : "warning"} dot>
+                  {evidenceCount} linked
                 </Badge>
               </div>
               <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,0.22fr)_minmax(0,0.34fr)_minmax(0,0.18fr)_minmax(0,0.16fr)_auto]">
@@ -5742,22 +5229,36 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                 </p>
               ) : null}
               <div className="mt-3 grid gap-2 md:grid-cols-2">
-                {(view.draft.evidenceAttachments ?? []).length > 0 ? (view.draft.evidenceAttachments ?? []).map((attachment) => (
+                {evidenceAttachments.map((attachment) => (
                   <div key={attachment.attachmentId} className="flex items-start justify-between gap-3 rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{attachment.displayName}</div>
-                      <div className="truncate font-mono text-xs text-muted-foreground">{attachment.uri}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{attachment.evidenceKind} / {attachment.lineId ? `Line ${attachment.lineId}` : "Header"}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{attachment.lineId ? "Supports one journal line" : "Supports the full journal entry"}</div>
+                      <TechnicalDetails label="Evidence details" className="mt-2" contentClassName="space-y-2 text-xs">
+                        <div><span className="text-muted-foreground">Route or path</span><div className="mt-1 break-all font-mono text-foreground">{attachment.uri}</div></div>
+                        <div><span className="text-muted-foreground">Evidence kind</span><div className="mt-1 break-all font-mono text-foreground">{attachment.evidenceKind}</div></div>
+                        <div><span className="text-muted-foreground">Source system</span><div className="mt-1 break-all font-mono text-foreground">{attachment.sourceSystem}</div></div>
+                      </TechnicalDetails>
                     </div>
                     <Button size="icon" variant="ghost" aria-label={`Remove evidence ${attachment.displayName}`} onClick={() => view.removeAttachment(attachment.attachmentId)}>
                       <X className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   </div>
-                )) : (
+                ))}
+                {retainedEvidenceLinks.map((link, index) => (
+                  <div key={link} className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm">
+                    <div className="font-semibold text-foreground">Retained evidence link {index + 1}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">Available to validation and approval controls.</div>
+                    <TechnicalDetails label="Evidence route" className="mt-2">
+                      <div className="break-all font-mono text-xs text-foreground">{link}</div>
+                    </TechnicalDetails>
+                  </div>
+                ))}
+                {evidenceCount === 0 ? (
                   <p className="rounded border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
                     No source evidence is attached yet. Approval submission remains blocked until at least one evidence route or source document is linked.
                   </p>
-                )}
+                ) : null}
               </div>
           </div>
 
@@ -5851,7 +5352,12 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)]">
             <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
-                <h4 className="text-sm font-semibold text-foreground">Validation</h4>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h4 className="text-sm font-semibold text-foreground">Validation</h4>
+                  <Badge variant={view.validationIsCurrent ? "success" : "warning"} dot>
+                    {view.validationIsCurrent ? "Current" : "Required"}
+                  </Badge>
+                </div>
                 <div className="mt-3 space-y-2">
                   {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
                     <div key={issue.id} className={cn("rounded border px-3 py-2 text-sm", issue.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : issue.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "border-border/70 bg-background/50 text-muted-foreground")}>
@@ -5861,7 +5367,9 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                     </div>
                   )) : (
                     <p className="rounded border border-border/70 bg-background/50 px-3 py-2 text-sm text-muted-foreground">
-                      No validation issues are attached to this draft. Use Validate before approval submission.
+                      {view.validationIsCurrent
+                        ? "Validation is current for this draft and no issues were returned."
+                        : "Validation has not completed for the current draft. Use Validate before approval submission."}
                     </p>
                   )}
                 </div>
@@ -5871,10 +5379,16 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                 {selectedLine ? (
                   <div className="mt-3 space-y-3 text-sm">
                     <dl className="grid gap-2">
-                      <div><dt className="text-xs text-muted-foreground">Line ID</dt><dd className="break-all font-mono">{selectedLine.lineId}</dd></div>
-                      <div><dt className="text-xs text-muted-foreground">GL account</dt><dd className="break-all font-mono">{selectedLine.accountPath || "Not selected"}</dd></div>
-                      <div><dt className="text-xs text-muted-foreground">Security</dt><dd className="break-all">{selectedLine.securityDisplayName || selectedLine.securityId || "No Security Master reference"}</dd></div>
+                      <div><dt className="text-xs text-muted-foreground">GL account</dt><dd className="text-foreground">{selectedAccountLabel}</dd></div>
+                      <div><dt className="text-xs text-muted-foreground">Security</dt><dd className="break-all text-foreground">{selectedLine.securityDisplayName || "No Security Master reference"}</dd></div>
                     </dl>
+                    <TechnicalDetails label="Line system details">
+                      <dl className="grid gap-2 text-xs">
+                        <div><dt className="text-muted-foreground">Line ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.lineId}</dd></div>
+                        <div><dt className="text-muted-foreground">GL path</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.accountPath || "Not selected"}</dd></div>
+                        <div><dt className="text-muted-foreground">Security ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.securityId || "Not selected"}</dd></div>
+                      </dl>
+                    </TechnicalDetails>
                     <div className="rounded border border-border/70 bg-background/50 p-2">
                       <label className="space-y-1 text-sm">
                         <span className="text-xs font-semibold uppercase text-muted-foreground">Security Master picker</span>
@@ -6092,14 +5606,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <FormRow label="Node id" labelFor="accounting-chart-node-id">
-              <Input
-                id="accounting-chart-node-id"
-                value={view.chartAccountEditor.nodeIdValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ nodeId: event.currentTarget.value })}
-              />
-            </FormRow>
+          <div className="grid gap-3 md:grid-cols-3">
             <FormRow label="Account path" labelFor="accounting-chart-path">
               <Input
                 id="accounting-chart-path"
@@ -6122,7 +5629,7 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
               />
             </FormRow>
           </div>
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="grid gap-3 md:grid-cols-2">
             <FormRow label="Parent path" labelFor="accounting-chart-parent-path">
               <Input
                 id="accounting-chart-parent-path"
@@ -6130,21 +5637,35 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                 onChange={(event) => view.chartAccountEditor.updateDraft({ parentPath: event.currentTarget.value })}
               />
             </FormRow>
-            <FormRow label="Financial account id" labelFor="accounting-chart-financial-account-id">
-              <Input
-                id="accounting-chart-financial-account-id"
-                value={view.chartAccountEditor.financialAccountIdValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ financialAccountId: event.currentTarget.value })}
-              />
-            </FormRow>
-            <FormRow label="Retained evidence" labelFor="accounting-chart-evidence">
-              <Input
-                id="accounting-chart-evidence"
-                value={view.chartAccountEditor.evidenceValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ evidenceText: event.currentTarget.value })}
-              />
-            </FormRow>
           </div>
+          <TechnicalDetails
+            label="Chart account identifiers and evidence"
+            description="Stable node identity, linked financial account, and retained evidence reference for audit and support use."
+          >
+            <div className="grid gap-3 md:grid-cols-3">
+              <FormRow label="Node id" labelFor="accounting-chart-node-id">
+                <Input
+                  id="accounting-chart-node-id"
+                  value={view.chartAccountEditor.nodeIdValue}
+                  onChange={(event) => view.chartAccountEditor.updateDraft({ nodeId: event.currentTarget.value })}
+                />
+              </FormRow>
+              <FormRow label="Financial account id" labelFor="accounting-chart-financial-account-id">
+                <Input
+                  id="accounting-chart-financial-account-id"
+                  value={view.chartAccountEditor.financialAccountIdValue}
+                  onChange={(event) => view.chartAccountEditor.updateDraft({ financialAccountId: event.currentTarget.value })}
+                />
+              </FormRow>
+              <FormRow label="Retained evidence" labelFor="accounting-chart-evidence">
+                <Input
+                  id="accounting-chart-evidence"
+                  value={view.chartAccountEditor.evidenceValue}
+                  onChange={(event) => view.chartAccountEditor.updateDraft({ evidenceText: event.currentTarget.value })}
+                />
+              </FormRow>
+            </div>
+          </TechnicalDetails>
           <ChartAccountPathBuilder editor={view.chartAccountEditor} />
           {view.chartAccountEditor.statusText ? (
             <p className="text-sm text-muted-foreground">{view.chartAccountEditor.statusText}</p>
@@ -6409,12 +5930,18 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
                         ))}
                       </div>
                     </div>
-                    <RulesStudioList title="Scope" rows={view.selectedRule.scopeLabels.length > 0 ? view.selectedRule.scopeLabels : ["No dimensional scope configured."]} />
-                    <RulesStudioList title="Predicates" rows={view.selectedRule.conditionRows} />
-                    <RulesStudioList title="Formulas" rows={view.selectedRule.formulaRows} />
-                    <RulesStudioList title="Allocations" rows={view.selectedRule.allocationRows} />
-                    <RulesStudioList title="Generated postings" rows={view.selectedRule.generatedPostingRows} />
-                    <RulesStudioList title="Version history" rows={view.selectedRule.versionRows} />
+                    <TechnicalDetails
+                      label="Rule scope and posting internals"
+                      description="Inspect effective scope, predicates, formula logic, allocations, generated postings, and retained versions for the selected rule."
+                      contentClassName="space-y-4"
+                    >
+                      <RulesStudioList title="Scope" rows={view.selectedRule.scopeLabels.length > 0 ? view.selectedRule.scopeLabels : ["No dimensional scope configured."]} />
+                      <RulesStudioList title="Predicates" rows={view.selectedRule.conditionRows} />
+                      <RulesStudioList title="Formulas" rows={view.selectedRule.formulaRows} />
+                      <RulesStudioList title="Allocations" rows={view.selectedRule.allocationRows} />
+                      <RulesStudioList title="Generated postings" rows={view.selectedRule.generatedPostingRows} />
+                      <RulesStudioList title="Version history" rows={view.selectedRule.versionRows} />
+                    </TechnicalDetails>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">Select a posting rule to inspect its effective dating, predicates, formula logic, allocation behavior, generated postings, and promotion evidence.</p>
@@ -6660,9 +6187,9 @@ function hasPromotionReadinessBlocker(items: AccountingRulesStudioPromotionReadi
 
 function AccountingValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {
   return (
-    <div aria-label={ariaLabel} className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={cn("font-mono tabular-nums text-foreground", tone)}>{value}</span>
+    <div aria-label={ariaLabel} className="data-grid-surface flex min-w-0 items-center justify-between gap-4 px-3 py-2">
+      <span className="min-w-0 flex-1 text-muted-foreground">{label}</span>
+      <span className={cn("min-w-0 flex-1 break-words text-right font-mono tabular-nums text-foreground", tone)}>{value}</span>
     </div>
   );
 }

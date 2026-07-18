@@ -4,10 +4,13 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from pathlib import PurePosixPath
+from unittest.mock import patch
 
 
 DOCS_SCRIPT_DIR = Path(__file__).resolve().parents[1]
@@ -31,6 +34,55 @@ generate_structure_docs = load_module(
 
 
 class GenerateStructureDocsTests(unittest.TestCase):
+    def test_git_visible_files_merge_case_colliding_index_paths_and_filesystem_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".github").mkdir()
+            (root / ".github" / "pull_request_template.md").write_text("template\n", encoding="utf-8")
+            (root / "docs" / "status").mkdir(parents=True)
+            (root / "docs" / "status" / "todo-scan-results.json").write_text("{}\n", encoding="utf-8")
+            git_result = subprocess.CompletedProcess(
+                args=["git", "ls-files"],
+                returncode=0,
+                stdout=(
+                    b".github/PULL_REQUEST_TEMPLATE.md\0"
+                    b".github/pull_request_template.md\0"
+                ),
+                stderr=b"",
+            )
+
+            with patch.object(generate_structure_docs.subprocess, "run", return_value=git_result):
+                visible = generate_structure_docs._git_visible_files(root)
+
+            self.assertIsNotNone(visible)
+            self.assertEqual(
+                {
+                    ".github/PULL_REQUEST_TEMPLATE.md",
+                    ".github/pull_request_template.md",
+                    "docs/status/todo-scan-results.json",
+                },
+                {path.as_posix() for path in visible or []},
+            )
+
+    def test_render_tree_preserves_case_colliding_git_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            visible_files = [
+                PurePosixPath(".github/PULL_REQUEST_TEMPLATE.md"),
+                PurePosixPath(".github/pull_request_template.md"),
+                PurePosixPath(".github/pull_request_template_desktop.md"),
+            ]
+
+            with patch.object(generate_structure_docs, "_git_visible_files", return_value=visible_files):
+                rendered = generate_structure_docs.render_tree(root)
+
+            self.assertIn("PULL_REQUEST_TEMPLATE.md", rendered)
+            self.assertIn("pull_request_template.md", rendered)
+            self.assertLess(
+                rendered.index("PULL_REQUEST_TEMPLATE.md"),
+                rendered.index("pull_request_template.md"),
+            )
+
     def test_render_tree_skips_local_artifacts_and_keeps_canonical_data_docs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -64,6 +116,51 @@ class GenerateStructureDocsTests(unittest.TestCase):
             self.assertNotIn("appsettings.json.backup", rendered)
             self.assertNotIn(".nuget", rendered)
             self.assertNotIn("artifacts", rendered)
+
+    def test_render_tree_skips_nested_worktree_checkouts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "Meridian.cs").write_text("namespace Meridian;\n", encoding="utf-8")
+            (root / ".claude" / "settings.json").parent.mkdir(parents=True)
+            (root / ".claude" / "settings.json").write_text("{}\n", encoding="utf-8")
+            # A git-ignored worktree holds a second checkout of the repository.
+            worktree_src = root / ".claude" / "worktrees" / "task-branch" / "src"
+            worktree_src.mkdir(parents=True)
+            (worktree_src / "WorktreeCopy.cs").write_text("namespace Meridian;\n", encoding="utf-8")
+
+            rendered = generate_structure_docs.render_tree(root)
+
+            self.assertIn("Meridian.cs", rendered)
+            self.assertIn("settings.json", rendered)
+            self.assertNotIn("worktrees", rendered)
+            self.assertNotIn("WorktreeCopy.cs", rendered)
+
+    def test_parse_args_defaults_output_to_canonical_path_per_mode(self) -> None:
+        cases = [
+            ([], "docs/generated/repository-structure.md"),
+            (["--workflows-only"], "docs/generated/workflows-overview.md"),
+            (["--providers-only"], "docs/generated/provider-registry.md"),
+        ]
+        for argv, expected in cases:
+            with self.subTest(argv=argv):
+                with patch.object(sys, "argv", ["generate-structure-docs.py", *argv]):
+                    args = generate_structure_docs.parse_args()
+                self.assertIsNone(args.output)
+
+                mode = "structure"
+                if args.workflows_only:
+                    mode = "workflows"
+                elif args.providers_only:
+                    mode = "providers"
+                self.assertEqual(expected, generate_structure_docs.DEFAULT_OUTPUTS[mode])
+
+    def test_parse_args_honors_explicit_output_override(self) -> None:
+        with patch.object(
+            sys, "argv", ["generate-structure-docs.py", "--workflows-only", "--output", "custom.md"]
+        ):
+            args = generate_structure_docs.parse_args()
+        self.assertEqual("custom.md", args.output)
 
     def test_render_tree_skips_symlinked_entries(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as external:

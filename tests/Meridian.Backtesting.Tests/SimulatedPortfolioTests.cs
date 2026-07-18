@@ -39,6 +39,25 @@ public sealed class SimulatedPortfolioTests
     }
 
     [Fact]
+    public void ShortPosition_AverageCostAndUnrealisedPnl_ComeFromShortEntryPrice()
+    {
+        var portfolio = CreatePortfolio(10_000m);
+        // Short 10 SPY @ $400, then the price falls to $350
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 400m, 0m, DateTimeOffset.UtcNow));
+        portfolio.UpdateLastPrice("SPY", 350m);
+
+        var position = portfolio.GetCurrentPositions()["SPY"];
+        position.Quantity.Should().Be(-10);
+        position.AverageCostBasis.Should().Be(400m,
+            "a net-short position's basis is the average short entry price, not zero");
+        position.UnrealizedPnl.Should().Be(500m,
+            "shorted at $400 with the market at $350 → 10 × $50 gain");
+
+        var snapshot = portfolio.TakeSnapshot(DateTimeOffset.UtcNow, DateOnly.FromDateTime(DateTime.Today));
+        snapshot.TotalEquity.Should().Be(10_500m, "cash $14 000 − short liability $3 500");
+    }
+
+    [Fact]
     public void AccrueDailyInterest_ChargesMarginOnDebitBalance()
     {
         var portfolio = CreatePortfolio(1_000m);

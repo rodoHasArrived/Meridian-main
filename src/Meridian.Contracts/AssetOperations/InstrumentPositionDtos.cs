@@ -99,6 +99,8 @@ public sealed record PositionEconomicStateDto(
     JsonElement? ExtensionPayload = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
+
+    public ProjectionLineageDto? ProjectionLineage { get; init; }
 }
 
 public sealed record EconomicEventReferenceDto(

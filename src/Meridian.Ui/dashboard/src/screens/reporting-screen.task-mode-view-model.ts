@@ -3,6 +3,7 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 export type ReportingTaskModeId =
   | "daily-reporting-cockpit"
   | "report-builder"
+  | "schedules"
   | "run-status"
   | "delivery-evidence"
   | "exports"
@@ -28,9 +29,16 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
   "report-builder": {
     id: "report-builder",
     label: "Report Builder",
-    description: "Reporting owns governed output design, report-writer grids, branding, schedules, and delivery history.",
+    description: "Design governed output, report-writer grids, branding, and reusable templates without mixing in run or schedule operations.",
     routeLabel: "Report Builder",
     ariaLabel: "Reporting task mode report builder"
+  },
+  schedules: {
+    id: "schedules",
+    label: "Scheduled Reports",
+    description: "Create, pause, resume, and run governed report schedules with their recipient delivery plans.",
+    routeLabel: "Scheduled Reports",
+    ariaLabel: "Reporting task mode scheduled reports"
   },
   "run-status": {
     id: "run-status",
@@ -62,10 +70,10 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
   },
   "report-pack-approval": {
     id: "report-pack-approval",
-    label: "Delivery Evidence",
-    description: "Reporting owns governed output review, recipient checks, export preview, and publication evidence.",
-    routeLabel: "Delivery Evidence",
-    ariaLabel: "Reporting task mode delivery evidence"
+    label: "Report packs",
+    description: "Review governed report packs, resolve recipient blockers, and complete server-authorized approval or publication actions.",
+    routeLabel: "Report packs",
+    ariaLabel: "Reporting task mode report packs"
   }
 };
 
@@ -78,6 +86,10 @@ export function buildReportingTaskMode(pathname: string): ReportingTaskModeViewM
 
   if (normalizedPathname.startsWith(WORKSTATION_ROUTE_CATALOG.reportingReportBuilder)) {
     return reportingTaskModeDefinitions["report-builder"];
+  }
+
+  if (normalizedPathname.startsWith(WORKSTATION_ROUTE_CATALOG.reportingScheduled)) {
+    return reportingTaskModeDefinitions.schedules;
   }
 
   if (isReportPackRoute(pathname)) {

@@ -525,6 +525,7 @@ public sealed record OperationsSecurityMasterResolveRequestDto(
     int OverrideRequestCount = 0,
     bool OverridesApproved = false,
     int MissingAccountingTermCount = 0,
+    IReadOnlyList<Guid>? OverrideSecurityIds = null,
     IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
 
 public sealed record OperationsLedgerDraftRequestDto(
@@ -1341,7 +1342,8 @@ public sealed record PrivateCapitalCloseCockpitDto(
     IReadOnlyList<string> PlannedCapabilities,
     IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto>? ApprovalHistory = null,
     IReadOnlyList<PrivateCapitalNavSupportPackageDto>? NavSupportPackages = null,
-    IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null)
+    IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null,
+    DailyValuationScheduleStatusDto? DailyValuationStatus = null)
 {
     public IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto> ApprovalHistory { get; init; } =
         ApprovalHistory ?? [];
@@ -1361,5 +1363,7 @@ public interface IPrivateCapitalCloseCockpitService
         Guid? fundAccountId = null,
         string? periodId = null,
         string? entityId = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default,
+        string? tenantId = null,
+        string? companyId = null);
 }

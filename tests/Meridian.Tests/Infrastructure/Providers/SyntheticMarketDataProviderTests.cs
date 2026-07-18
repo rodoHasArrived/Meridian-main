@@ -4,6 +4,7 @@ using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Synthetic;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Tests.TestHelpers;
 using Xunit;
 
@@ -51,7 +52,7 @@ public sealed class SyntheticMarketDataProviderTests
     public async Task StreamingClient_PublishesTradesQuotesAndOrderBookSnapshots()
     {
         var publisher = new SignalingMarketEventPublisher();
-        var client = new SyntheticMarketDataClient(publisher, new SyntheticMarketDataConfig(Enabled: true, EventsPerSecond: 20));
+        await using var client = new SyntheticMarketDataClient(publisher, new SyntheticMarketDataConfig(Enabled: true, EventsPerSecond: 20));
         await client.ConnectAsync();
 
         var tradeSub = client.SubscribeTrades(new SymbolConfig("AAPL", SubscribeTrades: true, SubscribeDepth: false));
@@ -72,6 +73,53 @@ public sealed class SyntheticMarketDataProviderTests
         publishedEvents.Should().Contain(e => e.Type == MarketEventType.L2Snapshot);
         publishedEvents.Should().Contain(e => e.Symbol == "AAPL");
         publishedEvents.Where(e => e.Payload is LOBSnapshot).Should().OnlyContain(e => ((LOBSnapshot)e.Payload).Bids.Count == 5);
+    }
+
+    [Fact]
+    public async Task StreamingClient_ConnectionDiagnostics_TrackSyntheticLifecycleAndPublishEvents()
+    {
+        var publisher = new SignalingMarketEventPublisher();
+        await using var client = new SyntheticMarketDataClient(
+            publisher,
+            new SyntheticMarketDataConfig(Enabled: true));
+        var observed = new List<WebSocketConnectionDiagnostics>();
+        client.ConnectionDiagnosticsChanged += observed.Add;
+
+        var initial = client.GetConnectionDiagnosticsSnapshot();
+        await client.ConnectAsync();
+        var connected = client.GetConnectionDiagnosticsSnapshot();
+        await client.DisconnectAsync();
+        var disconnected = client.GetConnectionDiagnosticsSnapshot();
+
+        initial.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Configured);
+        initial.IsConnected.Should().BeFalse();
+        connected.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Connected);
+        connected.IsConnected.Should().BeTrue();
+        connected.LastConnectedAt.Should().NotBeNull();
+        disconnected.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        disconnected.IsConnected.Should().BeFalse();
+        disconnected.LastDisconnectedAt.Should().NotBeNull();
+        observed.Select(snapshot => snapshot.LifecycleState).Should().ContainInOrder(
+            ProviderConnectionLifecycleState.Connecting,
+            ProviderConnectionLifecycleState.Connected,
+            ProviderConnectionLifecycleState.Disconnecting,
+            ProviderConnectionLifecycleState.Disconnected);
+    }
+
+    [Fact]
+    public async Task StreamingClient_DisabledConfiguration_NeverClaimsConnected()
+    {
+        var publisher = new SignalingMarketEventPublisher();
+        await using var client = new SyntheticMarketDataClient(
+            publisher,
+            new SyntheticMarketDataConfig(Enabled: false));
+
+        await client.ConnectAsync();
+
+        var snapshot = client.GetConnectionDiagnosticsSnapshot();
+        snapshot.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disabled);
+        snapshot.IsConnected.Should().BeFalse();
+        snapshot.WebSocketState.Should().Be(System.Net.WebSockets.WebSocketState.None);
     }
 
     [Fact]

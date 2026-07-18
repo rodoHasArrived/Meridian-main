@@ -1,4 +1,5 @@
 using System.Net;
+using System.Collections.Immutable;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -26,11 +27,51 @@ public sealed class ReportingRunStreamEndpointTests
 
     private static readonly DateTimeOffset FixedNow = new(2026, 5, 1, 12, 0, 0, TimeSpan.Zero);
     private const string SeededRunId = "job-stream-20260501";
+    private const string SeededTenantId = "tenant-a";
+    private const string SeededCompanyId = "company-a";
 
     [Fact]
     public async Task WithoutReadPermission_Returns403()
     {
         await using var app = await CreateStreamAppAsync(grantPermission: false);
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{SeededRunId}/stream");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task WithoutTenantScope_Returns403()
+    {
+        await using var app = await CreateStreamAppAsync(includeTenantScope: false);
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{SeededRunId}/stream");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CrossTenantManifest_Returns403()
+    {
+        await using var app = await CreateStreamAppAsync(
+            requestTenantId: "tenant-b",
+            requestCompanyId: "company-b");
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{SeededRunId}/stream");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CrossTenantManifest_AdminOverrideStillReturns403()
+    {
+        await using var app = await CreateStreamAppAsync(
+            grantAdminOverride: true,
+            requestTenantId: "tenant-b",
+            requestCompanyId: "company-b");
         var client = app.GetTestClient();
 
         var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{SeededRunId}/stream");
@@ -87,22 +128,29 @@ public sealed class ReportingRunStreamEndpointTests
         var client = app.GetTestClient();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
-        // Hold the first stream open (its subscription keeps the session's single slot reserved).
-        using var first = await client.GetAsync(
-            $"/api/fund-structure/reporting/runs/{SeededRunId}/stream",
-            HttpCompletionOption.ResponseHeadersRead,
-            cts.Token);
-        first.StatusCode.Should().Be(HttpStatusCode.OK);
-        await using var firstStream = await first.Content.ReadAsStreamAsync(cts.Token);
-        await ReadPastFirstFrameAsync(firstStream, cts.Token);
+        try
+        {
+            // Hold the first stream open (its subscription keeps the session's single slot reserved).
+            using var first = await client.GetAsync(
+                $"/api/fund-structure/reporting/runs/{SeededRunId}/stream",
+                HttpCompletionOption.ResponseHeadersRead,
+                cts.Token);
+            first.StatusCode.Should().Be(HttpStatusCode.OK);
+            await using var firstStream = await first.Content.ReadAsStreamAsync(cts.Token);
+            await ReadPastFirstFrameAsync(firstStream, cts.Token);
 
-        using var second = await client.GetAsync(
-            $"/api/fund-structure/reporting/runs/{SeededRunId}/stream",
-            HttpCompletionOption.ResponseHeadersRead,
-            cts.Token);
+            using var second = await client.GetAsync(
+                $"/api/fund-structure/reporting/runs/{SeededRunId}/stream",
+                HttpCompletionOption.ResponseHeadersRead,
+                cts.Token);
 
-        second.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
-        second.Headers.RetryAfter.Should().NotBeNull();
+            second.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+            second.Headers.RetryAfter.Should().NotBeNull();
+        }
+        finally
+        {
+            await cts.CancelAsync();
+        }
     }
 
     private static async Task<string> ReadFirstEventFrameAsync(HttpResponseMessage response, CancellationToken ct)
@@ -151,12 +199,38 @@ public sealed class ReportingRunStreamEndpointTests
     private static async Task<WebApplication> CreateStreamAppAsync(
         bool grantPermission = true,
         bool registerBroadcaster = true,
-        int maxConcurrentStreams = 8)
+        int maxConcurrentStreams = 8,
+        bool includeTenantScope = true,
+        string requestTenantId = SeededTenantId,
+        string requestCompanyId = SeededCompanyId,
+        bool grantAdminOverride = false)
     {
         var orchestration = new ReportingOrchestrationService(
             new DefaultReportingTemplateCatalog(), new DeterministicReportingSectionRenderer(), () => FixedNow);
         await orchestration.ExecuteAsync(
-            new ReportingJobContract("job-stream", "investor-monthly-statement", new DateOnly(2026, 5, 1), ReportingRunTrigger.AdHoc, 0, "op", FixedNow),
+            new ReportingJobContract(
+                "job-stream",
+                "investor-monthly-statement",
+                new DateOnly(2026, 5, 1),
+                ReportingRunTrigger.AdHoc,
+                0,
+                "op",
+                FixedNow,
+                OperationalScope: new ReportingOperationalScope(
+                    SeededTenantId,
+                    "organization-a",
+                    SeededCompanyId,
+                    FundId: null,
+                    BookId: "book-a",
+                    PeriodId: "2026-05"),
+                ImmutableAccessScope: new ReportingAccessScope(
+                    "policy-a",
+                    "1",
+                    ReportingGovernanceAccessMode.CompanyWide,
+                    OwnerPrincipalId: null,
+                    AllowOwnerAccess: false,
+                    Principals: ImmutableArray<ReportingAccessPrincipalScope>.Empty,
+                    PolicyHash: "policy-hash-a")),
             CancellationToken.None);
 
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -188,7 +262,15 @@ public sealed class ReportingRunStreamEndpointTests
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "reporting-op";
             if (grantPermission)
             {
-                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewReporting;
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = grantAdminOverride
+                    ? UserPermission.ViewReporting | UserPermission.AdminMaintenance
+                    : UserPermission.ViewReporting;
+            }
+
+            if (includeTenantScope)
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = requestCompanyId;
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = requestTenantId;
             }
 
             await next();

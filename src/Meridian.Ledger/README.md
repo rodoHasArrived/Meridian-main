@@ -40,7 +40,10 @@ balanced unrealized FX revaluation journal lines for monetary asset/liability ac
 base-currency ledger posting lines while preserving local amount, currency, and FX-rate evidence.
 `DailyPortfolioPricingProjector` applies fund-specific valuation policies to listed and OTC daily
 marks, preserves price-source/evidence references, and prepares balanced fair-value adjustment
-lines against unrealized gain/loss accounts.
+lines against unrealized gain/loss accounts. Valuation policies carry a first-class ASC 820
+`FairValueLevel` (Level 1/2/3) and a `StalePricePolicy` (allow/flag/block by max price age); the
+Application-layer `WaterfallMarkPriceSource` composes ordered price-source tiers (exchange close →
+vendor composite → matrix/model → manual) and stamps the resolving tier's fair-value level.
 `DailyPortfolioPricingDraftBuilder` converts that projection into a governed
 `AutomatedJournalDraft` (kind `FairValueMarkAdjustment`) with per-mark price evidence so daily
 fair-value adjustments flow through `AutomatedJournalApproval` before posting; the
@@ -55,10 +58,15 @@ units-of-production), always depreciating to salvage value with the final period
 `FixedAssetDepreciationDraftBuilder` batches all of a period's per-asset projections into a single
 governed `AutomatedJournalDraft` (kind `DepreciationPosted`) so one approval covers the whole
 depreciation run, mirroring `DailyPortfolioPricingDraftBuilder`.
-`LedgerAccountTaxLotPolicyBook` resolves FIFO/LIFO/HIFO/SpecificId relief methods at the ledger
-account level so accounting statements can follow front-office lot-relief policy.
+`LedgerAccountTaxLotPolicyBook` resolves FIFO/LIFO/HIFO/SpecificId/AverageCost relief methods at the
+ledger account level so accounting statements can follow front-office lot-relief policy.
 `LedgerTaxLotReliefProjector` applies those account-level relief methods to open tax lots and
 prepares balanced cash, security cost-basis, and realized gain/loss lines before durable posting.
+For `AverageCost` it pools every open lot into a single average unit cost while still depleting lots
+oldest-first for deterministic lot closing. When a `WashSalePolicy` and replacement acquisitions are
+supplied, it defers the proportional disallowed loss on a realizing sale (US IRC §1091), recognizing
+only the allowed portion and capitalizing the deferred amount into the replacement lot's basis
+(`WashSaleOutcome`), so the entry still balances and no premature loss is booked.
 `LedgerTaxLot` carries an optional `SecurityId` so cost-basis lots link to Security Master
 reference data. `LedgerTaxLotBasisAdjuster` (fed via `LedgerTaxLotReliefInput.BasisAdjustments`)
 restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — corporate-action
@@ -75,6 +83,13 @@ approval/posting.
 `AutomatedJournalApproval` governs those drafts through submit, approve, reject, and post
 transitions, requiring approval/posting evidence and preserving approval metadata on the posted
 ledger journal entry.
+`LedgerJournalReversal` is the general correction primitive: it books a balanced reversing entry
+for any posted journal by swapping every line's debit and credit under a new journal id, linking
+back to the original via a `reversal.of` tag — so corrections stay immutable (reverse/rebook) rather
+than mutating posted history. The Application-layer `SecurityMasterLedgerBridge` uses it (opt-in via
+`CorporateActionLedgerPostingContext.AutoReverseSupersededPostings`) to automatically reverse a
+previously-posted corporate action when it is cancelled, and to reverse-then-rebook when it is
+amended.
 `IAutomatedJournalPostingTarget` is the shared target contract for approved automated journal
 projections: backtests and what-if runs can post through `InMemoryAutomatedJournalPostingTarget`,
 while durable implementations can append the same approved projection to the governed journal
@@ -86,7 +101,10 @@ allowing separate books such as shadow-NAV ledgers to continue independently.
 revenue and expense account is zeroed and the net income is rolled into retained earnings, scoped
 per financial account. `PeriodCloseDraftBuilder` wraps that projection in a governed
 `AutomatedJournalDraft` (kind `PeriodCloseClosingEntries`) so closes post through
-`AutomatedJournalApproval` instead of remaining status-only.
+`AutomatedJournalApproval` instead of remaining status-only. Its idempotency key includes a stable
+fingerprint of the temporary-account residual and full line-dimension scope: an unchanged retry
+reuses the retained draft, while a late adjustment produces a distinct draft for only the remaining
+closing delta without collapsing fund, entity, sleeve, or other dimensions.
 `ShadowNavValidator` compares actual and shadow ledger books at a point in time, reports
 account-level and NAV variances against configured tolerances, and prepares a governed override
 draft when independent fund-admin validation requires review.

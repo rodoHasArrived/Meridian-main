@@ -1126,14 +1126,111 @@ export interface BackfillProgressEntry {
   completed: boolean;
 }
 
+export interface BackfillProviderAttemptProgress {
+  symbol: string;
+  provider: string;
+  rangeStart: string | null;
+  rangeEnd: string | null;
+  providerAttempt: number;
+  retryRound: number;
+  operation: string | null;
+  status: string | null;
+  barsDownloaded: number;
+  startedAt: string;
+  observedAt: string;
+  error: string | null;
+}
+
+export interface BackfillProviderSymbolProgress {
+  symbol: string;
+  rangeStart: string | null;
+  rangeEnd: string | null;
+  totalDays: number;
+  completedDays: number;
+  percentComplete: number;
+  isCompleted: boolean;
+  isFailed: boolean;
+  isSkipped: boolean;
+  currentProvider: string | null;
+  currentStatus: string | null;
+  providerAttempt: number;
+  retryRound: number;
+  operation: string | null;
+  attemptStartedAt: string | null;
+  lastUpdatedAt: string | null;
+  error: string | null;
+}
+
+export interface BackfillProviderProgressSnapshot {
+  symbols: Record<string, BackfillProviderSymbolProgress>;
+  recentProviderAttempts: BackfillProviderAttemptProgress[];
+  overallPercentComplete: number;
+  totalSymbols: number;
+  completedSymbols: number;
+  failedSymbols: number;
+  droppedProviderNotifications: number;
+  timestamp: string;
+}
+
 export interface BackfillProgressResponse {
+  lastRun?: BackfillTriggerResult | null;
+  isActive?: boolean;
+  providerProgress?: BackfillProviderProgressSnapshot;
+  timestamp?: string;
+  // Compatibility fields returned by older hosts during rolling upgrades.
   active?: boolean;
   provider?: string | null;
   symbols?: BackfillProgressEntry[];
   message?: string | null;
-  lastRun?: BackfillTriggerResult | null;
-  isActive?: boolean;
-  timestamp?: string;
+}
+
+export type BackfillRemediationSlaTier = "Standard" | "SameBusinessDay";
+
+export type BackfillRemediationSlaStatus = "Open" | "DueSoon" | "Overdue" | "Failed" | "Completed";
+
+export interface BackfillRemediationSla {
+  tier: BackfillRemediationSlaTier;
+  status: BackfillRemediationSlaStatus;
+  dueAtUtc: string;
+  requiresOwnerAssignment: boolean;
+  downstreamWorkflow: string;
+  reasonCode: string;
+  provider: string;
+  triggerSource: string | null;
+  isCompatibilityDerived: boolean;
+}
+
+export interface BackfillExecutionHistoryRow {
+  executionId: string;
+  scheduleName: string;
+  trigger: string;
+  scheduleId: string;
+  status: string;
+  startedAt: string;
+  completedAt: string | null;
+  symbolsProcessed: number;
+  barsDownloaded: number;
+  errorMessage: string | null;
+  fromDate: string;
+  toDate: string;
+  symbols: string[];
+  autoRemediationTriggerReason: string | null;
+  autoRemediationAttemptCount: number;
+  autoRemediationLastOutcome: string | null;
+  autoRemediationIdempotencyKey: string | null;
+  autoRemediationSla: BackfillRemediationSla | null;
+}
+
+export interface BackfillExecutionHistoryResponse {
+  executions: BackfillExecutionHistoryRow[];
+  total: number;
+  autoRemediation: {
+    total: number;
+    withReason: number;
+    lastOutcome: string | null;
+    defaultProvider: string;
+  };
+  timestamp: string;
 }
 
 // --- System Overview types ---
@@ -1162,39 +1259,116 @@ export interface SystemOverviewResponse {
 
 // --- Quality monitoring types ---
 
-export interface QualitySymbolScore {
-  symbol: string;
-  completenessScore: number;
-  freshnessScore: number;
-  gapCount: number;
-  anomalyCount: number;
-  health: "Healthy" | "Warning" | "Critical";
-}
-
 export interface QualityGapEntry {
   symbol: string;
-  provider: string;
-  from: string;
-  to: string;
-  estimatedBars: number;
-  status: "Open" | "Resolved";
+  eventType: string;
+  gapStart: string;
+  gapEnd: string;
+  duration: string;
+  missedSequenceStart: number;
+  missedSequenceEnd: number;
+  estimatedMissedEvents: number;
+  severity: number;
+  possibleCause: string | null;
 }
 
 export interface QualityAnomalyEntry {
-  anomalyId: string;
+  id: string;
+  timestamp: string;
   symbol: string;
-  anomalyType: string;
-  message: string;
+  type: number;
+  severity: number;
+  description: string;
+  expectedValue: number;
+  actualValue: number;
+  deviationPercent: number;
+  zScore: number;
+  provider: string | null;
+  isAcknowledged: boolean;
   detectedAt: string;
-  acknowledged: boolean;
+}
+
+export interface QualityComponentResponse {
+  kind: "StreamingFreshness" | "StoredCompleteness" | "AdapterGapIntegrity";
+  label: string;
+  weight: number;
+  score: number | null;
+  availability: "Measured" | "Partial" | "Stale" | "Unavailable";
+  observedAt: string | null;
+  issueCount: number;
+  detail: string;
+}
+
+export interface QualityCompositeGapResponse {
+  gapId: string;
+  symbol: string;
+  provider: string | null;
+  eventType: string;
+  from: string;
+  to: string;
+  estimatedMissingEvents: number;
+  severity: string;
+  status: "Open" | "Resolved";
+  canBackfill: boolean;
+  disabledReason: string | null;
+}
+
+export interface QualityProviderFreshnessResponse {
+  provider: string;
+  lastEventAt: string | null;
+  ageMilliseconds: number | null;
+  status: "Fresh" | "Stale" | "Unavailable";
+  completenessScore: number | null;
+  gapCount: number;
+}
+
+export interface QualityCompositeSymbolResponse {
+  symbol: string;
+  compositeScore: number | null;
+  status: "Green" | "Amber" | "Red" | "Unavailable";
+  isPartial: boolean;
+  coverageWeight: number;
+  expectedEvents: number | null;
+  observedEvents: number | null;
+  anomalyCount: number;
+  components: QualityComponentResponse[];
+  openGaps: QualityCompositeGapResponse[];
+  providerFreshness: QualityProviderFreshnessResponse[];
+  issues: string[];
+}
+
+export interface QualityCompositeDashboardResponse {
+  version: string;
+  observedAt: string;
+  compositeScore: number | null;
+  status: "Green" | "Amber" | "Red" | "Unavailable";
+  isPartial: boolean;
+  coverageWeight: number;
+  components: QualityComponentResponse[];
+  symbols: QualityCompositeSymbolResponse[];
+  openGaps: QualityCompositeGapResponse[];
+  anomalyCount: number;
+}
+
+export interface QualityGapRemediationRequest {
+  gapId: string;
+  dashboardVersion: string;
+}
+
+export interface QualityGapRemediationResponse {
+  gapId: string;
+  symbol: string;
+  status: "None" | "Completed" | "FailedTransient" | "FailedPermanent" | "Skipped";
+  provider: string;
+  from: string;
+  to: string;
+  idempotencyKey: string;
+  message: string;
 }
 
 export interface QualityDashboardResponse {
-  overallScore: number;
-  completenessScore: number;
-  freshnessScore: number;
-  anomalyRate: number;
-  symbols: QualitySymbolScore[];
+  timestamp: string;
+  composite: QualityCompositeDashboardResponse | null;
   recentGaps: QualityGapEntry[];
   recentAnomalies: QualityAnomalyEntry[];
 }

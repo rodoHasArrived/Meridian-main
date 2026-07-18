@@ -752,7 +752,8 @@ public sealed record TreasuryLedgerContextDto(
     string? CapitalAccountId = null,
     string? InvestorId = null,
     string? PaymentIntentId = null,
-    string? SettlementReference = null);
+    string? SettlementReference = null,
+    string? BatchCorrelationId = null);
 
 public sealed record ManualJournalEntryDraftDto(
     Guid JournalEntryId,
@@ -795,7 +796,8 @@ public sealed record ManualJournalEntryDraftDto(
     JournalEntryReversalDto? Reversal = null,
     JournalEntryRebookDto? Rebook = null,
     string? TenantId = null,
-    string? CompanyId = null)
+    string? CompanyId = null,
+    AutomatedJournalEvidenceAssessmentDto? AutomationEvidenceAssessment = null)
 {
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];

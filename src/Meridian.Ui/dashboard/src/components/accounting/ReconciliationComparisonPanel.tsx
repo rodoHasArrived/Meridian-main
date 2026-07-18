@@ -60,8 +60,8 @@ function ReconciliationComparisonPane({
       <div className="reconcile-pane-head">
         <span className="reconcile-pane-title">{heading}</span>
         <span className="reconcile-pane-chips">
-          <SeverityBadge status="ready" dot={false} label={`${matched} matched`} />
-          {timing > 0 ? <SeverityBadge status="action" dot={false} label={`${timing} timing`} /> : null}
+          {matched > 0 ? <SeverityBadge status="ready" dot={false} label={`${matched} matched`} /> : null}
+          {timing > 0 ? <SeverityBadge status="action" dot={false} label={`${timing} need${timing === 1 ? "s" : ""} review`} /> : null}
           {breaks > 0 ? <SeverityBadge status="blocked" dot={false} label={`${breaks} break${breaks > 1 ? "s" : ""}`} /> : null}
         </span>
       </div>

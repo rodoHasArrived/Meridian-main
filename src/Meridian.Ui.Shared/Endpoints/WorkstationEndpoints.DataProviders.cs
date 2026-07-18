@@ -198,45 +198,6 @@ public static partial class WorkstationEndpoints
             ActionHref: "/settings/integrations");
     }
 
-    private static WorkstationDataProviderRecord BuildFallbackDataProviderRecord(
-        string providerId,
-        string displayName,
-        string status,
-        string capability,
-        string latency,
-        string note,
-        string trustScore,
-        string signalSource,
-        string reasonCode,
-        string recommendedAction,
-        string gateImpact)
-        => new(
-            ProviderId: providerId,
-            DisplayName: displayName,
-            Status: status,
-            Capability: capability,
-            Latency: latency,
-            Note: note,
-            TrustScore: trustScore,
-            SignalSource: signalSource,
-            ReasonCode: reasonCode,
-            RecommendedAction: recommendedAction,
-            GateImpact: gateImpact,
-            ConnectionSummary: null,
-            RoutingSummary: new WorkstationDataProviderRoutingSummary(
-                ConnectionId: null,
-                ProviderFamilyId: providerId,
-                ProductionReady: null,
-                CertificationFresh: null,
-                BindingCount: 0,
-                FallbackRouteCount: 0,
-                HealthStatus: status),
-            Diagnostics:
-            [
-                new WorkstationDataProviderDiagnostic("provider-health", "Provider health", status == "Healthy" ? "pass" : "warning", status == "Healthy" ? "Pass" : "Review", note),
-                new WorkstationDataProviderDiagnostic("trust-state", "Trust state", status == "Healthy" ? "pass" : "warning", trustScore, $"{signalSource}. {recommendedAction}")
-            ]);
-
     private static IReadOnlyList<ProviderBindingDto> ResolveRoutingBindings(
         IReadOnlyDictionary<string, IReadOnlyList<ProviderBindingDto>> bindingLookup,
         IReadOnlyList<ProviderConnectionDto>? routingConnections)

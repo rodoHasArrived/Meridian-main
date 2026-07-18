@@ -13,8 +13,12 @@ public static class DailyPortfolioPricingProjector
 
         var lines = input.Marks
             .Select(mark => BuildLine(input, mark))
+            .OrderBy(static line => line.SecurityId)
+            .ThenBy(static line => line.Symbol, StringComparer.Ordinal)
+            .ThenBy(static line => line.FinancialAccountId, StringComparer.Ordinal)
+            .ThenBy(static line => line.EvidenceReference, StringComparer.Ordinal)
             .ToList();
-        var journalLines = BuildJournalLines(lines);
+        var journalLines = BuildJournalLines(input, lines);
 
         return new DailyPortfolioPricingProjection(input, lines, journalLines);
     }
@@ -24,6 +28,9 @@ public static class DailyPortfolioPricingProjector
         var costBasis = RoundCurrency(mark.Quantity * mark.CostPrice);
         var marketValue = RoundCurrency(mark.Quantity * mark.MarkPrice);
         var unrealizedGainOrLoss = marketValue - costBasis;
+        var hasPriorCarryingValue = mark.PriorCarryingValue.HasValue;
+        var priorCarryingValue = RoundCurrency(mark.PriorCarryingValue ?? costBasis);
+        var markAdjustment = marketValue - priorCarryingValue;
 
         return new DailyPortfolioPricingLine(
             mark.Symbol,
@@ -33,37 +40,55 @@ public static class DailyPortfolioPricingProjector
             costBasis,
             marketValue,
             unrealizedGainOrLoss,
+            priorCarryingValue,
+            hasPriorCarryingValue,
+            markAdjustment,
             mark.PriceSource,
             mark.EvidenceReference,
             input.Policy.PolicyId,
             input.Policy.ValuationMethod,
             mark.FinancialAccountId,
-            mark.InstrumentType);
+            mark.InstrumentType,
+            FairValueLevel: mark.FairValueLevel == FairValueLevel.Unclassified
+                ? input.Policy.DefaultFairValueLevel
+                : mark.FairValueLevel,
+            IsStalePriced: mark.IsStalePriced,
+            PriceObservedOn: mark.PriceObservedOn,
+            Confidence: mark.Confidence,
+            SecurityId: mark.SecurityId,
+            CarryingValueSource: mark.CarryingValueSource,
+            CarryingValueCapturedAtUtc: mark.CarryingValueCapturedAtUtc,
+            CarryingValueEvidenceReference: mark.CarryingValueEvidenceReference);
     }
 
-    private static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> BuildJournalLines(
+    private static IReadOnlyList<DailyPortfolioPricingJournalLine> BuildJournalLines(
+        DailyPortfolioPricingInput input,
         IReadOnlyList<DailyPortfolioPricingLine> lines)
     {
-        var journalLines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
+        var journalLines = new List<DailyPortfolioPricingJournalLine>();
 
         foreach (var line in lines)
         {
-            if (line.UnrealizedGainOrLoss == 0m)
+            if (line.MarkAdjustment == 0m)
                 continue;
 
             var securitiesAccount = LedgerAccounts.Securities(line.Symbol, line.FinancialAccountId);
             var scope = line.FinancialAccountId ?? line.Symbol;
+            var dimensions = new LedgerLineDimensionSet(
+                FundId: input.Policy.FundId,
+                InstrumentId: line.SecurityId,
+                AccountId: line.FinancialAccountId);
 
-            if (line.UnrealizedGainOrLoss > 0m)
+            if (line.MarkAdjustment > 0m)
             {
-                journalLines.Add((securitiesAccount, line.UnrealizedGainOrLoss, 0m));
-                journalLines.Add((LedgerAccounts.UnrealizedGainFor(scope), 0m, line.UnrealizedGainOrLoss));
+                journalLines.Add(new DailyPortfolioPricingJournalLine(line, securitiesAccount, line.MarkAdjustment, 0m, dimensions));
+                journalLines.Add(new DailyPortfolioPricingJournalLine(line, LedgerAccounts.UnrealizedGainFor(scope), 0m, line.MarkAdjustment, dimensions));
             }
             else
             {
-                var loss = Math.Abs(line.UnrealizedGainOrLoss);
-                journalLines.Add((LedgerAccounts.UnrealizedLossFor(scope), loss, 0m));
-                journalLines.Add((securitiesAccount, 0m, loss));
+                var loss = Math.Abs(line.MarkAdjustment);
+                journalLines.Add(new DailyPortfolioPricingJournalLine(line, LedgerAccounts.UnrealizedLossFor(scope), loss, 0m, dimensions));
+                journalLines.Add(new DailyPortfolioPricingJournalLine(line, securitiesAccount, 0m, loss, dimensions));
             }
         }
 

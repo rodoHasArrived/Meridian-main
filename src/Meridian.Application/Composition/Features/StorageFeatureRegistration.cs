@@ -55,6 +55,7 @@ using Meridian.Storage.Integrations;
 using Meridian.Storage.MoneyMarket;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
+using Meridian.Ledger;
 using Meridian.Storage.Maintenance;
 using Meridian.Storage.Policies;
 using Meridian.Storage.Query;
@@ -178,6 +179,17 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<IFileMaintenanceService, FileMaintenanceService>();
         services.AddSingleton<IQualityTrendStore, FileQualityTrendStore>();
         services.AddSingleton<IDataQualityService, DataQualityService>();
+        services.TryAddSingleton<IDataQualityScoringService>(sp => new DataQualityScoringService(
+            sp.GetRequiredService<StorageOptions>(),
+            sp.GetRequiredService<ILogger<DataQualityScoringService>>(),
+            sp.GetService<ISourceRegistry>(),
+            sp.GetService<IMetadataTagService>()));
+        services.TryAddSingleton<Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer>(sp =>
+            new Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer(
+                sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<DataQualityMonitor>(sp => new DataQualityMonitor(
+            sp.GetRequiredService<Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer>(),
+            sp.GetRequiredService<StorageOptions>().RootPath));
         services.AddSingleton<IStorageSearchService, StorageSearchService>();
         services.AddSingleton<ITierMigrationService, TierMigrationService>();
         services.AddSingleton<IAuditChainService, AuditChainService>();
@@ -200,6 +212,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
+            services.AddSingleton(sp => new DurableAutomatedJournalPoster(
+                sp.GetRequiredService<IGovernedLedgerPostingTarget>()));
+            services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
+                sp.GetRequiredService<DurableAutomatedJournalPoster>());
             services.AddSingleton<PostgresAccountingConfigurationStore>();
             services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
@@ -309,6 +326,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterQualityReportStore, PostgresSecurityMasterQualityReportStore>();
             services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
             services.AddSingleton<IStructuredCashFlowLedgerBridge, StructuredCashFlowLedgerBridge>();
+            services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
@@ -339,7 +357,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         {
             services.AddSingleton(assetOperationsOptions);
             services.AddSingleton<AssetOperationsMigrationRunner>();
-            services.AddSingleton<IAssetOperationsProjectionStore, PostgresAssetOperationsProjectionStore>();
+            services.AddSingleton<PostgresAssetOperationsProjectionStore>();
+            services.AddSingleton<IAssetOperationsProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
+            services.AddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
         }
 
         // Register null/stub implementations as fallbacks when Security Master is not configured.
@@ -377,10 +399,18 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
-        services.TryAddSingleton<IAssetOperationsProjectionStore, InMemoryAssetOperationsProjectionStore>();
+        if (!AssetOperationsStartup.IsConfigured())
+        {
+            services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();
+            services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+        }
         services.TryAddSingleton<AssetObligationProjectionService>();
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
+        services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
 
         if (DirectLendingStartup.IsConfigured())
         {
@@ -540,17 +570,20 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
             return new FundOperationsPersistenceOptions { DomainModes = domainModes };
         });
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
-        services.AddSingleton<IDomainProjectionReconciliationJob>(
-            _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+        if (!ProductionServiceRegistrationPolicy.IsProductionComposition(services))
+        {
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundStructure));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.FundAccounts));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.DirectLending));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.Banking));
+            services.AddSingleton<IDomainProjectionReconciliationJob>(
+                _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
+        }
         return services;
     }
 

@@ -7,11 +7,12 @@ using System.Globalization;
 
 namespace Meridian.Wpf.ViewModels.Accounting;
 
-public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableBase
+public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private readonly IAccountingProjectionQueryService _queryService;
     private readonly IAccountingCloseManagementService? _closeManagementService;
     private ClosePeriodPlanDto? _closePlan;
+    private ClosePostingGateDto? _closingEntriesGate;
     private Guid _closeWorkflowId;
     private long _closeWorkflowVersion;
     private ClosePeriodState _closeState = ClosePeriodState.Open;
@@ -70,6 +71,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         RequestLateAdjustmentCommand = new AsyncRelayCommand(RequestLateAdjustmentAsync, CanRequestLateAdjustment);
         ReviewLateAdjustmentCommand = new AsyncRelayCommand(ReviewLateAdjustmentAsync, CanReviewLateAdjustment);
         ReviewCloseEvidenceCommand = new AsyncRelayCommand(ReviewCloseEvidenceAsync, CanReviewCloseEvidence);
+        QueueClosingEntriesCommand = new AsyncRelayCommand(QueueClosingEntriesAsync, CanQueueClosingEntries);
         LockClosePeriodCommand = new AsyncRelayCommand(LockClosePeriodAsync, CanLockClosePeriod);
     }
 
@@ -85,6 +87,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     public ObservableCollection<AccountingWorkbenchRow> CloseEvidenceReviewRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ClosePeriodLockIssueRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> CloseOperatingCoverageRows { get; } = [];
+    public ObservableCollection<AccountingClosePostingBalanceRow> ClosingEntryBalanceRows { get; } = [];
     public ObservableCollection<CloseWorkflowStep> CloseWorkflowSteps { get; } = [];
     public ObservableCollection<CloseSetupTaskOption> CloseSetupTaskOptions { get; } = [];
     public IReadOnlyList<string> CloseTaskSignOffDecisionOptions { get; } =
@@ -105,6 +108,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
     public IAsyncRelayCommand RequestLateAdjustmentCommand { get; }
     public IAsyncRelayCommand ReviewLateAdjustmentCommand { get; }
     public IAsyncRelayCommand ReviewCloseEvidenceCommand { get; }
+    public IAsyncRelayCommand QueueClosingEntriesCommand { get; }
     public IAsyncRelayCommand LockClosePeriodCommand { get; }
 
     public string CloseWorkflowIdText
@@ -633,6 +637,79 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         }
     }
 
+    public ClosePostingGateDto? ClosingEntriesGate
+    {
+        get => _closingEntriesGate;
+        private set
+        {
+            if (!SetProperty(ref _closingEntriesGate, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(ClosingEntriesGateStatusText));
+            RaisePropertyChanged(nameof(ClosingEntriesNetIncomeRollText));
+            RaisePropertyChanged(nameof(ClosingEntriesBalanceCountText));
+            RaisePropertyChanged(nameof(ClosingEntriesLockPostureText));
+            RaisePropertyChanged(nameof(ClosingEntriesDetailText));
+            RaisePropertyChanged(nameof(ClosingEntriesJournalEvidenceText));
+            QueueClosingEntriesCommand.NotifyCanExecuteChanged();
+            LockClosePeriodCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    public string ClosingEntriesGateStatusText
+        => ClosingEntriesGate is null
+            ? "Not supplied"
+            : FormatClosePostingGateState(ClosingEntriesGate.State);
+
+    public string ClosingEntriesNetIncomeRollText
+        => ClosingEntriesGate is null
+            ? "Net-income roll unavailable"
+            : string.Format(
+                CultureInfo.InvariantCulture,
+                "{0:+#,##0.00;-#,##0.00;0.00} {1}",
+                ClosingEntriesGate.NetIncomeRoll,
+                _closePlan?.MaterialityPolicy.Currency ?? string.Empty).TrimEnd();
+
+    public string ClosingEntriesBalanceCountText
+        => ClosingEntriesGate is null
+            ? "Scoped balances unavailable"
+            : $"{ClosingEntriesGate.TemporaryAccountBalanceCount:N0} {Pluralize(ClosingEntriesGate.TemporaryAccountBalanceCount, "temporary-account balance", "temporary-account balances")}";
+
+    public string ClosingEntriesLockPostureText
+        => ClosingEntriesGate is null
+            ? "Lock posture unavailable"
+            : ClosingEntriesGate.IsReadyForLock
+                ? "Ready for lock"
+                : "Posting required before lock";
+
+    public string ClosingEntriesDetailText
+        => ClosingEntriesGate?.Detail
+            ?? "The shared close plan did not return the typed closing-entry posting gate.";
+
+    public string ClosingEntriesJournalEvidenceText
+    {
+        get
+        {
+            if (ClosingEntriesGate is not { } gate)
+            {
+                return "No closing-entry draft, batch, reversal, or evidence identifiers were returned.";
+            }
+
+            var draft = gate.DraftJournalEntryId is { } draftId
+                ? $"Draft {draftId:D}{(gate.DraftStatus is { } status ? $" ({status})" : string.Empty)}"
+                : "No draft queued";
+            var closingBatches = gate.ClosingBatchJournalEntryIds.Count == 0
+                ? "no closing batches"
+                : $"closing batches {string.Join(", ", gate.ClosingBatchJournalEntryIds.Select(static id => id.ToString("D")))}";
+            var reversals = gate.ReversalDraftJournalEntryIds.Count == 0
+                ? "no reversal drafts"
+                : $"reversal drafts {string.Join(", ", gate.ReversalDraftJournalEntryIds.Select(static id => id.ToString("D")))}";
+            return $"{draft}; {closingBatches}; {reversals}; {gate.EvidenceLinks.Count:N0} {Pluralize(gate.EvidenceLinks.Count, "evidence link", "evidence links")}.";
+        }
+    }
+
     public SourceLinkedAuditLine? SelectedAuditLine
     {
         get => _selectedAuditLine;
@@ -712,18 +789,24 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
 
     public void ApplyClosePlan(ClosePeriodPlanDto closePlan)
     {
-        ApplyClosePlan(closePlan.Configuration?.WorkflowId ?? Guid.Empty, closePlan);
+        ApplyClosePlan(
+            closePlan.Configuration?.WorkflowId ?? Guid.Empty,
+            closePlan.WorkflowVersion,
+            closePlan);
     }
 
     public void ApplyClosePlan(Guid workflowId, ClosePeriodPlanDto closePlan)
-        => ApplyClosePlan(workflowId, _closeWorkflowVersion, closePlan);
+        => ApplyClosePlan(workflowId, closePlan.WorkflowVersion, closePlan);
 
     public void ApplyClosePlan(Guid workflowId, long workflowVersion, ClosePeriodPlanDto closePlan)
     {
         ArgumentNullException.ThrowIfNull(closePlan);
         _closeWorkflowId = workflowId;
-        _closeWorkflowVersion = Math.Max(0, workflowVersion);
+        _closeWorkflowVersion = closePlan.WorkflowVersion > 0
+            ? closePlan.WorkflowVersion
+            : Math.Max(0, workflowVersion);
         _closePlan = closePlan;
+        ApplyClosingEntriesGate(closePlan);
         ApplyCloseSetupDraft(closePlan);
         ApplyCloseReviewRows(closePlan);
         ClosePlanSetupStatusText = workflowId == Guid.Empty
@@ -735,7 +818,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             ? $"Close plan {closePlan.PeriodId} loaded without workflow context; period lock is disabled."
             : closePlan.IsPeriodLocked
             ? $"Close plan {closePlan.PeriodId} is already locked."
-            : $"Close plan {closePlan.PeriodId} is ready for governed period-lock review.";
+            : ResolveClosePeriodLockStatus(closePlan);
         CloseTaskSignOffStatusText = workflowId == Guid.Empty
             ? $"Close plan {closePlan.PeriodId} loaded without workflow context; task sign-off is disabled."
             : closePlan.IsPeriodLocked
@@ -769,6 +852,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         RequestLateAdjustmentCommand.NotifyCanExecuteChanged();
         ReviewLateAdjustmentCommand.NotifyCanExecuteChanged();
         ReviewCloseEvidenceCommand.NotifyCanExecuteChanged();
+        QueueClosingEntriesCommand.NotifyCanExecuteChanged();
         LockClosePeriodCommand.NotifyCanExecuteChanged();
         RefreshCloseWorkflowSteps();
     }
@@ -997,10 +1081,35 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
            _closePlan is { IsPeriodLocked: false } closePlan &&
            ValidateLateAdjustmentDraft(closePlan) is null;
 
+    private bool CanQueueClosingEntries()
+        => _closeManagementService is not null &&
+           _closeWorkflowId != Guid.Empty &&
+           _closePlan is { IsPeriodLocked: false } &&
+           ClosingEntriesGate?.State == ClosePostingGateStateDto.Required;
+
+    private static string ResolveClosePeriodLockStatus(ClosePeriodPlanDto closePlan)
+        => closePlan.ClosingEntriesGate switch
+        {
+            null => "The shared close plan did not return a closing-entry gate; period lock is disabled.",
+            { State: ClosePostingGateStateDto.Required } =>
+                $"Close plan {closePlan.PeriodId} requires closing entries to be queued before period lock.",
+            { State: ClosePostingGateStateDto.DraftQueued or ClosePostingGateStateDto.Submitted or ClosePostingGateStateDto.Approved } gate =>
+                $"Close plan {closePlan.PeriodId} cannot lock until closing entries advance from {FormatClosePostingGateState(gate.State)} to Posted.",
+            { IsReadyForLock: true, State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired } =>
+                $"Close plan {closePlan.PeriodId} is ready for governed period-lock review.",
+            { } gate =>
+                $"Close plan {closePlan.PeriodId} cannot lock while closing-entry gate state is {FormatClosePostingGateState(gate.State)}."
+        };
+
     private bool CanLockClosePeriod()
         => _closeManagementService is not null &&
            _closeWorkflowId != Guid.Empty &&
-           _closePlan is { IsPeriodLocked: false };
+           _closePlan is { IsPeriodLocked: false } &&
+           ClosingEntriesGate is
+           {
+               IsReadyForLock: true,
+               State: ClosePostingGateStateDto.Posted or ClosePostingGateStateDto.NotRequired
+           };
 
     private async Task LoadClosePlanAsync()
     {
@@ -1023,7 +1132,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             return;
         }
 
-        ApplyClosePlan(workflowId, 0, closePlan);
+        ApplyClosePlan(workflowId, closePlan);
         CloseWorkflowIdText = workflowId.ToString("D");
         ClosePlanSetupStatusText = $"Loaded close plan {closePlan.PeriodId} for governed setup retention.";
     }
@@ -1068,7 +1177,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             ClosePlanSetupStatusText = $"Retained close-plan setup for {updated.PeriodId}.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
@@ -1130,7 +1239,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             CloseTaskSignOffStatusText = request.Decision == ManualJournalEntryStatusDto.Approved
                 ? $"Retained {request.Role} sign-off evidence for close task {request.TaskId}."
                 : $"Retained {request.Role} rejection evidence for close task {request.TaskId}.";
@@ -1187,7 +1296,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             LateAdjustmentRequestStatusText = $"Requested retained late adjustment for journal {request.JournalEntryId:D}.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
@@ -1242,7 +1351,7 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             LateAdjustmentReviewStatusText = $"{request.Decision} late adjustment {request.RequestId} with retained WPF review evidence.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
@@ -1297,12 +1406,79 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 return;
             }
 
-            ApplyClosePlan(_closeWorkflowId, _closeWorkflowVersion, updated);
+            ApplyClosePlan(_closeWorkflowId, updated);
             CloseEvidenceReviewStatusText = $"Retained WPF evidence review for blocker {request.IssueCode}.";
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
             CloseEvidenceReviewStatusText = $"Close evidence review could not be retained: {ex.Message}";
+        }
+    }
+
+    private async Task QueueClosingEntriesAsync()
+    {
+        if (_closeManagementService is null)
+        {
+            ClosePeriodLockStatusText = "Close management service is not registered for this desktop session.";
+            return;
+        }
+
+        if (_closePlan is null || _closeWorkflowId == Guid.Empty)
+        {
+            ClosePeriodLockStatusText = "Load a workflow-scoped close plan before queuing closing entries.";
+            return;
+        }
+
+        if (_closePlan.IsPeriodLocked)
+        {
+            ClosePeriodLockStatusText = $"Close plan {_closePlan.PeriodId} is already locked.";
+            return;
+        }
+
+        if (!CanQueueClosingEntries())
+        {
+            ClosePeriodLockStatusText = ClosingEntriesGate is null
+                ? "The shared close plan did not return a closing-entry gate."
+                : $"Closing entries can only be queued while the gate is Required; current state is {ClosingEntriesGateStatusText}.";
+            return;
+        }
+
+        try
+        {
+            var request = BuildClosePeriodLockRequest(
+                _closeWorkflowId,
+                _closeWorkflowVersion,
+                _closePlan,
+                prepareClosingEntriesOnly: true);
+            var result = await _closeManagementService
+                .LockClosePeriodAsync(request, "wpf-accounting-controller")
+                .ConfigureAwait(true);
+
+            if (result is null)
+            {
+                ClosePeriodLockStatusText = $"Close workflow {_closeWorkflowId:D} was not found.";
+                return;
+            }
+
+            if (result.Plan is not null)
+            {
+                ApplyClosePlan(_closeWorkflowId, result.Plan);
+            }
+
+            ApplyClosePeriodLockIssues(result.Issues);
+            ClosePeriodLockStatusText = result.Plan is
+            {
+                ClosingEntriesGate.State: ClosePostingGateStateDto.DraftQueued or
+                        ClosePostingGateStateDto.Submitted or
+                        ClosePostingGateStateDto.Approved or
+                        ClosePostingGateStateDto.Posted
+            } preparedPlan
+                    ? $"Prepared closing-entry workflow for close period {preparedPlan.PeriodId}; human approval and posting remain governed."
+                    : $"Closing-entry preparation is blocked by {result.Issues.Count} issue(s).";
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        {
+            ClosePeriodLockStatusText = $"Closing entries could not be queued: {ex.Message}";
         }
     }
 
@@ -1332,9 +1508,21 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
             return;
         }
 
+        if (!CanLockClosePeriod())
+        {
+            ClosePeriodLockStatusText = ClosingEntriesGate is null
+                ? "The accounting period cannot lock without a shared closing-entry gate."
+                : $"The accounting period cannot lock while closing-entry gate state is {ClosingEntriesGateStatusText}. Post closing entries or resolve the gate first.";
+            return;
+        }
+
         try
         {
-            var request = BuildClosePeriodLockRequest(_closeWorkflowId, _closeWorkflowVersion, _closePlan);
+            var request = BuildClosePeriodLockRequest(
+                _closeWorkflowId,
+                _closeWorkflowVersion,
+                _closePlan,
+                prepareClosingEntriesOnly: false);
             var result = await _closeManagementService
                 .LockClosePeriodAsync(request, "wpf-accounting-controller")
                 .ConfigureAwait(true);
@@ -1347,7 +1535,10 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
 
             if (result.Plan is not null)
             {
-                ApplyClosePlan(_closeWorkflowId, result.Transition?.NewVersion ?? _closeWorkflowVersion, result.Plan);
+                ApplyClosePlan(
+                    _closeWorkflowId,
+                    result.Transition?.NewVersion ?? _closeWorkflowVersion,
+                    result.Plan);
             }
 
             ApplyClosePeriodLockIssues(result.Issues);
@@ -1359,425 +1550,6 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         {
             ClosePeriodLockStatusText = $"Close-period lock could not be retained: {ex.Message}";
         }
-    }
-
-    private string? ValidateCloseSetupDraft(ClosePeriodPlanDto closePlan)
-    {
-        if (CloseSetupAmountThreshold < 0)
-        {
-            return "Enter a non-negative materiality amount threshold before retaining close setup.";
-        }
-
-        if (CloseSetupPercentThreshold < 0)
-        {
-            return "Enter a non-negative materiality percent threshold before retaining close setup.";
-        }
-
-        var currency = NormalizeOptional(CloseSetupCurrency);
-        if (currency is null || currency.Length != 3 || currency.Any(static character => !char.IsLetter(character)))
-        {
-            return "Enter a three-letter materiality currency before retaining close setup.";
-        }
-
-        if (NormalizeOptional(CloseSetupReviewRole) is null)
-        {
-            return "Enter a materiality review role before retaining close setup.";
-        }
-
-        var taskId = NormalizeOptional(CloseSetupTaskId);
-        if (taskId is null)
-        {
-            return "Select a retained close checklist task before retaining close setup.";
-        }
-
-        if (!closePlan.Tasks.Any(task => string.Equals(task.TaskId, taskId, StringComparison.OrdinalIgnoreCase)))
-        {
-            return $"Close checklist task {taskId} is not loaded in this close plan.";
-        }
-
-        if (!string.IsNullOrWhiteSpace(CloseSetupTaskDueDateText) &&
-            !DateOnly.TryParseExact(CloseSetupTaskDueDateText.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
-        {
-            return "Close task due date must use yyyy-MM-dd format before retaining close setup.";
-        }
-
-        if (CloseSetupTaskRequiredApprovalCount <= 0)
-        {
-            return "Enter a positive required approval count before retaining close setup.";
-        }
-
-        if (NormalizeOptional(CloseSetupTaskRequiredApprovalRole) is null)
-        {
-            return "Enter an approval role before retaining close setup.";
-        }
-
-        if (NormalizeOptional(CloseSetupTaskRequiredEvidence) is null)
-        {
-            return "Enter required sign-off evidence before retaining close setup.";
-        }
-
-        foreach (var entry in SplitCloseSetupSignOffRequirements(CloseSetupTaskSignOffRequirementsText))
-        {
-            var requirement = ParseCloseSetupSignOffRequirement(entry);
-            if (NormalizeOptional(requirement.Role) is null)
-            {
-                return "Enter a role for every sign-off matrix row before retaining close setup.";
-            }
-
-            if (requirement.RequiredApprovalCount <= 0)
-            {
-                return $"Enter a positive approval count for {requirement.Role} before retaining close setup.";
-            }
-        }
-
-        return null;
-    }
-
-    private string? ValidateCloseTaskSignOffDraft(ClosePeriodPlanDto closePlan)
-    {
-        var taskId = NormalizeOptional(CloseTaskSignOffTaskId);
-        if (taskId is null)
-        {
-            return "Select a retained close checklist task before retaining sign-off evidence.";
-        }
-
-        var task = closePlan.Tasks.FirstOrDefault(task =>
-            string.Equals(task.TaskId, taskId, StringComparison.OrdinalIgnoreCase));
-        if (task is null)
-        {
-            return $"Close checklist task {taskId} is not loaded in this close plan.";
-        }
-
-        if (task.Status is CloseTaskStatusDto.SignedOff)
-        {
-            return $"Close checklist task {task.TaskId} is already signed off.";
-        }
-
-        if (task.Status is CloseTaskStatusDto.Blocked or CloseTaskStatusDto.WaitingOnDependency)
-        {
-            return $"Close checklist task {task.TaskId} is {task.Status} and cannot be signed off yet.";
-        }
-
-        var role = NormalizeOptional(CloseTaskSignOffRole);
-        if (role is null)
-        {
-            return "Enter a sign-off role before retaining close task sign-off evidence.";
-        }
-
-        if (task.SignOffRequirements.Count > 0 &&
-            !task.SignOffRequirements.Any(requirement => string.Equals(requirement.Role, role, StringComparison.OrdinalIgnoreCase)))
-        {
-            return $"Close checklist task {task.TaskId} does not allow sign-off role {role}.";
-        }
-
-        if (!TryParseCloseTaskSignOffDecision(out _))
-        {
-            return "Select Approved or Rejected before retaining close task sign-off evidence.";
-        }
-
-        return null;
-    }
-
-    private string? ValidateLateAdjustmentDraft(ClosePeriodPlanDto closePlan)
-    {
-        if (!Guid.TryParse(LateAdjustmentJournalEntryIdText, out var journalEntryId) || journalEntryId == Guid.Empty)
-        {
-            return "Enter a journal entry id before requesting a late adjustment.";
-        }
-
-        if (!TryParseLateAdjustmentAmount(out var amount) || amount == 0m)
-        {
-            return "Enter a non-zero late adjustment amount before retaining the request.";
-        }
-
-        var currency = NormalizeOptional(LateAdjustmentCurrency);
-        if (currency is null || currency.Length != 3 || currency.Any(static character => !char.IsLetter(character)))
-        {
-            return "Enter a three-letter late adjustment currency before retaining the request.";
-        }
-
-        if (NormalizeOptional(LateAdjustmentReason) is null)
-        {
-            return "Enter a late adjustment reason before retaining the request.";
-        }
-
-        if (closePlan.LateAdjustments.Any(adjustment =>
-                adjustment.JournalEntryId == journalEntryId &&
-                adjustment.ApprovalState is not ManualJournalEntryStatusDto.Rejected))
-        {
-            return $"Journal entry {journalEntryId:D} already has a retained late adjustment request.";
-        }
-
-        return null;
-    }
-
-    private CreateLateAdjustmentRequestDto BuildCreateLateAdjustmentRequest(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan)
-    {
-        var journalEntryId = Guid.Parse(LateAdjustmentJournalEntryIdText.Trim());
-        var amount = ParseLateAdjustmentAmount();
-        var currency = NormalizeRequired(LateAdjustmentCurrency, closePlan.MaterialityPolicy.Currency).ToUpperInvariant();
-        var reason = NormalizeRequired(LateAdjustmentReason, "WPF late adjustment request.");
-
-        return new CreateLateAdjustmentRequestDto(
-            workflowId,
-            journalEntryId,
-            amount,
-            currency,
-            reason,
-            "wpf-accounting-controller",
-            BuildLateAdjustmentRequestEvidence(workflowId, closePlan, journalEntryId),
-            $"wpf-late-adjustment-request-{workflowId:D}-{journalEntryId:D}",
-            OperationsActionOriginDto.HumanOperator);
-    }
-
-    private UpsertClosePeriodPlanConfigurationRequestDto BuildClosePlanConfigurationRequest(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan)
-    {
-        var materialityPolicy = new MaterialityPolicyDto(
-            closePlan.MaterialityPolicy.PolicyId,
-            CloseSetupAmountThreshold,
-            CloseSetupPercentThreshold,
-            NormalizeRequired(CloseSetupCurrency, closePlan.MaterialityPolicy.Currency),
-            NormalizeRequired(CloseSetupReviewRole, closePlan.MaterialityPolicy.ReviewRole),
-            CloseSetupRequiresLateAdjustmentApproval);
-        var editableTaskId = NormalizeOptional(CloseSetupTaskId)
-                             ?? closePlan.Tasks.FirstOrDefault()?.TaskId
-                             ?? "close-task";
-        var editableTaskDueDate = ParseCloseSetupDueDate(CloseSetupTaskDueDateText);
-        var editableTaskDependencies = ParseCloseSetupDependencies(CloseSetupTaskDependsOnTaskIdsText);
-        var editableTaskDependencyIdReasons = ParseCloseSetupDependencyReasonOverrides(CloseSetupTaskDependsOnTaskIdsText);
-        var editableTaskDependencyReasonOverrides = ParseCloseSetupDependencyReasonOverrides(CloseSetupTaskDependencyReason);
-        var editableTaskDependencyReason = editableTaskDependencyReasonOverrides.Count == 0
-            ? NormalizeOptional(CloseSetupTaskDependencyReason)
-            : null;
-        var editableTaskSignOffRequirements = ParseCloseSetupSignOffRequirements(CloseSetupTaskSignOffRequirementsText);
-        var taskConfigurations = closePlan.Tasks
-            .Select(task =>
-            {
-                var requiredApprovalCount = Math.Max(
-                    1,
-                    task.SignOffRequirements.Count == 0
-                        ? 1
-                        : task.SignOffRequirements.Max(static requirement => requirement.RequiredApprovalCount));
-                var requiredEvidence = string.Join(
-                    "; ",
-                    task.SignOffRequirements
-                        .Select(static requirement => requirement.EvidenceRequirement.Trim())
-                        .Where(static value => value.Length > 0));
-                var fallbackSignOffRequirements = BuildCloseSetupSignOffRequirementConfigurations(task.SignOffRequirements);
-                if (fallbackSignOffRequirements.Count == 0)
-                {
-                    fallbackSignOffRequirements =
-                    [
-                        new CloseTaskSignOffRequirementConfigurationDto(
-                            task.SignOffRequirements.FirstOrDefault()?.Role ?? task.Owner,
-                            requiredApprovalCount,
-                            string.IsNullOrWhiteSpace(requiredEvidence) ? "Retained close checklist evidence" : requiredEvidence)
-                    ];
-                }
-
-                if (!string.Equals(task.TaskId, editableTaskId, StringComparison.OrdinalIgnoreCase))
-                {
-                    var primaryRequirement = fallbackSignOffRequirements[0];
-                    return new CloseTaskConfigurationDto(
-                        task.TaskId,
-                        task.DisplayName,
-                        task.Owner,
-                        task.DueDate,
-                        primaryRequirement.RequiredApprovalCount,
-                        primaryRequirement.Role,
-                        primaryRequirement.EvidenceRequirement,
-                        task.Dependencies.Select(static dependency => dependency.DependsOnTaskId).ToArray(),
-                        task.Dependencies.Select(static dependency => new CloseTaskDependencyConfigurationDto(
-                            dependency.DependsOnTaskId,
-                            dependency.Reason)).ToArray(),
-                        fallbackSignOffRequirements);
-                }
-
-                var editableFallbackRequirement = new CloseTaskSignOffRequirementConfigurationDto(
-                    NormalizeOptional(CloseSetupTaskRequiredApprovalRole)
-                        ?? task.SignOffRequirements.FirstOrDefault()?.Role
-                        ?? task.Owner,
-                    Math.Max(1, CloseSetupTaskRequiredApprovalCount),
-                    NormalizeOptional(CloseSetupTaskRequiredEvidence)
-                        ?? (string.IsNullOrWhiteSpace(requiredEvidence) ? "Retained close checklist evidence" : requiredEvidence));
-                var editableSignOffRequirements = editableTaskSignOffRequirements.Count == 0
-                    ? [editableFallbackRequirement]
-                    : editableTaskSignOffRequirements;
-                var editablePrimaryRequirement = editableSignOffRequirements[0];
-                return new CloseTaskConfigurationDto(
-                    task.TaskId,
-                    NormalizeOptional(CloseSetupTaskDisplayName) ?? task.DisplayName,
-                    NormalizeOptional(CloseSetupTaskOwner) ?? task.Owner,
-                    editableTaskDueDate ?? task.DueDate,
-                    editablePrimaryRequirement.RequiredApprovalCount,
-                    editablePrimaryRequirement.Role,
-                    editablePrimaryRequirement.EvidenceRequirement,
-                    editableTaskDependencies,
-                    BuildCloseSetupDependencyConfigurations(
-                        editableTaskDependencies,
-                        editableTaskDependencyIdReasons,
-                        editableTaskDependencyReasonOverrides,
-                        editableTaskDependencyReason,
-                        task.Dependencies),
-                    editableSignOffRequirements);
-            })
-            .ToArray();
-
-        return new UpsertClosePeriodPlanConfigurationRequestDto(
-            workflowId,
-            materialityPolicy,
-            taskConfigurations,
-            Actor: "wpf-accounting-controller",
-            EvidenceLinks: BuildClosePlanConfigurationEvidence(workflowId, closePlan),
-            CorrelationId: $"wpf-close-plan-configuration-{workflowId:D}",
-            ActionOrigin: OperationsActionOriginDto.HumanOperator,
-            ExpectedConfiguredAtUtc: closePlan.Configuration?.ConfiguredAtUtc);
-    }
-
-    private void ApplyCloseSetupDraft(ClosePeriodPlanDto closePlan)
-    {
-        var materiality = closePlan.MaterialityPolicy;
-        CloseSetupAmountThreshold = materiality.AmountThreshold;
-        CloseSetupPercentThreshold = materiality.PercentThreshold;
-        CloseSetupCurrency = materiality.Currency;
-        CloseSetupReviewRole = materiality.ReviewRole;
-        CloseSetupRequiresLateAdjustmentApproval = materiality.RequiresLateAdjustmentApproval;
-
-        CloseSetupTaskOptions.Clear();
-        foreach (var task in closePlan.Tasks)
-        {
-            CloseSetupTaskOptions.Add(BuildCloseSetupTaskOption(task));
-        }
-
-        var firstTask = closePlan.Tasks.FirstOrDefault();
-        var firstTaskId = firstTask?.TaskId ?? string.Empty;
-        if (string.Equals(SelectedCloseSetupTaskId, firstTaskId, StringComparison.Ordinal))
-        {
-            ApplyCloseSetupTaskDraft(firstTask);
-        }
-        else
-        {
-            SelectedCloseSetupTaskId = firstTaskId;
-        }
-    }
-
-    private void ApplyCloseSetupTaskDraft(CloseTaskDto? task)
-    {
-        if (task is null)
-        {
-            CloseSetupTaskId = string.Empty;
-            CloseSetupTaskDisplayName = string.Empty;
-            CloseSetupTaskOwner = string.Empty;
-            CloseSetupTaskDueDateText = string.Empty;
-            CloseSetupTaskRequiredApprovalCount = 1;
-            CloseSetupTaskRequiredApprovalRole = "Controller";
-            CloseSetupTaskRequiredEvidence = "Retained close checklist evidence";
-            CloseSetupTaskSignOffRequirementsText = string.Empty;
-            CloseSetupTaskDependsOnTaskIdsText = string.Empty;
-            CloseSetupTaskDependencyReason = "Configured close-plan dependency.";
-            return;
-        }
-
-        var requiredApprovalCount = Math.Max(
-            1,
-            task.SignOffRequirements.Count == 0
-                ? 1
-                : task.SignOffRequirements.Max(static requirement => requirement.RequiredApprovalCount));
-        var requiredEvidence = string.Join(
-            "; ",
-            task.SignOffRequirements
-                .Select(static requirement => requirement.EvidenceRequirement.Trim())
-                .Where(static value => value.Length > 0));
-
-        CloseSetupTaskId = task.TaskId;
-        CloseSetupTaskDisplayName = task.DisplayName;
-        CloseSetupTaskOwner = task.Owner;
-        CloseSetupTaskDueDateText = task.DueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        CloseSetupTaskRequiredApprovalCount = requiredApprovalCount;
-        CloseSetupTaskRequiredApprovalRole = task.SignOffRequirements.FirstOrDefault()?.Role ?? task.Owner;
-        CloseSetupTaskRequiredEvidence = string.IsNullOrWhiteSpace(requiredEvidence)
-            ? "Retained close checklist evidence"
-            : requiredEvidence;
-        CloseSetupTaskSignOffRequirementsText = BuildCloseSetupSignOffRequirementText(task.SignOffRequirements);
-        CloseSetupTaskDependsOnTaskIdsText = string.Join(", ", task.Dependencies.Select(static dependency => dependency.DependsOnTaskId));
-        CloseSetupTaskDependencyReason = BuildCloseSetupDependencyReason(task.Dependencies);
-    }
-
-    private static CloseSetupTaskOption BuildCloseSetupTaskOption(CloseTaskDto task)
-    {
-        var signOffSummary = task.SignOffRequirements.Count == 0
-            ? "No sign-off requirement"
-            : string.Join(
-                "; ",
-                task.SignOffRequirements.Select(static requirement =>
-                    $"{requirement.Role}: {requirement.ApprovedCount}/{requirement.RequiredApprovalCount}"));
-
-        return new CloseSetupTaskOption(
-            task.TaskId,
-            string.IsNullOrWhiteSpace(task.DisplayName) ? task.TaskId : task.DisplayName,
-            task.Status.ToString(),
-            task.Owner,
-            task.DueDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            signOffSummary);
-    }
-
-    private CloseTaskDto? ApplyCloseTaskSignOffDraft(ClosePeriodPlanDto closePlan)
-    {
-        var task = ResolveNextSignOffTask(closePlan);
-        if (task is null)
-        {
-            CloseTaskSignOffTaskId = string.Empty;
-            CloseTaskSignOffRole = string.Empty;
-            CloseTaskSignOffDecision = ManualJournalEntryStatusDto.Approved.ToString();
-            CloseTaskSignOffNotes = string.Empty;
-            return null;
-        }
-
-        var requirement = task.SignOffRequirements.FirstOrDefault(static row => !row.IsSatisfied)
-                          ?? task.SignOffRequirements.FirstOrDefault();
-        CloseTaskSignOffTaskId = task.TaskId;
-        CloseTaskSignOffRole = string.IsNullOrWhiteSpace(requirement?.Role) ? task.Owner : requirement!.Role.Trim();
-        CloseTaskSignOffDecision = ManualJournalEntryStatusDto.Approved.ToString();
-        CloseTaskSignOffNotes = $"WPF Accounting Close retained {CloseTaskSignOffRole} sign-off evidence for {task.DisplayName}.";
-        return task;
-    }
-
-    private LateAdjustmentRequestDto? ApplyLateAdjustmentReviewDraft(ClosePeriodPlanDto closePlan)
-    {
-        var adjustment = ResolveNextLateAdjustment(closePlan);
-        if (adjustment is null)
-        {
-            LateAdjustmentReviewRequestId = string.Empty;
-            LateAdjustmentReviewDecision = ManualJournalEntryStatusDto.Approved.ToString();
-            LateAdjustmentReviewNotes = string.Empty;
-            return null;
-        }
-
-        LateAdjustmentReviewRequestId = adjustment.RequestId;
-        LateAdjustmentReviewDecision = ManualJournalEntryStatusDto.Approved.ToString();
-        LateAdjustmentReviewNotes = $"WPF Accounting Close approved late adjustment {adjustment.RequestId}.";
-        return adjustment;
-    }
-
-    private AccountingConfigurationValidationIssueDto? ApplyCloseEvidenceReviewDraft(ClosePeriodPlanDto closePlan)
-    {
-        var issue = ResolveNextCloseEvidenceReviewIssue(closePlan);
-        if (issue is null)
-        {
-            CloseEvidenceReviewIssueCode = string.Empty;
-            CloseEvidenceReviewTargetId = string.Empty;
-            CloseEvidenceReviewNotes = string.Empty;
-            return null;
-        }
-
-        CloseEvidenceReviewIssueCode = issue.Code;
-        CloseEvidenceReviewTargetId = issue.TargetId ?? string.Empty;
-        CloseEvidenceReviewNotes = $"WPF Accounting Close reviewed blocker {issue.Code} for {NormalizeOptional(issue.TargetId) ?? closePlan.ClosePlanId}. {issue.Message}";
-        return issue;
     }
 
     private void ApplyCloseReviewRows(ClosePeriodPlanDto closePlan)
@@ -1940,6 +1712,77 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
                 item.RequiredAction,
                 $"{item.EvidenceCount:N0} {Pluralize(item.EvidenceCount, "evidence link", "evidence links")}; {item.BlockingIssueCount:N0} {Pluralize(item.BlockingIssueCount, "blocking issue", "blocking issues")}. {blockerSummary}",
                 item.ControlId);
+        }
+    }
+
+    private void ApplyClosingEntriesGate(ClosePeriodPlanDto closePlan)
+    {
+        ClosingEntryBalanceRows.Clear();
+        ClosingEntriesGate = closePlan.ClosingEntriesGate;
+        foreach (var balance in closePlan.ClosingEntriesGate?.Balances ?? [])
+        {
+            ClosingEntryBalanceRows.Add(new AccountingClosePostingBalanceRow(
+                string.IsNullOrWhiteSpace(balance.Symbol)
+                    ? balance.AccountName
+                    : $"{balance.AccountName} ({balance.Symbol.Trim()})",
+                balance.AccountType,
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0:+#,##0.00;-#,##0.00;0.00} {1}",
+                    balance.Balance,
+                    closePlan.MaterialityPolicy.Currency).TrimEnd(),
+                FormatClosePostingBalanceScope(balance.Dimensions),
+                NormalizeOptional(balance.FinancialAccountId) ?? "No financial-account id"));
+        }
+    }
+
+    private static string FormatClosePostingGateState(ClosePostingGateStateDto state)
+        => state switch
+        {
+            ClosePostingGateStateDto.NotRequired => "Not required",
+            ClosePostingGateStateDto.DraftQueued => "Draft queued",
+            ClosePostingGateStateDto.ReversalQueued => "Reversal queued",
+            _ => state.ToString()
+        };
+
+    private static string FormatClosePostingBalanceScope(LedgerDimensionSetDto? dimensions)
+    {
+        if (dimensions is null)
+        {
+            return "No scoped dimensions returned";
+        }
+
+        var labels = new List<string>();
+        AddScopeLabel(labels, "Fund", dimensions.FundId);
+        AddScopeLabel(labels, "Entity", dimensions.EntityId);
+        AddScopeLabel(labels, "Sleeve", dimensions.SleeveId);
+        AddScopeLabel(labels, "Strategy", dimensions.StrategyId);
+        AddScopeLabel(labels, "Investor", dimensions.InvestorId);
+        AddScopeLabel(labels, "Capital account", dimensions.CapitalAccountId);
+        AddScopeLabel(labels, "Instrument", dimensions.InstrumentId?.ToString("D"));
+        AddScopeLabel(labels, "Position", dimensions.PositionId?.ToString("D"));
+        AddScopeLabel(labels, "Tax lot", dimensions.TaxLotId);
+        AddScopeLabel(labels, "Cost center", dimensions.CostCenterId);
+        AddScopeLabel(labels, "Counterparty", dimensions.CounterpartyId);
+        AddScopeLabel(labels, "Organization", dimensions.OrganizationId);
+        AddScopeLabel(labels, "Portfolio", dimensions.PortfolioId);
+        AddScopeLabel(labels, "Book", dimensions.BookId);
+        AddScopeLabel(labels, "Account", dimensions.AccountId);
+        foreach (var (key, value) in dimensions.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            AddScopeLabel(labels, $"External {key}", value);
+        }
+
+        return labels.Count == 0
+            ? "No scoped dimensions returned"
+            : string.Join(" | ", labels);
+    }
+
+    private static void AddScopeLabel(ICollection<string> labels, string label, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            labels.Add($"{label}: {value.Trim()}");
         }
     }
 
@@ -2255,399 +2098,4 @@ public sealed class AccountingCloseViewModel : Meridian.Wpf.ViewModels.BindableB
         return reasons.Length == 1 ? reasons[0] : "Configured close-plan dependency.";
     }
 
-    private static IReadOnlyList<string> BuildClosePlanConfigurationEvidence(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan)
-    {
-        var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            $"wpf://accounting/close/setup/{workflowId:D}",
-            $"evidence://close-plan-configuration/fund/{closePlan.FundProfileId}/period/{closePlan.PeriodId}"
-        };
-
-        if (closePlan.LedgerBookId is { } ledgerBookId)
-        {
-            links.Add($"evidence://close-plan-configuration/ledger-book/{ledgerBookId}");
-        }
-
-        foreach (var task in closePlan.Tasks)
-        {
-            foreach (var evidence in task.EvidenceLinks)
-            {
-                if (!string.IsNullOrWhiteSpace(evidence))
-                {
-                    links.Add(evidence.Trim());
-                }
-            }
-        }
-
-        foreach (var adjustment in closePlan.LateAdjustments)
-        {
-            foreach (var evidence in adjustment.EvidenceLinks)
-            {
-                if (!string.IsNullOrWhiteSpace(evidence))
-                {
-                    links.Add(evidence.Trim());
-                }
-            }
-        }
-
-        return links.ToArray();
-    }
-
-    private static IReadOnlyList<string> BuildLateAdjustmentRequestEvidence(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan,
-        Guid journalEntryId)
-    {
-        var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            $"wpf://accounting/close/late-adjustment/{workflowId:D}/{journalEntryId:D}",
-            $"evidence://late-adjustment-request/workflow/{workflowId:D}/journal/{journalEntryId:D}/period/{closePlan.PeriodId}"
-        };
-
-        if (closePlan.LedgerBookId is { } ledgerBookId)
-        {
-            links.Add($"evidence://late-adjustment-request/book/{ledgerBookId:D}/journal/{journalEntryId:D}/period/{closePlan.PeriodId}");
-        }
-
-        return links.ToArray();
-    }
-
-    private static LockClosePeriodRequestDto BuildClosePeriodLockRequest(
-        Guid workflowId,
-        long workflowVersion,
-        ClosePeriodPlanDto closePlan)
-    {
-        var reportPackId = BuildCloseReportPackId(closePlan);
-        var closePackageId = $"close-package-{closePlan.FundProfileId}-{closePlan.PeriodId}";
-        var manifestId = $"manifest-{closePlan.FundProfileId}-{closePlan.PeriodId}";
-        return new LockClosePeriodRequestDto(
-            workflowId,
-            ExpectedWorkflowVersion: workflowVersion,
-            Actor: "wpf-accounting-controller",
-            Rationale: "Lock close period from WPF Accounting Close after checklist, sign-off, reconciliation, and report certification review.",
-            ReportPackId: reportPackId,
-            EvidenceLinks: BuildClosePeriodLockEvidence(workflowId, closePlan, reportPackId, closePackageId, manifestId),
-            ChecklistControlApprovals: BuildClosePeriodLockApprovals(closePlan),
-            CorrelationId: $"wpf-close-period-lock-{workflowId:D}",
-            ClosePackageId: closePackageId,
-            ClosePackageManifestId: manifestId,
-            ClosePackageRetainedManifestRoute: $"/workstation/reporting/packages/{manifestId}",
-            ActionOrigin: OperationsActionOriginDto.HumanOperator);
-    }
-
-    private SignOffCloseTaskRequestDto BuildCloseTaskSignOffRequest(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan,
-        CloseTaskDto task,
-        string roleText,
-        string decisionText,
-        string notesText)
-    {
-        var role = NormalizeRequired(roleText, task.SignOffRequirements.FirstOrDefault()?.Role ?? task.Owner);
-        var decision = ParseCloseTaskSignOffDecision(decisionText);
-        var notes = NormalizeRequired(
-            notesText,
-            decision == ManualJournalEntryStatusDto.Approved
-                ? $"WPF Accounting Close retained {role} sign-off evidence for {task.DisplayName}."
-                : $"WPF Accounting Close retained {role} rejection evidence for {task.DisplayName}.");
-        return new SignOffCloseTaskRequestDto(
-            workflowId,
-            task.TaskId,
-            role,
-            decision,
-            Actor: "wpf-accounting-controller",
-            Notes: notes,
-            EvidenceLinks: BuildCloseTaskSignOffEvidence(workflowId, closePlan, task, role),
-            CorrelationId: $"wpf-close-task-signoff-{workflowId:D}-{SanitizeForCorrelation(task.TaskId)}-{SanitizeForCorrelation(role)}",
-            ActionOrigin: OperationsActionOriginDto.HumanOperator);
-    }
-
-    private ReviewLateAdjustmentRequestDto BuildReviewLateAdjustmentRequest(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan,
-        LateAdjustmentRequestDto adjustment)
-    {
-        var decision = ParseCloseReviewDecision(LateAdjustmentReviewDecision);
-        var decisionText = decision.ToString();
-        var notes = NormalizeRequired(
-            LateAdjustmentReviewNotes,
-            $"WPF Accounting Close {decisionText.ToLowerInvariant()} late adjustment {adjustment.RequestId}.");
-        return new ReviewLateAdjustmentRequestDto(
-            workflowId,
-            adjustment.RequestId,
-            decision,
-            Actor: "wpf-accounting-controller",
-            Notes: notes,
-            EvidenceLinks: BuildLateAdjustmentReviewEvidence(workflowId, closePlan, adjustment, decision),
-            CorrelationId: $"wpf-late-adjustment-review-{workflowId:D}-{SanitizeForCorrelation(adjustment.RequestId)}-{SanitizeForCorrelation(decisionText)}",
-            ActionOrigin: OperationsActionOriginDto.HumanOperator);
-    }
-
-    private static IReadOnlyList<string> BuildLateAdjustmentReviewEvidence(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan,
-        LateAdjustmentRequestDto adjustment,
-        ManualJournalEntryStatusDto decision)
-    {
-        var decisionToken = decision == ManualJournalEntryStatusDto.Rejected ? "rejection" : "approval";
-        var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            $"wpf://accounting/close/late-adjustment-review/{workflowId:D}/{adjustment.RequestId}/{decisionToken}",
-            $"evidence://late-adjustment-review/request/{adjustment.RequestId}/workflow/{workflowId:D}/period/{closePlan.PeriodId}/{decisionToken}"
-        };
-
-        if (closePlan.LedgerBookId is { } ledgerBookId)
-        {
-            links.Add($"evidence://late-adjustment-review/request/{adjustment.RequestId}/book/{ledgerBookId:D}/period/{closePlan.PeriodId}/{decisionToken}");
-        }
-
-        foreach (var evidence in adjustment.EvidenceLinks)
-        {
-            if (!string.IsNullOrWhiteSpace(evidence))
-            {
-                links.Add(evidence.Trim());
-            }
-        }
-
-        return links.ToArray();
-    }
-
-    private ReviewCloseEvidenceRequestDto BuildReviewCloseEvidenceRequest(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan,
-        AccountingConfigurationValidationIssueDto issue)
-    {
-        var targetId = NormalizeOptional(issue.TargetId) ?? closePlan.ClosePlanId;
-        return new ReviewCloseEvidenceRequestDto(
-            workflowId,
-            issue.Code,
-            issue.TargetId,
-            Actor: "wpf-accounting-controller",
-            Notes: NormalizeRequired(
-                CloseEvidenceReviewNotes,
-                $"WPF Accounting Close reviewed blocker {issue.Code} for {targetId}. {issue.Message}"),
-            EvidenceLinks: BuildCloseEvidenceReviewEvidence(workflowId, closePlan, issue),
-            CorrelationId: $"wpf-close-evidence-review-{workflowId:D}-{SanitizeForCorrelation(issue.Code)}-{SanitizeForCorrelation(targetId)}",
-            ActionOrigin: OperationsActionOriginDto.HumanOperator);
-    }
-
-    private static IReadOnlyList<string> BuildCloseEvidenceReviewEvidence(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan,
-        AccountingConfigurationValidationIssueDto issue)
-    {
-        var targetId = NormalizeOptional(issue.TargetId) ?? closePlan.ClosePlanId;
-        var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            $"wpf://accounting/close/evidence-review/{workflowId:D}/{issue.Code}/{targetId}",
-            $"evidence://close-review/workflow/{workflowId:D}/period/{closePlan.PeriodId}/issue/{issue.Code}/target/{targetId}"
-        };
-
-        if (closePlan.LedgerBookId is { } ledgerBookId)
-        {
-            links.Add($"evidence://close-review/workflow/{workflowId:D}/period/{closePlan.PeriodId}/book/{ledgerBookId:D}/issue/{issue.Code}/target/{targetId}");
-        }
-
-        return links.ToArray();
-    }
-
-    private static IReadOnlyList<string> BuildCloseTaskSignOffEvidence(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan,
-        CloseTaskDto task,
-        string role)
-    {
-        var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            $"wpf://accounting/close/task-signoff/{workflowId:D}/{task.TaskId}/{role}",
-            $"evidence://close-task-signoff/workflow/{workflowId:D}/task/{task.TaskId}/role/{role}/period/{closePlan.PeriodId}"
-        };
-
-        if (closePlan.LedgerBookId is { } ledgerBookId)
-        {
-            links.Add($"evidence://close-task-signoff/book/{ledgerBookId:D}/task/{task.TaskId}/role/{role}/period/{closePlan.PeriodId}");
-        }
-
-        foreach (var evidence in task.EvidenceLinks)
-        {
-            if (!string.IsNullOrWhiteSpace(evidence))
-            {
-                links.Add(evidence.Trim());
-            }
-        }
-
-        return links.ToArray();
-    }
-
-    private static CloseTaskDto? ResolveNextSignOffTask(ClosePeriodPlanDto closePlan)
-        => closePlan.Tasks.FirstOrDefault(static task =>
-            task.Status is not CloseTaskStatusDto.SignedOff and not CloseTaskStatusDto.Blocked and not CloseTaskStatusDto.WaitingOnDependency &&
-            task.SignOffRequirements.Any(static requirement => !requirement.IsSatisfied));
-
-    private CloseTaskDto? ResolveCloseTaskSignOffTask(ClosePeriodPlanDto closePlan)
-    {
-        var taskId = NormalizeOptional(CloseTaskSignOffTaskId);
-        return taskId is null
-            ? null
-            : closePlan.Tasks.FirstOrDefault(task => string.Equals(task.TaskId, taskId, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static LateAdjustmentRequestDto? ResolveNextLateAdjustment(ClosePeriodPlanDto closePlan)
-        => closePlan.LateAdjustments.FirstOrDefault(static adjustment =>
-            adjustment.ApprovalState == ManualJournalEntryStatusDto.Submitted);
-
-    private LateAdjustmentRequestDto? ResolveLateAdjustmentReviewDraft(ClosePeriodPlanDto closePlan)
-    {
-        if (!TryParseCloseReviewDecision(LateAdjustmentReviewDecision, out _))
-        {
-            return null;
-        }
-
-        var requestId = NormalizeOptional(LateAdjustmentReviewRequestId);
-        return requestId is null
-            ? null
-            : closePlan.LateAdjustments.FirstOrDefault(adjustment =>
-                string.Equals(adjustment.RequestId, requestId, StringComparison.OrdinalIgnoreCase) &&
-                adjustment.ApprovalState == ManualJournalEntryStatusDto.Submitted);
-    }
-
-    private static AccountingConfigurationValidationIssueDto? ResolveNextCloseEvidenceReviewIssue(ClosePeriodPlanDto closePlan)
-        => closePlan.ValidationIssues.FirstOrDefault(issue => FindCloseEvidenceReview(closePlan, issue) is null);
-
-    private AccountingConfigurationValidationIssueDto? ResolveCloseEvidenceReviewIssue(ClosePeriodPlanDto closePlan)
-    {
-        var issueCode = NormalizeOptional(CloseEvidenceReviewIssueCode);
-        if (issueCode is null)
-        {
-            return null;
-        }
-
-        var targetId = NormalizeOptional(CloseEvidenceReviewTargetId);
-        return closePlan.ValidationIssues.FirstOrDefault(issue =>
-            string.Equals(issue.Code, issueCode, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(issue.TargetId ?? string.Empty, targetId ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
-            FindCloseEvidenceReview(closePlan, issue) is null);
-    }
-
-    private static CloseEvidenceReviewDto? FindCloseEvidenceReview(
-        ClosePeriodPlanDto closePlan,
-        AccountingConfigurationValidationIssueDto issue)
-        => closePlan.EvidenceReviews
-            .OrderByDescending(static review => review.ReviewedAtUtc)
-            .FirstOrDefault(review =>
-                string.Equals(review.IssueCode, issue.Code, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(review.TargetId ?? string.Empty, issue.TargetId ?? string.Empty, StringComparison.OrdinalIgnoreCase));
-
-    private static string SanitizeForCorrelation(string value)
-        => string.Concat((value ?? string.Empty)
-            .Trim()
-            .Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-'))
-            .Trim('-');
-
-    private static IReadOnlyList<OperationsChecklistControlApprovalDto> BuildClosePeriodLockApprovals(
-        ClosePeriodPlanDto closePlan)
-        => closePlan.Tasks
-            .SelectMany(static task => task.SignOffs
-                .Where(static signOff => signOff.ApprovalState == ManualJournalEntryStatusDto.Approved)
-                .Select(signOff => new OperationsChecklistControlApprovalDto(
-                    task.TaskId,
-                    string.IsNullOrWhiteSpace(signOff.Actor) ? "wpf-accounting-controller" : signOff.Actor.Trim(),
-                    signOff.SignedAtUtc ?? DateTimeOffset.UtcNow)))
-            .ToArray();
-
-    private static IReadOnlyList<string> BuildClosePeriodLockEvidence(
-        Guid workflowId,
-        ClosePeriodPlanDto closePlan,
-        string reportPackId,
-        string closePackageId,
-        string manifestId)
-    {
-        var links = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            $"wpf://accounting/close/period-lock/{workflowId:D}",
-            $"evidence://close-package/{closePackageId}/workflow/{workflowId:D}/period/{closePlan.PeriodId}/report-pack/{reportPackId}/manifest/{manifestId}/period-lock"
-        };
-
-        if (closePlan.LedgerBookId is { } ledgerBookId)
-        {
-            links.Add($"evidence://close-package/{closePackageId}/book/{ledgerBookId:D}/period/{closePlan.PeriodId}/report-pack/{reportPackId}/period-lock");
-        }
-
-        foreach (var task in closePlan.Tasks)
-        {
-            foreach (var evidence in task.EvidenceLinks)
-            {
-                if (!string.IsNullOrWhiteSpace(evidence))
-                {
-                    links.Add(evidence.Trim());
-                }
-            }
-
-            foreach (var signOff in task.SignOffs)
-            {
-                foreach (var evidence in signOff.EvidenceLinks)
-                {
-                    if (!string.IsNullOrWhiteSpace(evidence))
-                    {
-                        links.Add(evidence.Trim());
-                    }
-                }
-            }
-        }
-
-        foreach (var adjustment in closePlan.LateAdjustments)
-        {
-            foreach (var evidence in adjustment.EvidenceLinks)
-            {
-                if (!string.IsNullOrWhiteSpace(evidence))
-                {
-                    links.Add(evidence.Trim());
-                }
-            }
-        }
-
-        return links.ToArray();
-    }
-
-    private static string BuildCloseReportPackId(ClosePeriodPlanDto closePlan)
-        => $"report-pack-{closePlan.FundProfileId}-{closePlan.PeriodId}";
-
-    private void ApplyClosePeriodLockIssues(IReadOnlyList<AccountingConfigurationValidationIssueDto> issues)
-    {
-        ClosePeriodLockIssueRows.Clear();
-        foreach (var issue in issues)
-        {
-            ClosePeriodLockIssueRows.Add(new AccountingWorkbenchRow(
-                issue.Code,
-                issue.Severity.ToString(),
-                issue.Message,
-                issue.SuggestedAction ?? "Resolve the close blocker before locking the period.",
-            issue.TargetId ?? string.Empty));
-        }
-    }
-}
-
-public sealed record CloseSetupTaskOption(
-    string TaskId,
-    string DisplayName,
-    string Status,
-    string Owner,
-    string DueDate,
-    string SignOffSummary);
-
-public sealed record CloseWorkflowStep(
-    string StepId,
-    string Label,
-    string Status,
-    string Detail,
-    string Evidence,
-    string? DisabledReason,
-    IAsyncRelayCommand Command)
-{
-    public string ActionLabel => Label;
-    public string DisabledReasonText => string.IsNullOrWhiteSpace(DisabledReason)
-        ? "Ready"
-        : DisabledReason;
 }

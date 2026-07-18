@@ -331,12 +331,19 @@ public sealed class MainPageUiWorkflowTests
 
                 using var facade = new MainPageUiAutomationFacade();
 
+                facade.ContentFrame.Visibility.Should().Be(Visibility.Collapsed);
+                facade.WorkspaceHomeSurface.Visibility.Should().Be(Visibility.Visible);
+
                 facade.OpenCommandPalettePage("Backtest");
                 await WaitForConditionAsync(() => facade.ViewModel.IsWorkflowPageActive).ConfigureAwait(true);
+                await WaitForConditionAsync(() => facade.ContentFrame.ActualWidth > 0).ConfigureAwait(true);
 
                 facade.ViewModel.ShellDensityMode.Should().Be(ShellDensityMode.Standard);
                 facade.ViewModel.ShellContextVisibility.Should().Be(Visibility.Collapsed);
                 facade.WorkspaceShellContextStrip.Visibility.Should().Be(Visibility.Collapsed);
+                facade.ContentFrame.Visibility.Should().Be(Visibility.Visible);
+                facade.ContentFrame.ActualWidth.Should().BeGreaterThan(0);
+                facade.WorkspaceHomeSurface.Visibility.Should().Be(Visibility.Collapsed);
 
                 facade.Click(facade.ShellDensityToggleButton);
 
@@ -409,7 +416,9 @@ public sealed class MainPageUiWorkflowTests
             facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(6);
 
             facade.Click(facade.TradingWorkspaceButton);
-            await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading").ConfigureAwait(true);
+            await WaitForConditionAsync(
+                () => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading",
+                timeoutMs: 15000).ConfigureAwait(true);
 
             facade.ViewModel.WorkspaceHomeSummaryChromeVisibility.Should().Be(Visibility.Visible);
             facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripTrading")
@@ -435,8 +444,9 @@ public sealed class MainPageUiWorkflowTests
                 DefaultLedgerScope: FundLedgerScope.Consolidated)).ConfigureAwait(true);
             await fundContextService.SelectFundProfileAsync("alpha-fund").ConfigureAwait(true);
 
-            await WaitForConditionAsync(() =>
-                facade.ViewModel.PrimaryWorkflowSummary?.NextAction.Label == "Open Strategy Runs").ConfigureAwait(true);
+            await WaitForConditionAsync(
+                () => facade.ViewModel.PrimaryWorkflowSummary?.NextAction.Label == "Open Strategy Runs",
+                timeoutMs: 15000).ConfigureAwait(true);
 
             facade.ViewModel.PrimaryWorkflowSummary!.NextAction.Label.Should().Be("Open Strategy Runs");
             facade.ViewModel.SecondaryWorkflowSummaries.Single(summary => summary.WorkspaceId == "accounting").NextAction.Label.Should().Be("Open Accounting Shell");

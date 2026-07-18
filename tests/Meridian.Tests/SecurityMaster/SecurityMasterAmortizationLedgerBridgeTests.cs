@@ -34,6 +34,12 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     private static StructuredCashFlowProjectionDto Projection(params StructuredCashFlowScheduleEntry[] schedule)
         => new(SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base, DateTimeOffset.UtcNow, schedule);
 
+    private static StructuredCashFlowProjectionDto ScenarioProjection(
+        StructuredCashFlowScenario scenario,
+        StructuredCashFlowStaleness staleness,
+        params StructuredCashFlowScheduleEntry[] schedule)
+        => new(SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, scenario, DateTimeOffset.UtcNow, schedule, staleness);
+
     private static StructuredCashFlowScheduleEntry Period(int year, int month, int day, decimal interest, decimal principal = 0m)
         => new(new DateTimeOffset(year, month, day, 0, 0, 0, TimeSpan.Zero), principal, interest, 1m);
 
@@ -201,5 +207,40 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker, "broker-9")).Should().Be(40m);
         ledger.GetBalance(LedgerAccounts.CouponIncomeFor("broker-9")).Should().Be(40m);
         ledger.Journal[0].Metadata.FinancialAccountId.Should().Be("broker-9");
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_WithStaleSource_PostsNothing()
+    {
+        // A stale cash flow source must be gated out of the ledger, not accrued from.
+        var projection = ScenarioProjection(
+            StructuredCashFlowScenario.Base,
+            StructuredCashFlowStaleness.Stale,
+            Period(2026, 6, 30, interest: 30m));
+        var bridge = BuildBridge(CashFlowServiceWith(projection));
+        var ledger = new DomainLedger();
+
+        var posted = await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger);
+
+        posted.Should().Be(0);
+        ledger.Journal.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_WithNonBaseScenario_PostsNothing()
+    {
+        // Rate-shocked what-if projections are analytics only and must never reach the ledger.
+        var projection = ScenarioProjection(
+            StructuredCashFlowScenario.Up200,
+            StructuredCashFlowStaleness.Fresh,
+            Period(2026, 6, 30, interest: 30m));
+        var bridge = BuildBridge(CashFlowServiceWith(projection, StructuredCashFlowScenario.Up200));
+        var ledger = new DomainLedger();
+
+        var posted = await bridge.PostProjectedCashFlowsAsync(
+            SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(Scenario: StructuredCashFlowScenario.Up200));
+
+        posted.Should().Be(0);
+        ledger.Journal.Should().BeEmpty();
     }
 }

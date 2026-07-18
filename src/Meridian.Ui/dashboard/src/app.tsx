@@ -76,9 +76,9 @@ import {
 import { ActivityLogProvider } from "@/lib/activity-log/store";
 import {
   OnboardingCoachMark,
-  OnboardingHeaderProgress,
   useOnboardingTour
 } from "@/components/meridian/onboarding-tour";
+import { ActivationHeaderProgress } from "@/features/first-run/activation-progress";
 import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import {
   reportWorkstationRouteError,
@@ -87,6 +87,9 @@ import {
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect, resolveWorkstationRouteBreadcrumbLabel, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
+import { FirstRunScreen } from "@/features/first-run/first-run-screen";
+import type { FirstRunStatus } from "@/features/first-run/types";
+import { apiGetJson } from "@/lib/api";
 
 // Lazy route modules and data-backed panels often mount hash targets after the
 // shell route change. Wait briefly before falling back to the workbench landmark,
@@ -150,8 +153,24 @@ export function App() {
  */
 function AppRoot() {
   const { pathname } = useLocation();
+  const [firstRun, setFirstRun] = useState<FirstRunStatus | null>(null);
+  const [firstRunChecked, setFirstRunChecked] = useState(false);
+  useEffect(() => {
+    let active = true;
+    apiGetJson<FirstRunStatus>("/api/workstation/first-run/")
+      .then((value) => { if (active) { setFirstRun(value); setFirstRunChecked(true); } })
+      .catch(() => { if (active) setFirstRunChecked(true); });
+    return () => { active = false; };
+  }, []);
+
   if (isCompanionPaneRoute(pathname)) {
     return <CompanionPaneWindow />;
+  }
+  if (firstRunChecked && firstRun && !firstRun.isComplete && pathname !== "/setup") {
+    return <Navigate to="/setup" replace />;
+  }
+  if (pathname === "/setup") {
+    return <FirstRunScreen initialStatus={firstRun} />;
   }
   return <AppShell />;
 }
@@ -482,7 +501,7 @@ function AppShell() {
         actions={(
           <>
             <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
-            <OnboardingHeaderProgress controller={onboardingTour} />
+            <ActivationHeaderProgress />
             <ActivityCenter />
             <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
           </>
@@ -662,9 +681,7 @@ function AppShell() {
 
       <WorkstationStatusBar
         items={buildWorkstationStatusItems({
-          session,
           workspaceLabel: headerWorkspace.label,
-          usingDevelopmentFixtures,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error)
         })}

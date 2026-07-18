@@ -24,7 +24,12 @@ export function StrategyFormulaWorkbenchScreen() {
             title="Formula catalog is not connected"
             detail="No strategy formula endpoint is available in this workstation build. Connect a governed catalog before authoring formulas here."
           />
-          <div className="flex justify-center">
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button asChild variant="outline">
+              <Link to="/settings/providers" aria-label="Review provider connections required by Formula Workbench">
+                Review provider connections
+              </Link>
+            </Button>
             <Button asChild>
               <Link to="/strategy">Open Strategy workspace</Link>
             </Button>
