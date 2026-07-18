@@ -4,9 +4,11 @@ using Meridian.Application.Composition;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Core.Logging;
 using Meridian.Entities.FundStructure;
 using Meridian.FSharp.CashFlowInterop;
 using Meridian.Storage.FundStructure;
+using Serilog;
 
 namespace Meridian.Application.FundStructure;
 
@@ -16,6 +18,7 @@ namespace Meridian.Application.FundStructure;
 /// </summary>
 public sealed class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
 {
+    private static readonly ILogger Log = LoggingSetup.ForContext<InMemoryFundStructureService>();
     private static readonly StringComparer AssignmentComparer = StringComparer.OrdinalIgnoreCase;
     private const string DefaultCashFlowCurrency = "USD";
     private const string SecurityMasterInstrumentAssignmentType = "SecurityMasterInstrument";
@@ -3275,7 +3278,12 @@ public sealed class InMemoryFundStructureService : INonProductionOnlyService, IF
         }
         catch (Exception ex) when (ex is IOException or JsonException)
         {
-            // Preserve startup availability for malformed or missing local snapshots.
+            // Preserve startup availability for malformed or missing local snapshots — but a
+            // discarded snapshot means governance state silently reset, so operators must see it.
+            Log.Warning(
+                ex,
+                "Fund structure snapshot could not be loaded; starting from an empty working set (persistence enabled: {PersistenceEnabled})",
+                _persistenceEnabled);
         }
     }
 

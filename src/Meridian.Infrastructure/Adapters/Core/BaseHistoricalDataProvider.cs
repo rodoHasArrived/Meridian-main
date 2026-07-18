@@ -457,47 +457,35 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     }
 
     /// <summary>
-    /// Synchronous HTTP response handling for backwards compatibility.
-    /// Prefer using <see cref="HandleHttpResponseAsync"/> for new code.
+    /// Validates an HTTP response and throws the provider exception mapped to its status.
+    /// Delegates to <see cref="HandleHttpResponseAsync"/> so status handling stays centralized
+    /// (this used to be a full synchronous duplicate of that logic).
+    /// A 404 returns normally so providers can surface empty results.
     /// </summary>
-    protected void HandleHttpResponse(HttpResponseMessage response, string symbol, string dataType)
+    protected async Task HandleHttpResponseOrThrowAsync(
+        HttpResponseMessage response,
+        string symbol,
+        string dataType,
+        CancellationToken ct)
     {
-        if (response.IsSuccessStatusCode)
-            return;
+        var result = await HandleHttpResponseAsync(response, symbol, dataType, ct).ConfigureAwait(false);
+        if (result.IsSuccess || result.IsNotFound)
+            return; // Allow empty results for not found
 
-        var statusCode = (int)response.StatusCode;
-
-        if (statusCode == 401 || statusCode == 403)
-        {
-            Log.Error("{Provider} API returned {StatusCode} for {Symbol} {DataType}: Authentication failed", Name, statusCode, symbol, dataType);
+        if (result.IsAuthError)
             throw new ConnectionException(
-                $"{Name} API returned {statusCode}: Authentication failed for {symbol}",
+                $"{Name} API returned authentication error for {symbol}. Verify credentials.",
                 provider: Name);
-        }
 
-        if (statusCode == 429)
-        {
-            var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response) ?? TimeSpan.FromSeconds(60);
-            RecordRateLimitHit(retryAfter);
-            RaiseRateLimitHit(GetRateLimitInfo());
-
-            Log.Warning("{Provider} API returned 429 for {Symbol} {DataType}: Rate limit exceeded", Name, symbol, dataType);
+        if (result.IsRateLimited)
             throw new RateLimitException(
                 $"{Name} API rate limit exceeded for {symbol}",
                 provider: Name,
                 symbol: symbol,
-                retryAfter: retryAfter);
-        }
+                retryAfter: result.RetryAfter ?? TimeSpan.FromSeconds(60));
 
-        if (statusCode == 404)
-        {
-            Log.Debug("{Provider} API returned 404 for {Symbol} {DataType}: Not found", Name, symbol, dataType);
-            return; // Allow empty results for not found
-        }
-
-        Log.Warning("{Provider} API returned {StatusCode} for {Symbol} {DataType}", Name, statusCode, symbol, dataType);
         throw new DataProviderException(
-            $"{Name} API returned {statusCode} for {symbol}",
+            $"{Name} API error for {symbol}: {result.ErrorMessage}",
             provider: Name,
             symbol: symbol);
     }

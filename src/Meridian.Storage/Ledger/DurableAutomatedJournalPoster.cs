@@ -74,6 +74,13 @@ public sealed class DurableAutomatedJournalPoster : IAutomatedJournalPostingTarg
 
         var entry = approval.ToJournalEntry();
 
+        // CRASH-RETRY INVARIANT: a crash between this durable append and the caller
+        // persisting the MarkPosted status re-enters here with Status=Approved. That retry
+        // is safe only because the posting target pre-flights the posting identity
+        // (journal-entry id / aggregate) and resolves an equivalent retained entry as a
+        // successful no-op append (see DurableLedgerPostingTarget.PostAsync) — the DB
+        // uniqueness constraint is the backstop, not the guard. Any replacement posting
+        // target must preserve that idempotent-retry contract.
         await _postingTarget.PostAsync(
                 new LedgerJournalEntryWrite(
                 entry,

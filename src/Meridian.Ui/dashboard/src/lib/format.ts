@@ -2,6 +2,11 @@
 // All helpers pin the en-US locale so operator machines render identical values
 // regardless of host locale, and all accept null/undefined/non-finite input,
 // rendering the configurable `fallback` instead.
+//
+// SCOPE: this is the default formatting convention for the workstation. Accounting
+// surfaces (ledger, statements, journal grids) intentionally use the statement
+// convention in `components/accounting/money.ts` (parenthesized negatives, zero-dash);
+// the two conventions differ by design — see the note in that file.
 
 const FORMAT_LOCALE = "en-US";
 const DEFAULT_FALLBACK = "—";

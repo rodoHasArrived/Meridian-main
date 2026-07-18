@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -94,6 +95,12 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
     private readonly string _rootDirectory;
     private readonly ILogger<FileEvidenceArtifactStore> _logger;
+
+    // Serializes read-modify-write cycles on a vault's manifest/index pair. AtomicFileWriter
+    // only makes each single write atomic; without this, concurrent document reviews on the
+    // same vault could read the same snapshot and silently clobber each other's updates.
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _vaultWriteLocks =
+        new(StringComparer.OrdinalIgnoreCase);
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -647,6 +654,27 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
 
         var normalizedDocumentId = RequireTrimmed(documentId, nameof(documentId));
         var reviewer = RequireTrimmed(request.Reviewer, nameof(request.Reviewer));
+
+        var vaultLock = _vaultWriteLocks.GetOrAdd(safeVaultId, static _ => new SemaphoreSlim(1, 1));
+        await vaultLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await ReviewDocumentUnderLockAsync(safeVaultId, normalizedDocumentId, reviewer, request, ct)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            vaultLock.Release();
+        }
+    }
+
+    private async Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentUnderLockAsync(
+        string safeVaultId,
+        string normalizedDocumentId,
+        string reviewer,
+        EvidenceVaultDocumentReviewRequestDto request,
+        CancellationToken ct)
+    {
         var reviewedAt = DateTimeOffset.UtcNow;
         var indexPath = Path.Combine(_rootDirectory, "_vault", $"{safeVaultId}.json");
         var identity = await TryReadVaultIdentityAsync(indexPath, ct).ConfigureAwait(false);
@@ -2289,6 +2317,18 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be deserialized.", indexPath);
             return null;
         }
+        catch (IOException ex)
+        {
+            // A locked or transiently unreadable file must skip this entry, not fail the
+            // whole vault listing.
+            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be read.", indexPath);
+            return null;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be accessed.", indexPath);
+            return null;
+        }
     }
 
     private async Task<RetainedEvidenceManifestDto?> TryReadRetainedManifestAsync(
@@ -2316,6 +2356,16 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         catch (JsonException ex)
         {
             _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be deserialized.", manifestPath);
+            return null;
+        }
+        catch (IOException ex)
+        {
+            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be read.", manifestPath);
+            return null;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be accessed.", manifestPath);
             return null;
         }
     }

@@ -2986,12 +2986,12 @@ export async function searchSecurities(query: string, take = 25, activeOnly = tr
   return results;
 }
 
-export function getSecurityDetail(securityId: string) {
-  return getJson<SecurityMasterEntry>(workstationSecurityMasterEntryEndpoint(securityId));
+export function getSecurityDetail(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<SecurityMasterEntry>(workstationSecurityMasterEntryEndpoint(securityId), options);
 }
 
-export function getSecurityIdentity(securityId: string) {
-  return getJson<SecurityIdentityDrillIn>(workstationSecurityMasterIdentityEndpoint(securityId));
+export function getSecurityIdentity(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<SecurityIdentityDrillIn>(workstationSecurityMasterIdentityEndpoint(securityId), options);
 }
 
 export function getSecurityHistory(securityId: string) {
@@ -3024,12 +3024,12 @@ export function upsertSecurityAlias(request: Record<string, unknown>) {
 
 // --- Security Master corporate actions and trading parameters ---
 
-export function getCorporateActions(securityId: string) {
-  return getJson<CorporateAction[]>(securityMasterCorporateActionsEndpoint(securityId));
+export function getCorporateActions(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<CorporateAction[]>(securityMasterCorporateActionsEndpoint(securityId), options);
 }
 
-export function getTradingParameters(securityId: string) {
-  return getJson<TradingParameters>(securityMasterTradingParametersEndpoint(securityId));
+export function getTradingParameters(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<TradingParameters>(securityMasterTradingParametersEndpoint(securityId), options);
 }
 
 export function getOperatorOverrides(securityId: string) {

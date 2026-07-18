@@ -170,11 +170,12 @@ public sealed class WriteAheadLogCorruptionModeTests : TempDirectoryAsyncTestBas
     // ── WalOptions defaults ──────────────────────────────────────────────
 
     [Fact]
-    public void WalOptions_DefaultCorruptionMode_IsSkip()
+    public void WalOptions_DefaultCorruptionMode_IsAlert()
     {
-        // Existing behaviour is preserved by default so no existing deployments break.
+        // The durability backstop must never discard records silently by default:
+        // Alert skips corrupt records but raises CorruptionDetected for operators.
         var options = new WalOptions();
-        options.CorruptionMode.Should().Be(WalCorruptionMode.Skip);
+        options.CorruptionMode.Should().Be(WalCorruptionMode.Alert);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────

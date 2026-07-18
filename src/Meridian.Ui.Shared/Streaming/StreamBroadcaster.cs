@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Streaming;
 
@@ -36,7 +37,13 @@ public sealed class StreamBroadcaster<TPayload> : IAsyncDisposable
         new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropWrite, SingleReader = true, SingleWriter = false });
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _loop;
+    private readonly ILogger? _logger;
+    private long _lastFailureLogTicks;
     private int _disposed;
+
+    /// <summary>Minimum spacing between logged build/publish failures, so a persistently
+    /// broken payload builder surfaces without flooding the log on every coalesce tick.</summary>
+    private static readonly TimeSpan FailureLogInterval = TimeSpan.FromSeconds(30);
 
     public StreamBroadcaster(
         StreamConnectionRegistry registry,
@@ -44,7 +51,8 @@ public sealed class StreamBroadcaster<TPayload> : IAsyncDisposable
         IEqualityComparer<TPayload> coalesceComparer,
         int coalesceIntervalMs,
         int subscriberChannelCapacity,
-        bool evictEmptyTopics)
+        bool evictEmptyTopics,
+        ILogger? logger = null)
     {
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _build = build ?? throw new ArgumentNullException(nameof(build));
@@ -52,6 +60,7 @@ public sealed class StreamBroadcaster<TPayload> : IAsyncDisposable
         _coalesceIntervalMs = coalesceIntervalMs;
         _subscriberChannelCapacity = subscriberChannelCapacity;
         _evictEmptyTopics = evictEmptyTopics;
+        _logger = logger;
         _loop = Task.Run(() => RunAsync(_cts.Token));
     }
 
@@ -188,9 +197,11 @@ public sealed class StreamBroadcaster<TPayload> : IAsyncDisposable
                 {
                     PublishPending();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // A single publish failure must never terminate the fan-out loop.
+                    // A single publish failure must never terminate the fan-out loop,
+                    // but a persistent one must not stall a topic invisibly either.
+                    LogFailureRateLimited(ex, "Stream fan-out publish round failed");
                 }
             }
         }
@@ -206,11 +217,30 @@ public sealed class StreamBroadcaster<TPayload> : IAsyncDisposable
         {
             return _build(topic);
         }
-        catch
+        catch (Exception ex)
         {
             // A build failure must not tear down the loop or the subscriber.
+            LogFailureRateLimited(ex, $"Stream payload build failed for topic '{topic.Key}'");
             return null;
         }
+    }
+
+    private void LogFailureRateLimited(Exception ex, string message)
+    {
+        if (_logger is null)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow.Ticks;
+        var last = Interlocked.Read(ref _lastFailureLogTicks);
+        if (now - last < FailureLogInterval.Ticks ||
+            Interlocked.CompareExchange(ref _lastFailureLogTicks, now, last) != last)
+        {
+            return;
+        }
+
+        _logger.LogWarning(ex, "{Message} (further failures suppressed for {Interval})", message, FailureLogInterval);
     }
 
     public async ValueTask DisposeAsync()
