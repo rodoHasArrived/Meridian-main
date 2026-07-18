@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
+using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
@@ -134,6 +135,107 @@ public sealed class AutomatedJournalCapitalAccountReconciliationResolverTests
         var result = await resolver.ResolveAsync(Scope());
 
         result.Should().BeNull("generic retained support does not prove governed ledger approval or certification");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_ProductionNormalizedApprovedPostingCommands_RoundTripFingerprintAndApprovalProvenance()
+    {
+        var normalized = new[]
+        {
+            ProductionPostingCommandRecord(
+                MayPeriodId,
+                new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero),
+                1_050_000m,
+                1),
+            ProductionPostingCommandRecord(
+                JunePeriodId,
+                new DateTimeOffset(2026, 6, 30, 12, 0, 0, TimeSpan.Zero),
+                -50_000m,
+                2),
+            ProductionPostingCommandRecord(
+                JulyPeriodId,
+                new DateTimeOffset(2026, 7, 31, 8, 0, 0, TimeSpan.Zero),
+                100_000m,
+                3)
+        };
+        var records = normalized.Select(static item => item.Record).ToArray();
+        var (resolver, _, _) = CreateResolver(records);
+
+        foreach (var item in normalized)
+        {
+            var tags = item.Record.Entry.Metadata.Tags;
+            tags.Should().NotBeNull();
+            tags!["postingCommandId"].Should().Be(item.Command.CommandId.ToString("D"));
+            tags["approvalState"].Should().Be(AccountingPostingApprovalStateDto.Approved.ToString());
+            tags["approvalId"].Should().Be(item.Command.ApprovalId);
+            tags[AccountingPostingCommandValidator.PostingCommandFingerprintTag]
+                .Should().Be(AccountingPostingCommandValidator.ComputePostingCommandFingerprint(item.Command));
+            tags[AccountingPostingCommandValidator.PostingCommandFingerprintTag]
+                .Should().MatchRegex("^sha256:[0-9a-f]{64}$");
+            item.Record.Entry.Metadata.EvidenceReferences.Should().ContainSingle(evidence =>
+                evidence.Kind == AccountingPostingEvidenceKindDto.Approval.ToString() &&
+                evidence.EvidenceId == item.Command.ApprovalId &&
+                evidence.SubjectId == item.Record.Entry.JournalEntryId.ToString("D"));
+        }
+
+        var result = await resolver.ResolveAsync(Scope());
+
+        result.Should().NotBeNull();
+        result!.IsReconciled.Should().BeTrue();
+        result.ReviewedBy.Should().Be("fund-controller");
+        result.ReviewedAtUtc.Should().Be(normalized.Max(static item =>
+            item.Command.Evidence.Single(evidence => evidence.Kind == AccountingPostingEvidenceKindDto.Approval).RetainedAtUtc));
+        result.ConfidenceScore.Should().Be(0.95m);
+    }
+
+    [Fact]
+    public void NormalizeAndValidate_PendingPostingCommand_RejectsBeforeGovernedReconciliation()
+    {
+        var retained = BuildRetainedEquityRecord(
+            JulyPeriodId,
+            new DateTimeOffset(2026, 7, 31, 8, 0, 0, TimeSpan.Zero),
+            100_000m,
+            3,
+            "Investor Capital",
+            "entity-alpha",
+            "capital-account-alpha",
+            "investor-alpha",
+            includeEvidence: false,
+            governanceMode: GovernanceMode.None);
+        var write = BuildPostingCommandWrite(
+            retained,
+            3,
+            AccountingPostingApprovalStateDto.Pending);
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*approved or not-required reviewer state*");
+    }
+
+    [Theory]
+    [InlineData(PostingProvenanceMutation.CommandIdMismatch)]
+    [InlineData(PostingProvenanceMutation.PendingApprovalState)]
+    [InlineData(PostingProvenanceMutation.ApprovalEvidenceBindingMismatch)]
+    [InlineData(PostingProvenanceMutation.MalformedFingerprint)]
+    [InlineData(PostingProvenanceMutation.DefaultApprovalTimestamp)]
+    [InlineData(PostingProvenanceMutation.FutureApprovalTimestamp)]
+    public async Task ResolveAsync_MutatedPostingCommandProvenance_FailsClosed(
+        PostingProvenanceMutation mutation)
+    {
+        var records = new[]
+        {
+            CapitalRecord(MayPeriodId, new DateTimeOffset(2026, 5, 31, 12, 0, 0, TimeSpan.Zero), 1_050_000m, 1),
+            CapitalRecord(JunePeriodId, new DateTimeOffset(2026, 6, 30, 12, 0, 0, TimeSpan.Zero), -50_000m, 2),
+            MutatePostingProvenance(
+                CapitalRecord(JulyPeriodId, new DateTimeOffset(2026, 7, 31, 8, 0, 0, TimeSpan.Zero), 100_000m, 3),
+                mutation)
+        };
+        var (resolver, _, _) = CreateResolver(records);
+
+        var result = await resolver.ResolveAsync(Scope());
+
+        result.Should().BeNull($"{mutation} must not qualify as governed posting-command provenance");
     }
 
     [Fact]
@@ -335,6 +437,231 @@ public sealed class AutomatedJournalCapitalAccountReconciliationResolverTests
         bool includeEvidence,
         GovernanceMode governanceMode)
     {
+        if (governanceMode == GovernanceMode.PostingCommand && includeEvidence)
+        {
+            return ProductionPostingCommandRecord(
+                periodId,
+                timestamp,
+                equityDelta,
+                globalSequence,
+                equityAccountName,
+                entityId,
+                capitalAccountId,
+                investorId).Record;
+        }
+
+        return BuildRetainedEquityRecord(
+            periodId,
+            timestamp,
+            equityDelta,
+            globalSequence,
+            equityAccountName,
+            entityId,
+            capitalAccountId,
+            investorId,
+            includeEvidence,
+            governanceMode);
+    }
+
+    private static (
+        LedgerJournalEntryRecord Record,
+        AccountingPostingCommandDto Command) ProductionPostingCommandRecord(
+        Guid periodId,
+        DateTimeOffset timestamp,
+        decimal equityDelta,
+        long globalSequence,
+        string equityAccountName = "Investor Capital",
+        string entityId = "entity-alpha",
+        string? capitalAccountId = "capital-account-alpha",
+        string? investorId = "investor-alpha")
+    {
+        var retained = BuildRetainedEquityRecord(
+            periodId,
+            timestamp,
+            equityDelta,
+            globalSequence,
+            equityAccountName,
+            entityId,
+            capitalAccountId,
+            investorId,
+            includeEvidence: false,
+            governanceMode: GovernanceMode.None);
+        var write = BuildPostingCommandWrite(
+            retained,
+            globalSequence,
+            AccountingPostingApprovalStateDto.Approved);
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+        var command = write.PostingCommand!;
+
+        return (
+            retained with
+            {
+                Entry = normalized.Entry,
+                CommandId = normalized.CommandId,
+                CorrelationId = normalized.CorrelationId,
+                AccountingBasis = normalized.AccountingBasis,
+                AccountingPolicyId = normalized.AccountingPolicyId,
+                AccountingPolicyVersion = normalized.AccountingPolicyVersion,
+                RuleId = normalized.RuleId,
+                RuleVersion = normalized.RuleVersion,
+                SourceEventId = normalized.SourceEventId,
+                SourceJournalEntryId = normalized.SourceJournalEntryId,
+                PostingKind = normalized.PostingKind,
+                AdjustmentApproval = normalized.AdjustmentApproval
+            },
+            command);
+    }
+
+    private static LedgerJournalEntryWrite BuildPostingCommandWrite(
+        LedgerJournalEntryRecord retained,
+        long globalSequence,
+        AccountingPostingApprovalStateDto approvalState)
+    {
+        var commandId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var approvalId = $"capital-ledger-approval-{globalSequence}";
+        var journalEntryId = retained.Entry.JournalEntryId;
+        var retainedAt = retained.Entry.Timestamp.AddMinutes(1);
+        var effectiveDate = DateOnly.FromDateTime(retained.Entry.Timestamp.UtcDateTime);
+        var idempotencyKey = $"capital-account-ledger:{BookId:N}:{journalEntryId:N}";
+        var evidence = new AccountingPostingEvidenceReferenceDto[]
+        {
+            new(
+                $"evidence-{globalSequence}",
+                $"evidence://ledger/{journalEntryId:D}",
+                AccountingPostingEvidenceKindDto.Source,
+                "LedgerSupport",
+                retained.Entry.Timestamp.AddSeconds(30),
+                "fund-controller",
+                SubjectId: journalEntryId.ToString("D"),
+                ContentHash: $"sha256:{journalEntryId:N}{journalEntryId:N}"),
+            new(
+                approvalId,
+                $"approval://accounting-posting/{approvalId}",
+                AccountingPostingEvidenceKindDto.Approval,
+                "FinancialOperations",
+                retainedAt,
+                "fund-controller",
+                SubjectId: journalEntryId.ToString("D"),
+                ContentHash: $"sha256:{commandId:N}{commandId:N}")
+        };
+        var command = new AccountingPostingCommandDto(
+            commandId,
+            retained.AggregateId,
+            retained.PeriodId,
+            effectiveDate,
+            retainedAt,
+            idempotencyKey,
+            AccountingPostingIntentDto.Originating,
+            SourceEventId: sourceEventId,
+            CorrelationId: Guid.NewGuid(),
+            CausationId: sourceEventId,
+            ExpectedVersion: 0,
+            SourceEventType: retained.Entry.Metadata.FundEventType,
+            TreasuryContext: new TreasuryLedgerContextDto(
+                effectiveDate,
+                idempotencyKey,
+                retained.Entry.Metadata.FundEventId,
+                retained.Entry.Metadata.FundEventType,
+                retained.Entry.Metadata.CapitalAccountId,
+                retained.Entry.Metadata.InvestorId),
+            ApprovalState: approvalState,
+            ApprovalId: approvalId,
+            OperatorRationale: "Reviewed capital-account ledger support.",
+            Evidence: evidence,
+            ActionOrigin: OperationsActionOriginDto.HumanOperator,
+            LedgerBookId: BookId);
+
+        return new LedgerJournalEntryWrite(
+            retained.Entry,
+            retained.AggregateId,
+            retained.PeriodId,
+            AccountingBasis: retained.AccountingBasis,
+            AccountingPolicyId: retained.AccountingPolicyId,
+            AccountingPolicyVersion: retained.AccountingPolicyVersion,
+            RuleId: retained.RuleId,
+            RuleVersion: retained.RuleVersion,
+            PostingKind: retained.PostingKind,
+            PostingCommand: command,
+            LedgerBookId: BookId);
+    }
+
+    private static LedgerJournalEntryRecord MutatePostingProvenance(
+        LedgerJournalEntryRecord record,
+        PostingProvenanceMutation mutation)
+    {
+        if (mutation == PostingProvenanceMutation.CommandIdMismatch)
+        {
+            return record with { CommandId = Guid.NewGuid() };
+        }
+
+        var tags = new Dictionary<string, string>(
+            record.Entry.Metadata.Tags!,
+            StringComparer.OrdinalIgnoreCase);
+        var evidence = record.Entry.Metadata.EvidenceReferences.ToArray();
+        switch (mutation)
+        {
+            case PostingProvenanceMutation.PendingApprovalState:
+                tags["approvalState"] = AccountingPostingApprovalStateDto.Pending.ToString();
+                break;
+            case PostingProvenanceMutation.ApprovalEvidenceBindingMismatch:
+                evidence = evidence
+                    .Select(item => item.Kind == AccountingPostingEvidenceKindDto.Approval.ToString()
+                        ? item with
+                        {
+                            EvidenceId = "unrelated-approval",
+                            SubjectId = Guid.NewGuid().ToString("D")
+                        }
+                        : item)
+                    .ToArray();
+                break;
+            case PostingProvenanceMutation.MalformedFingerprint:
+                tags[AccountingPostingCommandValidator.PostingCommandFingerprintTag] = "sha256:not-a-digest";
+                break;
+            case PostingProvenanceMutation.DefaultApprovalTimestamp:
+                evidence = evidence
+                    .Select(item => item.Kind == AccountingPostingEvidenceKindDto.Approval.ToString()
+                        ? item with { RetainedAtUtc = default }
+                        : item)
+                    .ToArray();
+                break;
+            case PostingProvenanceMutation.FutureApprovalTimestamp:
+                evidence = evidence
+                    .Select(item => item.Kind == AccountingPostingEvidenceKindDto.Approval.ToString()
+                        ? item with { RetainedAtUtc = EvaluatedAt.AddMinutes(1) }
+                        : item)
+                    .ToArray();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(mutation), mutation, null);
+        }
+
+        var metadata = record.Entry.Metadata with
+        {
+            Tags = tags,
+            EvidenceReferences = evidence
+        };
+        var entry = new JournalEntry(
+            record.Entry.JournalEntryId,
+            record.Entry.Timestamp,
+            record.Entry.Description,
+            record.Entry.Lines,
+            metadata);
+        return record with { Entry = entry };
+    }
+
+    private static LedgerJournalEntryRecord BuildRetainedEquityRecord(
+        Guid periodId,
+        DateTimeOffset timestamp,
+        decimal equityDelta,
+        long globalSequence,
+        string equityAccountName,
+        string entityId,
+        string? capitalAccountId,
+        string? investorId,
+        bool includeEvidence,
+        GovernanceMode governanceMode)
+    {
         var journalEntryId = Guid.NewGuid();
         var commandId = Guid.NewGuid();
         var approvalId = $"capital-ledger-approval-{globalSequence}";
@@ -434,6 +761,16 @@ public sealed class AutomatedJournalCapitalAccountReconciliationResolverTests
                 ? LedgerPostingKindDto.Adjustment
                 : LedgerPostingKindDto.Originating,
             AdjustmentApproval: adjustmentApproval);
+    }
+
+    public enum PostingProvenanceMutation
+    {
+        CommandIdMismatch = 0,
+        PendingApprovalState = 1,
+        ApprovalEvidenceBindingMismatch = 2,
+        MalformedFingerprint = 3,
+        DefaultApprovalTimestamp = 4,
+        FutureApprovalTimestamp = 5
     }
 
     private enum GovernanceMode
