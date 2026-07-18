@@ -259,11 +259,11 @@ Completed the shared multi-asset operations proof lane by exposing Security Mast
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | complete |
-| Last reviewed | 2026-07-02 |
+| Last reviewed | 2026-07-18 |
 
 ### Current Summary
 
-Delivered 2026-07-02. Statement connectors ship as data, not code - declarative versioned CSV/OFX mapping-profile documents (operator-editable, atomic-write persisted, drift-detected), an IB Flex Report XML connector, an OFX 1.x/2.x bank and investment connector, and a fetch-capable Alpaca activity plus portfolio connector reusing the existing brokerage gateway and credential vault. Every connector classifies transactional, position, cash-balance, fee, and dividend data into canonical records, previews per-column mapping confidence and per-kind record breakdowns, and commits deterministically rendered canonical-CSV artifacts through the existing statement-run workflow into the reconciliation queue. Scheduled fetches run through persisted schedules with duplicate-key idempotency; the Accounting workspace gains an Import Statement surface with a live mapping-profile editor.
+Delivered 2026-07-02 and completed operator scheduled-fetch coverage 2026-07-18. Statement connectors ship as data, not code - declarative versioned CSV/OFX mapping-profile documents (operator-editable, atomic-write persisted, drift-detected), an IB Flex Report XML connector, an OFX 1.x/2.x bank and investment connector, and a fetch-capable Alpaca activity plus portfolio connector reusing the existing brokerage gateway and credential vault. Every connector classifies transactional, position, cash-balance, fee, and dividend data into canonical records, previews per-column mapping confidence and per-kind record breakdowns, and commits deterministically rendered canonical-CSV artifacts through the existing statement-run workflow into the reconciliation queue. The Accounting Import Statement surface now accepts file upload or remote provider preview, provides a live mapping-profile editor, and lets operators create, edit, pause, delete, refresh, and run persisted broker- or custodian-classified fetch schedules. Duplicate-key idempotency is preserved; transient scheduled-fetch failures do not advance the successful watermark or expose exception messages.
 
 ### Exit Criteria
 

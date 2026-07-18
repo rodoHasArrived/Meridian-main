@@ -872,6 +872,10 @@ links with break id, route, status, priority, reason, and suggested next action 
 Vault identity, Evidence Workbench route, reconciliation route, and operator next actions so browser
 and WPF clients can deep-link into the exact casework opened by the statement run without relying on
 parallel arrays.
+The same additive contract family carries persisted statement-fetch schedule and upsert payloads.
+Schedules expose an explicit `SourceKind` (`broker` or `custodian`) so background imports preserve
+the same reconciliation classification as file imports; omitted values on older upsert clients and
+persisted snapshots default to `broker` for compatibility.
 Direct Lending servicer statement intake contracts live under
 `DirectLending/DirectLendingWorkflowDtos.cs`. They publish shared preview/import/apply request and
 result payloads, row-level validation issues, statement kind/status/apply-mode enums, and retained
