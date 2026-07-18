@@ -7,7 +7,7 @@ program:
   id: meridian-program
   title: Meridian Evidence-Backed Investment Operations
   owner: Core Team
-  snapshot_date: 2026-07-11
+  snapshot_date: 2026-07-18
   status: active
   active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, and bounded W7 live-readiness governance milestones; active Evidence Vault productization, statement reconciliation onboarding, and WPF parity remain in progress
   scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, close support, retained evidence, workflow controls, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes. WPF desktop product/UI work is reactivated as an active co-equal lane whose immediate focus is web-UI parity over shared contracts.
@@ -45,8 +45,8 @@ program:
     - Paper-first live-readiness governance for paper-to-live promotion evidence, overrides, controls, and audit retention
   production_readiness:
     status: blocked
-    reviewed: 2026-07-11
-    baseline_commit: f0ac384a2
+    reviewed: 2026-07-18
+    baseline_commit: aa3d7edde
     canonical_tracker: docs/product/implementation-todo-list.md
     release_gate: Every P0 row in the canonical production-readiness tracker must be complete on the same release commit; unsupported paths must be explicitly scoped out and fail closed.
   deferred_lanes:
