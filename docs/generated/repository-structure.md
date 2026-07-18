@@ -1128,8 +1128,11 @@ Meridian-main
 │   │       │   ├── migrations.json
 │   │       │   └── policies.json
 │   │       ├── reports
+│   │       │   ├── artifact-drift.json
 │   │       │   ├── migration-application.json
 │   │       │   ├── policy-report.json
+│   │       │   ├── schema-diff.json
+│   │       │   ├── schema-diff.md
 │   │       │   └── summary.md
 │   │       └── render-manifest.json
 │   └── scripts
