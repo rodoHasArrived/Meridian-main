@@ -30,6 +30,7 @@ x86/
 !build/scripts/install/*.sh
 !build/scripts/hooks/
 !build/scripts/hooks/*.sh
+/build/schema-control/
 bld/
 
 # Publish output
