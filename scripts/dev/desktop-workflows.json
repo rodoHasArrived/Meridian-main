@@ -493,6 +493,12 @@
           "notes": "Capture the System health screen from the registered WPF shell catalog."
         },
         {
+          "title": "Lifecycle control",
+          "pageTag": "LifecycleControl",
+          "captureName": "wpf-lifecycle-control",
+          "notes": "Capture the Lifecycle control screen from the registered WPF shell catalog."
+        },
+        {
           "title": "Diagnostics",
           "pageTag": "Diagnostics",
           "captureName": "wpf-diagnostics",
