@@ -30,6 +30,54 @@ public static partial class FundStructureEndpoints
             .WithTags("Reporting Governance")
             .RequireWorkstationTenantScope();
 
+        group.MapGet("/series/{seriesId}", (string seriesId, HttpContext context) =>
+                GetGovernedReportingSeriesAsync(seriesId, context, jsonOptions))
+            .WithName("GetGovernedReportingSeries")
+            .Produces<ReportingGovernanceSeriesHistoryDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .RequireAnyPermission(
+                UserPermission.ViewReporting,
+                UserPermission.ManageReporting,
+                UserPermission.ApproveReporting,
+                UserPermission.DeliverReporting,
+                UserPermission.AdminMaintenance);
+
+        group.MapGet("/{runId}/restatement-requests", (string runId, HttpContext context) =>
+                ListGovernedReportingRestatementsAsync(runId, context, jsonOptions))
+            .WithName("ListGovernedReportingRestatements")
+            .Produces<IReadOnlyList<ReportingGovernanceRestatementDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .RequireAnyPermission(
+                UserPermission.ViewReporting,
+                UserPermission.ManageReporting,
+                UserPermission.ApproveReporting,
+                UserPermission.DeliverReporting,
+                UserPermission.AdminMaintenance);
+
+        group.MapGet("/restatement-requests/{requestId}", (string requestId, HttpContext context) =>
+                GetGovernedReportingRestatementAsync(requestId, context, jsonOptions))
+            .WithName("GetGovernedReportingRestatement")
+            .Produces<ReportingGovernanceRestatementDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .RequireAnyPermission(
+                UserPermission.ViewReporting,
+                UserPermission.ManageReporting,
+                UserPermission.ApproveReporting,
+                UserPermission.DeliverReporting,
+                UserPermission.AdminMaintenance);
+
         group.MapGet("/{runId}", (string runId, HttpContext context) =>
                 GetGovernedReportingRunAsync(runId, context, jsonOptions))
             .WithName("GetGovernedReportingRun")
@@ -45,6 +93,19 @@ public static partial class FundStructureEndpoints
                 UserPermission.ApproveReporting,
                 UserPermission.DeliverReporting,
                 UserPermission.AdminMaintenance);
+
+        group.MapPost("/{runId}/govern", (
+                string runId,
+                HttpContext context) => GovernCompletedReportingRunAsync(runId, context, jsonOptions))
+            .WithName("GovernCompletedReportingRun")
+            .Produces<GovernedReportingRunDto>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance);
 
         group.MapPost("/{runId}/validate", (
                 string runId,
@@ -104,7 +165,7 @@ public static partial class FundStructureEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
-            .RequireAnyPermission(UserPermission.ApproveReporting, UserPermission.AdminMaintenance);
+            .RequireAnyPermission(UserPermission.DeliverReporting, UserPermission.AdminMaintenance);
 
         group.MapPost("/{runId}/restatement-requests", (
                 string runId,
@@ -153,6 +214,56 @@ public static partial class FundStructureEndpoints
             static (coordinator, caller, id, ct) => coordinator.GetAsync(id, caller, ct),
             ReportingGovernanceApiProjector.ProjectRun,
             StatusCodes.Status200OK,
+            jsonOptions);
+
+    private static Task<IResult> GetGovernedReportingSeriesAsync(
+        string seriesId,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions) =>
+        ExecuteGovernanceAsync(
+            context,
+            seriesId,
+            static (coordinator, caller, id, ct) => coordinator.GetSeriesHistoryAsync(id, caller, ct),
+            ReportingGovernanceApiProjector.ProjectSeriesHistory,
+            StatusCodes.Status200OK,
+            jsonOptions);
+
+    private static Task<IResult> ListGovernedReportingRestatementsAsync(
+        string runId,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions) =>
+        ExecuteGovernanceAsync(
+            context,
+            runId,
+            static (coordinator, caller, id, ct) =>
+                coordinator.ListRestatementRequestsAsync(id, caller, ct),
+            ReportingGovernanceApiProjector.ProjectRestatements,
+            StatusCodes.Status200OK,
+            jsonOptions);
+
+    private static Task<IResult> GetGovernedReportingRestatementAsync(
+        string requestId,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions) =>
+        ExecuteGovernanceAsync(
+            context,
+            requestId,
+            static (coordinator, caller, id, ct) => coordinator.GetRestatementRequestAsync(id, caller, ct),
+            ReportingGovernanceApiProjector.ProjectRestatement,
+            StatusCodes.Status200OK,
+            jsonOptions);
+
+    private static Task<IResult> GovernCompletedReportingRunAsync(
+        string runId,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions) =>
+        ExecuteGovernanceAsync(
+            context,
+            runId,
+            static (coordinator, caller, id, ct) =>
+                coordinator.CreateFromCompletedCertifiedManifestAsync(id, caller, ct),
+            ReportingGovernanceApiProjector.ProjectRun,
+            StatusCodes.Status201Created,
             jsonOptions);
 
     private static Task<IResult> ValidateGovernedReportingRunAsync(
@@ -283,7 +394,7 @@ public static partial class FundStructureEndpoints
             string,
             CancellationToken,
             Task<TDomain>> operation,
-        Func<TDomain, TResponse> project,
+        Func<TDomain, ReportingGovernanceCallerContext, TResponse> project,
         int successStatusCode,
         JsonSerializerOptions jsonOptions)
     {
@@ -314,7 +425,7 @@ public static partial class FundStructureEndpoints
                     resourceId.Trim(),
                     context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(project(result), jsonOptions, statusCode: successStatusCode);
+            return Results.Json(project(result, caller!), jsonOptions, statusCode: successStatusCode);
         }
         catch (ReportingGovernancePersistenceException ex)
         {
@@ -349,6 +460,10 @@ public static partial class FundStructureEndpoints
             return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
         }
         catch (IOException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+        catch (NotSupportedException ex)
         {
             return Results.Problem(ex.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
         }

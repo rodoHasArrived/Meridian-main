@@ -1,15 +1,13 @@
 import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SeverityBadge } from "@/components/operations";
-import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { redactReportingCredentialText, safeReportingHref } from "@/lib/reporting-link-safety";
+import { evidenceWorkbenchPath, workstationRouteWithQuery } from "@/lib/workspace";
 import { reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
-  ReportingCommandStatusView,
-  ReportingScheduleField,
-  type ReportingCommandStatus
+  ReportingScheduleField
 } from "@/screens/reporting-screen.shared-components";
 import type {
   ReportPackDeliveryAttempt,
@@ -18,28 +16,22 @@ import type {
 
 interface ReportingDeliveryHistoryPanelProps {
   deliveryAttempts: ReportPackDeliveryAttempt[];
-  deliveryFailureStatus: ReportingCommandStatus | null;
-  runningDeliveryFailureId: string | null;
-  onRecordDeliveryFailure: (attempt: ReportPackDeliveryAttempt) => void | Promise<void>;
 }
 
 export function ReportingDeliveryHistoryPanel({
-  deliveryAttempts,
-  deliveryFailureStatus,
-  runningDeliveryFailureId,
-  onRecordDeliveryFailure
+  deliveryAttempts
 }: ReportingDeliveryHistoryPanelProps) {
   return (
     <Card className="panel-surface">
       <CardHeader>
         <div className="eyebrow-label">Delivery history</div>
         <CardTitle>Distribution attempts</CardTitle>
-        <CardDescription>Published report-pack delivery attempts are retained by recipient and channel.</CardDescription>
+        <CardDescription>Immutable, tenant-filtered report delivery evidence retained by recipient and channel.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
-        {deliveryFailureStatus ? (
-          <ReportingCommandStatusView status={deliveryFailureStatus} />
-        ) : null}
+        <p role="status" className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-xs leading-5 text-primary">
+          Dispatch and provider failure receipts are server-owned. Use the governed run detail for release and distribution controls; this panel remains read-only evidence.
+        </p>
         {deliveryAttempts.length > 0 ? (
           <div role="list" aria-label="Report-pack delivery attempts" className="space-y-2">
             {deliveryAttempts.slice(0, 6).map((attempt) => (
@@ -56,7 +48,7 @@ export function ReportingDeliveryHistoryPanel({
                   </span>
                   <SeverityBadge status={attempt.state} label={attempt.state} />
                 </div>
-                <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{attempt.deliveryReference}</p>
+                <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{redactReportingCredentialText(attempt.deliveryReference)}</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   Attempt {attempt.attemptNumber} by {attempt.actor} at {attempt.attemptedAtUtc}
                 </p>
@@ -66,13 +58,13 @@ export function ReportingDeliveryHistoryPanel({
                       {attempt.package.deliveryMode} package · {attempt.package.formats.join(", ")}
                     </p>
                     {attempt.package.deliveryChannelSummary ? (
-                      <p>{attempt.package.deliveryChannelSummary}</p>
+                      <p>{redactReportingCredentialText(attempt.package.deliveryChannelSummary)}</p>
                     ) : null}
                     {attempt.package.deliveryAccessSummary ? (
-                      <p>{attempt.package.deliveryAccessSummary}</p>
+                      <p>{redactReportingCredentialText(attempt.package.deliveryAccessSummary)}</p>
                     ) : null}
                     {attempt.package.downloadSummary ? (
-                      <p>{attempt.package.downloadSummary}</p>
+                      <p>{redactReportingCredentialText(attempt.package.downloadSummary)}</p>
                     ) : null}
                     {attempt.package.accessExpiresAtUtc ? (
                       <p className="break-all font-mono text-[11px]">
@@ -86,71 +78,97 @@ export function ReportingDeliveryHistoryPanel({
                     ) : null}
                     {attempt.package.accessLinks?.length ? (
                       <div className="flex flex-wrap gap-1.5" aria-label={`${attempt.attemptId} package access links`}>
-                        {attempt.package.accessLinks.map((link) => (
-                          <a
-                            key={`${attempt.attemptId}-${link.kind}-${link.href}`}
-                            className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                            href={link.href}
-                            aria-label={`${link.label} ${link.requiresToken ? "token gated" : "internal route"} ${link.href}`}
-                          >
-                            <span className="max-w-[12rem] truncate text-foreground">{link.label}</span>
-                            <Badge variant="outline">{link.requiresToken ? "Token gated" : "Internal"}</Badge>
-                            {link.expiresAtUtc ? <span>Expires {link.expiresAtUtc}</span> : null}
-                          </a>
-                        ))}
+                        {attempt.package.accessLinks.map((link, index) => {
+                          const safeHref = safeReportingHref(link.href, {
+                            requireOpaqueFragment: link.requiresToken
+                          });
+                          return safeHref ? (
+                            <a
+                              key={`${attempt.attemptId}-${link.kind}-${index}`}
+                              className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                              href={safeHref}
+                              aria-label={`${redactReportingCredentialText(link.label)} ${link.requiresToken ? "fragment-token gated" : "internal route"}`}
+                            >
+                              <span className="max-w-[12rem] truncate text-foreground">
+                                {redactReportingCredentialText(link.label)}
+                              </span>
+                              <Badge variant="outline">{link.requiresToken ? "Fragment gated" : "Internal"}</Badge>
+                              {link.expiresAtUtc ? <span>Expires {link.expiresAtUtc}</span> : null}
+                            </a>
+                          ) : (
+                            <span
+                              key={`${attempt.attemptId}-${link.kind}-${index}`}
+                              className="inline-flex items-center gap-1.5 rounded-sm border border-warning/40 px-2 py-1 text-[11px] text-warning"
+                            >
+                              {redactReportingCredentialText(link.label)} <Badge variant="warning">Unsafe link suppressed</Badge>
+                            </span>
+                          );
+                        })}
                       </div>
-                    ) : attempt.package.secureLink.startsWith("/") ? (
-                      <a
-                        className="block break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
-                        href={attempt.package.secureLink}
-                      >
-                        {attempt.package.secureLink}
-                      </a>
-                    ) : (
-                      <p className="break-all font-mono text-[11px]">
-                        {attempt.package.secureLink}
+                    ) : attempt.package.secureLink ? (
+                      <p className="text-[11px] text-muted-foreground">
+                        Legacy package access reference retained as non-actionable evidence. Use the governed run for scoped recipient access.
                       </p>
+                    ) : (
+                      <p className="text-[11px] text-warning">Legacy or query-credential package link suppressed.</p>
                     )}
                     {attempt.package.notifications?.length ? (
                       <ul aria-label={`${attempt.recipient} delivery notifications`} className="grid gap-1.5">
-                        {attempt.package.notifications.map((notification) => (
-                          <li
-                            key={`${attempt.attemptId}-${notification.notificationId}`}
-                            className="rounded-md border border-border/70 bg-background/40 px-2 py-2"
-                          >
+                        {attempt.package.notifications.map((notification) => {
+                          const safeNotificationHref = safeReportingHref(notification.href, {
+                            requireOpaqueFragment: notification.requiresToken
+                          });
+                          return (
+                            <li
+                              key={`${attempt.attemptId}-${notification.notificationId}`}
+                              className="rounded-md border border-border/70 bg-background/40 px-2 py-2"
+                            >
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <span className="min-w-0">
-                                <span className="block font-semibold text-foreground">{notification.subject}</span>
+                                <span className="block font-semibold text-foreground">
+                                  {redactReportingCredentialText(notification.subject)}
+                                </span>
                                 <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
                                   {notification.notificationId}
                                 </span>
                               </span>
                               <Badge variant="outline">{notification.status}</Badge>
                             </div>
-                            <p className="mt-1 text-xs leading-5 text-muted-foreground">{notification.body}</p>
+                            <p className="mt-1 text-xs leading-5 text-muted-foreground">{redactReportingCredentialText(notification.body)}</p>
                             <dl className="mt-2 grid gap-1 text-[11px] sm:grid-cols-2">
                               <ReportingScheduleField label="Channel" value={`${notification.channel} · ${notification.deliveryMode}`} />
                               <ReportingScheduleField label="Recipient" value={`${notification.recipient} · ${notification.recipientRole}`} />
                               <ReportingScheduleField label="Created" value={notification.createdAtUtc} />
                               <ReportingScheduleField label="Expires" value={notification.expiresAtUtc ?? "No expiry"} />
                             </dl>
-                            <a
-                              className="mt-2 block break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
-                              href={notification.href}
-                              aria-label={`${notification.subject} ${notification.requiresToken ? "token gated" : "internal route"} ${notification.href}`}
-                            >
-                              {notification.href}
-                            </a>
-                          </li>
-                        ))}
+                              {safeNotificationHref ? (
+                                <a
+                                  className="mt-2 block font-mono text-[11px] text-primary underline-offset-2 hover:underline"
+                                  href={safeNotificationHref}
+                                  aria-label={`${redactReportingCredentialText(notification.subject)} ${notification.requiresToken ? "fragment-token gated" : "internal route"}`}
+                                >
+                                  Open retained notification access
+                                </a>
+                              ) : (
+                                <p className="mt-2 text-[11px] text-warning">Unsafe notification link suppressed.</p>
+                              )}
+                            </li>
+                          );
+                        })}
                       </ul>
                     ) : null}
                     <p className="break-all font-mono text-[11px]">
-                      {attempt.package.retainedManifestPath}
+                      {redactReportingCredentialText(attempt.package.retainedManifestPath)}
                     </p>
                     {attempt.package.reportingRunId ? (
                       <p className="break-all font-mono text-[11px]">
-                        Reporting run: {attempt.package.reportingRunId}
+                        Reporting run: {attempt.package.reportingRunId}{" "}
+                        <Link
+                          className="font-sans font-medium text-primary underline-offset-2 hover:underline"
+                          to={workstationRouteWithQuery("reportingRunDetail", { runId: attempt.package.reportingRunId })}
+                        >
+                          Open governed run
+                        </Link>
                       </p>
                     ) : null}
                     {attempt.package.reportingTemplateId ? (
@@ -175,7 +193,7 @@ export function ReportingDeliveryHistoryPanel({
                     ) : null}
                     {attempt.package.sourceArtifacts?.length ? (
                       <p className="break-all font-mono text-[11px]">
-                        Source artifacts: {attempt.package.sourceArtifacts.join(", ")}
+                        Source artifacts: {redactReportingCredentialText(attempt.package.sourceArtifacts.join(", "))}
                       </p>
                     ) : null}
                     {attempt.package.generatedReportWriterGrids?.length ? (
@@ -292,10 +310,10 @@ export function ReportingDeliveryHistoryPanel({
                             <li key={`${attempt.attemptId}-${line.lineKey}-${line.evidenceId ?? line.sourceId}`} className="break-all">
                               <span className="font-mono text-foreground">{line.lineKey}</span>
                               <span> · {line.sourceKind} · {line.reportValue ?? "value pending"}</span>
-                              {line.financialRecordHref ? (
+                              {safeReportingHref(line.financialRecordHref) ? (
                                 <a
                                   className="ml-2 text-primary underline-offset-2 hover:underline"
-                                  href={line.financialRecordHref}
+                                  href={safeReportingHref(line.financialRecordHref)!}
                                   aria-label={`Open Financial Record Explorer for ${line.lineKey}`}
                                 >
                                   {formatFinancialRecordExplorerName(line.financialRecordExplorerId)}
@@ -331,9 +349,9 @@ export function ReportingDeliveryHistoryPanel({
                           <ul aria-label={`${attempt.recipient} delivery packet evidence links`} className="mt-1 space-y-1">
                             {attempt.package.deliveryEvidencePacket.deliveryEvidence.map((evidence) => (
                               <li key={`${attempt.attemptId}-${evidence.evidenceId}`} className="break-all font-mono">
-                                {evidence.route ? (
+                                {safeReportingHref(evidence.route) ? (
                                   <a
-                                    href={evidence.route}
+                                    href={safeReportingHref(evidence.route)!}
                                     className="text-primary underline-offset-2 hover:underline"
                                     aria-label={`Open delivery evidence ${evidence.evidenceId}`}
                                   >
@@ -412,10 +430,10 @@ export function ReportingDeliveryHistoryPanel({
                           >
                             <div className="flex flex-wrap items-start justify-between gap-2">
                               <span className="min-w-0">
-                                {artifact.downloadRoute ? (
+                                {safeGovernedDistributionArtifactHref(artifact.downloadRoute) ? (
                                   <a
                                     className="block break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
-                                    href={artifact.downloadRoute}
+                                    href={safeGovernedDistributionArtifactHref(artifact.downloadRoute)!}
                                     aria-label={`Download ${artifact.artifactName}`}
                                   >
                                     {artifact.artifactName}
@@ -426,7 +444,7 @@ export function ReportingDeliveryHistoryPanel({
                                   </span>
                                 )}
                                 <span className="mt-1 block break-all font-mono text-[11px]">
-                                  {artifact.retainedPath}
+                                  {redactReportingCredentialText(artifact.retainedPath)}
                                 </span>
                               </span>
                               <Badge variant="outline">{artifact.format}</Badge>
@@ -443,20 +461,11 @@ export function ReportingDeliveryHistoryPanel({
                     ) : null}
                   </div>
                 ) : null}
-                {attempt.failureReason ? <p className="mt-1 text-xs text-warning">{attempt.failureReason}</p> : null}
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    busy={runningDeliveryFailureId === `${attempt.attemptId}:delivery-failure`}
-                    busyLabel="Recording"
-                    disabled={attempt.state === "Failed" || Boolean(runningDeliveryFailureId)}
-                    disabledReason={attempt.state === "Failed" ? "This delivery attempt is already recorded as failed." : null}
-                    onClick={() => void onRecordDeliveryFailure(attempt)}
-                  >
-                    Record delivery failure
-                  </Button>
-                </div>
+                {attempt.failureReason ? (
+                  <p className="mt-1 text-xs text-warning">
+                    {redactReportingCredentialText(attempt.failureReason)}
+                  </p>
+                ) : null}
               </div>
             ))}
           </div>
@@ -523,4 +532,11 @@ function formatReportWriterDatasetMetadata(reportPackage: ReportPackDeliveryPack
 
 function reportPackDeliveryEvidencePath(reportId: string, attemptId: string): string {
   return evidenceWorkbenchPath("report-pack-delivery", `${reportId}:${attemptId}`);
+}
+
+function safeGovernedDistributionArtifactHref(value: string | null | undefined): string | null {
+  const href = safeReportingHref(value);
+  return href?.startsWith("/api/fund-structure/reporting/distribution/packages/")
+    ? href
+    : null;
 }

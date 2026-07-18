@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -59,7 +60,66 @@ public sealed class ReportingGovernanceEndpointTests
         payload.Scope.TenantId.Should().Be("tenant-a");
         payload.Access.PolicyHash.Should().Be(Hash('a'));
         payload.Snapshot.SnapshotHash.Should().Be(Hash('b'));
+        payload.NormalizedParameters.Should().NotBeNull();
+        payload.NormalizedParameters!.PeriodId.Should().Be("2026-06");
+        var validate = payload.ActionAvailability.Single(action => action.Action == "ValidateRun");
+        validate.IsAllowed.Should().BeFalse();
+        validate.BlockedReason.Should().Contain("ManageReporting");
+        validate.ExpectedVersion.Should().Be(7);
         payload.Version.Should().Be(7);
+    }
+
+    [Fact]
+    public async Task Get_WithManagePermission_ProjectsServerOwnedAllowedActionAndExpectedVersion()
+    {
+        var coordinator = new RecordingCoordinator();
+        await using var app = await CreateAppAsync(coordinator, UserPermission.ManageReporting);
+
+        var payload = await app.GetTestClient()
+            .GetFromJsonAsync<GovernedReportingRunDto>(
+                "/api/fund-structure/reporting/runs/run-001",
+                JsonOptions);
+
+        var validate = payload!.ActionAvailability.Single(action => action.Action == "ValidateRun");
+        validate.IsAllowed.Should().BeTrue();
+        validate.BlockedReason.Should().BeNull();
+        validate.ExpectedVersion.Should().Be(payload.Version);
+    }
+
+    [Theory]
+    [InlineData("/api/fund-structure/reporting/runs/series/series-001", "series-history")]
+    [InlineData("/api/fund-structure/reporting/runs/run-001/restatement-requests", "list-restatements")]
+    [InlineData("/api/fund-structure/reporting/runs/restatement-requests/restatement-001", "get-restatement")]
+    public async Task CanonicalDiscoveryRoutes_AreTenantScopedAndInvokeReadFacade(
+        string path,
+        string expectedOperation)
+    {
+        var coordinator = new RecordingCoordinator();
+        await using var app = await CreateAppAsync(coordinator, UserPermission.ViewReporting);
+
+        var response = await app.GetTestClient().GetAsync(path);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        coordinator.LastOperation.Should().Be(expectedOperation);
+        coordinator.LastCaller!.TenantId.Should().Be("tenant-a");
+        coordinator.LastCaller.CompanyId.Should().Be("company-a");
+    }
+
+    [Fact]
+    public async Task RestatementDetail_ProjectsRequesterMakerCheckerBlocker()
+    {
+        var coordinator = new RecordingCoordinator();
+        await using var app = await CreateAppAsync(coordinator, UserPermission.ApproveReporting);
+
+        var payload = await app.GetTestClient()
+            .GetFromJsonAsync<ReportingGovernanceRestatementDto>(
+                "/api/fund-structure/reporting/runs/restatement-requests/restatement-001",
+                JsonOptions);
+
+        var approve = payload!.ActionAvailability.Single(action => action.Action == "ApproveRestatement");
+        approve.IsAllowed.Should().BeFalse();
+        approve.BlockedReason.Should().Contain("requester");
+        approve.ExpectedVersion.Should().Be(payload.Version);
     }
 
     [Fact]
@@ -250,6 +310,7 @@ public sealed class ReportingGovernanceEndpointTests
     private static GovernedReportingRun SeedRun(string runId = "run-001")
     {
         var authority = SeedAuthority();
+        var parametersJson = SeedParametersJson();
         return new GovernedReportingRun(
             runId,
             "series-001",
@@ -268,7 +329,12 @@ public sealed class ReportingGovernanceEndpointTests
                 "4",
                 ReportingGovernanceAccessMode.Restricted,
                 "server-operator",
-                ["server-operator", "ReportingAnalyst"],
+                AllowOwnerAccess: true,
+                Principals:
+                [
+                    new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.User, "server-operator"),
+                    new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.Group, "ReportingAnalyst")
+                ],
                 Hash('a')),
             new ReportingCertifiedSnapshotScope(
                 "tenant-a",
@@ -280,7 +346,12 @@ public sealed class ReportingGovernanceEndpointTests
                 "snapshot-001",
                 Hash('b'),
                 "reconciliation-001",
-                new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero)),
+                new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
+                SourceCheckpointId: "source-checkpoint-001",
+                SourceCheckpointHash: Hash('c'),
+                ReconciliationCheckpointHash: Hash('d'),
+                ParametersCanonicalJson: parametersJson,
+                ParametersHash: Sha256(parametersJson)),
             authority,
             new DateTimeOffset(2026, 7, 1, 0, 1, 0, TimeSpan.Zero),
             RestatementOfRunId: null,
@@ -324,6 +395,14 @@ public sealed class ReportingGovernanceEndpointTests
 
     private static string Hash(char value) => new(value, 64);
 
+    private static string Sha256(string value) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+
+    private static string SeedParametersJson() =>
+        """
+        {"scope":{"fundProfileId":"fund-a","entityScopeKind":"AllEntities","dimensions":null},"periodId":"2026-06","asOfDate":"2026-06-30","ledgerBookId":"11111111-1111-1111-1111-111111111111","accountingBasis":"Gaap","presentationCurrency":"USD","consolidationLevel":"Fund","outputFormat":"Pdf","finality":"Final","includeSupportingSchedules":true,"includeEvidenceAppendix":true,"templateParameters":{}}
+        """;
+
     private sealed class RecordingCoordinator : IReportingGovernanceEndpointCoordinator
     {
         public string? LastOperation { get; private set; }
@@ -342,6 +421,35 @@ public sealed class ReportingGovernanceEndpointTests
             ReportingGovernanceCallerContext caller,
             CancellationToken cancellationToken = default) =>
             Run<IReadOnlyList<GovernedReportingRun>>("list", null, caller, [SeedRun()]);
+
+        public Task<ReportingGovernanceSeriesHistory> GetSeriesHistoryAsync(
+            string seriesId,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Run(
+                "series-history",
+                null,
+                caller,
+                new ReportingGovernanceSeriesHistory(
+                    seriesId,
+                    [SeedRun()],
+                    [SeedRestatementRequest()]));
+
+        public Task<IReadOnlyList<ReportingRestatementRequest>> ListRestatementRequestsAsync(
+            string predecessorRunId,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Run<IReadOnlyList<ReportingRestatementRequest>>(
+                "list-restatements",
+                null,
+                caller,
+                [SeedRestatementRequest()]);
+
+        public Task<ReportingRestatementRequest> GetRestatementRequestAsync(
+            string requestId,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Run("get-restatement", null, caller, SeedRestatementRequest());
 
         public Task<GovernedReportingRun> CreateFromCompletedCertifiedManifestAsync(
             string manifestRunId,

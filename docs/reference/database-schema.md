@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-12
+**Reviewed:** 2026-07-15
 
 This is the consolidated relational schema reference for the current Meridian programs. It maps
 every PostgreSQL store the platform provisions today — schema by schema, table by table — and
@@ -29,6 +29,10 @@ served from a fallback. The governance pair is required: production-safe startup
 `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` are
 configured; `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` bypasses this for local/dev fixtures only and
 is rejected in Production (`StorageFeatureRegistration.EnsureGovernancePersistenceProfile`).
+Durable governed reporting is registered when `MERIDIAN_REPORTING_CONNECTION_STRING` is present,
+or when it intentionally falls back to `MERIDIAN_LEDGER_CONNECTION_STRING`; without either,
+certification may still report dependency blockers but governance, release, artifact retention,
+grants, and delivery do not fall back to production fixtures.
 Migration runners create schemas and tables idempotently at startup (`create schema/table if not
 exists`), substituting the configured schema for the `__SCHEMA__` placeholder in each script.
 
@@ -44,12 +48,15 @@ exists`), substituting the configured schema for the `__SCHEMA__` placeholder in
 | Banking | `banking` | 2 | `src/Meridian.Storage/Banking/Migrations/` | `MERIDIAN_BANKING_CONNECTION_STRING`, `MERIDIAN_BANKING_SCHEMA` |
 | Money Market | `money_market` | 3 | `src/Meridian.Storage/MoneyMarket/Migrations/` | `MERIDIAN_MONEY_MARKET_CONNECTION_STRING`, `MERIDIAN_MONEY_MARKET_SCHEMA` |
 | Asset Operations | `asset_operations` | 11 | `src/Meridian.Storage/AssetOperations/Migrations/` | `MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING`, `MERIDIAN_ASSET_OPERATIONS_SCHEMA` |
+| Governed Reporting | `reporting` | 12 | `src/Meridian.Storage/Reporting/Migrations/` (`001`–`008`) | `MERIDIAN_REPORTING_CONNECTION_STRING` (falls back to `MERIDIAN_LEDGER_CONNECTION_STRING`), `MERIDIAN_REPORTING_SCHEMA` |
 | Identity Scoped Access | `identity_access` | 1 | Inline DDL in `src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs` | `MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING`, `MERIDIAN_SCOPED_ACCESS_SCHEMA` |
 
-Total: 116 tables. Composition entrypoints live in `src/Meridian.Application/Composition/`
+Total: 128 tables. Composition entrypoints live in `src/Meridian.Application/Composition/`
 (`LedgerStartup`, `SecurityMasterStartup`, `DirectLendingStartup`, `FundStructureStartup`,
 `FundAccountsStartup`, `BankingStartup`, `MoneyMarketStartup`, `AssetOperationsStartup`, and
-`Features/StorageFeatureRegistration` for scoped access).
+`Features/StorageFeatureRegistration` for scoped access). Governed Reporting storage is registered
+from `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` and migrated by
+`ReportingMigrationRunner`.
 
 ## Cross-Store Reference Keys
 
@@ -63,7 +70,7 @@ Stores never declare foreign keys across schema boundaries; they share identifie
 | `fund_profile_id` (text) | Ledger accounting-configuration workspaces / fund profiles | `ledger.ledger_books`, accounting policies, tenancy registry, data-vendor entitlement scope |
 | `loan_id` (uuid) | `direct_lending.loan_event` / `loan_contract` | All direct-lending projections, servicer statement rows |
 | `period_id` (uuid) | `ledger.accounting_periods` | `journal_entries` / `journal_legs` (logical, no FK constraint) |
-| `tenant_id`, `company_id` (text) | Retrofitted multi-tenancy columns | Ledger configuration/workspaces, ledger books, periods, operations continuity, fund accounts |
+| `tenant_id`, `company_id` (text) | Retrofitted multi-tenancy columns | Ledger configuration/workspaces, ledger books, periods, operations continuity, fund accounts, governed reporting runs/evidence/artifacts/grants/deliveries |
 
 ## Ledger Store (`ledger`)
 
@@ -454,6 +461,36 @@ jsonb`, `created_at`, and an index on `security_id`: `asset_operation_subjects`,
 terms → lifecycle → projection → actuals → reconciliation → ledger projection → readiness →
 audit) that generalizes the direct-lending pattern to any instrument.
 
+## Governed Reporting Store (`reporting`)
+
+Certified reporting persistence is tenant-scoped and fail-closed. The migrations use a checksummed
+`reporting_schema_migrations` ledger and a schema-scoped advisory lock; the 12 domain tables below
+are the table count reported in the registry.
+
+| Table | Primary key | Purpose and immutable controls |
+| --- | --- | --- |
+| `reporting_artifact_blobs` | `content_hash_sha256` | Content-addressed artifact bytes and byte length; update/delete trigger rejects overwrite. |
+| `reporting_governed_runs` | (`tenant_id`, `run_id`) | One immutable series revision identity plus lifecycle payload/checksum and compare-and-swap version; released revisions cannot change. |
+| `reporting_restatement_requests` | (`tenant_id`, `request_id`) | Predecessor-bound request, state, requester, reason, approved replacement revision, and optimistic version; delete and identity changes are rejected. |
+| `reporting_governance_audit` | (`tenant_id`, `aggregate_kind`, `aggregate_id`, `aggregate_version`) | Contiguous append-only lifecycle/restatement audit chain with previous/current hashes. |
+| `reporting_access_grants` | `grant_id` | Token hash, tenant/package/run, typed audience, exact artifact scope, expiry/use limit, revocation, and version; authority fields cannot be moved or deleted. |
+| `reporting_delivery_jobs` | `job_id` | Release authorization, package, immutable payload/hash, distribution idempotency key, transport, typed recipient, lease/retry state, provider message, and bound grant. |
+| `reporting_delivery_receipts` | (`job_id`, `receipt_id`) | Append-only dispatcher, provider, access, and download receipt evidence. |
+| `reporting_artifact_packages` | (`tenant_id`, `package_id`) | Immutable run/revision/snapshot/manifest package identity and access-policy hash. |
+| `reporting_artifact_catalog` | (`tenant_id`, `package_id`, `artifact_id`) | Immutable package-scoped filename, content type, content hash, byte size, retained URI, and creation evidence. |
+| `reporting_artifact_audit_chain_head` | `chain_id` | Singleton current artifact-audit sequence and hash used to serialize appends. |
+| `reporting_artifact_audit` | `sequence` | Append-only retain/verify/access/deny/integrity audit evidence with actor/target tenant and previous/current hashes. |
+| `reporting_reconciliation_evidence` | (`tenant_id`, `receipt_key_sha256`) | Exact hard-close/reconciliation completion receipt, full scope, source checkpoint binding, evidence ids, canonical payload, and receipt hash; update/delete is rejected. |
+
+Migrations `005`–`007` harden typed grant audiences, delivery transitions and provider correlation,
+reconciliation evidence, and governed-run tenant/scope constraints. Migration `008` explicitly
+versions governance aggregate and audit formats: retained pre-hardening rows are stamped `v1`,
+verified as immutable read-only evidence, and never inferred or rewritten as canonical `v2`; new
+writers must provide `v2` explicitly, so an older rolling writer fails closed instead of
+mislabeling legacy bytes. Contract and operator details are in
+[Governed Accounting Reporting](accounting-report-packs.md) and
+[Governed Reporting Operations](../operators/governed-reporting-operations.md).
+
 ## Identity Scoped Access Store (`identity_access`)
 
 | Table | Primary key | References | Purpose |
@@ -480,6 +517,7 @@ JSON/JSONL via `AtomicFileWriter`. The relational stores above never hold tick d
 | Backtesting / execution | In-memory during a run; results flow into strategy run entries and ledger postings (`TradeExecutedEvent` → journal legs) | Orders, fills, lots, portfolio snapshots, metrics (`BacktestResult`) |
 | Workflow runbooks | `<dataRoot>/runbooks.json` (`JsonRunbookStore`) | Runbook definitions and steps |
 | Identity | JSON/JSONL via `AtomicFileWriter` under `governance/` | User accounts, user-account audit trail (`user-account-audit.jsonl`), role permission profiles, scoped-access assignments (file variant of the Postgres store above) |
+| Governed Reporting orchestration | Integrity-validated JSON under `<DataRoot>/workstation/reporting/`, written through `AtomicFileWriter` | Certified run/audit snapshot at `runs/reporting-runs.json`; schedules and restart-safe release handoffs at `reporting-schedules.json`; custom templates and starter-kit state; legacy workflow/delivery files retained only for historical compatibility |
 | Reconciliation connectors | JSON stores in `src/Meridian.FinancialOperations/Reconciliation/Connectors/` | Statement mapping profiles, reconciliation checkpoints |
 | Provider credentials | `FileProviderCredentialStore` (`src/Meridian.DataIntegration/Credentials/`) | OAuth tokens and provider credential records |
 | Analysis/export | DuckDB over JSONL/Parquet (`src/Meridian.Storage/Query/DuckDbQueryService.cs`), portable data packages with `PackageManifest` | Read-only analysis views and governed exports, not authoritative state |

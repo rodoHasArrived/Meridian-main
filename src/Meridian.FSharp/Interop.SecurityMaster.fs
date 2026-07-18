@@ -112,20 +112,39 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    convertibleTerms = convertibleTerms |})
         | SecurityKind.Option terms ->
             let (SecurityId underlyingId) = terms.UnderlyingId
+            let exerciseStyle =
+                terms.ExerciseStyle
+                |> Option.map (fun style ->
+                    match style with
+                    | ExerciseStyle.American -> "American"
+                    | ExerciseStyle.European -> "European"
+                    | ExerciseStyle.Bermudan -> "Bermudan")
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    underlyingId = underlyingId
                    putCall = terms.PutCall
                    strike = terms.Strike
                    expiry = terms.Expiry
-                   multiplier = terms.Multiplier |})
+                   multiplier = terms.Multiplier
+                   optChainId = terms.OptChainId
+                   exerciseStyle = exerciseStyle
+                   settlementType = terms.SettlementType
+                   isAdjusted = terms.IsAdjusted
+                   lastTradingDt = terms.LastTradingDt |})
         | SecurityKind.Future terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
                    rootSymbol = terms.RootSymbol
                    contractMonth = terms.ContractMonth
                    expiry = terms.Expiry
-                   multiplier = terms.Multiplier |})
+                   multiplier = terms.Multiplier
+                   lastTradingDt = terms.LastTradingDt
+                   firstNoticeDt = terms.FirstNoticeDt
+                   deliveryMonthDt = terms.DeliveryMonthDt
+                   settlementType = terms.SettlementType
+                   deliveryLocationCode = terms.DeliveryLocationCode
+                   isRollTarget = terms.IsRollTarget
+                   rollWindowDays = terms.RollWindowDays |})
         | SecurityKind.Bond terms ->
             let couponType, floatingIndex, spreadBps, capRate, floorRate =
                 match terms.Coupon with

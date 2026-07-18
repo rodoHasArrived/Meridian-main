@@ -307,17 +307,11 @@ function collectRequiredFixtureRoutes(captures) {
   return [...required];
 }
 
-function assertFixtureRouteCoverage(requiredRoutes, fixtureRoutes) {
+function findMissingFixtureRoutes(requiredRoutes, fixtureRoutes) {
   const availableRoutes = Object.keys(fixtureRoutes);
-  const missing = requiredRoutes.filter(
+  return requiredRoutes.filter(
     (requiredRoute) => !availableRoutes.some((candidate) => candidate === requiredRoute || requiredRoute.startsWith(`${candidate}/`))
   );
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Screenshot fixture route coverage is incomplete. Missing route fixtures: ${missing.join(", ")}`
-    );
-  }
 }
 
 function extractWorkstationRouteCatalog(source, filePath) {
@@ -434,7 +428,7 @@ function assertCaptureRouteStateIdentity(captures) {
   }
 }
 
-async function assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPath) {
+async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShellPath) {
   const capturedPaths = new Set(
     captures
       .map((capture) => screenshotCoveragePath(capture.path))
@@ -450,15 +444,9 @@ async function assertCaptureRouteCoverage(captures, routeCatalogPath, appShellPa
       .map((routePath) => screenshotCoveragePath(routePath))
       .filter((routePath) => routePath.length > 0)
   );
-  const missingPaths = [...expectedPaths]
+  return [...expectedPaths]
     .filter((routePath) => !capturedPaths.has(routePath))
     .sort();
-
-  if (missingPaths.length > 0) {
-    throw new Error(
-      `Web screenshot route coverage is incomplete. Missing capture path(s): ${missingPaths.join(", ")}`
-    );
-  }
 }
 
 function collectCaptureWaitForTexts(capture) {
@@ -577,7 +565,7 @@ function assertNoCaptureBrowserError(pageErrors, captureName) {
   }
 }
 
-async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs) {
+async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs) {
   pageErrors.reset();
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
@@ -604,7 +592,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   );
   for (const waitForText of collectCaptureWaitForTexts(capture)) {
     await waitForCaptureStep(
-      page.getByText(waitForText, { exact: false }).filter({ visible: true }).first().waitFor({ timeout: timeoutMs }),
+      page.getByText(waitForText, { exact: false }).filter({ visible: true }).first().waitFor({ timeout: readinessTimeoutMs }),
       pageErrors,
       capture.name,
       `waiting for visible text '${waitForText}'`
@@ -614,7 +602,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     for (const selector of capture.waitForSelectors) {
       if (typeof selector === "string" && selector.trim().length > 0) {
         await waitForCaptureStep(
-          page.waitForSelector(selector, { timeout: timeoutMs }),
+          page.waitForSelector(selector, { timeout: readinessTimeoutMs }),
           pageErrors,
           capture.name,
           `waiting for selector '${selector}'`
@@ -628,7 +616,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       page.getByText(waitForAbsentText, { exact: false })
         .filter({ visible: true })
         .first()
-        .waitFor({ state: "hidden", timeout: timeoutMs }),
+        .waitFor({ state: "hidden", timeout: readinessTimeoutMs }),
       pageErrors,
       capture.name,
       `waiting for transitional text '${waitForAbsentText}' to clear`
@@ -718,6 +706,11 @@ async function main() {
   const host = values.get("host") ?? "127.0.0.1";
   const port = Number(values.get("port") ?? "5173");
   const timeoutMs = Number(values.get("timeout-ms") ?? "120000");
+  // Readiness assertions (waitForText/selector) use a shorter budget than the
+  // navigation/frame timeout so a single screen that never renders its expected
+  // content fails fast and the run moves on to the next route instead of
+  // blocking the whole catalog for the full navigation timeout.
+  const readinessTimeoutMs = Number(values.get("readiness-timeout-ms") ?? "30000");
   const minBytes = Number(values.get("min-bytes") ?? "12000");
   const minTextLength = Number(values.get("min-text-length") ?? "80");
   const basePath = routeConfig.basePath ?? "/workstation";
@@ -745,7 +738,11 @@ async function main() {
   };
 
   try {
-    await assertCaptureRouteCoverage(allCaptures, routeCatalogPath, appShellPath);
+    // Coverage gaps (a live app route with no capture entry) are reported at the
+    // end as a run failure rather than aborting before any screenshot is taken,
+    // so the catalog stays self-adjusting: every configured screen is still
+    // captured and the run tells you exactly which new route needs an entry.
+    const missingCoverage = await findMissingCaptureRoutePaths(allCaptures, routeCatalogPath, appShellPath);
 
     if (!flags.has("skip-server")) {
       server = startViteServer(dashboardDir, host, port, logs);
@@ -759,7 +756,16 @@ async function main() {
       ? fixtureConfig.routes
       : {};
     const requiredFixtureRoutes = collectRequiredFixtureRoutes(captures);
-    assertFixtureRouteCoverage(requiredFixtureRoutes, fixtureRoutes);
+    const missingFixtureRoutes = findMissingFixtureRoutes(requiredFixtureRoutes, fixtureRoutes);
+    if (missingFixtureRoutes.length > 0) {
+      // A missing fixture no longer aborts the run; the affected route may render
+      // a degraded state and, if it fails its readiness checks, is reported as a
+      // per-route capture failure while every other route still captures.
+      console.warn(
+        `::warning::Screenshot fixture route coverage is incomplete. Missing route fixtures: ${missingFixtureRoutes.join(", ")}. `
+        + "Affected routes may render degraded and be reported as capture failures."
+      );
+    }
 
     const dashboardRequire = createRequire(path.join(dashboardDir, "package.json"));
     const { chromium } = dashboardRequire("playwright");
@@ -787,11 +793,17 @@ async function main() {
           routeConfig.defaultViewport ?? {},
           minBytes,
           minTextLength,
-          timeoutMs
+          timeoutMs,
+          readinessTimeoutMs
         );
         results.push(result);
         console.log(`Captured ${capture.name} -> ${result.path}`);
       } catch (error) {
+        // Fault isolation: a screen that fails to render correctly is recorded
+        // with its error and skipped so the run continues through the remaining
+        // screens. The failure is surfaced in the end-of-run summary and turns
+        // the overall run non-zero, but never blocks the rest of the catalog.
+        const message = error instanceof Error ? error.message : String(error);
         const failed = {
           id: capture.id,
           name: capture.name,
@@ -799,10 +811,10 @@ async function main() {
           route: capture.path,
           url: toRouteUrl(baseUrl, capture.path),
           status: "failed",
-          error: error instanceof Error ? error.message : String(error)
+          error: message
         };
         results.push(failed);
-        throw error;
+        console.error(`::warning::Skipped ${capture.name} (${capture.path}): ${message.split(/\r?\n/)[0]}`);
       } finally {
         pageErrors.dispose();
         pageErrors = null;
@@ -811,10 +823,46 @@ async function main() {
     }
 
     const proxyErrors = logs.filter((line) => /http proxy error:\s*\/api\//i.test(line));
+    const failedCaptures = results.filter((result) => result.status === "failed");
+    const passedCaptures = results.filter((result) => result.status === "passed");
+    manifest.capturedCount = passedCaptures.length;
+    manifest.failedCaptureCount = failedCaptures.length;
+
+    console.log(
+      `\nScreenshot capture summary: ${passedCaptures.length}/${captures.length} route(s) captured successfully.`
+    );
+    if (failedCaptures.length > 0) {
+      console.log(`${failedCaptures.length} route(s) did not render correctly and were skipped:`);
+      for (const failure of failedCaptures) {
+        const firstLine = String(failure.error ?? "unknown error").split(/\r?\n/)[0];
+        console.log(`  - ${failure.name} (${failure.route}): ${firstLine}`);
+      }
+    }
+
+    const problems = [];
+    if (missingCoverage.length > 0) {
+      problems.push(`Live route(s) without a screenshot capture entry: ${missingCoverage.join(", ")}`);
+    }
     if (proxyErrors.length > 0) {
-      throw new Error(
-        `Detected ${proxyErrors.length} Vite proxy API error log(s) during screenshot capture.`
-      );
+      problems.push(`Detected ${proxyErrors.length} Vite proxy API error log(s) during screenshot capture.`);
+    }
+    for (const problem of problems) {
+      console.error(`::error::${problem}`);
+    }
+
+    // The run has already moved through every screen and written a screenshot
+    // for each one that rendered. If any screen failed or coverage is
+    // incomplete, exit non-zero with a consolidated summary so CI flags it while
+    // the successful screenshots remain available.
+    if (failedCaptures.length > 0 || problems.length > 0) {
+      manifest.status = "failed";
+      const summary = [
+        failedCaptures.length > 0
+          ? `${failedCaptures.length} route(s) failed to render: ${failedCaptures.map((failure) => failure.name).join(", ")}`
+          : null,
+        ...problems
+      ].filter(Boolean).join(" | ");
+      throw new Error(summary);
     }
 
     manifest.status = "passed";

@@ -44,8 +44,15 @@ DATA_SOURCES = [
     "src/**/*.cs endpoint mappings",
     "src/Meridian.Contracts/Api/UiApiRoutes.cs",
     "src/Meridian.Contracts/Workstation/*.cs",
-    "docs/**/*.md",
+    "docs/**/*.md (excluding generated report roots)",
 ]
+
+# Generated reports live under these roots and echo route paths and contract names verbatim —
+# including this dashboard's own markdown, which lists every endpoint it scans. Treating them as
+# documentation creates a feedback loop: an endpoint counts as documented purely because a prior
+# run wrote it into a report. That inflates coverage toward 100% and leaves the artifact unable to
+# converge, since each run's output changes the next run's input.
+GENERATED_DOC_ROOTS = ("docs/status", "docs/generated")
 
 
 def _should_skip(path: Path) -> bool:
@@ -161,6 +168,14 @@ def _scan_workstation_contracts(root: Path) -> list[dict[str, object]]:
     return contracts
 
 
+def _is_generated_doc(root: Path, path: Path) -> bool:
+    relative = _rel(root, path)
+    return any(
+        relative == generated_root or relative.startswith(generated_root + "/")
+        for generated_root in GENERATED_DOC_ROOTS
+    )
+
+
 def _load_docs_text(root: Path) -> str:
     docs_dir = root / "docs"
     if not docs_dir.is_dir():
@@ -168,6 +183,8 @@ def _load_docs_text(root: Path) -> str:
 
     chunks: list[str] = []
     for path in _iter_files(docs_dir, ".md"):
+        if _is_generated_doc(root, path):
+            continue
         chunks.append(_read_text(path))
     normalized = "\n".join(chunks)
     return ROUTE_CONSTRAINT_RE.sub(r"{\1}", normalized).casefold()

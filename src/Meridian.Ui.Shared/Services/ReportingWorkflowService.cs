@@ -12,7 +12,7 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed class ReportTemplateRegistryService
 {
-    private readonly ConcurrentDictionary<string, ReportTemplateGovernanceRecordDto> _templates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ReportTemplateGovernanceRecordDto> _templates = new(StringComparer.Ordinal);
     private readonly IReportTemplateGovernanceStore? _store;
 
     public ReportTemplateRegistryService(IReportTemplateGovernanceStore? store = null)
@@ -42,14 +42,18 @@ public sealed class ReportTemplateRegistryService
                 ApprovedAt: now,
                 DecisionRationale: "Built-in Reporting template",
                 ApprovalReference: $"builtin:{template.TemplateId}@{template.Version}");
-            _templates[ToKey(definition.TemplateId)] = record;
+            _templates[ToKey(record)] = record;
         }
 
         foreach (var record in _store?.Load() ?? [])
         {
             if (!record.IsBuiltIn)
             {
-                _templates[ToKey(record.Definition.TemplateId)] = record;
+                if (!_templates.TryAdd(ToKey(record), record))
+                {
+                    throw new InvalidDataException(
+                        $"Duplicate report template ownership key '{ToKey(record)}'.");
+                }
             }
         }
 
@@ -78,36 +82,92 @@ public sealed class ReportTemplateRegistryService
             ApprovedBy: "legacy-register",
             ApprovedAt: now,
             DecisionRationale: "Compatibility registration");
-        MarkPriorApprovedTemplatesNotLatest(normalized.TemplateId.Name, normalized.TemplateId.Version);
-        _templates[ToKey(normalized.TemplateId)] = record;
+        MarkPriorApprovedTemplatesNotLatest(
+            normalized.TemplateId.Name,
+            normalized.TemplateId.Version,
+            tenantId: null,
+            companyId: null);
+        _templates[ToKey(record)] = record;
         PersistTemplates();
         return normalized;
     }
 
     public ReportTemplateDefinitionDto? Get(VersionedReportTemplateIdDto id) =>
-        _templates.TryGetValue(ToKey(id), out var template) && template.Status == ReportTemplateLifecycleStatusDto.Approved
+        TryGetRecord(id, accessContext: null, out var template)
+        && template.Status == ReportTemplateLifecycleStatusDto.Approved
             ? template.Definition
+            : null;
+
+    public ReportTemplateDefinitionDto? Get(
+        VersionedReportTemplateIdDto id,
+        ReportAccessQueryContext? accessContext) =>
+        TryGetRecord(id, accessContext, out var template)
+        && template.Status == ReportTemplateLifecycleStatusDto.Approved
+        && IsRecordInScope(template, accessContext)
+            ? BindRecordToScope(template, accessContext).Definition
             : null;
 
     public IReadOnlyList<ReportTemplateGovernanceRecordDto> List(bool includeSuperseded = false) =>
         _templates.Values
+            .Where(static record => record.IsBuiltIn
+                || string.IsNullOrWhiteSpace(record.TenantId) && string.IsNullOrWhiteSpace(record.CompanyId))
             .Where(record => includeSuperseded || record.Status != ReportTemplateLifecycleStatusDto.Superseded)
             .OrderBy(record => record.Definition.TemplateId.Name, StringComparer.OrdinalIgnoreCase)
             .ThenByDescending(record => record.Definition.TemplateId.Version)
             .ToArray();
 
+    public IReadOnlyList<ReportTemplateGovernanceRecordDto> List(
+        ReportAccessQueryContext? accessContext,
+        bool includeSuperseded = false)
+    {
+        var records = _templates.Values
+            .Where(record => IsRecordInScope(record, accessContext))
+            .Where(record => includeSuperseded || record.Status != ReportTemplateLifecycleStatusDto.Superseded)
+            .Select(record => BindRecordToScope(record, accessContext))
+            .OrderBy(record => record.Definition.TemplateId.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenByDescending(record => record.Definition.TemplateId.Version)
+            .ToArray();
+        var latestApprovedByName = records
+            .Where(static record => record.Status == ReportTemplateLifecycleStatusDto.Approved)
+            .GroupBy(static record => record.Definition.TemplateId.Name, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Max(record => record.Definition.TemplateId.Version),
+                StringComparer.OrdinalIgnoreCase);
+        return records
+            .Select(record => record with
+            {
+                IsLatestApproved = record.Status == ReportTemplateLifecycleStatusDto.Approved
+                    && latestApprovedByName.TryGetValue(record.Definition.TemplateId.Name, out var version)
+                    && record.Definition.TemplateId.Version == version
+            })
+            .ToArray();
+    }
+
     public ReportTemplateGovernanceRecordDto CreateDraft(
         ReportTemplateDraftRequestDto request,
         string actor,
         string? companyId = null,
-        IReadOnlyList<string>? reportGroupPrincipalIds = null)
+        IReadOnlyList<string>? reportGroupPrincipalIds = null,
+        string? tenantId = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
 
+        var normalizedTenantId = NormalizeOptional(tenantId);
+        var normalizedCompanyId = NormalizeOptional(companyId);
+        if ((normalizedTenantId is null) != (normalizedCompanyId is null))
+        {
+            throw new UnauthorizedAccessException(
+                "Report template ownership requires tenant and company scope together.");
+        }
+
         var name = NormalizeIdentifier(request.Name);
         var latestVersion = _templates.Values
             .Where(record => string.Equals(record.Definition.TemplateId.Name, name, StringComparison.OrdinalIgnoreCase))
+            .Where(record => record.IsBuiltIn
+                || string.Equals(record.TenantId, normalizedTenantId, StringComparison.Ordinal)
+                && string.Equals(record.CompanyId, normalizedCompanyId, StringComparison.Ordinal))
             .Select(record => record.Definition.TemplateId.Version)
             .DefaultIfEmpty(0)
             .Max();
@@ -125,8 +185,14 @@ public sealed class ReportTemplateRegistryService
             request.Grids,
             request.AccessPolicy),
             actor,
-            companyId,
+            normalizedCompanyId,
             reportGroupPrincipalIds);
+        if (normalizedCompanyId is not null
+            && !string.Equals(definition.AccessPolicy?.CompanyId, normalizedCompanyId, StringComparison.Ordinal))
+        {
+            throw new UnauthorizedAccessException(
+                "The report template access policy belongs to another company scope.");
+        }
         var now = DateTimeOffset.UtcNow;
         var record = new ReportTemplateGovernanceRecordDto(
             definition,
@@ -141,15 +207,21 @@ public sealed class ReportTemplateRegistryService
             ValidationIssues: ValidateDefinition(definition),
             AuditTrail: [new ReportTemplateAuditEventDto(now, actor.Trim(), "draft", ReportTemplateLifecycleStatusDto.Draft, ReportTemplateLifecycleStatusDto.Draft, request.Rationale?.Trim())],
             DecisionRationale: string.IsNullOrWhiteSpace(request.Rationale) ? null : request.Rationale.Trim(),
-            BasedOnTemplateId: basedOnTemplateId);
-        _templates[ToKey(definition.TemplateId)] = record;
+            BasedOnTemplateId: basedOnTemplateId,
+            TenantId: normalizedTenantId,
+            CompanyId: normalizedCompanyId);
+        _templates[ToKey(record)] = record;
         PersistTemplates();
         return record;
     }
 
-    public ReportTemplateGovernanceRecordDto Submit(VersionedReportTemplateIdDto id, string actor, string? note = null)
+    public ReportTemplateGovernanceRecordDto Submit(
+        VersionedReportTemplateIdDto id,
+        string actor,
+        string? note = null,
+        ReportAccessQueryContext? accessContext = null)
     {
-        var record = GetRecord(id);
+        var record = GetRecord(id, accessContext);
         if (record.IsBuiltIn)
         {
             throw new InvalidOperationException("Built-in report templates are already approved and cannot be submitted.");
@@ -169,11 +241,15 @@ public sealed class ReportTemplateRegistryService
         return Transition(record, ReportTemplateLifecycleStatusDto.InReview, actor, "submit", note);
     }
 
-    public ReportTemplateGovernanceRecordDto Approve(VersionedReportTemplateIdDto id, ReportTemplateDecisionRequestDto request, string actor)
+    public ReportTemplateGovernanceRecordDto Approve(
+        VersionedReportTemplateIdDto id,
+        ReportTemplateDecisionRequestDto request,
+        string actor,
+        ReportAccessQueryContext? accessContext = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Rationale);
-        var record = GetRecord(id);
+        var record = GetRecord(id, accessContext);
         if (record.IsBuiltIn)
         {
             throw new InvalidOperationException("Built-in report templates are immutable.");
@@ -197,7 +273,11 @@ public sealed class ReportTemplateRegistryService
             throw new InvalidOperationException($"Template {id.Name}@v{id.Version} cannot be approved: {string.Join("; ", validationIssues)}");
         }
 
-        MarkPriorApprovedTemplatesNotLatest(record.Definition.TemplateId.Name, record.Definition.TemplateId.Version);
+        MarkPriorApprovedTemplatesNotLatest(
+            record.Definition.TemplateId.Name,
+            record.Definition.TemplateId.Version,
+            record.TenantId,
+            record.CompanyId);
         var approved = Transition(record, ReportTemplateLifecycleStatusDto.Approved, actor, "approve", request.Rationale.Trim()) with
         {
             ApprovedBy = actor.Trim(),
@@ -206,16 +286,20 @@ public sealed class ReportTemplateRegistryService
             ApprovalReference = string.IsNullOrWhiteSpace(request.ApprovalReference) ? null : request.ApprovalReference.Trim(),
             IsLatestApproved = true
         };
-        _templates[ToKey(approved.Definition.TemplateId)] = approved;
+        _templates[ToKey(approved)] = approved;
         PersistTemplates();
         return approved;
     }
 
-    public ReportTemplateGovernanceRecordDto Reject(VersionedReportTemplateIdDto id, ReportTemplateDecisionRequestDto request, string actor)
+    public ReportTemplateGovernanceRecordDto Reject(
+        VersionedReportTemplateIdDto id,
+        ReportTemplateDecisionRequestDto request,
+        string actor,
+        ReportAccessQueryContext? accessContext = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.Rationale);
-        var record = GetRecord(id);
+        var record = GetRecord(id, accessContext);
         if (record.IsBuiltIn)
         {
             throw new InvalidOperationException("Built-in report templates are immutable.");
@@ -233,14 +317,16 @@ public sealed class ReportTemplateRegistryService
             DecisionRationale = request.Rationale.Trim(),
             ApprovalReference = string.IsNullOrWhiteSpace(request.ApprovalReference) ? null : request.ApprovalReference.Trim()
         };
-        _templates[ToKey(rejected.Definition.TemplateId)] = rejected;
+        _templates[ToKey(rejected)] = rejected;
         PersistTemplates();
         return rejected;
     }
 
-    public RenderReportTemplateResponseDto Render(RenderReportTemplateRequestDto request)
+    public RenderReportTemplateResponseDto Render(
+        RenderReportTemplateRequestDto request,
+        ReportAccessQueryContext? accessContext = null)
     {
-        var template = Get(request.TemplateId) ?? throw new ArgumentException("Template not found.");
+        var template = Get(request.TemplateId, accessContext) ?? throw new ArgumentException("Template not found.");
         var missing = template.Parameters.Where(p => p.Required && !request.Parameters.ContainsKey(p.Name)).Select(p => p.Name).ToArray();
         var sections = template.Sections is { Count: > 0 }
             ? string.Join(',', template.Sections)
@@ -257,11 +343,102 @@ public sealed class ReportTemplateRegistryService
 
     public bool CanAccess(VersionedReportTemplateIdDto id, ReportAccessQueryContext? context)
     {
-        var template = Get(id);
+        var template = Get(id, context);
         return template is not null && ReportAccessPolicyEvaluator.Evaluate(template.AccessPolicy, context).IsAccessible;
     }
 
-    private static string ToKey(VersionedReportTemplateIdDto id) => $"{id.Name}:{id.Version}";
+    private static bool IsRecordInScope(
+        ReportTemplateGovernanceRecordDto record,
+        ReportAccessQueryContext? accessContext)
+    {
+        if (record.IsBuiltIn)
+        {
+            return true;
+        }
+
+        if (accessContext is null)
+        {
+            return string.IsNullOrWhiteSpace(record.TenantId)
+                && string.IsNullOrWhiteSpace(record.CompanyId);
+        }
+
+        var tenantId = NormalizeOptional(accessContext.TenantId);
+        var companyId = NormalizeOptional(accessContext.CompanyId);
+        if (accessContext.RequireBoundScope
+            && (string.IsNullOrWhiteSpace(accessContext.ActorPrincipalId)
+                || tenantId is null
+                || companyId is null))
+        {
+            return false;
+        }
+
+        if (tenantId is null || companyId is null)
+        {
+            return !accessContext.RequireBoundScope
+                && string.IsNullOrWhiteSpace(record.TenantId)
+                && string.IsNullOrWhiteSpace(record.CompanyId);
+        }
+
+        return string.Equals(record.TenantId, tenantId, StringComparison.Ordinal)
+            && string.Equals(record.CompanyId, companyId, StringComparison.Ordinal);
+    }
+
+    private static ReportTemplateGovernanceRecordDto BindRecordToScope(
+        ReportTemplateGovernanceRecordDto record,
+        ReportAccessQueryContext? accessContext)
+    {
+        var policy = ReportAccessPolicyEvaluator.Normalize(record.Definition.AccessPolicy);
+        if (policy.Mode != ReportAccessModeDto.CompanyWide
+            || !string.IsNullOrWhiteSpace(policy.CompanyId)
+            || string.IsNullOrWhiteSpace(accessContext?.CompanyId))
+        {
+            return record;
+        }
+
+        return record with
+        {
+            Definition = record.Definition with
+            {
+                AccessPolicy = policy with { CompanyId = accessContext.CompanyId.Trim() }
+            }
+        };
+    }
+
+    private static string ToKey(ReportTemplateGovernanceRecordDto record) =>
+        ToKey(record.Definition.TemplateId, record.TenantId, record.CompanyId);
+
+    private static string ToKey(
+        VersionedReportTemplateIdDto id,
+        string? tenantId,
+        string? companyId) =>
+        $"{tenantId?.Trim() ?? string.Empty}\u001f{companyId?.Trim() ?? string.Empty}\u001f{id.Name.Trim().ToLowerInvariant()}:{id.Version}";
+
+    private bool TryGetRecord(
+        VersionedReportTemplateIdDto id,
+        ReportAccessQueryContext? accessContext,
+        out ReportTemplateGovernanceRecordDto record)
+    {
+        var tenantId = NormalizeOptional(accessContext?.TenantId);
+        var companyId = NormalizeOptional(accessContext?.CompanyId);
+        if (tenantId is not null
+            && companyId is not null
+            && _templates.TryGetValue(ToKey(id, tenantId, companyId), out var scoped))
+        {
+            record = scoped;
+            return true;
+        }
+
+        if (_templates.TryGetValue(
+                ToKey(id, tenantId: null, companyId: null),
+                out var global))
+        {
+            record = global;
+            return true;
+        }
+
+        record = null!;
+        return false;
+    }
 
     private static int ParseMajorVersion(string version)
     {
@@ -881,8 +1058,11 @@ public sealed class ReportTemplateRegistryService
         IReadOnlyList<string> RowReferences,
         IReadOnlyList<string> TotalReferences);
 
-    private ReportTemplateGovernanceRecordDto GetRecord(VersionedReportTemplateIdDto id) =>
-        _templates.TryGetValue(ToKey(id), out var record)
+    private ReportTemplateGovernanceRecordDto GetRecord(
+        VersionedReportTemplateIdDto id,
+        ReportAccessQueryContext? accessContext = null) =>
+        TryGetRecord(id, accessContext, out var record)
+        && IsRecordInScope(record, accessContext)
             ? record
             : throw new KeyNotFoundException($"Template {id.Name}@v{id.Version} was not found.");
 
@@ -905,30 +1085,41 @@ public sealed class ReportTemplateRegistryService
             SubmittedAt = target == ReportTemplateLifecycleStatusDto.InReview ? now : record.SubmittedAt,
             AuditTrail = record.AuditTrail.Append(new ReportTemplateAuditEventDto(now, actor.Trim(), action, record.Status, target, note)).ToArray()
         };
-        _templates[ToKey(next.Definition.TemplateId)] = next;
+        _templates[ToKey(next)] = next;
         PersistTemplates();
         return next;
     }
 
-    private void MarkPriorApprovedTemplatesNotLatest(string templateName, int newLatestVersion)
+    private void MarkPriorApprovedTemplatesNotLatest(
+        string templateName,
+        int newLatestVersion,
+        string? tenantId,
+        string? companyId)
     {
         foreach (var record in _templates.Values.Where(record =>
                      string.Equals(record.Definition.TemplateId.Name, templateName, StringComparison.OrdinalIgnoreCase)
                      && record.Definition.TemplateId.Version != newLatestVersion
-                     && record.Status == ReportTemplateLifecycleStatusDto.Approved))
+                     && record.Status == ReportTemplateLifecycleStatusDto.Approved
+                     && string.Equals(record.TenantId, tenantId, StringComparison.Ordinal)
+                     && string.Equals(record.CompanyId, companyId, StringComparison.Ordinal)))
         {
             var updated = record with
             {
                 Status = record.IsBuiltIn ? record.Status : ReportTemplateLifecycleStatusDto.Superseded,
                 IsLatestApproved = false
             };
-            _templates[ToKey(updated.Definition.TemplateId)] = updated;
+            _templates[ToKey(updated)] = updated;
         }
     }
 
     private void ReconcileLatestApprovedTemplates()
     {
-        foreach (var group in _templates.Values.GroupBy(record => record.Definition.TemplateId.Name, StringComparer.OrdinalIgnoreCase))
+        foreach (var group in _templates.Values.GroupBy(record => new
+        {
+            TenantId = record.TenantId ?? string.Empty,
+            CompanyId = record.CompanyId ?? string.Empty,
+            Name = record.Definition.TemplateId.Name.ToLowerInvariant()
+        }))
         {
             var latestApprovedVersion = group
                 .Where(static record => record.Status == ReportTemplateLifecycleStatusDto.Approved)
@@ -946,7 +1137,7 @@ public sealed class ReportTemplateRegistryService
                     IsLatestApproved = record.Status == ReportTemplateLifecycleStatusDto.Approved
                         && record.Definition.TemplateId.Version == latestApprovedVersion.Value
                 };
-                _templates[ToKey(updated.Definition.TemplateId)] = updated;
+                _templates[ToKey(updated)] = updated;
             }
         }
     }
@@ -998,10 +1189,16 @@ public sealed class FileReportTemplateGovernanceStore : IReportTemplateGovernanc
             try
             {
                 var json = File.ReadAllText(_options.SnapshotPath);
-                return JsonSerializer.Deserialize<ReportTemplateGovernanceSnapshot>(json, _jsonOptions)?.Records
+                var records = JsonSerializer.Deserialize<ReportTemplateGovernanceSnapshot>(json, _jsonOptions)?.Records
                     ?? throw new JsonException("Report template governance snapshot deserialized to null.");
+                ValidateRecords(records);
+                return records;
             }
-            catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+            catch (Exception ex) when (ex is IOException
+                                            or JsonException
+                                            or InvalidDataException
+                                            or ArgumentException
+                                            or UnauthorizedAccessException)
             {
                 _logger.LogCritical(ex, "Report template governance snapshot at {SnapshotPath} is unreadable; reporting is blocked until the state is recovered.", _options.SnapshotPath);
                 throw new ReportingStateCorruptionException(_options.SnapshotPath, ex);
@@ -1014,12 +1211,56 @@ public sealed class FileReportTemplateGovernanceStore : IReportTemplateGovernanc
         ArgumentNullException.ThrowIfNull(records);
         lock (_gate)
         {
+            ValidateRecords(records);
             var snapshot = new ReportTemplateGovernanceSnapshot(
                 records
-                    .OrderBy(static record => record.Definition.TemplateId.Name, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static record => record.TenantId, StringComparer.Ordinal)
+                    .ThenBy(static record => record.CompanyId, StringComparer.Ordinal)
+                    .ThenBy(static record => record.Definition.TemplateId.Name, StringComparer.OrdinalIgnoreCase)
                     .ThenByDescending(static record => record.Definition.TemplateId.Version)
                     .ToArray());
             AtomicFileWriter.Write(_options.SnapshotPath, JsonSerializer.Serialize(snapshot, _jsonOptions));
+        }
+    }
+
+    private static void ValidateRecords(IReadOnlyList<ReportTemplateGovernanceRecordDto> records)
+    {
+        var identities = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var record in records)
+        {
+            if (record is null
+                || record.Definition is null
+                || string.IsNullOrWhiteSpace(record.Definition.TemplateId.Name)
+                || record.Definition.TemplateId.Version <= 0)
+            {
+                throw new InvalidDataException(
+                    "The report template governance snapshot contains an invalid record.");
+            }
+
+            var hasTenant = !string.IsNullOrWhiteSpace(record.TenantId);
+            var hasCompany = !string.IsNullOrWhiteSpace(record.CompanyId);
+            if (hasTenant != hasCompany)
+            {
+                throw new InvalidDataException(
+                    $"Template '{record.Definition.TemplateId.Name}@v{record.Definition.TemplateId.Version}' has incomplete tenant/company ownership.");
+            }
+
+            if (hasCompany
+                && !string.Equals(
+                    record.Definition.AccessPolicy?.CompanyId,
+                    record.CompanyId,
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidDataException(
+                    $"Template '{record.Definition.TemplateId.Name}@v{record.Definition.TemplateId.Version}' has an access policy outside its immutable company scope.");
+            }
+
+            var identity = $"{record.TenantId?.Trim() ?? string.Empty}\u001f{record.CompanyId?.Trim() ?? string.Empty}\u001f{record.Definition.TemplateId.Name.Trim().ToLowerInvariant()}:{record.Definition.TemplateId.Version}";
+            if (!identities.Add(identity))
+            {
+                throw new InvalidDataException(
+                    $"The report template governance snapshot contains duplicate template identity '{identity}'.");
+            }
         }
     }
 
@@ -1172,7 +1413,7 @@ public sealed class ReportPackWorkflowService
 
         if (accessContext?.RequireBoundScope == true
             && !string.IsNullOrWhiteSpace(normalizedAccessPolicy.CompanyId)
-            && !string.Equals(normalizedAccessPolicy.CompanyId, accessContext.CompanyId, StringComparison.OrdinalIgnoreCase))
+            && !string.Equals(normalizedAccessPolicy.CompanyId, accessContext.CompanyId, StringComparison.Ordinal))
         {
             throw new UnauthorizedAccessException("The reporting pack access policy belongs to another company.");
         }

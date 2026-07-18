@@ -85,7 +85,7 @@
     <Grid x:Name="CommandPaletteOverlay"
           Visibility="{Binding CommandPaletteVisibility}"
           Panel.ZIndex="100"
-          Background="#80000000"
+          Background="{StaticResource ModalScrimBrush}"
           AutomationProperties.AutomationId="CommandPaletteOverlay"
           AutomationProperties.Name="Command Palette Overlay"
           MouseDown="CommandPaletteOverlay_MouseDown">

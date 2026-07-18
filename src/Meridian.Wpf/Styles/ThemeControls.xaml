@@ -138,7 +138,7 @@
         <Setter Property="Template" Value="{StaticResource PrimaryButtonTemplate}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConsoleAccentBlueBrush}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="{StaticResource OnAccentTextBrush}" />
         <Setter Property="Padding" Value="16,9" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />

@@ -34,8 +34,6 @@ import {
   coveredCallRunStatusEndpoint,
   coveredCallRunsEndpoint,
   exportPreviewEndpoint,
-  reportPackDeliveryPackageEndpoint,
-  reportPackDeliveryPortalPackageEndpoint,
   reportPackEvidenceBundleEndpoint,
   reportingRunAuditTrailEndpoint,
   reportingRunReportWriterGridEndpoint,
@@ -422,10 +420,6 @@ describe("workstation API endpoint catalog", () => {
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench).toBe("/api/fund-structure/ledger-mapping-view");
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments).toBe("/api/fund-structure/ledger-mapping-assignments");
     expect(FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview).toBe("/api/fund-structure/accounting/transaction-lab/preview");
-    expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryPackage).toBe(
-      "/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package"
-    );
-    expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage).toBe("/portal/reporting/packages/{packageId}");
     expect(WORKSTATION_API_ENDPOINTS.reportingStructuredExport).toBe("/api/workstation/reporting/structured-exports/{exportId}");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingStructuredExport).toBe("/api/fund-structure/reporting/structured-exports/{exportId}");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunReadiness).toBe("/api/fund-structure/reporting/runs/readiness");
@@ -444,12 +438,6 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "pdf")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=pdf"
-    );
-    expect(reportPackDeliveryPackageEndpoint("report / 1", "attempt / 1", "tok / 1")).toBe(
-      "/api/fund-structure/reporting/packs/report%20%2F%201/deliveries/attempt%20%2F%201/package?token=tok+%2F+1"
-    );
-    expect(reportPackDeliveryPortalPackageEndpoint("pkg / 1", "tok / 1")).toBe(
-      "/portal/reporting/packages/pkg%20%2F%201?token=tok+%2F+1"
     );
   });
 

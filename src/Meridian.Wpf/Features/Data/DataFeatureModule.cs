@@ -1,5 +1,9 @@
+using Meridian.Application.SecurityMaster;
+using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.Contracts.Catalog;
+using Meridian.Storage.Interfaces;
+using Meridian.Storage.Services;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.DataQuality;
 using Meridian.Ui.Services.ProviderDiagnostics;
@@ -12,6 +16,8 @@ using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using DataWorkspaceShellPresentationService = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPresentationService;
 using DataWorkspaceShellPage = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPage;
 using DataWorkspaceShellSnapshotService = Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellSnapshotService;
@@ -91,6 +97,7 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddTransient<ProviderViewModel>();
         services.AddTransient<DataQualityViewModel>();
         services.AddTransient<CollectionSessionViewModel>();
+        RegisterCanonicalSymbolRegistry(services);
         services.AddSingleton<SymbolMappingService>(sp =>
             sp.GetService<ICanonicalSymbolRegistry>() is { } registry
                 ? new SymbolMappingService(registry)
@@ -101,6 +108,45 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddTransient<WatchlistViewModel>();
         services.AddSingleton<IQualityArchiveStore, QualityArchiveStore>();
         services.AddTransient<QualityArchiveViewModel>();
+    }
+
+    private static void RegisterCanonicalSymbolRegistry(IServiceCollection services)
+    {
+        if (services.Any(static descriptor => descriptor.ServiceType == typeof(ICanonicalSymbolRegistry)))
+        {
+            return;
+        }
+
+        if (!services.Any(static descriptor => descriptor.ServiceType == typeof(ISymbolRegistryService)))
+        {
+            services.TryAddSingleton<SymbolRegistryService>(sp =>
+            {
+                var configStore = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
+                return new SymbolRegistryService(configStore.GetDataRoot());
+            });
+            services.TryAddSingleton<ISymbolRegistryService>(sp =>
+                sp.GetRequiredService<SymbolRegistryService>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, SymbolRegistryInitializationHostedService>());
+        }
+
+        services.TryAddSingleton<CanonicalSymbolRegistry>();
+        services.TryAddSingleton<ICanonicalSymbolRegistry>(sp =>
+            sp.GetRequiredService<CanonicalSymbolRegistry>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, CanonicalSymbolRegistryMigrationService>());
+    }
+
+    private sealed class SymbolRegistryInitializationHostedService : IHostedService
+    {
+        private readonly SymbolRegistryService _registry;
+
+        public SymbolRegistryInitializationHostedService(SymbolRegistryService registry)
+            => _registry = registry;
+
+        public Task StartAsync(CancellationToken cancellationToken)
+            => _registry.InitializeAsync(cancellationToken);
+
+        public Task StopAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;

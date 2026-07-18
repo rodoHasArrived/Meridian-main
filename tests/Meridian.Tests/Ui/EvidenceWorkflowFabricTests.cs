@@ -11,12 +11,14 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -1002,10 +1004,11 @@ public sealed class EvidenceWorkflowFabricTests
         var attemptId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var deliveryAttempt = BuildReportPackDeliveryAttempt(reportId, attemptId, DateTimeOffset.UtcNow);
         var subject = Subject(EvidenceSubjectResolver.ReportPackKind, reportId.ToString("D"));
-        using var provider = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddSingleton<IGovernanceReportPackRepository>(new InMemoryReportPackRepository(BuildReportPackSnapshot(reportId)))
-            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([deliveryAttempt]))
-            .BuildServiceProvider();
+            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([deliveryAttempt]));
+        AddBoundReportingDeliveryReadScope(services, reportId);
+        using var provider = services.BuildServiceProvider();
         var contributor = new ReportPackEvidenceContributor(provider);
 
         var contribution = await contributor.ContributeAsync(new EvidenceContributionContext(subject, CancellationToken.None));
@@ -1048,9 +1051,10 @@ public sealed class EvidenceWorkflowFabricTests
         var attempt = BuildReportPackDeliveryAttempt(reportId, attemptId, DateTimeOffset.UtcNow);
         var subjectId = $"{reportId:D}:{attemptId:D}";
         var subject = Subject(EvidenceSubjectResolver.ReportPackDeliveryKind, subjectId);
-        using var provider = new ServiceCollection()
-            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([attempt]))
-            .BuildServiceProvider();
+        var services = new ServiceCollection()
+            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([attempt]));
+        AddBoundReportingDeliveryReadScope(services, reportId);
+        using var provider = services.BuildServiceProvider();
         var contributor = new ReportPackDeliveryEvidenceContributor(provider);
 
         var contribution = await contributor.ContributeAsync(new EvidenceContributionContext(subject, CancellationToken.None));
@@ -1078,8 +1082,13 @@ public sealed class EvidenceWorkflowFabricTests
             node.ArtifactRefs.Any(artifact =>
                 artifact.CanonicalSubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
                 artifact.CanonicalSubjectId == subjectId &&
-                artifact.Route!.Contains("/artifacts/board-pack.pdf", StringComparison.OrdinalIgnoreCase) &&
-                artifact.Retained));
+                artifact.Route == null &&
+                artifact.Path != null &&
+                artifact.Path.EndsWith("board-pack.pdf", StringComparison.OrdinalIgnoreCase) &&
+                !artifact.Retained));
+        JsonSerializer.Serialize(contribution)
+            .Contains("token=", StringComparison.OrdinalIgnoreCase)
+            .Should().BeFalse();
         contribution.Nodes.Should().Contain(node =>
             node.Kind == "audit-history" &&
             node.Status == EvidenceStatusDto.Ready &&
@@ -1235,6 +1244,9 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Nodes.Should().Contain(node => node.Kind == "report-line-provenance");
         packet.Nodes.Should().Contain(node => node.Kind == "branding-theme");
         packet.Nodes.Should().Contain(node => node.Kind == "restatement-lineage");
+        JsonSerializer.Serialize(packet)
+            .Contains("token=", StringComparison.OrdinalIgnoreCase)
+            .Should().BeFalse();
         packet.Completeness.ValidationIssues.Should().NotContain(issue => issue.Code == "orphan-evidence");
         packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Delivery)
             .EvidenceKinds.Should().Contain("delivery-evidence-packet");
@@ -3858,6 +3870,7 @@ public sealed class EvidenceWorkflowFabricTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(new Meridian.Application.UI.ConfigStore(configPath));
         builder.Services.AddWorkflowLibrary();
+        builder.Services.AddHttpContextAccessor();
         if (operationsWorkflowService is not null)
         {
             builder.Services.AddSingleton(operationsWorkflowService);
@@ -3866,6 +3879,11 @@ public sealed class EvidenceWorkflowFabricTests
         if (deliveryRecordStore is not null)
         {
             builder.Services.AddSingleton(deliveryRecordStore);
+            var reportIds = deliveryRecordStore.Load()
+                .Select(static attempt => attempt.ReportId)
+                .Distinct()
+                .ToArray();
+            builder.Services.AddSingleton(BuildBoundReportPackWorkflowService(reportIds));
         }
 
         if (manualJournalService is not null)
@@ -3876,9 +3894,73 @@ public sealed class EvidenceWorkflowFabricTests
         builder.Services.AddEvidenceWorkflowFabric();
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            BindReportingRequestContext(context);
+            await next();
+        });
         app.MapEvidenceEndpoints(ServerJsonOptions);
         await app.StartAsync();
         return app;
+    }
+
+    private static void AddBoundReportingDeliveryReadScope(
+        IServiceCollection services,
+        params Guid[] reportIds)
+    {
+        var httpContext = new DefaultHttpContext();
+        BindReportingRequestContext(httpContext);
+        services.AddSingleton<IHttpContextAccessor>(new HttpContextAccessor { HttpContext = httpContext });
+        services.AddSingleton(BuildBoundReportPackWorkflowService(reportIds));
+    }
+
+    private static void BindReportingRequestContext(HttpContext context)
+    {
+        context.Items[LoginSessionMiddleware.CurrentUserKey] = "evidence-controller";
+        context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = UserRole.Controller;
+        context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+        context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+    }
+
+    private static ReportPackWorkflowService BuildBoundReportPackWorkflowService(
+        IReadOnlyList<Guid> reportIds)
+    {
+        var policy = new ReportAccessPolicyDto(
+            ReportAccessModeDto.CompanyWide,
+            OwnerPrincipalId: "evidence-controller",
+            CompanyId: "company-test");
+        var policyHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(policy)))).ToLowerInvariant();
+        var timestamp = new DateTimeOffset(2026, 6, 30, 8, 0, 0, TimeSpan.Zero);
+        var records = reportIds
+            .Distinct()
+            .Select(reportId => new ReportPackWorkflowRecordDto(
+                ReportId: reportId,
+                FundProfileId: "fund-evidence",
+                FundAccountId: "account-evidence",
+                Period: "2026-06",
+                TemplateId: new VersionedReportTemplateIdDto("board-pack", 1),
+                State: ReportPackWorkflowStateDto.Published,
+                Version: 1,
+                CreatedAt: timestamp,
+                CreatedBy: "evidence-controller",
+                UpdatedAt: timestamp,
+                AuditTrail:
+                [
+                    new ReportPackAuditEventDto(
+                        timestamp,
+                        "evidence-controller",
+                        "published",
+                        ReportPackWorkflowStateDto.Approved,
+                        ReportPackWorkflowStateDto.Published)
+                ],
+                Restatement: null,
+                AccessPolicy: policy,
+                TenantId: "tenant-test",
+                CompanyId: "company-test",
+                AccessPolicySnapshotHash: policyHash))
+            .ToArray();
+        return new ReportPackWorkflowService(new InMemoryReportPackWorkflowRecordStore(records));
     }
 
     private static EvidenceSubjectDto Subject(string kind, string id)
@@ -4291,6 +4373,16 @@ public sealed class EvidenceWorkflowFabricTests
         public IReadOnlyList<ReportPackDeliveryAttemptDto> Load() => attempts;
 
         public void Save(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)
+        {
+        }
+    }
+
+    private sealed class InMemoryReportPackWorkflowRecordStore(IReadOnlyList<ReportPackWorkflowRecordDto> records)
+        : IReportPackWorkflowRecordStore
+    {
+        public IReadOnlyList<ReportPackWorkflowRecordDto> Load() => records;
+
+        public void Save(IReadOnlyList<ReportPackWorkflowRecordDto> updatedRecords)
         {
         }
     }

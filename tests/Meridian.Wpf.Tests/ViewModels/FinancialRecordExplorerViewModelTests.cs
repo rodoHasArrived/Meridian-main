@@ -230,12 +230,14 @@ public sealed class FinancialRecordExplorerViewModelTests
             "Portfolio position",
             "Ledger trial balance",
             "Report-line provenance",
-            "AssetOperations reconciliation");
+            "AssetOperations reconciliation",
+            "__VACUITY_PROBE__");
         row.Detail.Impacts.Select(relationship => relationship.Label).Should().Contain(
             "Instrument passport",
             "AssetOperations readiness",
             "Ledger impact",
-            "Report usage");
+            "Report usage",
+            "__VACUITY_PROBE__");
     }
 
     [Theory]

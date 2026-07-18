@@ -186,7 +186,9 @@ jobs:
           fi
 
       - name: Upload screenshot artifacts
-        if: ${{ steps.capture_web.outcome == 'success' }}
+        # Upload whatever screenshots were captured even when some routes failed
+        # to render, so a partial run still surfaces the screens that worked.
+        if: ${{ always() }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: web-screenshots-${{ github.run_number }}

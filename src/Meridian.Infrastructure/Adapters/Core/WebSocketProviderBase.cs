@@ -115,6 +115,7 @@ public abstract class WebSocketProviderBase :
     /// </remarks>
     public virtual ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot()
     {
+        var capabilities = ProviderCapabilities;
         return new ProviderRateLimitDiagnosticSnapshot(
             ProviderId: ProviderId,
             Surface: ProviderRateLimitSurfaces.Streaming,
@@ -122,8 +123,8 @@ public abstract class WebSocketProviderBase :
             RequestsInWindow: 0,
             // Capabilities expose these as nullable; this "diagnostics unavailable" snapshot marks
             // StateAvailable: false, so an unset limit collapses to a neutral zero placeholder.
-            MaxRequestsPerWindow: ProviderCapabilities.MaxRequestsPerWindow ?? 0,
-            Window: ProviderCapabilities.RateLimitWindow ?? TimeSpan.Zero,
+            MaxRequestsPerWindow: capabilities.MaxRequestsPerWindow.GetValueOrDefault(),
+            Window: capabilities.RateLimitWindow.GetValueOrDefault(),
             IsRateLimited: false,
             ResetAt: null,
             UsageRatio: 0,
