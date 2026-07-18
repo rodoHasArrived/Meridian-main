@@ -13,8 +13,8 @@
     <Grid>
         <Grid x:Name="ContentGrid"/>
         <Border x:Name="DropOverlay"
-                Background="#22007ACC"
-                BorderBrush="#66007ACC"
+                Background="{StaticResource DropTargetFillBrush}"
+                BorderBrush="{StaticResource DropTargetBorderBrush}"
                 BorderThickness="2"
                 Visibility="Collapsed">
             <TextBlock HorizontalAlignment="Center"

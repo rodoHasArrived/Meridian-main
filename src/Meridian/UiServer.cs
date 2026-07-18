@@ -203,7 +203,11 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
         builder.Services.AddSingleton<StrategyLifecycleManager>();
         builder.Services.AddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
-        builder.Services.AddSingleton<Meridian.Audit.Compliance.ImmutableAuditLogService>();
+        // Durable, tamper-evident compliance audit log — persisted so events survive a restart
+        // (an in-memory-only log would silently lose all compliance history).
+        builder.Services.AddSingleton(
+            new Meridian.Audit.Compliance.ImmutableAuditLogService(
+                Path.Combine(resolvedDataRoot, "compliance", "audit", "audit-log.jsonl")));
         builder.Services.AddSingleton<AccessReviewService>();
 
         // Execution layer — paper trading gateway wired for cockpit endpoints
@@ -508,7 +512,10 @@ public sealed class UiServer : IAsyncDisposable
         if (!IsAuthenticationRequired(environment))
             return;
 
-        if (apiHostOptions.AllowInsecureTransportForReverseProxy || HasHttpsBinding(apiHostOptions.Urls))
+        if (apiHostOptions.AllowInsecureTransportForReverseProxy ||
+            HasHttpsBinding(apiHostOptions.Urls) ||
+            apiHostOptions.DeploymentMode == MeridianApiDeploymentMode.LocalWorkstation &&
+            HasOnlyLoopbackHttpBindings(apiHostOptions.Urls))
             return;
 
         throw new InvalidOperationException(
@@ -541,6 +548,25 @@ public sealed class UiServer : IAsyncDisposable
         }
 
         return false;
+    }
+
+    private static bool HasOnlyLoopbackHttpBindings(IEnumerable<string> configuredUrls)
+    {
+        var hasBinding = false;
+
+        foreach (var url in configuredUrls)
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed) ||
+                !parsed.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                !parsed.IsLoopback)
+            {
+                return false;
+            }
+
+            hasBinding = true;
+        }
+
+        return hasBinding;
     }
 
     internal static string ResolvePersistentDataRoot(string configPath)

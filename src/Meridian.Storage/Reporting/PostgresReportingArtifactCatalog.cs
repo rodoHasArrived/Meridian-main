@@ -148,6 +148,122 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
         return artifact;
     }
 
+    public async ValueTask<ReportingRetainedArtifactPackage?> GetPackageAsync(
+        string tenantId,
+        string packageId,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedTenantId = ValidateAndNormalizeKey(tenantId, nameof(tenantId));
+        var normalizedPackageId = ValidateAndNormalizeKey(packageId, nameof(packageId));
+        await using var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        string packagePayload;
+        int declaredArtifactCount;
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText =
+                $"""
+                select package_payload,
+                       package_hash_sha256,
+                       artifact_count
+                from {_packageTable}
+                where tenant_id = @tenant_id
+                  and package_id = @package_id;
+                """;
+            command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
+            command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, normalizedPackageId);
+            await using var reader = await command
+                .ExecuteReaderAsync(CommandBehavior.SingleRow, cancellationToken)
+                .ConfigureAwait(false);
+            if (!await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                return null;
+            }
+
+            packagePayload = reader.GetString(0);
+            VerifyPayloadHash("artifact package", reader.GetString(1), packagePayload);
+            declaredArtifactCount = reader.GetInt32(2);
+        }
+
+        var package = DeserializePackage(packagePayload);
+        string packageTenantId;
+        try
+        {
+            packageTenantId = ValidatePackage(package);
+        }
+        catch (ArgumentException exception)
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Retained artifact package metadata is invalid: {exception.Message}");
+        }
+
+        if (!string.Equals(package.PackageId, normalizedPackageId, StringComparison.Ordinal)
+            || !string.Equals(packageTenantId, normalizedTenantId, StringComparison.Ordinal)
+            || declaredArtifactCount != package.Artifacts.Length)
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                "Retained artifact package metadata does not match its tenant/package database key or declared artifact count.");
+        }
+
+        var expected = package.Artifacts.ToDictionary(
+            static artifact => artifact.ArtifactId,
+            static artifact => SerializeArtifact(artifact),
+            StringComparer.Ordinal);
+        var retained = new Dictionary<string, string>(StringComparer.Ordinal);
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText =
+                $"""
+                select artifact_id,
+                       artifact_payload,
+                       artifact_hash_sha256
+                from {_artifactTable}
+                where tenant_id = @tenant_id
+                  and package_id = @package_id;
+                """;
+            command.Parameters.AddWithValue("tenant_id", NpgsqlDbType.Text, normalizedTenantId);
+            command.Parameters.AddWithValue("package_id", NpgsqlDbType.Text, normalizedPackageId);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                var artifactId = reader.GetString(0);
+                var artifactPayload = reader.GetString(1);
+                VerifyPayloadHash("artifact catalog record", reader.GetString(2), artifactPayload);
+                var artifact = DeserializeArtifact(artifactPayload);
+                try
+                {
+                    ValidateArtifact(artifact);
+                }
+                catch (ArgumentException exception)
+                {
+                    throw new ReportingArtifactCatalogIntegrityException(
+                        $"Retained artifact metadata is invalid: {exception.Message}");
+                }
+
+                if (!string.Equals(artifact.Scope.TenantId, normalizedTenantId, StringComparison.Ordinal)
+                    || !string.Equals(artifact.PackageId, normalizedPackageId, StringComparison.Ordinal)
+                    || !string.Equals(artifact.ArtifactId, artifactId, StringComparison.Ordinal)
+                    || !retained.TryAdd(artifactId, artifactPayload))
+                {
+                    throw new ReportingArtifactCatalogIntegrityException(
+                        "Retained artifact metadata does not match its tenant/package/artifact database key or is duplicated.");
+                }
+            }
+        }
+
+        if (retained.Count != declaredArtifactCount
+            || expected.Count != declaredArtifactCount
+            || expected.Any(pair =>
+                !retained.TryGetValue(pair.Key, out var payload)
+                || !string.Equals(pair.Value, payload, StringComparison.Ordinal)))
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Immutable report package '{normalizedPackageId}' is incomplete, augmented, or inconsistent with its retained package payload.");
+        }
+
+        return package;
+    }
+
     private async Task<bool> TryInsertPackageAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
@@ -404,16 +520,22 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
         }
 
         if (artifact.Access.Mode == ReportingGovernanceAccessMode.Private
-            && string.IsNullOrWhiteSpace(artifact.Access.OwnerPrincipalId))
+            && (!artifact.Access.AllowOwnerAccess
+                || string.IsNullOrWhiteSpace(artifact.Access.OwnerPrincipalId))
+            && artifact.Access.Principals.IsDefaultOrEmpty)
         {
-            throw new ArgumentException("Private reporting artifact access requires an owner principal.", nameof(artifact));
+            throw new ArgumentException(
+                "Private reporting artifact access requires an enabled owner or named user principal.",
+                nameof(artifact));
         }
 
         if (artifact.Access.Mode == ReportingGovernanceAccessMode.Restricted
-            && artifact.Access.PrincipalIds.IsDefaultOrEmpty)
+            && (!artifact.Access.AllowOwnerAccess
+                || string.IsNullOrWhiteSpace(artifact.Access.OwnerPrincipalId))
+            && artifact.Access.Principals.IsDefaultOrEmpty)
         {
             throw new ArgumentException(
-                "Restricted reporting artifact access requires at least one principal.",
+                "Restricted reporting artifact access requires an owner or at least one principal.",
                 nameof(artifact));
         }
 
@@ -443,12 +565,44 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
             throw new ArgumentException("Artifact and snapshot timestamps must be expressed in UTC.", nameof(artifact));
         }
 
-        if (!artifact.Access.PrincipalIds.IsDefault)
+        if (!artifact.Access.Principals.IsDefault)
         {
-            foreach (var principalId in artifact.Access.PrincipalIds)
+            foreach (var principal in artifact.Access.Principals)
             {
-                ValidateRequiredIdentifier(principalId, nameof(artifact.Access.PrincipalIds));
+                if (principal is null || !Enum.IsDefined(principal.Kind))
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(artifact),
+                        "Reporting artifact access principal kind is invalid.");
+                }
+
+                ValidateRequiredIdentifier(
+                    principal.PrincipalId,
+                    nameof(artifact.Access.Principals));
             }
+
+            if (artifact.Access.Principals.Any(principal =>
+                    artifact.Access.Principals.Count(candidate =>
+                        candidate.Kind == principal.Kind
+                        && string.Equals(
+                            candidate.PrincipalId,
+                            principal.PrincipalId,
+                            StringComparison.OrdinalIgnoreCase)) > 1))
+            {
+                throw new ArgumentException(
+                    "Reporting artifact access principals must be unique by kind and identity.",
+                    nameof(artifact));
+            }
+        }
+
+        if (artifact.Access.Mode == ReportingGovernanceAccessMode.Private
+            && !artifact.Access.Principals.IsDefaultOrEmpty
+            && artifact.Access.Principals.Any(static principal =>
+                principal.Kind != ReportingAccessPrincipalKind.User))
+        {
+            throw new ArgumentException(
+                "Private reporting artifact access can retain only user principals.",
+                nameof(artifact));
         }
     }
 
@@ -469,10 +623,11 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
         && string.Equals(expected.PolicyVersion, candidate.PolicyVersion, StringComparison.Ordinal)
         && expected.Mode == candidate.Mode
         && string.Equals(expected.OwnerPrincipalId, candidate.OwnerPrincipalId, StringComparison.Ordinal)
-        && ((expected.PrincipalIds.IsDefault && candidate.PrincipalIds.IsDefault)
-            || (!expected.PrincipalIds.IsDefault
-                && !candidate.PrincipalIds.IsDefault
-                && expected.PrincipalIds.SequenceEqual(candidate.PrincipalIds, StringComparer.Ordinal)))
+        && expected.AllowOwnerAccess == candidate.AllowOwnerAccess
+        && ((expected.Principals.IsDefault && candidate.Principals.IsDefault)
+            || (!expected.Principals.IsDefault
+                && !candidate.Principals.IsDefault
+                && expected.Principals.SequenceEqual(candidate.Principals)))
         && string.Equals(expected.PolicyHash, candidate.PolicyHash, StringComparison.Ordinal);
 
     private static string SerializePackage(ReportingRetainedArtifactPackage package) =>
@@ -495,6 +650,23 @@ public sealed class PostgresReportingArtifactCatalog : IReportingArtifactCatalog
         {
             throw new ReportingArtifactCatalogIntegrityException(
                 $"Retained artifact metadata is not valid canonical JSON: {exception.Message}");
+        }
+    }
+
+    private static ReportingRetainedArtifactPackage DeserializePackage(string payload)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize(
+                       payload,
+                       ReportingArtifactCatalogJsonContext.Default.ReportingRetainedArtifactPackage)
+                   ?? throw new ReportingArtifactCatalogIntegrityException(
+                       "Retained artifact package metadata deserialized to null.");
+        }
+        catch (JsonException exception)
+        {
+            throw new ReportingArtifactCatalogIntegrityException(
+                $"Retained artifact package metadata is not valid canonical JSON: {exception.Message}");
         }
     }
 

@@ -109,7 +109,12 @@ public static class ProductionServiceRegistrationPolicy
                 nameof(ProductionSafeImplementationAttribute),
                 StringComparison.Ordinal));
 
-    internal static bool IsProductionComposition(IServiceCollection services)
+    /// <summary>
+    /// Returns whether registrations added to <paramref name="services"/> are being composed for a
+    /// production environment or an explicitly production API posture. Downstream feature modules use
+    /// this to omit unsupported fallback capabilities before the final graph guard runs.
+    /// </summary>
+    public static bool IsProductionComposition(IServiceCollection services)
         => ResolveDeclaredPosture(services) == MeridianDeploymentPosture.ProductionApi
            || IsProductionEnvironment();
 

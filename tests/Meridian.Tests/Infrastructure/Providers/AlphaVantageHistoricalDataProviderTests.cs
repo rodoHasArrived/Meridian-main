@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Tests.TestHelpers;
 
@@ -127,7 +128,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
     }
 
     [Fact]
-    public async Task GetIntradayBarsAsync_WhenBodyContainsRateLimitMessage_ThrowsHttpRequestException()
+    public async Task GetIntradayBarsAsync_WhenBodyContainsRateLimitMessage_ThrowsRateLimitException()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RateLimitResponse));
@@ -136,7 +137,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
 
         Func<Task> act = () => provider.GetIntradayBarsAsync("AAPL", "5min", null, null, cts.Token);
 
-        await act.Should().ThrowAsync<HttpRequestException>()
+        await act.Should().ThrowAsync<RateLimitException>()
             .WithMessage("*rate limit*");
     }
 

@@ -1,15 +1,18 @@
 import { hasRetainedReportingAsOfDateValue } from "@/lib/reporting-periods";
+import { redactReportingCredentialText, safeReportingHref } from "@/lib/reporting-link-safety";
 import type {
   ReportPackDeliveryAccessLink,
   ReportWriterDatasetSource,
   ReportingScheduleDeliveryPlan,
   ReportingScheduleDeliveryTarget,
-  ReportingScheduleRecord
+  ReportingScheduleRecord,
+  ReportingScheduledReleaseHandoff
 } from "@/types";
 import type {
   ReportingDeliveryAccessLinkRow,
   ReportingScheduleDeliveryPlanRow,
-  ReportingScheduleRow
+  ReportingScheduleRow,
+  ReportingScheduledReleaseHandoffRow
 } from "@/screens/reporting-screen.view-model";
 
 const reportingTimestampFormatter = new Intl.DateTimeFormat("en-US", {
@@ -73,10 +76,102 @@ export function buildScheduleRows(
     description: schedule.description?.trim() || "No schedule note",
     deliveryTargetLabel: formatScheduleDeliveryTargets(schedule.deliveryTargets),
     datasetSourceLabel: formatScheduleDatasetSource(schedule.datasetSourceId, datasetSources),
+    ...buildScheduleReleaseView(schedule),
     canPause: schedule.state === "Active",
     canResume: schedule.state === "Paused",
     ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
   }));
+}
+
+function buildScheduleReleaseView(
+  schedule: ReportingScheduleRecord
+): Pick<ReportingScheduleRow, "accessPolicySnapshotLabel" | "releaseGateLabel" | "releaseGateVariant" | "releaseHandoffs"> {
+  const accessPolicySnapshotHash = schedule.accessPolicySnapshotHash?.trim() || null;
+  const releaseHandoffs = buildScheduledReleaseHandoffRows(schedule.releaseDeliveryHandoffs);
+  const deliveryTargetCount = schedule.deliveryTargets?.length ?? 0;
+  const pendingCount = releaseHandoffs.filter((handoff) => handoff.state === "PendingRelease").length;
+  const enqueuedCount = releaseHandoffs.filter((handoff) => handoff.state === "Enqueued").length;
+
+  if (deliveryTargetCount === 0) {
+    return {
+      accessPolicySnapshotLabel: accessPolicySnapshotHash ?? "No access policy snapshot retained",
+      releaseGateLabel: "No release delivery handoff required",
+      releaseGateVariant: "success",
+      releaseHandoffs
+    };
+  }
+
+  if (!accessPolicySnapshotHash) {
+    return {
+      accessPolicySnapshotLabel: "No access policy snapshot retained",
+      releaseGateLabel: "Release delivery blocked: access policy snapshot hash unavailable",
+      releaseGateVariant: "warning",
+      releaseHandoffs
+    };
+  }
+
+  if (releaseHandoffs.length === 0) {
+    return {
+      accessPolicySnapshotLabel: accessPolicySnapshotHash,
+      releaseGateLabel: "Release delivery ready: post-generation handoff will be retained",
+      releaseGateVariant: "success",
+      releaseHandoffs
+    };
+  }
+
+  if (pendingCount > 0) {
+    return {
+      accessPolicySnapshotLabel: accessPolicySnapshotHash,
+      releaseGateLabel: `${pendingCount} handoff${pendingCount === 1 ? "" : "s"} awaiting governance release; ${enqueuedCount} enqueued`,
+      releaseGateVariant: "warning",
+      releaseHandoffs
+    };
+  }
+
+  return {
+    accessPolicySnapshotLabel: accessPolicySnapshotHash,
+    releaseGateLabel: `${enqueuedCount} release delivery handoff${enqueuedCount === 1 ? "" : "s"} enqueued`,
+    releaseGateVariant: "success",
+    releaseHandoffs
+  };
+}
+
+function buildScheduledReleaseHandoffRows(
+  handoffs: ReportingScheduledReleaseHandoff[] | null | undefined
+): ReportingScheduledReleaseHandoffRow[] {
+  return (handoffs ?? []).map<ReportingScheduledReleaseHandoffRow>((handoff) => ({
+    id: handoff.handoffId,
+    runId: handoff.runId,
+    distributionLabel: handoff.distributionId === handoff.targetDistributionId
+      ? handoff.distributionId
+      : `${handoff.distributionId} to ${handoff.targetDistributionId}`,
+    transportId: handoff.transportId,
+    recipientLabel: handoff.recipientPrincipalId
+      ? `${handoff.recipientPrincipalKind ?? "Unknown"} · ${handoff.recipientPrincipalId}`
+      : "No typed recipient retained",
+    formatsLabel: handoff.requestedFormats && handoff.requestedFormats.length > 0
+      ? handoff.requestedFormats.join(", ")
+      : "Formats resolved after release",
+    state: handoff.state,
+    stateVariant: handoff.state === "Enqueued" ? "success" : "warning",
+    createdLabel: formatReportingTimestamp(handoff.createdAtUtc),
+    enqueuedLabel: buildScheduledReleaseEnqueuedLabel(handoff),
+    ariaLabel: `${handoff.handoffId} release delivery handoff ${handoff.state} for ${handoff.recipientPrincipalKind ?? "unknown"} recipient`
+  }));
+}
+
+function buildScheduledReleaseEnqueuedLabel(handoff: ReportingScheduledReleaseHandoff): string {
+  if (handoff.state !== "Enqueued") {
+    return "Awaiting governance release";
+  }
+
+  const jobId = handoff.enqueuedDeliveryJobId?.trim() || null;
+  const enqueuedAt = handoff.enqueuedAtUtc ? formatReportingTimestamp(handoff.enqueuedAtUtc) : null;
+  if (jobId && enqueuedAt) {
+    return `${jobId} · ${enqueuedAt}`;
+  }
+
+  return jobId ?? enqueuedAt ?? "Enqueued; job reference unavailable";
 }
 
 export function buildScheduleSummary(schedules: ReportingScheduleRow[]): string {
@@ -109,12 +204,14 @@ export function buildScheduleDeliveryPlanRows(
     route: plan.route,
     note: plan.note,
     lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
-    lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
+    lastDeliveryHref: safeReportingHref(plan.lastDeliveryPackageRoute),
     lastDeliveryLinks: buildDeliveryAccessLinkRows(plan.lastDeliveryAccessLinks, `${plan.planId}-delivery-link`),
     accessExpiryLabel: plan.lastDeliveryAccessExpiresAtUtc
       ? formatReportingTimestamp(plan.lastDeliveryAccessExpiresAtUtc)
       : "No retained access expiry",
-    accessSummaryLabel: plan.lastDeliveryAccessSummary?.trim() || "No retained access summary",
+    accessSummaryLabel: plan.lastDeliveryAccessSummary?.trim()
+      ? redactReportingCredentialText(plan.lastDeliveryAccessSummary.trim())
+      : "No retained access summary",
     channelSummaryLabel: plan.lastDeliveryChannelSummary?.trim() || "No retained channel summary",
     downloadSummaryLabel: plan.lastDeliveryDownloadSummary?.trim() || "No retained download summary",
     notificationSummaryLabel: plan.lastDeliveryNotificationSummary?.trim() || "No retained notification proof",
@@ -206,20 +303,26 @@ function buildDeliveryAccessLinkRows(
 ): ReportingDeliveryAccessLinkRow[] {
   return (links ?? [])
     .filter((link) => link.href?.trim())
-    .map((link, index) => {
-      const label = link.label?.trim() || link.kind || "Delivery link";
-      const href = link.href.trim();
+    .flatMap((link, index) => {
+      const label = redactReportingCredentialText(link.label?.trim() || link.kind || "Delivery link");
+      const href = safeReportingHref(link.href.trim(), {
+        requireOpaqueFragment: link.requiresToken
+      });
+      if (!href) {
+        return [];
+      }
       const expiresLabel = link.expiresAtUtc ? `Expires ${formatReportingTimestamp(link.expiresAtUtc)}` : null;
-      return {
+      return [{
         id: `${idPrefix}-${index + 1}`,
         kind: link.kind?.trim() || "delivery-link",
         label,
         href,
-        tokenLabel: link.requiresToken ? "Token gated" : "Internal",
+        requiresOpaqueFragment: link.requiresToken,
+        tokenLabel: link.requiresToken ? "Fragment gated" : "Internal",
         expiresLabel,
         description: link.description?.trim() || null,
-        ariaLabel: `${label} ${link.requiresToken ? "token gated" : "internal route"} ${href}`
-      };
+        ariaLabel: `${label} ${link.requiresToken ? "fragment-token gated" : "internal route"}`
+      }];
     });
 }
 

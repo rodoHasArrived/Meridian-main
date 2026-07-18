@@ -14,17 +14,11 @@ import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import {
-  apiPostJson,
   approveReportTemplateDraft,
-  deliverReportPack,
-  generateReportPack,
   pauseReportingSchedule,
-  previewReportPack,
   provisionReportingStarterKit,
-  recordReportPackDeliveryFailure,
   rejectReportTemplateDraft,
   resumeReportingSchedule,
-  runDueReportingSchedules,
   runReportingScheduleNow,
   saveReportingSchedule,
   submitReportTemplateDraft
@@ -44,7 +38,6 @@ import {
   useReportingScreenViewModel,
   type ReportingProfileRow,
   type ReportingExportStatusState,
-  type ReportingRunActionRow,
   type ReportingRunStatusRow,
   type ReportingScheduleDeliveryPlanRow,
   type ReportingScheduleRow,
@@ -86,6 +79,7 @@ import {
   type ReportingScheduleDraftField,
   type ReportingScheduleDraftState,
   type ReportingScheduleDraftTarget,
+  type ReportingScheduleRecipientPrincipalKind,
   type ReportingScheduleManagementModel
 } from "@/screens/reporting-screen.schedule-management";
 import { TemplateLifecycleActionIcon } from "@/screens/reporting-screen.template-lifecycle";
@@ -103,17 +97,13 @@ import {
 import type {
   AccountingWorkspaceResponse,
   GovernanceReportArtifactFormat,
-  ReportBrandingTheme,
-  ReportPackDeliveryAttempt,
-  ReportPackDeliveryFailureRequest,
   ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
   ReportingRunParameters,
   ReportingRunRequest,
   RenderReportTemplateRequest,
-  ReportingScheduleUpsertRequest,
-  ReportingWorkflowEvidenceLink
+  ReportingScheduleUpsertRequest
 } from "@/types";
 import {
   buildReportAccessPolicy,
@@ -240,13 +230,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     resolveReportingRunSeverityStatus(resolveRowStatus(run), run.asOfDateLabel);
   const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusReportPackProfile = useRef(false);
-  const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
   const [templateLifecycleStatus, setTemplateLifecycleStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
   const [starterKitStatus, setStarterKitStatus] = useState<ReportingCommandStatus | null>(null);
-  const [deliveryFailureStatus, setDeliveryFailureStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
-  const [brandingPackStatus, setBrandingPackStatus] = useState<ReportingCommandStatus | null>(null);
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(data?.reporting ?? null));
   const reportWriterDatasetSources = data?.reporting.reportWriterDatasetSources ?? [];
@@ -285,14 +272,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const livePortfolioRefreshInFlight = useRef(false);
   const livePortfolioViews = data?.reporting.livePortfolioViews ?? [];
   const shouldAutoRefreshLivePortfolioViews = livePortfolioViews.some((view) => view.isMarketTickLinked || view.state === "LiveLinked");
-  const runningRunActionId = runActionStatus?.state === "running" ? runActionStatus.id : null;
   const runningTemplateLifecycleActionId = templateLifecycleStatus?.state === "running" ? templateLifecycleStatus.id : null;
   const runningScheduleActionId = scheduleActionStatus?.state === "running" ? scheduleActionStatus.id : null;
   const runningStarterKitId = starterKitStatus?.state === "running" ? starterKitStatus.id : null;
-  const runningDeliveryFailureId = deliveryFailureStatus?.state === "running" ? deliveryFailureStatus.id : null;
-  const runningBrandingThemeId = brandingPackStatus?.state === "running" ? brandingPackStatus.id : null;
   const isRefreshingLivePortfolioViews = livePortfolioRefreshStatus?.state === "running";
-  const reportingFundProfileId = resolveReportingFundProfileId(data?.reporting ?? null);
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
   const isDailyReportingCockpitLanding = vm.taskMode.id === "daily-reporting-cockpit";
   const isReportBuilderTaskMode = vm.taskMode.id === "report-builder";
@@ -357,14 +340,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           || right.runAttemptOrdinal - left.runAttemptOrdinal
         ))[0] ?? null
     : null;
-  const reportPackWorkflowAction = reportPackWorkflowRun?.nextActions
-    .find((action) => action.isEnabled && action.method === "POST" && action.kind !== "restatement") ?? null;
-  const reportPackWorkflowCommand = reportPackWorkflowRun && reportPackWorkflowAction
-    ? { run: reportPackWorkflowRun, action: reportPackWorkflowAction }
-    : null;
   const reportPackWorkflowStatusLabel = presentReportingStatusLabel(
-    reportPackWorkflowCommand
-      ? resolveRowStatus(reportPackWorkflowCommand.run)
+    reportPackWorkflowRun
+      ? resolveRowStatus(reportPackWorkflowRun)
       : reportPackWorkflowRecord?.state.trim() || vm.workflowTaskPanel?.statusLabel || "Report pack review"
   );
   const showStarterKitChooser =
@@ -417,51 +395,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     event.preventDefault();
     shouldFocusReportPackProfile.current = true;
     vm.selectAdjacentReportPackProfile(command);
-  }
-
-  async function handleRunAction(run: ReportingRunStatusRow, action: ReportingRunActionRow) {
-    if (!action.isEnabled || action.method !== "POST" || runningRunActionId) {
-      return;
-    }
-
-    if (action.kind === "restatement") {
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "error",
-        message: "Restatement requires changed-line evidence before it can be submitted.",
-        details: ["Open the report-pack workflow and attach changed report lines with retained evidence."]
-      });
-      return;
-    }
-
-    setRunActionStatus({
-      id: action.id,
-      label: action.label,
-      state: "running",
-      message: `${action.label} is running.`,
-      details: []
-    });
-
-    try {
-      await executeRunAction(run, action);
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "success",
-        message: `${action.label} completed.`,
-        details: []
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${action.label} failed.`);
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
   }
 
   async function handleTemplateLifecycleAction(
@@ -643,7 +576,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     setScheduleDraft((current) => {
       const next = {
         ...current,
-        [field]: field === "deliveryMode" ? normalizeReportingScheduleDeliveryMode(value) : value
+        [field]: field === "deliveryMode"
+          ? normalizeReportingScheduleDeliveryMode(value)
+          : field === "recipientPrincipalKind"
+            ? normalizeReportingScheduleRecipientPrincipalKind(value)
+            : value
       } as ReportingScheduleDraftState;
       if (field === "cronExpression" || field === "nextAsOfDate") {
         next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc);
@@ -686,6 +623,17 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function stageScheduleDraftDeliveryTarget() {
+    if (!scheduleDraft.recipientPrincipalId.trim() || !scheduleDraft.recipientPrincipalKind) {
+      setScheduleActionStatus({
+        id: "schedule-draft:target",
+        label: "Stage reporting schedule recipient",
+        state: "error",
+        message: "Select a recipient kind and enter its explicit principal ID before staging this target.",
+        details: ["Scheduled delivery audiences must retain an exact User, Group, or Company principal."]
+      });
+      return;
+    }
+
     setScheduleDraft((current) => {
       const target = buildCurrentScheduleDraftTarget(current);
       return {
@@ -756,7 +704,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         details: [
           `Template: ${result.templateId}`,
           savedTargets.length > 0
-            ? `Delivery targets: ${savedTargets.map((target) => `${target.distributionId} via ${target.deliveryMode ?? "SecurePortal"}`).join("; ")}`
+            ? `Delivery targets: ${savedTargets.map((target) => `${target.distributionId} to ${target.recipientPrincipalKind ?? "Unknown"}:${target.recipientPrincipalId ?? "missing principal"} via ${target.deliveryMode ?? "SecurePortal"}`).join("; ")}`
             : "Delivery targets: none",
           `Formats: ${savedTargets.map((target) => `${target.distributionId}=${(target.formats ?? []).join("/")}`).join("; ")}`,
           result.brandingThemeOverride
@@ -818,267 +766,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     }
   }
 
-  async function handleRunDueSchedules() {
-    const statusId = "schedule-due:run";
-    if (runningScheduleActionId) {
-      return;
-    }
-
-    setScheduleActionStatus({
-      id: statusId,
-      label: "Run due reporting schedules",
-      state: "running",
-      message: "Due reporting schedules are running.",
-      details: []
-    });
-
-    try {
-      const result = await runDueReportingSchedules();
-      const deliveryCount = result.runs.reduce((total, run) => total + (run.deliveryAttempts?.length ?? 0), 0);
-      const warningDetails = result.runs.flatMap((run) => run.deliveryWarnings ?? []);
-      setScheduleActionStatus({
-        id: statusId,
-        label: "Run due reporting schedules",
-        state: "success",
-        message: `Due schedule run completed for ${result.runs.length} schedule${result.runs.length === 1 ? "" : "s"}.`,
-        details: [
-          `Evaluated: ${result.evaluatedAtUtc}`,
-          `Deliveries: ${deliveryCount}`,
-          ...warningDetails.map((warning) => `Delivery warning: ${warning}`)
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, "Run due reporting schedules failed.");
-      setScheduleActionStatus({
-        id: statusId,
-        label: "Run due reporting schedules",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handleRecordDeliveryFailure(attempt: ReportPackDeliveryAttempt) {
-    const statusId = `${attempt.attemptId}:delivery-failure`;
-    if (runningDeliveryFailureId || attempt.state === "Failed") {
-      return;
-    }
-
-    const label = `Record ${attempt.recipient} delivery failure`;
-    setDeliveryFailureStatus({
-      id: statusId,
-      label,
-      state: "running",
-      message: `${label} is running.`,
-      details: [`Attempt: ${attempt.attemptId}`, `Distribution: ${attempt.distributionId}`]
-    });
-
-    try {
-      const result = await recordReportPackDeliveryFailure(attempt.reportId, buildReportPackDeliveryFailureRequest(attempt));
-      setDeliveryFailureStatus({
-        id: statusId,
-        label,
-        state: "success",
-        message: `${attempt.recipient} delivery failure recorded.`,
-        details: [
-          `Attempt ID: ${result.attemptId}`,
-          `State: ${result.state}`,
-          `Reason: ${result.failureReason ?? "Delivery failure recorded from Reporting workspace."}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${label} failed.`);
-      setDeliveryFailureStatus({
-        id: statusId,
-        label,
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handleGenerateBrandedPack(theme: ReportBrandingTheme) {
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    setBrandingPackStatus({
-      id: theme.themeId,
-      label: "Generate branded report pack",
-      state: "running",
-      message: `${theme.name} report pack is generating.`,
-      details: []
-    });
-
-    try {
-      const result = await generateReportPack({
-        fundProfileId: reportingFundProfileId,
-        auditActor: "browser.reporting",
-        reportKind: "BoardPacket",
-        formats: ["Pdf", "Xlsx", "Csv"],
-        brandingThemeId: theme.themeId,
-        decisionRationale: `Generated from Reporting branding theme ${theme.name}.`
-      });
-
-      setBrandingPackStatus({
-        id: theme.themeId,
-        label: "Generate branded report pack",
-        state: "success",
-        message: `${theme.name} report pack generated.`,
-        details: [
-          `Report ID: ${result.reportId}`,
-          `Artifacts: ${result.artifacts.length}`,
-          `Theme: ${result.brandingTheme?.name ?? theme.name}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack generation failed.`);
-      setBrandingPackStatus({
-        id: theme.themeId,
-        label: "Generate branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handlePreviewBrandedPack(theme: ReportBrandingTheme) {
-    const statusId = `${theme.themeId}:preview`;
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Preview branded report pack",
-      state: "running",
-      message: `${theme.name} report pack preview is rendering.`,
-      details: []
-    });
-
-    try {
-      const result = await previewReportPack({
-        fundProfileId: reportingFundProfileId,
-        reportKind: "BoardPacket",
-        brandingThemeId: theme.themeId
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview branded report pack",
-        state: "success",
-        message: `${theme.name} report pack preview rendered.`,
-        details: formatReportPackPreviewDetails(result)
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack preview failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
   function updateBrandingDraft(field: ReportBrandingDraftField, value: string) {
     setBrandingDraft((current) => ({
       ...current,
       [field]: value
     }));
-  }
-
-  async function handleGenerateCustomBrandedPack() {
-    const statusId = "custom-branding-override";
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    const theme = buildReportBrandingOverride(brandingDraft);
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Generate custom branded report pack",
-      state: "running",
-      message: `${theme.name} report pack is generating.`,
-      details: []
-    });
-
-    try {
-      const result = await generateReportPack({
-        fundProfileId: reportingFundProfileId,
-        auditActor: "browser.reporting",
-        reportKind: "BoardPacket",
-        formats: ["Pdf", "Xlsx", "Csv"],
-        brandingThemeOverride: theme,
-        decisionRationale: `Generated from custom Reporting branding override ${theme.name}.`
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Generate custom branded report pack",
-        state: "success",
-        message: `${theme.name} report pack generated.`,
-        details: [
-          `Report ID: ${result.reportId}`,
-          `Artifacts: ${result.artifacts.length}`,
-          `Theme: ${result.brandingTheme?.name ?? theme.name}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack generation failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Generate custom branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handlePreviewCustomBrandedPack() {
-    const statusId = "custom-branding-override:preview";
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    const theme = buildReportBrandingOverride(brandingDraft);
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Preview custom branded report pack",
-      state: "running",
-      message: `${theme.name} report pack preview is rendering.`,
-      details: []
-    });
-
-    try {
-      const result = await previewReportPack({
-        fundProfileId: reportingFundProfileId,
-        reportKind: "BoardPacket",
-        brandingThemeOverride: theme
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview custom branded report pack",
-        state: "success",
-        message: `${theme.name} report pack preview rendered.`,
-        details: formatReportPackPreviewDetails(result)
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack preview failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview custom branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
   }
 
   if (!data) {
@@ -1752,14 +1444,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       <ReportingBrandingAccessPanel
         themes={data.reporting.brandingThemes ?? []}
         draft={brandingDraft}
-        status={brandingPackStatus}
-        runningBrandingThemeId={runningBrandingThemeId}
-        reportingFundProfileId={reportingFundProfileId}
         onDraftChange={updateBrandingDraft}
-        onPreviewTheme={handlePreviewBrandedPack}
-        onGenerateTheme={handleGenerateBrandedPack}
-        onPreviewCustom={handlePreviewCustomBrandedPack}
-        onGenerateCustom={handleGenerateCustomBrandedPack}
       />
       ) : null}
 
@@ -1992,43 +1677,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   </Button>
                 ) : null}
                 {run.hasNextActions ? (
-                  <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} next actions`}>
-                    {run.nextActions.map((action) => {
-                      const disabledReason = action.disabledReason
-                        ?? (action.kind === "restatement"
-                          ? "Restatement requires changed-line evidence."
-                          : action.method !== "POST"
-                            ? "Open system references from the audit details."
-                            : runningRunActionId
-                              ? "Another run action is in progress."
-                              : null);
-
-                      return (
-                      <div key={action.id} className="max-w-sm">
-                      <Button
-                        aria-label={action.ariaLabel}
-                        disabled={!action.isEnabled || action.method !== "POST" || action.kind === "restatement" || Boolean(runningRunActionId)}
-                        busy={runningRunActionId === action.id}
-                        busyLabel="Running"
-                        disabledReason={disabledReason}
-                        onClick={() => void handleRunAction(run, action)}
-                        size="sm"
-                        variant={action.isEnabled ? "outline" : "ghost"}
-                        className={cn(
-                          "min-h-9 min-w-0 justify-start px-2.5 py-1.5 text-xs",
-                          action.isEnabled
-                            ? "border-primary/35 bg-primary/10 text-primary hover:bg-primary/15"
-                            : "border-border/60 bg-secondary/20 text-muted-foreground"
-                        )}
-                      >
-                        <span className="truncate">{action.label}</span>
-                      </Button>
-                      {(!action.isEnabled || action.method !== "POST" || action.kind === "restatement") && disabledReason ? (
-                        <p role="status" className="mt-1 text-xs leading-5 text-muted-foreground">{disabledReason}</p>
-                      ) : null}
-                      </div>
-                      );
-                    })}
+                  <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2" aria-label={`${run.id} governed workflow continuation`}>
+                    <p className="min-w-0 flex-1 text-xs leading-5 text-primary">
+                      Legacy pack mutations are retired. Continue validation, approval, release, restatement, and distribution from the governed run.
+                    </p>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
+                        Open governed run
+                      </a>
+                    </Button>
                   </div>
                 ) : null}
               </div>
@@ -2037,9 +1694,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                 No report runs have been generated yet.
               </p>
             )}
-            {runActionStatus ? (
-              <ReportingCommandStatusView status={runActionStatus} />
-            ) : null}
           </CardContent>
         </Card>
         ) : null}
@@ -2067,7 +1721,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           onStageTarget={stageScheduleDraftDeliveryTarget}
           onRemoveTarget={removeScheduleDraftDeliveryTarget}
           onSaveDraft={saveScheduleDraft}
-          onRunDue={handleRunDueSchedules}
           onScheduleAction={handleScheduleAction}
           onSchedulePlanRun={handleSchedulePlanRun}
         />
@@ -2076,9 +1729,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         {isSchedulesTaskMode || isDeliveryEvidenceTaskMode ? (
         <ReportingDeliveryHistoryPanel
           deliveryAttempts={data.reporting.deliveryAttempts ?? []}
-          deliveryFailureStatus={deliveryFailureStatus}
-          runningDeliveryFailureId={runningDeliveryFailureId}
-          onRecordDeliveryFailure={handleRecordDeliveryFailure}
         />
         ) : null}
       </section>
@@ -2101,21 +1751,16 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               </div>
               <span className="flex flex-wrap items-center gap-2">
                 <SeverityBadge
-                  status={reportPackWorkflowRecord || reportPackWorkflowCommand
+                  status={reportPackWorkflowRecord || reportPackWorkflowRun
                     ? reportPackWorkflowStatusLabel
                     : reportingStatusFromVariant[vm.workflowTaskPanel.statusVariant]}
                   label={reportPackWorkflowStatusLabel}
                 />
-                {reportPackWorkflowCommand ? (
-                  <Button
-                    size="sm"
-                    busy={runningRunActionId === reportPackWorkflowCommand.action.id}
-                    busyLabel="Running"
-                    disabled={Boolean(runningRunActionId)}
-                    onClick={() => void handleRunAction(reportPackWorkflowCommand.run, reportPackWorkflowCommand.action)}
-                    aria-label={reportPackWorkflowCommand.action.label}
-                  >
-                    {reportPackWorkflowCommand.action.label}
+                {reportPackWorkflowRun ? (
+                  <Button asChild size="sm">
+                    <a href={workstationRouteWithQuery("reportingRunDetail", { runId: reportPackWorkflowRun.id })}>
+                      Open governed run
+                    </a>
                   </Button>
                 ) : null}
               </span>
@@ -2133,7 +1778,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             >
               {vm.workflowTaskPanel.selectedSummary}
             </div>
-            {runActionStatus ? <ReportingCommandStatusView status={runActionStatus} /> : null}
             <div
               role="region"
               aria-label={vm.workflowTaskPanel.publicationReview.regionLabel}
@@ -2981,6 +2625,8 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     datasetSourceId: normalizeOptionalDatasetSourceId(schedule?.datasetSourceId ?? buildDefaultReportWriterDatasetSourceId(reporting)) ?? "",
     distributionId: normalizeIdentifierToken(firstTarget?.distributionId ?? distribution?.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(firstTarget?.deliveryMode),
+    recipientPrincipalId: normalizeDraftText(firstTarget?.recipientPrincipalId, ""),
+    recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(firstTarget?.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
     formats: buildScheduleFormatSelection(firstTarget?.formats),
     deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget),
@@ -3116,11 +2762,18 @@ function buildReportingScheduleDeliveryTargets(
   const targets = new Map<string, NonNullable<ReportingScheduleUpsertRequest["deliveryTargets"]>[number]>();
   for (const target of [...draft.deliveryTargets, buildCurrentScheduleDraftTarget(draft)]) {
     const distributionId = normalizeIdentifierToken(target.distributionId, "board-reporting-committee");
+    const recipientPrincipalId = target.recipientPrincipalId.trim();
+    const recipientPrincipalKind = normalizeReportingScheduleRecipientPrincipalKind(target.recipientPrincipalKind);
+    if (!recipientPrincipalId || !recipientPrincipalKind) {
+      throw new Error("Every scheduled delivery target requires an explicit User, Group, or Company recipient principal and ID.");
+    }
     const note = target.distributionId === draft.distributionId
       ? currentDeliveryNote
       : normalizeDraftText(target.deliveryNote, "");
     targets.set(distributionId, {
       distributionId,
+      recipientPrincipalId,
+      recipientPrincipalKind,
       deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
       formats: reportingScheduleArtifactFormats.filter((format) => target.formats[format]),
       note: note || null
@@ -3134,6 +2787,8 @@ function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): Re
   return normalizeScheduleDraftTarget({
     distributionId: draft.distributionId,
     deliveryMode: draft.deliveryMode,
+    recipientPrincipalId: draft.recipientPrincipalId,
+    recipientPrincipalKind: draft.recipientPrincipalKind,
     note: draft.deliveryNote,
     formats: reportingScheduleArtifactFormats.filter((format) => draft.formats[format])
   });
@@ -3142,12 +2797,16 @@ function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): Re
 function normalizeScheduleDraftTarget(target: {
   distributionId: string;
   deliveryMode?: ReportPackDeliveryMode | null;
+  recipientPrincipalId?: string | null;
+  recipientPrincipalKind?: string | null;
   note?: string | null;
   formats?: readonly GovernanceReportArtifactFormat[] | null;
 }): ReportingScheduleDraftTarget {
   return {
     distributionId: normalizeIdentifierToken(target.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
+    recipientPrincipalId: normalizeDraftText(target.recipientPrincipalId, ""),
+    recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(target.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(target.note, ""),
     formats: buildScheduleFormatSelection(target.formats)
   };
@@ -3177,6 +2836,12 @@ function normalizeReportingScheduleDeliveryMode(value: string | null | undefined
     : "SecurePortal";
 }
 
+function normalizeReportingScheduleRecipientPrincipalKind(
+  value: string | null | undefined
+): ReportingScheduleRecipientPrincipalKind | "" {
+  return value === "User" || value === "Group" || value === "Company" ? value : "";
+}
+
 function parseScheduleMaxRetries(value: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 1;
@@ -3187,26 +2852,6 @@ function formatReportingScheduleRunDetails(result: Awaited<ReturnType<typeof run
     "Run retained for audit review",
     `Deliveries: ${result.deliveryAttempts?.length ?? 0}`,
     ...(result.deliveryWarnings ?? []).map((warning) => `Delivery warning: ${warning}`)
-  ];
-}
-
-function formatReportPackPreviewDetails(result: Awaited<ReturnType<typeof previewReportPack>>): string[] {
-  const assetClasses = result.assetClassSections
-    .map((section) => `${section.assetClass}: ${formatReportingMoney(section.total, result.currency)}`)
-    .join("; ");
-
-  return [
-    `Preview ID: ${result.reportId}`,
-    `Fund: ${result.displayName}`,
-    `Report kind: ${result.reportKind}`,
-    `As of: ${result.asOf}`,
-    `Total net assets: ${formatReportingMoney(result.totalNetAssets, result.currency)}`,
-    `Trial balance lines: ${result.trialBalanceLineCount}`,
-    `Asset-class sections: ${result.assetClassSectionCount}`,
-    result.brandingTheme
-      ? `Branding: ${result.brandingTheme.name} · ${result.brandingTheme.firmName} · ${result.brandingTheme.themeId}`
-      : "Branding: default theme",
-    assetClasses ? `Asset classes: ${assetClasses}` : "Asset classes: none"
   ];
 }
 
@@ -3274,54 +2919,6 @@ function formatHeatMapWidth(value: number): string {
   return `${Math.min(100, Math.max(2, value))}%`;
 }
 
-function resolveReportingFundProfileId(reporting: AccountingWorkspaceResponse["reporting"] | null): string | null {
-  const direct = reporting?.fundProfileId?.trim() || reporting?.selectedFundProfileId?.trim();
-  if (direct) {
-    return direct;
-  }
-
-  return reporting?.workflowRecords
-    ?.map((record) => record.fundProfileId?.trim())
-    .find((fundProfileId): fundProfileId is string => Boolean(fundProfileId)) ?? null;
-}
-
-async function executeRunAction(run: ReportingRunStatusRow, action: ReportingRunActionRow): Promise<void> {
-  if (action.kind.startsWith("delivery:")) {
-    const reportId = extractReportPackId(run, action);
-    const distributionId = action.kind.slice("delivery:".length);
-    await deliverReportPack(reportId, {
-      distributionId,
-      note: "Delivered from browser Reporting workspace.",
-      formats: ["Pdf", "Xlsx", "Csv"],
-      evidenceLinks: buildEvidenceLinksFromRun(run)
-    });
-    return;
-  }
-
-  if (action.kind === "approval-reject") {
-    await apiPostJson<unknown>(action.href, {
-      reason: "Returned from browser Reporting workspace.",
-      evidenceLinks: buildEvidenceLinksFromRun(run)
-    });
-    return;
-  }
-
-  if (action.kind === "publication") {
-    const reportId = extractReportPackId(run, action);
-    await apiPostJson<unknown>(action.href, {
-      signedOffBy: "server-authenticated-actor",
-      evidenceHash: `sha256:${normalizeEvidenceToken(run.id)}`,
-      manifestId: `browser-${normalizeEvidenceToken(reportId)}`,
-      retainedManifestPath: `workstation/reporting/${normalizeEvidenceToken(reportId)}/manifest.json`,
-      evidenceLinks: buildEvidenceLinksFromRun(run),
-      note: "Published from browser Reporting workspace."
-    });
-    return;
-  }
-
-  await apiPostJson<unknown>(action.href);
-}
-
 function buildReportTemplateDecisionRequest(
   template: ReportingTemplateRow,
   action: ReportingTemplateLifecycleActionRow
@@ -3370,64 +2967,4 @@ function buildTemplateLifecycleBusyLabel(action: ReportingTemplateLifecycleActio
   }
 
   return "Submitting";
-}
-
-function extractReportPackId(run: ReportingRunStatusRow, action: ReportingRunActionRow): string {
-  const hrefMatch = action.href.match(/\/reporting\/packs\/([0-9a-fA-F-]{36})(?:\/|$)/);
-  if (hrefMatch?.[1]) {
-    return hrefMatch[1];
-  }
-
-  if (run.id.startsWith("report-pack:")) {
-    return run.id.slice("report-pack:".length);
-  }
-
-  return run.id;
-}
-
-function buildEvidenceLinksFromRun(run: ReportingRunStatusRow): ReportingWorkflowEvidenceLink[] {
-  const links = run.drilldownLinks
-    .filter((link) => link.kind.includes("evidence") || link.href.includes("/evidence"))
-    .map((link) => ({
-      evidenceId: normalizeEvidenceToken(link.id),
-      label: link.label,
-      route: link.href,
-      source: link.source || "reporting",
-      capturedAtUtc: null
-    }));
-
-  if (links.length > 0) {
-    return links;
-  }
-
-  return [{
-    evidenceId: normalizeEvidenceToken(run.id),
-    label: `${run.templateId} report run`,
-    route: null,
-    source: "reporting",
-    capturedAtUtc: null
-  }];
-}
-
-function buildReportPackDeliveryFailureRequest(attempt: ReportPackDeliveryAttempt): ReportPackDeliveryFailureRequest {
-  return {
-    distributionId: attempt.distributionId,
-    deliveryReference: `delivery-failure:${normalizeEvidenceToken(attempt.attemptId)}`,
-    note: `Delivery failure recorded from Reporting workspace for ${attempt.recipient}.`,
-    failureReason: `Operator recorded delivery failure for ${attempt.recipient} after attempt ${attempt.attemptNumber}.`,
-    evidenceLinks: [
-      {
-        evidenceId: normalizeEvidenceToken(attempt.attemptId),
-        label: `${attempt.recipient} delivery attempt ${attempt.attemptNumber}`,
-        route: attempt.package?.portalRoute ?? attempt.package?.secureLink ?? null,
-        source: "report-pack-delivery",
-        capturedAtUtc: attempt.attemptedAtUtc
-      }
-    ]
-  };
-}
-
-function normalizeEvidenceToken(value: string): string {
-  const normalized = value.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
-  return normalized || "reporting-evidence";
 }

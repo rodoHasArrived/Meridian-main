@@ -109,7 +109,11 @@ public class WebSocketConnectionManagerTests
     {
         var manager = new WebSocketConnectionManager(
             providerName: "test-provider",
-            config: null,
+            config: WebSocketConnectionConfig.Default with
+            {
+                RetryBaseDelay = TimeSpan.Zero,
+                MaxRetryDelay = TimeSpan.Zero
+            },
             logger: null,
             shutdownTimeout: TimeSpan.FromMilliseconds(40));
         var supervisor = GetPrivateField<ProviderConnectionSupervisor>(manager, "_supervisor");

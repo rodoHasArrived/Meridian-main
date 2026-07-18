@@ -97,12 +97,41 @@ public static class LedgerFinancialStatementBuilder
             }
         }
 
-        foreach (var account in trialBalance.Keys)
-        {
-            if (!MatchesFinancialAccount(account, financialAccountId))
-                continue;
+        var accountsByPath = trialBalance.Keys
+            .Where(account => MatchesFinancialAccount(account, financialAccountId))
+            .GroupBy(account => account.Name, StringComparer.OrdinalIgnoreCase);
 
-            result.Register(account.Name, account.AccountType, account.Symbol, account.FinancialAccountId);
+        foreach (var accountGroup in accountsByPath)
+        {
+            var accounts = accountGroup.ToList();
+            var account = accounts[0];
+            var existing = result.Find(account.Name);
+            if (existing is not null)
+            {
+                if (accounts.Any(candidate => candidate.AccountType != existing.Account.AccountType))
+                {
+                    throw new ArgumentException(
+                        $"Chart account '{account.Name}' is registered with a different account type.",
+                        nameof(chart));
+                }
+
+                continue;
+            }
+
+            var symbols = accounts
+                .Select(candidate => candidate.Symbol)
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+            var financialAccountIds = accounts
+                .Select(candidate => candidate.FinancialAccountId)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            result.Register(
+                account.Name,
+                account.AccountType,
+                symbols.Count == 1 ? symbols[0] : null,
+                financialAccountIds.Count == 1 ? financialAccountIds[0] : null);
         }
 
         return result;

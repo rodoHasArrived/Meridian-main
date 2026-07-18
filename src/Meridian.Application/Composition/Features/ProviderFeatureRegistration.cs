@@ -62,7 +62,7 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
             var registry = new ProviderRegistry(alertDispatcher: null, LoggingSetup.ForContext<ProviderRegistry>());
 
             var configStore = sp.GetRequiredService<ConfigStore>();
-            var config = LoadPreparedConfig(sp, configStore);
+            var config = LoadProviderBootstrapConfig(sp, configStore);
             var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var log = LoggingSetup.ForContext("ProviderRegistration");
 
@@ -104,7 +104,7 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
         services.AddSingleton<ProviderFactory>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
-            var config = LoadPreparedConfig(sp, configStore);
+            var config = LoadProviderBootstrapConfig(sp, configStore);
             var credentialResolver = sp.GetRequiredService<IProviderCredentialResolver>();
             var logger = LoggingSetup.ForContext<ProviderFactory>();
             return new ProviderFactory(
@@ -117,10 +117,15 @@ internal sealed partial class ProviderFeatureRegistration : IServiceFeatureRegis
         return services;
     }
 
-    private static AppConfig LoadPreparedConfig(IServiceProvider sp, ConfigStore configStore)
+    private static AppConfig LoadProviderBootstrapConfig(IServiceProvider sp, ConfigStore configStore)
     {
         var configService = sp.GetRequiredService<ConfigurationService>();
-        return configService.LoadAndPrepareConfig(configStore.ConfigPath);
+        // Provider selection is itself backed by ProviderRegistry. Applying self-healing
+        // while that registry is being constructed recursively resolves the registry and
+        // leaves hosted composition stuck in its service factory. Bootstrap from the
+        // overlaid, credential-resolved configuration; callers can still apply self-healing
+        // after the provider graph is available.
+        return configService.LoadAndPrepareConfig(configStore.ConfigPath, applySelfHealing: false);
     }
 
     private static void RegisterCorporateActionProviders(IServiceCollection services)

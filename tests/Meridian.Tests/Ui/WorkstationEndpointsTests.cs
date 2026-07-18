@@ -6026,7 +6026,12 @@ public sealed partial class WorkstationEndpointsTests
             ],
             accessPolicy: new ReportAccessPolicyDto(
                 ReportAccessModeDto.Restricted,
-                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]));
+                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]),
+            accessContext: new ReportAccessQueryContext(
+                ActorPrincipalId: "report.author",
+                CompanyId: "tenant-test",
+                TenantId: "tenant-test",
+                RequireBoundScope: true));
 
         await using var app = await CreateAppAsync(services =>
         {

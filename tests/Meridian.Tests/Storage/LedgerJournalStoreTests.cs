@@ -407,7 +407,7 @@ public sealed class LedgerJournalStoreTests
         var act = () => LedgerPeriodPostingGuard.Validate(write, period);
 
         act.Should().Throw<LedgerValidationException>()
-            .WithMessage("*closing entries*soft-closed*");
+            .WithMessage("*ClosingEntry postings*soft-closed*");
     }
 
     [Fact]

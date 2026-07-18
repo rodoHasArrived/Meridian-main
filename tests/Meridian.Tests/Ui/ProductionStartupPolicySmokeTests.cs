@@ -78,6 +78,44 @@ public sealed class ProductionStartupPolicySmokeTests
             .WithMessage("*no HTTPS binding is configured*");
     }
 
+    [Theory]
+    [InlineData("http://localhost:8080")]
+    [InlineData("http://127.0.0.1:8080")]
+    [InlineData("http://[::1]:8080")]
+    public void ValidateAuthenticationTransportSecurity_WhenLocalWorkstationUsesLoopbackHttp_AllowsStartup(
+        string url)
+    {
+        using var authMode = new EnvironmentVariableScope("MDC_AUTH_MODE", "required");
+        var options = new ApiHostOptions
+        {
+            DeploymentMode = MeridianApiDeploymentMode.LocalWorkstation,
+            Urls = [url]
+        };
+
+        Action act = () => UiServer.ValidateAuthenticationTransportSecurity(new TestHostEnvironment("Production"), options);
+
+        act.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData("http://0.0.0.0:8080")]
+    [InlineData("http://192.168.1.10:8080")]
+    public void ValidateAuthenticationTransportSecurity_WhenLocalWorkstationUsesNonLoopbackHttp_RejectsStartup(
+        string url)
+    {
+        using var authMode = new EnvironmentVariableScope("MDC_AUTH_MODE", "required");
+        var options = new ApiHostOptions
+        {
+            DeploymentMode = MeridianApiDeploymentMode.LocalWorkstation,
+            Urls = [url]
+        };
+
+        Action act = () => UiServer.ValidateAuthenticationTransportSecurity(new TestHostEnvironment("Production"), options);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*no HTTPS binding is configured*");
+    }
+
     [Fact]
     public void ValidateAuthenticationTransportSecurity_WhenReverseProxyInsecureTransportIsExplicit_AllowsStartup()
     {

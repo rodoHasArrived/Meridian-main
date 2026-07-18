@@ -1428,6 +1428,14 @@ public sealed class AccountingConfigurationServiceTests
                 "Revenue",
                 FinancialAccountId: "MSFT"),
             "valuation-ops"));
+        await configuration.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            "fund-alpha",
+            new ChartOfAccountsNodeDto(
+                "unrealized-loss",
+                "Expenses:Unrealized Loss",
+                "Unrealized Loss",
+                "Expense"),
+            "valuation-ops"));
 
         var journalStore = WritableManualJournalLedgerJournalStore.Default(AccountingBasisKindDto.Primary);
         journalStore.Seed(BuildJournal(
@@ -1574,7 +1582,11 @@ public sealed class AccountingConfigurationServiceTests
 
         var correctionBatch = await scheduler.RunDueAsync(correctionAsOf);
         var correctionRun = correctionBatch.Runs.Should().ContainSingle().Subject;
-        correctionRun.State.Should().Be(DailyValuationScheduleStateDto.DraftReady);
+        correctionRun.State.Should().Be(
+            DailyValuationScheduleStateDto.DraftReady,
+            "the corrected marks should produce an incremental draft batch; summary: {0}; blockers: {1}",
+            correctionRun.Summary,
+            string.Join(" | ", correctionRun.Blockers));
         correctionRun.JournalEntryIds.Should().HaveCount(2)
             .And.NotBeEquivalentTo(initialPosting.JournalEntryIds);
         var correctionPosting = await batchLifecycle.ApproveAndPostAsync(new DailyValuationBatchLifecycleRequestDto(

@@ -39,13 +39,6 @@ public sealed class JsonlBatchOptions
     public bool Enabled { get; init; } = true;
 
     /// <summary>
-    /// Retained for configuration compatibility.
-    /// The direct-stream writer no longer pre-serializes batches into strings, so this
-    /// threshold is not used to switch between sequential and parallel string creation.
-    /// </summary>
-    public int ParallelSerializationThreshold { get; init; } = 5000;
-
-    /// <summary>
     /// Default options with batching enabled.
     /// </summary>
     public static JsonlBatchOptions Default => new();
@@ -56,8 +49,7 @@ public sealed class JsonlBatchOptions
     public static JsonlBatchOptions HighThroughput => new()
     {
         BatchSize = 5000,
-        FlushInterval = TimeSpan.FromSeconds(10),
-        ParallelSerializationThreshold = 5000
+        FlushInterval = TimeSpan.FromSeconds(10)
     };
 
     /// <summary>
@@ -66,8 +58,7 @@ public sealed class JsonlBatchOptions
     public static JsonlBatchOptions LowLatency => new()
     {
         BatchSize = 100,
-        FlushInterval = TimeSpan.FromSeconds(1),
-        ParallelSerializationThreshold = 5000
+        FlushInterval = TimeSpan.FromSeconds(1)
     };
 
     /// <summary>

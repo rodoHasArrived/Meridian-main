@@ -1,4 +1,4 @@
-import { Plus, RotateCcw, Send, Trash2 } from "lucide-react";
+import { Plus, Send, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { safeReportingHref } from "@/lib/reporting-link-safety";
 import {
   ReportingCommandStatusView,
   ReportingScheduleField,
@@ -39,6 +40,8 @@ export type ReportingScheduleDraftField =
   | "requestedBy"
   | "distributionId"
   | "deliveryMode"
+  | "recipientPrincipalId"
+  | "recipientPrincipalKind"
   | "description"
   | "deliveryNote"
   | "datasetSourceId";
@@ -53,6 +56,8 @@ export interface ReportingScheduleDraftState {
   requestedBy: string;
   distributionId: string;
   deliveryMode: ReportPackDeliveryMode;
+  recipientPrincipalId: string;
+  recipientPrincipalKind: ReportingScheduleRecipientPrincipalKind | "";
   description: string;
   deliveryNote: string;
   formats: Record<ReportingScheduleArtifactFormat, boolean>;
@@ -65,9 +70,13 @@ export interface ReportingScheduleDraftState {
 export interface ReportingScheduleDraftTarget {
   distributionId: string;
   deliveryMode: ReportPackDeliveryMode;
+  recipientPrincipalId: string;
+  recipientPrincipalKind: ReportingScheduleRecipientPrincipalKind | "";
   deliveryNote: string;
   formats: Record<ReportingScheduleArtifactFormat, boolean>;
 }
+
+export type ReportingScheduleRecipientPrincipalKind = "User" | "Group" | "Company";
 
 export const reportingScheduleArtifactFormats: ReportingScheduleArtifactFormat[] = ["Pdf", "Xlsx", "Csv"];
 export const reportingScheduleDeliveryModes: ReportPackDeliveryMode[] = ["SecurePortal", "EmailLink", "EvidenceVault", "InternalRoute"];
@@ -119,7 +128,6 @@ interface ReportingScheduleManagementPanelProps {
   onStageTarget: () => void;
   onRemoveTarget: (distributionId: string) => void;
   onSaveDraft: () => void | Promise<void>;
-  onRunDue: () => void | Promise<void>;
   onScheduleAction: (schedule: ReportingScheduleRow, action: "pause" | "resume" | "run") => void | Promise<void>;
   onSchedulePlanRun: (plan: ReportingScheduleDeliveryPlanRow) => void | Promise<void>;
 }
@@ -138,7 +146,6 @@ export function ReportingScheduleManagementPanel({
   onStageTarget,
   onRemoveTarget,
   onSaveDraft,
-  onRunDue,
   onScheduleAction,
   onSchedulePlanRun
 }: ReportingScheduleManagementPanelProps) {
@@ -147,6 +154,9 @@ export function ReportingScheduleManagementPanel({
     template.templateName === scheduleDraft.templateId && template.versionNumber === scheduleDraft.templateVersion) ?? null;
   const selectedScheduleTemplateRowId = selectedScheduleTemplate?.id
     ?? `${scheduleDraft.templateId}:${scheduleDraft.templateVersion}`;
+  const hasExplicitTypedRecipient = Boolean(
+    scheduleDraft.recipientPrincipalId.trim() && scheduleDraft.recipientPrincipalKind
+  );
 
   return (
     <Card className="panel-surface">
@@ -239,6 +249,30 @@ export function ReportingScheduleManagementPanel({
                   <option key={mode} value={mode}>{presentScheduleDeliveryMode(mode)}</option>
                 ))}
               </Select>
+            </label>
+            <label className="min-w-0 space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">Recipient kind</span>
+              <Select
+                value={scheduleDraft.recipientPrincipalKind}
+                onChange={(event) => onDraftChange("recipientPrincipalKind", event.target.value)}
+                aria-label="Reporting schedule recipient principal kind"
+                required
+              >
+                <option value="">Select recipient kind</option>
+                <option value="User">User</option>
+                <option value="Group">Group</option>
+                <option value="Company">Company</option>
+              </Select>
+            </label>
+            <label className="min-w-0 space-y-1">
+              <span className="text-xs font-medium text-muted-foreground">Recipient principal ID</span>
+              <Input
+                value={scheduleDraft.recipientPrincipalId}
+                onChange={(event) => onDraftChange("recipientPrincipalId", event.target.value)}
+                aria-label="Reporting schedule recipient principal ID"
+                autoComplete="off"
+                required
+              />
             </label>
           </div>
           <TechnicalDetails
@@ -371,6 +405,19 @@ export function ReportingScheduleManagementPanel({
                 <Checkbox label="Schedule evidence appendix" checked={scheduleDraft.runParameters.includeEvidenceAppendix} onCheckedChange={(checked) => onRunParameterChange("includeEvidenceAppendix", checked)} />
               </div>
               <label className="mt-3 block space-y-1">
+                <span className="text-xs font-medium text-muted-foreground">Ledger dimensions (JSON)</span>
+                <textarea
+                  className="min-h-24 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  value={scheduleDraft.runParameters.dimensionsJson}
+                  onChange={(event) => onRunParameterChange("dimensionsJson", event.target.value)}
+                  aria-label="Reporting schedule ledger dimensions (JSON)"
+                  spellCheck={false}
+                />
+                <span className="block text-xs leading-5 text-muted-foreground">
+                  Use supported scalar dimension IDs and an optional externalGlDimensions string map. Book IDs must be UUIDs; a code-only ledger selection can be resolved by the server.
+                </span>
+              </label>
+              <label className="mt-3 block space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Template parameters (JSON)</span>
                 <textarea
                   className="min-h-20 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -417,7 +464,10 @@ export function ReportingScheduleManagementPanel({
               type="button"
               size="sm"
               variant="outline"
-              disabled={Boolean(runningScheduleActionId)}
+              disabled={Boolean(runningScheduleActionId) || !hasExplicitTypedRecipient}
+              disabledReason={!hasExplicitTypedRecipient
+                ? "Select a recipient kind and enter its explicit principal ID before staging this target."
+                : null}
               onClick={onStageTarget}
               aria-label="Stage reporting schedule delivery target"
             >
@@ -436,21 +486,10 @@ export function ReportingScheduleManagementPanel({
               <Send className="h-4 w-4" aria-hidden="true" />
               Save schedule
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              busy={runningScheduleActionId === "schedule-due:run"}
-              busyLabel="Running"
-              disabled={!model.hasScheduleRows || Boolean(runningScheduleActionId)}
-              disabledReason={model.hasScheduleRows ? null : "No saved schedules are due. Save a schedule first."}
-              onClick={() => void onRunDue()}
-              aria-label="Run due reporting schedules"
-            >
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              Run due
-            </Button>
           </div>
+          <p role="status" className="mt-3 rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-xs leading-5 text-primary">
+            Due schedules are leased and executed by Meridian's hosted reporting worker. Use Run now on one saved schedule only for an intentional operator-triggered run.
+          </p>
           {scheduleDraft.deliveryTargets.length > 0 ? (
             <div className="mt-3 rounded-md border border-border/70 bg-background/30 px-3 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -468,7 +507,8 @@ export function ReportingScheduleManagementPanel({
                         {distributionOptions.find((option) => option.distributionId === target.distributionId)?.recipient ?? "Configured recipient"}
                       </span>
                       <span className="mt-0.5 block text-muted-foreground">
-                        {presentScheduleDeliveryMode(target.deliveryMode)} · {formatScheduleDraftTargetFormats(target)}
+                        {target.recipientPrincipalKind || "Missing kind"}:{target.recipientPrincipalId || "Missing principal"}
+                        {" · "}{presentScheduleDeliveryMode(target.deliveryMode)} · {formatScheduleDraftTargetFormats(target)}
                       </span>
                     </span>
                     <Button
@@ -502,7 +542,12 @@ export function ReportingScheduleManagementPanel({
                       {templates.find((template) => template.templateName === schedule.templateId)?.name ?? "Scheduled report"}
                     </span>
                   </span>
-                  <Badge variant={schedule.stateVariant}>{schedule.state}</Badge>
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant={schedule.stateVariant}>{schedule.state}</Badge>
+                    <Badge variant={schedule.releaseGateVariant}>
+                      {schedule.releaseGateVariant === "success" ? "Release delivery ready" : "Release delivery gated"}
+                    </Badge>
+                  </span>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">{schedule.description}</p>
                 <dl className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -520,7 +565,40 @@ export function ReportingScheduleManagementPanel({
                     <ReportingScheduleField label="Last run" value={schedule.lastRunLabel} />
                     <ReportingScheduleField label="Delivery" value={schedule.deliveryTargetLabel} />
                     <ReportingScheduleField label="Dataset" value={schedule.datasetSourceLabel} />
+                    <ReportingScheduleField label="Access policy snapshot" value={schedule.accessPolicySnapshotLabel} />
+                    <ReportingScheduleField label="Release delivery gate" value={schedule.releaseGateLabel} />
                   </dl>
+                  {schedule.releaseHandoffs.length > 0 ? (
+                    <section
+                      aria-label={`${schedule.id} release delivery handoff history`}
+                      className="border-t border-border/60 px-3 py-3"
+                    >
+                      <h5 className="text-xs font-semibold text-foreground">Release delivery handoff history</h5>
+                      <ul className="mt-2 space-y-2">
+                        {schedule.releaseHandoffs.map((handoff) => (
+                          <li
+                            key={handoff.id}
+                            aria-label={handoff.ariaLabel}
+                            className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="break-all font-mono text-xs text-foreground">{handoff.id}</span>
+                              <Badge variant={handoff.stateVariant}>{handoff.state}</Badge>
+                            </div>
+                            <dl className="mt-2 grid gap-x-3 gap-y-1 text-xs sm:grid-cols-2">
+                              <div><dt className="inline text-muted-foreground">Run: </dt><dd className="inline break-all font-mono">{handoff.runId}</dd></div>
+                              <div><dt className="inline text-muted-foreground">Distribution: </dt><dd className="inline break-all font-mono">{handoff.distributionLabel}</dd></div>
+                              <div><dt className="inline text-muted-foreground">Transport: </dt><dd className="inline break-all font-mono">{handoff.transportId}</dd></div>
+                              <div><dt className="inline text-muted-foreground">Recipient: </dt><dd className="inline break-all">{handoff.recipientLabel}</dd></div>
+                              <div><dt className="inline text-muted-foreground">Formats: </dt><dd className="inline">{handoff.formatsLabel}</dd></div>
+                              <div><dt className="inline text-muted-foreground">Retained: </dt><dd className="inline">{handoff.createdLabel}</dd></div>
+                              <div><dt className="inline text-muted-foreground">Queue: </dt><dd className="inline break-all">{handoff.enqueuedLabel}</dd></div>
+                            </dl>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  ) : null}
                 </details>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{schedule.runCountLabel}</Badge>
@@ -626,9 +704,16 @@ export function ReportingScheduleManagementPanel({
                       {plan.note ? (
                         <p className="text-xs leading-5 text-muted-foreground">{plan.note}</p>
                       ) : null}
-                      <a className="block break-all font-mono text-xs text-primary underline-offset-2 hover:underline" href={plan.route}>
-                        {plan.route}
-                      </a>
+                      {safeReportingHref(plan.route) ? (
+                        <a
+                          className="block break-all font-mono text-xs text-primary underline-offset-2 hover:underline"
+                          href={safeReportingHref(plan.route)!}
+                        >
+                          Open retained schedule route
+                        </a>
+                      ) : (
+                        <p className="text-xs text-warning">Unsafe schedule route suppressed.</p>
+                      )}
                     </div>
                   </details>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -646,22 +731,31 @@ export function ReportingScheduleManagementPanel({
                   </div>
                   {plan.lastDeliveryLinks.length > 0 ? (
                     <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${plan.id} retained delivery access links`}>
-                      {plan.lastDeliveryLinks.map((link) => (
-                        <a
-                          key={link.id}
-                          href={link.href}
-                          aria-label={link.ariaLabel}
-                          className="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                        >
-                          <span className="max-w-[12rem] truncate text-foreground">{link.label}</span>
-                          <Badge variant="outline">{link.tokenLabel}</Badge>
-                          {link.expiresLabel ? <span>{link.expiresLabel}</span> : null}
-                        </a>
-                      ))}
+                      {plan.lastDeliveryLinks.map((link) => {
+                        const safeHref = safeReportingHref(link.href, {
+                          requireOpaqueFragment: link.requiresOpaqueFragment
+                        });
+                        return safeHref ? (
+                          <a
+                            key={link.id}
+                            href={safeHref}
+                            aria-label={link.ariaLabel}
+                            className="inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                          >
+                            <span className="max-w-[12rem] truncate text-foreground">{link.label}</span>
+                            <Badge variant="outline">{link.tokenLabel}</Badge>
+                            {link.expiresLabel ? <span>{link.expiresLabel}</span> : null}
+                          </a>
+                        ) : (
+                          <span key={link.id} className="inline-flex min-h-9 items-center rounded-sm border border-warning/40 px-2.5 py-1.5 text-xs text-warning">
+                            {link.label} · unsafe link suppressed
+                          </span>
+                        );
+                      })}
                     </div>
-                  ) : plan.lastDeliveryHref ? (
+                  ) : safeReportingHref(plan.lastDeliveryHref) ? (
                     <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                      <a className="text-primary underline-offset-2 hover:underline" href={plan.lastDeliveryHref}>
+                      <a className="text-primary underline-offset-2 hover:underline" href={safeReportingHref(plan.lastDeliveryHref)!}>
                         Open retained delivery
                       </a>
                     </div>

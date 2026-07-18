@@ -1,6 +1,38 @@
 using System.Collections.Immutable;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Meridian.Reporting;
+
+/// <summary>
+/// Produces the immutable tenant/run/revision package identity shared by artifact retention,
+/// governance release receipts, grants, and delivery jobs. A run id is an aggregate identity; it
+/// must never be used as a substitute for the retained package identity.
+/// </summary>
+public static class ReportingArtifactPackageIdentity
+{
+    public static string Create(GovernedReportingRun run)
+    {
+        ArgumentNullException.ThrowIfNull(run);
+        return Create(run.Scope.TenantId, run.RunId, run.Revision);
+    }
+
+    public static string Create(string tenantId, string runId, int revision)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        if (revision <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(revision), "Reporting package revisions must be positive.");
+        }
+
+        var canonical = $"{tenantId.Trim()}\n{runId.Trim()}\n{revision.ToString(CultureInfo.InvariantCulture)}";
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)))
+            .ToLowerInvariant();
+        return $"report-package-{hash}";
+    }
+}
 
 /// <summary>
 /// Tenant-scoped content address for an immutable reporting artifact.
@@ -113,6 +145,25 @@ public interface IReportingArtifactCatalog
     ValueTask<ReportingArtifactCatalogWriteResult> AddPackageAsync(
         ReportingRetainedArtifactPackage package,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reads the complete immutable package through an exact tenant/package key. Release callers
+    /// use this record—not mutable orchestration state—to discover the complete artifact set.
+    /// </summary>
+    ValueTask<ReportingRetainedArtifactPackage?> GetPackageAsync(
+        string tenantId,
+        string packageId,
+        CancellationToken cancellationToken = default) =>
+        ValueTask.FromException<ReportingRetainedArtifactPackage?>(
+            new NotSupportedException(
+                "This reporting artifact catalog does not implement immutable package lookup."));
+
+    ValueTask<ReportingRetainedArtifactPackage?> GetPackageAsync(
+        string packageId,
+        CancellationToken cancellationToken = default) =>
+        ValueTask.FromException<ReportingRetainedArtifactPackage?>(
+            new NotSupportedException(
+                "Tenant-scoped reporting package lookup is required. Supply tenantId and packageId."));
 
     /// <summary>
     /// Reads one artifact through its complete tenant/package/artifact key. Production callers

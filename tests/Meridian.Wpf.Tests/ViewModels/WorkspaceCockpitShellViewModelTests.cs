@@ -243,7 +243,8 @@ public sealed class WorkspaceCockpitShellViewModelTests
             "Delivery readiness queue",
             "Approval review queue",
             "Due package queue",
-            "Evidence and provenance gaps");
+            "Evidence and provenance gaps",
+            "__VACUITY_PROBE__");
 
         var delivery = items.Single(static item => item.Title == "Delivery readiness queue");
         delivery.Tone.Should().Be(WorkspaceTone.Danger);

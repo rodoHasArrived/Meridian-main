@@ -3017,6 +3017,18 @@ describe("AccountingScreen", () => {
         reversalDraftJournalEntryIds: []
       }
     };
+    const queuedClosePlan: ClosePeriodPlan = {
+      ...closePlan,
+      workflowVersion: 13,
+      closingEntriesGate: {
+        ...closePlan.closingEntriesGate!,
+        state: "DraftQueued",
+        isReadyForLock: false,
+        detail: "A closing-entry draft is queued for controller approval and posting.",
+        draftJournalEntryId: "closing-entry-draft-2026-05",
+        draftStatus: "Draft"
+      }
+    };
     const lateAdjustmentPlan: ClosePeriodPlan = {
       ...closePlan,
       lateAdjustments: [{
@@ -3036,9 +3048,17 @@ describe("AccountingScreen", () => {
     };
     vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValueOnce([approvalWorkflowSummary]);
     vi.mocked(api.getOperationsContinuityWorkflow).mockResolvedValueOnce(approvalWorkflowDetail);
-    vi.mocked(api.getLedgerCloseManagementPeriodPlan).mockResolvedValue(closePlan);
+    vi.mocked(api.getLedgerCloseManagementPeriodPlan)
+      .mockResolvedValueOnce(closePlan)
+      .mockResolvedValue(queuedClosePlan);
     vi.mocked(api.listLedgerAccountingReportPackages).mockResolvedValue([]);
     vi.mocked(api.configureLedgerCloseManagementPeriodPlan).mockResolvedValueOnce(closePlan);
+    vi.mocked(api.lockLedgerCloseManagementPeriod).mockResolvedValueOnce({
+      isLocked: false,
+      plan: queuedClosePlan,
+      transition: null,
+      issues: []
+    });
     vi.mocked(api.createLedgerCloseManagementLateAdjustment).mockResolvedValueOnce(lateAdjustmentPlan);
 
     await renderAccountingScreen(data, "/accounting");
@@ -3054,7 +3074,31 @@ describe("AccountingScreen", () => {
     const scopedBalances = within(closingEntriesGate).getByRole("table", { name: "Scoped temporary-account balances" });
     expect(within(scopedBalances).getByText("Advisory fee revenue (ADV-FEE)")).toBeInTheDocument();
     expect(within(scopedBalances).getByText("Fund: fund-alpha | Entity: entity-alpha | Sleeve: sleeve-credit")).toBeInTheDocument();
-    expect(within(closingEntriesGate).getByRole("button", { name: "Queue closing entries" })).toBeEnabled();
+    const queueClosingEntriesButton = within(closingEntriesGate).getByRole("button", { name: "Queue closing entries" });
+    expect(queueClosingEntriesButton).toBeEnabled();
+    expect(within(cockpit).getByRole("button", { name: "Lock period" })).toBeDisabled();
+
+    await user.click(queueClosingEntriesButton);
+
+    expect(await within(cockpit).findByText("Queued closing entries for 2026-05; state is Draft queued.")).toBeInTheDocument();
+    expect(api.lockLedgerCloseManagementPeriod).toHaveBeenCalledWith(expect.objectContaining({
+      workflowId: "workflow-approval-1",
+      expectedWorkflowVersion: 12,
+      actor: "browser-accounting-controller",
+      rationale: "Prepare closing entries for close period 2026-05 before period lock.",
+      correlationId: "browser-close-period-closing-entries-workflow-approval-1",
+      prepareClosingEntriesOnly: true,
+      evidenceLinks: expect.arrayContaining([
+        "browser://accounting/close/closing-entry-preparation/workflow-approval-1",
+        "evidence://close-package/workflow/workflow-approval-1/period/2026-05/book/book-alpha/closing-entry-preparation"
+      ])
+    }));
+    await waitFor(
+      () => expect(within(
+        within(cockpit).getByRole("region", { name: "Post closing entries gate" })
+      ).getByRole("button", { name: "Queue closing entries" })).toBeDisabled(),
+      { timeout: 5_000 }
+    );
     expect(within(cockpit).getByRole("button", { name: "Lock period" })).toBeDisabled();
     await waitFor(() => expect(screen.getByRole("button", { name: "Retain close setup" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Retain close setup" }));

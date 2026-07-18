@@ -61,6 +61,9 @@ evidence so accounting operations can route principal-paydown blockers precisely
 Security Master adapter preserves mortgage-backed, asset-backed, and amortizing-loan asset classes
 when normalizing economic definitions so factor paydowns stay principal events instead of being
 collapsed into generic unsupported instruments.
+External-statement input is an optional reconciliation source. When no provider is configured, the
+production-safe null source contributes no statement rows; retained reconciliation run storage and
+the configured portfolio, ledger, and banking inputs remain authoritative.
 Factor rows retain their evidence link and source-content hash, and the Security Master accounting
 event service delegates factor math and deterministic event identity to Instruments
 `FactorPaydownProjectionService`. Reconciliation run ids no longer participate in factor event

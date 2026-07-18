@@ -182,19 +182,26 @@ public sealed class ProviderConnectionSupervisorTests
         using var disconnectCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
         var elapsed = Stopwatch.StartNew();
 
-        Func<Task> disconnect = async () => await supervisor.DisconnectAsync(async _ =>
+        var disconnectTask = supervisor.DisconnectAsync(async _ =>
         {
             cleanupEntered.TrySetResult(true);
             await releaseCleanup.Task;
         }, disconnectCts.Token);
+        Func<Task> disconnect = async () => await disconnectTask;
 
-        await cleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
-        await disconnect.Should().ThrowAsync<OperationCanceledException>();
-        elapsed.Stop();
+        try
+        {
+            await cleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
+            await disconnect.Should().ThrowAsync<OperationCanceledException>();
+            elapsed.Stop();
 
-        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
-        supervisor.GetSnapshot().LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
-        releaseCleanup.TrySetResult(true);
+            elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
+            supervisor.GetSnapshot().LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        }
+        finally
+        {
+            releaseCleanup.TrySetResult(true);
+        }
     }
 
     [Fact]

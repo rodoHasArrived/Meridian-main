@@ -296,20 +296,11 @@ import type {
   PrivateCapitalFundEventCommandCenter,
   PrivateCapitalFundEventLedgerRecord,
   PrivateCapitalReportOutput,
-  FundReportPackGenerateRequest,
-  FundReportPackPreview,
-  FundReportPackPreviewRequest,
-  FundReportPackSnapshot,
-  ReportPackDeliveryAttempt,
-  ReportPackDeliveryFailureRequest,
-  ReportPackDeliveryHistory,
-  ReportPackDeliveryRequest,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
   ReportTemplateGovernanceRecord,
   RenderReportTemplateRequest,
   RenderReportTemplateResponse,
-  ReportingDueScheduleRunResult,
   ReportingScheduleRecord,
   ReportingScheduleRunResult,
   ReportingStarterKitProvisionResult,
@@ -341,6 +332,7 @@ import type {
   MaintenanceSchedulesResponse
 } from "@/types";
 import { createReportingRunsApi } from "@/lib/api/reporting-runs.api";
+import { createProviderModulesApi } from "@/lib/api/provider-modules.api";
 import {
   AUTH_API_ENDPOINTS,
   ADMIN_OPERATIONS_API_ENDPOINTS,
@@ -443,8 +435,6 @@ import {
   STATEMENT_CONNECTOR_API_ENDPOINTS,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
-  reportingPackDeliveriesEndpoint,
-  reportingPackDeliveryFailuresEndpoint,
   reportingTemplateApproveEndpoint,
   reportingTemplateRejectEndpoint,
   reportingTemplateSubmitEndpoint,
@@ -559,6 +549,8 @@ const csrfHeaderName = "X-CSRF-Token";
 
 export interface ApiRequestOptions {
   signal?: AbortSignal;
+  /** Disable development fixtures for authoritative or security-sensitive read paths. */
+  allowDevelopmentFallback?: boolean;
 }
 
 let developmentFixtureUsage = false;
@@ -749,7 +741,9 @@ async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promis
   });
 
   if (!response.ok) {
-    const fixture = await getDevelopmentFallback<T>(path, response.status);
+    const fixture = options.allowDevelopmentFallback === false
+      ? undefined
+      : await getDevelopmentFallback<T>(path, response.status);
     if (fixture !== undefined) {
       markDevelopmentFixtureUsage();
       return fixture;
@@ -2633,14 +2627,6 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
 
 export const { assessReportingRunReadiness, runReportingNow } = createReportingRunsApi(postJson);
 
-export function previewReportPack(request: FundReportPackPreviewRequest, options: ApiRequestOptions = {}) {
-  return postJson<FundReportPackPreview>(FUND_STRUCTURE_API_ENDPOINTS.reportPackPreview, request, options);
-}
-
-export function generateReportPack(request: FundReportPackGenerateRequest, options: ApiRequestOptions = {}) {
-  return postJson<FundReportPackSnapshot>(FUND_STRUCTURE_API_ENDPOINTS.reportPacks, request, options);
-}
-
 export function createReportTemplateDraft(request: ReportTemplateDraftRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportTemplateGovernanceRecord>(
     FUND_STRUCTURE_API_ENDPOINTS.reportingTemplateDrafts,
@@ -2696,26 +2682,6 @@ export function rejectReportTemplateDraft(
   );
 }
 
-export function deliverReportPack(
-  reportId: string,
-  request: ReportPackDeliveryRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ReportPackDeliveryAttempt>(reportingPackDeliveriesEndpoint(reportId), request, options);
-}
-
-export function recordReportPackDeliveryFailure(
-  reportId: string,
-  request: ReportPackDeliveryFailureRequest,
-  options: ApiRequestOptions = {}
-) {
-  return postJson<ReportPackDeliveryAttempt>(reportingPackDeliveryFailuresEndpoint(reportId), request, options);
-}
-
-export function getReportPackDeliveryHistory(reportId: string, options: ApiRequestOptions = {}) {
-  return getJson<ReportPackDeliveryHistory>(reportingPackDeliveriesEndpoint(reportId), options);
-}
-
 export function listReportingSchedules(options: ApiRequestOptions = {}) {
   return getJson<ReportingScheduleRecord[]>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, options);
 }
@@ -2738,10 +2704,6 @@ export function resumeReportingSchedule(scheduleId: string, options: ApiRequestO
 
 export function runReportingScheduleNow(scheduleId: string, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRunResult>(reportingScheduleRunNowEndpoint(scheduleId), undefined, options);
-}
-
-export function runDueReportingSchedules(options: ApiRequestOptions = {}) {
-  return postJson<ReportingDueScheduleRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunDue, undefined, options);
 }
 
 export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {
@@ -4151,55 +4113,13 @@ export async function createFundStructureSetupDraft(draft: FundStructureSetupDra
   return postJson<FundStructureSetupResult>(FUND_STRUCTURE_API_ENDPOINTS.setupDraftCreate, draft, options);
 }
 
-// ---------------------------------------------------------------------------
-// Provider Module Setup API (Settings > Provider Setup)
-// ---------------------------------------------------------------------------
-
-import type {
-  ProviderModuleStatus,
-  ProviderModuleCatalogueEntry,
-  UpsertProviderModuleRequest,
-  ProviderModuleSetupResult,
-  ProviderModuleTestResult,
-} from "@/types/provider-setup";
-
-const PROVIDER_MODULE_API = {
-  modules: "/api/providers/modules",
-  catalogue: "/api/providers/modules/catalogue",
-  moduleById: (moduleId: string) => `/api/providers/modules/${encodeURIComponent(moduleId)}`,
-  enabled: (moduleId: string) => `/api/providers/modules/${encodeURIComponent(moduleId)}/enabled`,
-  test: (moduleId: string) => `/api/providers/modules/${encodeURIComponent(moduleId)}/test`,
-  restart: "/api/providers/restart",
-};
-
-export function getProviderModules(options: ApiRequestOptions = {}) {
-  return getJson<ProviderModuleStatus[]>(PROVIDER_MODULE_API.modules, options);
-}
-
-export function getProviderModuleCatalogue(options: ApiRequestOptions = {}) {
-  return getJson<ProviderModuleCatalogueEntry[]>(PROVIDER_MODULE_API.catalogue, options);
-}
-
-export function upsertProviderModule(request: UpsertProviderModuleRequest, options: ApiRequestOptions = {}) {
-  return postJson<ProviderModuleSetupResult>(PROVIDER_MODULE_API.modules, request, options);
-}
-
-export function updateProviderModule(moduleId: string, request: UpsertProviderModuleRequest, options: ApiRequestOptions = {}) {
-  return putJson<ProviderModuleSetupResult>(PROVIDER_MODULE_API.moduleById(moduleId), request, options);
-}
-
-export function deleteProviderModule(moduleId: string, options: ApiRequestOptions = {}) {
-  return deleteJson<ProviderModuleSetupResult>(PROVIDER_MODULE_API.moduleById(moduleId), options);
-}
-
-export function setProviderModuleEnabled(moduleId: string, enabled: boolean, options: ApiRequestOptions = {}) {
-  return putJson<ProviderModuleSetupResult>(PROVIDER_MODULE_API.enabled(moduleId), { enabled }, options);
-}
-
-export function testProviderModule(moduleId: string, options: ApiRequestOptions = {}) {
-  return postJson<ProviderModuleTestResult>(PROVIDER_MODULE_API.test(moduleId), undefined, options);
-}
-
-export function restartProviderHost(options: ApiRequestOptions = {}) {
-  return postJson<{ restarting: boolean; message: string }>(PROVIDER_MODULE_API.restart, undefined, options);
-}
+export const {
+  getProviderModules,
+  getProviderModuleCatalogue,
+  upsertProviderModule,
+  updateProviderModule,
+  deleteProviderModule,
+  setProviderModuleEnabled,
+  testProviderModule,
+  restartProviderHost
+} = createProviderModulesApi(getJson, postJson, putJson, deleteJson);

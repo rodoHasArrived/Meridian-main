@@ -231,16 +231,24 @@ public sealed partial class WorkstationEndpointsTests
         actions["open-journal"].Href.Should().Contain("/api/workstation/runs/run-1/ledger/journal");
         actions["open-approval-evidence"].Href.Should().Contain("/api/workstation/evidence/subjects/approval/approval-1/packet");
         actions["open-evidence-audit-links"].Href.Should().Contain("/api/workstation/evidence/subjects/report-line/ledger-evidence-1/packet");
-        actions["open-delivery-history"].Href.Should().Contain($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries");
+        actions["open-delivery-history"].Href.Should().Contain(
+            "/api/workstation/evidence/subjects/report-pack-delivery/");
+        row.Cells.Single(cell => cell.ColumnId == "report").LinkHref.Should().Be(
+            $"/api/fund-structure/report-packs/{published.ReportId:D}");
+        explorer.ProofActions.Should().Contain(action =>
+            action.ActionId == "open-reporting-runs" &&
+            action.Href == "/api/fund-structure/reporting/runs");
+        row.Detail.ProofActions.Select(static action => action.Href).Should().NotContain(href =>
+            href.Contains("/api/fund-structure/reporting/packs/", StringComparison.Ordinal));
         actions["open-delivery-evidence-graph"].Href.Should().Contain("/api/workstation/evidence/subjects/report-pack-delivery/");
         actions["open-delivery-evidence-graph"].Href.Should().Contain(Uri.EscapeDataString($"{published.ReportId:D}:{attempt.AttemptId:D}"));
         actions["open-restatement-evidence"].Href.Should().Contain("restatement-evidence-1");
         row.Detail.UsedIn.Select(static relationship => relationship.Label).Should().Contain(
-            ["Published report pack", "Delivery history", "Delivery evidence graph", "Restatement record"]);
+            ["Published report pack (read-only)", "Delivery history", "Delivery evidence graph", "Restatement record"]);
         row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
             ["Source record", "Instrument", "Position / transaction", "Reconciliation", "Journal", "Approval", "Delivery history", "Evidence and audit links", "Restatement evidence"]);
         explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain(
-            ["Instrument", "Position / transaction", "Reconciliation", "Journal", "trial-balance.cash", "Published report pack", "Evidence and audit links", "Evidence", "Audit event"]);
+            ["Instrument", "Position / transaction", "Reconciliation", "Journal", "trial-balance.cash", "Published report pack (read-only)", "Evidence and audit links", "Evidence", "Audit event"]);
         explorer.RecordGraph.Edges.Select(static edge => edge.Label).Should().Contain(
             ["feeds", "reconciles", "posts", "reports", "included in", "retains audit", "retains evidence", "audits"]);
     }

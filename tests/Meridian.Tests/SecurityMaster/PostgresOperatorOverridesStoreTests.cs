@@ -208,10 +208,10 @@ public sealed class PostgresOperatorOverridesStoreTests
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
         command.CommandText =
-             $$"""
-             insert into {{_fixture.Options.Schema}}.security_operator_overrides (security_id, values, updated_by, updated_at)
-             values (@security_id, '{}'::jsonb, 'legacy-operator', now());
-             """;
+              $$"""
+              insert into {{_fixture.Options.Schema}}.security_operator_overrides (security_id, values, updated_by, updated_at)
+              values (@security_id, '{}'::jsonb, 'legacy-operator', now());
+              """;
         command.Parameters.AddWithValue("security_id", securityId);
         await command.ExecuteNonQueryAsync();
     }
