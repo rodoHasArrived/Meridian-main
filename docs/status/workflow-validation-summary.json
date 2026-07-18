@@ -1,6 +1,6 @@
 {
   "manifest": "docs/status/workflow-manifest.json",
-  "workflowCount": 11,
+  "workflowCount": 12,
   "declared": {
     "makeTargets": [
       "desktop-test-operator-inbox-route"
@@ -9,6 +9,7 @@
       "build/scripts/ci/dispatch-targeted-test.py",
       "build/scripts/docs/generate-workflow-manifest.py",
       "build/scripts/docs/run-docs-automation.py",
+      "build/scripts/schema-control.py",
       "scripts/dev/build-ibapi-smoke.ps1",
       "scripts/dev/capture-desktop-screenshots.ps1",
       "scripts/dev/generate-dk1-pilot-parity-packet.ps1",
@@ -26,10 +27,17 @@
     "scriptPaths": []
   },
   "governance": {
-    "missingArtifacts": [],
+    "missingArtifacts": [
+      "postgresql-schema-control:database/manifest/catalog.json",
+      "postgresql-schema-control:database/manifest/contracts.json",
+      "postgresql-schema-control:database/manifest/dependencies.json",
+      "postgresql-schema-control:database/manifest/migrations.json",
+      "postgresql-schema-control:database/manifest/policies.json",
+      "postgresql-schema-control:docs/generated/database"
+    ],
     "staleArtifacts": [],
     "outsideCanonicalPaths": [],
     "orphanGeneratedOutputs": []
   },
-  "status": "clean"
+  "status": "drift-detected"
 }

@@ -168,6 +168,14 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
   - `python3 build/scripts/docs/run-docs-automation.py --profile core --summary-output docs/status/docs-automation-summary.md --json-output docs/status/docs-automation-summary.json`
   - `python3 build/scripts/docs/generate-workflow-manifest.py`
 
+#### `postgresql-schema-control`
+
+- Owners: @storage-platform, @developer-experience
+- Commands:
+  - `python3 build/scripts/schema-control.py inventory --base-ref origin/main`
+  - `python3 build/scripts/schema-control.py verify --database-url "$DATABASE_URL" --base-ref origin/main`
+  - `gh workflow run schema-control.yml --ref <branch> -f mode=snapshot`
+
 #### `desktop-screenshot-catalog`
 
 - Owners: @desktop-shell, @operator-experience

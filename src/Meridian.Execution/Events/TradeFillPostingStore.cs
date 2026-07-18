@@ -11,6 +11,22 @@ namespace Meridian.Execution.Events;
 /// <summary>Configuration for the durable trade-fill-to-ledger handoff.</summary>
 public sealed record TradeFillPostingStoreOptions(string RootDirectory, string PostingScope)
 {
+    public TradeFillPostingStoreOptions(
+        string rootDirectory,
+        TradeFillLedgerPostingContext postingContext)
+        : this(
+            rootDirectory,
+            (postingContext ?? throw new ArgumentNullException(nameof(postingContext))).PostingScope)
+    {
+        ScopeIdentity = TradeFillPostingScopeIdentity.FromContext(postingContext);
+    }
+
+    /// <summary>
+    /// Complete accounting identity for exact construction. The positional scope-only constructor
+    /// remains an explicitly legacy label-only mode for existing local stores.
+    /// </summary>
+    public TradeFillPostingScopeIdentity ScopeIdentity { get; init; } = new(PostingScope);
+
     public int CompactionRecordThreshold { get; init; } = 128;
 
     public long MaxWalFileSizeBytes { get; init; } = 512 * 1024;
@@ -46,10 +62,22 @@ public sealed record TradeFillPostingStoreOptions(string RootDirectory, string P
         if (MaxRememberedPostedFillIds <= 0)
             throw new ArgumentOutOfRangeException(nameof(MaxRememberedPostedFillIds));
 
+        var scopeIdentity = (ScopeIdentity
+                             ?? throw new ArgumentException("A trade-fill posting scope identity is required.", nameof(ScopeIdentity)))
+            .Validate();
+        var postingScope = PostingScope.Trim();
+        if (!string.Equals(scopeIdentity.PostingScope, postingScope, StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "The trade-fill posting scope identity label must match the configured posting scope.",
+                nameof(ScopeIdentity));
+        }
+
         return this with
         {
             RootDirectory = Path.GetFullPath(RootDirectory.Trim()),
-            PostingScope = PostingScope.Trim()
+            PostingScope = postingScope,
+            ScopeIdentity = scopeIdentity
         };
     }
 
@@ -96,6 +124,12 @@ public interface ITradeFillPostingStore : IAsyncDisposable
 {
     string PostingScope { get; }
 
+    /// <summary>
+    /// Complete accounting identity for exact stores. Existing implementations remain explicitly
+    /// label-only until they opt into the aggregate, period, book, and policy fields.
+    /// </summary>
+    TradeFillPostingScopeIdentity ScopeIdentity => new(PostingScope);
+
     Task<TradeFillPostingAcceptance> AcceptAsync(
         TradeExecutedEvent tradeEvent,
         CancellationToken ct = default);
@@ -115,7 +149,8 @@ public interface ITradeFillPostingStore : IAsyncDisposable
 /// </summary>
 public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
 {
-    private const int SnapshotVersion = 1;
+    private const int LegacySnapshotVersion = 1;
+    private const int SnapshotVersion = 2;
     private const string PendingRecordType = "TradeFillPending";
     private const string FailureRecordType = "TradeFillFailure";
     private const string PostedRecordType = "TradeFillPosted";
@@ -147,6 +182,7 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         _options = options.Validate();
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         PostingScope = _options.PostingScope;
+        ScopeIdentity = _options.ScopeIdentity;
         _wal = new WriteAheadLog(
             _options.WalDirectory,
             new WalOptions
@@ -160,6 +196,8 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
     }
 
     public string PostingScope { get; }
+
+    public TradeFillPostingScopeIdentity ScopeIdentity { get; }
 
     public async Task<TradeFillPostingAcceptance> AcceptAsync(
         TradeExecutedEvent tradeEvent,
@@ -210,7 +248,8 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
                     PostingScope,
                     tradeEvent,
                     acceptedAtUtc,
-                    posting.StoreSequence);
+                    posting.StoreSequence,
+                    ScopeIdentity);
                 var record = await AppendWalAsync(
                         JsonSerializer.Serialize(payload, ExecutionJsonContext.Default.TradeFillPendingWalPayload),
                         PendingRecordType,
@@ -287,7 +326,12 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
             {
                 try
                 {
-                    var payload = new TradeFillStatusWalPayload(PostingScope, fillId, DateTimeOffset.UtcNow, null);
+                    var payload = new TradeFillStatusWalPayload(
+                        PostingScope,
+                        fillId,
+                        DateTimeOffset.UtcNow,
+                        null,
+                        ScopeIdentity);
                     var record = await AppendWalAsync(
                             JsonSerializer.Serialize(payload, ExecutionJsonContext.Default.TradeFillStatusWalPayload),
                             PostedRecordType,
@@ -370,7 +414,8 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
                         PostingScope,
                         fillId,
                         occurredAtUtc,
-                        normalizedFailure);
+                        normalizedFailure,
+                        ScopeIdentity);
                     var record = await AppendWalAsync(
                             JsonSerializer.Serialize(payload, ExecutionJsonContext.Default.TradeFillStatusWalPayload),
                             FailureRecordType,
@@ -492,25 +537,36 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
             throw new InvalidDataException("Trade-fill posting snapshot is invalid.", ex);
         }
 
-        if (snapshot.Version != SnapshotVersion)
+        if (snapshot.Version is not LegacySnapshotVersion and not SnapshotVersion)
             throw new InvalidDataException($"Unsupported trade-fill posting snapshot version {snapshot.Version}.");
-        EnsureScope(snapshot.PostingScope);
+        if (snapshot.Version == SnapshotVersion && snapshot.ScopeIdentity is null)
+            throw new InvalidDataException("Trade-fill posting snapshot has no durable scope identity state.");
+
+        EnsureScopeIdentity(
+            snapshot.PostingScope,
+            snapshot.Version == LegacySnapshotVersion ? null : snapshot.ScopeIdentity,
+            "snapshot");
         if (snapshot.AppliedThroughWalSequence < 0 || snapshot.NextStoreSequence < 0)
             throw new InvalidDataException("Trade-fill posting snapshot has invalid sequence state.");
+        if (snapshot.Pending is null)
+            throw new InvalidDataException("Trade-fill posting snapshot has no pending state.");
 
         _lastAppliedWalSequence = snapshot.AppliedThroughWalSequence;
         _snapshotAppliedThroughWalSequence = snapshot.AppliedThroughWalSequence;
         _nextStoreSequence = snapshot.NextStoreSequence;
         foreach (var item in snapshot.Pending)
         {
+            if (item is null || item.Posting is null || item.Posting.TradeEvent is null)
+                throw new InvalidDataException("Trade-fill posting snapshot contains invalid pending state.");
             EnsureScope(item.Posting.PostingScope);
-            if (item.Posting.TradeEvent.FillId == Guid.Empty)
+            var normalizedPosting = item.Posting;
+            if (normalizedPosting.TradeEvent.FillId == Guid.Empty)
                 throw new InvalidDataException("Trade-fill posting snapshot contains an empty fill id.");
-            if (!_pending.TryAdd(item.Posting.TradeEvent.FillId, item.Posting))
-                throw new InvalidDataException($"Trade-fill posting snapshot repeats fill '{item.Posting.TradeEvent.FillId:D}'.");
+            if (!_pending.TryAdd(normalizedPosting.TradeEvent.FillId, normalizedPosting))
+                throw new InvalidDataException($"Trade-fill posting snapshot repeats fill '{normalizedPosting.TradeEvent.FillId:D}'.");
             if (item.WalAccepted)
-                _walAccepted.Add(item.Posting.TradeEvent.FillId);
-            _nextStoreSequence = Math.Max(_nextStoreSequence, item.Posting.StoreSequence);
+                _walAccepted.Add(normalizedPosting.TradeEvent.FillId);
+            _nextStoreSequence = Math.Max(_nextStoreSequence, normalizedPosting.StoreSequence);
         }
     }
 
@@ -519,7 +575,10 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         if (record.RecordType == PendingRecordType)
         {
             var payload = DeserializePending(record);
-            EnsureScope(payload.PostingScope);
+            EnsureScopeIdentity(
+                payload.PostingScope,
+                payload.ScopeIdentity,
+                $"WAL record {record.Sequence}");
             if (payload.TradeEvent.FillId == Guid.Empty)
                 throw new InvalidDataException($"Trade-fill WAL record {record.Sequence} has an empty fill id.");
             if (_posted.Contains(payload.TradeEvent.FillId))
@@ -550,7 +609,10 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
             throw new InvalidDataException($"Trade-fill WAL record {record.Sequence} has unknown type '{record.RecordType}'.");
 
         var status = DeserializeStatus(record);
-        EnsureScope(status.PostingScope);
+        EnsureScopeIdentity(
+            status.PostingScope,
+            status.ScopeIdentity,
+            $"WAL status record {record.Sequence}");
         if (status.FillId == Guid.Empty)
             throw new InvalidDataException($"Trade-fill WAL status record {record.Sequence} has an empty fill id.");
         if (record.RecordType == PostedRecordType)
@@ -596,7 +658,8 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
                 .Select(posting => new TradeFillPostingSnapshotItem(
                     posting,
                     _walAccepted.Contains(posting.TradeEvent.FillId)))
-                .ToArray());
+                .ToArray(),
+            ScopeIdentity);
         var json = JsonSerializer.Serialize(snapshot, ExecutionJsonContext.Default.TradeFillPostingSnapshot);
         if (_options.SnapshotWriteOverride is { } snapshotWriteOverride)
             await snapshotWriteOverride(json, ct).ConfigureAwait(false);
@@ -740,6 +803,35 @@ public sealed class WalTradeFillPostingStore : ITradeFillPostingStore
         }
     }
 
+    private TradeFillPostingScopeIdentity EnsureScopeIdentity(
+        string retainedScope,
+        TradeFillPostingScopeIdentity? retainedScopeIdentity,
+        string source)
+    {
+        EnsureScope(retainedScope);
+
+        TradeFillPostingScopeIdentity normalizedIdentity;
+        try
+        {
+            normalizedIdentity = (retainedScopeIdentity
+                                  ?? new TradeFillPostingScopeIdentity(retainedScope))
+                .Validate();
+        }
+        catch (ArgumentException ex)
+        {
+            throw new InvalidDataException($"Trade-fill {source} scope identity is invalid.", ex);
+        }
+
+        if (!string.Equals(retainedScope, normalizedIdentity.PostingScope, StringComparison.Ordinal)
+            || normalizedIdentity != ScopeIdentity)
+        {
+            throw new InvalidDataException(
+                $"Trade-fill {source} scope identity '{normalizedIdentity}' does not match configured scope identity '{ScopeIdentity}'.");
+        }
+
+        return normalizedIdentity;
+    }
+
     private static void EnsureSameEconomics(TradeExecutedEvent retained, TradeExecutedEvent candidate)
     {
         if (retained != candidate)
@@ -760,20 +852,23 @@ internal sealed record TradeFillPendingWalPayload(
     string PostingScope,
     TradeExecutedEvent TradeEvent,
     DateTimeOffset AcceptedAtUtc,
-    long StoreSequence = 0);
+    long StoreSequence = 0,
+    TradeFillPostingScopeIdentity? ScopeIdentity = null);
 
 internal sealed record TradeFillStatusWalPayload(
     string PostingScope,
     Guid FillId,
     DateTimeOffset OccurredAtUtc,
-    string? Failure);
+    string? Failure,
+    TradeFillPostingScopeIdentity? ScopeIdentity = null);
 
 internal sealed record TradeFillPostingSnapshot(
     int Version,
     string PostingScope,
     long AppliedThroughWalSequence,
     long NextStoreSequence,
-    IReadOnlyList<TradeFillPostingSnapshotItem> Pending);
+    IReadOnlyList<TradeFillPostingSnapshotItem> Pending,
+    TradeFillPostingScopeIdentity? ScopeIdentity = null);
 
 internal sealed record TradeFillPostingSnapshotItem(
     PendingTradeFillPosting Posting,

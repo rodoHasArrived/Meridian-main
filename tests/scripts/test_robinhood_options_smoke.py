@@ -74,18 +74,20 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('ContextEnterInvoked = $false', self.script)
         self.assertIn('Enabled operating context detected. Entering the workstation.', self.script)
 
-    def test_deep_page_navigation_uses_the_primary_shell_command_palette(self) -> None:
+    def test_primary_shell_command_palette_fallback_is_automation_safe(self) -> None:
         self.assertIn('function Invoke-CommandPaletteNavigation', self.script)
         self.assertIn('[MeridianSmokeNative]::SetForegroundWindow($Process.MainWindowHandle)', self.script)
         self.assertIn('function Find-FirstVisibleElementByAutomationIds', self.script)
         self.assertIn('function Find-FirstVisibleElementByNames', self.script)
         self.assertIn('AutomationIds @("ShellCommandPaletteButton")', self.script)
-        self.assertIn('Names @("Search", "Open Command Palette")', self.script)
+        self.assertIn('Names @("Search")', self.script)
         self.assertIn('-not $element.Current.IsOffscreen -and $element.Current.IsEnabled', self.script)
         self.assertIn('Opening command palette via automation id', self.script)
         self.assertIn('Invoke-OrClickElement -Element $paletteButton', self.script)
         self.assertIn('$Root = Get-WindowAutomationRoot -Process $Process', self.script)
         self.assertIn('Send-WindowKeys -Process $Process -Keys "^k"', self.script)
+        self.assertIn('AutomationIds @("MainPage")', self.script)
+        self.assertIn('$mainPage.SetFocus()', self.script)
         self.assertIn('AutomationIds @("CommandPaletteInput")', self.script)
         self.assertIn('AutomationIds @("CommandPaletteResults")', self.script)
         self.assertIn('-not $candidate.Current.IsOffscreen', self.script)
@@ -98,7 +100,7 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
             self.script,
         )
         self.assertIn(
-            'Invoke-CommandPaletteNavigation -Root $root -Process $process -PageTag $Case.PageTag -ResultName $Case.PaletteResultName',
+            '$startProcessArgs["ArgumentList"] = @("--page=$($Case.PageTag)")',
             self.script,
         )
         self.assertIn('PaletteResultName = "Add provider wizard"', self.script)
@@ -109,6 +111,18 @@ class RobinhoodOptionsSmokeScriptTests(unittest.TestCase):
         self.assertIn('$seedPageTag = Get-WorkspaceShellPageTag -WorkspaceId $Case.WorkspaceId', self.script)
         self.assertIn('-PageTag $seedPageTag', self.script)
         self.assertIn('-PageTitle $seedPageTitle', self.script)
+
+    def test_each_case_relaunches_with_the_supported_page_contract_after_context_entry(self) -> None:
+        self.assertIn('Relaunching with the supported page route.', self.script)
+        self.assertIn('$process.WaitForExit(5000)', self.script)
+        self.assertIn('$process = Start-Process @startProcessArgs', self.script)
+        self.assertIn('ReadyMarkers = @("Choose a Provider", "Add Provider Relationship")', self.script)
+
+    def test_failure_snapshot_includes_element_layout_diagnostics(self) -> None:
+        self.assertIn('$element.Current.AutomationId', self.script)
+        self.assertIn('$element.Current.ControlType.ProgrammaticName', self.script)
+        self.assertIn('$element.Current.BoundingRectangle', self.script)
+        self.assertIn('$element.Current.IsOffscreen', self.script)
 
     def test_workspace_activation_skips_reselecting_an_active_shell(self) -> None:
         activation_start = self.script.index('function Try-ActivateWorkspaceShell')

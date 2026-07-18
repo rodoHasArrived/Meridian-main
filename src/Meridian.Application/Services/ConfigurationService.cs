@@ -124,9 +124,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// </summary>
     public DetectedProvider? GetBestRealTimeProvider()
     {
-        var eligibleProviders = GetProvidersByCapability("RealTime")
-            .Where(p => p.HasCredentials)
-            .ToList();
+        var eligibleProviders = GetEligibleRealTimeProviders();
 
         if (eligibleProviders.Count == 0)
             return null;
@@ -151,6 +149,21 @@ public sealed class ConfigurationService : IAsyncDisposable
                    string.Equals(provider.DisplayName, selected.ConnectionId, StringComparison.OrdinalIgnoreCase))
                ?? eligibleProviders.OrderBy(static p => p.SuggestedPriority).FirstOrDefault();
     }
+
+    /// <summary>
+    /// Selects the best credentialed provider from static detection data only. Configuration
+    /// self-healing runs while the provider registry may still be under construction, so it must
+    /// not enter the runtime routing graph whose catalog depends on that registry.
+    /// </summary>
+    private DetectedProvider? GetBestDetectedRealTimeProvider()
+        => GetEligibleRealTimeProviders()
+            .OrderBy(static provider => provider.SuggestedPriority)
+            .FirstOrDefault();
+
+    private List<DetectedProvider> GetEligibleRealTimeProviders()
+        => GetProvidersByCapability("RealTime")
+            .Where(static provider => provider.HasCredentials)
+            .ToList();
 
     /// <summary>
     /// Gets available providers for historical data backfill.
@@ -330,7 +343,7 @@ public sealed class ConfigurationService : IAsyncDisposable
             strictness,
             _credentialResolver,
             _ibGatewayAvailabilityProbe,
-            GetBestRealTimeProvider);
+            GetBestDetectedRealTimeProvider);
 
         _log.Information("Self-healing applied {FixCount} fixes, {WarningCount} warnings",
             result.Applied.Count, result.Warnings.Count);

@@ -88,7 +88,7 @@ public static class ReportingReconciliationEvidenceValidation
         RequireText(source.CheckpointId, nameof(source.CheckpointId));
         RequireHash(source.CheckpointHash, nameof(source.CheckpointHash));
 
-        var evidence = source.EvidenceIds
+        var evidence = (source.EvidenceIds.IsDefault ? [] : source.EvidenceIds)
             .Concat(completion.EvidenceIds)
             .Append($"reconciliation-completion:{completion.CompletionCheckpointId}:{completion.CompletionCheckpointHash}")
             .Where(static item => !string.IsNullOrWhiteSpace(item))
@@ -166,6 +166,12 @@ public static class ReportingReconciliationEvidenceValidation
         RequireHash(receipt.SourceCheckpointHash, nameof(receipt.SourceCheckpointHash));
         RequireHash(receipt.ReconciliationCheckpointHash, nameof(receipt.ReconciliationCheckpointHash));
         RequireHash(receipt.CompletionCheckpointHash, nameof(receipt.CompletionCheckpointHash));
+        if (receipt.EvidenceIds.IsDefaultOrEmpty)
+        {
+            throw new ArgumentException(
+                "A retained reconciliation receipt requires a UTC timestamp, distinct source/reconciliation identities, and unique exact evidence.",
+                nameof(receipt));
+        }
         var evidenceWithoutReceipt = receipt.EvidenceIds
             .Where(item => !string.Equals(
                 item,

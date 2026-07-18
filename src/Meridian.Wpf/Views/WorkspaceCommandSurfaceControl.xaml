@@ -65,8 +65,8 @@
                 AutomationProperties.Name="Workspace Page Header">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" MinWidth="220" />
+                    <ColumnDefinition Width="Auto" MaxWidth="520" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
@@ -220,7 +220,7 @@
                         </Border>
                     </WrapPanel>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <WrapPanel HorizontalAlignment="Right">
                         <Button Style="{StaticResource SecondaryButtonStyle}"
                                 ToolTip="Choose operating context"
                                 Margin="0,0,8,0"
@@ -349,7 +349,7 @@
                                            VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
-                    </StackPanel>
+                    </WrapPanel>
                 </StackPanel>
             </Grid>
         </Border>

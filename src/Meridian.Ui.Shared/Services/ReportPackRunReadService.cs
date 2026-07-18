@@ -2291,7 +2291,9 @@ public sealed partial class ReportPackRunReadService
             return deliveryMode == ReportPackDeliveryModeDto.EvidenceVault;
         }
 
-        return deliveryMode == ReportPackDeliveryModeDto.InternalRoute;
+        // Channels without an explicit egress hint accept the materialized secure-portal default
+        // as well as an explicitly chosen internal operator route.
+        return deliveryMode is ReportPackDeliveryModeDto.SecurePortal or ReportPackDeliveryModeDto.InternalRoute;
     }
 
     private static GovernanceReportArtifactFormatDto[] FindMissingDeliveryFormats(
@@ -2342,7 +2344,9 @@ public sealed partial class ReportPackRunReadService
             return ReportPackDeliveryModeDto.EvidenceVault;
         }
 
-        return ReportPackDeliveryModeDto.InternalRoute;
+        // Mirror ReportingScheduleService.ResolveScheduledDeliveryMode: scheduled deliveries
+        // default to the token-gated secure portal for channels without an explicit egress hint.
+        return ReportPackDeliveryModeDto.SecurePortal;
     }
 
     private static string? NormalizeOptional(string? value) =>
@@ -2515,7 +2519,9 @@ public sealed partial class ReportPackRunReadService
                 AsOfDate: manifest.AsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 AttemptCount: manifest.AttemptCount,
                 SectionCount: manifest.Sections.Length,
-                LineageLinkedSections: manifest.Sections.Count(static section => section.Lineage is not null),
+                LineageLinkedSections: manifest.Sections.Count(static section =>
+                    !string.IsNullOrWhiteSpace(section.DatasetSnapshotId)
+                    && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId)),
                 Artifacts: manifest.Artifacts
                     .Concat(BuildGenericRunDrilldownArtifacts(manifest))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
