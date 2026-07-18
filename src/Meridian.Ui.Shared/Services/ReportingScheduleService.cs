@@ -2267,10 +2267,7 @@ public sealed class ReportingScheduleService
             return ReportPackDeliveryModeDto.EvidenceVault;
         }
 
-        // Scheduled releases always egress through the token-gated secure portal unless the
-        // channel explicitly requires email-link or evidence-vault handling; the release handoff
-        // maps every non-email mode to the secure-portal transport.
-        return ReportPackDeliveryModeDto.SecurePortal;
+        return ReportPackDeliveryModeDto.SecurePortal; // non-email scheduled handoffs use the secure-portal transport
     }
 
     private IReadOnlyList<IReadOnlyDictionary<string, string>>? ResolveDatasetRows(
@@ -2306,9 +2303,7 @@ public sealed class ReportingScheduleService
             manifest.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             manifest.AttemptCount,
             manifest.Sections.Length,
-            manifest.Sections.Count(static section =>
-                !string.IsNullOrWhiteSpace(section.DatasetSnapshotId)
-                && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId)),
+            manifest.Sections.Count(static section => !string.IsNullOrWhiteSpace(section.DatasetSnapshotId) && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId)),
             manifest.Artifacts.ToArray(),
             auditTrail.Select(static audit => audit.Action).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
             manifest.FailureReason,

@@ -2235,18 +2235,12 @@ public sealed partial class ReportPackDeliveryService
             .ToArray();
     }
 
-    /// <summary>
-    /// Counts sections whose retained lineage is actually populated, mirroring
-    /// <c>ReportingStatusProjectionService</c>; <see cref="ReportingSectionManifest.Lineage"/> is a
-    /// non-nullable reference, so a null check alone can never detect a missing lineage binding.
-    /// </summary>
+    // Mirrors ReportingStatusProjectionService: Lineage is a non-nullable reference, so only
+    // populated snapshot/checkpoint ids prove a section's retained lineage binding.
     private static int CountLineageLinkedSections(
         System.Collections.Immutable.ImmutableArray<ReportingSectionManifest> sections) =>
-        sections.IsDefaultOrEmpty
-            ? 0
-            : sections.Count(static section =>
-                !string.IsNullOrWhiteSpace(section.DatasetSnapshotId)
-                && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId));
+        sections.IsDefaultOrEmpty ? 0 : sections.Count(static section =>
+            !string.IsNullOrWhiteSpace(section.DatasetSnapshotId) && !string.IsNullOrWhiteSpace(section.ReconciliationCheckpointId));
 
     private static (string? Summary, int? Passed, int? Warning, int? Failed) BuildGeneratedGridValidationSummary(
         string gridId,
