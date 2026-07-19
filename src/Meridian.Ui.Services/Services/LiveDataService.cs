@@ -20,7 +20,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<List<TradeEvent>?> GetRecentTradesAsync(string symbol, int limit = 100, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<List<TradeEvent>>($"/api/data/trades/{symbol}?limit={limit}", ct)).DataOrLoggedNull("Get recent trades");
+        return (await ApiClientService.Instance.GetWithResponseAsync<List<TradeEvent>>($"/api/data/trades/{symbol}?limit={limit}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get recent trades");
     }
 
     /// <summary>
@@ -28,7 +28,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<List<QuoteEvent>?> GetRecentQuotesAsync(string symbol, int limit = 100, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<List<QuoteEvent>>($"/api/data/quotes/{symbol}?limit={limit}", ct)).DataOrLoggedNull("Get recent quotes");
+        return (await ApiClientService.Instance.GetWithResponseAsync<List<QuoteEvent>>($"/api/data/quotes/{symbol}?limit={limit}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get recent quotes");
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<OrderBookSnapshot?> GetOrderBookAsync(string symbol, int levels = 10, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<OrderBookSnapshot>($"/api/data/orderbook/{symbol}?levels={levels}", ct)).DataOrLoggedNull("Get order book snapshot");
+        return (await ApiClientService.Instance.GetWithResponseAsync<OrderBookSnapshot>($"/api/data/orderbook/{symbol}?levels={levels}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get order book snapshot");
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<BboQuote?> GetBboAsync(string symbol, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<BboQuote>($"/api/data/bbo/{symbol}", ct)).DataOrLoggedNull("Get BBO quote");
+        return (await ApiClientService.Instance.GetWithResponseAsync<BboQuote>($"/api/data/bbo/{symbol}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get BBO quote");
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<OrderFlowStats?> GetOrderFlowStatsAsync(string symbol, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<OrderFlowStats>($"/api/data/orderflow/{symbol}", ct)).DataOrLoggedNull("Get order flow statistics");
+        return (await ApiClientService.Instance.GetWithResponseAsync<OrderFlowStats>($"/api/data/orderflow/{symbol}", ct).ConfigureAwait(false)).DataOrLoggedNull("Get order flow statistics");
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<List<SubscriptionInfo>?> GetActiveSubscriptionsAsync(CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<List<SubscriptionInfo>>("/api/subscriptions/active", ct)).DataOrLoggedNull("Get active subscriptions");
+        return (await ApiClientService.Instance.GetWithResponseAsync<List<SubscriptionInfo>>("/api/subscriptions/active", ct).ConfigureAwait(false)).DataOrLoggedNull("Get active subscriptions");
     }
 
     /// <summary>
@@ -68,7 +68,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<SubscriptionResult?> SubscribeAsync(SubscribeRequest request, CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.PostWithResponseAsync<SubscriptionResult>("/api/subscriptions/subscribe", request, ct)).DataOrLoggedNull("Subscribe to symbol");
+        return (await ApiClientService.Instance.PostWithResponseAsync<SubscriptionResult>("/api/subscriptions/subscribe", request, ct).ConfigureAwait(false)).DataOrLoggedNull("Subscribe to symbol");
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<bool> UnsubscribeAsync(string symbol, CancellationToken ct = default)
     {
-        var response = await ApiClientService.Instance.PostWithResponseAsync<UnsubscribeResponse>($"/api/subscriptions/unsubscribe/{symbol}", null, ct);
+        var response = await ApiClientService.Instance.PostWithResponseAsync<UnsubscribeResponse>($"/api/subscriptions/unsubscribe/{symbol}", null, ct).ConfigureAwait(false);
         return response.Success;
     }
 
@@ -85,7 +85,7 @@ public sealed class LiveDataService
     /// </summary>
     public async Task<DataStreamHealth?> GetStreamHealthAsync(CancellationToken ct = default)
     {
-        return (await ApiClientService.Instance.GetWithResponseAsync<DataStreamHealth>("/api/data/health", ct)).DataOrLoggedNull("Get data stream health");
+        return (await ApiClientService.Instance.GetWithResponseAsync<DataStreamHealth>("/api/data/health", ct).ConfigureAwait(false)).DataOrLoggedNull("Get data stream health");
     }
 }
 

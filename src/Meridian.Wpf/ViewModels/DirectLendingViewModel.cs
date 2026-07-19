@@ -576,12 +576,14 @@ public sealed class DirectLendingViewModel : BindableBase
                 $"/api/loans/{SelectedLoan.LoanId}/accruals/daily", body, ct)
                 .ConfigureAwait(false);
 
-            if (response.Success && response.Data is not null)
+            if (response.Success)
             {
-                var result = response.Data;
-                AccrualResultText =
-                    $"Accrual posted for {result.AccrualDate}: interest ${result.InterestAmount:N2}, " +
-                    $"commitment fee ${result.CommitmentFeeAmount:N2}";
+                // A success with no payload (empty body) is still a posted accrual; only a
+                // failed response may show the failure text.
+                AccrualResultText = response.Data is { } result
+                    ? $"Accrual posted for {result.AccrualDate}: interest ${result.InterestAmount:N2}, " +
+                      $"commitment fee ${result.CommitmentFeeAmount:N2}"
+                    : "Accrual posted.";
             }
             else
             {

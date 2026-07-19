@@ -32,7 +32,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<SystemHealthSummary?> GetHealthSummaryAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<SystemHealthSummary>(UiApiRoutes.HealthSummary, ct)).DataOrLoggedNull("Get system health summary");
+        return (await _apiClient.GetWithResponseAsync<SystemHealthSummary>(UiApiRoutes.HealthSummary, ct).ConfigureAwait(false)).DataOrLoggedNull("Get system health summary");
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<List<ProviderHealth>?> GetProviderHealthAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<List<ProviderHealth>>(UiApiRoutes.HealthProviders, ct)).DataOrLoggedNull("Get provider health");
+        return (await _apiClient.GetWithResponseAsync<List<ProviderHealth>>(UiApiRoutes.HealthProviders, ct).ConfigureAwait(false)).DataOrLoggedNull("Get provider health");
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<ProviderReadinessSummaryDto?> GetProviderReadinessAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, ct)).DataOrLoggedNull("Get provider readiness");
+        return (await _apiClient.GetWithResponseAsync<ProviderReadinessSummaryDto>(UiApiRoutes.ProviderReadiness, ct).ConfigureAwait(false)).DataOrLoggedNull("Get provider readiness");
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<ProviderDiagnosticsSnapshot?> GetProviderDiagnosticsAsync(string provider, CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<ProviderDiagnosticsSnapshot>(BuildProviderDiagnosticsRoute(provider), ct)).DataOrLoggedNull("Get provider diagnostics");
+        return (await _apiClient.GetWithResponseAsync<ProviderDiagnosticsSnapshot>(BuildProviderDiagnosticsRoute(provider), ct).ConfigureAwait(false)).DataOrLoggedNull("Get provider diagnostics");
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<StorageHealth?> GetStorageHealthAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<StorageHealth>(UiApiRoutes.HealthStorage, ct)).DataOrLoggedNull("Get storage health");
+        return (await _apiClient.GetWithResponseAsync<StorageHealth>(UiApiRoutes.HealthStorage, ct).ConfigureAwait(false)).DataOrLoggedNull("Get storage health");
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<List<SystemEvent>?> GetRecentEventsAsync(int limit = 50, CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<List<SystemEvent>>(BuildRecentEventsRoute(limit), ct)).DataOrLoggedNull("Get recent system events");
+        return (await _apiClient.GetWithResponseAsync<List<SystemEvent>>(BuildRecentEventsRoute(limit), ct).ConfigureAwait(false)).DataOrLoggedNull("Get recent system events");
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<SystemMetrics?> GetSystemMetricsAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<SystemMetrics>(UiApiRoutes.HealthMetrics, ct)).DataOrLoggedNull("Get system metrics");
+        return (await _apiClient.GetWithResponseAsync<SystemMetrics>(UiApiRoutes.HealthMetrics, ct).ConfigureAwait(false)).DataOrLoggedNull("Get system metrics");
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<ConnectionTestResult?> TestConnectionAsync(string provider, CancellationToken ct = default)
     {
-        return (await _apiClient.PostWithResponseAsync<ConnectionTestResult>(BuildProviderTestRoute(provider), null, ct)).DataOrLoggedNull("Test provider connection");
+        return (await _apiClient.PostWithResponseAsync<ConnectionTestResult>(BuildProviderTestRoute(provider), null, ct).ConfigureAwait(false)).DataOrLoggedNull("Test provider connection");
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<DiagnosticBundle?> GenerateDiagnosticBundleAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.PostWithResponseAsync<DiagnosticBundle>(UiApiRoutes.HealthDiagnosticsBundle, null, ct)).DataOrLoggedNull("Generate diagnostic bundle");
+        return (await _apiClient.PostWithResponseAsync<DiagnosticBundle>(UiApiRoutes.HealthDiagnosticsBundle, null, ct).ConfigureAwait(false)).DataOrLoggedNull("Generate diagnostic bundle");
     }
 
     internal static string BuildProviderDiagnosticsRoute(string provider)
@@ -143,10 +143,10 @@ internal interface ISystemHealthApiClient
 internal sealed class ApiClientSystemHealthApiClient(ApiClientService apiClient) : ISystemHealthApiClient
 {
     public async Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
-        => (await apiClient.GetWithResponseAsync<T>(endpoint, ct)).DataOrLoggedNull("System health API GET request");
+        => (await apiClient.GetWithResponseAsync<T>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("System health API GET request");
 
     public async Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
-        => (await apiClient.PostWithResponseAsync<T>(endpoint, body, ct)).DataOrLoggedNull("System health API POST request");
+        => (await apiClient.PostWithResponseAsync<T>(endpoint, body, ct).ConfigureAwait(false)).DataOrLoggedNull("System health API POST request");
 
     public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default) where T : class
         => apiClient.GetWithResponseAsync<T>(endpoint, ct);

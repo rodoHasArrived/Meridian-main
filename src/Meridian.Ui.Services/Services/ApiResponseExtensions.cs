@@ -27,6 +27,6 @@ public static class ApiResponseExtensions
                 $"{operation} failed with {(response.IsConnectionError ? "a connection error" : $"HTTP {response.StatusCode}")}{detail}; returning null.");
         }
 
-        return response.Data;
+        return null;
     }
 }

@@ -29,7 +29,7 @@ public class StorageServiceBase
     /// </summary>
     public async Task<StorageStatsSummary?> GetStorageStatsAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<StorageStatsSummary>(UiApiRoutes.StorageStats, ct)).DataOrLoggedNull("Get storage statistics");
+        return (await _apiClient.GetWithResponseAsync<StorageStatsSummary>(UiApiRoutes.StorageStats, ct).ConfigureAwait(false)).DataOrLoggedNull("Get storage statistics");
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public class StorageServiceBase
     /// </summary>
     public async Task<List<StorageCategory>?> GetStorageBreakdownAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<List<StorageCategory>>(UiApiRoutes.StorageBreakdown, ct)).DataOrLoggedNull("Get storage breakdown");
+        return (await _apiClient.GetWithResponseAsync<List<StorageCategory>>(UiApiRoutes.StorageBreakdown, ct).ConfigureAwait(false)).DataOrLoggedNull("Get storage breakdown");
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class StorageServiceBase
     public async Task<SymbolStorageInfo?> GetSymbolInfoAsync(string symbol, CancellationToken ct = default)
     {
         return (await _apiClient.GetWithResponseAsync<SymbolStorageInfo>(
-            UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolInfo, "symbol", symbol), ct)).DataOrLoggedNull("Get symbol storage info");
+            UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolInfo, "symbol", symbol), ct).ConfigureAwait(false)).DataOrLoggedNull("Get symbol storage info");
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class StorageServiceBase
     public async Task<SymbolStorageStats?> GetSymbolStorageStatsAsync(string symbol, CancellationToken ct = default)
     {
         return (await _apiClient.GetWithResponseAsync<SymbolStorageStats>(
-            UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolStats, "symbol", symbol), ct)).DataOrLoggedNull("Get symbol storage statistics");
+            UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolStats, "symbol", symbol), ct).ConfigureAwait(false)).DataOrLoggedNull("Get symbol storage statistics");
     }
 
     /// <summary>
@@ -64,7 +64,7 @@ public class StorageServiceBase
     public async Task<string?> GetSymbolFolderPathAsync(string symbol, CancellationToken ct = default)
     {
         var response = (await _apiClient.GetWithResponseAsync<SymbolPathResponse>(
-            UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolPath, "symbol", symbol), ct)).DataOrLoggedNull("Get symbol folder path");
+            UiApiRoutes.WithParam(UiApiRoutes.StorageSymbolPath, "symbol", symbol), ct).ConfigureAwait(false)).DataOrLoggedNull("Get symbol folder path");
         return response?.FolderPath;
     }
 
@@ -73,7 +73,7 @@ public class StorageServiceBase
     /// </summary>
     public async Task<StorageHealthReport?> GetStorageHealthAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<StorageHealthReport>(UiApiRoutes.StorageHealth, ct)).DataOrLoggedNull("Get storage health");
+        return (await _apiClient.GetWithResponseAsync<StorageHealthReport>(UiApiRoutes.StorageHealth, ct).ConfigureAwait(false)).DataOrLoggedNull("Get storage health");
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public class StorageServiceBase
     /// </summary>
     public async Task<List<CleanupCandidate>?> GetCleanupCandidatesAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<List<CleanupCandidate>>(UiApiRoutes.StorageCleanupCandidates, ct)).DataOrLoggedNull("Get cleanup candidates");
+        return (await _apiClient.GetWithResponseAsync<List<CleanupCandidate>>(UiApiRoutes.StorageCleanupCandidates, ct).ConfigureAwait(false)).DataOrLoggedNull("Get cleanup candidates");
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ public class StorageServiceBase
         return (await _apiClient.PostWithResponseAsync<CleanupResult>(
             UiApiRoutes.StorageCleanup,
             new { dryRun },
-            ct)).DataOrLoggedNull("Run storage cleanup");
+            ct).ConfigureAwait(false)).DataOrLoggedNull("Run storage cleanup");
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public class StorageServiceBase
     /// </summary>
     public async Task<ArchiveStats?> GetArchiveStatsAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<ArchiveStats>(UiApiRoutes.StorageArchiveStats, ct)).DataOrLoggedNull("Get archive statistics");
+        return (await _apiClient.GetWithResponseAsync<ArchiveStats>(UiApiRoutes.StorageArchiveStats, ct).ConfigureAwait(false)).DataOrLoggedNull("Get archive statistics");
     }
 
     /// <summary>

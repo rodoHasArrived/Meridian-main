@@ -23,7 +23,7 @@ public sealed class BackfillApiService
     /// </summary>
     public async Task<List<BackfillProviderInfo>> GetProvidersAsync(CancellationToken ct = default)
     {
-        var result = (await _apiClient.GetWithResponseAsync<List<BackfillProviderInfo>>(UiApiRoutes.BackfillProviders, ct)).DataOrLoggedNull("Get backfill providers");
+        var result = (await _apiClient.GetWithResponseAsync<List<BackfillProviderInfo>>(UiApiRoutes.BackfillProviders, ct).ConfigureAwait(false)).DataOrLoggedNull("Get backfill providers");
         return result ?? new List<BackfillProviderInfo>();
     }
 
@@ -32,14 +32,14 @@ public sealed class BackfillApiService
     /// </summary>
     public async Task<BackfillResultDto?> GetLastStatusAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<BackfillResultDto>(UiApiRoutes.BackfillStatus, ct)).DataOrLoggedNull("Get last backfill status");
+        return (await _apiClient.GetWithResponseAsync<BackfillResultDto>(UiApiRoutes.BackfillStatus, ct).ConfigureAwait(false)).DataOrLoggedNull("Get last backfill status");
     }
 
     /// <summary>
     /// Gets the typed live provider/fallback progress snapshot for the current or latest run.
     /// </summary>
     public async Task<BackfillRunProgressResponse?> GetProgressAsync(CancellationToken ct = default) =>
-        (await _apiClient.GetWithResponseAsync<BackfillRunProgressResponse>(UiApiRoutes.BackfillProgress, ct)).DataOrLoggedNull("Get backfill progress");
+        (await _apiClient.GetWithResponseAsync<BackfillRunProgressResponse>(UiApiRoutes.BackfillProgress, ct).ConfigureAwait(false)).DataOrLoggedNull("Get backfill progress");
 
     /// <summary>
     /// Runs a backfill operation for the specified symbols.
@@ -66,7 +66,7 @@ public sealed class BackfillApiService
             UiApiRoutes.BackfillRun,
             request,
             ct,
-            backfillClient);
+            backfillClient).ConfigureAwait(false);
 
         if (response.Success)
         {
@@ -85,7 +85,7 @@ public sealed class BackfillApiService
     /// </summary>
     public async Task<BackfillHealthResponse?> CheckProviderHealthAsync(CancellationToken ct = default)
     {
-        return (await _apiClient.GetWithResponseAsync<BackfillHealthResponse>(UiApiRoutes.BackfillHealth, ct)).DataOrLoggedNull("Check backfill provider health");
+        return (await _apiClient.GetWithResponseAsync<BackfillHealthResponse>(UiApiRoutes.BackfillHealth, ct).ConfigureAwait(false)).DataOrLoggedNull("Check backfill provider health");
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public sealed class BackfillApiService
             UiApiRoutes.BackfillGapFill,
             request,
             ct,
-            backfillClient);
+            backfillClient).ConfigureAwait(false);
         return response.Data;
     }
 
@@ -118,7 +118,7 @@ public sealed class BackfillApiService
     /// </summary>
     public async Task<List<BackfillPreset>> GetPresetsAsync(CancellationToken ct = default)
     {
-        var result = (await _apiClient.GetWithResponseAsync<List<BackfillPreset>>(UiApiRoutes.BackfillPresets, ct)).DataOrLoggedNull("Get backfill presets");
+        var result = (await _apiClient.GetWithResponseAsync<List<BackfillPreset>>(UiApiRoutes.BackfillPresets, ct).ConfigureAwait(false)).DataOrLoggedNull("Get backfill presets");
         return result ?? new List<BackfillPreset>();
     }
 
@@ -138,7 +138,7 @@ public sealed class BackfillApiService
         int limit = 50,
         CancellationToken ct = default) =>
         (await _apiClient.GetWithResponseAsync<BackfillExecutionHistoryResponse>(
-            UiApiRoutes.WithQuery(UiApiRoutes.BackfillExecutions, $"limit={limit}"), ct)).DataOrLoggedNull("Get backfill execution history");
+            UiApiRoutes.WithQuery(UiApiRoutes.BackfillExecutions, $"limit={limit}"), ct).ConfigureAwait(false)).DataOrLoggedNull("Get backfill execution history");
 
     /// <summary>
     /// Gets backfill statistics.
@@ -149,7 +149,7 @@ public sealed class BackfillApiService
             ? UiApiRoutes.WithQuery(UiApiRoutes.BackfillStatistics, $"hours={hours.Value}")
             : UiApiRoutes.BackfillStatistics;
 
-        return (await _apiClient.GetWithResponseAsync<BackfillStatistics>(route, ct)).DataOrLoggedNull("Get backfill statistics");
+        return (await _apiClient.GetWithResponseAsync<BackfillStatistics>(route, ct).ConfigureAwait(false)).DataOrLoggedNull("Get backfill statistics");
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public sealed class BackfillApiService
         if (date != null)
             route = UiApiRoutes.WithQuery(route, $"date={Uri.EscapeDataString(date)}");
 
-        return (await _apiClient.GetWithResponseAsync<SymbolGapAnalysisDto>(route, ct)).DataOrLoggedNull("Get symbol gap analysis");
+        return (await _apiClient.GetWithResponseAsync<SymbolGapAnalysisDto>(route, ct).ConfigureAwait(false)).DataOrLoggedNull("Get symbol gap analysis");
     }
 }
 
