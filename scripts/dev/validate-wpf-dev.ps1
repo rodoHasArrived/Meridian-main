@@ -250,6 +250,35 @@ if (-not $blockedByConcurrentDotnet) {
                 -Steps $steps `
                 -RetryEvents $retryEvents | Out-Null
         }
+
+        # Meridian.LifecycleSupervisor.Tests targets net10.0-windows, so this Windows lane is
+        # the only place it can execute (audit finding P9: it previously ran in no CI lane).
+        # dotnet test restores and builds the small project itself.
+        $supervisorTestsProject = "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj"
+        $supervisorTestCommand = @(
+            "dotnet",
+            "test",
+            $supervisorTestsProject,
+            "-c", $Configuration,
+            "--nologo",
+            "--verbosity", "minimal",
+            "--results-directory", $resultsDirectory
+        )
+
+        if (-not [string]::IsNullOrWhiteSpace($Filter)) {
+            $supervisorTestCommand += @("--filter", $Filter)
+        }
+
+        $supervisorTestCommand += $serializedBuildArgs
+
+        Invoke-MeridianStepWithTestHostRetry `
+            -Name "Run lifecycle supervisor tests" `
+            -Command $supervisorTestCommand `
+            -LogName "supervisor-test.log" `
+            -SummaryDir $summaryDir `
+            -RepoRoot $repoRoot `
+            -Steps $steps `
+            -RetryEvents $retryEvents | Out-Null
     }
 }
 
