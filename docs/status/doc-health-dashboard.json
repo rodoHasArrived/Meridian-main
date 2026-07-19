@@ -1,11 +1,11 @@
 {
   "total_files": 624,
-  "total_lines": 112259,
+  "total_lines": 112331,
   "orphaned_count": 244,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 205,
-  "average_lines": 179.9,
+  "todo_count": 206,
+  "average_lines": 180.0,
   "health_score": 80,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1023,7 +1023,7 @@
     },
     {
       "path": "docs/adr/README.md",
-      "line_count": 21,
+      "line_count": 25,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1239,7 +1239,7 @@
     },
     {
       "path": "docs/ai/copilot/instructions.md",
-      "line_count": 146,
+      "line_count": 147,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1551,7 +1551,7 @@
     },
     {
       "path": "docs/architecture/README.md",
-      "line_count": 82,
+      "line_count": 86,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1863,7 +1863,7 @@
     },
     {
       "path": "docs/development/README.md",
-      "line_count": 136,
+      "line_count": 141,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2055,7 +2055,7 @@
     },
     {
       "path": "docs/docfx/README.md",
-      "line_count": 109,
+      "line_count": 113,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2063,15 +2063,15 @@
     },
     {
       "path": "docs/documentation-inventory.md",
-      "line_count": 131,
+      "line_count": 90,
       "has_heading": true,
-      "todo_count": 3,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
       "path": "docs/documentation-ownership.md",
-      "line_count": 56,
+      "line_count": 71,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2151,7 +2151,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 273,
+      "line_count": 275,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2183,7 +2183,7 @@
     },
     {
       "path": "docs/examples/README.md",
-      "line_count": 16,
+      "line_count": 20,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2567,7 +2567,7 @@
     },
     {
       "path": "docs/integrations/README.md",
-      "line_count": 17,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2607,7 +2607,7 @@
     },
     {
       "path": "docs/operations/README.md",
-      "line_count": 32,
+      "line_count": 33,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2751,7 +2751,7 @@
     },
     {
       "path": "docs/plans/README.md",
-      "line_count": 48,
+      "line_count": 49,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2839,9 +2839,9 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 233,
+      "line_count": 244,
       "has_heading": true,
-      "todo_count": 1,
+      "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2887,7 +2887,7 @@
     },
     {
       "path": "docs/prompts/README.md",
-      "line_count": 13,
+      "line_count": 17,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2911,9 +2911,9 @@
     },
     {
       "path": "docs/README.md",
-      "line_count": 80,
+      "line_count": 102,
       "has_heading": true,
-      "todo_count": 0,
+      "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3191,7 +3191,7 @@
     },
     {
       "path": "docs/roadmap/README.md",
-      "line_count": 23,
+      "line_count": 27,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3239,7 +3239,7 @@
     },
     {
       "path": "docs/screenshots/README.md",
-      "line_count": 40,
+      "line_count": 44,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3351,7 +3351,7 @@
     },
     {
       "path": "docs/security/README.md",
-      "line_count": 22,
+      "line_count": 34,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3407,7 +3407,7 @@
     },
     {
       "path": "docs/source/README.md",
-      "line_count": 22,
+      "line_count": 26,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3447,7 +3447,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 168,
+      "line_count": 171,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3455,7 +3455,7 @@
     },
     {
       "path": "docs/testing/README.md",
-      "line_count": 10,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
