@@ -283,6 +283,112 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
         }
     }
 
+    [Fact]
+    public async Task FlushAsync_WhenBatchWriteFails_PreservesBufferedEventsForRetry()
+    {
+        var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
+        var writeAttempts = 0;
+        var lastAttemptEventCount = 0;
+        await using var sink = new JsonlStorageSink(
+            options,
+            policy,
+            batchOptions,
+            writeBatchAsync: (_, events, _) =>
+            {
+                writeAttempts++;
+                lastAttemptEventCount = events.Count;
+                if (writeAttempts == 1)
+                    throw new IOException("simulated flush failure");
+                return Task.CompletedTask;
+            });
+
+        await sink.AppendAsync(CreateTestEvent("AAPL", 1));
+
+        var failedFlush = () => sink.FlushAsync();
+        await failedFlush.Should().ThrowAsync<IOException>();
+
+        sink.EventsBuffered.Should().Be(1, "a failed flush must restore the drained batch for retry");
+        sink.EventsWritten.Should().Be(0, "no events were persisted by the failed flush");
+
+        await sink.FlushAsync();
+
+        writeAttempts.Should().Be(2, "the retry should re-attempt the batch write");
+        lastAttemptEventCount.Should().Be(1, "the retried batch must contain the restored event");
+        sink.EventsWritten.Should().Be(1);
+        sink.EventsBuffered.Should().Be(0);
+        sink.BatchesWritten.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task FlushAsync_WhenBatchWriteIsCancelled_PreservesBufferedEventsForRetry()
+    {
+        var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
+        var writeAttempts = 0;
+        await using var sink = new JsonlStorageSink(
+            options,
+            policy,
+            batchOptions,
+            writeBatchAsync: (_, _, _) =>
+            {
+                writeAttempts++;
+                if (writeAttempts == 1)
+                    throw new OperationCanceledException("simulated cancellation");
+                return Task.CompletedTask;
+            });
+
+        await sink.AppendAsync(CreateTestEvent("MSFT", 1));
+
+        var cancelledFlush = () => sink.FlushAsync();
+        await cancelledFlush.Should().ThrowAsync<OperationCanceledException>();
+
+        sink.EventsBuffered.Should().Be(1, "a cancelled flush must leave the batch buffered for retry");
+        sink.EventsWritten.Should().Be(0);
+
+        await sink.FlushAsync();
+
+        writeAttempts.Should().Be(2, "retry should still be possible after cancellation");
+        sink.EventsWritten.Should().Be(1);
+        sink.EventsBuffered.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AppendAsync_WhenSizeTriggeredFlushFails_RestoresEventsForNextFlush()
+    {
+        var batchOptions = new JsonlBatchOptions { BatchSize = 2, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
+        var writeAttempts = 0;
+        await using var sink = new JsonlStorageSink(
+            options,
+            policy,
+            batchOptions,
+            writeBatchAsync: (_, _, _) =>
+            {
+                writeAttempts++;
+                if (writeAttempts == 1)
+                    throw new IOException("simulated size-triggered flush failure");
+                return Task.CompletedTask;
+            });
+
+        await sink.AppendAsync(CreateTestEvent("SPY", 1));
+
+        var failingAppend = () => sink.AppendAsync(CreateTestEvent("SPY", 2)).AsTask();
+        await failingAppend.Should().ThrowAsync<IOException>("the size-triggered flush surfaces the write failure");
+
+        sink.EventsBuffered.Should().Be(2, "both events must survive the failed size-triggered flush");
+        sink.EventsWritten.Should().Be(0);
+
+        await sink.FlushAsync();
+
+        writeAttempts.Should().Be(2);
+        sink.EventsWritten.Should().Be(2);
+        sink.EventsBuffered.Should().Be(0);
+    }
+
     private static MarketEvent CreateTestEvent(string symbol, int sequence)
     {
         var trade = new Trade(

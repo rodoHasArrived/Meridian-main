@@ -392,8 +392,8 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         var defragOptions = new DefragOptions(
             MinFileSizeBytes: options.MinFileSizeBytes,
             MaxFilesPerMerge: options.MaxFilesPerMerge,
-            PreserveOriginals: options.DryRun,
-            MaxFileAge: TimeSpan.FromDays(options.FileAgeDaysThreshold)
+            MaxFileAge: TimeSpan.FromDays(options.FileAgeDaysThreshold),
+            DryRun: options.DryRun
         );
 
         var result = await _fileMaintenanceService.DefragmentAsync(defragOptions, ct);

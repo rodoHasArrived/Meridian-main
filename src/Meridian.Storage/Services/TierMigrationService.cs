@@ -276,24 +276,27 @@ public sealed class TierMigrationService : ITierMigrationService
         var relativePath = Path.GetRelativePath(_options.RootPath, sourcePath);
         var targetPath = Path.Combine(targetTier.Path, relativePath);
 
-        // Change extension if format changes
-        if (targetTier.Format == "parquet" && !sourcePath.EndsWith(".parquet"))
+        // Reject conversions this service does not actually implement. Renaming the target
+        // extension without converting the payload would ship mislabeled bytes and — with
+        // DeleteSource — destroy the only correct copy.
+        if (targetTier.Format == "parquet" && !sourcePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
         {
-            targetPath = Path.ChangeExtension(targetPath, ".parquet");
-            // Parquet conversion would happen here
+            throw new NotSupportedException(
+                $"Tier '{targetTier.Path}' requests parquet format, but converting '{Path.GetExtension(sourcePath)}' " +
+                "sources to parquet is not implemented. Configure the tier with Format 'jsonl' or migrate parquet sources only.");
         }
-        else if (targetTier.Compression.HasValue && targetTier.Compression != CompressionCodec.None)
-        {
-            var ext = targetTier.Compression switch
-            {
-                CompressionCodec.Gzip => ".gz",
-                CompressionCodec.Zstd => ".zst",
-                CompressionCodec.LZ4 => ".lz4",
-                _ => ""
-            };
 
-            if (!targetPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
-                targetPath = ApplyCompressionExtension(targetPath, ext);
+        if (targetTier.Compression.HasValue && targetTier.Compression != CompressionCodec.None)
+        {
+            if (targetTier.Compression != CompressionCodec.Gzip)
+            {
+                throw new NotSupportedException(
+                    $"Tier '{targetTier.Path}' requests {targetTier.Compression} compression, but only Gzip is implemented " +
+                    "for tier migration. Configure the tier with Gzip or no compression.");
+            }
+
+            if (!targetPath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
+                targetPath = ApplyCompressionExtension(targetPath, ".gz");
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
@@ -354,27 +357,24 @@ public sealed class TierMigrationService : ITierMigrationService
 
     private async Task CopyFileAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
     {
-        await using var sourceStream = File.OpenRead(source);
-        await using var targetStream = File.Create(target);
-
-        if (tierConfig.Compression == CompressionCodec.Gzip)
+        // Route through the atomic writer (temp file + fsync + rename + directory sync) so a
+        // crash mid-copy can never leave a partial file at the final target path.
+        await AtomicFileWriter.WriteStreamAsync(target, async targetStream =>
         {
-            // leaveOpen so the GZipStream trailer is flushed on dispose without closing
-            // targetStream before we fsync it below.
-            await using (var gzip = new GZipStream(targetStream, CompressionLevel.Optimal, leaveOpen: true))
+            await using var sourceStream = File.OpenRead(source);
+
+            if (tierConfig.Compression == CompressionCodec.Gzip)
             {
+                // leaveOpen so the GZipStream trailer is flushed on dispose without closing
+                // the temp stream the atomic writer still needs to fsync.
+                await using var gzip = new GZipStream(targetStream, CompressionLevel.Optimal, leaveOpen: true);
                 await sourceStream.CopyToAsync(gzip, ct);
             }
-        }
-        else
-        {
-            await sourceStream.CopyToAsync(targetStream, ct);
-        }
-
-        // Force the migrated data blocks to physical disk so callers that delete the source
-        // afterwards cannot lose data on a crash. Uses the existing write handle.
-        await targetStream.FlushAsync(ct);
-        targetStream.Flush(flushToDisk: true);
+            else
+            {
+                await sourceStream.CopyToAsync(targetStream, ct);
+            }
+        }, ct);
     }
 
     private async Task CopyWithVerificationAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)

@@ -102,6 +102,11 @@ public sealed class JsonlStorageSink : IStorageSink
     private readonly Func<string, Lazy<WriterState>> _writerFactory;
     private readonly Func<string, MarketEventBuffer> _bufferFactory;
 
+    // Test seam mirroring ParquetStorageSink's injectable atomic-write delegate: when set,
+    // batched flushes route through this instead of the WriterState so tests can simulate
+    // write failures without filesystem tricks.
+    private readonly Func<string, IReadOnlyList<MarketEvent>, CancellationToken, Task>? _writeBatchOverride;
+
     // Metrics
     private long _eventsBuffered;
     private long _eventsWritten;
@@ -143,6 +148,17 @@ public sealed class JsonlStorageSink : IStorageSink
     public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger<JsonlStorageSink>? logger = null)
         : this(options, policy, JsonlBatchOptions.NoBatching, logger)
     {
+    }
+
+    internal JsonlStorageSink(
+        StorageOptions options,
+        IStoragePolicy policy,
+        JsonlBatchOptions batchOptions,
+        Func<string, IReadOnlyList<MarketEvent>, CancellationToken, Task> writeBatchAsync,
+        ILogger<JsonlStorageSink>? logger = null)
+        : this(options, policy, batchOptions, logger)
+    {
+        _writeBatchOverride = writeBatchAsync ?? throw new ArgumentNullException(nameof(writeBatchAsync));
     }
 
     /// <summary>
@@ -247,8 +263,26 @@ public sealed class JsonlStorageSink : IStorageSink
         if (events.Count == 0)
             return;
 
-        var writer = _writers.GetOrAdd(path, _writerFactory).Value;
-        await writer.WriteBatchAsync(events, ct).ConfigureAwait(false);
+        try
+        {
+            if (_writeBatchOverride is not null)
+            {
+                await _writeBatchOverride(path, events, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                var writer = _writers.GetOrAdd(path, _writerFactory).Value;
+                await writer.WriteBatchAsync(events, ct).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            // DrainAll hands back the buffer's internal swap list; restore before the next
+            // drain (serialised by _flushGate) so a failed write never discards the batch.
+            buffer.RestoreToFront(events);
+            _logger.LogError(ex, "Failed to flush {Count} buffered events to {Path}; events were restored for retry", events.Count, path);
+            throw;
+        }
 
         Interlocked.Add(ref _eventsWritten, events.Count);
         Interlocked.Add(ref _eventsBuffered, -events.Count);
