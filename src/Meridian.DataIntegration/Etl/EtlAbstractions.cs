@@ -61,6 +61,7 @@ public sealed class NormalizationOutcome
 public sealed class EtlRunResult
 {
     public bool Success { get; init; }
+    public EtlRunStatus Status { get; init; } = EtlRunStatus.Failed;
     public int FilesProcessed { get; init; }
     public long RecordsProcessed { get; init; }
     public long RecordsAccepted { get; init; }
@@ -68,6 +69,13 @@ public sealed class EtlRunResult
     public long RecordsDeduplicated { get; init; }
     public string[] Errors { get; init; } = [];
     public EtlExportResult? ExportResult { get; init; }
+}
+
+public enum EtlRunStatus
+{
+    Failed,
+    Partial,
+    Completed
 }
 
 public sealed class EtlExportResult

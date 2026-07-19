@@ -49,6 +49,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
     private int _uncommittedRecords;
     private DateTime _lastFlushTime = DateTime.UtcNow;
     private bool _disposed;
+    private CancellationTokenSource? _flushLoopCts;
+    private Task? _flushLoopTask;
+    private Exception? _backgroundFlushFailure;
     private long _corruptedRecordCount;
     private long _skippedRecordCount;
 
@@ -146,6 +149,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         // Start a new WAL file
         await StartNewWalFileAsync(ct);
+        StartDelayedFlushLoop();
 
         _log.Information("WAL initialized, current sequence: {Sequence}", _currentSequence);
     }
@@ -166,6 +170,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
     private async Task<WalRecord> AppendSerializedPayloadAsync(string payload, string recordType, CancellationToken ct)
     {
+        ThrowIfBackgroundFlushFailed();
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -248,6 +253,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// </summary>
     public async Task FlushAsync(CancellationToken ct = default)
     {
+        ThrowIfBackgroundFlushFailed();
         await _writeLock.WaitAsync(ct);
         try
         {
@@ -292,6 +298,59 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
         _uncommittedRecords = 0;
         _lastFlushTime = DateTime.UtcNow;
+    }
+
+    private void StartDelayedFlushLoop()
+    {
+        if (_flushLoopTask is not null ||
+            _options.SyncMode != WalSyncMode.BatchedSync ||
+            _options.MaxFlushDelay <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        _flushLoopCts = new CancellationTokenSource();
+        _flushLoopTask = RunDelayedFlushLoopAsync(_flushLoopCts.Token);
+    }
+
+    private async Task RunDelayedFlushLoopAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(_options.MaxFlushDelay);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            {
+                await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+                try
+                {
+                    if (_uncommittedRecords > 0 &&
+                        DateTime.UtcNow - _lastFlushTime >= _options.MaxFlushDelay)
+                    {
+                        await FlushInternalAsync(ct).ConfigureAwait(false);
+                    }
+                }
+                finally
+                {
+                    _writeLock.Release();
+                }
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            _backgroundFlushFailure = ex;
+            _log.Error(ex, "Lifecycle-owned delayed WAL flush failed");
+        }
+    }
+
+    private void ThrowIfBackgroundFlushFailed()
+    {
+        if (_backgroundFlushFailure is not null)
+        {
+            throw new IOException("The delayed WAL flush loop failed; new writes are blocked.", _backgroundFlushFailure);
+        }
     }
 
     /// <summary>
@@ -1076,6 +1135,16 @@ public sealed class WriteAheadLog : IAsyncDisposable
         // Fixed acquisition order (write, then truncate) cannot deadlock: truncation never
         // takes the write lock and writers never take the truncate lock. Holding both here
         // guarantees no in-flight truncation observes the disposed semaphores.
+        if (_flushLoopCts is not null)
+        {
+            await _flushLoopCts.CancelAsync().ConfigureAwait(false);
+        }
+
+        if (_flushLoopTask is not null)
+        {
+            await _flushLoopTask.ConfigureAwait(false);
+        }
+
         await _writeLock.WaitAsync();
         await _truncateLock.WaitAsync();
         try
@@ -1087,7 +1156,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             if (_currentWriter != null)
             {
-                await _currentWriter.FlushAsync();
+                await FlushInternalAsync(CancellationToken.None).ConfigureAwait(false);
+                if (_currentWalFile is not null && _options.SyncMode != WalSyncMode.NoSync)
+                {
+                    _currentWalFile.Flush(flushToDisk: true);
+                }
                 await _currentWriter.DisposeAsync();
                 // _currentWriter.DisposeAsync() already closes the underlying _currentWalFile stream
                 // so we should not attempt to flush or dispose it again
@@ -1101,6 +1174,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
             _writeLock.Release();
             _writeLock.Dispose();
             _truncateLock.Dispose();
+            _flushLoopCts?.Dispose();
         }
     }
 

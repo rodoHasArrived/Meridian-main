@@ -223,6 +223,7 @@ internal sealed class OperationsLedgerPostingService
                 candidate.SourceJournalEntryId,
                 candidate.PostingKind,
                 candidate.AdjustmentApproval,
+                PostingCommand: BuildPostingCommand(workflow, request, candidate),
                 LedgerBookId: workflow.LedgerBookId);
             blockers = [];
             return true;
@@ -276,6 +277,14 @@ internal sealed class OperationsLedgerPostingService
             blockers.Add(CreateJournalCandidateBlocker(
                 "LEDGER_IDEMPOTENCY_KEY_MISSING",
                 "Ledger journal candidate requires a durable command id and idempotency key before posting.",
+                evidence));
+        }
+
+        if (!candidate.ExpectedLedgerVersion.HasValue || candidate.ExpectedLedgerVersion.Value < 0)
+        {
+            blockers.Add(CreateJournalCandidateBlocker(
+                "LEDGER_EXPECTED_VERSION_REQUIRED",
+                "Ledger journal candidate requires the authoritative accounting-period version before posting.",
                 evidence));
         }
 
@@ -436,6 +445,52 @@ internal sealed class OperationsLedgerPostingService
         }
 
         return blockers;
+    }
+
+    private static AccountingPostingCommandDto BuildPostingCommand(
+        OperationsContinuityWorkflow workflow,
+        OperationsLedgerPostRequestDto request,
+        OperationsLedgerJournalCandidateDto candidate)
+    {
+        var commandId = candidate.CommandId.GetValueOrDefault();
+        var retainedAt = candidate.Timestamp;
+        var evidence = OperationsContinuityWorkflowText.NormalizeEvidence(request.EvidenceLinks)
+            .Select(link => new AccountingPostingEvidenceReferenceDto(
+                link.EvidenceId,
+                link.Route ?? $"evidence://operations-continuity/{link.EvidenceId}",
+                AccountingPostingEvidenceKindDto.Reconciliation,
+                string.IsNullOrWhiteSpace(link.Source) ? "OperationsContinuity" : link.Source.Trim(),
+                link.CapturedAtUtc ?? retainedAt,
+                request.Actor,
+                SubjectId: workflow.WorkflowId.ToString("D"),
+                Description: link.Label))
+            .ToArray();
+        var intent = candidate.PostingKind switch
+        {
+            LedgerPostingKindDto.Adjustment => AccountingPostingIntentDto.Adjustment,
+            _ => AccountingPostingIntentDto.Originating
+        };
+
+        return new AccountingPostingCommandDto(
+            commandId,
+            candidate.AggregateId,
+            candidate.PeriodId,
+            DateOnly.FromDateTime(candidate.Timestamp.UtcDateTime),
+            candidate.Timestamp,
+            candidate.IdempotencyKey!,
+            intent,
+            SourceEventId: candidate.SourceEventId,
+            CorrelationId: candidate.CorrelationId,
+            CausationId: commandId,
+            SourceJournalEntryId: candidate.SourceJournalEntryId,
+            ExpectedVersion: candidate.ExpectedLedgerVersion,
+            SourceEventType: candidate.Metadata?.ActivityType,
+            ApprovalState: AccountingPostingApprovalStateDto.Approved,
+            ApprovalId: candidate.AdjustmentApproval?.ApprovalId ?? request.LedgerBatchId,
+            OperatorRationale: request.Rationale,
+            Evidence: evidence,
+            ActionOrigin: request.ActionOrigin,
+            LedgerBookId: workflow.LedgerBookId);
     }
 
 

@@ -16,7 +16,12 @@ public static class LedgerStoreExtensions
             throw new ArgumentException("A ledger journal store connection string is required.", nameof(connStr));
         }
 
-        services.AddSingleton(new LedgerJournalStoreOptions { ConnectionString = connStr });
+        services.AddSingleton(new LedgerJournalStoreOptions
+        {
+            ConnectionString = connStr,
+            RequireGovernedPostingCommand = true,
+            RequireExpectedVersion = true
+        });
         services.AddSingleton<PostgresLedgerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());

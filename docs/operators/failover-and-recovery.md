@@ -2,9 +2,103 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-19
 
 This page is the canonical operator guide for Meridian recovery posture and failover response.
+
+## Supported Recovery Unit
+
+The supported local-workstation topology is recovered as one unit:
+
+- the dedicated PostgreSQL database named by the production connection string; and
+- the configured Meridian data root, including encrypted credentials, workflow evidence,
+  execution controls, strategy state, WAL files, catalogs, and lifecycle receipts.
+
+Do not restore only one side of this unit. A database-only or file-only restore can create an
+apparently healthy host whose evidence and command state disagree.
+
+`build/scripts/recovery/invoke-production-recovery.ps1` is the canonical automation. It creates a
+custom-format PostgreSQL dump and a data-root ZIP, encrypts each with independently derived
+AES-256 encryption and HMAC-SHA256 authentication keys, verifies plaintext and ciphertext SHA-256
+hashes, publishes the backup atomically, applies retention only after success, and emits a JSON
+receipt. The encryption key must be a 32-byte random value supplied through
+`MDC_RECOVERY_ENCRYPTION_KEY_BASE64`; store it in the approved secret manager, never in the backup
+location or repository.
+
+## Backup
+
+Quiesce write-producing workflows or place the lifecycle supervisor in its controlled drain state,
+then run:
+
+```powershell
+$env:MDC_RECOVERY_ENCRYPTION_KEY_BASE64 = '<secret-manager-value>'
+pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
+  -Mode Backup `
+  -ConnectionString $env:MERIDIAN_LEDGER_CONNECTION_STRING `
+  -DataRoot $env:MDC_DATA_ROOT `
+  -BackupRoot 'E:\MeridianBackups' `
+  -RetentionDays 35 `
+  -MaximumRpoSeconds 3600
+```
+
+Copy the completed `backup-<UTC timestamp>` directory to the approved off-host backup target. Never
+copy a staging directory whose name starts with `.backup-`.
+
+## Clean Restore
+
+Restore into a clean, dedicated database and an empty data root first. The database overwrite switch
+is deliberately mandatory. A non-empty data root is rejected unless `-AllowDataOverwrite` is
+explicit; when allowed, the prior root is moved to a timestamped quarantine sibling rather than
+deleted.
+
+```powershell
+pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
+  -Mode Restore `
+  -ConnectionString $env:MERIDIAN_LEDGER_CONNECTION_STRING `
+  -DataRoot $env:MDC_DATA_ROOT `
+  -BackupRoot 'E:\MeridianBackups' `
+  -BackupPath 'E:\MeridianBackups\backup-20260719T031700Z' `
+  -RestoreConnectionString $env:MERIDIAN_RECOVERY_CONNECTION_STRING `
+  -RestoreDataRoot 'D:\MeridianRecovery\data' `
+  -AllowDatabaseOverwrite
+```
+
+After restore, start the host against the recovery database/root and verify `/startupz`, audit-chain
+integrity, ledger totals, open reconciliation cases, report-pack hashes, strategy/promotion lineage,
+and the operator inbox before approving traffic.
+
+## Recovery Drill And Objectives
+
+`Production Certification` runs the same encrypted backup and clean restore path against disposable
+PostgreSQL source/target databases on every scheduled and release-tag run. It validates a retained
+database business row and an encrypted-vault file after restore and uploads the dated backup,
+manifest, and receipt for 90 days.
+
+```powershell
+pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
+  -Mode Drill `
+  -ConnectionString $env:MERIDIAN_LEDGER_CONNECTION_STRING `
+  -DataRoot $env:MDC_DATA_ROOT `
+  -BackupRoot 'E:\MeridianBackups\drills' `
+  -RestoreConnectionString $env:MERIDIAN_RECOVERY_CONNECTION_STRING `
+  -RestoreDataRoot 'D:\MeridianRecovery\drill-data' `
+  -AllowDatabaseOverwrite `
+  -MaximumRpoSeconds 3600 `
+  -MaximumRtoSeconds 7200
+```
+
+The receipt fails the drill when the measured backup window exceeds the declared RPO or the clean
+restore exceeds the declared RTO. A workflow definition is not drill evidence: retain the successful
+run URL and its `production-recovery-drill-*` artifact with the release packet.
+
+## Migration Rollback
+
+Before applying a migration classified as destructive, create and verify a recovery-unit backup.
+Apply the migration only after the backup receipt is `passed`. If validation fails, stop the host,
+restore the pre-migration recovery unit into a clean target, replay only commands whose immutable
+idempotency keys are later than the backup boundary, reconcile ledger/evidence totals, and switch the
+lifecycle configuration to the restored target. Do not attempt an ad-hoc reverse migration when it
+would discard data.
 
 ## Recovery Posture
 
@@ -38,6 +132,13 @@ curl http://localhost:8080/api/workstation/reconciliation/queue
 curl http://localhost:8080/api/config/effective
 ```
 
+Also validate the latest receipt before declaring recovery complete:
+
+```powershell
+Get-Content 'E:\MeridianBackups\recovery-drill-receipt.json' | ConvertFrom-Json |
+  Format-List status, backupId, measuredRpoSeconds, measuredRtoSeconds, completedAtUtc
+```
+
 If a service is unstable, switch to service-safe mode, re-run provider validation, and recheck operator inbox for recovery state changes before promoting.
 
 ## Evidence and Handoff
@@ -59,4 +160,3 @@ Recovery handoffs should include:
 
 - Legacy source: [archive/docs/operations/failover-and-recovery-runbook.md](../../archive/docs/operations/failover-and-recovery-runbook.md)
 - Archive copy: [archive/docs/operations/failover-and-recovery-runbook.md](../../archive/docs/operations/failover-and-recovery-runbook.md)
-

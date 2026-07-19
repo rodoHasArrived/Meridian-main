@@ -17,6 +17,8 @@ namespace Meridian.Infrastructure.Reconciliation;
 /// </summary>
 public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store) : IBrokerStatementService
 {
+    private const long MaximumStatementBytes = 32L * 1024 * 1024;
+    private const int MaximumStatementRows = 100_000;
     private static readonly string[] SupportedBrokerAliases =
         ["ibflex", "ib-flex", "ibkr", "interactivebrokers", "interactive-brokers"];
 
@@ -35,6 +37,12 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         if (!File.Exists(request.SourcePath))
         {
             errors.Add("Source file not found.");
+            return new BrokerStatementValidationResult(false, errors, 0);
+        }
+
+        if (new FileInfo(request.SourcePath).Length > MaximumStatementBytes)
+        {
+            errors.Add($"Flex report exceeds the {MaximumStatementBytes}-byte limit.");
             return new BrokerStatementValidationResult(false, errors, 0);
         }
 
@@ -67,6 +75,12 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             + statement.Descendants("OpenPosition").Count()
             + statement.Descendants("CashTransaction").Count());
 
+        if (rowCount > MaximumStatementRows)
+        {
+            errors.Add($"Flex report exceeds the {MaximumStatementRows}-row limit.");
+            return new BrokerStatementValidationResult(false, errors, rowCount);
+        }
+
         if (rowCount == 0)
         {
             errors.Add("Flex report contains no Trade, OpenPosition, or CashTransaction rows; "
@@ -82,9 +96,9 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var fileBytes = await File.ReadAllBytesAsync(request.SourcePath, ct).ConfigureAwait(false);
+        EnsureBoundedFile(request.SourcePath);
         var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
-            ? Convert.ToHexString(SHA256.HashData(fileBytes))
+            ? await HashFileAsync(request.SourcePath, ct).ConfigureAwait(false)
             : request.SourceFileHash.Trim().ToUpperInvariant();
         var duplicateKey = StatementDuplicateKey.Create(
             request.FundAccountId,
@@ -103,6 +117,10 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         var importId = duplicateKey;
         var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
         var rows = ParseRows(document, importId).ToList();
+        if (rows.Count > MaximumStatementRows)
+        {
+            throw new InvalidDataException($"Flex report exceeds the {MaximumStatementRows}-row limit.");
+        }
         if (rows.Count == 0)
         {
             // A Flex query configured without the supported sections must fail loudly instead
@@ -135,7 +153,12 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             DuplicateKey = duplicateKey
         };
 
-        await store.SaveImportAsync(import, rows, ct).ConfigureAwait(false);
+        if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException(
+                "Statement already imported (fund account, statement period, and source file hash match).");
+        }
+
         return new BrokerStatementImportResult(import, rows);
     }
 
@@ -148,11 +171,33 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             DtdProcessing = DtdProcessing.Prohibit,
             XmlResolver = null,
             Async = true,
-            CloseInput = true
+            CloseInput = true,
+            MaxCharactersInDocument = MaximumStatementBytes,
+            MaxCharactersFromEntities = 0
         };
 
         using var reader = XmlReader.Create(File.OpenRead(path), settings);
         return await XDocument.LoadAsync(reader, LoadOptions.None, ct).ConfigureAwait(false);
+    }
+
+    private static void EnsureBoundedFile(string path)
+    {
+        if (new FileInfo(path).Length > MaximumStatementBytes)
+        {
+            throw new InvalidDataException($"Flex report exceeds the {MaximumStatementBytes}-byte limit.");
+        }
+    }
+
+    private static async Task<string> HashFileAsync(string path, CancellationToken ct)
+    {
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 64 * 1024,
+            options: FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
     }
 
     private static IEnumerable<CanonicalStatementRow> ParseRows(XDocument document, string importId)

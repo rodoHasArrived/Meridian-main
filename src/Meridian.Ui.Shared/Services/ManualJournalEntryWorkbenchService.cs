@@ -682,6 +682,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
 
         var ledgerBook = await journalStore.GetLedgerBookAsync(ledgerBookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Ledger book '{ledgerBookId:D}' was not found.");
+        var period = await journalStore.GetPeriodAsync(periodId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Ledger period '{periodId:D}' was not found.");
+        if (period.LedgerBookId != ledgerBookId)
+        {
+            throw new InvalidOperationException(
+                $"Ledger period '{periodId:D}' does not belong to ledger book '{ledgerBookId:D}'.");
+        }
         if (ledgerBook.AccountingBasis != draft.AccountingBasis)
         {
             throw new InvalidOperationException(
@@ -689,7 +696,14 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         }
 
         var mergedEvidence = MergeEvidenceLinks(draft.EvidenceLinks, request.EvidenceLinks);
-        var postingCommand = BuildManualPostingCommand(draft, request, ledgerBookId, periodId, mergedEvidence, recordedAtUtc);
+        var postingCommand = BuildManualPostingCommand(
+            draft,
+            request,
+            ledgerBookId,
+            periodId,
+            period.Version,
+            mergedEvidence,
+            recordedAtUtc);
         var write = await BuildManualJournalEntryWriteAsync(
                 draft,
                 ledgerBook,
@@ -822,6 +836,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         JournalEntryLifecycleActionRequestDto request,
         Guid ledgerBookId,
         Guid periodId,
+        long expectedPeriodVersion,
         IReadOnlyList<string> evidenceLinks,
         DateTimeOffset recordedAtUtc)
     {
@@ -853,6 +868,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             CorrelationId: TryParseGuid(request.CorrelationId),
             CausationId: draft.JournalEntryId,
             SourceJournalEntryId: sourceJournalEntryId,
+            ExpectedVersion: expectedPeriodVersion,
             SourceEventType: sourceEventType,
             TreasuryContext: treasuryContext,
             ApprovalState: AccountingPostingApprovalStateDto.Approved,

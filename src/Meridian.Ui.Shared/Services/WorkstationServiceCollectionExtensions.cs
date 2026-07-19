@@ -160,17 +160,20 @@ public static class WorkstationServiceCollectionExtensions
         if (!isProductionComposition)
         {
             services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
+            services.TryAddSingleton<ImmutableAuditLogService>();
         }
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
         services.TryAddSingleton<IngestionOperationsService>();
         services.TryAddSingleton<StorageAssuranceService>();
         services.TryAddSingleton<SensitiveActionPolicyEngine>();
-        services.TryAddSingleton<ImmutableAuditLogService>();
         services.TryAddSingleton<AccessReviewService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
         services.TryAddSingleton<FundStructureSetupWorkflowService>();
 
-        services.TryAddSingleton<IStrategyRepository, StrategyRunStore>();
+        services.TryAddSingleton<StrategyRunStoreOptions>(sp =>
+            new StrategyRunStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "runs")));
+        services.TryAddSingleton<IStrategyRepository>(sp =>
+            new StrategyRunStore(sp.GetRequiredService<StrategyRunStoreOptions>()));
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
             new PromotionRecordStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "promotions")));
         services.TryAddSingleton<IPromotionRecordStore>(sp =>
@@ -725,7 +728,9 @@ public static class WorkstationServiceCollectionExtensions
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var dataRoot = configStore.GetDataRoot();
-            return new ProviderCredentialStore(dataRoot);
+            return new ProviderCredentialStore(
+                sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(),
+                dataRoot);
         });
         services.TryAddSingleton<IProviderModuleSetupService, ProviderModuleSetupService>();
 

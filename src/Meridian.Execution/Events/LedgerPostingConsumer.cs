@@ -6,6 +6,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
@@ -628,19 +629,50 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     {
         var activityType = entry.Metadata.ActivityType
             ?? throw new InvalidDataException("Trade-fill journal activity type is required.");
+        var commandId = CreateDeterministicGuid(evt.FillId, activityType, "command");
+        var sourceEventId = CreateDeterministicGuid(evt.FillId, activityType, "source-event");
         return new LedgerJournalEntryWrite(
             entry,
             _postingContext.AggregateId,
             _postingContext.PeriodId,
-            CommandId: CreateDeterministicGuid(evt.FillId, activityType, "command"),
+            CommandId: commandId,
             CorrelationId: evt.FillId,
             AccountingBasis: AccountingBasisKindDto.Primary,
             AccountingPolicyId: _postingContext.AccountingPolicyId,
             AccountingPolicyVersion: _postingContext.AccountingPolicyVersion,
             RuleId: $"execution.{activityType}",
             RuleVersion: "1",
-            SourceEventId: CreateDeterministicGuid(evt.FillId, activityType, "source-event"),
+            SourceEventId: sourceEventId,
             PostingKind: LedgerPostingKindDto.Originating,
+            PostingCommand: new AccountingPostingCommandDto(
+                commandId,
+                _postingContext.AggregateId,
+                _postingContext.PeriodId,
+                DateOnly.FromDateTime(evt.OccurredAt.UtcDateTime),
+                evt.OccurredAt,
+                entry.Metadata.IdempotencyKey!,
+                AccountingPostingIntentDto.Originating,
+                SourceEventId: sourceEventId,
+                CorrelationId: evt.FillId,
+                CausationId: commandId,
+                ExpectedVersion: _postingContext.ExpectedPeriodVersion,
+                SourceEventType: activityType,
+                ApprovalState: AccountingPostingApprovalStateDto.NotRequired,
+                OperatorRationale: "Governed OMS execution report accepted for ledger posting.",
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        $"execution-fill:{evt.FillId:D}:{activityType}",
+                        $"evidence://execution/fills/{evt.FillId:D}/{activityType}",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "OrderManagementSystem",
+                        evt.OccurredAt,
+                        "execution-ledger-consumer",
+                        SubjectId: evt.OrderId,
+                        Description: "Authoritative execution report and Security Master gate result.")
+                ],
+                ActionOrigin: OperationsActionOriginDto.HumanOperator,
+                LedgerBookId: _postingContext.LedgerBookId),
             LedgerBookId: _postingContext.LedgerBookId);
     }
 

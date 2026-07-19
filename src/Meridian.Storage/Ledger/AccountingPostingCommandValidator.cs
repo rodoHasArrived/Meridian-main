@@ -10,13 +10,22 @@ public static class AccountingPostingCommandValidator
 {
     internal const string PostingCommandFingerprintTag = "postingCommandFingerprint";
 
-    public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write)
+    public static LedgerJournalEntryWrite NormalizeAndValidate(
+        LedgerJournalEntryWrite write,
+        bool requirePostingCommand = false,
+        bool requireExpectedVersion = false)
     {
         ArgumentNullException.ThrowIfNull(write);
         ArgumentNullException.ThrowIfNull(write.Entry);
 
         if (write.PostingCommand is not { } command)
         {
+            if (requirePostingCommand)
+            {
+                throw new LedgerValidationException(
+                    "A typed accounting posting command is required at the production ledger append boundary.");
+            }
+
             return write;
         }
 
@@ -68,6 +77,12 @@ public static class AccountingPostingCommandValidator
         if (command.ExpectedVersion is < 0)
         {
             throw new LedgerValidationException("Accounting posting command expected version cannot be negative.");
+        }
+
+        if (requireExpectedVersion && !command.ExpectedVersion.HasValue)
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command expected version is required at the production ledger append boundary.");
         }
 
         if (command.ActionOrigin != OperationsActionOriginDto.HumanOperator)

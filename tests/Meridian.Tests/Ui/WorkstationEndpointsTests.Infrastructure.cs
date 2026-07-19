@@ -251,7 +251,8 @@ public sealed partial class WorkstationEndpointsTests
                 Symbol: "OPS",
                 SecurityId: securityId),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private static void RegisterPromotionServices(IServiceCollection services, string promotionRoot)

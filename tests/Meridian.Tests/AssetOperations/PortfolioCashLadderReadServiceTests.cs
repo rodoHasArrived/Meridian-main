@@ -27,11 +27,13 @@ public sealed class PortfolioCashLadderReadServiceTests
         var service = new PortfolioCashLadderReadService(
             securityMasterQueryService: Substitute.For<ISecurityMasterQueryService>(),
             assetOperationsQueryService: assetOperations,
-            holdingsSource: holdings);
+            holdingsSource: holdings,
+            cashBalanceProvider: BuildCashBalanceProvider());
 
         var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
 
         ladder.SecuritiesEvaluated.Should().Be(1);
+        ladder.IsDecisionReady.Should().BeTrue();
         ladder.Contributions.Should().ContainSingle()
             .Which.Should().Match<PortfolioCashLadderContributionDto>(row =>
                 row.DisplayName == "Held Bond" && row.Amount == 300m);
@@ -40,7 +42,7 @@ public sealed class PortfolioCashLadderReadServiceTests
     }
 
     [Fact]
-    public async Task GetCashLadderAsync_WithoutHoldingsSource_FallsBackToActiveSecuritiesAndWarnsAboutUnitQuantity()
+    public async Task GetCashLadderAsync_WithoutHoldingsSource_BlocksInsteadOfFabricatingUnitQuantity()
     {
         var securityId = Guid.NewGuid();
         var securityMaster = Substitute.For<ISecurityMasterQueryService>();
@@ -55,13 +57,16 @@ public sealed class PortfolioCashLadderReadServiceTests
 
         var service = new PortfolioCashLadderReadService(
             securityMasterQueryService: securityMaster,
-            assetOperationsQueryService: assetOperations);
+            assetOperationsQueryService: assetOperations,
+            cashBalanceProvider: BuildCashBalanceProvider());
 
         var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
 
-        ladder.Contributions.Should().ContainSingle()
-            .Which.Amount.Should().Be(100m, "the fallback uses unit quantity");
-        ladder.Warnings.Should().ContainMatch("*No holdings source is wired*");
+        ladder.IsDecisionReady.Should().BeFalse();
+        ladder.Buckets.Should().BeEmpty("a blocked ladder must not emit liquidity-breach flags");
+        ladder.Contributions.Should().BeEmpty();
+        ladder.BlockingReasons.Should().ContainMatch("*No authoritative holdings source*");
+        await assetOperations.DidNotReceiveWithAnyArgs().GetOperationsAsync(default, default);
     }
 
     [Fact]
@@ -80,7 +85,8 @@ public sealed class PortfolioCashLadderReadServiceTests
 
         var service = new PortfolioCashLadderReadService(
             assetOperationsQueryService: assetOperations,
-            holdingsSource: holdingsSource);
+            holdingsSource: holdingsSource,
+            cashBalanceProvider: BuildCashBalanceProvider());
 
         var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
 
@@ -89,7 +95,7 @@ public sealed class PortfolioCashLadderReadServiceTests
     }
 
     [Fact]
-    public async Task GetCashLadderAsync_FallbackWithMoreThanCapActiveSubjects_WarnsAboutCap()
+    public async Task GetCashLadderAsync_WithoutHoldingsSource_DoesNotEnumerateSecurityMasterSubjects()
     {
         const int cap = 500;
         var summaries = Enumerable.Range(0, cap + 1)
@@ -104,12 +110,14 @@ public sealed class PortfolioCashLadderReadServiceTests
 
         var service = new PortfolioCashLadderReadService(
             securityMasterQueryService: securityMaster,
-            assetOperationsQueryService: assetOperations);
+            assetOperationsQueryService: assetOperations,
+            cashBalanceProvider: BuildCashBalanceProvider());
 
         var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
 
-        ladder.Warnings.Should().ContainMatch($"*More than {cap} active Security Master subjects exist*");
-        ladder.SecuritiesEvaluated.Should().Be(cap);
+        ladder.IsDecisionReady.Should().BeFalse();
+        ladder.SecuritiesEvaluated.Should().Be(0);
+        await securityMaster.DidNotReceiveWithAnyArgs().SearchAsync(default!, default);
     }
 
     [Fact]
@@ -128,11 +136,14 @@ public sealed class PortfolioCashLadderReadServiceTests
 
         var service = new PortfolioCashLadderReadService(
             assetOperationsQueryService: assetOperations,
-            holdingsSource: holdingsSource);
+            holdingsSource: holdingsSource,
+            cashBalanceProvider: BuildCashBalanceProvider());
 
         var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
 
         ladder.Warnings.Should().ContainMatch("*1 of 2 held securities have no asset-operations projection*");
+        ladder.IsDecisionReady.Should().BeFalse();
+        ladder.Buckets.Should().BeEmpty();
     }
 
     [Fact]
@@ -148,12 +159,52 @@ public sealed class PortfolioCashLadderReadServiceTests
 
         var service = new PortfolioCashLadderReadService(
             assetOperationsQueryService: assetOperations,
-            holdingsSource: holdingsSource);
+            holdingsSource: holdingsSource,
+            cashBalanceProvider: BuildCashBalanceProvider());
 
         var ladder = await service.GetCashLadderAsync(
             new PortfolioCashLadderQuery(HorizonDays: 30, FundAccountId: "fund-123"));
 
         ladder.Warnings.Should().ContainMatch("*Fund-account scope 'fund-123' is not yet applied*");
+        ladder.IsDecisionReady.Should().BeFalse();
+        ladder.Buckets.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetCashLadderAsync_WhenForeignCurrencyHasNoFxSource_BlocksWithoutBreachFlags()
+    {
+        var securityId = Guid.NewGuid();
+        var assetOperations = Substitute.For<IAssetOperationsQueryService>();
+        var detail = BuildDetail(securityId, "EUR Bond", couponAmount: 100m);
+        assetOperations.GetOperationsAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(detail with
+            {
+                ProjectedCashFlows = detail.ProjectedCashFlows
+                    .Select(flow => flow with { Currency = "EUR" })
+                    .ToArray()
+            });
+        var holdings = Substitute.For<IPortfolioHoldingsSource>();
+        holdings.GetHoldingsAsync(Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns([new PortfolioHoldingDto(securityId, 1m)]);
+
+        var service = new PortfolioCashLadderReadService(
+            assetOperationsQueryService: assetOperations,
+            holdingsSource: holdings,
+            cashBalanceProvider: BuildCashBalanceProvider());
+
+        var ladder = await service.GetCashLadderAsync(new PortfolioCashLadderQuery(HorizonDays: 30));
+
+        ladder.IsDecisionReady.Should().BeFalse();
+        ladder.Buckets.Should().BeEmpty();
+        ladder.BlockingReasons.Should().ContainMatch("*no authoritative FX conversion source*");
+    }
+
+    private static IPortfolioCashBalanceProvider BuildCashBalanceProvider()
+    {
+        var provider = Substitute.For<IPortfolioCashBalanceProvider>();
+        provider.GetCashBalancesAsync(Arg.Any<CancellationToken>())
+            .Returns([new PortfolioCashBalanceDto("cash-1", "Operating cash", 1_000_000m, "USD", "Ledger", "cash-1")]);
+        return provider;
     }
 
     private static AssetOperationsDetailDto BuildDetail(Guid securityId, string displayName, decimal couponAmount)

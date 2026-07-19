@@ -111,6 +111,34 @@ public sealed class StrategyRunStoreTests
         queried.Should().ContainSingle().Which.Should().Be(updated);
     }
 
+    [Fact]
+    public async Task DurableStore_RestartRetainsRecordedRun()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-strategy-runs-{Guid.NewGuid():N}");
+        try
+        {
+            var expected = CreateRun(
+                "run-durable",
+                "strategy-durable",
+                RunType.Paper,
+                new DateTimeOffset(2026, 7, 19, 12, 0, 0, TimeSpan.Zero));
+            var options = new StrategyRunStoreOptions(root);
+            var first = new StrategyRunStore(options);
+            await first.RecordRunAsync(expected);
+
+            var restarted = new StrategyRunStore(options);
+
+            (await restarted.GetRunByIdAsync(expected.RunId)).Should().BeEquivalentTo(expected);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
     private static StrategyRunEntry CreateRun(
         string runId,
         string strategyId,

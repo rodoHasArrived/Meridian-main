@@ -586,7 +586,8 @@ public sealed record OperationsLedgerJournalCandidateDto(
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
     OperationsJournalEntryMetadataDto? Metadata = null,
     string? IdempotencyKey = null,
-    string? SecurityMasterProvenance = null);
+    string? SecurityMasterProvenance = null,
+    long? ExpectedLedgerVersion = null);
 
 public sealed record OperationsLedgerJournalLineDto(
     Guid? EntryId,

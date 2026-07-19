@@ -1,12 +1,14 @@
+using System.Text.Json;
+using Meridian.Storage.Archival;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 
 namespace Meridian.Strategies.Storage;
 
 /// <summary>
-/// In-memory run store used for development and testing.
-/// A production implementation would persist entries to JSONL using
-/// <c>AtomicFileWriter</c> following the same pattern as <c>JsonlStorageSink</c>.
+/// Indexed strategy-run repository with optional durable snapshot persistence. Production
+/// composition always supplies <see cref="StrategyRunStoreOptions"/>; the parameterless form is
+/// retained for isolated unit tests.
 /// </summary>
 public sealed class StrategyRunStore : IStrategyRepository
 {
@@ -14,25 +16,61 @@ public sealed class StrategyRunStore : IStrategyRepository
     private readonly Dictionary<string, List<StrategyRunEntry>> _runsByStrategy = new(StringComparer.Ordinal);
     private readonly List<StrategyRunEntry> _runsByLastUpdated = [];
     private readonly Lock _lock = new();
+    private readonly SemaphoreSlim _writeLock = new(1, 1);
+    private readonly string? _persistencePath;
+
+    public StrategyRunStore(StrategyRunStoreOptions? options = null)
+    {
+        _persistencePath = options?.SnapshotPath;
+        if (_persistencePath is null || !File.Exists(_persistencePath))
+        {
+            return;
+        }
+
+        var entries = JsonSerializer.Deserialize<StrategyRunEntry[]>(File.ReadAllText(_persistencePath)) ?? [];
+        foreach (var entry in entries)
+        {
+            _runsById[entry.RunId] = entry;
+            InsertIndexedEntry(entry);
+        }
+    }
 
     /// <inheritdoc/>
-    public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default)
+    public async Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(entry);
         ct.ThrowIfCancellationRequested();
 
-        lock (_lock)
+        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            if (_runsById.TryGetValue(entry.RunId, out var existing))
+            StrategyRunEntry[] snapshot;
+            lock (_lock)
             {
-                RemoveIndexedEntry(existing);
+                if (_runsById.TryGetValue(entry.RunId, out var existing))
+                {
+                    RemoveIndexedEntry(existing);
+                }
+
+                _runsById[entry.RunId] = entry;
+                InsertIndexedEntry(entry);
+                snapshot = _runsById.Values
+                    .OrderBy(static run => run.RunId, StringComparer.Ordinal)
+                    .ToArray();
             }
 
-            _runsById[entry.RunId] = entry;
-            InsertIndexedEntry(entry);
+            if (_persistencePath is not null)
+            {
+                await AtomicFileWriter.WriteAsync(
+                    _persistencePath,
+                    JsonSerializer.Serialize(snapshot),
+                    ct).ConfigureAwait(false);
+            }
         }
-
-        return Task.CompletedTask;
+        finally
+        {
+            _writeLock.Release();
+        }
     }
 
     /// <inheritdoc/>
@@ -223,4 +261,9 @@ public sealed class StrategyRunStore : IStrategyRepository
             target.RemoveAt(index);
         }
     }
+}
+
+public sealed record StrategyRunStoreOptions(string RootDirectory)
+{
+    public string SnapshotPath => Path.Combine(RootDirectory, "strategy-runs.json");
 }

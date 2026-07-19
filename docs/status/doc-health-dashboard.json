@@ -1,11 +1,11 @@
 {
   "total_files": 625,
-  "total_lines": 112348,
+  "total_lines": 112513,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 205,
-  "average_lines": 179.8,
+  "average_lines": 180.0,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2532,7 +2532,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9196,
+      "line_count": 9203,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2652,7 +2652,7 @@
     },
     {
       "path": "docs/operators/deployment-packaging.md",
-      "line_count": 38,
+      "line_count": 67,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2660,7 +2660,7 @@
     },
     {
       "path": "docs/operators/failover-and-recovery.md",
-      "line_count": 62,
+      "line_count": 162,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2836,7 +2836,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 358,
+      "line_count": 387,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
