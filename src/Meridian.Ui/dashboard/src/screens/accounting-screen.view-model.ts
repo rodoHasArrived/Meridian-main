@@ -55,6 +55,7 @@ import {
   areReconciliationBreakQueuesEquivalent,
   replaceBreakQueueItem,
 } from "./accounting-screen.reconciliation-queue-utils";
+import { useScopedReconciliationBreakQueue } from "./accounting-screen.reconciliation-selection";
 import {
   buildOperationalExceptionWorkbenchState,
   buildReconciliationBreakQueueState,
@@ -4096,32 +4097,7 @@ export function useAccountingReconciliationViewModel(
       });
   }, [services]);
 
-  const scopedBreakQueue = useMemo(
-    () => workstream === "reconciliation"
-      ? selectedRunId
-        ? breakQueue.filter((item) => item.runId === selectedRunId)
-        : []
-      : breakQueue,
-    [breakQueue, selectedRunId, workstream]
-  );
-  const selectedBreakRunIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (workstream !== "reconciliation") {
-      selectedBreakRunIdRef.current = null;
-      return;
-    }
-
-    const runChanged = selectedBreakRunIdRef.current !== selectedRunId;
-    selectedBreakRunIdRef.current = selectedRunId;
-    setSelectedBreakId((current) => {
-      if (!runChanged && current && scopedBreakQueue.some((item) => item.breakId === current)) {
-        return current;
-      }
-
-      return scopedBreakQueue[0]?.breakId ?? null;
-    });
-  }, [scopedBreakQueue, selectedRunId, workstream]);
+  const scopedBreakQueue = useScopedReconciliationBreakQueue(breakQueue, selectedRunId, workstream, setSelectedBreakId);
 
   useEffect(() => {
     if (workstream !== "reconciliation" && workstream !== "exceptions") {
