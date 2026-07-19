@@ -140,7 +140,7 @@ public sealed class TradingHoursViewModel : BindableBase
     {
         try
         {
-            var response = await _apiClient.GetAsync<CalendarStatusResponse>(UiApiRoutes.CalendarStatus);
+            var response = (await _apiClient.GetWithResponseAsync<CalendarStatusResponse>(UiApiRoutes.CalendarStatus)).DataOrLoggedNull("Load market calendar status");
             if (response?.Market is not null)
             {
                 UpdateStatusBanner(
@@ -252,8 +252,8 @@ public sealed class TradingHoursViewModel : BindableBase
 
         try
         {
-            var response = await _apiClient.GetAsync<CalendarHolidaysResponse>(
-                $"{UiApiRoutes.CalendarHolidays}?year={year}");
+            var response = (await _apiClient.GetWithResponseAsync<CalendarHolidaysResponse>(
+                $"{UiApiRoutes.CalendarHolidays}?year={year}")).DataOrLoggedNull("Load market holiday calendar");
             if (response?.Holidays is not null)
             {
                 Holidays.Clear();

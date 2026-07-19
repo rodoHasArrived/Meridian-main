@@ -2253,9 +2253,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             var endpoint = $"/api/workstation/security-master/securities" +
                            $"?query={Uri.EscapeDataString(query)}&take=50&activeOnly={ActiveOnly}";
 
-            var results = await ApiClientService.Instance
-                .GetAsync<SecurityMasterWorkstationDto[]>(endpoint, linked)
-                .ConfigureAwait(false);
+            var results = (await ApiClientService.Instance
+                .GetWithResponseAsync<SecurityMasterWorkstationDto[]>(endpoint, linked)
+                .ConfigureAwait(false)).DataOrLoggedNull("Search security master securities");
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
@@ -3343,9 +3343,9 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 SubscriptionPricePerShare: null,
                 RightsPerShare: null);
 
-            var result = await ApiClientService.Instance
-                .PostAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
-                .ConfigureAwait(false);
+            var result = (await ApiClientService.Instance
+                .PostWithResponseAsync<CorporateActionDto>($"/api/workstation/security-master/securities/{securityId}/corporate-actions", dto, ct)
+                .ConfigureAwait(false)).DataOrLoggedNull("Record corporate action");
 
             if (result is not null)
             {
