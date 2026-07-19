@@ -1061,6 +1061,8 @@ Meridian-main
 │       │   ├── promptfoo-adapter.py
 │       │   └── promptfoo_adapter.py
 │       ├── ci
+│       │   ├── apiclient-caller-baseline.json
+│       │   ├── check-apiclient-callers.py
 │       │   ├── check-file-size.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-warning-suppressions.py
@@ -1068,6 +1070,8 @@ Meridian-main
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── generate-release-evidence-manifest.py
 │       │   ├── run-dotnet-ci-tests.py
+│       │   ├── run-script-tests.py
+│       │   ├── script-test-quarantine.json
 │       │   └── summarize-ci-artifacts.py
 │       ├── docs
 │       │   ├── tests
@@ -5943,6 +5947,7 @@ Meridian-main
 │   │   │   │   │   ├── route-error-telemetry.ts
 │   │   │   │   │   ├── saved-layouts.test.ts
 │   │   │   │   │   ├── saved-layouts.ts
+│   │   │   │   │   ├── security-schedule-dev-fixtures.ts
 │   │   │   │   │   ├── shared-tone-mappings.test.ts
 │   │   │   │   │   ├── shared-tone-mappings.ts
 │   │   │   │   │   ├── sql-workbench-storage.test.ts
@@ -6337,6 +6342,7 @@ Meridian-main
 │   │   │   ├── AnalysisExportService.cs
 │   │   │   ├── AnalysisExportWizardService.cs
 │   │   │   ├── ApiClientService.cs
+│   │   │   ├── ApiClientSession.cs
 │   │   │   ├── ArchiveBrowserService.cs
 │   │   │   ├── ArchiveHealthService.cs
 │   │   │   ├── BackendServiceManagerBase.cs
@@ -7060,6 +7066,7 @@ Meridian-main
 │   │   │   ├── WorkspaceShellSlotContributionService.cs
 │   │   │   ├── WorkspaceShellStateProviders.cs
 │   │   │   ├── WorkspaceStateTokenStore.cs
+│   │   │   ├── WorkstationAccountingApiClient.cs
 │   │   │   ├── WorkstationOperatingContextScopeResolver.cs
 │   │   │   ├── WorkstationOperatingContextService.cs
 │   │   │   ├── WorkstationOperatorInboxApiClient.cs
@@ -8428,6 +8435,7 @@ Meridian-main
 │   │   │   ├── FundScopeTenantColumnMigrationTests.cs
 │   │   │   ├── GovernedLedgerPostingTargetTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
+│   │   │   ├── JsonlAppendStreamTests.cs
 │   │   │   ├── JsonlBatchWriteTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
@@ -8657,6 +8665,8 @@ Meridian-main
 │   │   │   ├── WorkstationStreamEndpointTests.cs
 │   │   │   ├── WorkstationTenantContextTests.cs
 │   │   │   └── WorkstationWorkflowSummaryFinancialOperationsTests.cs
+│   │   ├── UiServices
+│   │   │   └── ApiClientSessionTests.cs
 │   │   ├── Workflow
 │   │   │   ├── FundWorkflowCommandHandlerTests.cs
 │   │   │   └── RunbookServicesTests.cs
@@ -8982,6 +8992,7 @@ Meridian-main
 │   │   ├── test_buildctl_artifact_retention.py
 │   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_central_package_versions.py
+│   │   ├── test_check_apiclient_callers.py
 │   │   ├── test_check_codex_memory.py
 │   │   ├── test_check_codex_skills.py
 │   │   ├── test_check_contract_compatibility_gate.py
@@ -9026,6 +9037,7 @@ Meridian-main
 │   │   ├── test_route_maintenance_classification.py
 │   │   ├── test_run_dotnet_ci_tests.py
 │   │   ├── test_run_provider_validation_evidence_bundle.py
+│   │   ├── test_run_script_tests.py
 │   │   ├── test_schema_control_catalog.py
 │   │   ├── test_schema_control_cli.py
 │   │   ├── test_schema_control_contracts.py
@@ -9037,7 +9049,6 @@ Meridian-main
 │   │   ├── test_schema_control_workflow.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_screenshot_workflow_plan.py
-│   │   ├── test_setup_dotnet_cache_action.py
 │   │   ├── test_shared_build_retention.py
 │   │   ├── test_shared_checkpoint.py
 │   │   ├── test_summarize_desktop_workflow_bundle.py
