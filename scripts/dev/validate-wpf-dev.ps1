@@ -9,7 +9,8 @@ param(
     [switch]$BuildOnly,
     [switch]$Restore,
     [switch]$NoIsolation,
-    [switch]$AllowConcurrentDotnet
+    [switch]$AllowConcurrentDotnet,
+    [switch]$IncludeSupervisorTests
 )
 
 Set-StrictMode -Version Latest
@@ -253,32 +254,37 @@ if (-not $blockedByConcurrentDotnet) {
 
         # Meridian.LifecycleSupervisor.Tests targets net10.0-windows, so this Windows lane is
         # the only place it can execute (audit finding P9: it previously ran in no CI lane).
-        # dotnet test restores and builds the small project itself.
-        $supervisorTestsProject = "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj"
-        $supervisorTestCommand = @(
-            "dotnet",
-            "test",
-            $supervisorTestsProject,
-            "-c", $Configuration,
-            "--nologo",
-            "--verbosity", "minimal",
-            "--results-directory", $resultsDirectory
-        )
+        # Opt-in: the full windows-desktop validation passes -IncludeSupervisorTests; scoped
+        # dev loops (WPF class filters) skip it. dotnet test restores and builds the project
+        # itself with the restore-arg set — the WPF $Framework override must not leak into a
+        # project that declares its own TargetFramework (NETSDK1005 otherwise).
+        if ($IncludeSupervisorTests) {
+            $supervisorTestsProject = "tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj"
+            $supervisorTestCommand = @(
+                "dotnet",
+                "test",
+                $supervisorTestsProject,
+                "-c", $Configuration,
+                "--nologo",
+                "--verbosity", "minimal",
+                "--results-directory", $resultsDirectory
+            )
 
-        if (-not [string]::IsNullOrWhiteSpace($Filter)) {
-            $supervisorTestCommand += @("--filter", $Filter)
+            if (-not [string]::IsNullOrWhiteSpace($Filter)) {
+                $supervisorTestCommand += @("--filter", $Filter)
+            }
+
+            $supervisorTestCommand += $serializedRestoreArgs
+
+            Invoke-MeridianStepWithTestHostRetry `
+                -Name "Run lifecycle supervisor tests" `
+                -Command $supervisorTestCommand `
+                -LogName "supervisor-test.log" `
+                -SummaryDir $summaryDir `
+                -RepoRoot $repoRoot `
+                -Steps $steps `
+                -RetryEvents $retryEvents | Out-Null
         }
-
-        $supervisorTestCommand += $serializedBuildArgs
-
-        Invoke-MeridianStepWithTestHostRetry `
-            -Name "Run lifecycle supervisor tests" `
-            -Command $supervisorTestCommand `
-            -LogName "supervisor-test.log" `
-            -SummaryDir $summaryDir `
-            -RepoRoot $repoRoot `
-            -Steps $steps `
-            -RetryEvents $retryEvents | Out-Null
     }
 }
 
