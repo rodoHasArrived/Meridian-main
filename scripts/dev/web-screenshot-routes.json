@@ -474,16 +474,14 @@
       "id": "W03I5",
       "name": "web-accounting-evidence-detail",
       "path": "/accounting/evidence/detail?evidenceId=bank-statement",
-      "docLabel": "Accounting \u2014 Evidence Detail",
-      "waitForText": "Evidence Detail",
+      "docLabel": "Accounting \u2014 Evidence Detail (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Evidence reference ready for inspection",
-        "Ready to inspect",
-        "does not approve, post, or release work",
-        "Inspect selected evidence"
+        "Evidence Workbench",
+        "Document intake"
       ]
     },
     {
@@ -546,15 +544,14 @@
       "id": "W03L",
       "name": "web-accounting-evidence-workbench",
       "path": "/accounting/evidence",
-      "docLabel": "Accounting \u2014 Evidence Workbench",
-      "waitForText": "Evidence Workbench",
+      "docLabel": "Accounting \u2014 Evidence Workbench (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Evidence subjects",
-        "Evidence Vault documents",
-        "operating-bank-statement.csv"
+        "Evidence Workbench",
+        "Document intake"
       ]
     },
     {
@@ -1034,15 +1031,14 @@
       "id": "W06F",
       "name": "web-data-evidence-workbench",
       "path": "/data/evidence",
-      "docLabel": "Data \u2014 Evidence Workbench",
-      "waitForText": "Evidence Workbench",
+      "docLabel": "Data \u2014 Evidence Workbench (redirects to Reporting Evidence)",
+      "waitForText": "Evidence workbench",
       "requiredApiRoutes": [
-        "/api/workstation/data"
+        "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Evidence subjects",
-        "Document intake",
-        "Evidence Vault documents"
+        "Evidence Workbench",
+        "Document intake"
       ]
     },
     {

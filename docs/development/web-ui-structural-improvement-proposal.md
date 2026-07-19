@@ -31,9 +31,11 @@
 > delivery: Trial Balance now renders as a tab of the Ledger Explorer
 > (`/accounting/ledger?view=trial-balance`) and the Formula Workbench placeholder as a tab of
 > Quant Lab (`/strategy/quant-lab?view=formulas`); both retired routes redirect with query and
-> hash scope preserved via `legacyWorkspaceRedirect()`. Evidence Workbench canonicalization and
-> the Market Data desk merge are the next folds; the reporting run-flow merge and reconciliation
-> module extraction remain sequenced behind them.
+> hash scope preserved via `legacyWorkspaceRedirect()`. The Evidence Workbench is canonicalized
+> to `/reporting/evidence`: the `/accounting/evidence` and `/data/evidence` mounts and the
+> `/accounting/evidence/detail` stub redirect there with subject scope preserved, matching the
+> existing `evidenceWorkbenchPath()` gravity. The Market Data desk merge is the next fold; the
+> reporting run-flow merge and reconciliation module extraction remain sequenced behind it.
 
 This document reviews the browser workstation as captured in the current screenshot catalog and
 proposes a set of improvements, including large structural changes to page architecture, routing,

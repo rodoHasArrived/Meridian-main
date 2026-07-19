@@ -801,45 +801,6 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
   );
 }
 
-export function EvidenceDetailScreen() {
-  const [searchParams] = useSearchParams();
-  const evidenceId = searchParams.get("evidenceId")?.trim() || null;
-
-  return (
-    <div className="space-y-4">
-      <Card className="panel-surface">
-        <CardHeader>
-          <CardTitle>Evidence Detail</CardTitle>
-          <CardDescription>Document-level evidence can support or block work; it does not approve, post, or release work.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Selected evidence" value={evidenceId ? "Reference retained" : "No reference selected"} />
-          <FinanceFact label="Metadata source" value="Shared Evidence Workbench" />
-          <FinanceFact label="Review status" value={evidenceId ? "Ready to inspect" : "Selection required"} />
-        </CardContent>
-      </Card>
-      <StatusBanner
-        role="status"
-        tone={evidenceId ? "info" : "warning"}
-        title={evidenceId ? "Evidence reference ready for inspection" : "Select evidence to continue"}
-        detail={evidenceId
-          ? "Open the shared Evidence Workbench to load source-owned classification, extraction, links, and audit events."
-          : "Return to the Evidence Workbench and select a retained document or record."}
-      />
-      {evidenceId ? (
-        <TechnicalDetails label="Evidence reference">
-          <p className="break-all font-mono text-xs text-muted-foreground">{evidenceId}</p>
-        </TechnicalDetails>
-      ) : null}
-      <Button asChild size="sm">
-        <Link to={evidenceId ? evidenceWorkbenchPath("evidence", evidenceId) : WORKSTATION_ROUTE_CATALOG.reportingEvidence}>
-          {evidenceId ? "Inspect selected evidence" : "Open Evidence Workbench"}
-        </Link>
-      </Button>
-    </div>
-  );
-}
-
 export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
   const closePlan = firstRecord(asRecord(data), "closePlans");
   const approvals = readRecordArray(closePlan, "approvals");

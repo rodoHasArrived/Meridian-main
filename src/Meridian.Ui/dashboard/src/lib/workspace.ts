@@ -47,8 +47,8 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingAssetDetail: "/accounting/security-master/detail",
   accountingApprovals: "/accounting/approvals",
   accountingApprovalInbox: "/accounting/approvals/inbox",
-  accountingEvidence: "/accounting/evidence",
-  accountingEvidenceDetail: "/accounting/evidence/detail",
+  accountingEvidenceLegacy: "/accounting/evidence",
+  accountingEvidenceDetailLegacy: "/accounting/evidence/detail",
   reporting: "/reporting",
   reportingReportBuilder: "/reporting/report-builder",
   reportingLibrary: "/reporting/library",
@@ -75,7 +75,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   dataWatchlist: "/data/watchlist",
   dataQuotes: "/data/quotes",
   dataAlerts: "/data/alerts",
-  dataEvidence: "/data/evidence",
+  dataEvidenceLegacy: "/data/evidence",
   dataBackfills: "/data/backfills",
   dataOperations: "/data/operations",
   dataAssurance: "/data/assurance",
@@ -134,7 +134,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   BrokerageSync: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   DataShell: WORKSTATION_ROUTE_CATALOG.data,
   DataOperationsShell: WORKSTATION_ROUTE_CATALOG.data,
-  EvidenceWorkbench: WORKSTATION_ROUTE_CATALOG.accountingEvidence,
+  EvidenceWorkbench: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
   FundExceptionWorkbench: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
   FundAuditTrail: WORKSTATION_ROUTE_CATALOG.accounting,
   FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
@@ -423,6 +423,27 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
 
   if (firstSegment === "accounting" && pathSegments(pathname)[1] === "trial-balance") {
     return `${WORKSTATION_ROUTE_CATALOG.accountingLedger}${withSearchParam(search, "view", "trial-balance")}${hash}`;
+  }
+
+  if (firstSegment === "accounting" && pathSegments(pathname)[1] === "evidence") {
+    if (pathSegments(pathname)[2] === "detail") {
+      const params = new URLSearchParams(search);
+      const evidenceId = params.get("evidenceId");
+      if (evidenceId) {
+        params.delete("evidenceId");
+        params.set("subjectKind", "evidence");
+        params.set("subjectId", evidenceId);
+      }
+      const nextSearch = params.toString();
+      return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${nextSearch ? `?${nextSearch}` : ""}${hash}`;
+    }
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.accountingEvidenceLegacy.length);
+    return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "evidence") {
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataEvidenceLegacy.length);
+    return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${suffix}${search}${hash}`;
   }
 
   if (firstSegment === "strategy" && pathSegments(pathname)[1] === "formula-workbench") {

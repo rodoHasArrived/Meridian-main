@@ -53,10 +53,10 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | price-alerts-screen | `Views/NotificationCenterPage.xaml` | Partial — alert surface exists, less rule-authoring focus |
 | report-library-screen | `Views/WorkflowLibraryPage.xaml` + Reporting shell | Partial |
 | report-run-parameters-screen | `Views/AnalysisExportWizardPage.xaml` + Reporting shell | Partial |
-| finance-standard-pages-screen | `Views/AnalysisExportPage.xaml` + Reporting shell | Partial |
+| finance-standard-pages-screen (evidence-detail stub retired per `W8-UX-CONSOL-001`; `/accounting/evidence/detail` redirects into the reporting evidence workbench) | `Views/AnalysisExportPage.xaml` + Reporting shell | Partial |
 | strategy-designer-screen | `Views/QuantScriptPage.xaml` + `Views/BacktestPage.xaml` | Partial — authoring present, no designer canvas |
 | operations-continuity-screen | `Services/OperationsControlCenterClient.cs` (surfaced as a Settings tab) | **Gap-leaning** — no dedicated page |
-| evidence-workbench-screen | `Views/FinancialRecordExplorerPage.xaml` + evidence strips | **Gap** — `EvidenceWorkbench` is a wired nav target with no page (see below) |
+| evidence-workbench-screen (canonical mount `/reporting/evidence` per `W8-UX-CONSOL-001`; former `/accounting/evidence` and `/data/evidence` mounts redirect there) | `Views/FinancialRecordExplorerPage.xaml` + evidence strips | **Gap** — `EvidenceWorkbench` is a wired nav target with no page (see below) |
 | operator-readiness-console | `Views/DashboardPage.xaml` / `Views/SystemHealthPage.xaml` (tangential) | **Gap** — no cross-lane readiness console |
 | operations-record-release-screen | none (adjacent: `Views/RetentionAssurancePage.xaml`, `Views/ArchiveHealthPage.xaml`) | **Gap** — no record-release / publish-gating page |
 | covered-call-screen | `Views/OptionsPage.xaml` (chain viewer only) | **Gap** — no covered-call writing/roll workflow |

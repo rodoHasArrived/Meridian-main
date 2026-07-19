@@ -5,7 +5,6 @@ import {
   AccountDetailScreen,
   ApprovalInboxScreen,
   CloseCalendarScreen,
-  EvidenceDetailScreen,
   LedgerExplorerScreen,
   ReconciliationMatchWorkbenchScreen,
   ReportPreviewValidationScreen,
@@ -409,13 +408,4 @@ describe("finance standard pages", () => {
     expect(screen.getByText("What evidence supports it?")).toBeInTheDocument();
   });
 
-  it("renders evidence detail with the non-approval rule visible", async () => {
-    await renderPage(<EvidenceDetailScreen />, "/accounting/evidence/detail?evidenceId=bank-statement");
-
-    expect(screen.getByRole("heading", { name: "Evidence Detail" })).toBeInTheDocument();
-    expect(screen.getByText("bank-statement")).toBeInTheDocument();
-    expect(screen.getByText(/does not approve, post, or release work/i)).toBeInTheDocument();
-    expect(screen.getByText("Evidence reference ready for inspection")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Inspect selected evidence" })).toHaveAttribute("href", "/reporting/evidence?subjectKind=evidence&subjectId=bank-statement");
-  });
 });

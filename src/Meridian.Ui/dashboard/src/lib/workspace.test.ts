@@ -126,6 +126,21 @@ describe("workspace metadata", () => {
     );
   });
 
+  it("redirects retired evidence mounts to the canonical reporting evidence workbench", () => {
+    expect(legacyWorkspaceRedirect("/accounting/evidence")).toBe("/reporting/evidence");
+    expect(legacyWorkspaceRedirect("/accounting/evidence", "?subjectKind=run&subjectId=run-1", "#packet")).toBe(
+      "/reporting/evidence?subjectKind=run&subjectId=run-1#packet"
+    );
+    expect(legacyWorkspaceRedirect("/accounting/evidence/detail", "?evidenceId=bank-statement")).toBe(
+      "/reporting/evidence?subjectKind=evidence&subjectId=bank-statement"
+    );
+    expect(legacyWorkspaceRedirect("/accounting/evidence/detail")).toBe("/reporting/evidence");
+    expect(legacyWorkspaceRedirect("/data/evidence")).toBe("/reporting/evidence");
+    expect(legacyWorkspaceRedirect("/data/evidence", "?subjectKind=import-run&subjectId=imp-9")).toBe(
+      "/reporting/evidence?subjectKind=import-run&subjectId=imp-9"
+    );
+  });
+
   it("returns workspace summaries for canonical keys", () => {
     expect(workspaceForKey("reporting")).toMatchObject({
       label: "Reporting",
@@ -167,7 +182,7 @@ describe("workspace metadata", () => {
 
   it("maps backend workflow targets to browser workstation routes", () => {
     expect(workflowTargetPath("Backtest", "strategy")).toBe("/strategy");
-    expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/accounting/evidence");
+    expect(workflowTargetPath("EvidenceWorkbench", "strategy")).toBe("/reporting/evidence");
     expect(workflowTargetPath("EvidenceWorkbench:accounting-record/accounting-record-2026-05", "accounting"))
       .toBe("/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05");
     expect(workflowTargetPath(" EvidenceWorkbench:strategy-run/run 1/A ", "strategy"))

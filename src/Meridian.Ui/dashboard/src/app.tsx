@@ -112,7 +112,6 @@ const AssetDetailScreen = lazy(() => import("@/screens/asset-detail-screen").the
 const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.AccountDetailScreen })));
 const ApprovalInboxScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ApprovalInboxScreen })));
 const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.CloseCalendarScreen })));
-const EvidenceDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.EvidenceDetailScreen })));
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
@@ -602,8 +601,8 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
                   <Route path="/accounting/security-master/detail" element={<AssetDetailScreen />} />
-                  <Route path="/accounting/evidence/detail" element={<EvidenceDetailScreen />} />
-                  <Route path="/accounting/evidence" element={<EvidenceWorkbenchScreen />} />
+                  <Route path="/accounting/evidence/detail" element={<LegacyWorkspaceRedirect />} />
+                  <Route path="/accounting/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/library" element={<ReportLibraryScreen data={reporting} />} />
@@ -620,7 +619,7 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
                   <Route path="/data/quotes" element={<LiveQuotesScreen />} />
                   <Route path="/data/watchlist" element={<WatchlistScreen />} />
                   <Route path="/data/alerts" element={<PriceAlertsScreen />} />
-                  <Route path="/data/evidence" element={<EvidenceWorkbenchScreen />} />
+                  <Route path="/data/evidence" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/security-master/*" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/*" element={(

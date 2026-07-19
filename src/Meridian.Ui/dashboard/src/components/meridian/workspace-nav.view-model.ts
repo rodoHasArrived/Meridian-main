@@ -97,7 +97,6 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
     { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
     { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals },
-    { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.accountingEvidence },
     { label: "Configure", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
   ],
   reporting: [
@@ -125,7 +124,6 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Watchlist", route: WORKSTATION_ROUTE_CATALOG.dataWatchlist },
     { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
     { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts },
-    { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.dataEvidence },
     { label: "Ingestion operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations },
     { label: "Storage assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance },
     { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports },

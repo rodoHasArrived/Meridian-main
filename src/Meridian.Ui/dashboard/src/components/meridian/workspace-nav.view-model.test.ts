@@ -153,7 +153,6 @@ describe("workspace nav view model", () => {
       "/accounting/exceptions",
       "/accounting/security-master",
       "/accounting/approvals",
-      "/accounting/evidence",
       "/accounting/configure"
     ]);
     expect(accounting?.subItems[0]).toMatchObject({
@@ -176,15 +175,14 @@ describe("workspace nav view model", () => {
     });
   });
 
-  it("surfaces the accounting evidence intake queue under Accounting", () => {
-    const model = buildWorkspaceNavViewModel("/accounting/evidence");
+  it("keeps the evidence workbench out of Accounting navigation after canonicalization", () => {
+    const model = buildWorkspaceNavViewModel("/accounting/ledger");
     const accounting = model.items.find((item) => item.key === "accounting");
+    const reporting = model.items.find((item) => item.key === "reporting");
 
-    expect(accounting?.subItems.find((item) => item.route === "/accounting/evidence")).toMatchObject({
-      label: "Evidence",
-      active: true,
-      ariaCurrent: "page",
-      ariaLabel: "Evidence, current page"
+    expect(accounting?.subItems.map((item) => item.route)).not.toContain("/accounting/evidence");
+    expect(reporting?.subItems.find((item) => item.route === "/reporting/evidence")).toMatchObject({
+      label: "Evidence"
     });
   });
 
@@ -309,7 +307,6 @@ describe("workspace nav view model", () => {
       "/data/watchlist",
       "/data/quotes",
       "/data/alerts",
-      "/data/evidence",
       "/data/operations",
       "/data/assurance",
       "/data/exports",
@@ -323,16 +320,11 @@ describe("workspace nav view model", () => {
     });
   });
 
-  it("surfaces the document evidence intake queue under Data", () => {
-    const model = buildWorkspaceNavViewModel("/data/evidence");
+  it("keeps the evidence workbench out of Data navigation after canonicalization", () => {
+    const model = buildWorkspaceNavViewModel("/data/operations");
     const data = model.items.find((item) => item.key === "data");
 
-    expect(data?.subItems.find((item) => item.route === "/data/evidence")).toMatchObject({
-      label: "Evidence",
-      active: true,
-      ariaCurrent: "page",
-      ariaLabel: "Evidence, current page"
-    });
+    expect(data?.subItems.map((item) => item.route)).not.toContain("/data/evidence");
   });
 
   it("surfaces the provider catalog lane under Data", () => {
