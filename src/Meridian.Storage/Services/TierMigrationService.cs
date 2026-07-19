@@ -272,9 +272,18 @@ public sealed class TierMigrationService : ITierMigrationService
         var sourceInfo = new FileInfo(sourcePath);
         var originalSize = sourceInfo.Length;
 
-        // Determine target path
+        // Determine target path. The migrated file must land inside the target tier's root:
+        // a source outside the storage root produces ".." segments in the relative path, and
+        // writing (or later deleting) through such a path would escape the tier directory.
         var relativePath = Path.GetRelativePath(_options.RootPath, sourcePath);
-        var targetPath = Path.Combine(targetTier.Path, relativePath);
+        var tierRoot = Path.GetFullPath(targetTier.Path);
+        var targetPath = Path.GetFullPath(Path.Combine(tierRoot, relativePath));
+        if (!targetPath.StartsWith(tierRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            && !string.Equals(targetPath, tierRoot, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Refusing to migrate '{sourcePath}': the resolved target '{targetPath}' escapes tier root '{tierRoot}'.");
+        }
 
         // Reject conversions this service does not actually implement. Renaming the target
         // extension without converting the payload would ship mislabeled bytes and — with
