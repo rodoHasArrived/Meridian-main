@@ -64,7 +64,6 @@ const QUANT_LAB_TABS = [
 ];
 
 export function QuantLabScreen() {
-  const vm = useQuantLabScreenViewModel();
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") === "formulas" ? "formulas" : "lab";
 
@@ -93,8 +92,21 @@ export function QuantLabScreen() {
         }}
       >
         <TabPanel>
-          {view === "lab" ? (
-            <div className="grid gap-4">
+          {view === "lab" ? <ScriptLabPanel /> : null}
+        </TabPanel>
+        <TabPanel>
+          {view === "formulas" ? <FormulaWorkbenchPanel /> : null}
+        </TabPanel>
+      </Tabs>
+    </ScreenLayout>
+  );
+}
+
+function ScriptLabPanel() {
+  const vm = useQuantLabScreenViewModel();
+
+  return (
+    <div className="grid gap-4">
       <span className="sr-only" aria-live="polite">{vm.runStatusAnnouncement}</span>
       <Card>
         <CardContent className="space-y-3">
@@ -154,14 +166,7 @@ export function QuantLabScreen() {
           <TemplatesPanel templates={vm.templateRows} state={vm.templatesPanel} onSelect={vm.loadTemplate} />
         </div>
       </div>
-            </div>
-          ) : null}
-        </TabPanel>
-        <TabPanel>
-          {view === "formulas" ? <FormulaWorkbenchPanel /> : null}
-        </TabPanel>
-      </Tabs>
-    </ScreenLayout>
+    </div>
   );
 }
 
