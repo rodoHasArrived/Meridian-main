@@ -153,12 +153,15 @@ public sealed class ApiClientService : IDisposable
     }
 
     /// <summary>
-    /// Performs a GET request to the specified endpoint.
+    /// Performs a GET request to the specified endpoint. Returns null ONLY for 404 (not found)
+    /// and — for legacy compatibility — on other failures, which are now logged. New callers
+    /// must use <see cref="GetWithResponseAsync{T}"/> so failures stay distinguishable from
+    /// absent data; the CI caller ratchet (check-apiclient-callers.py) blocks new call sites.
     /// </summary>
     public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
     {
         var url = BuildUrl(endpoint);
-        return SendAsync<T>(() => _httpClient.GetAsync(url, ct), ct);
+        return SendAsync<T>("GET", url, () => _httpClient.GetAsync(url, ct), ct);
     }
 
     /// <summary>
@@ -171,12 +174,15 @@ public sealed class ApiClientService : IDisposable
     }
 
     /// <summary>
-    /// Performs a POST request with JSON body.
+    /// Performs a POST request with JSON body. Returns null ONLY for 404 (not found) and — for
+    /// legacy compatibility — on other failures, which are now logged. New callers must use
+    /// <see cref="PostWithResponseAsync{T}"/> so failures stay distinguishable from absent data;
+    /// the CI caller ratchet (check-apiclient-callers.py) blocks new call sites.
     /// </summary>
     public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
     {
         var url = BuildUrl(endpoint);
-        return SendAsync<T>(() => _httpClient.PostAsync(url, CreateJsonContent(body), ct), ct);
+        return SendAsync<T>("POST", url, () => _httpClient.PostAsync(url, CreateJsonContent(body), ct), ct);
     }
 
     /// <summary>
@@ -214,11 +220,12 @@ public sealed class ApiClientService : IDisposable
 
     /// <summary>
     /// Sends a request and deserializes a successful JSON response, returning null on any
-    /// non-success status or failure (except cancellation, which is rethrown). Centralizes the
-    /// try/catch/deserialize pattern shared by <see cref="GetAsync{T}"/> and <see cref="PostAsync{T}"/>.
-    /// The request is built inside the try block so serialization errors are handled uniformly.
+    /// non-success status or failure (except cancellation, which is rethrown). Null is the
+    /// documented result for 404 only; every other failure is logged before returning null so
+    /// backend outages are no longer indistinguishable from empty data (audit finding P7).
+    /// Legacy seam: new code uses <see cref="SendWithResponseAsync{T}"/>.
     /// </summary>
-    private static async Task<T?> SendAsync<T>(Func<Task<HttpResponseMessage>> send, CancellationToken ct)
+    private static async Task<T?> SendAsync<T>(string method, string url, Func<Task<HttpResponseMessage>> send, CancellationToken ct)
         where T : class
     {
         try
@@ -226,6 +233,13 @@ public sealed class ApiClientService : IDisposable
             var response = await send();
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
+                {
+                    LoggingService.Instance.LogWarning(
+                        $"API {method} {url} failed with {(int)response.StatusCode} {response.StatusCode}; returning null. " +
+                        "Callers on the legacy null-based seam cannot distinguish this failure from absent data.");
+                }
+
                 return null;
             }
 
@@ -236,8 +250,9 @@ public sealed class ApiClientService : IDisposable
         {
             throw;
         }
-        catch
+        catch (Exception ex)
         {
+            LoggingService.Instance.LogError($"API {method} {url} threw; returning null.", ex);
             return null;
         }
     }

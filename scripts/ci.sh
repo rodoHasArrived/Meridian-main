@@ -138,6 +138,9 @@ verify_dotnet() {
   run_step "Validate warning suppression inventory" \
     "$python_cmd" build/scripts/ci/check-warning-suppressions.py
 
+  run_step "Enforce ApiClientService caller ratchet" \
+    "$python_cmd" build/scripts/ci/check-apiclient-callers.py
+
   run_step "Enforce no-new-god-file ratchet" \
     "$python_cmd" build/scripts/ci/check-file-size.py
 
