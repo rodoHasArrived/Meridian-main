@@ -21,7 +21,7 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
         // Arrange
         var options = new StorageOptions { RootPath = TestDataRoot };
         var policy = new TestStoragePolicy(TestDataRoot);
-        await using var sink = new JsonlStorageSink(options, policy, JsonlBatchOptions.NoBatching);
+        var sink = new JsonlStorageSink(options, policy, JsonlBatchOptions.NoBatching);
 
         var evt = CreateTestEvent("AAPL", 1);
 
@@ -32,6 +32,9 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
         // Assert
         sink.EventsWritten.Should().Be(1);
         sink.EventsBuffered.Should().Be(0);
+
+        // Dispose sink to release the persistent append handle before reading on Windows
+        await sink.DisposeAsync();
 
         var files = Directory.GetFiles(TestDataRoot, "*.jsonl", SearchOption.AllDirectories);
         files.Should().HaveCount(1);
@@ -175,7 +178,7 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
         var batchOptions = new JsonlBatchOptions { BatchSize = 5, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
         var options = new StorageOptions { RootPath = TestDataRoot };
         var policy = new TestStoragePolicy(TestDataRoot);
-        await using var sink = new JsonlStorageSink(options, policy, batchOptions);
+        var sink = new JsonlStorageSink(options, policy, batchOptions);
 
         // Act - Add events for different symbols
         for (int i = 0; i < 3; i++)
@@ -189,6 +192,9 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
 
         await sink.FlushAsync();
         sink.EventsWritten.Should().Be(6);
+
+        // Dispose sink to release the persistent append handles before reading on Windows
+        await sink.DisposeAsync();
 
         var files = Directory.GetFiles(TestDataRoot, "*.jsonl", SearchOption.AllDirectories);
         files.Should().HaveCount(2);
