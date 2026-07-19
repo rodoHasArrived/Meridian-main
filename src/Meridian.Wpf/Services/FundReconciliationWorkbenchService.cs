@@ -134,7 +134,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         ArgumentNullException.ThrowIfNull(breakRow);
 
         var detail = await _apiClient.GetLatestRunDetailAsync(breakRow.RunId, ct).ConfigureAwait(false);
-        return detail is null ? null : BuildStrategyDetail(detail, baseCurrency, breakRow);
+        return detail is null ? null : BuildStrategyDetail(detail, baseCurrency, breakRow, ResolveActorLabel());
     }
 
     public async Task<FundReconciliationDetailModel?> GetRunDetailAsync(
@@ -149,7 +149,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             var results = await _fundAccountService
                 .GetReconciliationResultsAsync(runRow.ReconciliationRunId, ct)
                 .ConfigureAwait(false);
-            return BuildAccountDetail(runRow, results, baseCurrency);
+            return BuildAccountDetail(runRow, results, baseCurrency, ResolveActorLabel());
         }
 
         ReconciliationRunDetail? detail = null;
@@ -159,7 +159,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         }
 
         detail ??= await _apiClient.GetRunDetailAsync(runRow.ReconciliationRunId.ToString("N"), ct).ConfigureAwait(false);
-        return detail is null ? null : BuildStrategyDetail(detail, baseCurrency, focusBreak: null, runOverride: runRow);
+        return detail is null ? null : BuildStrategyDetail(detail, baseCurrency, focusBreak: null, ResolveActorLabel(), runOverride: runRow);
     }
 
     public Task<WorkstationReconciliationActionResult> StartReviewAsync(
@@ -477,6 +477,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         ReconciliationRunDetail detail,
         string baseCurrency,
         FundReconciliationBreakQueueRow? focusBreak,
+        string fallbackActorLabel,
         FundReconciliationRunRow? runOverride = null)
     {
         var strategyName = runOverride?.PrimaryLabel
@@ -555,7 +556,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 Description: string.IsNullOrWhiteSpace(focusBreak.AssignedToLabel)
                     ? "Assigned for review."
                     : $"Assigned to {focusBreak.AssignedToLabel}.",
-                ActorLabel: focusBreak.ReviewedBy ?? ResolveActorLabel()));
+                ActorLabel: focusBreak.ReviewedBy ?? fallbackActorLabel));
         }
 
         if (focusBreak?.ResolvedAt is not null)
@@ -567,7 +568,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 Description: string.IsNullOrWhiteSpace(focusBreak.ResolutionNote)
                     ? "Resolution note was not captured."
                     : focusBreak.ResolutionNote,
-                ActorLabel: focusBreak.ResolvedBy ?? ResolveActorLabel()));
+                ActorLabel: focusBreak.ResolvedBy ?? fallbackActorLabel));
         }
 
         auditRows.Sort(static (left, right) => right.Timestamp.CompareTo(left.Timestamp));
@@ -603,7 +604,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
     private static FundReconciliationDetailModel BuildAccountDetail(
         FundReconciliationRunRow runRow,
         IReadOnlyList<AccountReconciliationResultDto> results,
-        string baseCurrency)
+        string baseCurrency,
+        string fallbackActorLabel)
     {
         var exceptionRows = results
             .Where(result => !result.IsMatch)
@@ -619,7 +621,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 TimestampText: runRow.RequestedAtText,
                 Title: "Account reconciliation requested",
                 Description: $"{runRow.TotalChecks} check(s) were evaluated for {runRow.PrimaryLabel}.",
-                ActorLabel: ResolveActorLabel()),
+                ActorLabel: fallbackActorLabel),
             new FundReconciliationAuditTrailRow(
                 Timestamp: runRow.CompletedAt ?? runRow.RequestedAt,
                 TimestampText: runRow.CompletedAtText,
