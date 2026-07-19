@@ -290,7 +290,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     public AccountingConfigureViewModel(
         FundContextService fundContextService,
-        IAccountingConfigurationService configurationService,
+        IWorkstationAccountingApiClient configurationService,
         IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService,
         IAccountingConfigurationStore? configurationStore = null,
         IManualJournalEntryDraftStore? manualJournalEntryDraftStore = null,

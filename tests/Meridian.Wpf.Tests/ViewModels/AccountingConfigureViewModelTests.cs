@@ -1122,7 +1122,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var manualJournalService = new StaticManualJournalEntryWorkbenchService(projection);
         var viewModel = new AccountingConfigureViewModel(
             fundContext,
-            configurationService,
+            new WorkstationAccountingApiClientStub(configurationService),
             manualJournalService,
             configurationStore,
             capitalAccountWorkbenchService: new CapitalAccountWorkbenchService(manualJournalService));
@@ -1636,7 +1636,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var productionReadinessService = new AccountingProductionReadinessService(services.BuildServiceProvider());
         var viewModel = new AccountingConfigureViewModel(
             fundContext,
-            configurationService,
+            new WorkstationAccountingApiClientStub(configurationService),
             manualJournalService,
             configurationStore,
             draftStore,
@@ -1984,7 +1984,53 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             => Task.FromException<LedgerPeriodCloseResultDto>(new NotSupportedException("Accounting configure tests do not close ledger periods."));
     }
 
-    private sealed class StaticAccountingConfigurationService : IAccountingConfigurationService
+    /// <summary>
+    /// Adapts an in-process configuration service to the desktop's HTTP-client seam so the
+    /// ViewModel under test keeps exercising local store semantics.
+    /// </summary>
+    private sealed class WorkstationAccountingApiClientStub : IWorkstationAccountingApiClient
+    {
+        private readonly IAccountingConfigurationService _inner;
+
+        public WorkstationAccountingApiClientStub(IAccountingConfigurationService inner) => _inner = inner;
+
+        public Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
+            string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
+            => _inner.GetWorkspaceAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId);
+
+        public Task<AccountingConfigurationWorkspaceDto> UpsertChartNodeAsync(UpsertChartOfAccountsNodeRequest request, CancellationToken ct = default)
+            => _inner.UpsertChartNodeAsync(request, ct);
+
+        public Task<AccountingConfigurationWorkspaceDto> UpsertTemplateAsync(UpsertJournalEntryTemplateRequest request, CancellationToken ct = default)
+            => _inner.UpsertTemplateAsync(request, ct);
+
+        public Task<AccountingConfigurationWorkspaceDto> UpsertPostingRuleAsync(UpsertPostingRuleRequest request, CancellationToken ct = default)
+            => _inner.UpsertPostingRuleAsync(request, ct);
+
+        public Task<AccountingConfigurationWorkspaceDto> ApprovePostingRulePromotionAsync(ApprovePostingRulePromotionRequest request, CancellationToken ct = default)
+            => _inner.ApprovePostingRulePromotionAsync(request, ct);
+
+        public Task<AccountingConfigurationWorkspaceDto> UpsertRuleTestCaseAsync(UpsertAccountingRuleTestCaseRequest request, CancellationToken ct = default)
+            => _inner.UpsertRuleTestCaseAsync(request, ct);
+
+        public Task<AccountingJournalTemplatePreviewDto> PreviewTemplateAsync(PreviewJournalTemplateRequest request, CancellationToken ct = default)
+            => _inner.PreviewTemplateAsync(request, ct);
+
+        public Task<RuleDryRunResultDto> DryRunPostingRuleAsync(RuleDryRunRequestDto request, CancellationToken ct = default)
+            => _inner.DryRunPostingRuleAsync(request, ct);
+
+        public Task<AccountingRuleTestSuiteResultDto> ExecuteRuleTestCasesAsync(ExecuteAccountingRuleTestCasesRequestDto request, CancellationToken ct = default)
+            => _inner.ExecuteRuleTestCasesAsync(request, ct);
+
+        public Task<AccountingConfigurationWorkspaceDto> ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default)
+            => _inner.ActivateAsync(request, ct);
+
+        public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(
+            string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
+            => _inner.ListAuditAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId);
+    }
+
+    private sealed class StaticAccountingConfigurationService : IWorkstationAccountingApiClient
     {
         private readonly AccountingConfigurationWorkspaceDto _workspace;
         private readonly AccountingConfigurationWorkspaceDto? _refreshedWorkspace;

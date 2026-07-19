@@ -182,7 +182,7 @@ public sealed class ApiClientService : IDisposable
     public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default) where T : class
     {
         var url = BuildUrl(endpoint);
-        return SendAsync<T>("POST", url, () => _httpClient.PostAsync(url, CreateJsonContent(body), ct), ct);
+        return SendAsync<T>("POST", url, () => _httpClient.SendAsync(CreateMutationRequest(HttpMethod.Post, url, CreateJsonContent(body)), ct), ct);
     }
 
     /// <summary>
@@ -196,7 +196,7 @@ public sealed class ApiClientService : IDisposable
     {
         var url = BuildUrl(endpoint);
         var client = customClient ?? _httpClient;
-        return SendWithResponseAsync<T>(() => client.PostAsync(url, CreateJsonContent(body), ct), ct);
+        return SendWithResponseAsync<T>(() => client.SendAsync(CreateMutationRequest(HttpMethod.Post, url, CreateJsonContent(body)), ct), ct);
     }
 
     /// <summary>
@@ -207,7 +207,88 @@ public sealed class ApiClientService : IDisposable
         CancellationToken ct = default) where T : class
     {
         var url = BuildUrl(endpoint);
-        return SendWithResponseAsync<T>(() => _httpClient.DeleteAsync(url, ct), ct);
+        return SendWithResponseAsync<T>(() => _httpClient.SendAsync(CreateMutationRequest(HttpMethod.Delete, url, content: null), ct), ct);
+    }
+
+    /// <summary>
+    /// Builds a mutating request that echoes the server-issued CSRF cookie as the
+    /// X-CSRF-Token header. The server's CookieCsrfMiddleware requires the header on
+    /// session-authenticated POST/PUT/PATCH/DELETE calls under /api; before a login
+    /// session exists there is no CSRF cookie and the header is simply omitted.
+    /// </summary>
+    private HttpRequestMessage CreateMutationRequest(HttpMethod method, string url, HttpContent? content)
+    {
+        var request = new HttpRequestMessage(method, url) { Content = content };
+        var csrfToken = ApiClientSession.GetCsrfToken(_baseUrl);
+        if (!string.IsNullOrWhiteSpace(csrfToken))
+        {
+            request.Headers.TryAddWithoutValidation(ApiClientSession.CsrfHeaderName, csrfToken);
+        }
+
+        return request;
+    }
+
+    /// <summary>
+    /// Establishes the server login session shared by every "api-client" consumer (audit
+    /// finding P8). On success the server's Set-Cookie responses (mdc-session + mdc-csrf)
+    /// land in <see cref="ApiClientSession.Cookies"/>, so subsequent API calls are
+    /// authenticated — letting endpoints stamp the session actor over client-supplied
+    /// values — and mutations carry the CSRF header. Mirrors
+    /// LifecycleControlClient.AuthenticateAsync, which manages its own separate session.
+    /// </summary>
+    public async Task<bool> AuthenticateAsync(string username, string password, CancellationToken ct = default)
+    {
+        var url = BuildUrl(UiApiRoutes.AuthApiLogin);
+        try
+        {
+            using var response = await _httpClient.PostAsync(
+                url,
+                CreateJsonContent(new { username, password, returnUrl = "/workstation/" }),
+                ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                LoggingService.Instance.LogWarning(
+                    $"Workstation API login failed with {(int)response.StatusCode} {response.StatusCode}.");
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogError("Workstation API login threw.", ex);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Ends the server login session (best effort) and expires the locally held session
+    /// cookies so no further request can ride the old session.
+    /// </summary>
+    public async Task SignOutAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var url = BuildUrl(UiApiRoutes.AuthApiLogout);
+            using var response = await _httpClient.SendAsync(
+                CreateMutationRequest(HttpMethod.Post, url, content: null), ct);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogWarning(
+                $"Workstation API logout failed ({ex.Message}); expiring local session cookies anyway.");
+        }
+        finally
+        {
+            ApiClientSession.Clear(_baseUrl);
+        }
     }
 
     /// <summary>
