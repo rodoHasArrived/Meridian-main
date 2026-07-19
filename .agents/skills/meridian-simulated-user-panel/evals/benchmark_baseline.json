@@ -1,7 +1,7 @@
 {
   "_comment": "Accepted baseline pass rates per eval. Update after a verified strong run of the simulated-user-panel skill.",
-  "_schema_version": "2026-04-14",
-  "_last_updated": "2026-04-14",
+  "_schema_version": "2026-07-19",
+  "_last_updated": "2026-07-19",
   "baselines": [
     {
       "eval_id": 1,

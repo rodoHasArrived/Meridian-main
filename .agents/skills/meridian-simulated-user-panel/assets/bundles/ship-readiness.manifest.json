@@ -1,18 +1,36 @@
 {
-  "schema_version": "2026-04-14",
+  "schema_version": "2026-07-19",
   "mode": "release_gate",
   "artifact_type": "ship-readiness",
   "artifact_paths": [
     "artifacts/desktop-workflows/example-run/manifest.json",
-    "tests/Meridian.Wpf.Tests/Views/ExampleSmokeTests.cs",
+    "artifacts/test-results/example-smoke-result.trx",
     "docs/screenshots/desktop/example-screen.png"
   ],
+  "artifact_evidence": [
+    {
+      "path": "artifacts/desktop-workflows/example-run/manifest.json",
+      "kind": "workflow-manifest",
+      "status": "verified"
+    },
+    {
+      "path": "artifacts/test-results/example-smoke-result.trx",
+      "kind": "test-result",
+      "status": "verified"
+    },
+    {
+      "path": "docs/screenshots/desktop/example-screen.png",
+      "kind": "screenshot",
+      "status": "verified"
+    }
+  ],
+  "artifact_freshness": "current",
   "artifact_summary": "Release-gate bundle for a near-ship feature.",
   "persona_set": {
     "panel": "operations-controls",
     "required_roles": [
-      "Owner-Operator",
-      "Fund Operations Lead"
+      "Controller",
+      "Operations Manager"
     ]
   },
   "focus_areas": [
