@@ -65,6 +65,7 @@ function readDashboardPrimitive(path: string) {
 
 describe("dashboard design-system contract", () => {
   it("keeps the checked-in design-system bundle and manifest synchronized", () => {
+    // Use process.cwd() relative path to avoid import.meta.url resolution issues in browser test environments
     const script = resolve(
       process.cwd(),
       "../../../Meridian Design System/scripts/sync_generated_artifacts.mjs"
