@@ -23,9 +23,9 @@ public sealed class BackfillProviderConfigService : IBackfillProviderConfigAudit
     public static BackfillProviderConfigService Instance => _instance.Value;
 
     private BackfillProviderConfigService()
-        : this(ct => ApiClientService.Instance.GetAsync<BackfillProviderStatusDto[]>(
+        : this(async ct => (await ApiClientService.Instance.GetWithResponseAsync<BackfillProviderStatusDto[]>(
             "/api/backfill/providers/statuses",
-            ct))
+            ct)).DataOrLoggedNull("Get backfill provider statuses"))
     {
     }
 

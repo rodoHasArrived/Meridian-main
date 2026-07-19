@@ -65,11 +65,11 @@ public sealed class DataQualityApiClient : DataQualityServiceBase, IDataQualityA
         return response.Success ? response.Data : null;
     }
 
-    protected override Task<T?> GetAsync<T>(string endpoint, CancellationToken ct) where T : class
-        => _apiClient.GetAsync<T>(endpoint, ct);
+    protected override async Task<T?> GetAsync<T>(string endpoint, CancellationToken ct) where T : class
+        => (await _apiClient.GetWithResponseAsync<T>(endpoint, ct)).DataOrLoggedNull("Data quality API GET request");
 
-    protected override Task<T?> PostAsync<T>(string endpoint, object? body, CancellationToken ct) where T : class
-        => _apiClient.PostAsync<T>(endpoint, body, ct);
+    protected override async Task<T?> PostAsync<T>(string endpoint, object? body, CancellationToken ct) where T : class
+        => (await _apiClient.PostWithResponseAsync<T>(endpoint, body, ct)).DataOrLoggedNull("Data quality API POST request");
 
     protected override async Task<(bool Success, T? Data)> PostWithResponseAsync<T>(string endpoint, object? body, CancellationToken ct)
         where T : class
