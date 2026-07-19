@@ -1045,6 +1045,97 @@ Meridian-main
 │   │   └── __init__.py
 │   ├── rules
 │   │   └── doc-rules.yaml
+│   ├── schema-control
+│   │   └── ci-run-29683799068
+│   │       └── candidate
+│   │           ├── docs
+│   │           │   ├── contracts
+│   │           │   │   ├── asset-operations-contracts.md
+│   │           │   │   ├── banking-contracts.md
+│   │           │   │   ├── direct-lending-contracts-page-01.md
+│   │           │   │   ├── direct-lending-contracts-page-02.md
+│   │           │   │   ├── direct-lending-contracts.md
+│   │           │   │   ├── fund-governance-contracts-page-01.md
+│   │           │   │   ├── fund-governance-contracts-page-02.md
+│   │           │   │   ├── fund-governance-contracts.md
+│   │           │   │   ├── identity-access-contracts.md
+│   │           │   │   ├── ledger-contracts-page-01.md
+│   │           │   │   ├── ledger-contracts-page-02.md
+│   │           │   │   ├── ledger-contracts-page-03.md
+│   │           │   │   ├── ledger-contracts-page-04.md
+│   │           │   │   ├── ledger-contracts.md
+│   │           │   │   ├── money-market-contracts.md
+│   │           │   │   ├── reporting-contracts.md
+│   │           │   │   ├── security-master-contracts-page-01.md
+│   │           │   │   ├── security-master-contracts-page-02.md
+│   │           │   │   ├── security-master-contracts-page-03.md
+│   │           │   │   └── security-master-contracts.md
+│   │           │   ├── diagrams
+│   │           │   │   ├── asset_operations.mmd
+│   │           │   │   ├── banking.mmd
+│   │           │   │   ├── contracts-asset-operations-contracts.mmd
+│   │           │   │   ├── contracts-banking-contracts.mmd
+│   │           │   │   ├── contracts-direct-lending-contracts-page-01.mmd
+│   │           │   │   ├── contracts-direct-lending-contracts-page-02.mmd
+│   │           │   │   ├── contracts-fund-governance-contracts-page-01.mmd
+│   │           │   │   ├── contracts-fund-governance-contracts-page-02.mmd
+│   │           │   │   ├── contracts-identity-access-contracts.mmd
+│   │           │   │   ├── contracts-ledger-contracts-page-01.mmd
+│   │           │   │   ├── contracts-ledger-contracts-page-02.mmd
+│   │           │   │   ├── contracts-ledger-contracts-page-03.mmd
+│   │           │   │   ├── contracts-ledger-contracts-page-04.mmd
+│   │           │   │   ├── contracts-money-market-contracts.mmd
+│   │           │   │   ├── contracts-reporting-contracts.mmd
+│   │           │   │   ├── contracts-security-master-contracts-page-01.mmd
+│   │           │   │   ├── contracts-security-master-contracts-page-02.mmd
+│   │           │   │   ├── contracts-security-master-contracts-page-03.mmd
+│   │           │   │   ├── fund_accounts.mmd
+│   │           │   │   ├── fund_structure.mmd
+│   │           │   │   ├── identity_access.mmd
+│   │           │   │   ├── ledger.mmd
+│   │           │   │   ├── money_market.mmd
+│   │           │   │   ├── public.mmd
+│   │           │   │   ├── reporting.mmd
+│   │           │   │   └── security_master.mmd
+│   │           │   ├── modules
+│   │           │   │   ├── asset_operations.md
+│   │           │   │   ├── banking.md
+│   │           │   │   ├── fund_accounts.md
+│   │           │   │   ├── fund_structure.md
+│   │           │   │   ├── identity_access.md
+│   │           │   │   ├── ledger.md
+│   │           │   │   ├── money_market.md
+│   │           │   │   ├── public.md
+│   │           │   │   ├── reporting.md
+│   │           │   │   └── security_master.md
+│   │           │   ├── data-object-catalog.md
+│   │           │   ├── README.md
+│   │           │   └── schema-catalog.md
+│   │           ├── manifest
+│   │           │   ├── schemas
+│   │           │   │   ├── asset_operations.json
+│   │           │   │   ├── banking.json
+│   │           │   │   ├── fund_accounts.json
+│   │           │   │   ├── fund_structure.json
+│   │           │   │   ├── identity_access.json
+│   │           │   │   ├── ledger.json
+│   │           │   │   ├── money_market.json
+│   │           │   │   ├── public.json
+│   │           │   │   ├── reporting.json
+│   │           │   │   └── security_master.json
+│   │           │   ├── catalog.json
+│   │           │   ├── contracts.json
+│   │           │   ├── dependencies.json
+│   │           │   ├── migrations.json
+│   │           │   └── policies.json
+│   │           ├── reports
+│   │           │   ├── artifact-drift.json
+│   │           │   ├── migration-application.json
+│   │           │   ├── policy-report.json
+│   │           │   ├── schema-diff.json
+│   │           │   ├── schema-diff.md
+│   │           │   └── summary.md
+│   │           └── render-manifest.json
 │   └── scripts
 │       ├── ai
 │       │   ├── tests
@@ -1640,6 +1731,7 @@ Meridian-main
 │   │   ├── filterConfig.yml
 │   │   └── README.md
 │   ├── domain
+│   │   ├── brokerage-account-snapshot.md
 │   │   ├── fund-event.md
 │   │   ├── operational-evidence-graph.md
 │   │   ├── README.md
@@ -3917,6 +4009,7 @@ Meridian-main
 │   │   │   ├── IOperatorInboxService.cs
 │   │   │   ├── IReportingRunNotifier.cs
 │   │   │   ├── LedgerReconciliationContractCompatibility.cs
+│   │   │   ├── MarginControlCenterDtos.cs
 │   │   │   ├── OperationsContinuityDtos.cs
 │   │   │   ├── PilotReadinessArtifactDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
@@ -4323,7 +4416,8 @@ Meridian-main
 │   │   │   │   │   ├── AlpacaActivityStatementConnector.cs
 │   │   │   │   │   └── AlpacaStatementSnapshot.cs
 │   │   │   │   ├── IbFlex
-│   │   │   │   │   └── IbFlexStatementConnector.cs
+│   │   │   │   │   ├── IbFlexStatementConnector.cs
+│   │   │   │   │   └── IbFlexWebServiceClient.cs
 │   │   │   │   ├── Ofx
 │   │   │   │   │   ├── OfxDocumentParser.cs
 │   │   │   │   │   └── OfxStatementConnector.cs
@@ -4331,6 +4425,8 @@ Meridian-main
 │   │   │   │   ├── CsvStatementConnector.cs
 │   │   │   │   ├── FileStatementMappingProfileStore.cs
 │   │   │   │   ├── StatementBuiltInProfiles.cs
+│   │   │   │   ├── StatementCanonicalEvidenceJsonContext.cs
+│   │   │   │   ├── StatementCanonicalEvidenceReader.cs
 │   │   │   │   ├── StatementColumnConfidenceScorer.cs
 │   │   │   │   ├── StatementConnectorContracts.cs
 │   │   │   │   ├── StatementConnectorRegistry.cs
@@ -6087,6 +6183,8 @@ Meridian-main
 │   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── live-quotes-screen.view-model.test.ts
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
+│   │   │   │   │   ├── margin-control-center-screen.test.tsx
+│   │   │   │   │   ├── margin-control-center-screen.tsx
 │   │   │   │   │   ├── operations-continuity-reviewed-automation.view-model.ts
 │   │   │   │   │   ├── operations-continuity-screen.command-state.ts
 │   │   │   │   │   ├── operations-continuity-screen.test.tsx
@@ -6666,6 +6764,8 @@ Meridian-main
 │   │   │   ├── ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Lifecycle.cs
+│   │   │   ├── MarginCertificationStore.cs
+│   │   │   ├── MarginControlCenterReadService.cs
 │   │   │   ├── MultiAssetCoverageReadService.cs
 │   │   │   ├── OmsIntegrationService.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs
@@ -8278,6 +8378,7 @@ Meridian-main
 │   │   │   │   ├── CsvLineSplitterTests.cs
 │   │   │   │   ├── CsvStatementConnectorTests.cs
 │   │   │   │   ├── IbFlexStatementConnectorTests.cs
+│   │   │   │   ├── IbFlexWebServiceClientTests.cs
 │   │   │   │   ├── OfxStatementConnectorTests.cs
 │   │   │   │   ├── StatementColumnConfidenceScorerTests.cs
 │   │   │   │   ├── StatementConnectorTestData.cs
@@ -8585,6 +8686,7 @@ Meridian-main
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
+│   │   │   ├── MarginControlCenterReadServiceTests.cs
 │   │   │   ├── OmsIntegrationServiceTests.cs
 │   │   │   ├── OperationsContinuityReconciliationBridgeTests.cs
 │   │   │   ├── OperatorApprovalFlowScenarioTests.cs

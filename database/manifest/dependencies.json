@@ -10648,6 +10648,48 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginCertificationRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginCertificationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.MarginRequirementDto"
     },
     {
@@ -12779,6 +12821,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StarterWorkspaceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
     },
     {
       "kind": "contract-set-member",
@@ -30255,6 +30315,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "target": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.MeridianAssuranceScoreDto",
       "target": "contract:Meridian.Contracts.Workstation.EvidenceAssuranceComponentDto"
     },
@@ -33623,6 +33707,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementImportCommitResultDto",
       "target": "contract:Meridian.Contracts.Workstation.StatementKindSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementImportPreviewDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
     },
     {
       "kind": "contract-reference",
@@ -39190,7 +39292,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4581ff5b00f8a44b0e2ea4c8ebb45298cd108ff543e05a7861cf7473d4c86a76",
+  "fingerprint": "c9ce09dd111037d15735c5fccfabf17f9c3f6c9d8f2cb9e9223041cc3ef28f38",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -49889,6 +49991,48 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginCertificationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginCertificationRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginCertificationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginCertificationResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlAccountDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlAlertDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlAlertDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlCenterDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.MarginPositionContributionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.MarginPositionContributionDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.MarginRequirementDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.MarginRequirementDto"
@@ -52022,6 +52166,24 @@
       "id": "contract:Meridian.Contracts.Workstation.StarterWorkspaceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StarterWorkspaceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementActivityCompletenessDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto"
     },
     {
       "classification": "dto",
@@ -56713,11 +56875,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2750,
-    "contract_set_memberships": 3193,
-    "edges": 6516,
+    "contract_references": 2757,
+    "contract_set_memberships": 3203,
+    "edges": 6533,
     "foreign_keys": 77,
     "logical_references": 6,
-    "nodes": 2988
+    "nodes": 2998
   }
 }

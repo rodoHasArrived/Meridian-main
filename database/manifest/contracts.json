@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "840fa0112f1dd41cd4fd95545adaab92ad4d1410bea4d3147ce0b061cda784fb",
+      "fingerprint": "69b87afa9ad9a9e86760a16c15807daec516c0de3f2fd893dd7eb7194d5c12f1",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1785,6 +1785,13 @@
         "Meridian.Contracts.Workstation.LedgerReconciliationContractCompatibility",
         "Meridian.Contracts.Workstation.LedgerSummary",
         "Meridian.Contracts.Workstation.LedgerTrialBalanceLine",
+        "Meridian.Contracts.Workstation.MarginCertificationRequestDto",
+        "Meridian.Contracts.Workstation.MarginCertificationResultDto",
+        "Meridian.Contracts.Workstation.MarginControlAccountDto",
+        "Meridian.Contracts.Workstation.MarginControlAlertDto",
+        "Meridian.Contracts.Workstation.MarginControlCenterDto",
+        "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto",
+        "Meridian.Contracts.Workstation.MarginPositionContributionDto",
         "Meridian.Contracts.Workstation.MarginRequirementDto",
         "Meridian.Contracts.Workstation.MeridianAssuranceScoreDto",
         "Meridian.Contracts.Workstation.MetricsDiff",
@@ -2141,6 +2148,9 @@
         "Meridian.Contracts.Workstation.SettlementInstruction",
         "Meridian.Contracts.Workstation.StarterWorkspaceDto",
         "Meridian.Contracts.Workstation.StartWorkflow",
+        "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+        "Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+        "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
         "Meridian.Contracts.Workstation.StatementBreakDto",
         "Meridian.Contracts.Workstation.StatementBreakType",
         "Meridian.Contracts.Workstation.StatementColumnConfidenceDto",
@@ -3355,7 +3365,7 @@
       ]
     }
   ],
-  "fingerprint": "b30383a659bb3e6d75d5b392b5e7437d6aca35451185b7122ea9d65f7b2e45ac",
+  "fingerprint": "91e525d8491eaf7c2607dc2233b6ae061e5f8da655ff0b704cc07e0b1ded8c50",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5392,7 +5402,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "1c74f4f8c687870486c311e25ff0a9f2a65d79c3b0befccaccb75d311eb5c423",
+      "fingerprint": "f1f3ba3d0c37647530a5db8d606790d6f5296748885aca2697bdb7da33e96c50",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -5672,6 +5682,13 @@
         "Meridian.Contracts.Workstation.LedgerReconciliationContractCompatibility",
         "Meridian.Contracts.Workstation.LedgerSummary",
         "Meridian.Contracts.Workstation.LedgerTrialBalanceLine",
+        "Meridian.Contracts.Workstation.MarginCertificationRequestDto",
+        "Meridian.Contracts.Workstation.MarginCertificationResultDto",
+        "Meridian.Contracts.Workstation.MarginControlAccountDto",
+        "Meridian.Contracts.Workstation.MarginControlAlertDto",
+        "Meridian.Contracts.Workstation.MarginControlCenterDto",
+        "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto",
+        "Meridian.Contracts.Workstation.MarginPositionContributionDto",
         "Meridian.Contracts.Workstation.MarginRequirementDto",
         "Meridian.Contracts.Workstation.MeridianAssuranceScoreDto",
         "Meridian.Contracts.Workstation.MetricsDiff",
@@ -6028,6 +6045,9 @@
         "Meridian.Contracts.Workstation.SettlementInstruction",
         "Meridian.Contracts.Workstation.StarterWorkspaceDto",
         "Meridian.Contracts.Workstation.StartWorkflow",
+        "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+        "Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+        "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
         "Meridian.Contracts.Workstation.StatementBreakDto",
         "Meridian.Contracts.Workstation.StatementBreakType",
         "Meridian.Contracts.Workstation.StatementColumnConfidenceDto",
@@ -252863,6 +252883,1390 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "5a0ffd4fad4d01acb8bb04bf48f12219e002837e222ac6608cc4eac4b8f33388",
+      "full_name": "Meridian.Contracts.Workstation.MarginCertificationRequestDto",
+      "id": "Meridian.Contracts.Workstation.MarginCertificationRequestDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 79,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOf",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 80,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidencePath",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 81,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Note",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 82,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 78,
+          "type": "string"
+        }
+      ],
+      "name": "MarginCertificationRequestDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.MarginCertificationRequestDto",
+      "references": [],
+      "source": {
+        "line": 77,
+        "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 77,
+          "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "6431718494e57f1f28b793c14c476b2876892b90eacab8562cbff92be50f3680",
+      "full_name": "Meridian.Contracts.Workstation.MarginCertificationResultDto",
+      "id": "Meridian.Contracts.Workstation.MarginCertificationResultDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 86,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOf",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 87,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertifiedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 90,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertifiedBy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 89,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidencePath",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 88,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Note",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 91,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 85,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 92,
+          "type": "string"
+        }
+      ],
+      "name": "MarginCertificationResultDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.MarginCertificationResultDto",
+      "references": [],
+      "source": {
+        "line": 84,
+        "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 84,
+          "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "3fc0b7bbcad4aa613a7c6f5aba5e06f81d785d778d0a67771a38f7c9930bbfd8",
+      "full_name": "Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "id": "Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 6,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActivityComplete",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "bool?",
+          "source_line": 25,
+          "type": "bool?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOf",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 7,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BorrowPositionCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 29,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BuyingPower",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 14,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Cash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 12,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertificationNote",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 34,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertificationState",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 9,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertifiedAtUtc",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 33,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CertifiedBy",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 32,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 10,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Equity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 13,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidencePath",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 31,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MaintenanceVariance",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 23,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MarginRegime",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 11,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OptionLifecycleEventCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 28,
+          "type": "int"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "default !",
+          "element_type": "MarginPositionContributionDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PositionContributions",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<MarginPositionContributionDto>",
+          "source_line": 27,
+          "type": "IReadOnlyList<MarginPositionContributionDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderExcessLiquidity",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 17,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 5,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderInitialMargin",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 15,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderMaintenanceMargin",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 16,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderMarginLoan",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 18,
+          "type": "decimal?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "default !",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Restrictions",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 26,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RiskLevel",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 24,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowExcessLiquidity",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 22,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowInitialMargin",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 20,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowMaintenanceMargin",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 21,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowModelName",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 19,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SnapshotPhase",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 8,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 30,
+          "type": "int"
+        }
+      ],
+      "name": "MarginControlAccountDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.MarginControlAccountDto",
+      "references": [
+        "Meridian.Contracts.Workstation.MarginPositionContributionDto"
+      ],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "42fce023971008d135c93351b9a86f178e10af9ad53e36effc1945b3f32850c3",
+      "full_name": "Meridian.Contracts.Workstation.MarginControlAlertDto",
+      "id": "Meridian.Contracts.Workstation.MarginControlAlertDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 60,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 61,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 62,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 59,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Severity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 58,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SuggestedAction",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 63,
+          "type": "string"
+        }
+      ],
+      "name": "MarginControlAlertDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.MarginControlAlertDto",
+      "references": [],
+      "source": {
+        "line": 57,
+        "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 57,
+          "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "4a5920e3a18b2c0ed118aa4fc8761a86ebe99fe27279e73998bf78f01aab4b1b",
+      "full_name": "Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "id": "Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 71,
+          "type": "int"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "default !",
+          "element_type": "MarginControlAccountDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Accounts",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<MarginControlAccountDto>",
+          "source_line": 67,
+          "type": "IReadOnlyList<MarginControlAccountDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "default !",
+          "element_type": "MarginControlAlertDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Alerts",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<MarginControlAlertDto>",
+          "source_line": 69,
+          "type": "IReadOnlyList<MarginControlAlertDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AuthorityNote",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 74,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EndOfDayCertificationCandidateCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 73,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "GeneratedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 66,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NextAction",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 75,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "default !",
+          "element_type": "MarginControlPrimeSummaryDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrimeSummaries",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<MarginControlPrimeSummaryDto>",
+          "source_line": 68,
+          "type": "IReadOnlyList<MarginControlPrimeSummaryDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 70,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProvisionalAccountCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 72,
+          "type": "int"
+        }
+      ],
+      "name": "MarginControlCenterDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.MarginControlCenterDto",
+      "references": [
+        "Meridian.Contracts.Workstation.MarginControlAccountDto",
+        "Meridian.Contracts.Workstation.MarginControlAlertDto",
+        "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto"
+      ],
+      "source": {
+        "line": 65,
+        "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 65,
+          "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "e17ba9fc0c43bbc42de7442f8bd17c3494cc1bc09cf94ab2059414effbcc2ebe",
+      "full_name": "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto",
+      "id": "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 51,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CriticalAccountCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 55,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderExcessLiquidity",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 54,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 50,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderMaintenanceMargin",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 53,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TotalEquity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 52,
+          "type": "decimal"
+        }
+      ],
+      "name": "MarginControlPrimeSummaryDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto",
+      "references": [],
+      "source": {
+        "line": 49,
+        "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 49,
+          "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "a7f7cdf4bb3ba0b7e48446ba014f07dfcd5a304a8ba9f6c7a2dc1289f83d6627",
+      "full_name": "Meridian.Contracts.Workstation.MarginPositionContributionDto",
+      "id": "Meridian.Contracts.Workstation.MarginPositionContributionDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BorrowRate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 43,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BorrowStatus",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 42,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MarketValue",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 39,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OptionLifecycleEventCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 45,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Quantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 38,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 46,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityMasterSource",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 47,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowInitialMargin",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 40,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShadowMaintenanceMargin",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 41,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Symbol",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 37,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 44,
+          "type": "int"
+        }
+      ],
+      "name": "MarginPositionContributionDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.MarginPositionContributionDto",
+      "references": [],
+      "source": {
+        "line": 36,
+        "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 36,
+          "path": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "d0095c590d17a7093ae06660d71876c5f1cd3b43c19e0473234380e598a8e1fb",
       "full_name": "Meridian.Contracts.Workstation.MarginRequirementDto",
       "id": "Meridian.Contracts.Workstation.MarginRequirementDto",
@@ -308441,6 +309845,543 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
+      "fingerprint": "089b29d06ce3dad820bb18841a95fc72f160bc575c556cf253e86e714e2546e7",
+      "full_name": "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+      "id": "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountBlocked",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 111,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 96,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOf",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 97,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BuyingPower",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 103,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Cash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 101,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Currency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 98,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Equity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 102,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExcessLiquidity",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 106,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "InitialMargin",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 104,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MaintenanceMargin",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 105,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MarginLoan",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 107,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MarginRegime",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 100,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Multiplier",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "decimal?",
+          "source_line": 108,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OptionsApprovedLevel",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 113,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OptionsTradingLevel",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 114,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 95,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "default": "default !",
+          "element_type": "string",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Restrictions",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<string>",
+          "source_line": 115,
+          "type": "IReadOnlyList<string>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ShortingEnabled",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 112,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Status",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 99,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TradingBlocked",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 109,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TransfersBlocked",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 110,
+          "type": "bool"
+        }
+      ],
+      "name": "StatementAccountSnapshotPreviewDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+      "references": [],
+      "source": {
+        "line": 94,
+        "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 94,
+          "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "3e3bfecce9c955559aa0a54176e1152135cc334936d8f30ac2768c01412cdd86",
+      "full_name": "Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+      "id": "Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "HighWatermark",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 124,
+          "type": "DateTimeOffset?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsComplete",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 127,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastEventId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 123,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PageCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 125,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceRecordCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 126,
+          "type": "int"
+        }
+      ],
+      "name": "StatementActivityCompletenessDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+      "references": [],
+      "source": {
+        "line": 122,
+        "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 122,
+          "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "28df35195311ef7bf6df91d85abb3fc01b03a5a2a264c3c6703efd7512eb90df",
+      "full_name": "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
+      "id": "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Category",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 118,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecordCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 120,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default !",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Subtype",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 119,
+          "type": "string"
+        }
+      ],
+      "name": "StatementActivitySubtypeSummaryDto",
+      "namespace": "Meridian.Contracts.Workstation",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
+      "references": [],
+      "source": {
+        "line": 117,
+        "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 117,
+          "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
       "fingerprint": "874d3de479685d18c88b33a4b5d02a5593e270a709228b210c423fb16f95ed4f",
       "full_name": "Meridian.Contracts.Workstation.StatementBreakDto",
       "id": "Meridian.Contracts.Workstation.StatementBreakDto",
@@ -309256,7 +311197,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4aa19a0410368e6c8077f1f6707c083f917aed8b2ce9f10ee2a31f086a42e7da",
+      "fingerprint": "7dc44accb4ae88000687409b4cda30313eaac31c14659fef2e706bd079e84e86",
       "full_name": "Meridian.Contracts.Workstation.StatementFetchScheduleDto",
       "id": "Meridian.Contracts.Workstation.StatementFetchScheduleDto",
       "kind": "record",
@@ -309273,7 +311214,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 162,
+          "source_line": 212,
           "type": "int"
         },
         {
@@ -309287,7 +311228,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 156,
+          "source_line": 206,
           "type": "string"
         },
         {
@@ -309301,7 +311242,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 163,
+          "source_line": 213,
           "type": "bool"
         },
         {
@@ -309315,7 +311256,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 157,
+          "source_line": 207,
           "type": "string"
         },
         {
@@ -309329,7 +311270,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 158,
+          "source_line": 208,
           "type": "string"
         },
         {
@@ -309343,7 +311284,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 164,
+          "source_line": 214,
           "type": "DateTimeOffset?"
         },
         {
@@ -309357,7 +311298,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 165,
+          "source_line": 215,
           "type": "string?"
         },
         {
@@ -309371,7 +311312,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 160,
+          "source_line": 210,
           "type": "string?"
         },
         {
@@ -309385,7 +311326,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 166,
+          "source_line": 216,
           "type": "DateTimeOffset?"
         },
         {
@@ -309399,7 +311340,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 155,
+          "source_line": 205,
           "type": "string"
         },
         {
@@ -309413,7 +311354,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 159,
+          "source_line": 209,
           "type": "string"
         },
         {
@@ -309427,7 +311368,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 167,
+          "source_line": 217,
           "type": "string"
         },
         {
@@ -309441,7 +311382,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 161,
+          "source_line": 211,
           "type": "string"
         }
       ],
@@ -309451,12 +311392,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.StatementFetchScheduleDto",
       "references": [],
       "source": {
-        "line": 154,
+        "line": 204,
         "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
       },
       "sources": [
         {
-          "line": 154,
+          "line": 204,
           "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
         }
       ],
@@ -309472,7 +311413,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "f5f54bce33b818f13527ff64b887848b2c2ac59018e3a56f25c524e8865d892b",
+      "fingerprint": "e13cd0e62c2d4f27332f5743d8edf2ac99a17fac9bddb48f4e79868c5e852d8e",
       "full_name": "Meridian.Contracts.Workstation.StatementFetchScheduleUpsertRequestDto",
       "id": "Meridian.Contracts.Workstation.StatementFetchScheduleUpsertRequestDto",
       "kind": "record",
@@ -309489,7 +311430,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 177,
+          "source_line": 227,
           "type": "int"
         },
         {
@@ -309503,7 +311444,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 171,
+          "source_line": 221,
           "type": "string"
         },
         {
@@ -309517,7 +311458,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 178,
+          "source_line": 228,
           "type": "bool"
         },
         {
@@ -309531,7 +311472,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 172,
+          "source_line": 222,
           "type": "string"
         },
         {
@@ -309545,7 +311486,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 173,
+          "source_line": 223,
           "type": "string"
         },
         {
@@ -309559,7 +311500,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 175,
+          "source_line": 225,
           "type": "string?"
         },
         {
@@ -309573,7 +311514,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 170,
+          "source_line": 220,
           "type": "string?"
         },
         {
@@ -309587,7 +311528,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 174,
+          "source_line": 224,
           "type": "string"
         },
         {
@@ -309602,7 +311543,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 179,
+          "source_line": 229,
           "type": "string?"
         },
         {
@@ -309616,7 +311557,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 176,
+          "source_line": 226,
           "type": "string?"
         }
       ],
@@ -309626,12 +311567,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.StatementFetchScheduleUpsertRequestDto",
       "references": [],
       "source": {
-        "line": 169,
+        "line": 219,
         "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
       },
       "sources": [
         {
-          "line": 169,
+          "line": 219,
           "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
         }
       ],
@@ -309647,7 +311588,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "f2e2149407f09c6b73b03a298b6f47541c4c342c08ca6e54c221792823ab692b",
+      "fingerprint": "e6cbe8fecf9ee003b4664234c01a47f707a7d59c2a1b89b794cb277174a2f33b",
       "full_name": "Meridian.Contracts.Workstation.StatementImportCommitResultDto",
       "id": "Meridian.Contracts.Workstation.StatementImportCommitResultDto",
       "kind": "record",
@@ -309664,7 +311605,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 122,
+          "source_line": 171,
           "type": "int"
         },
         {
@@ -309678,7 +311619,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 132,
+          "source_line": 181,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -309692,7 +311633,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 123,
+          "source_line": 172,
           "type": "int"
         },
         {
@@ -309706,7 +311647,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 133,
+          "source_line": 182,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -309720,7 +311661,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 119,
+          "source_line": 168,
           "type": "bool"
         },
         {
@@ -309734,7 +311675,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "EvidenceVaultIdentityDto?",
-          "source_line": 129,
+          "source_line": 178,
           "type": "EvidenceVaultIdentityDto?"
         },
         {
@@ -309748,7 +311689,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 130,
+          "source_line": 179,
           "type": "string?"
         },
         {
@@ -309762,7 +311703,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StatementKindSummaryDto>",
-          "source_line": 121,
+          "source_line": 170,
           "type": "IReadOnlyList<StatementKindSummaryDto>"
         },
         {
@@ -309776,7 +311717,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 127,
+          "source_line": 176,
           "type": "string"
         },
         {
@@ -309790,7 +311731,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 136,
+          "source_line": 185,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -309804,7 +311745,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<StatementImportReconciliationCaseLinkDto>",
-          "source_line": 135,
+          "source_line": 184,
           "type": "IReadOnlyList<StatementImportReconciliationCaseLinkDto>"
         },
         {
@@ -309818,7 +311759,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 134,
+          "source_line": 183,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -309832,7 +311773,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 131,
+          "source_line": 180,
           "type": "string?"
         },
         {
@@ -309846,8 +311787,22 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 120,
+          "source_line": 169,
           "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RetainedCanonicalEvidencePath",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 186,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -309860,7 +311815,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 125,
+          "source_line": 174,
           "type": "string"
         },
         {
@@ -309874,7 +311829,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 124,
+          "source_line": 173,
           "type": "string"
         },
         {
@@ -309888,7 +311843,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 118,
+          "source_line": 167,
           "type": "string"
         },
         {
@@ -309902,7 +311857,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 126,
+          "source_line": 175,
           "type": "string"
         }
       ],
@@ -309916,12 +311871,12 @@
         "Meridian.Contracts.Workstation.StatementKindSummaryDto"
       ],
       "source": {
-        "line": 117,
+        "line": 166,
         "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
       },
       "sources": [
         {
-          "line": 117,
+          "line": 166,
           "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
         }
       ],
@@ -310041,12 +311996,68 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "019f777766176685d81e8d6141ca7b48463fbbbd24f0ba21358c5882692d4ffb",
+      "fingerprint": "1028d3aaccf2fa8f7bd1e6ca6184f5deff3b2f35010ba31ccba7606032a83a7f",
       "full_name": "Meridian.Contracts.Workstation.StatementImportPreviewDto",
       "id": "Meridian.Contracts.Workstation.StatementImportPreviewDto",
       "kind": "record",
       "mapped_schemas": [],
       "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "StatementAccountSnapshotPreviewDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountSnapshots",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<StatementAccountSnapshotPreviewDto>?",
+          "source_line": 159,
+          "type": "IReadOnlyList<StatementAccountSnapshotPreviewDto>?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "StatementActivityCompletenessDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActivityCompleteness",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<StatementActivityCompletenessDto>?",
+          "source_line": 161,
+          "type": "IReadOnlyList<StatementActivityCompletenessDto>?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "StatementActivitySubtypeSummaryDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActivitySubtypeSummaries",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<StatementActivitySubtypeSummaryDto>?",
+          "source_line": 160,
+          "type": "IReadOnlyList<StatementActivitySubtypeSummaryDto>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "BorrowPositionCount",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "int?",
+          "source_line": 163,
+          "type": "int?"
+        },
         {
           "collection": true,
           "collection_kind": "IReadOnlyList",
@@ -310058,7 +312069,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StatementColumnMappingDto>",
-          "source_line": 109,
+          "source_line": 151,
           "type": "IReadOnlyList<StatementColumnMappingDto>"
         },
         {
@@ -310072,7 +312083,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 104,
+          "source_line": 146,
           "type": "string"
         },
         {
@@ -310086,7 +312097,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 103,
+          "source_line": 145,
           "type": "string"
         },
         {
@@ -310100,7 +312111,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 108,
+          "source_line": 150,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -310114,7 +312125,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 106,
+          "source_line": 148,
           "type": "string"
         },
         {
@@ -310128,7 +312139,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 107,
+          "source_line": 149,
           "type": "long"
         },
         {
@@ -310142,7 +312153,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StatementImportIssueDto>",
-          "source_line": 112,
+          "source_line": 154,
           "type": "IReadOnlyList<StatementImportIssueDto>"
         },
         {
@@ -310156,12 +312167,13 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StatementKindSummaryDto>",
-          "source_line": 111,
+          "source_line": 153,
           "type": "IReadOnlyList<StatementKindSummaryDto>"
         },
         {
           "collection": false,
           "collection_kind": null,
+          "default": "default !",
           "element_type": null,
           "json_ignored": false,
           "json_name": null,
@@ -310170,7 +312182,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 115,
+          "source_line": 157,
           "type": "string"
         },
         {
@@ -310184,7 +312196,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 105,
+          "source_line": 147,
           "type": "string?"
         },
         {
@@ -310198,7 +312210,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StatementProfileSuggestionDto>",
-          "source_line": 113,
+          "source_line": 155,
           "type": "IReadOnlyList<StatementProfileSuggestionDto>"
         },
         {
@@ -310212,7 +312224,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 110,
+          "source_line": 152,
           "type": "int"
         },
         {
@@ -310226,8 +312238,22 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 114,
+          "source_line": 156,
           "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotCount",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "int?",
+          "source_line": 162,
+          "type": "int?"
         }
       ],
       "name": "StatementImportPreviewDto",
@@ -310235,18 +312261,21 @@
       "partial": false,
       "qualified_name": "Meridian.Contracts.Workstation.StatementImportPreviewDto",
       "references": [
+        "Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto",
+        "Meridian.Contracts.Workstation.StatementActivityCompletenessDto",
+        "Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto",
         "Meridian.Contracts.Workstation.StatementColumnMappingDto",
         "Meridian.Contracts.Workstation.StatementImportIssueDto",
         "Meridian.Contracts.Workstation.StatementKindSummaryDto",
         "Meridian.Contracts.Workstation.StatementProfileSuggestionDto"
       ],
       "source": {
-        "line": 102,
+        "line": 144,
         "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
       },
       "sources": [
         {
-          "line": 102,
+          "line": 144,
           "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
         }
       ],
@@ -310262,7 +312291,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0a33563ebd9bbbc5e900e8af0dd8b7c2da785e978124309f8a343c8a5b2cc536",
+      "fingerprint": "fb18681b45c45bb558a124199d487ea5bb9d926682d30255a60458b214ab65f9",
       "full_name": "Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto",
       "id": "Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto",
       "kind": "record",
@@ -310279,7 +312308,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 145,
+          "source_line": 195,
           "type": "string?"
         },
         {
@@ -310293,7 +312322,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 144,
+          "source_line": 194,
           "type": "string"
         },
         {
@@ -310307,7 +312336,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 147,
+          "source_line": 197,
           "type": "string"
         },
         {
@@ -310321,7 +312350,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 149,
+          "source_line": 199,
           "type": "string"
         },
         {
@@ -310335,7 +312364,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 150,
+          "source_line": 200,
           "type": "string"
         },
         {
@@ -310349,7 +312378,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 146,
+          "source_line": 196,
           "type": "string"
         },
         {
@@ -310363,7 +312392,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 148,
+          "source_line": 198,
           "type": "string"
         },
         {
@@ -310377,7 +312406,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 151,
+          "source_line": 201,
           "type": "string"
         }
       ],
@@ -310387,12 +312416,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto",
       "references": [],
       "source": {
-        "line": 143,
+        "line": 193,
         "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
       },
       "sources": [
         {
-          "line": 143,
+          "line": 193,
           "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
         }
       ],
@@ -310408,7 +312437,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "db3c4c7d43213e0c2ff7f23f5ca288e29c7b933bbf99cd8d99924cc4d7872080",
+      "fingerprint": "fa97e4d89f37098e99b157ea6b91662296b3cad12a1cbbd2d5dd99dc239293ae",
       "full_name": "Meridian.Contracts.Workstation.StatementKindSummaryDto",
       "id": "Meridian.Contracts.Workstation.StatementKindSummaryDto",
       "kind": "record",
@@ -310425,7 +312454,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 92,
+          "source_line": 134,
           "type": "string"
         },
         {
@@ -310439,7 +312468,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 93,
+          "source_line": 135,
           "type": "int"
         },
         {
@@ -310453,7 +312482,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<StatementRecordPreviewDto>",
-          "source_line": 94,
+          "source_line": 136,
           "type": "IReadOnlyList<StatementRecordPreviewDto>"
         }
       ],
@@ -310465,12 +312494,12 @@
         "Meridian.Contracts.Workstation.StatementRecordPreviewDto"
       ],
       "source": {
-        "line": 91,
+        "line": 133,
         "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
       },
       "sources": [
         {
-          "line": 91,
+          "line": 133,
           "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
         }
       ],
@@ -311834,7 +313863,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4bb07d75a50204c3e2d4084a6727d8c4f25ce728b5d432dc9f377f3952f7b121",
+      "fingerprint": "49dce41f920301157eb11d03eb6a11935f21642294f17cf9f8a5c7cd40b5510c",
       "full_name": "Meridian.Contracts.Workstation.StatementProfileSuggestionDto",
       "id": "Meridian.Contracts.Workstation.StatementProfileSuggestionDto",
       "kind": "record",
@@ -311851,7 +313880,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 99,
+          "source_line": 141,
           "type": "string"
         },
         {
@@ -311865,7 +313894,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 98,
+          "source_line": 140,
           "type": "string"
         },
         {
@@ -311879,7 +313908,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 100,
+          "source_line": 142,
           "type": "decimal"
         }
       ],
@@ -311889,12 +313918,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.StatementProfileSuggestionDto",
       "references": [],
       "source": {
-        "line": 97,
+        "line": 139,
         "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
       },
       "sources": [
         {
-          "line": 97,
+          "line": 139,
           "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
         }
       ],
@@ -312820,7 +314849,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "7647721c6f0bcd612bf6609b9c054fc36db26121add8efca5524247955315f43",
+      "fingerprint": "fa5918572aa204d8f75482b15368b3f5fd4e98d6e42ea9ee50567d4bd2bb4cb2",
       "full_name": "Meridian.Contracts.Workstation.StatementRecordPreviewDto",
       "id": "Meridian.Contracts.Workstation.StatementRecordPreviewDto",
       "kind": "record",
@@ -312839,6 +314868,36 @@
           "raw_type": "string",
           "source_line": 75,
           "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActivityCategory",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 86,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActivitySubtype",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 87,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -312880,6 +314939,21 @@
           "origin": "positional_parameter",
           "raw_type": "string?",
           "source_line": 83,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Description",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 91,
           "type": "string?"
         },
         {
@@ -312927,6 +315001,21 @@
         {
           "collection": false,
           "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OrderId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 90,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
           "element_type": null,
           "json_ignored": false,
           "json_name": null,
@@ -312941,6 +315030,21 @@
         {
           "collection": false,
           "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProviderActivityCode",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 88,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
           "element_type": null,
           "json_ignored": false,
           "json_name": null,
@@ -312951,6 +315055,21 @@
           "raw_type": "decimal",
           "source_line": 77,
           "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RelatedTransactionId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 89,
+          "type": "string?"
         },
         {
           "collection": false,

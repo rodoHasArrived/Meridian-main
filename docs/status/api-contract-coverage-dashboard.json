@@ -2,16 +2,16 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 29.5,
+  "score_percent": 29.4,
   "endpoint_coverage_percent": 41.3,
-  "contract_coverage_percent": 11.8,
+  "contract_coverage_percent": 11.6,
   "summary": {
     "endpoint_count": 613,
     "documented_endpoint_count": 253,
     "undocumented_endpoint_count": 360,
-    "workstation_contract_count": 875,
+    "workstation_contract_count": 885,
     "documented_workstation_contract_count": 103,
-    "undocumented_workstation_contract_count": 772
+    "undocumented_workstation_contract_count": 782
   },
   "endpoints": [
     {
@@ -5775,6 +5775,41 @@
       "documented": true
     },
     {
+      "name": "MarginControlAccountDto",
+      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:4",
+      "documented": false
+    },
+    {
+      "name": "MarginPositionContributionDto",
+      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:35",
+      "documented": false
+    },
+    {
+      "name": "MarginControlPrimeSummaryDto",
+      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:48",
+      "documented": false
+    },
+    {
+      "name": "MarginControlAlertDto",
+      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:56",
+      "documented": false
+    },
+    {
+      "name": "MarginControlCenterDto",
+      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:64",
+      "documented": false
+    },
+    {
+      "name": "MarginCertificationRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:76",
+      "documented": false
+    },
+    {
+      "name": "MarginCertificationResultDto",
+      "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:83",
+      "documented": false
+    },
+    {
       "name": "OperationsWorkflowStatusDto",
       "source": "src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:11",
       "documented": false
@@ -6860,38 +6895,53 @@
       "documented": false
     },
     {
-      "name": "StatementKindSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:91",
+      "name": "StatementAccountSnapshotPreviewDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:94",
       "documented": false
     },
     {
-      "name": "StatementProfileSuggestionDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:97",
-      "documented": false
-    },
-    {
-      "name": "StatementImportPreviewDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:101",
-      "documented": false
-    },
-    {
-      "name": "StatementImportCommitResultDto",
+      "name": "StatementActivitySubtypeSummaryDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:116",
       "documented": false
     },
     {
-      "name": "StatementImportReconciliationCaseLinkDto",
+      "name": "StatementActivityCompletenessDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:121",
+      "documented": false
+    },
+    {
+      "name": "StatementKindSummaryDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:133",
+      "documented": false
+    },
+    {
+      "name": "StatementProfileSuggestionDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139",
+      "documented": false
+    },
+    {
+      "name": "StatementImportPreviewDto",
       "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:143",
       "documented": false
     },
     {
+      "name": "StatementImportCommitResultDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:165",
+      "documented": false
+    },
+    {
+      "name": "StatementImportReconciliationCaseLinkDto",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:193",
+      "documented": false
+    },
+    {
       "name": "StatementFetchScheduleDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:154",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:204",
       "documented": false
     },
     {
       "name": "StatementFetchScheduleUpsertRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:168",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:218",
       "documented": false
     },
     {
