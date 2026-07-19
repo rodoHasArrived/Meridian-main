@@ -577,19 +577,30 @@
       "id": "simulated-user-review",
       "description": "Route persona-backed product critique and user-testing requests to simulated user panel.",
       "matchWeighted": {
+        "simulated user panel": 3.5,
         "simulated user": 3.0,
+        "multi-persona": 3.0,
         "user testing": 2.5,
-        "persona": 2.0,
+        "persona critique": 2.5,
+        "realistic users": 3.0,
+        "compare the browser and wpf": 3.5,
+        "cross-surface": 3.0,
         "design partner": 2.0,
-        "usability": 2.0,
-        "release gate": 1.5
+        "usability lab": 3.0,
+        "usability-lab": 3.0,
+        "cluster complaints": 3.0,
+        "usability": 1.5,
+        "adoption risk": 2.0,
+        "persona": 1.0,
+        "release gate": 2.5,
+        "release-gate": 2.5
       },
       "route": {
         "lane": "simulated-user-review",
         "skill": "meridian-simulated-user-panel",
         "mode": "Standard",
         "modelRouteId": "governance-research",
-        "rationale": "Persona review prompts should critique concrete artifacts with explicit evidence and inference boundaries.",
+        "rationale": "Multi-persona reviews should use canonical Persona Matrix roles, classify evidence sufficiency, label simulation, and fail release gates closed when proof is missing.",
         "validationFloor": [
           "python .codex/skills/meridian-simulated-user-panel/scripts/run_evals.py --all --dry-run --summary"
         ],
@@ -606,6 +617,7 @@
         "escalationTriggers": [
           "review lacks a concrete artifact",
           "persona assumptions need product-source confirmation",
+          "release evidence is stale or insufficient",
           "feedback becomes implementation scope"
         ]
       }

@@ -21,8 +21,11 @@ def parse_args() -> argparse.Namespace:
     selector = parser.add_mutually_exclusive_group(required=True)
     selector.add_argument("--eval-id", type=int)
     selector.add_argument("--all", action="store_true")
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--live-run", action="store_true", help="Reserved for opt-in live traces from an isolated worktree.")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Run deterministic local fixtures only; no model invocation or task mutation.",
+    )
     parser.add_argument("--summary", action="store_true")
     parser.add_argument("--json", action="store_true")
     return parser.parse_args()
@@ -63,14 +66,26 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         checks.append(f"exit_code={expected_exit}")
     else:
         failures.append(f"expected exit_code={expected_exit}, got {completed.returncode}")
-    payload = json.loads(completed.stdout) if completed.stdout.strip() else {}
+    try:
+        payload = json.loads(completed.stdout) if completed.stdout.strip() else {}
+    except json.JSONDecodeError as exc:
+        payload = {}
+        failures.append(f"stdout was not valid JSON: {exc}")
     if payload:
         checks.append("stdout parsed as JSON")
     for path, expected in expect.get("json_equals", {}).items():
-        actual = json_at(payload, path)
+        try:
+            actual = json_at(payload, path)
+        except (KeyError, TypeError):
+            failures.append(f"missing JSON path: {path}")
+            continue
         (checks if actual == expected else failures).append(f"{path} == {expected!r}" if actual == expected else f"{path} expected {expected!r}, got {actual!r}")
     for path, minimum in expect.get("json_min", {}).items():
-        actual = json_at(payload, path)
+        try:
+            actual = json_at(payload, path)
+        except (KeyError, TypeError):
+            failures.append(f"missing JSON path: {path}")
+            continue
         (checks if actual >= minimum else failures).append(f"{path} >= {minimum}" if actual >= minimum else f"{path} expected >= {minimum}, got {actual}")
     return {
         "eval_id": case["id"],
@@ -95,8 +110,8 @@ def baseline_warnings(results: list[dict[str, Any]]) -> list[str]:
 
 def main() -> int:
     args = parse_args()
-    if args.live_run:
-        print("error: live-run is not implemented for this dry-run package eval", file=sys.stderr)
+    if not args.dry_run:
+        print("error: pass --dry-run; this runner intentionally has no live model-execution path", file=sys.stderr)
         return 2
     results = [run_case(case) for case in load_cases(args.eval_id)]
     warnings = baseline_warnings(results)

@@ -8,10 +8,11 @@ feedback instead of generic praise or shallow role-play.
 You are grading output from the `meridian-simulated-user-panel` skill. Check whether the review:
 
 - respected the manifest contract
-- used realistic personas and tagged panels
+- used canonical Persona Matrix roles or explicitly labeled advisory/custom lenses
 - grounded reactions in the artifact bundle
 - included the shared output contract
 - produced owner-minded synthesis and a mode-appropriate recommendation
+- included the simulation disclaimer and failed closed when release evidence was insufficient
 
 Use the deterministic `scripts/run_eval.py score` output when it exists. Step in manually when the
 deterministic checks are too weak to capture a qualitative failure.
@@ -32,6 +33,7 @@ Even if the deterministic checks passed, verify:
 - the rubric evidence is concrete instead of generic filler
 - owner actions are specific and prioritized
 - disagreements are called out when the artifact naturally creates tension
+- `ship` is used only with current sufficient functional evidence and verified success criteria
 
 ## Output Shape
 
@@ -40,7 +42,7 @@ schema. At minimum include:
 
 ```json
 {
-  "schema_version": "2026-04-14",
+  "schema_version": "2026-07-19",
   "eval_id": 0,
   "checks": [
     {
