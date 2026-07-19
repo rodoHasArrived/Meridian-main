@@ -57,8 +57,8 @@ const developmentFixtureDemoSteps = [
   {
     id: "watchlist",
     step: "1",
-    href: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
-    matchPath: WORKSTATION_ROUTE_CATALOG.dataWatchlist,
+    href: workstationRouteWithQuery("dataQuotes", { view: "watchlist" }),
+    matchPath: WORKSTATION_ROUTE_CATALOG.dataWatchlistLegacy,
     label: "Watchlist",
     ariaLabel: "Open sample watchlist demo lane"
   },

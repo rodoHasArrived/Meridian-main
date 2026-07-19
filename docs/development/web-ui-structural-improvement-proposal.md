@@ -34,8 +34,12 @@
 > hash scope preserved via `legacyWorkspaceRedirect()`. The Evidence Workbench is canonicalized
 > to `/reporting/evidence`: the `/accounting/evidence` and `/data/evidence` mounts and the
 > `/accounting/evidence/detail` stub redirect there with subject scope preserved, matching the
-> existing `evidenceWorkbenchPath()` gravity. The Market Data desk merge is the next fold; the
-> reporting run-flow merge and reconciliation module extraction remain sequenced behind it.
+> existing `evidenceWorkbenchPath()` gravity. The Market Data desk
+> (`screens/market-data-screen.tsx`) now owns `/data/quotes`, hosting the live-quote, watchlist,
+> and price-alert panels as `?view=` tabs over the shared quote stream — three Data sidebar items
+> collapse into one "Market data" entry, with `/data/watchlist` and `/data/alerts` redirecting.
+> The reporting run-flow merge and reconciliation module extraction remain sequenced as
+> follow-ups.
 
 This document reviews the browser workstation as captured in the current screenshot catalog and
 proposes a set of improvements, including large structural changes to page architecture, routing,

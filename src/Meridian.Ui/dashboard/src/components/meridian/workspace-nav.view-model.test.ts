@@ -296,27 +296,25 @@ describe("workspace nav view model", () => {
     expect(strategy?.subItems.map((item) => item.label)).not.toContain("Research Lab");
   });
 
-  it("surfaces the implemented price-alerts route under Data", () => {
-    const model = buildWorkspaceNavViewModel("/data/alerts");
+  it("surfaces the consolidated market data desk under Data", () => {
+    const model = buildWorkspaceNavViewModel("/data/quotes");
     const data = model.items.find((item) => item.key === "data");
 
     expect(data?.subItems.map((item) => item.route)).toEqual([
       "/data",
       "/data/import",
       "/data/providers",
-      "/data/watchlist",
       "/data/quotes",
-      "/data/alerts",
       "/data/operations",
       "/data/assurance",
       "/data/exports",
       "/data/query"
     ]);
-    expect(data?.subItems.find((item) => item.route === "/data/alerts")).toMatchObject({
-      label: "Price alerts",
+    expect(data?.subItems.find((item) => item.route === "/data/quotes")).toMatchObject({
+      label: "Market data",
       active: true,
       ariaCurrent: "page",
-      ariaLabel: "Price alerts, current page"
+      ariaLabel: "Market data, current page"
     });
   });
 
@@ -377,7 +375,7 @@ describe("workspace nav view model", () => {
     const model = buildWorkspaceNavViewModel("/data/quotes", undefined, "?symbol=aapl&provider=alpaca");
     const trading = model.items.find((item) => item.key === "trading");
     const data = model.items.find((item) => item.key === "data");
-    const quotes = data?.subItems.find((item) => item.label === "Live quotes");
+    const quotes = data?.subItems.find((item) => item.label === "Market data");
 
     expect(model.operatingScopeLabel).toBe("Subject: AAPL / Provider: alpaca");
     expect(trading).toMatchObject({
@@ -391,7 +389,7 @@ describe("workspace nav view model", () => {
     expect(quotes).toMatchObject({
       route: "/data/quotes?symbol=AAPL&provider=alpaca",
       active: true,
-      ariaLabel: "Live quotes, current page, preserving Subject: AAPL / Provider: alpaca"
+      ariaLabel: "Market data, current page, preserving Subject: AAPL / Provider: alpaca"
     });
   });
 

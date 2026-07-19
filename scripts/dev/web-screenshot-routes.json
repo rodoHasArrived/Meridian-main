@@ -911,8 +911,8 @@
     {
       "id": "W06A",
       "name": "web-data-watchlist",
-      "path": "/data/watchlist",
-      "docLabel": "Data \u2014 Watchlist",
+      "path": "/data/quotes?view=watchlist",
+      "docLabel": "Data \u2014 Market Data (Watchlist view)",
       "waitForText": "Data Lane",
       "requiredApiRoutes": [
         "/api/workstation/data"
@@ -930,7 +930,7 @@
       "id": "W06B",
       "name": "web-data-live-quotes",
       "path": "/data/quotes",
-      "docLabel": "Data \u2014 Live Quotes",
+      "docLabel": "Data \u2014 Market Data (Live Quotes view)",
       "waitForText": "Data Lane",
       "requiredApiRoutes": [
         "/api/workstation/data"
@@ -1015,8 +1015,8 @@
     {
       "id": "W06E",
       "name": "web-data-alerts",
-      "path": "/data/alerts",
-      "docLabel": "Data \u2014 Price Alerts",
+      "path": "/data/quotes?view=alerts",
+      "docLabel": "Data \u2014 Market Data (Price Alerts view)",
       "waitForText": "Price alerts",
       "requiredApiRoutes": [
         "/api/workstation/data"

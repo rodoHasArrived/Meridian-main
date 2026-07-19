@@ -278,8 +278,8 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
     id: "data-watchlist",
     label: "Watchlist",
-    description: "Add symbols and starter packs before validating live quotes.",
-    route: WORKSTATION_ROUTE_CATALOG.dataWatchlist
+    description: "Add symbols and starter packs from the Market Data desk watchlist view.",
+    route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=watchlist`
   },
   {
     id: "data-quotes",
@@ -290,8 +290,8 @@ const LOCAL_ROUTE_COMMANDS: CommandPaletteRouteDefinition[] = [
   {
     id: "data-alerts",
     label: "Price alerts",
-    description: "Create local quote-threshold alerts and review alert trigger state.",
-    route: WORKSTATION_ROUTE_CATALOG.dataAlerts
+    description: "Create local quote-threshold alerts from the Market Data desk alerts view.",
+    route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=alerts`
   },
   {
     id: "data-backfills",

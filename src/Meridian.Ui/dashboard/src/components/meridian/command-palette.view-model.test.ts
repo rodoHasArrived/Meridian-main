@@ -289,7 +289,7 @@ describe("command palette view model", () => {
     const coveredCallModel = buildCommandPaletteViewModel("/strategy/covered-call", undefined, {}, "covered call");
     const providerModel = buildCommandPaletteViewModel("/data/providers", undefined, {}, "provider catalog");
     const importModel = buildCommandPaletteViewModel("/data/import", undefined, {}, "import data");
-    const priceAlertsModel = buildCommandPaletteViewModel("/data/alerts", undefined, {}, "price alerts");
+    const priceAlertsModel = buildCommandPaletteViewModel("/data/quotes?view=alerts", undefined, {}, "price alerts");
     const externalGlModel = buildCommandPaletteViewModel(
       "/accounting/reconciliation/external-gl",
       undefined,
@@ -376,7 +376,7 @@ describe("command palette view model", () => {
     expect(priceAlertsModel.items.find((item) => item.id === "route:data-alerts")).toMatchObject({
       kind: "route",
       label: "Price alerts",
-      route: "/data/alerts",
+      route: "/data/quotes?view=alerts",
       statusLabel: "Current",
       commandLabel: "Stay on Price alerts",
       active: true
@@ -394,9 +394,9 @@ describe("command palette view model", () => {
       description: "Inspect quotes, trades, depth, charts, and staged tickets. Subject: MSFT."
     });
     expect(model.items.find((item) => item.id === "route:data-alerts")).toMatchObject({
-      route: "/data/alerts?symbol=MSFT",
-      routeLabel: "/data/alerts?symbol=MSFT",
-      description: "Create local quote-threshold alerts and review alert trigger state. Subject: MSFT."
+      route: "/data/quotes?view=alerts&symbol=MSFT",
+      routeLabel: "/data/quotes?view=alerts&symbol=MSFT",
+      description: "Create local quote-threshold alerts from the Market Data desk alerts view. Subject: MSFT."
     });
   });
 

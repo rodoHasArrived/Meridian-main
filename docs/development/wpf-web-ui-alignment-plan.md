@@ -39,8 +39,7 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | reporting-screen | `Features/Reporting/Shell/ReportingWorkspaceShellPage.xaml` + `Views/AnalysisExportPage.xaml` + `Views/ScheduleManagerPage.xaml` | Full |
 | settings-screen | `Views/SettingsPage.xaml` + `Features/Settings/Shell/SettingsWorkspaceShellPage.xaml` | Full |
 | portfolio-screen | `Features/Portfolio/Shell/PortfolioWorkspaceShellPage.xaml` + `Views/AccountPortfolioPage.xaml` | Full |
-| watchlist-screen | `Views/WatchlistPage.xaml` | Full |
-| live-quotes-screen | `Views/LiveDataViewerPage.xaml` | Full |
+| market-data-screen (Market Data desk at `/data/quotes`, consolidated per `W8-UX-CONSOL-001`; live-quotes, watchlist, and price-alerts panels as `?view=` tabs) | `Views/LiveDataViewerPage.xaml` + `Views/WatchlistPage.xaml` + `Views/NotificationCenterPage.xaml` | Full for quotes/watchlist; alerts view Partial — alert surface exists, less rule-authoring focus |
 | quant-lab-screen | `Views/QuantScriptPage.xaml` | Full |
 | fund-structure (entity setup) | `Views/FundStructureSetupPage.xaml` + `Views/FundProfileSelectionPage.xaml` | Full |
 | asset-detail-screen | `Views/SecurityPassportEditorView.xaml` (drill-in from `SecurityMasterPage`) | Partial — less unified than the web tabbed detail |
@@ -50,7 +49,6 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | journal-entry-detail-screen | `Views/FundLedgerPage.xaml` (journal entries) | Partial — no standalone JE detail page |
 | statement-import-screen | `ViewModels/FundLedgerViewModel.StatementReconciliation.cs` + `Views/PortfolioImportPage.xaml` | Partial — recon exists, no guided import screen |
 | daily-control-tower-screen | `Views/DashboardPage.xaml` + `Views/WorkspaceDecisionQueueControl.xaml` | Partial — dashboard/decision-queue overlap, not a triage tower |
-| price-alerts-screen | `Views/NotificationCenterPage.xaml` | Partial — alert surface exists, less rule-authoring focus |
 | report-library-screen | `Views/WorkflowLibraryPage.xaml` + Reporting shell | Partial |
 | report-run-parameters-screen | `Views/AnalysisExportWizardPage.xaml` + Reporting shell | Partial |
 | finance-standard-pages-screen (evidence-detail stub retired per `W8-UX-CONSOL-001`; `/accounting/evidence/detail` redirects into the reporting evidence workbench) | `Views/AnalysisExportPage.xaml` + Reporting shell | Partial |

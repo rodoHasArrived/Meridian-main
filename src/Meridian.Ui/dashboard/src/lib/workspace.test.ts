@@ -141,6 +141,17 @@ describe("workspace metadata", () => {
     );
   });
 
+  it("redirects the retired watchlist and price-alert routes into the market data desk", () => {
+    expect(legacyWorkspaceRedirect("/data/watchlist")).toBe("/data/quotes?view=watchlist");
+    expect(legacyWorkspaceRedirect("/data/watchlist", "?symbol=AAPL")).toBe(
+      "/data/quotes?symbol=AAPL&view=watchlist"
+    );
+    expect(legacyWorkspaceRedirect("/data/alerts")).toBe("/data/quotes?view=alerts");
+    expect(legacyWorkspaceRedirect("/data/alerts", "?symbol=MSFT", "#active")).toBe(
+      "/data/quotes?symbol=MSFT&view=alerts#active"
+    );
+  });
+
   it("returns workspace summaries for canonical keys", () => {
     expect(workspaceForKey("reporting")).toMatchObject({
       label: "Reporting",
@@ -162,7 +173,7 @@ describe("workspace metadata", () => {
       .toBe("Configure");
     expect(resolveWorkstationRouteBreadcrumbLabel("/reporting/report-packs", workspaceForKey("reporting")))
       .toBe("Report Packs");
-    expect(resolveWorkstationRouteBreadcrumbLabel("/workstation/data/quotes", workspaceForKey("data"))).toBe("Quotes");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/workstation/data/quotes", workspaceForKey("data"))).toBe("Market Data");
     expect(resolveWorkstationRouteBreadcrumbLabel("/portfolio/custom-beta-route", workspaceForKey("portfolio"))).toBe(
       "Custom Beta Route"
     );

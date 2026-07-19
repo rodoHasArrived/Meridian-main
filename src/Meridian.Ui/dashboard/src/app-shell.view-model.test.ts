@@ -550,23 +550,19 @@ describe("app shell view model", () => {
       contextLabel: "Operating context",
       contextValue: "Data / AAPL",
       routeLabel: "/data/quotes?symbol=AAPL",
-      nextActionLabel: "Next: Price alerts",
-      nextActionHref: "/data/alerts?symbol=AAPL",
+      nextActionLabel: "Next: Readiness",
+      nextActionHref: "/trading/readiness?symbol=AAPL",
       subjectSymbol: "AAPL",
       clearSubjectAriaLabel: "Clear AAPL operating context"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.href])).toEqual([
-      ["watchlist", false, false, "/data/watchlist?symbol=AAPL"],
-      ["quotes", true, false, "/data/quotes?symbol=AAPL"],
-      ["alerts", false, true, "/data/alerts?symbol=AAPL"],
-      ["readiness", false, false, "/trading/readiness?symbol=AAPL"],
+      ["market-data", true, false, "/data/quotes?symbol=AAPL"],
+      ["readiness", false, true, "/trading/readiness?symbol=AAPL"],
       ["provider-setup", false, false, "/settings#alpaca-provider-setup"]
     ]);
     expect(state.workflowContinuity.steps.map((step) => [step.label, step.statusLabel])).toEqual([
-      ["Watchlist", "Waiting"],
-      ["Live quotes", "Current / Waiting"],
-      ["Price alerts", "Next / Waiting"],
-      ["Readiness", "Waiting"],
+      ["Market data", "Current / Waiting"],
+      ["Readiness", "Next / Waiting"],
       ["Provider setup", "Available"]
     ]);
     expect(state.workflowContinuity.primaryOperatorFlowSteps.map((step) => [step.id, step.label, step.active, step.href])).toEqual([
@@ -606,7 +602,7 @@ describe("app shell view model", () => {
     ]);
 
     const dataState = buildAppShellViewState({
-      pathname: "/data/watchlist",
+      pathname: "/data/quotes",
       operatingContextSymbol: "msft",
       loading: false,
       error: null,
@@ -615,9 +611,7 @@ describe("app shell view model", () => {
     });
 
     expect(dataState.workflowContinuity.steps.map((step) => [step.id, step.href])).toEqual([
-      ["watchlist", "/data/watchlist?symbol=MSFT"],
-      ["quotes", "/data/quotes?symbol=MSFT"],
-      ["alerts", "/data/alerts?symbol=MSFT"],
+      ["market-data", "/data/quotes?symbol=MSFT"],
       ["readiness", "/trading/readiness?symbol=MSFT"],
       ["provider-setup", "/settings#alpaca-provider-setup"]
     ]);
@@ -968,13 +962,11 @@ describe("app shell view model", () => {
       nextActionHref: "/settings#alpaca-provider-setup"
     });
     expect(state.workflowContinuity.steps.map((step) => [step.id, step.active, step.next, step.statusLabel, step.statusTone])).toEqual([
-      ["watchlist", false, false, "Waiting", "pending"],
-      ["quotes", false, false, "Waiting", "pending"],
-      ["alerts", false, false, "Waiting", "pending"],
+      ["market-data", false, false, "Waiting", "pending"],
       ["readiness", false, false, "Waiting", "pending"],
       ["provider-setup", true, false, "Current / Available", "ready"]
     ]);
-    expect(state.workflowContinuity.steps[4].ariaLabel)
+    expect(state.workflowContinuity.steps[2].ariaLabel)
       .toBe("Provider setup, current workflow step, Available");
   });
 

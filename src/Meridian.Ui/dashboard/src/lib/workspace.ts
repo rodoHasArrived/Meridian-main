@@ -72,9 +72,9 @@ export const WORKSTATION_ROUTE_CATALOG = {
   data: "/data",
   dataImport: "/data/import",
   dataProviders: "/data/providers",
-  dataWatchlist: "/data/watchlist",
+  dataWatchlistLegacy: "/data/watchlist",
   dataQuotes: "/data/quotes",
-  dataAlerts: "/data/alerts",
+  dataAlertsLegacy: "/data/alerts",
   dataEvidenceLegacy: "/data/evidence",
   dataBackfills: "/data/backfills",
   dataOperations: "/data/operations",
@@ -351,7 +351,7 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   providers: "Providers",
   preferences: "Preferences",
   "quant-lab": "Quant Lab",
-  quotes: "Quotes",
+  quotes: "Market Data",
   readiness: "Readiness",
   reconciliation: "Reconciliation",
   "report-packs": "Report Packs",
@@ -444,6 +444,14 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
   if (firstSegment === "data" && pathSegments(pathname)[1] === "evidence") {
     const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataEvidenceLegacy.length);
     return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "watchlist") {
+    return `${WORKSTATION_ROUTE_CATALOG.dataQuotes}${withSearchParam(search, "view", "watchlist")}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "alerts") {
+    return `${WORKSTATION_ROUTE_CATALOG.dataQuotes}${withSearchParam(search, "view", "alerts")}${hash}`;
   }
 
   if (firstSegment === "strategy" && pathSegments(pathname)[1] === "formula-workbench") {
