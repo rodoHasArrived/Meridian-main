@@ -109,7 +109,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-07-18
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -742,7 +742,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-02
+    last_reviewed: 2026-07-18
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -870,7 +870,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-06-09
+    last_reviewed: 2026-07-18
 
   - id: SRC-UI-SERVICES
     path: src/Meridian.Ui.Services
@@ -929,7 +929,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-07-18
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -965,7 +965,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-07-18
 
   - id: SRC-WPF
     path: src/Meridian.Wpf

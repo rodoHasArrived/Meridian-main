@@ -163,7 +163,8 @@ public sealed record StatementFetchScheduleDto(
     bool Enabled,
     DateTimeOffset? LastRunAtUtc,
     string? LastRunStatus,
-    DateTimeOffset? NextDueAtUtc);
+    DateTimeOffset? NextDueAtUtc,
+    string SourceKind);
 
 public sealed record StatementFetchScheduleUpsertRequestDto(
     string? ScheduleId,
@@ -174,4 +175,5 @@ public sealed record StatementFetchScheduleUpsertRequestDto(
     string? MappingProfileId,
     string? ToleranceProfileId,
     int CadenceHours,
-    bool Enabled);
+    bool Enabled,
+    string? SourceKind = null);

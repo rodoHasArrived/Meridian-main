@@ -352,7 +352,10 @@ public static partial class WorkstationEndpoints
                                 ? "statement-default"
                                 : request.ToleranceProfileId,
                             request.CadenceHours,
-                            request.Enabled),
+                            request.Enabled,
+                            SourceKind: string.IsNullOrWhiteSpace(request.SourceKind)
+                                ? "broker"
+                                : request.SourceKind),
                         context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(ToScheduleDto(saved), jsonOptions);
@@ -561,5 +564,6 @@ public static partial class WorkstationEndpoints
             schedule.Enabled,
             schedule.LastRunAtUtc,
             schedule.LastRunStatus,
-            schedule.NextDueAtUtc);
+            schedule.NextDueAtUtc,
+            schedule.SourceKind);
 }

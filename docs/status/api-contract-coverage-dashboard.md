@@ -1270,7 +1270,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `StatementColumnMappingDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:57` |
 | `StatementConnectorDescriptorDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:9` |
 | `StatementFetchScheduleDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:154` |
-| `StatementFetchScheduleUpsertRequestDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:167` |
+| `StatementFetchScheduleUpsertRequestDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:168` |
 | `StatementImportCommitResultDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:116` |
 | `StatementImportIssueDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:64` |
 | `StatementImportPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:101` |

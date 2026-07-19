@@ -233,6 +233,39 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ScheduleStore_LegacySnapshot_DefaultsSourceKindToBroker()
+    {
+        var schedulePath = Path.Combine(_root, "reconciliation", "statement-fetch-schedules.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(schedulePath)!);
+        await File.WriteAllTextAsync(
+            schedulePath,
+            """
+            {
+              "version": 1,
+              "schedules": [
+                {
+                  "scheduleId": "legacy-schedule",
+                  "connectorId": "fake-fetch",
+                  "externalAccountId": "EXT-LEGACY",
+                  "fundAccountId": "FUND-LEGACY",
+                  "sourceInstitution": "Legacy Broker",
+                  "mappingProfileId": null,
+                  "toleranceProfileId": "statement-default",
+                  "cadenceHours": 24,
+                  "enabled": true,
+                  "lastRunAtUtc": null,
+                  "lastRunStatus": null
+                }
+              ]
+            }
+            """);
+
+        var schedule = (await new FileStatementFetchScheduleStore(_root).ListAsync()).Single();
+
+        schedule.SourceKind.Should().Be("broker");
+    }
+
+    [Fact]
     public async Task ScheduleRunner_RunsDueSchedules_AndRecordsOutcome()
     {
         var scheduleStore = new FileStatementFetchScheduleStore(_root);
@@ -246,7 +279,8 @@ public sealed class StatementImportServiceTests : IDisposable
             MappingProfileId: null,
             ToleranceProfileId: "statement-default",
             CadenceHours: 24,
-            Enabled: true));
+            Enabled: true,
+            SourceKind: "custodian"));
 
         var now = new DateTimeOffset(2026, 7, 1, 6, 0, 0, TimeSpan.Zero);
         var ran = await runner.RunDueSchedulesAsync(now);
@@ -255,6 +289,7 @@ public sealed class StatementImportServiceTests : IDisposable
         var updated = (await scheduleStore.ListAsync()).Single();
         updated.LastRunAtUtc.Should().Be(now);
         updated.LastRunStatus.Should().StartWith("Imported");
+        (await _workflow.ListImportsAsync()).Single().Broker.Should().Be("custodian");
 
         // Just ran: not due again until the cadence elapses.
         (await runner.RunDueSchedulesAsync(now.AddHours(1))).Should().Be(0);
@@ -276,12 +311,17 @@ public sealed class StatementImportServiceTests : IDisposable
             ToleranceProfileId: "statement-default",
             CadenceHours: 24,
             Enabled: true));
+        var lastSuccessfulRun = new DateTimeOffset(2026, 7, 17, 6, 0, 0, TimeSpan.Zero);
+        await scheduleStore.RecordRunAsync("sched-bad", lastSuccessfulRun, "Imported prior run");
 
-        var ran = await runner.RunDueSchedulesAsync(DateTimeOffset.UtcNow);
+        var ran = await runner.RunDueSchedulesAsync(lastSuccessfulRun.AddHours(25));
 
         ran.Should().Be(1);
         var updated = (await scheduleStore.ListAsync()).Single();
-        updated.LastRunStatus.Should().StartWith("Failed:");
+        updated.LastRunAtUtc.Should().Be(
+            lastSuccessfulRun,
+            "a transient fetch failure must preserve the last successful schedule watermark");
+        updated.LastRunStatus.Should().Be("Failed: NotSupportedException");
     }
 
     /// <summary>A fetch-capable connector returning a canonical CSV document, for scheduler tests.</summary>
