@@ -288,6 +288,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private ManualJournalEntryTypeDto _selectedEntryType = ManualJournalEntryTypeDto.General;
     private AccountingBasisKindDto _selectedAccountingBasis = AccountingBasisKindDto.Primary;
 
+    private readonly DesktopAuthenticationSession? _authenticationSession;
+
+    /// <summary>
+    /// Audit finding P8: governance records carry the authenticated desktop operator when a
+    /// session exists; the historical constant remains only as an anonymous-session fallback.
+    /// </summary>
+    private string ResolveActor() =>
+        _authenticationSession?.CurrentActor is { Length: > 0 } actor ? actor : DefaultActor;
+
     public AccountingConfigureViewModel(
         FundContextService fundContextService,
         IWorkstationAccountingApiClient configurationService,
@@ -304,9 +313,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         AccountingProductionReadinessService? accountingProductionReadinessService = null,
         IAccountingProductionCertificationProfileStore? productionCertificationProfileStore = null,
         IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null,
-        IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null)
+        IAccountingMigrationRunWorkerPlanStore? migrationRunWorkerPlanStore = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
+        _authenticationSession = authenticationSession;
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
@@ -1534,7 +1545,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertChartOfAccountsNodeRequest(
                     fundProfileId,
                     new ChartOfAccountsNodeDto("assets-cash", "Assets:Cash", "Cash", "Asset"),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1543,7 +1554,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertChartOfAccountsNodeRequest(
                     fundProfileId,
                     new ChartOfAccountsNodeDto("income-investment", "Income:Investment Income", "Investment Income", "Revenue"),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1552,7 +1563,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertChartOfAccountsNodeRequest(
                     fundProfileId,
                     new ChartOfAccountsNodeDto("expenses-investment-fees", "Expenses:Investment Fees", "Investment Fees", "Expense"),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1563,7 +1574,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     new UpsertChartOfAccountsNodeRequest(
                         fundProfileId,
                         node,
-                        DefaultActor,
+                        ResolveActor(),
                         CorrelationId: "wpf-accounting-config-seed",
                         EvidenceLinks: evidence,
                         LedgerBookId: ledgerBookId),
@@ -1581,7 +1592,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                             new JournalEntryTemplateLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 1m, _activeFundProfile.BaseCurrency, "Debit configured cash account."),
                             new JournalEntryTemplateLineDto("credit-income", "Income:Investment Income", AccountingTemplateLineSideDto.Credit, 1m, _activeFundProfile.BaseCurrency, "Credit configured income account.")
                         ]),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1592,7 +1603,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     new UpsertJournalEntryTemplateRequest(
                         fundProfileId,
                         template,
-                        DefaultActor,
+                        ResolveActor(),
                         CorrelationId: "wpf-accounting-config-seed",
                         EvidenceLinks: evidence,
                         LedgerBookId: ledgerBookId),
@@ -1608,7 +1619,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         "ManualJournalEntry",
                         "desktop-manual-adjustment-v1",
                         Description: "Fund/book configurable WPF policy route for manual accounting adjustments."),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-accounting-config-seed",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -1619,7 +1630,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     new UpsertPostingRuleRequest(
                         fundProfileId,
                         rule,
-                        DefaultActor,
+                        ResolveActor(),
                         CorrelationId: "wpf-accounting-config-seed",
                         EvidenceLinks: evidence,
                         LedgerBookId: ledgerBookId),
@@ -1652,7 +1663,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             _configuration = await _configurationService.ActivateAsync(
                 new ActivateAccountingConfigurationRequest(
                     _activeFundProfile.FundProfileId,
-                    DefaultActor,
+                    ResolveActor(),
                     _configuration?.LedgerBookId,
                     CorrelationId: "wpf-accounting-config-activate",
                     EvidenceLinks: ["accounting-config://desktop-activation"]),
@@ -2022,7 +2033,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var saved = await _manualJournalEntryWorkbenchService.SaveDraftAsync(
                 new SaveManualJournalEntryDraftRequest(
                     BuildManualJournalDraft(),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-manual-je-save",
                     EvidenceLinks: NormalizeEvidenceLink(DraftEvidenceLink),
                     LedgerBookId: _configuration?.LedgerBookId),
@@ -2052,7 +2063,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var validated = await _manualJournalEntryWorkbenchService.ValidateDraftAsync(
                 new ValidateManualJournalEntryDraftRequest(
                     BuildManualJournalDraft(),
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: "wpf-manual-je-validate",
                     LedgerBookId: _configuration?.LedgerBookId),
                 ct).ConfigureAwait(false);
@@ -2079,7 +2090,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new SubmitManualJournalEntryApprovalRequest(
                     _selectedDraft.JournalEntryId,
                     _selectedDraft.FundProfileId,
-                    DefaultActor,
+                    ResolveActor(),
                     _selectedDraft.Version,
                     Notes: "Submitted from WPF Accounting Configure.",
                     CorrelationId: "wpf-manual-je-submit",
@@ -2265,7 +2276,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertChartOfAccountsNodeRequest(
                     _activeFundProfile.FundProfileId,
                     node,
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: $"wpf-accounting-chart-account-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -2342,7 +2353,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 new UpsertPostingRuleRequest(
                     _activeFundProfile.FundProfileId,
                     rule,
-                    DefaultActor,
+                    ResolveActor(),
                     CorrelationId: $"wpf-accounting-posting-rule-draft-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
                     EvidenceLinks: evidence,
                     LedgerBookId: ledgerBookId),
@@ -2517,7 +2528,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var result = await _configurationService.ExecuteRuleTestCasesAsync(
                 new ExecuteAccountingRuleTestCasesRequestDto(
                     _activeFundProfile.FundProfileId,
-                    DefaultActor,
+                    ResolveActor(),
                     TestCases: [],
                     LedgerBookId: _configuration.LedgerBookId),
                 ct).ConfigureAwait(false);
@@ -2580,7 +2591,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     _activeFundProfile.FundProfileId,
                     queueItem.RuleId,
                     queueItem.RuleVersion,
-                    DefaultActor,
+                    ResolveActor(),
                     approvalId,
                     "Desktop controller approved the posting rule after Rules Studio regression review.",
                     EvidenceLinks: [evidenceLink],
@@ -2695,7 +2706,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                         Math.Abs(DraftAmount),
                         currency,
                         effectiveDate,
-                        DefaultActor,
+                        ResolveActor(),
                         AggregateId: Guid.NewGuid(),
                         PeriodId: Guid.NewGuid(),
                         AccountingTimestamp: DateTimeOffset.UtcNow,
@@ -4448,7 +4459,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             FundNodeId: null,
             currency,
             DraftMemo,
-            DefaultActor,
+            ResolveActor(),
             _selectedDraft?.CreatedAtUtc ?? now,
             now,
             _selectedDraft?.Version ?? 0,
@@ -4466,7 +4477,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     link,
                     "WPF",
                     now,
-                    DefaultActor))
+                    ResolveActor()))
                 .ToArray(),
             EntryType: SelectedEntryType,
             TreasuryContext: BuildManualJournalTreasuryContext(fundProfileId, SelectedEntryType, accountingDate, journalEntryId),

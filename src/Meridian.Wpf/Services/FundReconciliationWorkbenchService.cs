@@ -45,17 +45,24 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
     private readonly IWorkstationReconciliationApiClient _apiClient;
 
+    private readonly DesktopAuthenticationSession? _authenticationSession;
+
     public FundReconciliationWorkbenchService(
         ReconciliationReadService reconciliationReadService,
         IFundAccountService fundAccountService,
         StrategyRunWorkspaceService runWorkspaceService,
-        IWorkstationReconciliationApiClient apiClient)
+        IWorkstationReconciliationApiClient apiClient,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _reconciliationReadService = reconciliationReadService ?? throw new ArgumentNullException(nameof(reconciliationReadService));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+        _authenticationSession = authenticationSession;
     }
+
+    private string ResolveActorLabel() =>
+        _authenticationSession?.CurrentActor is { Length: > 0 } actor ? actor : "desktop-user";
 
     public async Task<FundReconciliationWorkbenchSnapshot> GetSnapshotAsync(string fundProfileId, CancellationToken ct = default)
     {
@@ -548,7 +555,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 Description: string.IsNullOrWhiteSpace(focusBreak.AssignedToLabel)
                     ? "Assigned for review."
                     : $"Assigned to {focusBreak.AssignedToLabel}.",
-                ActorLabel: focusBreak.ReviewedBy ?? "desktop-user"));
+                ActorLabel: focusBreak.ReviewedBy ?? ResolveActorLabel()));
         }
 
         if (focusBreak?.ResolvedAt is not null)
@@ -560,7 +567,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 Description: string.IsNullOrWhiteSpace(focusBreak.ResolutionNote)
                     ? "Resolution note was not captured."
                     : focusBreak.ResolutionNote,
-                ActorLabel: focusBreak.ResolvedBy ?? "desktop-user"));
+                ActorLabel: focusBreak.ResolvedBy ?? ResolveActorLabel()));
         }
 
         auditRows.Sort(static (left, right) => right.Timestamp.CompareTo(left.Timestamp));
@@ -612,7 +619,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 TimestampText: runRow.RequestedAtText,
                 Title: "Account reconciliation requested",
                 Description: $"{runRow.TotalChecks} check(s) were evaluated for {runRow.PrimaryLabel}.",
-                ActorLabel: "desktop-user"),
+                ActorLabel: ResolveActorLabel()),
             new FundReconciliationAuditTrailRow(
                 Timestamp: runRow.CompletedAt ?? runRow.RequestedAt,
                 TimestampText: runRow.CompletedAtText,

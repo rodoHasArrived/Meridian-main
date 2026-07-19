@@ -1515,7 +1515,8 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         WpfServices.FundContextService fundContextService,
         WpfServices.NavigationService navigationService,
         ISmQueryService queryService,
-        ISmService service)
+        ISmService service,
+        WpfServices.DesktopAuthenticationSession? authenticationSession = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
@@ -1528,6 +1529,10 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _queryService = queryService;
         _service = service;
+        if (authenticationSession?.CurrentActor is { Length: > 0 } sessionActor)
+        {
+            _conflictOperatorText = sessionActor;
+        }
         _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient);
