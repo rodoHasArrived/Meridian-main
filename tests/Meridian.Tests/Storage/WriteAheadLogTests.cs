@@ -221,6 +221,132 @@ public sealed class WriteAheadLogTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task TruncateAsync_UsesSegmentNameMetadata_WithoutRescanningRecords()
+    {
+        // Audit finding P10: truncation used to re-read and re-checksum every record of every
+        // segment. Segment names embed the creation-time sequence counter, so committed-ness
+        // is provable from the successor's name alone. Proof of no-scan: a corrupted record
+        // in a committed segment would increment CorruptedRecordCount if read.
+        var options = new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            MaxWalFileSizeBytes = 1, // every append rotates into its own segment
+            ArchiveAfterTruncate = false
+        };
+
+        await using var wal = new WriteAheadLog(TestDataRoot, options);
+        await wal.InitializeAsync();
+
+        for (var i = 0; i < 4; i++)
+        {
+            await wal.AppendAsync($"payload-{i}", "data");
+        }
+
+        var walFiles = Directory.GetFiles(TestDataRoot, "*.wal").OrderBy(f => f, StringComparer.Ordinal).ToList();
+        walFiles.Count.Should().BeGreaterThan(2, "rotation must have produced multiple segments");
+
+        // Corrupt a record in a completed segment: flip the payload so the stored checksum
+        // no longer matches. Metadata-based truncation must not notice.
+        string? tamperedSegment = null;
+        foreach (var walFile in walFiles.Take(walFiles.Count - 1)) // never touch the active tail
+        {
+            var lines = await File.ReadAllLinesAsync(walFile);
+            var recordIndex = Array.FindIndex(lines, l => l.Contains("payload-", StringComparison.Ordinal));
+            if (recordIndex < 0)
+                continue;
+
+            lines[recordIndex] = lines[recordIndex].Replace("payload-", "tampered-", StringComparison.Ordinal);
+            await File.WriteAllLinesAsync(walFile, lines);
+            tamperedSegment = walFile;
+            break;
+        }
+
+        tamperedSegment.Should().NotBeNull("a completed segment holding a record is required for the no-scan proof");
+
+        var last = await wal.AppendAsync("final", "marker");
+        await wal.CommitAsync(last.Sequence);
+        await wal.TruncateAsync(last.Sequence);
+
+        Directory.GetFiles(TestDataRoot, "*.wal").Should().ContainSingle(
+            "every completed segment is provably committed from its successor's base sequence");
+        wal.CorruptedRecordCount.Should().Be(0,
+            "metadata-based truncation must not read (and re-checksum) segment records");
+    }
+
+    [Fact]
+    public async Task TruncateAsync_KeepsSegmentsHoldingRecordsAboveThroughSequence()
+    {
+        var options = new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            MaxWalFileSizeBytes = 1, // every append rotates into its own segment
+            ArchiveAfterTruncate = false
+        };
+
+        await using var wal = new WriteAheadLog(TestDataRoot, options);
+        await wal.InitializeAsync();
+
+        var first = await wal.AppendAsync("committed-payload", "data");
+        var second = await wal.AppendAsync("uncommitted-payload-a", "data");
+        await wal.AppendAsync("uncommitted-payload-b", "data");
+        await wal.FlushAsync();
+
+        await wal.CommitAsync(first.Sequence);
+        await wal.TruncateAsync(first.Sequence);
+
+        var uncommitted = new List<long>();
+        await foreach (var record in wal.GetUncommittedRecordsAsync())
+        {
+            uncommitted.Add(record.Sequence);
+        }
+
+        uncommitted.Should().Contain(new[] { second.Sequence, second.Sequence + 1 },
+            "segments with records above the committed sequence must survive truncation");
+    }
+
+    [Fact]
+    public async Task TruncateAsync_ForeignNamedFileWithValidRecords_IsTruncatedViaScanFallback()
+    {
+        var options = new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync,
+            MaxWalFileSizeBytes = 1,
+            ArchiveAfterTruncate = false
+        };
+
+        await using var wal = new WriteAheadLog(TestDataRoot, options);
+        await wal.InitializeAsync();
+
+        await wal.AppendAsync("first-payload", "data");
+        await wal.AppendAsync("second-payload", "data");
+
+        // Copy a completed, well-formed segment under a name the metadata parser rejects:
+        // eligibility must fall back to the record scan and still truncate it once committed.
+        string? completedSegment = null;
+        foreach (var walFile in Directory.GetFiles(TestDataRoot, "wal_*.wal").OrderBy(f => f, StringComparer.Ordinal))
+        {
+            if ((await File.ReadAllTextAsync(walFile)).Contains("first-payload", StringComparison.Ordinal))
+            {
+                completedSegment = walFile;
+                break;
+            }
+        }
+
+        completedSegment.Should().NotBeNull("the rotated segment holding the first record must exist");
+        var foreignPath = Path.Combine(TestDataRoot, "legacy-import.wal");
+        File.Copy(completedSegment!, foreignPath);
+
+        var last = await wal.AppendAsync("final", "marker");
+        await wal.CommitAsync(last.Sequence);
+        await wal.TruncateAsync(last.Sequence);
+
+        File.Exists(foreignPath).Should().BeFalse(
+            "a fully committed file with an unparsable name must still truncate via the scan fallback");
+        Directory.GetFiles(TestDataRoot, "*.wal").Should().ContainSingle(
+            "only the active segment should remain");
+    }
+
+    [Fact]
     public async Task MultipleAppendAndCommit_MaintainsSequenceOrder()
     {
         await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });

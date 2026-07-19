@@ -390,6 +390,62 @@ public class PortableDataPackagerTests : TempDirectoryTestBase
         zipResult.PackagePath.Should().EndWith(".zip");
     }
 
+    [Theory]
+    [InlineData(PackageFormat.TarGz)]
+    [InlineData(PackageFormat.SevenZip)]
+    public async Task CreatePackageAsync_WithUnimplementedFormat_FailsWithoutWritingAnything(PackageFormat format)
+    {
+        // The former TarGz writer produced a corrupting pseudo-tar text stream and SevenZip
+        // silently wrote an empty file; both must now fail before touching the filesystem.
+        await CreateTestJsonlFileAsync("SPY/Trade/2026-01-03.jsonl", new[]
+        {
+            new { Timestamp = "2026-01-03T10:00:00Z", Symbol = "SPY", Price = 450.25m, Size = 100 }
+        });
+
+        var options = new PackageOptions
+        {
+            Name = "unsupported-format-test",
+            OutputDirectory = TestOutputDir,
+            Format = format
+        };
+
+        var result = await _packager.CreatePackageAsync(options);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("not implemented");
+        if (Directory.Exists(TestOutputDir))
+        {
+            Directory.GetFiles(TestOutputDir, "unsupported-format-test*", SearchOption.AllDirectories)
+                .Should().BeEmpty("a rejected format must not leave a package file behind");
+        }
+    }
+
+    [Fact]
+    public async Task ValidateAndImport_WithLegacyPseudoTarGzArtifact_FailInsteadOfReportingClean()
+    {
+        // Simulate an artifact written by the removed pseudo-tar writer. The old validation only
+        // implemented Zip, so these validated "clean"; the old import extracted zero files and
+        // still reported success.
+        var legacyPath = Path.Combine(TestDataRoot, "legacy_package_20260101.tar.gz");
+        await using (var fileStream = File.Create(legacyPath))
+        await using (var gzip = new GZipStream(fileStream, CompressionLevel.Optimal))
+        await using (var writer = new StreamWriter(gzip))
+        {
+            await writer.WriteLineAsync("__MANIFEST__:package-manifest.json");
+            await writer.WriteLineAsync("{}");
+            await writer.WriteLineAsync("__END_MANIFEST__");
+        }
+
+        var validation = await _packager.ValidatePackageAsync(legacyPath);
+        validation.IsValid.Should().BeFalse();
+        validation.Error.Should().Contain("not supported");
+
+        var import = await _packager.ImportPackageAsync(legacyPath, Path.Combine(TestDataRoot, "legacy-import-dest"));
+        import.Success.Should().BeFalse();
+        import.Error.Should().Contain("not supported");
+        import.FilesExtracted.Should().Be(0);
+    }
+
     [Fact]
     public async Task CreatePackageAsync_WithCompressionLevels_ShouldApplyCompression()
     {

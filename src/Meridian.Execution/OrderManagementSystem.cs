@@ -45,6 +45,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
     private readonly ConcurrentDictionary<ExecutionReport, FillProcessingProgress> _fillProcessing = new();
     private readonly ConcurrentQueue<ExecutionReport> _completedFillReportOrder = new();
     private readonly object _disposeSync = new();
+    private long _droppedExecutionReports;
     private Task? _disposeTask;
     private TaskCompletionSource? _operationsDrained;
     private int _orderSequence;
@@ -113,14 +114,24 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
             : BrokerageOrderPlacementGate.ResolveExecutionMode(brokerageConfiguration, gateway.GatewayId);
-        // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
+        // ExecutionReports is a best-effort observer stream: order state, session fill history,
+        // and the durable accounting handoff own correctness. The previous FullMode.Wait made a
+        // slow (or absent — there is no production reader today) subscriber block WriteAsync on
+        // the fill path, stalling the report pump and submit callers once the channel filled.
+        // DropOldest keeps fills flowing; drops are counted and logged.
         var executionPolicy = new EventPipelinePolicy(
             Capacity: _options.ValidatedExecutionChannelCapacity,
-            FullMode: BoundedChannelFullMode.Wait,
+            FullMode: BoundedChannelFullMode.DropOldest,
             EnableMetrics: false);
-        _executionChannel = executionPolicy.CreateChannel<ExecutionReport>(
-            singleReader: true,
-            singleWriter: false);
+        _executionChannel = Channel.CreateBounded<ExecutionReport>(
+            executionPolicy.ToBoundedOptions(singleReader: true, singleWriter: false),
+            dropped =>
+            {
+                var totalDropped = Interlocked.Increment(ref _droppedExecutionReports);
+                _logger.LogWarning(
+                    "Execution-report observer channel is full; dropped oldest report for order {OrderId} ({ReportType}). Total dropped: {DroppedTotal}",
+                    dropped.OrderId, dropped.ReportType, totalDropped);
+            });
 
         // Consume the gateway's asynchronous execution report stream so partial fills,
         // rejects, and cancels that arrive after the synchronous submit ack still reach
@@ -766,10 +777,20 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
     /// by portfolio trackers and audit subscribers.  Reports are published as each order
     /// transitions to <see cref="OrderStatus.Filled"/> or <see cref="OrderStatus.PartiallyFilled"/>,
     /// with <see cref="ExecutionReport.FilledQuantity"/> normalised to the fill increment
-    /// (gateways report cumulative quantities). Consumers must drain this reader promptly
-    /// to avoid backpressure.
+    /// (gateways report cumulative quantities). This is a lossy observer stream: when a
+    /// subscriber lags behind <see cref="OrderManagementSystemOptions.ExecutionChannelCapacity"/>,
+    /// the oldest unread report is dropped (logged and counted via
+    /// <see cref="DroppedExecutionReports"/>) rather than blocking the fill path. Order state,
+    /// session fill history, and the durable accounting handoff remain authoritative and lossless.
     /// </summary>
     public ChannelReader<ExecutionReport> ExecutionReports => _executionChannel.Reader;
+
+    /// <summary>
+    /// Total execution reports dropped from the <see cref="ExecutionReports"/> observer channel
+    /// because no subscriber drained it in time. Fills themselves are never lost — order state
+    /// and the accounting handoff do not flow through this channel.
+    /// </summary>
+    public long DroppedExecutionReports => Interlocked.Read(ref _droppedExecutionReports);
 
     /// <summary>
     /// Returns OMS-level accounting handoff failures that could not enter the primary publisher.
@@ -1215,8 +1236,9 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
 
             if (!progress.ExecutionReportPublished)
             {
-                // FullMode.Wait must be observed asynchronously. TryWrite here silently lost
-                // accepted fills whenever subscribers lagged behind the configured capacity.
+                // DropOldest semantics: this write completes without blocking even when the
+                // observer channel is full — the channel's drop callback logs and counts the
+                // evicted report. The fill path must never stall on observer lag.
                 try
                 {
                     await _executionChannel.Writer.WriteAsync(fillIncrement, postHandoffCt).ConfigureAwait(false);

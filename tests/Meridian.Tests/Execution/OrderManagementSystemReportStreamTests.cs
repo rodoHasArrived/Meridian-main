@@ -476,7 +476,7 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
-    public async Task Scenario_ExecutionBurstSaturatesSubscriber_BackpressurePreservesEveryFill()
+    public async Task Scenario_ExecutionBurstSaturatesSubscriber_DropsOldestObserverReportAndCountsIt()
     {
         var publisher = new RecordingTradeEventPublisher();
         var gateway = new StreamingGateway
@@ -523,15 +523,21 @@ public sealed class OrderManagementSystemReportStreamTests
             "the first fill must occupy the bounded channel");
         await gateway.PublishAsync(second);
         await WaitUntilAsync(() => publisher.AcceptedEvents.Count == 2,
-            "the second fill must reach publication before waiting for channel capacity");
+            "the second fill must reach publication without waiting on the saturated observer channel");
+        await WaitUntilAsync(() => oms.DroppedExecutionReports == 1,
+            "the saturated observer channel must drop the oldest unread report");
 
+        // The observer stream is lossy by design: the newest report survives, the accounting
+        // publisher (the lossless path) received both fills, and the drop was counted.
         using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var firstPublished = await oms.ExecutionReports.ReadAsync(readCts.Token);
-        var secondPublished = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        var survivingReport = await oms.ExecutionReports.ReadAsync(readCts.Token);
 
-        firstPublished.Symbol.Should().Be("AAA");
-        secondPublished.Symbol.Should().Be("BBB",
-            "the full channel must delay the producer rather than discard the second fill");
+        survivingReport.Symbol.Should().Be("BBB",
+            "DropOldest must evict the unread AAA report in favour of the newest fill");
+        publisher.AcceptedEvents.Should().HaveCount(2,
+            "the durable accounting handoff must remain lossless regardless of observer lag");
+        oms.DroppedExecutionReports.Should().Be(1);
+        oms.ExecutionReports.Count.Should().Be(0, "only the surviving report was readable");
     }
 
     private static ExecutionReport BuildReport(

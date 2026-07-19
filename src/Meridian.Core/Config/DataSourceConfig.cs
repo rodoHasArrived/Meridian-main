@@ -184,7 +184,9 @@ public sealed record IBClientPortalOptions(
     string BaseUrl = ApiEndpointDefaults.IbClientPortalBaseUrl,
 
     // <summary>
-    // Whether Meridian should allow the self-signed certificate typically used by local Client Portal sessions.
+    // Whether Meridian should allow the self-signed certificate typically used by local Client
+    // Portal sessions. Self-signed certificates are only ever tolerated for loopback hosts
+    // (localhost/127.0.0.1/::1); a non-loopback gateway must present a valid certificate.
     // </summary>
     bool AllowSelfSignedCertificates = true
 );

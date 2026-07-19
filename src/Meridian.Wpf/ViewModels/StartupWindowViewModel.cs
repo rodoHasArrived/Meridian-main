@@ -244,13 +244,27 @@ public sealed class StartupWindowViewModel : BindableBase
                 return;
             }
 
-            if (_lifecycleClient is not null &&
-                !await _lifecycleClient.AuthenticateAsync(username, password).ConfigureAwait(true))
+            if (_lifecycleClient is not null)
             {
-                _authenticationSession.SignOut();
-                Password = string.Empty;
-                SetStatus("The host rejected the desktop authentication session.", ErrorBrush);
-                return;
+                if (!await _lifecycleClient.AuthenticateAsync(username, password).ConfigureAwait(true))
+                {
+                    _authenticationSession.SignOut();
+                    Password = string.Empty;
+                    SetStatus("The host rejected the desktop authentication session.", ErrorBrush);
+                    return;
+                }
+
+                // Establish the shared workstation API session too (audit finding P8): the
+                // server session lets governed endpoints stamp the authenticated actor, and
+                // its CSRF cookie unlocks session-authenticated mutations.
+                if (!await Meridian.Ui.Services.ApiClientService.Instance
+                        .AuthenticateAsync(username, password).ConfigureAwait(true))
+                {
+                    _authenticationSession.SignOut();
+                    Password = string.Empty;
+                    SetStatus("The host rejected the workstation API session.", ErrorBrush);
+                    return;
+                }
             }
 
             Password = string.Empty;

@@ -138,6 +138,9 @@ verify_dotnet() {
   run_step "Validate warning suppression inventory" \
     "$python_cmd" build/scripts/ci/check-warning-suppressions.py
 
+  run_step "Enforce ApiClientService caller ratchet" \
+    "$python_cmd" build/scripts/ci/check-apiclient-callers.py
+
   run_step "Enforce no-new-god-file ratchet" \
     "$python_cmd" build/scripts/ci/check-file-size.py
 
@@ -249,6 +252,12 @@ verify_workflows() {
 
   run_step "Validate workflow hygiene" \
     bash -c 'set -euo pipefail; "$0" build/scripts/ci/check-workflow-hygiene.py 2>&1 | tee artifacts/build-logs/workflow-hygiene.log' "$python_cmd"
+
+  # Audit finding P9: ~65 of 75 tests/scripts suites were wired to no CI lane and several
+  # had rotted unnoticed. The runner gates every suite except the tracked quarantine list
+  # in build/scripts/ci/script-test-quarantine.json, which it prints on every run.
+  run_step "Run repo script test suite (quarantine-aware)" \
+    "$python_cmd" build/scripts/ci/run-script-tests.py
 }
 
 verify_fast() {

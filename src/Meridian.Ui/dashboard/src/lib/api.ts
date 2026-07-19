@@ -780,7 +780,7 @@ async function getDevelopmentFallback<T>(path: string, status: number): Promise<
   return fixture;
 }
 
-function markDevelopmentFixtureUsage() {
+export function markDevelopmentFixtureUsage() {
   developmentFixtureUsage = true;
 }
 
