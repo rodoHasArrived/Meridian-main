@@ -3355,7 +3355,7 @@
       ]
     }
   ],
-  "fingerprint": "bbfbb43200775b0f3c673b4454ec8c6258ea81c540218c05dbdb1052a5a5e707",
+  "fingerprint": "b30383a659bb3e6d75d5b392b5e7437d6aca35451185b7122ea9d65f7b2e45ac",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5392,7 +5392,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "e098327131b50ba22e6bf6c8e7f0eb31c9ae03a904bb2b97c8938824e351ea9a",
+      "fingerprint": "1c74f4f8c687870486c311e25ff0a9f2a65d79c3b0befccaccb75d311eb5c423",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -309256,7 +309256,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "e3d7e55f3c9e556f05e0421ec266d5222b9fb3347665bcaed38990ee5b6b6f6c",
+      "fingerprint": "4aa19a0410368e6c8077f1f6707c083f917aed8b2ce9f10ee2a31f086a42e7da",
       "full_name": "Meridian.Contracts.Workstation.StatementFetchScheduleDto",
       "id": "Meridian.Contracts.Workstation.StatementFetchScheduleDto",
       "kind": "record",
@@ -309423,6 +309423,20 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
+          "name": "SourceKind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 167,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
           "name": "ToleranceProfileId",
           "nullable": false,
           "origin": "positional_parameter",
@@ -309458,7 +309472,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "ebb5d6b952e92fd4cf50431f7b105b0e922d084d57b4a5804949bc904091a00d",
+      "fingerprint": "f5f54bce33b818f13527ff64b887848b2c2ac59018e3a56f25c524e8865d892b",
       "full_name": "Meridian.Contracts.Workstation.StatementFetchScheduleUpsertRequestDto",
       "id": "Meridian.Contracts.Workstation.StatementFetchScheduleUpsertRequestDto",
       "kind": "record",
@@ -309475,7 +309489,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 176,
+          "source_line": 177,
           "type": "int"
         },
         {
@@ -309489,7 +309503,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 170,
+          "source_line": 171,
           "type": "string"
         },
         {
@@ -309503,7 +309517,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 177,
+          "source_line": 178,
           "type": "bool"
         },
         {
@@ -309517,7 +309531,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 171,
+          "source_line": 172,
           "type": "string"
         },
         {
@@ -309531,7 +309545,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 172,
+          "source_line": 173,
           "type": "string"
         },
         {
@@ -309545,7 +309559,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 174,
+          "source_line": 175,
           "type": "string?"
         },
         {
@@ -309559,7 +309573,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 169,
+          "source_line": 170,
           "type": "string?"
         },
         {
@@ -309573,8 +309587,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 173,
+          "source_line": 174,
           "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SourceKind",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 179,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -309587,7 +309616,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 175,
+          "source_line": 176,
           "type": "string?"
         }
       ],
@@ -309597,12 +309626,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.StatementFetchScheduleUpsertRequestDto",
       "references": [],
       "source": {
-        "line": 168,
+        "line": 169,
         "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
       },
       "sources": [
         {
-          "line": 168,
+          "line": 169,
           "path": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs"
         }
       ],

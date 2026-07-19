@@ -1,4 +1,5 @@
 import { ArrowRight, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,44 +11,84 @@ import { Label } from "@/components/ui/label";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
-  STATEMENT_FORMAT_DRIFT_ISSUE_CODE,
-  statementColumnConfidenceBadgeVariant,
-  statementIssueBadgeVariant,
   useStatementImportPanelViewModel,
   type StatementImportPanelViewModel,
   type UseStatementImportPanelOptions
 } from "@/screens/statement-import-panel.view-model";
+import { StatementFetchPanel } from "@/screens/statement-fetch-panel";
+import type { StatementFetchPanelServices } from "@/screens/statement-fetch-panel.view-model";
+import { StatementImportPreviewDetails } from "@/screens/statement-import-preview";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
 
-export function StatementImportPanel(options: UseStatementImportPanelOptions = {}) {
+export interface StatementImportPanelProps extends UseStatementImportPanelOptions {
+  fetchServices?: Partial<StatementFetchPanelServices>;
+}
+
+export function StatementImportPanel(options: StatementImportPanelProps = {}) {
   const viewModel = useStatementImportPanelViewModel(options);
+  const [sourceMode, setSourceMode] = useState("file");
 
   return (
     <section className="flex flex-col gap-4" aria-label="Import statement">
       <PanelSurface className="p-4">
         <h1 className="text-base font-semibold text-foreground">Import statement</h1>
         <p className="mt-1 text-xs text-muted-foreground">
-          Upload a broker or custodian statement, review the detected column mappings and record kinds, then commit
-          the import into the reconciliation queue.
+          Upload a broker or custodian statement, or fetch it through a configured provider. Review the canonical
+          mapping and confidence before records enter the reconciliation queue.
         </p>
       </PanelSurface>
 
       <h2 className="sr-only">Statement import workflow</h2>
-
       {viewModel.loadError ? (
         <ErrorBanner title="Statement connector library failed to load" error={viewModel.loadError} />
       ) : null}
-
-      <SourceSection viewModel={viewModel} />
-      {viewModel.previewError ? (
-        <ErrorBanner title="Statement preview failed" error={viewModel.previewError} />
-      ) : null}
-      {viewModel.preview ? <PreviewSection viewModel={viewModel} /> : null}
-      <ProfileEditorSection viewModel={viewModel} />
-      <CommitSection viewModel={viewModel} />
+      <Tabs
+        aria-label="Statement import source"
+        value={sourceMode}
+        onValueChange={setSourceMode}
+        tabs={[
+          { id: "file", label: "File upload" },
+          { id: "scheduled", label: "Scheduled fetch" }
+        ]}
+      >
+        <TabPanel>
+          <div className="flex flex-col gap-4">
+            <SourceSection viewModel={viewModel} />
+            {viewModel.previewError ? (
+              <ErrorBanner title="Statement preview failed" error={viewModel.previewError} />
+            ) : null}
+            {viewModel.preview ? (
+              <StatementImportPreviewDetails
+                preview={viewModel.preview}
+                selectedKind={viewModel.selectedKind}
+                onSelectKind={viewModel.selectKind}
+              />
+            ) : null}
+            <ProfileEditorSection viewModel={viewModel} />
+            <CommitSection viewModel={viewModel} />
+          </div>
+        </TabPanel>
+        <TabPanel>
+          {sourceMode === "scheduled" && viewModel.loading ? (
+            <StatusBanner
+              tone="info"
+              title="Loading statement connectors"
+              detail="Checking the connector catalog for remote-fetch support."
+            />
+          ) : null}
+          {sourceMode === "scheduled" && !viewModel.loading ? (
+            <StatementFetchPanel
+              connectors={viewModel.connectors}
+              profiles={viewModel.profiles}
+              services={options.fetchServices}
+            />
+          ) : null}
+        </TabPanel>
+      </Tabs>
     </section>
   );
 }
@@ -158,168 +199,6 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
         ) : null}
       </CardContent>
     </Card>
-  );
-}
-
-function PreviewSection({ viewModel }: { viewModel: StatementImportPanelViewModel }) {
-  const preview = viewModel.preview;
-  if (!preview) {
-    return null;
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Preview: {preview.fileName}</CardTitle>
-        <CardDescription>
-          {preview.connectorDisplayName} parsed {preview.recordCount} records.{" "}
-          {preview.nextAction}
-        </CardDescription>
-        <div className="mt-1">
-          <Badge variant={preview.status === "ReadyToImport" ? "success" : "warning"}>
-            {preview.status}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
-        <ColumnMappingTable viewModel={viewModel} />
-        <KindSummarySection viewModel={viewModel} />
-        <IssueList viewModel={viewModel} />
-      </CardContent>
-    </Card>
-  );
-}
-
-function ColumnMappingTable({ viewModel }: { viewModel: StatementImportPanelViewModel }) {
-  const mappings = viewModel.preview?.columnMappings ?? [];
-  if (mappings.length === 0) {
-    return null;
-  }
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-xs" aria-label="Statement column mappings">
-        <caption className="sr-only">Detected statement columns mapped onto canonical Meridian fields</caption>
-        <thead>
-          <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-            <th scope="col" className="px-2 py-1.5">Source column</th>
-            <th scope="col" className="px-2 py-1.5">Canonical field</th>
-            <th scope="col" className="px-2 py-1.5">Confidence</th>
-          </tr>
-        </thead>
-        <tbody>
-          {mappings.map((mapping) => (
-            <tr key={mapping.sourceColumn} className="border-b border-border/60">
-              <td className="px-2 py-1.5 font-mono">{mapping.sourceColumn}</td>
-              <td className="px-2 py-1.5 font-mono">{mapping.canonicalField ?? "—"}</td>
-              <td className="px-2 py-1.5">
-                <Badge
-                  variant={statementColumnConfidenceBadgeVariant(mapping.confidence)}
-                  title={`${mapping.rationale} (score ${mapping.score.toFixed(2)})`}
-                >
-                  {mapping.confidence}
-                </Badge>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function KindSummarySection({ viewModel }: { viewModel: StatementImportPanelViewModel }) {
-  if (viewModel.kindSummaries.length === 0) {
-    return null;
-  }
-
-  const selected = viewModel.selectedKindSummary;
-
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Record kinds">
-        {viewModel.kindSummaries.map((summary) => (
-          <button
-            key={summary.kind}
-            type="button"
-            aria-pressed={summary.kind === viewModel.selectedKind}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-              summary.kind === viewModel.selectedKind
-                ? "border-primary bg-primary/15 text-primary"
-                : "border-border bg-secondary/35 text-muted-foreground hover:border-[#ADB8C4]"
-            )}
-            onClick={() => viewModel.selectKind(summary.kind)}
-          >
-            {summary.kind}
-            <span aria-hidden="true">{summary.recordCount}</span>
-            <span className="sr-only">{summary.recordCount} records</span>
-          </button>
-        ))}
-      </div>
-      {selected && selected.sampleRecords.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-xs" aria-label={`Sample ${selected.kind} records`}>
-            <caption className="sr-only">Sample records parsed for the {selected.kind} kind</caption>
-            <thead>
-              <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                <th scope="col" className="px-2 py-1.5">Account</th>
-                <th scope="col" className="px-2 py-1.5">Symbol</th>
-                <th scope="col" className="px-2 py-1.5">Activity</th>
-                <th scope="col" className="px-2 py-1.5">Trade date</th>
-                <th scope="col" className="px-2 py-1.5 text-right">Quantity</th>
-                <th scope="col" className="px-2 py-1.5 text-right">Price</th>
-                <th scope="col" className="px-2 py-1.5 text-right">Cash</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selected.sampleRecords.map((record, index) => (
-                <tr key={`${record.externalTransactionId ?? record.symbol}-${index}`} className="border-b border-border/60">
-                  <td className="px-2 py-1.5 font-mono">{record.account}</td>
-                  <td className="px-2 py-1.5 font-mono">{record.symbol}</td>
-                  <td className="px-2 py-1.5">{record.activityType}</td>
-                  <td className="px-2 py-1.5 font-mono">{record.tradeDate}</td>
-                  <td className="px-2 py-1.5 text-right font-mono">{record.quantity}</td>
-                  <td className="px-2 py-1.5 text-right font-mono">{record.price}</td>
-                  <td className="px-2 py-1.5 text-right font-mono">{record.cashAmount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function IssueList({ viewModel }: { viewModel: StatementImportPanelViewModel }) {
-  if (viewModel.issues.length === 0) {
-    return null;
-  }
-
-  return (
-    <ul className="flex flex-col gap-1.5" aria-label="Statement import issues">
-      {viewModel.issues.map((issue, index) => (
-        <li
-          key={`${issue.code}-${issue.rowNumber ?? "file"}-${index}`}
-          className="flex flex-wrap items-center gap-2 rounded-[2px] border border-border/60 bg-card px-2 py-1.5 text-xs"
-        >
-          <Badge variant={statementIssueBadgeVariant(issue.severity)}>{issue.severity}</Badge>
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            {issue.code}
-            {issue.rowNumber !== null ? ` · row ${issue.rowNumber}` : ""}
-            {issue.field ? ` · ${issue.field}` : ""}
-          </span>
-          <span className="min-w-0 flex-1">
-            {issue.message}
-            {issue.code === STATEMENT_FORMAT_DRIFT_ISSUE_CODE
-              ? " Review the mapping profile before committing — the statement layout drifted from the accepted fingerprint."
-              : ""}
-          </span>
-        </li>
-      ))}
-    </ul>
   );
 }
 

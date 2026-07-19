@@ -6891,7 +6891,7 @@
     },
     {
       "name": "StatementFetchScheduleUpsertRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:167",
+      "source": "src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:168",
       "documented": false
     },
     {

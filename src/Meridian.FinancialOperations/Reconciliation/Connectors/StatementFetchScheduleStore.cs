@@ -17,7 +17,8 @@ public sealed record StatementFetchSchedule(
     int CadenceHours,
     bool Enabled,
     DateTimeOffset? LastRunAtUtc = null,
-    string? LastRunStatus = null)
+    string? LastRunStatus = null,
+    string SourceKind = "broker")
 {
     public DateTimeOffset? NextDueAtUtc =>
         !Enabled ? null : LastRunAtUtc?.AddHours(Math.Max(1, CadenceHours));
@@ -40,6 +41,7 @@ public interface IStatementFetchScheduleStore
     Task<StatementFetchSchedule> UpsertAsync(StatementFetchSchedule schedule, CancellationToken ct = default);
     Task<bool> DeleteAsync(string scheduleId, CancellationToken ct = default);
     Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);
+    Task RecordFailureAsync(string scheduleId, string status, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -72,7 +74,8 @@ public sealed class FileStatementFetchScheduleStore
         {
             ScheduleId = string.IsNullOrWhiteSpace(schedule.ScheduleId)
                 ? Guid.NewGuid().ToString("N")
-                : schedule.ScheduleId.Trim()
+                : schedule.ScheduleId.Trim(),
+            SourceKind = schedule.SourceKind.Trim().ToLowerInvariant()
         };
 
         return await UpdateSnapshotAsync(snapshot =>
@@ -135,6 +138,28 @@ public sealed class FileStatementFetchScheduleStore
         }, ct).ConfigureAwait(false);
     }
 
+    public async Task RecordFailureAsync(string scheduleId, string status, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        await UpdateSnapshotAsync(snapshot =>
+        {
+            var existing = snapshot.Schedules.FirstOrDefault(candidate =>
+                string.Equals(candidate.ScheduleId, scheduleId.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (existing is null)
+            {
+                return snapshot;
+            }
+
+            var updated = existing with { LastRunStatus = status };
+            var retained = snapshot.Schedules
+                .Select(candidate => string.Equals(candidate.ScheduleId, updated.ScheduleId, StringComparison.OrdinalIgnoreCase)
+                    ? updated
+                    : candidate)
+                .ToArray();
+            return new StatementFetchScheduleSnapshot(SnapshotVersion, retained);
+        }, ct).ConfigureAwait(false);
+    }
+
     protected override StatementFetchScheduleSnapshot CreateEmptySnapshot() => new(SnapshotVersion, []);
 
     protected override StatementFetchScheduleSnapshot OnSnapshotLoaded(StatementFetchScheduleSnapshot snapshot)
@@ -167,6 +192,12 @@ public sealed class FileStatementFetchScheduleStore
         if (schedule.CadenceHours < 1)
         {
             throw new InvalidDataException("Fetch schedule cadence must be at least one hour.");
+        }
+
+        if (!string.Equals(schedule.SourceKind, "broker", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(schedule.SourceKind, "custodian", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("Fetch schedule source kind must be broker or custodian.");
         }
     }
 

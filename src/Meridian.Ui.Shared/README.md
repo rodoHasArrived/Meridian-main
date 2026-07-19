@@ -69,7 +69,10 @@ supported local-workstation HTTP binding omits that flag only when both ends of 
 loopback, allowing the packaged browser login to return its `SameSite=Strict` cookies on localhost.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
-source-of-truth services authoritative. `SecurityMasterWorkbenchQueryService` is published under
+source-of-truth services authoritative. Statement connector endpoints expose file and remote
+preview plus persisted fetch-schedule CRUD/run operations over shared DTOs; schedule upserts default
+an omitted source kind to `broker`, while explicit `custodian` values pass unchanged into Financial
+Operations. `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
 workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read

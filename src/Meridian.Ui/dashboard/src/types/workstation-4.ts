@@ -83,6 +83,7 @@ export interface StatementFetchSchedule {
   lastRunAtUtc: string | null;
   lastRunStatus: string | null;
   nextDueAtUtc: string | null;
+  sourceKind: StatementImportSourceKind;
 }
 
 export type StatementImportSourceKind = "broker" | "custodian";
@@ -106,6 +107,7 @@ export interface StatementFetchScheduleUpsertRequest {
   toleranceProfileId?: string | null;
   cadenceHours: number;
   enabled: boolean;
+  sourceKind?: StatementImportSourceKind | null;
 }
 
 export interface AccountingReconciliationRecord {
