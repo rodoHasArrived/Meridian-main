@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-07-13
+**Reviewed:** 2026-07-19
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -36,6 +36,17 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 - If you need evidence-backed examples of current operations, check:
   - [generated roadmap outputs](../roadmap/generated/)
   - Current project source-of-truth references listed below.
+
+## Current Project Snapshot
+
+The registry snapshot dated 2026-07-18 records Evidence Vault productization, statement
+reconciliation onboarding, and WPF parity as the active productization targets. The accepted
+W1-W5, FREX, FINOPS, connector-library, and bounded W7 milestones remain bounded completion claims,
+not blanket production certification.
+
+Production readiness is currently **blocked**. The release posture changes only when the
+[Implementation and Readiness Tracker](implementation-todo-list.md), roadmap evidence, packaging,
+operator preflight, and required GitHub Actions evidence agree on the same release commit.
 
 ## Canonical Product Design Charter
 

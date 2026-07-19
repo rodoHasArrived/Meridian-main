@@ -1,5 +1,9 @@
 # Testing Documentation
 
+**Status:** supporting
+**Owner:** core-team
+**Reviewed:** 2026-07-19
+
 This folder contains release-gate and acceptance-test references.
 
 - [Wave 2 Acceptance Gate Checklist](WAVE2_ACCEPTANCE_GATE_CHECKLIST.md)

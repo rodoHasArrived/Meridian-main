@@ -2,11 +2,11 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-06-14
+**Reviewed:** 2026-07-19
 
 This page tracks recurring repository hygiene and build-safe cleanup operations.
 
-Current local project path: `D:\Meridian-main`.
+Run cleanup commands from the repository root and preview every destructive candidate first.
 
 ## Daily Cleanup Commands
 
