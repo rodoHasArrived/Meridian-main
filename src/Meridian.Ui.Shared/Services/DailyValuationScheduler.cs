@@ -325,8 +325,10 @@ public sealed class DailyValuationScheduledWorker
             var skipped = run.Intake.Skipped.FirstOrDefault();
             var journalEntryId = created?.JournalEntryId ?? skipped?.JournalEntryId;
             var evidenceLinks = BuildEvidenceLinks(item, run, nowUtc);
-            var blockers = run.Valuation.RejectedMarks
-                .Select(static rejection => $"{rejection.Symbol}: {rejection.Reason}")
+            var blockers = run.Valuation.UnpricedSymbols
+                .Select(static symbol => $"{symbol}: no trusted closing mark available")
+                .Concat(run.Valuation.StalePricedSymbols
+                    .Select(static symbol => $"{symbol}: closing mark rejected — exceeds maximum mark-age policy"))
                 .ToArray();
 
             if (run.Valuation.Projection is null && blockers.Length > 0)
@@ -442,10 +444,6 @@ public sealed class DailyValuationScheduledWorker
         var uris = run.Intake.Created
             .SelectMany(static draft => draft.EvidenceLinks)
             .Concat(run.Valuation.Projection?.Lines.Select(static line => line.EvidenceReference) ?? [])
-            .Concat(run.Valuation.RejectedMarks
-                .Select(static rejection => rejection.EvidenceReference)
-                .Where(static uri => !string.IsNullOrWhiteSpace(uri))
-                .Select(static uri => uri!))
             .Where(static uri => !string.IsNullOrWhiteSpace(uri))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();

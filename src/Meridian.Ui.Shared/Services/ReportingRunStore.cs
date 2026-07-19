@@ -92,12 +92,13 @@ public sealed class FileReportingRunStore : IReportingRunStore
         try
         {
             var json = File.ReadAllText(SnapshotPath);
-            return JsonSerializer.Deserialize<ReportingRunStoreSnapshot>(json, _jsonOptions) ?? new ReportingRunStoreSnapshot([]);
+            return JsonSerializer.Deserialize<ReportingRunStoreSnapshot>(json, _jsonOptions)
+                ?? throw new JsonException("Reporting run snapshot deserialized to null.");
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
-            _logger.LogWarning(ex, "Unable to load reporting run snapshot from {SnapshotPath}.", SnapshotPath);
-            return new ReportingRunStoreSnapshot([]);
+            _logger.LogCritical(ex, "Reporting run snapshot at {SnapshotPath} is unreadable; reporting is blocked until the state is recovered.", SnapshotPath);
+            throw new ReportingStateCorruptionException(SnapshotPath, ex);
         }
     }
 

@@ -3799,6 +3799,40 @@ describe("ReportingScreen", () => {
     fireEvent.change(screen.getByLabelText("Reporting schedule dataset source"), {
       target: { value: "portfolio-reporting-cuts" }
     });
+    fireEvent.change(screen.getByLabelText("Reporting schedule entity scope"), {
+      target: { value: "Portfolio" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule portfolio ID"), {
+      target: { value: "portfolio-credit" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule accounting period ID"), {
+      target: { value: "2026-Q2" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule ledger book code"), {
+      target: { value: "STAT-GL" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule ledger book ID"), {
+      target: { value: "11111111-1111-1111-1111-111111111111" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule accounting basis"), {
+      target: { value: "Statutory" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule presentation currency"), {
+      target: { value: "EUR" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule consolidation level"), {
+      target: { value: "Portfolio" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule output format"), {
+      target: { value: "Xlsx" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule finality"), {
+      target: { value: "Final" }
+    });
+    fireEvent.click(screen.getByLabelText("Schedule supporting schedules"));
+    fireEvent.change(screen.getByLabelText("Reporting schedule template parameters (JSON)"), {
+      target: { value: JSON.stringify({ reportingRegion: "EU" }) }
+    });
     fireEvent.change(screen.getByLabelText("Reporting schedule distribution"), {
       target: { value: "compliance-archive" }
     });
@@ -3845,6 +3879,34 @@ describe("ReportingScreen", () => {
         footerText: "Northstar investor reporting",
         disclaimer: "Prepared for authorized allocator review.",
         isBuiltIn: false
+      },
+      template: {
+        name: "investor-monthly-statement",
+        version: 1
+      },
+      runParameters: {
+        scope: {
+          fundProfileId: "fund-alpha",
+          entityScopeKind: "Portfolio",
+          entityId: null,
+          portfolioId: "portfolio-credit",
+          investorId: null,
+          dimensions: null
+        },
+        periodId: "2026-Q2",
+        asOfDate: "2026-06-30",
+        ledgerBook: {
+          ledgerBookId: "11111111-1111-1111-1111-111111111111",
+          ledgerBookCode: "STAT-GL"
+        },
+        accountingBasis: "Statutory",
+        presentationCurrency: "EUR",
+        consolidationLevel: "Portfolio",
+        outputFormat: "Xlsx",
+        finality: "Final",
+        includeSupportingSchedules: false,
+        includeEvidenceAppendix: true,
+        templateParameters: { reportingRegion: "EU" }
       },
       deliveryTargets: [
         {

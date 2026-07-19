@@ -9,13 +9,13 @@ import { cn } from "@/lib/utils";
 export const designSystemNavRailClasses = {
   root: "operator-rail",
   compact: "operator-rail-compact",
-  nav: "operator-rail-nav",
-  section: "operator-rail-section",
+  nav: "operator-rail-nav op-rail__nav",
+  section: "operator-rail-section op-rail__section",
   scope: "operator-nav-scope",
   group: "operator-nav-group",
   row: "operator-nav-row",
-  item: "operator-nav-item",
-  itemIcon: "operator-nav-item__icon",
+  item: "operator-nav-item op-nav-item",
+  itemIcon: "operator-nav-item__icon op-nav-item__icon",
   itemActive: "active",
   status: "operator-nav-status",
   statusDot: "operator-nav-status-dot",
@@ -50,9 +50,14 @@ export function DesignSystemNavRail({
 }: DesignSystemNavRailProps) {
   return (
     <aside
-      className={cn(designSystemNavRailClasses.root, "mds-nav-rail", "op-rail", compact && designSystemNavRailClasses.compact, className)}
-      data-design-system-component="NavRail"
+      className={cn(
+        designSystemNavRailClasses.root,
+        "mds-nav-rail op-rail",
+        compact && designSystemNavRailClasses.compact,
+        className
+      )}
       aria-label={ariaLabel}
+      data-design-system-component="NavRail"
     >
       <nav className={designSystemNavRailClasses.nav} aria-label={navAriaLabel}>
         {children}

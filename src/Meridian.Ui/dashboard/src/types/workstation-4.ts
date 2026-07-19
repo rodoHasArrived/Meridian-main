@@ -715,6 +715,9 @@ export interface ReportingRunStatusProjection {
   changedLineCount?: number | null;
   addedLineCount?: number | null;
   removedLineCount?: number | null;
+  resolvedTemplate?: VersionedReportTemplateId | null;
+  resolvedParameters?: ReportingRunParameters | null;
+  readiness?: ReportingRunReadiness | null;
 }
 
 export interface ReportingGeneratedReportWriterGrid {
@@ -1165,6 +1168,12 @@ export interface ReportingScheduleRecord {
   datasetSourceId?: string | null;
   brandingThemeId?: string | null;
   brandingThemeOverride?: ReportBrandingTheme | null;
+  template?: VersionedReportTemplateId | null;
+  runParameters?: ReportingRunParameters | null;
+  tenantId?: string | null;
+  companyId?: string | null;
+  accessPolicySnapshot?: ReportAccessPolicy | null;
+  lastReadiness?: ReportingRunReadiness | null;
 }
 
 export interface ReportingScheduleUpsertRequest {
@@ -1182,6 +1191,8 @@ export interface ReportingScheduleUpsertRequest {
   datasetSourceId?: string | null;
   brandingThemeId?: string | null;
   brandingThemeOverride?: ReportBrandingTheme | null;
+  template?: VersionedReportTemplateId | null;
+  runParameters?: ReportingRunParameters | null;
 }
 
 export interface ReportingScheduleRunResult {
@@ -1246,6 +1257,69 @@ export interface ReportingRunRequest {
   datasetSourceId?: string | null;
   retryReason?: string | null;
   allowRestatement?: boolean;
+  template?: VersionedReportTemplateId | null;
+  parameters?: ReportingRunParameters | null;
+}
+
+export type ReportingEntityScopeKind = "AllEntities" | "Entity" | "Portfolio" | "Investor";
+export type ReportingAccountingBasis = "Gaap" | "Tax" | "Management" | "Cash" | "Statutory";
+export type ReportingConsolidationLevel = "Fund" | "Entity" | "Portfolio" | "Investor";
+export type ReportingOutputFormat = "Pdf" | "Xlsx" | "Csv" | "EvidenceVault";
+export type ReportingFinality = "Draft" | "Final";
+export type ReportingRunReadinessStatus = "Ready" | "ReviewRequired" | "Blocked" | "Unavailable";
+
+export interface ReportingRunScope {
+  fundProfileId: string;
+  entityScopeKind: ReportingEntityScopeKind;
+  entityId?: string | null;
+  portfolioId?: string | null;
+  investorId?: string | null;
+  dimensions?: import("./workstation-2").LedgerDimensionSet | null;
+}
+
+export interface ReportingLedgerBookSelection {
+  ledgerBookId?: string | null;
+  ledgerBookCode?: string | null;
+}
+
+export interface ReportingRunParameters {
+  scope: ReportingRunScope;
+  periodId: string;
+  asOfDate: string;
+  ledgerBook: ReportingLedgerBookSelection;
+  accountingBasis: ReportingAccountingBasis;
+  presentationCurrency: string;
+  consolidationLevel: ReportingConsolidationLevel;
+  outputFormat: ReportingOutputFormat;
+  finality: ReportingFinality;
+  includeSupportingSchedules: boolean;
+  includeEvidenceAppendix: boolean;
+  templateParameters: Record<string, string>;
+}
+
+export interface ReportingRunReadinessCheck {
+  checkId: string;
+  label: string;
+  status: ReportingRunReadinessStatus;
+  summary: string;
+  issueCount: number;
+  blocksDraft: boolean;
+  blocksFinal: boolean;
+  route?: string | null;
+  evidenceReferences: string[];
+}
+
+export interface ReportingRunReadiness {
+  evaluationId: string;
+  evaluatedAtUtc: string;
+  resolvedTemplate: VersionedReportTemplateId;
+  resolvedParameters: ReportingRunParameters;
+  status: ReportingRunReadinessStatus;
+  canGenerateDraft: boolean;
+  canGenerateFinal: boolean;
+  checks: ReportingRunReadinessCheck[];
+  blockingReasons: string[];
+  evidenceHash: string;
 }
 
 export interface ReportingRunResult {

@@ -104,6 +104,97 @@ public sealed class SecurityMasterQueryServiceAsOfTests
     }
 
     [Fact]
+    public async Task GetReportingReferenceByIdentifierAsOfAsync_FreezesDetailAndEconomicDefinitionFromSameEvent()
+    {
+        var securityId = Guid.NewGuid();
+        var current = MakeProjection(securityId, "Acme Corporation", version: 2);
+        var historicalEvent = MakeEnvelope(
+            securityId,
+            version: 1,
+            timestamp: T0,
+            displayName: "Acme Corp");
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            historicalEvent,
+            MakeEnvelope(
+                securityId,
+                version: 2,
+                timestamp: T0.AddDays(5),
+                displayName: "Acme Corporation")
+        });
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                "ACME",
+                null,
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns(current);
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(current);
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var service = new SecurityMasterQueryService(
+            eventStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, snapshotStore));
+
+        var reference = await service.GetReportingReferenceByIdentifierAsOfAsync(
+            SecurityIdentifierKind.Ticker,
+            "ACME",
+            null,
+            T0.AddDays(2));
+
+        reference.Should().NotBeNull();
+        reference!.Detail.DisplayName.Should().Be("Acme Corp");
+        reference.EconomicDefinition.Should().NotBeNull();
+        reference.EconomicDefinition!.DisplayName.Should().Be("Acme Corp");
+        reference.EconomicDefinition.Version.Should().Be(1);
+        reference.ResolutionMode.Should().Be(SecurityMasterReportingResolutionMode.HistoricalEvent);
+        reference.EventGlobalSequence.Should().Be(historicalEvent.GlobalSequence);
+        reference.EventStreamVersion.Should().Be(1);
+        reference.EventTimestamp.Should().Be(T0);
+    }
+
+    [Fact]
+    public async Task GetReportingReferenceByIdentifierAsOfAsync_LabelsProjectionOnlyFallbackAsNonHistorical()
+    {
+        var securityId = Guid.NewGuid();
+        var current = MakeProjection(securityId, "Projection Only Corp");
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SecurityMasterEventEnvelope>());
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetByIdentifierAsync(
+                SecurityIdentifierKind.Ticker,
+                "ACME",
+                null,
+                Arg.Any<DateTimeOffset>(),
+                true,
+                Arg.Any<CancellationToken>())
+            .Returns(current);
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>()).Returns(current);
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var service = new SecurityMasterQueryService(
+            eventStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, snapshotStore));
+
+        var reference = await service.GetReportingReferenceByIdentifierAsOfAsync(
+            SecurityIdentifierKind.Ticker,
+            "ACME",
+            null,
+            T0);
+
+        reference.Should().NotBeNull();
+        reference!.Detail.DisplayName.Should().Be("Projection Only Corp");
+        reference.EconomicDefinition.Should().NotBeNull();
+        reference.ResolutionMode.Should().Be(
+            SecurityMasterReportingResolutionMode.CurrentProjectionFallback);
+        reference.EventGlobalSequence.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetByIdentifierAsync_WithAsOf_FallsBackToStableIdentity_WhenIdentifierRowPostdatesAsOf()
     {
         // The CUSIP identity was backfilled after the security already existed, so its recorded

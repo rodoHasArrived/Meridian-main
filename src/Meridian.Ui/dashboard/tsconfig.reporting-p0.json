@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": [
+    "src/types.ts",
+    "src/types/workstation-4.ts",
+    "src/lib/ui-api-routes.generated.ts",
+    "src/lib/workstation-endpoints.ts",
+    "src/screens/report-run-parameters-screen.view-model.ts"
+  ]
+}

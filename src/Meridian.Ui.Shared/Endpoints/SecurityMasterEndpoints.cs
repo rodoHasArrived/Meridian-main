@@ -934,26 +934,32 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterOperatorOverrideDecision, async (
             Guid securityId,
-            OperatorOverrideApprovalDecisionRequest request,
+            OperatorOverrideDecisionRequest request,
             HttpContext context,
             [FromServices] IOperatorOverridesStore store,
             CancellationToken ct) =>
         {
+            // The reviewer identity is server-derived from the authenticated principal; overwrite any
+            // caller-supplied value so a client cannot spoof who approved the overlay.
             var reviewer = ResolveActor(context);
             try
             {
                 var updated = await store
-                    .RecordApprovalDecisionAsync(securityId, request, reviewer, ct)
+                    .RecordApprovalDecisionAsync(securityId, request with { Reviewer = reviewer }, ct)
                     .ConfigureAwait(false);
-                return updated is null ? Results.NotFound() : Results.Json(updated, jsonOptions);
+                return Results.Json(updated, jsonOptions);
             }
-            catch (ArgumentOutOfRangeException exception)
+            catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
             }
+            catch (InvalidOperationException)
+            {
+                return Results.NotFound();
+            }
         })
         .WithName("RecordSecurityMasterOperatorOverrideDecision")
-        .Accepts<OperatorOverrideApprovalDecisionRequest>("application/json")
+        .Accepts<OperatorOverrideDecisionRequest>("application/json")
         .Produces<OperatorOverridesDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

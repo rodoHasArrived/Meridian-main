@@ -60,6 +60,7 @@ interface ExportsReportRunnerProps {
   recentRuns: ReportingRunStatusRow[];
   status: ReportingCommandStatus | null;
   runningTemplateRunId: string | null;
+  runBlockedReason?: string | null;
   defaultRequester: string;
   onDraftChange: (field: ExportsReportRunDraftField, value: string) => void;
   onRestatementTargetChange: (target: RestatementTargetSelection | null) => void;
@@ -75,6 +76,7 @@ export function ExportsReportRunner({
   recentRuns,
   status,
   runningTemplateRunId,
+  runBlockedReason = null,
   defaultRequester,
   onDraftChange,
   onRestatementTargetChange,
@@ -92,11 +94,12 @@ export function ExportsReportRunner({
     : null;
   const isRestating = Boolean(restatementTarget);
   const restatementReasonMissing = isRestating && draft.retryReason.trim().length === 0;
-  const runDisabledReason = isRestating
+  const templateRunDisabledReason = isRestating
     ? (restatementReasonMissing
       ? "Enter a restatement reason to supersede the selected released report."
       : null)
     : resolveExportsRunDisabledReason(selectedTemplate);
+  const runDisabledReason = runBlockedReason ?? templateRunDisabledReason;
   const activeRunId = isRestating ? draft.restatementTargetRunId : selectedTemplate?.id;
   const isRunningSelected = Boolean(activeRunId && runningTemplateRunId === activeRunId);
 

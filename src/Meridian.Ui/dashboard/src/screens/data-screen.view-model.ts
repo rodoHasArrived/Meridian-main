@@ -1575,11 +1575,9 @@ export function useDataViewModel(
         await waitForBackfillProgressPoll(BACKFILL_PROGRESS_POLL_INTERVAL_MS, pollingController.signal);
       }
     };
-    let pollingTask: Promise<void>;
-
     try {
       const runRequest = services.run(buildBackfillRequest(form));
-      pollingTask = pollProgress();
+      const pollingTask = pollProgress();
       const nextResult = await runRequest;
       if (!token.isCurrent()) {
         backfillLifecycle.markStale(token.version);

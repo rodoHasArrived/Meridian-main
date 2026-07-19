@@ -58,12 +58,13 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
             try
             {
                 var json = File.ReadAllText(_options.SnapshotPath);
-                return JsonSerializer.Deserialize<ReportPackDeliverySnapshot>(json, _jsonOptions)?.Attempts ?? [];
+                return JsonSerializer.Deserialize<ReportPackDeliverySnapshot>(json, _jsonOptions)?.Attempts
+                    ?? throw new JsonException("Report-pack delivery snapshot deserialized to null.");
             }
             catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
             {
-                _logger.LogWarning(ex, "Unable to load report-pack delivery snapshot from {SnapshotPath}.", _options.SnapshotPath);
-                return [];
+                _logger.LogCritical(ex, "Report-pack delivery snapshot at {SnapshotPath} is unreadable; delivery is blocked until the state is recovered.", _options.SnapshotPath);
+                throw new ReportingStateCorruptionException(_options.SnapshotPath, ex);
             }
         }
     }
@@ -251,6 +252,12 @@ public sealed class ReportPackDeliveryService
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(target);
         ArgumentException.ThrowIfNullOrWhiteSpace(target.DistributionId);
+
+        if (manifest.Status != ReportingRunStatus.Released)
+        {
+            throw new InvalidOperationException(
+                $"Reporting run '{manifest.RunId}' is {manifest.Status} and cannot be delivered. Only Released runs may enter distribution.");
+        }
 
         var actor = ResolveActor(null, fallbackActor);
         var policy = ReportPackRunReadService.ResolveDistributionPolicy(target.DistributionId);

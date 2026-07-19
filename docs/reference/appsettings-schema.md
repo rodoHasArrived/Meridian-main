@@ -32,6 +32,7 @@ Use this page when you need to map configuration sections to high-impact operati
 | `IB`, `IBClientPortal` | Controls broker connectivity and execution-adjacent account surfaces. | `MDC_IB_*` |
 | `StockSharp` | Controls connector runtime and broker/data credential surfaces. | `MDC_STOCKSHARP_*` |
 | `Alpaca`, provider blocks under `Backfill:Providers` | Provider-specific data/credential posture. | `MDC_ALPACA_*`, provider-specific keys |
+| `SecurityMasterWorkbench` | Controls governed-write conflict-authority source precedence for Security Master passport edits. | n/a |
 | `Serilog` | Logging signal/noise and sensitive-output posture. | `MDC_DEBUG`, `MDC_LOG_LEVEL` |
 
 ## Security and Mutation Guardrails

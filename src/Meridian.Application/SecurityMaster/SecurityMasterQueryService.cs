@@ -3,7 +3,10 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+public sealed class SecurityMasterQueryService :
+    ISecurityMasterQueryService,
+    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,
+    ISecurityMasterReportingQueryService
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterStore _store;
@@ -89,6 +92,62 @@ public sealed class SecurityMasterQueryService : ISecurityMasterQueryService, Me
     {
         var projection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
         return await _rebuilder.RebuildEconomicDefinitionAsync(securityId, projection, ct).ConfigureAwait(false);
+    }
+
+    public async Task<SecurityMasterReportingReference?> GetReportingReferenceByIdentifierAsOfAsync(
+        SecurityIdentifierKind identifierKind,
+        string identifierValue,
+        string? provider,
+        DateTimeOffset asOfUtc,
+        CancellationToken ct = default)
+    {
+        var detail = await GetByIdentifierAsync(
+                identifierKind,
+                identifierValue,
+                provider,
+                ct,
+                asOfUtc)
+            .ConfigureAwait(false);
+        if (detail is null)
+        {
+            return null;
+        }
+
+        var events = await _eventStore.LoadAsync(detail.SecurityId, ct).ConfigureAwait(false);
+        if (events.Count == 0)
+        {
+            var currentEconomicDefinition = await GetEconomicDefinitionByIdAsync(detail.SecurityId, ct)
+                .ConfigureAwait(false);
+            return new SecurityMasterReportingReference(
+                detail,
+                currentEconomicDefinition,
+                asOfUtc,
+                SecurityMasterReportingResolutionMode.CurrentProjectionFallback);
+        }
+
+        var sourceEvent = events.LastOrDefault(@event => @event.EventTimestamp <= asOfUtc);
+        if (sourceEvent is null)
+        {
+            return null;
+        }
+
+        var currentProjection = await _store.GetProjectionAsync(detail.SecurityId, ct).ConfigureAwait(false);
+        var historicalProjection = await _rebuilder
+            .RebuildAsOfAsync(detail.SecurityId, asOfUtc, currentProjection, ct)
+            .ConfigureAwait(false);
+        if (historicalProjection is null)
+        {
+            return null;
+        }
+
+        return new SecurityMasterReportingReference(
+            SecurityMasterMapping.ToDetail(historicalProjection),
+            SecurityEconomicDefinitionAdapter.ToEconomicRecord(historicalProjection),
+            asOfUtc,
+            SecurityMasterReportingResolutionMode.HistoricalEvent,
+            sourceEvent.GlobalSequence,
+            sourceEvent.StreamVersion,
+            sourceEvent.EventTimestamp);
     }
 
     public async Task<TradingParametersDto?> GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default)

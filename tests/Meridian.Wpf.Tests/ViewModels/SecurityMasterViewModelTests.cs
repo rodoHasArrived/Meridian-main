@@ -1856,7 +1856,7 @@ public sealed class SecurityMasterViewModelTests
         public Task<OperatorOverridesDto?> GetOperatorOverridesAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<OperatorOverridesDto?>(null);
 
-        public Task<ApiResponse<OperatorOverridesDto>> RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideApprovalDecisionRequest request, CancellationToken ct = default)
+        public Task<ApiResponse<OperatorOverridesDto>> RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecisionRequest request, CancellationToken ct = default)
             => Task.FromResult(ApiResponse<OperatorOverridesDto>.Fail("not supported in stub", 501));
 
         // Passport Workbench governed-write methods are not exercised by these tests.
