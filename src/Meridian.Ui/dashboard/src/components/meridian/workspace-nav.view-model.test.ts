@@ -146,7 +146,6 @@ describe("workspace nav view model", () => {
       "/accounting/operations-continuity",
       "/accounting/entity-setup",
       "/accounting/ledger",
-      "/accounting/trial-balance",
       "/accounting/journal-entries",
       "/accounting/reconciliation",
       "/accounting/reconciliation/external-gl",
@@ -278,7 +277,6 @@ describe("workspace nav view model", () => {
     expect(strategy?.subItems.map((item) => item.route)).toEqual([
       "/strategy",
       "/strategy/designer",
-      "/strategy/formula-workbench",
       "/strategy/covered-call",
       "/strategy/promotions",
       "/strategy/lab",
@@ -296,12 +294,7 @@ describe("workspace nav view model", () => {
       ariaCurrent: undefined,
       ariaLabel: "Open Strategy Lab"
     });
-    expect(strategy?.subItems.find((item) => item.route === "/strategy/formula-workbench")).toMatchObject({
-      label: "Formula Workbench",
-      active: false,
-      ariaCurrent: undefined,
-      ariaLabel: "Open Formula Workbench"
-    });
+    expect(strategy?.subItems.map((item) => item.route)).not.toContain("/strategy/formula-workbench");
     expect(strategy?.subItems.map((item) => item.label)).not.toContain("Research Lab");
   });
 

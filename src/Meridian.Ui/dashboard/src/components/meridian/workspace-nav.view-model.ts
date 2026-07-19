@@ -90,7 +90,6 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Close", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
     { label: "Entity setup", route: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup },
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
-    { label: "Trial Balance", route: WORKSTATION_ROUTE_CATALOG.accountingTrialBalance },
     { label: "Adjustments", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries },
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, match: "exact" },
     { label: "External GL", route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation },
@@ -114,7 +113,6 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
   strategy: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.strategy, match: "exact" },
     { label: "Designer", route: WORKSTATION_ROUTE_CATALOG.strategyDesigner },
-    { label: "Formula Workbench", route: WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench },
     { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall },
     { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions },
     { label: "Strategy Lab", route: WORKSTATION_ROUTE_CATALOG.strategyLab },

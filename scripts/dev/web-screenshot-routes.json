@@ -310,7 +310,7 @@
     {
       "id": "W03D1",
       "name": "web-accounting-trial-balance-detail",
-      "path": "/accounting/trial-balance?runId=run-42",
+      "path": "/accounting/ledger?view=trial-balance&runId=run-42",
       "docLabel": "Accounting \u2014 Trial Balance Detail",
       "waitForText": "Trial Balance",
       "requiredApiRoutes": [
@@ -866,9 +866,9 @@
     {
       "id": "W05E",
       "name": "web-strategy-formula-workbench",
-      "path": "/strategy/formula-workbench",
+      "path": "/strategy/quant-lab?view=formulas",
       "docLabel": "Strategy \u2014 Formula Workbench",
-      "waitForText": "Formula Workbench",
+      "waitForText": "Quant Lab",
       "requiredApiRoutes": [
         "/api/workstation/strategy"
       ],

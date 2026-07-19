@@ -16,6 +16,7 @@ import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQ
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
+import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import {
   buildTemplateRows,
   hasRetainedReportingAsOfDate,
@@ -371,7 +372,7 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
       </Card>
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm" variant="outline">
-          <Link to={workstationRouteWithQuery("accountingTrialBalance", { runId: requestedRunId || null })}>Back to Trial Balance</Link>
+          <Link to={workstationRouteWithQuery("accountingLedger", { view: "trial-balance", runId: requestedRunId || null })}>Back to Trial Balance</Link>
         </Button>
         <Button asChild size="sm" variant="outline">
           <Link to={workstationRouteWithQuery("accountingLedger", { runId: requestedRunId || null })}>Open ledger activity</Link>
@@ -391,8 +392,14 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   );
 }
 
+const LEDGER_EXPLORER_TABS = [
+  { id: "ledger", label: "Ledger" },
+  { id: "trial-balance", label: "Trial balance" }
+];
+
 export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get("view") === "trial-balance" ? "trial-balance" : "ledger";
   const runs = readRecordArray(asRecord(data), "reconciliationQueue");
   const selectedRunId = searchParams.get("runId") ?? readString(runs[0] ?? null, "runId", "");
   const [searchText, setSearchText] = useState("");
@@ -403,7 +410,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!selectedRunId) {
+    if (!selectedRunId || view !== "ledger") {
       setJournalLines([]);
       return;
     }
@@ -430,7 +437,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
     return () => {
       cancelled = true;
     };
-  }, [selectedRunId]);
+  }, [selectedRunId, view]);
 
   const filteredRows = useMemo(() => {
     const needle = searchText.trim().toLowerCase();
@@ -449,6 +456,21 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
   }, [journalLines, searchText]);
 
   return (
+    <Tabs
+      tabs={LEDGER_EXPLORER_TABS}
+      value={view}
+      onValueChange={(nextView) => {
+        const nextParams = new URLSearchParams(searchParams);
+        if (nextView === "ledger") {
+          nextParams.delete("view");
+        } else {
+          nextParams.set("view", nextView);
+        }
+        setSearchParams(nextParams, { replace: true });
+      }}
+    >
+      <TabPanel>
+        {view === "ledger" ? (
     <div className="space-y-4">
       <Card className="panel-surface">
         <CardHeader>
@@ -589,6 +611,12 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
         </CardContent>
       </Card>
     </div>
+        ) : null}
+      </TabPanel>
+      <TabPanel>
+        {view === "trial-balance" ? <TrialBalanceScreen data={data} /> : null}
+      </TabPanel>
+    </Tabs>
   );
 }
 

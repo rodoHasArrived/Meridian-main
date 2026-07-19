@@ -46,7 +46,7 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | asset-detail-screen | `Views/SecurityPassportEditorView.xaml` (drill-in from `SecurityMasterPage`) | Partial — less unified than the web tabbed detail |
 | family-office-screen | `Views/AggregatePortfolioPage.xaml` | Partial — aggregation exists, less family-office framing |
 | cash-ladder-screen | `Views/RunCashFlowPage.xaml` | Partial — WPF ladder is per-strategy-run; web is portfolio-wide liquidity ladder |
-| trial-balance-screen | `Views/FundLedgerPage.xaml` / `Views/FinancialRecordExplorerPage.xaml` | Partial — trial balance is a section, not a dedicated page |
+| trial-balance (tab of finance-standard-pages ledger explorer at `/accounting/ledger?view=trial-balance`; consolidated per `W8-UX-CONSOL-001`) | `Views/FundLedgerPage.xaml` / `Views/FinancialRecordExplorerPage.xaml` | Partial — trial balance is a section in both lanes; the web fold moved it inside the ledger explorer, matching WPF's section model |
 | journal-entry-detail-screen | `Views/FundLedgerPage.xaml` (journal entries) | Partial — no standalone JE detail page |
 | statement-import-screen | `ViewModels/FundLedgerViewModel.StatementReconciliation.cs` + `Views/PortfolioImportPage.xaml` | Partial — recon exists, no guided import screen |
 | daily-control-tower-screen | `Views/DashboardPage.xaml` + `Views/WorkspaceDecisionQueueControl.xaml` | Partial — dashboard/decision-queue overlap, not a triage tower |
@@ -60,7 +60,7 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06.
 | operator-readiness-console | `Views/DashboardPage.xaml` / `Views/SystemHealthPage.xaml` (tangential) | **Gap** — no cross-lane readiness console |
 | operations-record-release-screen | none (adjacent: `Views/RetentionAssurancePage.xaml`, `Views/ArchiveHealthPage.xaml`) | **Gap** — no record-release / publish-gating page |
 | covered-call-screen | `Views/OptionsPage.xaml` (chain viewer only) | **Gap** — no covered-call writing/roll workflow |
-| strategy-formula-workbench-screen | `Views/QuantScriptPage.xaml` | Not a gap — the web screen is itself an unbuilt placeholder |
+| strategy-formula-workbench (tab of quant-lab-screen at `/strategy/quant-lab?view=formulas`; consolidated per `W8-UX-CONSOL-001`) | `Views/QuantScriptPage.xaml` | Not a gap — the web surface is a placeholder tab inside Quant Lab |
 
 ## True Gaps (ranked by operator centrality)
 
@@ -127,9 +127,10 @@ view model must consume the same shared read model the browser screen consumes.
 
 - Extend `OptionsPage`/add `Views/CoveredCallPage.xaml` (Strategy/Trading) for the staged
   covered-call workflow (chain preview, trade timeline, run history) matching `covered-call-screen`.
-- Close the partial-parity items where the browser screen has clearly moved ahead: dedicated
-  trial-balance and journal-entry-detail pages, portfolio-wide cash ladder, and a daily control tower
-  view over the existing dashboard/decision-queue state.
+- Close the partial-parity items where the browser screen has clearly moved ahead: trial-balance
+  depth inside the ledger surface (the web lane now folds trial balance into its ledger explorer per
+  `W8-UX-CONSOL-001`), a dedicated journal-entry-detail page, portfolio-wide cash ladder, and a daily
+  control tower view over the existing dashboard/decision-queue state.
 - `strategy-designer-screen` remains optional pending a decision on whether the desktop lane needs a
   visual designer canvas beyond `QuantScriptPage`/`BacktestPage`.
 

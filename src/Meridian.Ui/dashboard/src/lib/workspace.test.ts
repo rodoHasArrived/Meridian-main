@@ -47,7 +47,7 @@ describe("workspace metadata", () => {
 
   it("exposes typed workstation route catalog helpers", () => {
     expect(workstationRoute("tradingReadiness")).toBe("/trading/readiness");
-    expect(workstationRoute("strategyFormulaWorkbench")).toBe("/strategy/formula-workbench");
+    expect(workstationRoute("strategyFormulaWorkbenchLegacy")).toBe("/strategy/formula-workbench");
     expect(workstationRoute("strategyLab")).toBe("/strategy/lab");
     expect(workstationRoute("portfolioAssetDetail")).toBe("/portfolio/asset-detail");
     expect(workstationRoute("portfolioCashLadder")).toBe("/portfolio/cash-ladder");
@@ -106,6 +106,24 @@ describe("workspace metadata", () => {
     );
     expect(legacyWorkspaceRedirect("/governance/reconciliation")).toBe("/accounting/reconciliation");
     expect(legacyWorkspaceRedirect("/trading")).toBeNull();
+  });
+
+  it("redirects consolidated screen routes into their host screens with scope preserved", () => {
+    expect(legacyWorkspaceRedirect("/accounting/trial-balance")).toBe(
+      "/accounting/ledger?view=trial-balance"
+    );
+    expect(legacyWorkspaceRedirect("/accounting/trial-balance", "?runId=run-42", "#section")).toBe(
+      "/accounting/ledger?runId=run-42&view=trial-balance#section"
+    );
+    expect(legacyWorkspaceRedirect("/strategy/formula-workbench")).toBe(
+      "/strategy/quant-lab?view=formulas"
+    );
+    expect(legacyWorkspaceRedirect("/strategy/formula-workbench", "?draft=1")).toBe(
+      "/strategy/quant-lab?draft=1&view=formulas"
+    );
+    expect(normalizeLocalWorkstationRoute("/accounting/trial-balance?runId=run-42")).toBe(
+      "/accounting/ledger?runId=run-42&view=trial-balance"
+    );
   });
 
   it("returns workspace summaries for canonical keys", () => {

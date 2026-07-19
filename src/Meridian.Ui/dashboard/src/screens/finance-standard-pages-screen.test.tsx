@@ -329,6 +329,33 @@ describe("finance standard pages", () => {
     );
   });
 
+  it("switches the ledger explorer to the trial balance tab via the view search param", async () => {
+    vi.mocked(api.getRunLedgerJournal).mockResolvedValue([]);
+    vi.mocked(api.getRunTrialBalance).mockResolvedValue([]);
+
+    const tabData = {
+      ...data,
+      reconciliationQueue: [
+        {
+          runId: "run-42",
+          strategyName: "Paper Index Mean Reversion",
+          mode: "paper",
+          status: "Running",
+          lastUpdated: "3m ago",
+          breakCount: 1,
+          openBreakCount: 1,
+          reconciliationStatus: "BreaksOpen"
+        }
+      ]
+    } as unknown as AccountingWorkspaceResponse;
+
+    await renderPage(<LedgerExplorerScreen data={tabData} />, "/accounting/ledger?view=trial-balance&runId=run-42");
+
+    expect(screen.getByRole("tab", { name: "Trial balance" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Ledger" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.queryByLabelText("Search by account, amount, journal ID, source, security, entity")).not.toBeInTheDocument();
+  });
+
   it("renders reconciliation match workbench as a focused clearing queue", async () => {
     await renderPage(<ReconciliationMatchWorkbenchScreen data={data} />, "/accounting/reconciliation/match");
 

@@ -283,7 +283,7 @@ describe("command palette view model", () => {
 
   it("exposes focused portfolio, accounting, reporting, strategy, and data route commands", () => {
     const familyOfficeModel = buildCommandPaletteViewModel("/portfolio/family-office", undefined, {}, "family office");
-    const formulaWorkbenchModel = buildCommandPaletteViewModel("/strategy/formula-workbench", undefined, {}, "formula workbench");
+    const formulaWorkbenchModel = buildCommandPaletteViewModel("/strategy/quant-lab?view=formulas", undefined, {}, "formula workbench");
     const operationsRecordModel = buildCommandPaletteViewModel("/reporting/operations-record", undefined, {}, "operations record");
     const exportsModel = buildCommandPaletteViewModel("/reporting/exports", undefined, {}, "exports");
     const coveredCallModel = buildCommandPaletteViewModel("/strategy/covered-call", undefined, {}, "covered call");
@@ -310,7 +310,7 @@ describe("command palette view model", () => {
     expect(formulaWorkbenchModel.items.find((item) => item.id === "route:strategy-formula-workbench")).toMatchObject({
       kind: "route",
       label: "Formula Workbench",
-      route: "/strategy/formula-workbench",
+      route: "/strategy/quant-lab?view=formulas",
       statusLabel: "Current",
       commandLabel: "Stay on Formula Workbench",
       active: true

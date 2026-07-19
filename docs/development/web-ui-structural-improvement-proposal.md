@@ -26,6 +26,14 @@
 > Remaining: Phase E (token/chart/density polish); the deferred Accounting
 > configuration-panel extraction and reconciliation master–detail follow-ups are recorded
 > under the phase table in section 5.
+>
+> **Delivery status (2026-07-19).** Phase F (screen consolidation, `W8-UX-CONSOL-001`) is in
+> delivery: Trial Balance now renders as a tab of the Ledger Explorer
+> (`/accounting/ledger?view=trial-balance`) and the Formula Workbench placeholder as a tab of
+> Quant Lab (`/strategy/quant-lab?view=formulas`); both retired routes redirect with query and
+> hash scope preserved via `legacyWorkspaceRedirect()`. Evidence Workbench canonicalization and
+> the Market Data desk merge are the next folds; the reporting run-flow merge and reconciliation
+> module extraction remain sequenced behind them.
 
 This document reviews the browser workstation as captured in the current screenshot catalog and
 proposes a set of improvements, including large structural changes to page architecture, routing,
@@ -342,6 +350,7 @@ pipeline (`npm run screenshots` → `scripts/dev/capture-web-screenshots.mjs`, v
 | **C — Master–detail cockpit** | P1, P9 layout for the Phase-B views | `screen-layout`/`panel-surface`, new detail-rail composite | Medium |
 | **D — Settings & Accounting restructure** | P7 plus Accounting deep routes on the Phase-B/C pattern | `settings-screen.tsx`, `accounting-screen.tsx` decomposition | High (largest files) |
 | **E — Token & density polish** | P8 | `styles/index.css`, `tailwind.config.ts`, design-system package + contract test | Low–medium |
+| **F — Screen consolidation** | Fold sibling tools into deeper host screens behind the charter roots (`W8-UX-CONSOL-001`): Trial Balance → Ledger Explorer tab, Formula Workbench → Quant Lab tab, Evidence Workbench canonicalized to one Reporting home, Live Quotes + Watchlist + Price Alerts → one Market Data desk; retired routes stay as scope-preserving redirects | route table + `legacyWorkspaceRedirect()` in `lib/workspace.ts`, `workspace-nav.view-model.ts`, `app.tsx` routes, host screens (`finance-standard-pages-screen.tsx`, `quant-lab-screen.tsx`, `evidence-workbench-screen.tsx`, `live-quotes-screen.tsx`) | Medium |
 
 Validation per phase: targeted vitest suites (including the per-screen `*.a11y.test.tsx` axe
 suites), `npm --prefix src/Meridian.Ui/dashboard run build`, screenshot regeneration for touched

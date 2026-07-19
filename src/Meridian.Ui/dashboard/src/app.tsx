@@ -107,7 +107,6 @@ const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then(
 const LiveQuotesScreen = lazy(() => import("@/screens/live-quotes-screen").then((module) => ({ default: module.LiveQuotesScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
 const OperationsContinuityScreen = lazy(() => import("@/screens/operations-continuity-screen").then((module) => ({ default: module.OperationsContinuityScreen })));
-const TrialBalanceScreen = lazy(() => import("@/screens/trial-balance-screen").then((module) => ({ default: module.TrialBalanceScreen })));
 const JournalEntryDetailScreen = lazy(() => import("@/screens/journal-entry-detail-screen").then((module) => ({ default: module.JournalEntryDetailScreen })));
 const AssetDetailScreen = lazy(() => import("@/screens/asset-detail-screen").then((module) => ({ default: module.AssetDetailScreen })));
 const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.AccountDetailScreen })));
@@ -129,7 +128,6 @@ const PriceAlertsScreen = lazy(() => import("@/screens/price-alerts-screen").the
 const QuantLabScreen = lazy(() => import("@/screens/quant-lab-screen").then((module) => ({ default: module.QuantLabScreen })));
 const ReportingScreen = lazy(() => import("@/screens/reporting-screen").then((module) => ({ default: memo(module.ReportingScreen) })));
 const StrategyScreen = lazy(() => import("@/screens/strategy-screen").then((module) => ({ default: memo(module.StrategyScreen) })));
-const StrategyFormulaWorkbenchScreen = lazy(() => import("@/screens/strategy-formula-workbench-screen").then((module) => ({ default: module.StrategyFormulaWorkbenchScreen })));
 const StrategyDesignerScreen = lazy(() => import("@/screens/strategy-designer-screen").then((module) => ({ default: module.StrategyDesignerScreen })));
 const SettingsScreen = lazy(() => import("@/screens/settings-screen").then((module) => ({ default: memo(module.SettingsScreen) })));
 const TradingScreen = lazy(() => import("@/screens/trading-screen").then((module) => ({ default: memo(module.TradingScreen) })));
@@ -596,7 +594,7 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
-                  <Route path="/accounting/trial-balance" element={<TrialBalanceScreen data={accounting} />} />
+                  <Route path="/accounting/trial-balance" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
@@ -616,7 +614,7 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
-                  <Route path="/strategy/formula-workbench" element={<StrategyFormulaWorkbenchScreen />} />
+                  <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
                   <Route path="/data/quotes" element={<LiveQuotesScreen />} />

@@ -32,7 +32,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingEntitySetup: "/accounting/entity-setup",
   accountingLedger: "/accounting/ledger",
-  accountingTrialBalance: "/accounting/trial-balance",
+  accountingTrialBalanceLegacy: "/accounting/trial-balance",
   accountingAccountDetail: "/accounting/accounts/detail",
   accountingJournalEntries: "/accounting/journal-entries",
   accountingJournalEntryDetail: "/accounting/journal-entries/detail",
@@ -64,7 +64,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   reportingGovernance: "/reporting/governance",
   strategy: "/strategy",
   strategyDesigner: "/strategy/designer",
-  strategyFormulaWorkbench: "/strategy/formula-workbench",
+  strategyFormulaWorkbenchLegacy: "/strategy/formula-workbench",
   strategyCoveredCall: "/strategy/covered-call",
   strategyPromotions: "/strategy/promotions",
   strategyLab: "/strategy/lab",
@@ -343,7 +343,6 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   evidence: "Evidence",
   exceptions: "Exceptions",
   "family-office": "Family Office",
-  "formula-workbench": "Formula Workbench",
   "journal-entries": "Journal Entries",
   ledger: "Ledger Explorer",
   "operations-continuity": "Operations Continuity",
@@ -422,6 +421,14 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
     return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
   }
 
+  if (firstSegment === "accounting" && pathSegments(pathname)[1] === "trial-balance") {
+    return `${WORKSTATION_ROUTE_CATALOG.accountingLedger}${withSearchParam(search, "view", "trial-balance")}${hash}`;
+  }
+
+  if (firstSegment === "strategy" && pathSegments(pathname)[1] === "formula-workbench") {
+    return `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}${withSearchParam(search, "view", "formulas")}${hash}`;
+  }
+
   if (firstSegment === "data-operations" && pathSegments(pathname)[1] === "backfills") {
     const suffix = pathname.slice("/data-operations/backfills".length);
     return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
@@ -440,6 +447,13 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
 
   const suffix = pathname.slice(`/${firstSegment}`.length);
   return `${workspacePath(LEGACY_WORKSPACE_ALIASES[firstSegment])}${suffix}${search}${hash}`;
+}
+
+/** Merge one extra query parameter into an existing `?…` search string. */
+function withSearchParam(search: string, key: string, value: string): string {
+  const params = new URLSearchParams(search);
+  params.set(key, value);
+  return `?${params.toString()}`;
 }
 
 function firstPathSegment(pathname: string): string | null {
