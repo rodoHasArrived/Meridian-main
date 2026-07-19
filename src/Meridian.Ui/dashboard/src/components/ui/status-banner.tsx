@@ -13,7 +13,7 @@ const toneClasses: Record<StatusBannerTone, string> = {
   success: "border-l-success bg-success/10 text-success",
   warning: "border-l-warning bg-warning/10 text-warning",
   danger: "border-l-danger bg-danger/10 text-danger",
-  info: "border-l-[var(--severity-info-bd)] bg-[var(--severity-info-bg)] text-[var(--severity-info-fg)]"
+  info: "border-l-[var(--severity-info-bd,var(--ws-border-strong))] bg-[var(--severity-info-bg,var(--ws-surface-subtle))] text-[var(--severity-info-fg,var(--ws-text-secondary))]"
 };
 
 export function StatusBanner({ className, detail, title, tone = "info", ...props }: StatusBannerProps) {
