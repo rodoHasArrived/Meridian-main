@@ -1,24 +1,25 @@
 # Web Workstation Screenshot Audit
 
-Date: 2026-07-14 UTC
+Date: 2026-07-19 UTC
 
 ## Outcome
 
-The browser-workstation catalog was regenerated after the interface-improvement pass. All 75
-fixture-backed captures completed successfully at a 1440 x 1100 viewport, and the freshness
-validator confirmed that the route manifest and PNG inventory agree.
+The browser-workstation catalog was regenerated after the Accounting structural-polish and Phase E
+design-system pass. All 77 fixture-backed captures completed successfully at a 1440 x 1100
+viewport, and the strict freshness validator confirmed that the route manifest and PNG inventory
+agree. The maintained catalog contains 77 routes rather than the previously documented 75.
 
 | Family | Captures | Review outcome |
 | --- | ---: | --- |
 | Daily Control Tower | 1 | Clear operator posture, blocker, and next-action framing. |
 | Trading | 5 | Route-specific task states remain readable within the shared workstation shell. |
-| Portfolio | 6 | Source, run, freshness, and record evidence now use operator-facing language; technical references are progressively disclosed. |
-| Accounting | 22 | Reconciliation, close, approvals, external GL, Security Master, and evidence routes now show explicit blockers, human-readable dates, and consistent selected-run context. |
-| Reporting | 13 | First-use guidance, report-pack health, run status, approval routing, schedule dates, and retained evidence are explicit. |
-| Strategy | 7 | Research and promotion workflows distinguish action, evidence, and technical detail more clearly. |
-| Data | 10 | Provider and evidence routes prioritize operator tasks while retaining technical proof behind focused controls. |
-| Settings | 11 | Preferences, access, provider setup, accounting systems, and diagnostics are distinct routes; stale provider evidence fails closed rather than appearing production-ready. |
-| **Total** | **75** | **Complete current-run catalog.** |
+| Portfolio | 6 | Source, run, freshness, and record evidence use operator-facing language; technical references are progressively disclosed. |
+| Accounting | 22 | The close cockpit, reconciliation rail, canonical Ledger Explorer, configuration workflow, external GL, approvals, and evidence routes retain only route-relevant work. |
+| Reporting | 13 | Setup, run, validation, governance, scheduling, export, and operations-record tasks remain distinct. |
+| Strategy | 7 | The Strategy Lab now renders a populated, tokenized twelve-observation chart fixture with selected-marker evidence. |
+| Data | 12 | Provider, ingestion, storage-assurance, alert, query, and evidence routes prioritize operator tasks while retaining technical proof. |
+| Settings | 11 | Preferences, access, provider setup, accounting systems, and diagnostics remain distinct routes; stale provider evidence fails closed. |
+| **Total** | **77** | **Complete current-run catalog.** |
 
 ## Evidence
 
@@ -26,57 +27,64 @@ validator confirmed that the route manifest and PNG inventory agree.
 - Capture manifest: `artifacts/web-screenshots/manifest.json`
 - Route catalog: `scripts/dev/web-screenshot-routes.json`
 - Fixture catalog: `scripts/dev/web-screenshot-fixtures.json`
-- Capture command: `node scripts/dev/capture-web-screenshots.mjs --port 5188 --output-dir docs/screenshots/web --config scripts/dev/web-screenshot-routes.json --manifest artifacts/web-screenshots/manifest.json`
+- Capture command: `node scripts/dev/capture-web-screenshots.mjs --port 5173 --output-dir docs/screenshots/web --config scripts/dev/web-screenshot-routes.json --manifest artifacts/web-screenshots/manifest.json`
 - Freshness validation: `python scripts/dev/validate-screenshot-captures.py --surface web --output-dir docs/screenshots/web --web-routes scripts/dev/web-screenshot-routes.json --manifest artifacts/web-screenshots/manifest.json --require-fresh`
 - Workflow tests: `python tests/scripts/test_refresh_screenshots_workflow.py`
+- Browser unit and accessibility suite: `npm --prefix src/Meridian.Ui/dashboard run test`
 
-The capture manifest reports `status: passed`, `selectedCaptureCount: 75`, and
-`totalCaptureCount: 75`. Freshness validation reported 75 expected captures and 75 PNG files.
+The capture manifest reports `status: passed`, `selectedCaptureCount: 77`,
+`capturedCount: 77`, `failedCaptureCount: 0`, and `totalCaptureCount: 77`. Strict freshness
+validation reported 77 expected captures and 77 PNG files. The screenshot workflow contract suite
+passed all 28 tests. The full browser suite passed all 254 test files across its 32 maintained
+batches, including component accessibility and axe coverage.
 
 ## Improvements Confirmed In The Rendered Catalog
 
+- Phase E density, typography, semantic surface, and chart-plot tokens resolve consistently across
+  the workstation. The default and compact table-row contract is 32px; the terminal and spacious
+  variants remain 26px and 48px respectively.
+- Accounting reconciliation uses one comparison-and-casework workspace: statement runs and the
+  break queue occupy the master column while case rationale, evidence, ownership, and actions stay
+  in the detail rail.
+- `/accounting/ledger` is the canonical Ledger Explorer. The shared financial-record explorer owns
+  search, filters, and saved views, while run-scoped journal evidence remains subordinate; the old
+  hash-only `showLedgerExplorer` alias is intentionally removed.
+- Deep Accounting routes no longer inherit the generic workflow, posture, external-GL, and
+  multi-asset tail indiscriminately. Each route renders only the sections named by its route model.
+- The extracted Accounting configuration panel preserves the existing workflow while separating
+  its implementation from the parent Accounting screen.
+- Strategy Lab renders a deterministic twelve-point scatter plot, fit line, selected marker,
+  labeled axes, and residual context rather than an empty or invented fallback chart.
 - The seven root workspaces remain Trading, Portfolio, Accounting, Reporting, Strategy, Data, and
   Settings, with one shared operating-context shell across the catalog.
-- Operator-facing summaries use human-readable dates, source names, run context, and freshness
-  language instead of exposing implementation identifiers as primary content.
-- Raw run, policy, record, provider, configuration, and evidence references remain available but
-  move into collapsed technical-detail regions where they are not required for the next operator action.
-- Ready, review, stale, delayed, blocked, and unavailable states are no longer presented as
-  interchangeable. In particular, delayed provider verification and unresolved accounting breaks
-  block readiness or export handoff.
-- Accounting surfaces show explicit next actions and governing blockers: selected ledger-run
-  context, out-of-balance trial-balance posture, statement-run reconciliation, approval routing,
-  unresolved external-GL breaks, retained evidence, and payment-evidence requirements.
-- The Security Master explorer and command deck share selection state, use descriptive identity
-  labels, and tolerate incomplete passport evidence without crashing or inventing trust.
-- Reporting routes distinguish setup, run, validation, governance, scheduling, export, and
-  operations-record tasks instead of repeating one generic overview state.
-- Settings keeps routine preferences and guided provider setup separate from advanced manifests,
-  endpoint inventories, IDs, and runtime diagnostics.
 
 ## Visual Review
 
-The regenerated key workflows were inspected at their captured viewport for broken layout,
-cropping, hierarchy, contradictory status, raw identifiers, stale timestamps, and fixture-only
-language. No blocking layout defect was found in the reviewed operator flows. Long administration
-and advanced-diagnostics routes remain intentionally dense, but their technical content is confined
-to routes whose stated purpose is configuration or diagnostic evidence.
+The regenerated Accounting workspace, reconciliation, Ledger Explorer, configuration, and Strategy
+Lab captures were inspected at their captured viewport for broken layout, cropping, duplicated
+route tails, contradictory status, empty chart state, and stale fixture language. No blocking
+layout defect was found. The Ledger Explorer has one clear search/saved-view owner, the Accounting
+workspace remains a compact master-detail cockpit, and the Strategy chart is visibly populated.
+
+Long administration and evidence routes remain intentionally dense, but their technical content is
+confined to routes whose stated purpose is configuration, retained proof, or diagnostics.
 
 ## Residual Risks And Evidence Limits
 
 - Screenshots prove rendered layout and visible copy for fixture states; they do not prove live
-  backend behavior, production-data accuracy, or authorization enforcement.
-- Screenshot inspection cannot prove keyboard order, focus restoration, accessible names,
-  screen-reader announcements, pointer-target sizing, zoom reflow, or token-level WCAG contrast.
-  Automated component and accessibility tests are complementary evidence, not a substitute for a
-  rendered assistive-technology pass.
-- Several expert routes are deliberately long because they expose configuration or evidence
-  inventories. Their progressive disclosure should continue to be evaluated with real operators
-  and realistic data volumes.
+  backend behavior, production-data accuracy, authorization enforcement, or successful mutations.
+- Screenshot inspection cannot prove keyboard order, focus restoration, screen-reader
+  announcements, pointer-target sizing, or zoom reflow. Automated unit and accessibility coverage
+  is complementary evidence, not a substitute for a rendered assistive-technology pass.
+- Twenty-two expert routes exceed 2200px in full-page height. The tallest are Operations Continuity,
+  Reporting Run Detail, Accounting Configure, Settings coverage inventories, and evidence
+  workbenches. Further progressive disclosure and operator testing remain a post-pass backlog item;
+  this release proof does not claim that every expert route meets a universal page-height target.
 - The WPF desktop catalog under `docs/screenshots/desktop` was not changed or audited by this web
   pass.
 
 ## Follow-Up Validation
 
-Before release, keep the 75-route capture and freshness check in the validation lane, run the full
-browser unit/accessibility suite, and use GitHub Actions as the authoritative integration result.
+Keep the 77-route capture and strict freshness check in the release lane. GitHub Actions remains the
+authoritative integration result, and the hosted screenshot workflow should be rerun from `main`
+after a human merges the pull request so the published evidence is tied to the protected branch.

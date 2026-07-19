@@ -968,6 +968,166 @@
       "createdAt": "2026-05-15T15:00:00Z",
       "updatedAt": "2026-05-15T15:00:00Z"
     },
+    "/api/workstation/financial-record-explorers/ledger": {
+      "explorerId": "ledger",
+      "title": "Ledger Explorer",
+      "description": "Explore retained ledger records, journal support, and close evidence.",
+      "sourceState": "Screenshot fixture projection from run run-42 journal evidence.",
+      "isBlocked": false,
+      "blockedReason": "",
+      "scopeItems": [
+        {
+          "label": "Workstream",
+          "value": "Accounting",
+          "tone": "Info"
+        },
+        {
+          "label": "Source",
+          "value": "Journal entries and ledger detail",
+          "tone": "Default"
+        }
+      ],
+      "savedViews": [
+        {
+          "viewId": "system-ledger-controller-review",
+          "label": "Controller review",
+          "description": "Cash accounts with retained close evidence.",
+          "isSystem": true,
+          "isActive": true,
+          "filters": [],
+          "searchText": "",
+          "columnIds": [
+            "account",
+            "type",
+            "balance"
+          ]
+        }
+      ],
+      "summaryItems": [
+        {
+          "label": "Rows",
+          "value": "1",
+          "detail": "One retained ledger account row.",
+          "tone": "Success"
+        },
+        {
+          "label": "Open breaks",
+          "value": "1",
+          "detail": "Cash variance remains under review.",
+          "tone": "Warning"
+        }
+      ],
+      "filters": [],
+      "columns": [
+        {
+          "columnId": "account",
+          "header": "Account",
+          "cellKind": "text",
+          "width": 220,
+          "isRightAligned": false
+        },
+        {
+          "columnId": "type",
+          "header": "Type",
+          "cellKind": "text",
+          "width": 120,
+          "isRightAligned": false
+        },
+        {
+          "columnId": "balance",
+          "header": "Balance",
+          "cellKind": "currency",
+          "width": 120,
+          "isRightAligned": true
+        }
+      ],
+      "rows": [
+        {
+          "recordId": "ledger:run-42:cash",
+          "recordType": "Ledger account",
+          "label": "Cash",
+          "source": "Trial balance",
+          "status": "ReviewRequired",
+          "tone": "Warning",
+          "cells": [
+            {
+              "columnId": "account",
+              "displayValue": "Cash",
+              "rawValue": "Cash",
+              "tone": "Success",
+              "linkHref": ""
+            },
+            {
+              "columnId": "type",
+              "displayValue": "Asset",
+              "rawValue": "Asset",
+              "tone": "Default",
+              "linkHref": ""
+            },
+            {
+              "columnId": "balance",
+              "displayValue": "$120,500",
+              "rawValue": "120500",
+              "tone": "Success",
+              "linkHref": ""
+            }
+          ],
+          "detail": {
+            "recordId": "ledger:run-42:cash",
+            "recordType": "Ledger account",
+            "title": "Cash",
+            "subtitle": "Asset - run-42",
+            "description": "Source-backed cash balance with one retained variance awaiting controller review.",
+            "tone": "Warning",
+            "fields": [
+              {
+                "label": "Balance",
+                "value": "$120,500",
+                "detail": "Ledger cash from the retained trial balance.",
+                "tone": "Success"
+              }
+            ],
+            "proofActions": [],
+            "usedIn": [],
+            "impacts": [],
+            "fullRecordHref": "/api/workstation/runs/run-42/ledger/trial-balance"
+          }
+        }
+      ],
+      "selectedRecord": {
+        "recordId": "ledger:run-42:cash",
+        "recordType": "Ledger account",
+        "title": "Cash",
+        "subtitle": "Asset - run-42",
+        "description": "Source-backed cash balance with one retained variance awaiting controller review.",
+        "tone": "Warning",
+        "fields": [
+          {
+            "label": "Balance",
+            "value": "$120,500",
+            "detail": "Ledger cash from the retained trial balance.",
+            "tone": "Success"
+          }
+        ],
+        "proofActions": [],
+        "usedIn": [],
+        "impacts": [],
+        "fullRecordHref": "/api/workstation/runs/run-42/ledger/trial-balance"
+      },
+      "proofActions": [],
+      "recordGraph": {
+        "nodes": [
+          {
+            "nodeId": "ledger:run-42:cash",
+            "label": "Cash",
+            "nodeType": "Ledger account",
+            "tone": "Warning",
+            "href": "/api/workstation/runs/run-42/ledger/trial-balance"
+          }
+        ],
+        "edges": []
+      }
+    },
     "/api/workstation/accounting": {
       "metrics": [
         {
@@ -3330,6 +3490,56 @@
       "activeWorkflows": 1,
       "reviewRequired": 1
     },
+    "/api/workstation/reconciliation/statement-runs": [
+      {
+        "runId": "run-42",
+        "importId": "statement-import-42",
+        "startedAtUtc": "2026-05-03T19:45:00Z",
+        "completedAtUtc": "2026-05-03T19:48:00Z",
+        "positionMatches": 3,
+        "cashMatches": 2,
+        "transactionMatches": 7,
+        "openExceptionCount": 1,
+        "brokerCustodian": "Interactive Brokers",
+        "account": "DU1009034",
+        "period": "2026-05-03",
+        "status": "ReviewRequired",
+        "validationIssueCount": 1,
+        "matchCount": 12,
+        "breakCount": 1,
+        "caseCount": 1,
+        "importedAtUtc": "2026-05-03T19:44:00Z"
+      }
+    ],
+    "/api/workstation/reconciliation/break-queue": [
+      {
+        "breakId": "run-42:cash",
+        "runId": "run-42",
+        "strategyName": "Paper Index Mean Reversion",
+        "category": "AmountMismatch",
+        "status": "Open",
+        "variance": 500,
+        "reason": "Cash variance over tolerance.",
+        "assignedTo": null,
+        "detectedAt": "2026-05-03T19:49:00Z",
+        "lastUpdatedAt": "2026-05-03T19:52:00Z",
+        "reviewedBy": null,
+        "reviewedAt": null,
+        "resolvedBy": null,
+        "resolvedAt": null,
+        "resolutionNote": null,
+        "exceptionRoute": "cash",
+        "toleranceProfileId": "tp-cash-variance",
+        "toleranceBand": 250,
+        "requiredSignoffRole": "Fund operations lead",
+        "signoffStatus": "Pending",
+        "routingTarget": "FundTrialBalance",
+        "routingDetail": "Open the accounting trial balance for evidence review.",
+        "recommendedAction": "Review cash ledger entries before resolving.",
+        "commentCount": 2,
+        "evidenceCount": 3
+      }
+    ],
     "/api/workstation/reconciliation/statement-connectors": [
       {
         "connectorId": "csv-mapped",

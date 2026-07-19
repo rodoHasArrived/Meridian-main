@@ -209,6 +209,8 @@
       "waitForText": "Close Cockpit",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
+        "/api/workstation/reconciliation/statement-runs",
+        "/api/workstation/reconciliation/break-queue",
         "/api/accounting-system/providers",
         "/api/accounting-system/import/latest",
         "/api/accounting-system/reconciliation/latest"
@@ -231,9 +233,12 @@
       ],
       "waitForTexts": [
         "Open breaks",
-        "Intraday Vol Carry",
         "Statement runs",
-        "Reconciliation Casework"
+        "Reconciliation break queue",
+        "Run context"
+      ],
+      "waitForSelectors": [
+        "[data-master-detail-rail=\"reconciliation\"] button[aria-label=\"Assign reconciliation break run-42:cash\"]:not([disabled])"
       ]
     },
     {
@@ -397,12 +402,16 @@
       "waitForText": "Ledger Explorer",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
+        "/api/workstation/financial-record-explorers/ledger",
         "/api/workstation/runs/run-42/ledger/journal"
       ],
       "waitForTexts": [
-        "Search by account, amount, journal ID, source, security, entity",
         "Saved views",
-        "Ledger search results"
+        "Run-scoped journal evidence",
+        "Journal evidence rows"
+      ],
+      "waitForSelectors": [
+        "input[placeholder=\"Search financial records\"]"
       ]
     },
     {
