@@ -288,6 +288,17 @@ public sealed class TierMigrationService : ITierMigrationService
         MigrationOptions options,
         CancellationToken ct)
     {
+        // Defense-in-depth re-validation at the per-file chokepoint: every downstream
+        // filesystem touch (read, hash, delete) uses this normalized, root-contained path.
+        // MigrateAsync already refused out-of-root sources, so files can only be inside the
+        // storage root here; this local guard makes that invariant self-evident.
+        sourcePath = Path.GetFullPath(sourcePath);
+        if (!sourcePath.StartsWith(Path.GetFullPath(_options.RootPath) + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Refusing to migrate '{sourcePath}': the file escapes the storage root.");
+        }
+
         var sourceInfo = new FileInfo(sourcePath);
         var originalSize = sourceInfo.Length;
 
