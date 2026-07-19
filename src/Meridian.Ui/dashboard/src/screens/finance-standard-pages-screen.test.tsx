@@ -1,4 +1,5 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import * as api from "@/lib/api";
 import {
@@ -12,15 +13,17 @@ import {
   ReportRunDetailScreen
 } from "@/screens/finance-standard-pages-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { AccountingWorkspaceResponse } from "@/types";
+import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto } from "@/types";
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
+    getFinancialRecordExplorer: vi.fn(),
     getOperationsCloseCalendar: vi.fn(),
     getRunLedgerJournal: vi.fn(),
-    getRunTrialBalance: vi.fn()
+    getRunTrialBalance: vi.fn(),
+    saveFinancialRecordExplorerView: vi.fn()
   };
 });
 
@@ -124,6 +127,11 @@ async function renderPage(node: ReactElement, route: string) {
 describe("finance standard pages", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.history.replaceState({}, "", "/");
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValue(createLedgerFinancialRecordExplorer());
+    vi.mocked(api.saveFinancialRecordExplorerView).mockResolvedValue(
+      createLedgerFinancialRecordExplorer().savedViews[0]
+    );
   });
 
   it("renders the report preview and validation checkpoint tabs", async () => {
@@ -298,7 +306,8 @@ describe("finance standard pages", () => {
     expect(api.getRunTrialBalance).not.toHaveBeenCalled();
   });
 
-  it("renders ledger explorer search, saved views, and journal drill links", async () => {
+  it("renders one shared ledger explorer with subordinate run-scoped journal links", async () => {
+    const user = userEvent.setup();
     vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([
       {
         journalEntryId: "je-cash-1",
@@ -315,17 +324,106 @@ describe("finance standard pages", () => {
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger?runId=run-42");
 
     expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Search by account, amount, journal ID, source, security, entity")).toBeInTheDocument();
-    expect(screen.getByLabelText("Search by account, amount, journal ID, source, security, entity")).toHaveAttribute(
-      "placeholder",
-      "Cash, $120,500, AAPL, cash sweep"
-    );
-    expect(screen.getByLabelText("Run / period")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Manual JEs" })).toBeInTheDocument();
-    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Open journal detail");
+    expect(api.getFinancialRecordExplorer).toHaveBeenCalledWith("ledger");
+    expect(await screen.findByRole("cell", { name: "Retained cash control" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Search Ledger Explorer")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Search by account, amount, journal ID, source, security, entity")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Saved ledger views" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Journal run context")).toBeInTheDocument();
+    expect(await screen.findByRole("table", { name: "Run-scoped ledger journal results" })).toHaveTextContent("Open journal detail");
     expect(screen.getByRole("link", { name: "Open journal detail" })).toHaveAttribute(
       "href",
       "/accounting/journal-entries/detail?journalEntryId=je-cash-1&runId=run-42"
+    );
+
+    await user.clear(screen.getByLabelText("Search Ledger Explorer"));
+    await user.type(screen.getByLabelText("Search Ledger Explorer"), "missing record");
+    expect(screen.getByRole("status")).toHaveTextContent("No source-backed records are available for this explorer.");
+    expect(screen.getByRole("table", { name: "Run-scoped ledger journal results" })).toHaveTextContent("Open journal detail");
+  });
+
+  it("persists a named ledger explorer view and refetches the shared explorer", async () => {
+    const user = userEvent.setup();
+    const initialExplorer = createLedgerFinancialRecordExplorer();
+    const refreshedExplorer = createLedgerFinancialRecordExplorer({
+      savedViews: [
+        ...initialExplorer.savedViews,
+        {
+          viewId: "cash-review",
+          label: "Cash review",
+          description: "Search: cash",
+          isSystem: false,
+          isActive: true,
+          filters: [],
+          searchText: "cash"
+        }
+      ]
+    });
+    vi.mocked(api.getFinancialRecordExplorer)
+      .mockResolvedValueOnce(initialExplorer)
+      .mockResolvedValueOnce(refreshedExplorer);
+    vi.mocked(api.saveFinancialRecordExplorerView).mockResolvedValueOnce(refreshedExplorer.savedViews[1]);
+    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([]);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger?runId=run-42");
+
+    await user.type(await screen.findByLabelText("Search Ledger Explorer"), "cash");
+    await user.type(screen.getByLabelText("Saved view name"), "Cash review");
+    await user.click(screen.getByRole("button", { name: "Save view" }));
+
+    await waitFor(() => {
+      expect(api.saveFinancialRecordExplorerView).toHaveBeenCalledWith(
+        "ledger",
+        expect.objectContaining({ label: "Cash review", searchText: "cash" })
+      );
+      expect(api.getFinancialRecordExplorer).toHaveBeenCalledTimes(2);
+    });
+    expect(await screen.findByRole("button", { name: "Cash review" })).toBeInTheDocument();
+  });
+
+  it("preserves a query-selected run that is absent from the reconciliation queue", async () => {
+    const runScopedData = {
+      ...data,
+      reconciliationQueue: []
+    } as unknown as AccountingWorkspaceResponse;
+    vi.mocked(api.getRunLedgerJournal).mockResolvedValueOnce([{
+      journalEntryId: "je-retained-run",
+      timestamp: "2026-06-30T00:00:00Z",
+      description: "Retained deep-link journal",
+      totalDebits: 25,
+      totalCredits: 25,
+      lineCount: 2,
+      accountScopeDisplayName: "Cash",
+      entityScopeDisplayName: "Fund Alpha"
+    }]);
+    window.history.replaceState({}, "", "/accounting/ledger?runId=retained-run");
+
+    await renderPage(<LedgerExplorerScreen data={runScopedData} />, "/accounting/ledger?runId=retained-run");
+
+    expect(screen.getByLabelText("Journal run context")).toHaveValue("retained-run");
+    expect(api.getRunLedgerJournal).toHaveBeenCalledWith("retained-run");
+    expect(await screen.findByRole("link", { name: "Open journal detail" })).toHaveAttribute(
+      "href",
+      "/accounting/journal-entries/detail?journalEntryId=je-retained-run&runId=retained-run"
+    );
+    expect(new URLSearchParams(window.location.search).get("runId")).toBe("retained-run");
+  });
+
+  it("keeps the shared ledger explorer useful when no reconciliation runs exist", async () => {
+    const emptyQueueData = {
+      ...data,
+      reconciliationQueue: []
+    } as unknown as AccountingWorkspaceResponse;
+
+    await renderPage(<LedgerExplorerScreen data={emptyQueueData} />, "/accounting/ledger");
+
+    expect(api.getFinancialRecordExplorer).toHaveBeenCalledWith("ledger");
+    expect(api.getRunLedgerJournal).not.toHaveBeenCalled();
+    expect(await screen.findByRole("cell", { name: "Retained cash control" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Journal run context")).toHaveValue("");
+    expect(screen.getByRole("option", { name: "No run available" })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Run-scoped ledger journal results" })).toHaveTextContent(
+      "No journal evidence rows are available for the selected run."
     );
   });
 
@@ -392,3 +490,83 @@ describe("finance standard pages", () => {
     expect(screen.getByRole("link", { name: "Inspect selected evidence" })).toHaveAttribute("href", "/reporting/evidence?subjectKind=evidence&subjectId=bank-statement");
   });
 });
+
+function createLedgerFinancialRecordExplorer(
+  overrides: Partial<FinancialRecordExplorerDto> = {}
+): FinancialRecordExplorerDto {
+  const detail = {
+    recordId: "ledger:run-42:cash",
+    recordType: "Ledger account",
+    title: "Retained cash control",
+    subtitle: "Assets · run-42",
+    description: "Source-backed cash balance with retained journal and evidence links.",
+    tone: "Success" as const,
+    fields: [
+      { label: "Balance", value: "$120,500.00", detail: "Retained trial-balance value.", tone: "Success" as const }
+    ],
+    proofActions: [
+      {
+        actionId: "open-journal",
+        label: "Open journal evidence",
+        description: "Open retained run journal evidence.",
+        href: "/api/workstation/runs/run-42/ledger/journal",
+        isEnabled: true,
+        disabledReason: "",
+        tone: "Info" as const
+      }
+    ],
+    usedIn: [],
+    impacts: [],
+    fullRecordHref: "/api/workstation/runs/run-42/ledger/trial-balance"
+  };
+
+  return {
+    explorerId: "ledger",
+    title: "Ledger Explorer",
+    description: "Explore retained ledger records and their proof links.",
+    sourceState: "Source-backed ledger projection from retained accounting records.",
+    isBlocked: false,
+    blockedReason: "",
+    scopeItems: [
+      { label: "Record set", value: "Ledger trial balance", tone: "Info" }
+    ],
+    savedViews: [
+      {
+        viewId: "system-ledger-default",
+        label: "Controller review",
+        description: "Default retained-ledger review.",
+        isSystem: true,
+        isActive: true,
+        filters: [],
+        searchText: ""
+      }
+    ],
+    summaryItems: [
+      { label: "Retained records", value: "1", detail: "One source-backed ledger record.", tone: "Success" }
+    ],
+    filters: [],
+    columns: [
+      { columnId: "account", header: "Account", cellKind: "text", width: 220, isRightAligned: false },
+      { columnId: "balance", header: "Balance", cellKind: "currency", width: 120, isRightAligned: true }
+    ],
+    rows: [
+      {
+        recordId: detail.recordId,
+        recordType: "ledger",
+        label: detail.title,
+        source: "Trial balance",
+        status: "Posted",
+        tone: "Success",
+        cells: [
+          { columnId: "account", displayValue: detail.title, rawValue: "Cash", tone: "Success", linkHref: "" },
+          { columnId: "balance", displayValue: "$120,500.00", rawValue: "120500", tone: "Success", linkHref: "" }
+        ],
+        detail
+      }
+    ],
+    selectedRecord: detail,
+    proofActions: [],
+    recordGraph: { nodes: [], edges: [] },
+    ...overrides
+  };
+}

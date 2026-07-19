@@ -34,7 +34,7 @@ export function monthGrid(month: Date): Date[] {
 }
 
 const dayButtonClass =
-  "flex h-8 w-8 items-center justify-center rounded-[2px] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[#EAEEF3] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
+  "flex h-8 w-8 items-center justify-center rounded-[2px] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]";
 
 /**
  * Single-date input with a flat calendar popover. Concrete: hairline field, menu shadow on the
@@ -67,7 +67,7 @@ export function DatePicker({ value, onChange, label, placeholder = "Select date‚
   return (
     <div ref={rootRef} className={cn("relative w-full", className)}>
       {label ? (
-        <label htmlFor={id} className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <label htmlFor={id} className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </label>
       ) : null}
@@ -79,19 +79,19 @@ export function DatePicker({ value, onChange, label, placeholder = "Select date‚
         value={display}
         onClick={() => !disabled && setOpen((current) => !current)}
         className={cn(
-          "h-9 w-full cursor-pointer rounded-[2px] border border-border bg-[#F3F6F9] px-2.5 font-mono text-sm text-foreground",
-          "hover:border-[#ADB8C4] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          "h-9 w-full cursor-pointer rounded-[2px] border border-border bg-[var(--surface-input)] px-2.5 font-mono text-sm text-foreground",
+          "hover:border-[var(--border-hover)] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
           disabled && "cursor-not-allowed opacity-55"
         )}
       />
       {open ? (
-        <div className="absolute left-0 top-[calc(100%+4px)] z-[100] rounded-[2px] border border-border bg-popover p-3 shadow-[0_2px_6px_rgba(0,0,0,0.18)]">
+        <div className="absolute left-0 top-[calc(100%+4px)] z-[100] rounded-[2px] border border-border bg-popover p-3 shadow-[var(--shadow-menu)]">
           <div className="mb-3 flex items-center justify-between text-xs font-semibold text-foreground">
             <button
               type="button"
               aria-label="Previous month"
               onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1))}
-              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[#EAEEF3]"
+              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
             >
               ‚Üê
             </button>
@@ -100,7 +100,7 @@ export function DatePicker({ value, onChange, label, placeholder = "Select date‚
               type="button"
               aria-label="Next month"
               onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1))}
-              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[#EAEEF3]"
+              className="rounded-[2px] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
             >
               ‚Üí
             </button>

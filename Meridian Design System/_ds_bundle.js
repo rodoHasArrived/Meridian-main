@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"MeridianDesignSystem_4f61be","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Gauge","sourcePath":"components/core/Gauge.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LinearGauge","sourcePath":"components/core/LinearGauge.jsx"},{"name":"Modal","sourcePath":"components/core/Modal.jsx"},{"name":"ModalHeader","sourcePath":"components/core/Modal.jsx"},{"name":"ModalBody","sourcePath":"components/core/Modal.jsx"},{"name":"ModalFooter","sourcePath":"components/core/Modal.jsx"},{"name":"ModalForm","sourcePath":"components/core/Modal.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"SelectCheckbox","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"DenseDataTable","sourcePath":"components/data/DenseDataTable.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"ExpandableDataTable","sourcePath":"components/data/ExpandableDataTable.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"FilteredDataTable","sourcePath":"components/data/FilteredDataTable.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"}],"sourceHashes":{"components/accounting/AccountTree.jsx":"17df19a5c5e3","components/accounting/AgingTable.jsx":"676f5dc3d65a","components/accounting/AllocationEditor.jsx":"89b6b24c4f08","components/accounting/AmountCell.jsx":"7a4a07f99e7c","components/accounting/CommitmentBar.jsx":"a8c70b37ed8b","components/accounting/FxRevaluationTable.jsx":"3045907f4bb1","components/accounting/JournalEntryForm.jsx":"0b8ad8f51015","components/accounting/LedgerTable.jsx":"178baafa0404","components/accounting/Money.jsx":"6286fd04d9ed","components/accounting/ReconciliationPanel.jsx":"43997e4e6d60","components/accounting/StatementTable.jsx":"451128a83aa8","components/accounting/TaxLotTable.jsx":"4cb905eae29c","components/accounting/TrialBalance.jsx":"bfb06c80490c","components/accounting/money.js":"13f4f555cfea","components/charts/BarChart.jsx":"befa15cf66e5","components/charts/CandleChart.jsx":"b6bb7724bae2","components/charts/ChartCard.jsx":"6effbc549d35","components/charts/ChartTooltip.jsx":"c81351ca002e","components/charts/CorrelationHeatmap.jsx":"10f7caec0b70","components/charts/CoverageMatrix.jsx":"ae22a1f6784d","components/charts/DepthChart.jsx":"a2fa097031d3","components/charts/DrawdownChart.jsx":"5b2223b09d5e","components/charts/EquityCurve.jsx":"b4e4f897313d","components/charts/Histogram.jsx":"926ca0b0206c","components/charts/OwnershipGraph.jsx":"cefa98d45940","components/charts/PnLCalendar.jsx":"c4b6be016028","components/charts/ScatterChart.jsx":"eaf8a9123ad5","components/charts/Sparkline.jsx":"31287ad0fc62","components/charts/TimeframeSwitcher.jsx":"0d8c964e4829","components/charts/Treemap.jsx":"6ab7262ee86b","components/charts/WaterfallChart.jsx":"5325fe894470","components/charts/YieldCurve.jsx":"a4a8a460983d","components/charts/useChartCrosshair.js":"fe8b26d9651d","components/core/Accordion.jsx":"80ec12f1a771","components/core/AsyncCombobox.jsx":"0352d4088892","components/core/Badge.jsx":"fb3fe04e6265","components/core/Breadcrumb.jsx":"ac1133aeccc9","components/core/Button.jsx":"e9952ea748a4","components/core/Callout.jsx":"0e252e2a11ea","components/core/Checkbox.jsx":"44b3154fcf88","components/core/Combobox.jsx":"270e19e4e891","components/core/CommandPalette.jsx":"b30cd60fc182","components/core/ContextMenu.jsx":"e0d248bc7101","components/core/DatePicker.jsx":"4bc3fc806178","components/core/DateRangePicker.jsx":"38b864db6016","components/core/Delta.jsx":"7526db224a04","components/core/DensityToggle.jsx":"a9e21a1eac18","components/core/Dialog.jsx":"94bba944a3f8","components/core/Drawer.jsx":"e01a118d81c2","components/core/ErrorBoundary.jsx":"d9f701d6279e","components/core/Eyebrow.jsx":"3fdfcb5e8d22","components/core/FileUpload.jsx":"89d7ff169476","components/core/Flex.jsx":"6559d14f2144","components/core/Form.jsx":"4a15432cd2b1","components/core/FormField.jsx":"603ba8ad5378","components/core/FormValidation.jsx":"bc6bf7248d6f","components/core/FreshnessIndicator.jsx":"69c9832813ab","components/core/Gauge.jsx":"be597683f46b","components/core/Grid.jsx":"eee0873df147","components/core/HotkeysProvider.jsx":"d07ebdcbff1f","components/core/Input.jsx":"4c4ebd8b35a2","components/core/InstrumentChip.jsx":"db55683dfaf7","components/core/Kbd.jsx":"1efd52ca7123","components/core/LinearGauge.jsx":"7a0385beaa9d","components/core/Modal.jsx":"34c4b91dd20c","components/core/MultiSelect.jsx":"520bdba971b0","components/core/NotificationCenter.jsx":"a0ae490af93b","components/core/NumberInput.jsx":"a792691d2701","components/core/PanelSurface.jsx":"9dc0a0dcee21","components/core/Popover.jsx":"013de1c8dc80","components/core/ProgressBar.jsx":"14d0661921f5","components/core/RadioGroup.jsx":"5fd8031b2761","components/core/SegmentedControl.jsx":"f6cfbffa7177","components/core/Select.jsx":"f6cccfd244b9","components/core/Slider.jsx":"f3a0a4dfefe2","components/core/Spinner.jsx":"8d1e2c6a69ff","components/core/SplitPane.jsx":"6051b50ae2da","components/core/Stack.jsx":"3d2a133eb602","components/core/StatusBanner.jsx":"02aeb1215f60","components/core/Stepper.jsx":"3089b0927049","components/core/Tabs.jsx":"6da1b08b59f4","components/core/TagInput.jsx":"6027b37c5903","components/core/TextArea.jsx":"9f34075487c2","components/core/Timestamp.jsx":"c89ff640e3fd","components/core/Toast.jsx":"25f13abe3dca","components/core/Tooltip.jsx":"cd644f49fa66","components/core/TreeView.jsx":"e59c3c3612f5","components/core/Validators.js":"f1822ed811eb","components/core/useFormState.js":"6a83c91f272b","components/core/useOverlayFocus.js":"2e7d55834cf2","components/data/BulkActionBar.jsx":"91dd97f43efb","components/data/ColumnChooser.jsx":"b2c4f8de2801","components/data/ColumnManager.jsx":"f93ecff4eec7","components/data/DenseDataTable.jsx":"ac547c200a13","components/data/EditableCell.jsx":"98aced150c33","components/data/EmptyState.jsx":"aae021a2fb61","components/data/EntitySummary.jsx":"28d4d0b758e0","components/data/ExpandableDataTable.jsx":"4fc950a98ced","components/data/FilterBuilder.jsx":"4680482f3a0d","components/data/FilteredDataTable.jsx":"63d5f69702b2","components/data/KeyValueGrid.jsx":"afea4ca0f998","components/data/MetricCard.jsx":"e04cf6694423","components/data/Pagination.jsx":"528cd5b999d8","components/data/SavedViews.jsx":"87f6c08074b2","components/data/SelectionToolbar.jsx":"3aae65e8b854","components/data/Skeleton.jsx":"500dc7f5036b","components/data/TableHooks.js":"322c1824da59","components/data/Toolbar.jsx":"563bfec8c3a0","components/data/VirtualizedList.jsx":"f3fab01a284f","components/data/WorksheetGrid.jsx":"15204a36ff1b","components/data/useAsyncTableData.js":"ab343de3f5db","components/data/useRowSelection.js":"a799985727b9","components/data/useTableColumns.js":"b02587a19e8b","components/data/useTableState.js":"f2e26e0bc5e4","components/data/useThemeRowHeight.js":"66fa183ceeb5","components/operations/CaseQueue.jsx":"0ba22c70458d","components/operations/DiffView.jsx":"93fd8ab9ee1a","components/operations/EventTimeline.jsx":"92a68278de90","components/operations/EvidenceLink.jsx":"1c61b7fd4373","components/operations/GateRail.jsx":"18694ebe7369","components/operations/LogTail.jsx":"f2e242835b4e","components/operations/ProvenanceChip.jsx":"2dc6ea08e6c9","components/operations/ReadinessPanel.jsx":"f67d77cc6671","components/operations/SeverityBadge.jsx":"20d93cedff03","components/operations/SlaChip.jsx":"0ee3e7458d1d","components/operations/TrustStrip.jsx":"f5231f57da85","components/operations/ValidationIssueList.jsx":"eb7a2ea6475d","components/operations/WorkspaceSection.jsx":"0495eb21def0","components/operations/status.js":"3653187e0b7f","components/shell/NavRail.jsx":"f713544df7df","components/shell/SessionControls.jsx":"f11a362d2061","components/shell/StatusBar.jsx":"3a4f44cb65cd","components/shell/WorkstationTopbar.jsx":"b6b143961a25","components/trading/Blotter.jsx":"6d763e2375e7","components/trading/DepthLadder.jsx":"636df5392637","components/trading/FillsFeed.jsx":"70fa78c917c4","components/trading/OptionChainTable.jsx":"f6b8613ca953","components/trading/OrderTicket.jsx":"10a20eef6015"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/accounting/money.js"},{"name":"currencySymbol","sourcePath":"components/accounting/money.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"formatBps","sourcePath":"components/accounting/money.js"},{"name":"formatMoney","sourcePath":"components/accounting/money.js"},{"name":"formatMoneyCompact","sourcePath":"components/accounting/money.js"},{"name":"formatQuantity","sourcePath":"components/accounting/money.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"toNumber","sourcePath":"components/accounting/money.js"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"}]} */
+/* @ds-bundle: {"format":4,"namespace":"MeridianDesignSystem_4f61be","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Gauge","sourcePath":"components/core/Gauge.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LinearGauge","sourcePath":"components/core/LinearGauge.jsx"},{"name":"Modal","sourcePath":"components/core/Modal.jsx"},{"name":"ModalHeader","sourcePath":"components/core/Modal.jsx"},{"name":"ModalBody","sourcePath":"components/core/Modal.jsx"},{"name":"ModalFooter","sourcePath":"components/core/Modal.jsx"},{"name":"ModalForm","sourcePath":"components/core/Modal.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"SelectCheckbox","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"DenseDataTable","sourcePath":"components/data/DenseDataTable.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"ExpandableDataTable","sourcePath":"components/data/ExpandableDataTable.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"FilteredDataTable","sourcePath":"components/data/FilteredDataTable.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"}],"sourceHashes":{"components/accounting/AccountTree.jsx":"17df19a5c5e3","components/accounting/AgingTable.jsx":"676f5dc3d65a","components/accounting/AllocationEditor.jsx":"89b6b24c4f08","components/accounting/AmountCell.jsx":"7a4a07f99e7c","components/accounting/CommitmentBar.jsx":"a8c70b37ed8b","components/accounting/FxRevaluationTable.jsx":"3045907f4bb1","components/accounting/JournalEntryForm.jsx":"0b8ad8f51015","components/accounting/LedgerTable.jsx":"178baafa0404","components/accounting/Money.jsx":"6286fd04d9ed","components/accounting/ReconciliationPanel.jsx":"403e15b0f54a","components/accounting/StatementTable.jsx":"451128a83aa8","components/accounting/TaxLotTable.jsx":"4cb905eae29c","components/accounting/TrialBalance.jsx":"bfb06c80490c","components/accounting/money.js":"13f4f555cfea","components/charts/BarChart.jsx":"befa15cf66e5","components/charts/CandleChart.jsx":"b6bb7724bae2","components/charts/ChartCard.jsx":"6effbc549d35","components/charts/ChartTooltip.jsx":"c81351ca002e","components/charts/CorrelationHeatmap.jsx":"10f7caec0b70","components/charts/CoverageMatrix.jsx":"ae22a1f6784d","components/charts/DepthChart.jsx":"a2fa097031d3","components/charts/DrawdownChart.jsx":"5b2223b09d5e","components/charts/EquityCurve.jsx":"b4e4f897313d","components/charts/Histogram.jsx":"926ca0b0206c","components/charts/OwnershipGraph.jsx":"cefa98d45940","components/charts/PnLCalendar.jsx":"c4b6be016028","components/charts/ScatterChart.jsx":"eaf8a9123ad5","components/charts/Sparkline.jsx":"31287ad0fc62","components/charts/TimeframeSwitcher.jsx":"0d8c964e4829","components/charts/Treemap.jsx":"6ab7262ee86b","components/charts/WaterfallChart.jsx":"5325fe894470","components/charts/YieldCurve.jsx":"a4a8a460983d","components/charts/useChartCrosshair.js":"fe8b26d9651d","components/core/Accordion.jsx":"80ec12f1a771","components/core/AsyncCombobox.jsx":"0352d4088892","components/core/Badge.jsx":"fb3fe04e6265","components/core/Breadcrumb.jsx":"ac1133aeccc9","components/core/Button.jsx":"e9952ea748a4","components/core/Callout.jsx":"0e252e2a11ea","components/core/Checkbox.jsx":"44b3154fcf88","components/core/Combobox.jsx":"270e19e4e891","components/core/CommandPalette.jsx":"b30cd60fc182","components/core/ContextMenu.jsx":"e0d248bc7101","components/core/DatePicker.jsx":"bfc762b56b9b","components/core/DateRangePicker.jsx":"38b864db6016","components/core/Delta.jsx":"7526db224a04","components/core/DensityToggle.jsx":"a9e21a1eac18","components/core/Dialog.jsx":"cfbc4a66777c","components/core/Drawer.jsx":"9ca584753c5f","components/core/ErrorBoundary.jsx":"d9f701d6279e","components/core/Eyebrow.jsx":"3fdfcb5e8d22","components/core/FileUpload.jsx":"89d7ff169476","components/core/Flex.jsx":"cb320fab89ab","components/core/Form.jsx":"4a15432cd2b1","components/core/FormField.jsx":"5cb89511428e","components/core/FormValidation.jsx":"bc6bf7248d6f","components/core/FreshnessIndicator.jsx":"69c9832813ab","components/core/Gauge.jsx":"91cce969ee0b","components/core/Grid.jsx":"01128532601b","components/core/HotkeysProvider.jsx":"d07ebdcbff1f","components/core/Input.jsx":"4c4ebd8b35a2","components/core/InstrumentChip.jsx":"db55683dfaf7","components/core/Kbd.jsx":"1efd52ca7123","components/core/LinearGauge.jsx":"dd33e65ab2d6","components/core/Modal.jsx":"34c4b91dd20c","components/core/MultiSelect.jsx":"520bdba971b0","components/core/NotificationCenter.jsx":"a0ae490af93b","components/core/NumberInput.jsx":"a792691d2701","components/core/PanelSurface.jsx":"9dc0a0dcee21","components/core/Popover.jsx":"0b36d9e97247","components/core/ProgressBar.jsx":"14d0661921f5","components/core/RadioGroup.jsx":"5fd8031b2761","components/core/SegmentedControl.jsx":"f6cfbffa7177","components/core/Select.jsx":"f6cccfd244b9","components/core/Slider.jsx":"f3a0a4dfefe2","components/core/Spinner.jsx":"8d1e2c6a69ff","components/core/SplitPane.jsx":"6051b50ae2da","components/core/Stack.jsx":"35e22a8758b9","components/core/StatusBanner.jsx":"bb62cdea0f05","components/core/Stepper.jsx":"3089b0927049","components/core/Tabs.jsx":"6da1b08b59f4","components/core/TagInput.jsx":"6027b37c5903","components/core/TextArea.jsx":"9f34075487c2","components/core/Timestamp.jsx":"c89ff640e3fd","components/core/Toast.jsx":"25f13abe3dca","components/core/Tooltip.jsx":"cd644f49fa66","components/core/TreeView.jsx":"e59c3c3612f5","components/core/Validators.js":"f1822ed811eb","components/core/useFormState.js":"6a83c91f272b","components/core/useOverlayFocus.js":"2e7d55834cf2","components/data/BulkActionBar.jsx":"91dd97f43efb","components/data/ColumnChooser.jsx":"b2c4f8de2801","components/data/ColumnManager.jsx":"f93ecff4eec7","components/data/DenseDataTable.jsx":"688235a79462","components/data/EditableCell.jsx":"98aced150c33","components/data/EmptyState.jsx":"aae021a2fb61","components/data/EntitySummary.jsx":"28d4d0b758e0","components/data/ExpandableDataTable.jsx":"4fc950a98ced","components/data/FilterBuilder.jsx":"4680482f3a0d","components/data/FilteredDataTable.jsx":"59e2008a77aa","components/data/KeyValueGrid.jsx":"afea4ca0f998","components/data/MetricCard.jsx":"e04cf6694423","components/data/Pagination.jsx":"528cd5b999d8","components/data/SavedViews.jsx":"87f6c08074b2","components/data/SelectionToolbar.jsx":"3aae65e8b854","components/data/Skeleton.jsx":"500dc7f5036b","components/data/TableHooks.js":"322c1824da59","components/data/Toolbar.jsx":"563bfec8c3a0","components/data/VirtualizedList.jsx":"f3fab01a284f","components/data/WorksheetGrid.jsx":"15204a36ff1b","components/data/useAsyncTableData.js":"ab343de3f5db","components/data/useRowSelection.js":"a799985727b9","components/data/useTableColumns.js":"b02587a19e8b","components/data/useTableState.js":"f2e26e0bc5e4","components/data/useThemeRowHeight.js":"0551902e0fa7","components/operations/CaseQueue.jsx":"856fa98606a1","components/operations/DiffView.jsx":"93fd8ab9ee1a","components/operations/EventTimeline.jsx":"92a68278de90","components/operations/EvidenceLink.jsx":"1c61b7fd4373","components/operations/GateRail.jsx":"18694ebe7369","components/operations/LogTail.jsx":"f2e242835b4e","components/operations/ProvenanceChip.jsx":"2dc6ea08e6c9","components/operations/ReadinessPanel.jsx":"f67d77cc6671","components/operations/SeverityBadge.jsx":"20d93cedff03","components/operations/SlaChip.jsx":"0ee3e7458d1d","components/operations/TrustStrip.jsx":"f5231f57da85","components/operations/ValidationIssueList.jsx":"eb7a2ea6475d","components/operations/WorkspaceSection.jsx":"0495eb21def0","components/operations/status.js":"3653187e0b7f","components/shell/NavRail.jsx":"f713544df7df","components/shell/SessionControls.jsx":"f11a362d2061","components/shell/StatusBar.jsx":"3a4f44cb65cd","components/shell/WorkstationTopbar.jsx":"b6b143961a25","components/trading/Blotter.jsx":"6d763e2375e7","components/trading/DepthLadder.jsx":"636df5392637","components/trading/FillsFeed.jsx":"70fa78c917c4","components/trading/OptionChainTable.jsx":"f6b8613ca953","components/trading/OrderTicket.jsx":"10a20eef6015"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/accounting/money.js"},{"name":"currencySymbol","sourcePath":"components/accounting/money.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"formatBps","sourcePath":"components/accounting/money.js"},{"name":"formatMoney","sourcePath":"components/accounting/money.js"},{"name":"formatMoneyCompact","sourcePath":"components/accounting/money.js"},{"name":"formatQuantity","sourcePath":"components/accounting/money.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"toNumber","sourcePath":"components/accounting/money.js"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"}]} */
 
 (() => {
 
@@ -6272,17 +6272,29 @@ Object.assign(__ds_scope, { ContextMenu, useContextMenu });
 
 // components/core/DatePicker.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DatePicker = DatePicker;
 // Meridian DatePicker — single date input with calendar, functional only.
-
-const {
-  useState,
-  useRef
-} = React;
+const react_1 = __importDefault(require("react"));
+const { useState, useRef } = react_1.default;
 let injected = false;
 function inject() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
-  const css = `
+    if (injected || typeof document === "undefined")
+        return;
+    injected = true;
+    const css = `
 .mds-date-wrap{position:relative;display:inline-block;width:100%;}
 .mds-date-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#59636F);margin-bottom:5px;}
@@ -6305,88 +6317,53 @@ function inject() {
 .mds-date-day--selected{background:var(--accent,#2F6F8F);color:var(--text-on-accent,#fff);border-color:var(--accent,#2F6F8F);}
 .mds-date-day--today{border:2px solid var(--accent,#2F6F8F);}
 `;
-  const el = document.createElement("style");
-  el.setAttribute("data-mds", "datepicker");
-  el.textContent = css;
-  document.head.appendChild(el);
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "datepicker");
+    el.textContent = css;
+    document.head.appendChild(el);
 }
-function DatePicker({
-  label,
-  value,
-  onChange
-}) {
-  inject();
-  const [open, setOpen] = useState(false);
-  const [month, setMonth] = useState(value ? new Date(value) : new Date());
-  const ref = useRef(null);
-  React.useEffect(() => {
-    const handler = e => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-  const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
-  const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay());
-  const days = [];
-  for (let i = 0; i < 42; i++) {
-    const d = new Date(startDate);
-    d.setDate(d.getDate() + i);
-    days.push(d);
-  }
-  const formatDate = d => d.toISOString().split('T')[0];
-  const displayDate = value ? new Date(value).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  }) : 'Select date…';
-  return /*#__PURE__*/React.createElement("div", {
-    ref: ref
-  }, label && /*#__PURE__*/React.createElement("label", {
-    className: "mds-date-label"
-  }, label), /*#__PURE__*/React.createElement("div", {
-    className: "mds-date-wrap"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    className: "mds-date-input",
-    value: displayDate,
-    readOnly: true,
-    onClick: () => setOpen(!open)
-  }), open && /*#__PURE__*/React.createElement("div", {
-    className: "mds-date-cal"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mds-date-header"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "mds-date-nav",
-    onClick: () => setMonth(new Date(month.getFullYear(), month.getMonth() - 1))
-  }, "\u2190"), /*#__PURE__*/React.createElement("span", null, month.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long'
-  })), /*#__PURE__*/React.createElement("button", {
-    className: "mds-date-nav",
-    onClick: () => setMonth(new Date(month.getFullYear(), month.getMonth() + 1))
-  }, "\u2192")), /*#__PURE__*/React.createElement("div", {
-    className: "mds-date-grid"
-  }, ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => /*#__PURE__*/React.createElement("div", {
-    key: d,
-    className: "mds-date-dow"
-  }, d)), days.map((d, i) => {
-    const isOther = d.getMonth() !== month.getMonth();
-    const isSelected = value && formatDate(d) === value;
-    const isToday = formatDate(d) === formatDate(new Date());
-    return /*#__PURE__*/React.createElement("button", {
-      key: i,
-      className: `mds-date-day${isOther ? " mds-date-day--other" : ""}${isSelected ? " mds-date-day--selected" : ""}${isToday && !isSelected ? " mds-date-day--today" : ""}`,
-      onClick: () => {
-        onChange?.(formatDate(d));
-        setOpen(false);
-      }
-    }, d.getDate());
-  })))));
+function DatePicker({ label, value, onChange }) {
+    inject();
+    const [open, setOpen] = useState(false);
+    const [month, setMonth] = useState(value ? new Date(value) : new Date());
+    const ref = useRef(null);
+    react_1.default.useEffect(() => {
+        const handler = (e) => { if (ref.current && !ref.current.contains(e.target))
+            setOpen(false); };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+    const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+    const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    const days = [];
+    for (let i = 0; i < 42; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        days.push(d);
+    }
+    const formatDate = (d) => d.toISOString().split('T')[0];
+    const displayDate = value ? new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Select date…';
+    return (react_1.default.createElement("div", { ref: ref },
+        label && react_1.default.createElement("label", { className: "mds-date-label" }, label),
+        react_1.default.createElement("div", { className: "mds-date-wrap" },
+            react_1.default.createElement("input", { type: "text", className: "mds-date-input", value: displayDate, readOnly: true, onClick: () => setOpen(!open) }),
+            open && (react_1.default.createElement("div", { className: "mds-date-cal" },
+                react_1.default.createElement("div", { className: "mds-date-header" },
+                    react_1.default.createElement("button", { className: "mds-date-nav", onClick: () => setMonth(new Date(month.getFullYear(), month.getMonth() - 1)) }, "\u2190"),
+                    react_1.default.createElement("span", null, month.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })),
+                    react_1.default.createElement("button", { className: "mds-date-nav", onClick: () => setMonth(new Date(month.getFullYear(), month.getMonth() + 1)) }, "\u2192")),
+                react_1.default.createElement("div", { className: "mds-date-grid" },
+                    ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => react_1.default.createElement("div", { key: d, className: "mds-date-dow" }, d)),
+                    days.map((d, i) => {
+                        const isOther = d.getMonth() !== month.getMonth();
+                        const isSelected = value && formatDate(d) === value;
+                        const isToday = formatDate(d) === formatDate(new Date());
+                        return (react_1.default.createElement("button", { key: i, className: `mds-date-day${isOther ? " mds-date-day--other" : ""}${isSelected ? " mds-date-day--selected" : ""}${isToday && !isSelected ? " mds-date-day--today" : ""}`, onClick: () => { onChange?.(formatDate(d)); setOpen(false); } }, d.getDate()));
+                    })))))));
 }
-Object.assign(__ds_scope, { DatePicker });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/DatePicker.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/DateRangePicker.jsx
@@ -6932,7 +6909,17 @@ Object.assign(__ds_scope, { FileUpload });
 
 // components/core/Flex.jsx
 try { (() => {
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Flex = Flex;
 /**
  * Meridian Flex — Flexbox wrapper for directional layouts.
  * Use for rows by default; set vertical for columns.
@@ -6943,33 +6930,22 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
  *   <div>Right</div>
  * </Flex>
  */
-function Flex({
-  vertical = false,
-  align = 'stretch',
-  justify = 'flex-start',
-  gap = 'md',
-  wrap = false,
-  children,
-  className = '',
-  style = {},
-  ...rest
-}) {
-  const gapVar = gap && typeof gap === 'string' && gap.match(/^(xs|sm|md|lg|xl|2xl)$/) ? `var(--space-${gap})` : gap || '0';
-  return /*#__PURE__*/React.createElement("div", _extends({
-    className: className,
-    style: {
-      display: 'flex',
-      flexDirection: vertical ? 'column' : 'row',
-      alignItems: align,
-      justifyContent: justify,
-      gap: gapVar,
-      flexWrap: wrap ? 'wrap' : 'nowrap',
-      ...style
-    }
-  }, rest), children);
+function Flex({ vertical = false, align = 'stretch', justify = 'flex-start', gap = 'md', wrap = false, children, className = '', style = {}, ...rest }) {
+    const gapVar = gap && typeof gap === 'string' && gap.match(/^(xs|sm|md|lg|xl|2xl)$/)
+        ? `var(--space-${gap})`
+        : gap || '0';
+    return (React.createElement("div", { className: className, style: {
+            display: 'flex',
+            flexDirection: vertical ? 'column' : 'row',
+            alignItems: align,
+            justifyContent: justify,
+            gap: gapVar,
+            flexWrap: wrap ? 'wrap' : 'nowrap',
+            ...style
+        }, ...rest }, children));
 }
 Flex.displayName = 'Flex';
-Object.assign(__ds_scope, { Flex });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/Flex.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/Form.jsx
@@ -7057,6 +7033,17 @@ Object.assign(__ds_scope, { FormRow, FormGrid, FormDivider, FormSectionLabel, Fo
 
 // components/core/FormField.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FormField = FormField;
 /**
  * Meridian FormField — Wrapper combining label, input, error, and hint.
  * Reduces boilerplate in forms by bundling all field furniture.
@@ -7066,51 +7053,37 @@ try { (() => {
  *   <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
  * </FormField>
  */
-function FormField({
-  label,
-  hint,
-  error,
-  required = false,
-  children,
-  className = '',
-  style = {}
-}) {
-  const fieldId = Math.random().toString(36).slice(2);
-  return /*#__PURE__*/React.createElement("div", {
-    className: className,
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 'var(--space-sm)',
-      ...style
-    }
-  }, label && /*#__PURE__*/React.createElement("label", {
-    htmlFor: fieldId,
-    style: {
-      fontSize: 'var(--type-label)',
-      fontWeight: 600,
-      color: 'var(--text-primary)',
-      textTransform: 'uppercase',
-      letterSpacing: 'var(--letter-spacing-label)'
-    }
-  }, label, required && /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: 'var(--red)',
-      marginLeft: '4px'
-    }
-  }, "*")), children && typeof children === 'object' && children.type ? (() => {
-    const cloned = children;
-    return cloned.props ? children : children;
-  })() : children, (hint || error) && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 'var(--type-caption)',
-      color: error ? 'var(--red)' : 'var(--text-muted)',
-      marginTop: '-4px'
-    }
-  }, error || hint));
+function FormField({ label, hint, error, required = false, children, className = '', style = {}, }) {
+    const fieldId = Math.random().toString(36).slice(2);
+    return (React.createElement("div", { className: className, style: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-sm)',
+            ...style
+        } },
+        label && (React.createElement("label", { htmlFor: fieldId, style: {
+                fontSize: 'var(--type-label)',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                textTransform: 'uppercase',
+                letterSpacing: 'var(--letter-spacing-label)',
+            } },
+            label,
+            required && (React.createElement("span", { style: { color: 'var(--red)', marginLeft: '4px' } }, "*")))),
+        children && typeof children === 'object' && children.type
+            ? (() => {
+                const cloned = children;
+                return cloned.props ? (children) : (children);
+            })()
+            : children,
+        (hint || error) && (React.createElement("div", { style: {
+                fontSize: 'var(--type-caption)',
+                color: error ? 'var(--red)' : 'var(--text-muted)',
+                marginTop: '-4px',
+            } }, error || hint))));
 }
 FormField.displayName = 'FormField';
-Object.assign(__ds_scope, { FormField });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/FormField.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/FormValidation.jsx
@@ -7429,6 +7402,17 @@ Object.assign(__ds_scope, { ConnectionDot, FreshnessIndicator });
 
 // components/core/Gauge.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Gauge = Gauge;
 /**
  * Meridian Gauge — Circular progress indicator for metrics.
  * Shows value 0–100 as a circular arc with optional center label.
@@ -7436,87 +7420,59 @@ try { (() => {
  * @example
  * <Gauge value={75} label="CPU" color="var(--orange)" />
  */
-function Gauge({
-  value = 0,
-  max = 100,
-  label,
-  size = 120,
-  color = 'var(--accent)',
-  thickness = 8,
-  showValue = true,
-  className = '',
-  style = {}
-}) {
-  const percent = Math.min(Math.max(value / max, 0), 1);
-  const radius = (size - thickness) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - percent);
-  const cx = size / 2;
-  const cy = size / 2;
-  return /*#__PURE__*/React.createElement("div", {
-    className: className,
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 'var(--space-md)',
-      ...style
-    }
-  }, /*#__PURE__*/React.createElement("svg", {
-    width: size,
-    height: size,
-    viewBox: `0 0 ${size} ${size}`,
-    style: {
-      transform: 'rotate(-90deg)'
-    }
-  }, /*#__PURE__*/React.createElement("circle", {
-    cx: cx,
-    cy: cy,
-    r: radius,
-    fill: "none",
-    stroke: "var(--border)",
-    strokeWidth: thickness
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: cx,
-    cy: cy,
-    r: radius,
-    fill: "none",
-    stroke: color,
-    strokeWidth: thickness,
-    strokeDasharray: circumference,
-    strokeDashoffset: offset,
-    strokeLinecap: "round",
-    style: {
-      transition: 'stroke-dashoffset 300ms ease-out'
-    }
-  })), (label || showValue) && /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: 'center'
-    }
-  }, showValue && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 'var(--type-metric)',
-      fontWeight: 700,
-      color: 'var(--text-primary)',
-      fontFamily: 'var(--font-data)'
-    }
-  }, Math.round(value), "%"), label && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 'var(--type-label)',
-      color: 'var(--text-muted)',
-      fontWeight: 600,
-      textTransform: 'uppercase',
-      letterSpacing: 'var(--letter-spacing-label)'
-    }
-  }, label)));
+function Gauge({ value = 0, max = 100, label, size = 120, color = 'var(--accent)', thickness = 8, showValue = true, className = '', style = {}, }) {
+    const percent = Math.min(Math.max(value / max, 0), 1);
+    const radius = (size - thickness) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference * (1 - percent);
+    const cx = size / 2;
+    const cy = size / 2;
+    return (React.createElement("div", { className: className, style: {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 'var(--space-md)',
+            ...style
+        } },
+        React.createElement("svg", { width: size, height: size, viewBox: `0 0 ${size} ${size}`, style: { transform: 'rotate(-90deg)' } },
+            React.createElement("circle", { cx: cx, cy: cy, r: radius, fill: "none", stroke: "var(--border)", strokeWidth: thickness }),
+            React.createElement("circle", { cx: cx, cy: cy, r: radius, fill: "none", stroke: color, strokeWidth: thickness, strokeDasharray: circumference, strokeDashoffset: offset, strokeLinecap: "round", style: {
+                    transition: 'stroke-dashoffset 300ms ease-out',
+                } })),
+        (label || showValue) && (React.createElement("div", { style: { textAlign: 'center' } },
+            showValue && (React.createElement("div", { style: {
+                    fontSize: 'var(--type-metric)',
+                    fontWeight: 700,
+                    color: 'var(--text-primary)',
+                    fontFamily: 'var(--font-data)',
+                } },
+                Math.round(value),
+                "%")),
+            label && (React.createElement("div", { style: {
+                    fontSize: 'var(--type-label)',
+                    color: 'var(--text-muted)',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: 'var(--letter-spacing-label)',
+                } }, label))))));
 }
 Gauge.displayName = 'Gauge';
-Object.assign(__ds_scope, { Gauge });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/Gauge.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/Grid.jsx
 try { (() => {
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Grid = Grid;
 /**
  * Meridian Grid — CSS Grid wrapper for responsive layouts.
  * Automatically tracks light/dark theme via CSS vars.
@@ -7528,30 +7484,21 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
  *   <div>Item 3</div>
  * </Grid>
  */
-function Grid({
-  cols = 2,
-  rows = 'auto',
-  gap = 'md',
-  children,
-  className = '',
-  style = {},
-  ...rest
-}) {
-  const gapVar = gap && typeof gap === 'string' && gap.match(/^(xs|sm|md|lg|xl|2xl)$/) ? `var(--space-${gap})` : gap || '0';
-  const colsStr = cols ? `repeat(${cols}, 1fr)` : 'auto';
-  return /*#__PURE__*/React.createElement("div", _extends({
-    className: className,
-    style: {
-      display: 'grid',
-      gridTemplateColumns: colsStr,
-      gridTemplateRows: rows,
-      gap: gapVar,
-      ...style
-    }
-  }, rest), children);
+function Grid({ cols = 2, rows = 'auto', gap = 'md', children, className = '', style = {}, ...rest }) {
+    const gapVar = gap && typeof gap === 'string' && gap.match(/^(xs|sm|md|lg|xl|2xl)$/)
+        ? `var(--space-${gap})`
+        : gap || '0';
+    const colsStr = cols ? `repeat(${cols}, 1fr)` : 'auto';
+    return (React.createElement("div", { className: className, style: {
+            display: 'grid',
+            gridTemplateColumns: colsStr,
+            gridTemplateRows: rows,
+            gap: gapVar,
+            ...style
+        }, ...rest }, children));
 }
 Grid.displayName = 'Grid';
-Object.assign(__ds_scope, { Grid });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/Grid.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/Input.jsx
@@ -7610,15 +7557,35 @@ Object.assign(__ds_scope, { Input });
 
 // components/accounting/ReconciliationPanel.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReconciliationPanel = ReconciliationPanel;
 // Meridian reconciliation panel — two-sided statement vs. ledger comparison rendered as proper
 // multi-column data tables (Date · Reference · Memo · [Category] · Amount), with a shared toolbar
 // for status filtering + free-text search and click-to-sort column headers. Uses Core Input, Button, Checkbox primitives.
-
+const react_1 = __importDefault(require("react"));
+const AmountCell_1 = require("./AmountCell");
+const money_1 = require("./money");
+const Input_1 = require("../core/Input");
+const Button_1 = require("../core/Button");
+const Checkbox_1 = require("../core/Checkbox");
 let injected = false;
 function inject() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
-  const css = `
+    if (injected || typeof document === "undefined")
+        return;
+    injected = true;
+    const css = `
 .rec{border:1px solid var(--border,#D7DCE2);border-radius:var(--radius-card,2px);
   background:var(--bg-light,#fff);overflow:hidden;box-shadow:var(--shadow-card,none);}
 .rec__toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
@@ -7679,262 +7646,126 @@ function inject() {
 .rec__statusbox--out{background:var(--red-a10,rgba(186,63,85,.10));border-color:var(--red,#BA3F55);color:var(--red-dim,#8C2F40);}
 .rec__dot{height:6px;width:6px;border-radius:50%;background:currentColor;}
 `;
-  const el = document.createElement("style");
-  el.setAttribute("data-mds", "reconcile");
-  el.textContent = css;
-  document.head.appendChild(el);
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "reconcile");
+    el.textContent = css;
+    document.head.appendChild(el);
 }
 function compareItems(a, b, key) {
-  if (key === "amount") return (__ds_scope.toNumber(a.amount) || 0) - (__ds_scope.toNumber(b.amount) || 0);
-  if (key === "status") return (a.matched ? 1 : 0) - (b.matched ? 1 : 0);
-  const av = (a[key] ?? "").toString();
-  const bv = (b[key] ?? "").toString();
-  return av.localeCompare(bv, undefined, {
-    numeric: true
-  });
+    if (key === "amount")
+        return ((0, money_1.toNumber)(a.amount) || 0) - ((0, money_1.toNumber)(b.amount) || 0);
+    if (key === "status")
+        return (a.matched ? 1 : 0) - (b.matched ? 1 : 0);
+    const av = (a[key] ?? "").toString();
+    const bv = (b[key] ?? "").toString();
+    return av.localeCompare(bv, undefined, { numeric: true });
 }
-function SortHead({
-  col,
-  sort,
-  onSort
-}) {
-  const active = sort.key === col.key;
-  return /*#__PURE__*/React.createElement("th", {
-    className: `${col.num ? "num" : ""} ${active ? "is-sorted" : ""}`.trim(),
-    tabIndex: 0,
-    onClick: () => onSort(col.key),
-    onKeyDown: e => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        onSort(col.key);
-      }
-    },
-    "aria-sort": active ? sort.dir > 0 ? "ascending" : "descending" : "none",
-    scope: "col"
-  }, col.label, active && /*#__PURE__*/React.createElement("span", {
-    className: `rec__caret rec__caret--${sort.dir > 0 ? "asc" : "desc"}`,
-    "aria-hidden": "true"
-  }));
+function SortHead({ col, sort, onSort }) {
+    const active = sort.key === col.key;
+    return (react_1.default.createElement("th", { className: `${col.num ? "num" : ""} ${active ? "is-sorted" : ""}`.trim(), tabIndex: 0, onClick: () => onSort(col.key), onKeyDown: (e) => { if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSort(col.key);
+        } }, "aria-sort": active ? (sort.dir > 0 ? "ascending" : "descending") : "none", scope: "col" },
+        col.label,
+        active && react_1.default.createElement("span", { className: `rec__caret rec__caret--${sort.dir > 0 ? "asc" : "desc"}`, "aria-hidden": "true" })));
 }
-function Side({
-  side,
-  columns,
-  currency,
-  status,
-  query,
-  sort,
-  onSort
-}) {
-  const items = side.items || [];
-  const matched = items.filter(i => i.matched).length;
-  const open = items.length - matched;
-  let rows = items;
-  if (status === "matched") rows = rows.filter(i => i.matched);else if (status === "open") rows = rows.filter(i => !i.matched);
-  const q = query.trim().toLowerCase();
-  if (q) {
-    rows = rows.filter(i => columns.some(c => (i[c.key] ?? "").toString().toLowerCase().includes(q)));
-  }
-  if (sort.key) {
-    rows = [...rows].sort((a, b) => sort.dir * compareItems(a, b, sort.key));
-  }
-  return /*#__PURE__*/React.createElement("div", {
-    className: "rec__side"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "rec__head"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "rec__title"
-  }, side.title), /*#__PURE__*/React.createElement("span", {
-    className: "rec__counts"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "rec__chip rec__chip--ok"
-  }, matched, " matched"), open > 0 && /*#__PURE__*/React.createElement("span", {
-    className: "rec__chip rec__chip--open"
-  }, open, " open"))), /*#__PURE__*/React.createElement("div", {
-    className: "rec__tablewrap"
-  }, /*#__PURE__*/React.createElement("table", {
-    className: "rec__table"
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
-    style: {
-      width: 28,
-      textAlign: "center"
+function Side({ side, columns, currency, status, query, sort, onSort }) {
+    const items = side.items || [];
+    const matched = items.filter((i) => i.matched).length;
+    const open = items.length - matched;
+    let rows = items;
+    if (status === "matched")
+        rows = rows.filter((i) => i.matched);
+    else if (status === "open")
+        rows = rows.filter((i) => !i.matched);
+    const q = query.trim().toLowerCase();
+    if (q) {
+        rows = rows.filter((i) => columns.some((c) => (i[c.key] ?? "").toString().toLowerCase().includes(q)));
     }
-  }, /*#__PURE__*/React.createElement(__ds_scope.Checkbox, {
-    checked: rows.every(i => i.matched),
-    onChange: e => onToggleAll && onToggleAll(side, e.target.checked)
-  })), columns.map(c => /*#__PURE__*/React.createElement(SortHead, {
-    key: c.key,
-    col: c,
-    sort: sort,
-    onSort: onSort
-  })))), /*#__PURE__*/React.createElement("tbody", null, rows.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    className: "rec__empty",
-    colSpan: columns.length + 1
-  }, "No matching items")), rows.map((it, i) => /*#__PURE__*/React.createElement("tr", {
-    key: it.id ?? i,
-    className: it.matched ? "matched" : "open"
-  }, /*#__PURE__*/React.createElement("td", {
-    style: {
-      textAlign: "center",
-      paddingLeft: 6,
-      paddingRight: 6
+    if (sort.key) {
+        rows = [...rows].sort((a, b) => sort.dir * compareItems(a, b, sort.key));
     }
-  }, /*#__PURE__*/React.createElement(__ds_scope.Checkbox, {
-    checked: it.matched || false,
-    onChange: e => onToggleItem && onToggleItem(it.id, e.target.checked)
-  })), columns.map(c => c.amount ? /*#__PURE__*/React.createElement("td", {
-    key: c.key,
-    className: "num"
-  }, /*#__PURE__*/React.createElement(__ds_scope.AmountCell, {
-    value: it.amount,
-    currency: currency,
-    parens: true
-  })) : /*#__PURE__*/React.createElement("td", {
-    key: c.key,
-    className: `${c.mono ? "mono" : ""} ${c.key === "memo" ? "memo" : ""}`.trim()
-  }, it[c.key] ?? ""))))))));
+    return (react_1.default.createElement("div", { className: "rec__side" },
+        react_1.default.createElement("div", { className: "rec__head" },
+            react_1.default.createElement("span", { className: "rec__title" }, side.title),
+            react_1.default.createElement("span", { className: "rec__counts" },
+                react_1.default.createElement("span", { className: "rec__chip rec__chip--ok" },
+                    matched,
+                    " matched"),
+                open > 0 && react_1.default.createElement("span", { className: "rec__chip rec__chip--open" },
+                    open,
+                    " open"))),
+        react_1.default.createElement("div", { className: "rec__tablewrap" },
+            react_1.default.createElement("table", { className: "rec__table" },
+                react_1.default.createElement("thead", null,
+                    react_1.default.createElement("tr", null,
+                        react_1.default.createElement("th", { style: { width: 28, textAlign: "center" } },
+                            react_1.default.createElement(Checkbox_1.Checkbox, { checked: rows.every(i => i.matched), onChange: (e) => onToggleAll && onToggleAll(side, e.target.checked) })),
+                        columns.map((c) => react_1.default.createElement(SortHead, { key: c.key, col: c, sort: sort, onSort: onSort })))),
+                react_1.default.createElement("tbody", null,
+                    rows.length === 0 && (react_1.default.createElement("tr", null,
+                        react_1.default.createElement("td", { className: "rec__empty", colSpan: columns.length + 1 }, "No matching items"))),
+                    rows.map((it, i) => (react_1.default.createElement("tr", { key: it.id ?? i, className: it.matched ? "matched" : "open" },
+                        react_1.default.createElement("td", { style: { textAlign: "center", paddingLeft: 6, paddingRight: 6 } },
+                            react_1.default.createElement(Checkbox_1.Checkbox, { checked: it.matched || false, onChange: (e) => onToggleItem && onToggleItem(it.id, e.target.checked) })),
+                        columns.map((c) => c.amount ? (react_1.default.createElement("td", { key: c.key, className: "num" },
+                            react_1.default.createElement(AmountCell_1.AmountCell, { value: it.amount, currency: currency, parens: true }))) : (react_1.default.createElement("td", { key: c.key, className: `${c.mono ? "mono" : ""} ${c.key === "memo" ? "memo" : ""}`.trim() }, it[c.key] ?? "")))))))))));
 }
-const STATUS_TABS = [{
-  key: "all",
-  label: "All"
-}, {
-  key: "matched",
-  label: "Matched"
-}, {
-  key: "open",
-  label: "Open"
-}];
-function ReconciliationPanel({
-  left,
-  right,
-  columns,
-  currency = "USD",
-  statementBalance,
-  bookBalance,
-  tolerance = 0.005,
-  searchable = true,
-  filterable = true,
-  onToggleItem,
-  onToggleAll
-}) {
-  inject();
-  const [status, setStatus] = React.useState("all");
-  const [query, setQuery] = React.useState("");
-  const [sort, setSort] = React.useState({
-    key: null,
-    dir: 1
-  });
-  const onSort = key => setSort(s => s.key !== key ? {
-    key,
-    dir: 1
-  } : s.dir > 0 ? {
-    key,
-    dir: -1
-  } : {
-    key: null,
-    dir: 1
-  });
-
-  // Resolve columns: explicit prop, else default set + Category only if present in the data.
-  const allItems = [...(left.items || []), ...(right.items || [])];
-  const hasCategory = allItems.some(i => i.category != null && i.category !== "");
-  const cols = columns || [{
-    key: "date",
-    label: "Date",
-    mono: true
-  }, {
-    key: "ref",
-    label: "Reference",
-    mono: true
-  }, {
-    key: "memo",
-    label: "Memo"
-  }, ...(hasCategory ? [{
-    key: "category",
-    label: "Category"
-  }] : []), {
-    key: "amount",
-    label: "Amount",
-    num: true,
-    amount: true
-  }];
-  const sb = statementBalance != null ? __ds_scope.toNumber(statementBalance) : (left.items || []).reduce((a, i) => a + (__ds_scope.toNumber(i.amount) || 0), 0);
-  const bb = bookBalance != null ? __ds_scope.toNumber(bookBalance) : (right.items || []).reduce((a, i) => a + (__ds_scope.toNumber(i.amount) || 0), 0);
-  const diff = sb - bb;
-  const balanced = Math.abs(diff) <= tolerance;
-  return /*#__PURE__*/React.createElement("div", {
-    className: "rec",
-    role: "group",
-    "aria-label": "Reconciliation"
-  }, (filterable || searchable) && /*#__PURE__*/React.createElement("div", {
-    className: "rec__toolbar"
-  }, filterable ? /*#__PURE__*/React.createElement("div", {
-    className: "rec__seg",
-    role: "group",
-    "aria-label": "Filter by status"
-  }, STATUS_TABS.map(t => /*#__PURE__*/React.createElement("button", {
-    key: t.key,
-    type: "button",
-    "aria-pressed": status === t.key,
-    onClick: () => setStatus(t.key)
-  }, t.label))) : /*#__PURE__*/React.createElement("span", null), searchable && /*#__PURE__*/React.createElement("div", {
-    className: "rec__searchwrap"
-  }, /*#__PURE__*/React.createElement(__ds_scope.Input, {
-    placeholder: "Filter memo, ref\u2026",
-    value: query,
-    onChange: e => setQuery(e.target.value)
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "rec__cols"
-  }, /*#__PURE__*/React.createElement(Side, {
-    side: left,
-    columns: cols,
-    currency: currency,
-    status: status,
-    query: query,
-    sort: sort,
-    onSort: onSort
-  }), /*#__PURE__*/React.createElement(Side, {
-    side: right,
-    columns: cols,
-    currency: currency,
-    status: status,
-    query: query,
-    sort: sort,
-    onSort: onSort
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "rec__summary"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "rec__sumcell"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "rec__sumlabel"
-  }, left.title, " balance"), /*#__PURE__*/React.createElement(__ds_scope.AmountCell, {
-    value: sb,
-    currency: currency,
-    parens: true,
-    strong: true
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "rec__sumcell"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "rec__sumlabel"
-  }, right.title, " balance"), /*#__PURE__*/React.createElement(__ds_scope.AmountCell, {
-    value: bb,
-    currency: currency,
-    parens: true,
-    strong: true
-  })), /*#__PURE__*/React.createElement("div", {
-    className: `rec__statusbox ${balanced ? "rec__statusbox--bal" : "rec__statusbox--out"}`
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "rec__dot",
-    "aria-hidden": "true"
-  }), balanced ? "Reconciled" : /*#__PURE__*/React.createElement(React.Fragment, null, "Out by ", /*#__PURE__*/React.createElement(__ds_scope.AmountCell, {
-    value: Math.abs(diff),
-    currency: currency,
-    strong: true,
-    style: {
-      color: "inherit"
-    }
-  })))));
+const STATUS_TABS = [
+    { key: "all", label: "All" },
+    { key: "matched", label: "Matched" },
+    { key: "open", label: "Open" },
+];
+function ReconciliationPanel({ left, right, columns, currency = "USD", statementBalance, bookBalance, tolerance = 0.005, searchable = true, filterable = true, onToggleItem, onToggleAll, }) {
+    inject();
+    const [status, setStatus] = react_1.default.useState("all");
+    const [query, setQuery] = react_1.default.useState("");
+    const [sort, setSort] = react_1.default.useState({ key: null, dir: 1 });
+    const onSort = (key) => setSort((s) => s.key !== key ? { key, dir: 1 } : s.dir > 0 ? { key, dir: -1 } : { key: null, dir: 1 });
+    // Resolve columns: explicit prop, else default set + Category only if present in the data.
+    const allItems = [...(left.items || []), ...(right.items || [])];
+    const hasCategory = allItems.some((i) => i.category != null && i.category !== "");
+    const cols = columns || [
+        { key: "date", label: "Date", mono: true },
+        { key: "ref", label: "Reference", mono: true },
+        { key: "memo", label: "Memo" },
+        ...(hasCategory ? [{ key: "category", label: "Category" }] : []),
+        { key: "amount", label: "Amount", num: true, amount: true },
+    ];
+    const sb = statementBalance != null ? (0, money_1.toNumber)(statementBalance)
+        : (left.items || []).reduce((a, i) => a + ((0, money_1.toNumber)(i.amount) || 0), 0);
+    const bb = bookBalance != null ? (0, money_1.toNumber)(bookBalance)
+        : (right.items || []).reduce((a, i) => a + ((0, money_1.toNumber)(i.amount) || 0), 0);
+    const diff = sb - bb;
+    const balanced = Math.abs(diff) <= tolerance;
+    return (react_1.default.createElement("div", { className: "rec", role: "group", "aria-label": "Reconciliation" },
+        (filterable || searchable) && (react_1.default.createElement("div", { className: "rec__toolbar" },
+            filterable ? (react_1.default.createElement("div", { className: "rec__seg", role: "group", "aria-label": "Filter by status" }, STATUS_TABS.map((t) => (react_1.default.createElement("button", { key: t.key, type: "button", "aria-pressed": status === t.key, onClick: () => setStatus(t.key) }, t.label))))) : react_1.default.createElement("span", null),
+            searchable && (react_1.default.createElement("div", { className: "rec__searchwrap" },
+                react_1.default.createElement(Input_1.Input, { placeholder: "Filter memo, ref\u2026", value: query, onChange: (e) => setQuery(e.target.value) }))))),
+        react_1.default.createElement("div", { className: "rec__cols" },
+            react_1.default.createElement(Side, { side: left, columns: cols, currency: currency, status: status, query: query, sort: sort, onSort: onSort }),
+            react_1.default.createElement(Side, { side: right, columns: cols, currency: currency, status: status, query: query, sort: sort, onSort: onSort })),
+        react_1.default.createElement("div", { className: "rec__summary" },
+            react_1.default.createElement("div", { className: "rec__sumcell" },
+                react_1.default.createElement("span", { className: "rec__sumlabel" },
+                    left.title,
+                    " balance"),
+                react_1.default.createElement(AmountCell_1.AmountCell, { value: sb, currency: currency, parens: true, strong: true })),
+            react_1.default.createElement("div", { className: "rec__sumcell" },
+                react_1.default.createElement("span", { className: "rec__sumlabel" },
+                    right.title,
+                    " balance"),
+                react_1.default.createElement(AmountCell_1.AmountCell, { value: bb, currency: currency, parens: true, strong: true })),
+            react_1.default.createElement("div", { className: `rec__statusbox ${balanced ? "rec__statusbox--bal" : "rec__statusbox--out"}` },
+                react_1.default.createElement("span", { className: "rec__dot", "aria-hidden": "true" }),
+                balanced
+                    ? "Reconciled"
+                    : react_1.default.createElement(react_1.default.Fragment, null,
+                        "Out by ",
+                        react_1.default.createElement(AmountCell_1.AmountCell, { value: Math.abs(diff), currency: currency, strong: true, style: { color: "inherit" } }))))));
 }
-Object.assign(__ds_scope, { ReconciliationPanel });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/accounting/ReconciliationPanel.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/InstrumentChip.jsx
@@ -8321,6 +8152,17 @@ Object.assign(__ds_scope, { HotkeysProvider });
 
 // components/core/LinearGauge.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LinearGauge = LinearGauge;
 /**
  * Meridian LinearGauge — Horizontal progress indicator (like ProgressBar but with label).
  * Shows value 0–100 as a filled bar with optional label and value display.
@@ -8328,70 +8170,55 @@ try { (() => {
  * @example
  * <LinearGauge value={65} label="Memory" />
  */
-function LinearGauge({
-  value = 0,
-  max = 100,
-  label,
-  showValue = true,
-  color = 'var(--accent)',
-  height = 8,
-  className = '',
-  style = {}
-}) {
-  const percent = Math.min(Math.max(value / max, 0), 1) * 100;
-  return /*#__PURE__*/React.createElement("div", {
-    className: className,
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 'var(--space-sm)',
-      ...style
-    }
-  }, (label || showValue) && /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'baseline'
-    }
-  }, label && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 'var(--type-label)',
-      fontWeight: 600,
-      color: 'var(--text-muted)',
-      textTransform: 'uppercase',
-      letterSpacing: 'var(--letter-spacing-label)'
-    }
-  }, label), showValue && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 'var(--type-data-value)',
-      fontWeight: 600,
-      color: 'var(--text-primary)',
-      fontFamily: 'var(--font-data)'
-    }
-  }, Math.round(percent), "%")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'relative',
-      width: '100%',
-      height,
-      backgroundColor: 'var(--border)',
-      borderRadius: 'var(--radius-card)',
-      overflow: 'hidden'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      height: '100%',
-      width: `${percent}%`,
-      backgroundColor: color,
-      borderRadius: 'var(--radius-card)',
-      transition: 'width 300ms ease-out'
-    }
-  })));
+function LinearGauge({ value = 0, max = 100, label, showValue = true, color = 'var(--accent)', height = 8, className = '', style = {}, }) {
+    const percent = Math.min(Math.max(value / max, 0), 1) * 100;
+    return (React.createElement("div", { className: className, style: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-sm)',
+            ...style
+        } },
+        (label || showValue) && (React.createElement("div", { style: {
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'baseline',
+            } },
+            label && (React.createElement("div", { style: {
+                    fontSize: 'var(--type-label)',
+                    fontWeight: 600,
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: 'var(--letter-spacing-label)',
+                } }, label)),
+            showValue && (React.createElement("div", { style: {
+                    fontSize: 'var(--type-data-value)',
+                    fontWeight: 600,
+                    color: 'var(--text-primary)',
+                    fontFamily: 'var(--font-data)',
+                } },
+                Math.round(percent),
+                "%")))),
+        React.createElement("div", { style: {
+                position: 'relative',
+                width: '100%',
+                height,
+                backgroundColor: 'var(--border)',
+                borderRadius: 'var(--radius-card)',
+                overflow: 'hidden',
+            } },
+            React.createElement("div", { style: {
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    height: '100%',
+                    width: `${percent}%`,
+                    backgroundColor: color,
+                    borderRadius: 'var(--radius-card)',
+                    transition: 'width 300ms ease-out',
+                } }))));
 }
 LinearGauge.displayName = 'LinearGauge';
-Object.assign(__ds_scope, { LinearGauge });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/LinearGauge.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/MultiSelect.jsx
@@ -8660,20 +8487,30 @@ Object.assign(__ds_scope, { PanelSurface });
 
 // components/core/Popover.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Popover = Popover;
 // Meridian Popover — lightweight floating panel anchored to an element.
 // For tooltips, dropdowns, and contextual menus without the full weight of ContextMenu.
-
-const {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState
-} = React;
+const react_1 = __importDefault(require("react"));
+const { useEffect, useLayoutEffect, useRef, useState } = react_1.default;
 let injected = false;
 function inject() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
-  const css = `
+    if (injected || typeof document === "undefined")
+        return;
+    injected = true;
+    const css = `
 .mds-popover-root { position: fixed; z-index: 1001; pointer-events: none; }
 .mds-popover-wrap {
   background: var(--bg-light, #FAFBFC); border: 1px solid var(--border, #D7DCE2);
@@ -8689,110 +8526,94 @@ function inject() {
 }
 .mds-popover-overlay { position: fixed; inset: 0; z-index: 1000; }
 `;
-  const el = document.createElement("style");
-  el.setAttribute("data-mds", "popover");
-  el.textContent = css;
-  document.head.appendChild(el);
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "popover");
+    el.textContent = css;
+    document.head.appendChild(el);
 }
-function Popover({
-  open = false,
-  onClose = () => {},
-  anchorEl,
-  position = "bottom",
-  offset = 8,
-  children,
-  closeOnBackdrop = true,
-  closeOnEsc = true
-}) {
-  inject();
-  const rootRef = useRef(null);
-  const [style, setStyle] = useState({});
-
-  // useLayoutEffect: measure + position synchronously before paint, so the popover
-  // never flashes at (0,0) on open before the position effect fires.
-  useLayoutEffect(() => {
-    if (!open || !anchorEl || !rootRef.current) return;
-    const updatePosition = () => {
-      const anchorRect = anchorEl.getBoundingClientRect();
-      const popoverRect = rootRef.current.getBoundingClientRect();
-      let top = 0,
-        left = 0;
-      switch (position) {
-        case "top":
-          top = anchorRect.top - popoverRect.height - offset;
-          left = anchorRect.left + anchorRect.width / 2 - popoverRect.width / 2;
-          break;
-        case "bottom":
-          top = anchorRect.bottom + offset;
-          left = anchorRect.left + anchorRect.width / 2 - popoverRect.width / 2;
-          break;
-        case "left":
-          top = anchorRect.top + anchorRect.height / 2 - popoverRect.height / 2;
-          left = anchorRect.left - popoverRect.width - offset;
-          break;
-        case "right":
-          top = anchorRect.top + anchorRect.height / 2 - popoverRect.height / 2;
-          left = anchorRect.right + offset;
-          break;
-        default:
-          break;
-      }
-
-      // Clamp to viewport
-      const margin = 8;
-      if (left < margin) left = margin;
-      if (left + popoverRect.width > window.innerWidth - margin) {
-        left = window.innerWidth - popoverRect.width - margin;
-      }
-      if (top < margin) top = margin;
-      if (top + popoverRect.height > window.innerHeight - margin) {
-        top = window.innerHeight - popoverRect.height - margin;
-      }
-      setStyle({
-        top: `${top}px`,
-        left: `${left}px`
-      });
-    };
-    updatePosition();
-    window.addEventListener("scroll", updatePosition, true);
-    window.addEventListener("resize", updatePosition);
-    return () => {
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, [open, anchorEl, position, offset]);
-  useEffect(() => {
-    if (!open) return;
-    const handleEsc = e => {
-      if (closeOnEsc && e.key === "Escape") {
-        onClose();
-      }
-    };
-    const handleClick = e => {
-      if (closeOnBackdrop && !rootRef.current?.contains(e.target)) {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleEsc);
-    document.addEventListener("click", handleClick);
-    return () => {
-      document.removeEventListener("keydown", handleEsc);
-      document.removeEventListener("click", handleClick);
-    };
-  }, [open, closeOnBackdrop, closeOnEsc, onClose]);
-  if (!open) return null;
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "mds-popover-overlay",
-    onClick: closeOnBackdrop ? onClose : undefined
-  }), /*#__PURE__*/React.createElement("div", {
-    ref: rootRef,
-    className: "mds-popover-root",
-    style: style
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mds-popover-wrap"
-  }, children)));
+function Popover({ open = false, onClose = () => { }, anchorEl, position = "bottom", offset = 8, children, closeOnBackdrop = true, closeOnEsc = true, }) {
+    inject();
+    const rootRef = useRef(null);
+    const [style, setStyle] = useState({});
+    // useLayoutEffect: measure + position synchronously before paint, so the popover
+    // never flashes at (0,0) on open before the position effect fires.
+    useLayoutEffect(() => {
+        if (!open || !anchorEl || !rootRef.current)
+            return;
+        const updatePosition = () => {
+            const anchorRect = anchorEl.getBoundingClientRect();
+            const popoverRect = rootRef.current.getBoundingClientRect();
+            let top = 0, left = 0;
+            switch (position) {
+                case "top":
+                    top = anchorRect.top - popoverRect.height - offset;
+                    left = anchorRect.left + anchorRect.width / 2 - popoverRect.width / 2;
+                    break;
+                case "bottom":
+                    top = anchorRect.bottom + offset;
+                    left = anchorRect.left + anchorRect.width / 2 - popoverRect.width / 2;
+                    break;
+                case "left":
+                    top = anchorRect.top + anchorRect.height / 2 - popoverRect.height / 2;
+                    left = anchorRect.left - popoverRect.width - offset;
+                    break;
+                case "right":
+                    top = anchorRect.top + anchorRect.height / 2 - popoverRect.height / 2;
+                    left = anchorRect.right + offset;
+                    break;
+                default:
+                    break;
+            }
+            // Clamp to viewport
+            const margin = 8;
+            if (left < margin)
+                left = margin;
+            if (left + popoverRect.width > window.innerWidth - margin) {
+                left = window.innerWidth - popoverRect.width - margin;
+            }
+            if (top < margin)
+                top = margin;
+            if (top + popoverRect.height > window.innerHeight - margin) {
+                top = window.innerHeight - popoverRect.height - margin;
+            }
+            setStyle({ top: `${top}px`, left: `${left}px` });
+        };
+        updatePosition();
+        window.addEventListener("scroll", updatePosition, true);
+        window.addEventListener("resize", updatePosition);
+        return () => {
+            window.removeEventListener("scroll", updatePosition, true);
+            window.removeEventListener("resize", updatePosition);
+        };
+    }, [open, anchorEl, position, offset]);
+    useEffect(() => {
+        if (!open)
+            return;
+        const handleEsc = (e) => {
+            if (closeOnEsc && e.key === "Escape") {
+                onClose();
+            }
+        };
+        const handleClick = (e) => {
+            if (closeOnBackdrop && !rootRef.current?.contains(e.target)) {
+                onClose();
+            }
+        };
+        document.addEventListener("keydown", handleEsc);
+        document.addEventListener("click", handleClick);
+        return () => {
+            document.removeEventListener("keydown", handleEsc);
+            document.removeEventListener("click", handleClick);
+        };
+    }, [open, closeOnBackdrop, closeOnEsc, onClose]);
+    if (!open)
+        return null;
+    return (react_1.default.createElement(react_1.default.Fragment, null,
+        react_1.default.createElement("div", { className: "mds-popover-overlay", onClick: closeOnBackdrop ? onClose : undefined }),
+        react_1.default.createElement("div", { ref: rootRef, className: "mds-popover-root", style: style },
+            react_1.default.createElement("div", { className: "mds-popover-wrap" }, children))));
 }
-Object.assign(__ds_scope, { Popover });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/Popover.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/ProgressBar.jsx
@@ -9663,7 +9484,17 @@ Object.assign(__ds_scope, { SplitPane });
 
 // components/core/Stack.jsx
 try { (() => {
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Stack = Stack;
 /**
  * Meridian Stack — Semantic directional flex wrapper.
  * Preferred over Flex when direction is the primary concern.
@@ -9675,95 +9506,69 @@ function _extends() { return _extends = Object.assign ? Object.assign.bind() : f
  *   <div>Bottom</div>
  * </Stack>
  */
-function Stack({
-  direction = 'vertical',
-  spacing = 'md',
-  align = 'stretch',
-  justify = 'flex-start',
-  children,
-  className = '',
-  style = {},
-  ...rest
-}) {
-  const isVertical = direction === 'vertical' || direction === 'column';
-  const spacingVar = spacing && typeof spacing === 'string' && spacing.match(/^(xs|sm|md|lg|xl|2xl)$/) ? `var(--space-${spacing})` : spacing || '0';
-  return /*#__PURE__*/React.createElement("div", _extends({
-    className: className,
-    style: {
-      display: 'flex',
-      flexDirection: isVertical ? 'column' : 'row',
-      gap: spacingVar,
-      alignItems: align,
-      justifyContent: justify,
-      ...style
-    }
-  }, rest), children);
+function Stack({ direction = 'vertical', spacing = 'md', align = 'stretch', justify = 'flex-start', children, className = '', style = {}, ...rest }) {
+    const isVertical = direction === 'vertical' || direction === 'column';
+    const spacingVar = spacing && typeof spacing === 'string' && spacing.match(/^(xs|sm|md|lg|xl|2xl)$/)
+        ? `var(--space-${spacing})`
+        : spacing || '0';
+    return (React.createElement("div", { className: className, style: {
+            display: 'flex',
+            flexDirection: isVertical ? 'column' : 'row',
+            gap: spacingVar,
+            alignItems: align,
+            justifyContent: justify,
+            ...style
+        }, ...rest }, children));
 }
 Stack.displayName = 'Stack';
-Object.assign(__ds_scope, { Stack });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/Stack.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/StatusBanner.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StatusBanner = StatusBanner;
 // Meridian status banner — light institutional notice. Alpha-10 fill, solid semantic
 // left-accent border, dim semantic title. For run results, data health, session notices.
-
-function StatusBanner({
-  tone = "success",
-  title,
-  detail
-}) {
-  const c = {
-    success: {
-      bg: "var(--green-a10, rgba(22,136,95,.10))",
-      bd: "var(--green, #16885F)",
-      fg: "var(--green-dim, #10663F)"
-    },
-    warning: {
-      bg: "var(--orange-a10, rgba(183,121,31,.10))",
-      bd: "var(--orange, #8A520E)",
-      fg: "var(--orange-dim, #683E0B)"
-    },
-    danger: {
-      bg: "var(--red-a10, rgba(186,63,85,.10))",
-      bd: "var(--red, #BA3F55)",
-      fg: "var(--red-dim, #8C2F40)"
-    },
-    info: {
-      bg: "var(--blue-a10, rgba(47,111,143,.10))",
-      bd: "var(--accent, #2F6F8F)",
-      fg: "var(--accent, #2F6F8F)"
-    }
-  }[tone];
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 10,
-      alignItems: "baseline",
-      padding: "11px 14px",
-      borderRadius: "var(--radius-button,2px)",
-      border: "1px solid var(--border, #D7DCE2)",
-      borderLeft: `4px solid ${c.bd}`,
-      background: c.bg,
-      fontFamily: "var(--font-body)",
-      fontSize: 13
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontWeight: 600,
-      color: c.fg
-    }
-  }, title), detail && /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: "var(--text-secondary, #4D5967)",
-      marginTop: 2,
-      fontFamily: "var(--font-data)",
-      fontVariantNumeric: "tabular-nums"
-    }
-  }, detail)));
+const react_1 = __importDefault(require("react"));
+function StatusBanner({ tone = "info", title, detail }) {
+    const c = {
+        success: { bg: "var(--green-a10, rgba(22,136,95,.10))", bd: "var(--green, #16885F)", fg: "var(--green-dim, #10663F)" },
+        warning: { bg: "var(--orange-a10, rgba(183,121,31,.10))", bd: "var(--orange, #8A520E)", fg: "var(--orange-dim, #683E0B)" },
+        danger: { bg: "var(--red-a10, rgba(186,63,85,.10))", bd: "var(--red, #BA3F55)", fg: "var(--red-dim, #8C2F40)" },
+        info: {
+            bg: "var(--severity-info-bg, var(--bg-medium, #F5F7FA))",
+            bd: "var(--severity-info-bd, var(--border-strong, #AAB4BF))",
+            fg: "var(--severity-info-fg, var(--text-secondary, #4D5967))"
+        },
+    }[tone];
+    return (react_1.default.createElement("div", { style: {
+            display: "flex", gap: 10, alignItems: "baseline", padding: "11px 14px",
+            borderRadius: "var(--radius-button,2px)",
+            border: "1px solid var(--border, #D7DCE2)",
+            borderLeft: `4px solid ${c.bd}`, background: c.bg,
+            fontFamily: "var(--font-body)", fontSize: 13
+        } },
+        react_1.default.createElement("div", null,
+            react_1.default.createElement("div", { style: { fontWeight: 600, color: c.fg } }, title),
+            detail && react_1.default.createElement("div", { style: {
+                    fontSize: 12, color: "var(--text-secondary, #4D5967)", marginTop: 2,
+                    fontFamily: "var(--font-body)"
+                } }, detail))));
 }
-Object.assign(__ds_scope, { StatusBanner });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/StatusBanner.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/Stepper.jsx
@@ -11031,19 +10836,35 @@ Object.assign(__ds_scope, { useOverlayFocus });
 
 // components/core/Dialog.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Dialog = Dialog;
+exports.DialogHeader = DialogHeader;
+exports.DialogBody = DialogBody;
+exports.DialogFooter = DialogFooter;
 // Meridian Dialog — accessible modal dialog with focus trapping and ESC key handling.
 // Use for confirmations, alerts, and blocking user interactions.
 // Compound: Dialog + DialogHeader + DialogBody + DialogFooter.
-
-const {
-  useEffect,
-  useRef
-} = React;
+const react_1 = __importDefault(require("react"));
+const useOverlayFocus_1 = require("./useOverlayFocus");
+const { useEffect, useRef } = react_1.default;
 let injected = false;
 function inject() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
-  const css = `
+    if (injected || typeof document === "undefined")
+        return;
+    injected = true;
+    const css = `
 .mds-dialog-overlay {
   position: fixed; inset: 0; background: var(--scrim, rgba(14,17,19,.5));
   z-index: 1000; display: flex; align-items: center; justify-content: center;
@@ -11095,103 +10916,77 @@ function inject() {
   background: var(--bg-medium, #F5F7FA); flex-wrap: wrap;
 }
 `;
-  const el = document.createElement("style");
-  el.setAttribute("data-mds", "dialog");
-  el.textContent = css;
-  document.head.appendChild(el);
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "dialog");
+    el.textContent = css;
+    document.head.appendChild(el);
 }
-function Dialog({
-  open = false,
-  onClose = () => {},
-  title,
-  children,
-  showClose = true,
-  maxWidth = "520px",
-  closeOnEsc = true
-}) {
-  inject();
-  const ref = useRef(null);
-  // Shared overlay focus contract: initial focus, Tab trap at boundaries, restore on close.
-  __ds_scope.useOverlayFocus(ref, open, ".mds-dialog-wrap");
-  useEffect(() => {
-    if (!open) return;
-    const handleEsc = e => {
-      if (closeOnEsc && e.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
-  }, [open, closeOnEsc, onClose]);
-  if (!open) return null;
-  return /*#__PURE__*/React.createElement("div", {
-    ref: ref,
-    className: "mds-dialog-overlay",
-    onClick: onClose,
-    role: "presentation"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mds-dialog-wrap",
-    style: {
-      maxWidth
-    },
-    onClick: e => e.stopPropagation(),
-    role: "dialog",
-    "aria-modal": "true",
-    "aria-labelledby": title ? "mds-dialog-title" : undefined
-  }, title && /*#__PURE__*/React.createElement(DialogHeader, {
-    title: title,
-    onClose: showClose ? onClose : undefined,
-    showClose: showClose
-  }), children));
+function Dialog({ open = false, onClose = () => { }, title, children, showClose = true, maxWidth = "520px", closeOnEsc = true, }) {
+    inject();
+    const ref = useRef(null);
+    // Shared overlay focus contract: initial focus, Tab trap at boundaries, restore on close.
+    (0, useOverlayFocus_1.useOverlayFocus)(ref, open, ".mds-dialog-wrap");
+    useEffect(() => {
+        if (!open)
+            return;
+        const handleEsc = (e) => {
+            if (closeOnEsc && e.key === "Escape") {
+                onClose();
+            }
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => document.removeEventListener("keydown", handleEsc);
+    }, [open, closeOnEsc, onClose]);
+    if (!open)
+        return null;
+    return (react_1.default.createElement("div", { ref: ref, className: "mds-dialog-overlay", onClick: onClose, role: "presentation" },
+        react_1.default.createElement("div", { className: "mds-dialog-wrap", style: { maxWidth }, onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": title ? "mds-dialog-title" : undefined },
+            title && (react_1.default.createElement(DialogHeader, { title: title, onClose: showClose ? onClose : undefined, showClose: showClose })),
+            children)));
 }
-function DialogHeader({
-  title,
-  onClose,
-  showClose = true
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "mds-dialog-hd"
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "mds-dialog-title",
-    id: "mds-dialog-title"
-  }, title), showClose && /*#__PURE__*/React.createElement("button", {
-    className: "mds-dialog-close",
-    onClick: onClose,
-    "aria-label": "Close dialog",
-    type: "button"
-  }, "\u2715"));
+function DialogHeader({ title, onClose, showClose = true }) {
+    return (react_1.default.createElement("div", { className: "mds-dialog-hd" },
+        react_1.default.createElement("h2", { className: "mds-dialog-title", id: "mds-dialog-title" }, title),
+        showClose && (react_1.default.createElement("button", { className: "mds-dialog-close", onClick: onClose, "aria-label": "Close dialog", type: "button" }, "\u2715"))));
 }
-function DialogBody({
-  children
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "mds-dialog-bd"
-  }, children);
+function DialogBody({ children }) {
+    return react_1.default.createElement("div", { className: "mds-dialog-bd" }, children);
 }
-function DialogFooter({
-  children
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "mds-dialog-ft"
-  }, children);
+function DialogFooter({ children }) {
+    return react_1.default.createElement("div", { className: "mds-dialog-ft" }, children);
 }
-Object.assign(__ds_scope, { Dialog, DialogHeader, DialogBody, DialogFooter });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/Dialog.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/Drawer.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Drawer = Drawer;
+exports.DrawerHeader = DrawerHeader;
+exports.DrawerBody = DrawerBody;
 // Meridian Drawer — side panel for navigation, filters, or secondary actions.
 // Slides in from edge, can be dismissed with backdrop click or ESC.
-
-const {
-  useEffect,
-  useRef
-} = React;
+const react_1 = __importDefault(require("react"));
+const useOverlayFocus_1 = require("./useOverlayFocus");
+const { useEffect, useRef } = react_1.default;
 let injected = false;
 function inject() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
-  const css = `
+    if (injected || typeof document === "undefined")
+        return;
+    injected = true;
+    const css = `
 .mds-drawer-overlay {
   position: fixed; inset: 0; background: var(--scrim, rgba(14,17,19,.5));
   animation: mds-drawer-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out);
@@ -11263,82 +11058,44 @@ function inject() {
   color: var(--text-primary, #22272E);
 }
 `;
-  const el = document.createElement("style");
-  el.setAttribute("data-mds", "drawer");
-  el.textContent = css;
-  document.head.appendChild(el);
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "drawer");
+    el.textContent = css;
+    document.head.appendChild(el);
 }
-function Drawer({
-  open = false,
-  onClose = () => {},
-  side = "right",
-  title,
-  children,
-  size = side === "left" || side === "right" ? "360px" : "240px",
-  closeOnBackdrop = true,
-  closeOnEsc = true
-}) {
-  inject();
-  const ref = useRef(null);
-  // Shared overlay focus contract: initial focus, Tab trap at boundaries, restore on close.
-  __ds_scope.useOverlayFocus(ref, open, ".mds-drawer-wrap");
-  useEffect(() => {
-    if (!open) return;
-    const handleEsc = e => {
-      if (closeOnEsc && e.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
-  }, [open, closeOnEsc, onClose]);
-  if (!open) return null;
-  const sizeStyle = side === "left" || side === "right" ? {
-    width: size
-  } : {
-    height: size
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    ref: ref,
-    className: "mds-drawer-overlay",
-    onClick: closeOnBackdrop ? onClose : undefined,
-    role: "presentation"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: `mds-drawer-wrap mds-drawer-wrap--${side}`,
-    style: sizeStyle,
-    onClick: e => e.stopPropagation(),
-    role: "dialog",
-    "aria-modal": "true",
-    "aria-labelledby": title ? "mds-drawer-title" : undefined
-  }, title && /*#__PURE__*/React.createElement(DrawerHeader, {
-    title: title,
-    onClose: onClose
-  }), /*#__PURE__*/React.createElement(DrawerBody, null, children)));
+function Drawer({ open = false, onClose = () => { }, side = "right", title, children, size = side === "left" || side === "right" ? "360px" : "240px", closeOnBackdrop = true, closeOnEsc = true, }) {
+    inject();
+    const ref = useRef(null);
+    // Shared overlay focus contract: initial focus, Tab trap at boundaries, restore on close.
+    (0, useOverlayFocus_1.useOverlayFocus)(ref, open, ".mds-drawer-wrap");
+    useEffect(() => {
+        if (!open)
+            return;
+        const handleEsc = (e) => {
+            if (closeOnEsc && e.key === "Escape") {
+                onClose();
+            }
+        };
+        document.addEventListener("keydown", handleEsc);
+        return () => document.removeEventListener("keydown", handleEsc);
+    }, [open, closeOnEsc, onClose]);
+    if (!open)
+        return null;
+    const sizeStyle = side === "left" || side === "right" ? { width: size } : { height: size };
+    return (react_1.default.createElement("div", { ref: ref, className: "mds-drawer-overlay", onClick: closeOnBackdrop ? onClose : undefined, role: "presentation" },
+        react_1.default.createElement("div", { className: `mds-drawer-wrap mds-drawer-wrap--${side}`, style: sizeStyle, onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", "aria-labelledby": title ? "mds-drawer-title" : undefined },
+            title && react_1.default.createElement(DrawerHeader, { title: title, onClose: onClose }),
+            react_1.default.createElement(DrawerBody, null, children))));
 }
-function DrawerHeader({
-  title,
-  onClose
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "mds-drawer-hd"
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "mds-drawer-title",
-    id: "mds-drawer-title"
-  }, title), onClose && /*#__PURE__*/React.createElement("button", {
-    className: "mds-drawer-close",
-    onClick: onClose,
-    "aria-label": "Close drawer",
-    type: "button"
-  }, "\u2715"));
+function DrawerHeader({ title, onClose }) {
+    return (react_1.default.createElement("div", { className: "mds-drawer-hd" },
+        react_1.default.createElement("h2", { className: "mds-drawer-title", id: "mds-drawer-title" }, title),
+        onClose && (react_1.default.createElement("button", { className: "mds-drawer-close", onClick: onClose, "aria-label": "Close drawer", type: "button" }, "\u2715"))));
 }
-function DrawerBody({
-  children
-}) {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "mds-drawer-bd"
-  }, children);
+function DrawerBody({ children }) {
+    return react_1.default.createElement("div", { className: "mds-drawer-bd" }, children);
 }
-Object.assign(__ds_scope, { Drawer, DrawerHeader, DrawerBody });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/core/Drawer.jsx", error: String((e && e.message) || e) }); }
 
 // components/core/Modal.jsx
@@ -14273,35 +14030,64 @@ Object.assign(__ds_scope, { TableHooks });
 
 // components/data/useThemeRowHeight.js
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DEFAULT_THEME_ROW_HEIGHT = void 0;
+exports.useThemeRowHeight = useThemeRowHeight;
 // Meridian useThemeRowHeight — resolves the effective table row height from the density
-// token (--theme-row-height: 32 compact · 40 cozy · 48 spacious) so virtualization math
+// token (--theme-row-height: 26 terminal · 32 default/compact · 48 spacious) so virtualization math
 // stays in sync with the CSS and with DensityToggle. Pass an explicit override to opt out;
 // otherwise the hook re-reads the token whenever body[data-theme-density] changes.
-
+const react_1 = __importDefault(require("react"));
+exports.DEFAULT_THEME_ROW_HEIGHT = 32;
 function readRowHeight() {
-  if (typeof document === "undefined" || !document.body) return 40;
-  const v = parseFloat(getComputedStyle(document.body).getPropertyValue("--theme-row-height"));
-  return Number.isFinite(v) && v > 0 ? v : 40;
+    if (typeof document === "undefined" || !document.body)
+        return exports.DEFAULT_THEME_ROW_HEIGHT;
+    const v = parseFloat(getComputedStyle(document.body).getPropertyValue("--theme-row-height"));
+    return Number.isFinite(v) && v > 0 ? v : exports.DEFAULT_THEME_ROW_HEIGHT;
 }
 function useThemeRowHeight(override) {
-  const [h, setH] = React.useState(() => override != null ? override : readRowHeight());
-  React.useEffect(() => {
-    if (override != null) return;
-    setH(readRowHeight());
-    const mo = new MutationObserver(() => setH(readRowHeight()));
-    mo.observe(document.body, {
-      attributes: true,
-      attributeFilter: ["data-theme-density"]
-    });
-    return () => mo.disconnect();
-  }, [override]);
-  return override != null ? override : h;
+    const [h, setH] = react_1.default.useState(() => (override != null ? override : readRowHeight()));
+    react_1.default.useEffect(() => {
+        if (override != null)
+            return;
+        setH(readRowHeight());
+        const mo = new MutationObserver(() => setH(readRowHeight()));
+        mo.observe(document.body, { attributes: true, attributeFilter: ["data-theme-density"] });
+        return () => mo.disconnect();
+    }, [override]);
+    return override != null ? override : h;
 }
-Object.assign(__ds_scope, { useThemeRowHeight });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/data/useThemeRowHeight.js", error: String((e && e.message) || e) }); }
 
 // components/data/DenseDataTable.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DenseDataTable = DenseDataTable;
 // Meridian dense data grid — light institutional table. White paper, small-caps muted
 // headers, hairline row borders, hover/selected = blue wash + teal-blue left rail, sort
 // affordance. Supports optional checkbox column for multi-select workflows. Mirrors the
@@ -14314,12 +14100,14 @@ try { (() => {
 // always. Virtualized rows are real <tr>/<td>, not VirtualizedList's <div> rows, because a
 // CSS table needs real table cells for column alignment; VirtualizedList remains the right
 // choice for a non-tabular list.
-
+const react_1 = __importDefault(require("react"));
+const useThemeRowHeight_1 = require("./useThemeRowHeight");
 let injected = false;
 function inject() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
-  const css = `
+    if (injected || typeof document === "undefined")
+        return;
+    injected = true;
+    const css = `
 .dds-wrap{overflow-x:auto;border:1px solid var(--border,#D7DCE2);background:var(--bg-light,#fff);}
 .dds{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
@@ -14331,9 +14119,9 @@ function inject() {
 .dds th:last-child{border-right:none;}
 .dds th.dds--r{text-align:right;}
 .dds th.dds--checkbox{padding:9px 10px;width:34px;text-align:center;}
-.dds td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
+.dds td{padding:7px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
   border-top:1px solid var(--border,#D7DCE2);border-right:1px solid var(--border-divider,#DDE3EA);
-  font-variant-numeric:tabular-nums;height:var(--theme-row-height,40px);box-sizing:border-box;}
+  font-variant-numeric:tabular-nums;height:var(--theme-row-height,32px);box-sizing:border-box;}
 .dds td:last-child{border-right:none;}
 /* density: row height tracks --theme-row-height; vertical padding compresses to fit */
 body[data-theme-density="compact"] .dds td{padding-top:5px;padding-bottom:5px;}
@@ -14375,206 +14163,112 @@ body[data-theme-density="spacious"] .dds td{padding-top:15px;padding-bottom:15px
 .dds th.dds--drag{opacity:.5;}
 .dds th.dds--drop{box-shadow:inset 2px 0 0 var(--accent,#2F6F8F);}
 `;
-  const el = document.createElement("style");
-  el.setAttribute("data-mds", "dds");
-  el.textContent = css;
-  document.head.appendChild(el);
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "dds");
+    el.textContent = css;
+    document.head.appendChild(el);
 }
-function DenseDataTable({
-  columns,
-  rows,
-  selectedIndex = -1,
-  sortKey,
-  sortDir = "asc",
-  sortInfo,
-  onRowClick,
-  onSort,
-  onColumnResize,
-  onColumnReorder,
-  onColumnPin,
-  selectable = false,
-  selectedRows = [],
-  isRowSelected,
-  onSelectRow,
-  onSelectAll,
-  virtualize,
-  virtualizeThreshold = 500,
-  rowHeight,
-  // px — defaults to the density token --theme-row-height (32 compact · 40 cozy · 48 spacious)
-  maxHeight = 560
-}) {
-  inject();
-  const effRow = __ds_scope.useThemeRowHeight(rowHeight);
-  const rowIsSel = (row, realIndex) => isRowSelected ? isRowSelected(row, realIndex) : selectedRows.includes(realIndex);
-  const allSelected = selectable && selectedRows.length === rows.length && rows.length > 0;
-  const someSelected = selectable && selectedRows.length > 0 && selectedRows.length < rows.length;
-  const shouldVirtualize = virtualize ?? rows.length > virtualizeThreshold;
-  const [dragKey, setDragKey] = React.useState(null);
-  const [dropKey, setDropKey] = React.useState(null);
-  const resizeRef = React.useRef(null);
-  const startResize = (col, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const startX = e.clientX;
-    const startW = col.width || 140;
-    resizeRef.current = col.key;
-    const onMove = ev => onColumnResize && onColumnResize(col.key, startW + (ev.clientX - startX));
-    const onUp = () => {
-      resizeRef.current = null;
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-  };
-  const [scrollTop, setScrollTop] = React.useState(0);
-  const overscan = 8;
-  const viewportRows = Math.ceil(maxHeight / effRow);
-  const start = shouldVirtualize ? Math.max(0, Math.floor(scrollTop / effRow) - overscan) : 0;
-  const end = shouldVirtualize ? Math.min(rows.length, start + viewportRows + overscan * 2) : rows.length;
-  const visibleRows = shouldVirtualize ? rows.slice(start, end) : rows;
-  const topSpacer = start * effRow;
-  const bottomSpacer = (rows.length - end) * effRow;
-  const colCount = columns.length + (selectable ? 1 : 0);
-  const handleSelectAll = e => {
-    onSelectAll?.(!allSelected);
-  };
-  const handleSelectRow = (row, i, e) => {
-    e.stopPropagation();
-    onSelectRow?.(row, i, !selectedRows.includes(i));
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    className: "dds-wrap",
-    style: shouldVirtualize ? {
-      maxHeight,
-      overflowY: "auto"
-    } : undefined,
-    onScroll: shouldVirtualize ? e => setScrollTop(e.currentTarget.scrollTop) : undefined
-  }, /*#__PURE__*/React.createElement("table", {
-    className: "dds"
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, selectable && /*#__PURE__*/React.createElement("th", {
-    className: "dds--checkbox"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "checkbox",
-    className: "dds__ckbox",
-    checked: allSelected,
-    ref: el => {
-      if (el && someSelected) el.indeterminate = true;
-    },
-    onChange: handleSelectAll,
-    "aria-label": "Select all rows"
-  })), columns.map(c => {
-    const info = sortInfo ? sortInfo(c.key) : sortKey === c.key ? {
-      direction: sortDir
-    } : null;
-    const sorted = !!info;
-    const dir = info ? info.direction : sortDir;
-    const canSort = onSort && c.sortable !== false;
-    const pinStyle = c.pinned ? {
-      left: c.pinnedOffset || 0
-    } : undefined;
-    const cls = `${c.align === "right" ? "dds--r " : ""}${sorted ? "dds--sorted " : ""}${c.pinned ? "dds--pin " : ""}${dragKey === c.key ? "dds--drag " : ""}${dropKey === c.key ? "dds--drop" : ""}`.trim();
-    return /*#__PURE__*/React.createElement("th", {
-      key: c.key,
-      className: cls,
-      style: {
-        cursor: canSort ? "pointer" : "default",
-        width: c.width,
-        minWidth: c.width,
-        maxWidth: c.width,
-        ...pinStyle
-      },
-      draggable: !!onColumnReorder,
-      onDragStart: onColumnReorder ? () => setDragKey(c.key) : undefined,
-      onDragOver: onColumnReorder ? e => {
+function DenseDataTable({ columns, rows, selectedIndex = -1, sortKey, sortDir = "asc", sortInfo, onRowClick, onSort, onColumnResize, onColumnReorder, onColumnPin, selectable = false, selectedRows = [], isRowSelected, onSelectRow, onSelectAll, virtualize, virtualizeThreshold = 500, rowHeight, // px — defaults to --theme-row-height (26 terminal · 32 default/compact · 48 spacious)
+maxHeight = 560, }) {
+    inject();
+    const effRow = (0, useThemeRowHeight_1.useThemeRowHeight)(rowHeight);
+    const rowIsSel = (row, realIndex) => (isRowSelected ? isRowSelected(row, realIndex) : selectedRows.includes(realIndex));
+    const allSelected = selectable && selectedRows.length === rows.length && rows.length > 0;
+    const someSelected = selectable && selectedRows.length > 0 && selectedRows.length < rows.length;
+    const shouldVirtualize = virtualize ?? rows.length > virtualizeThreshold;
+    const [dragKey, setDragKey] = react_1.default.useState(null);
+    const [dropKey, setDropKey] = react_1.default.useState(null);
+    const resizeRef = react_1.default.useRef(null);
+    const startResize = (col, e) => {
         e.preventDefault();
-        setDropKey(c.key);
-      } : undefined,
-      onDrop: onColumnReorder ? () => {
-        if (dragKey && dragKey !== c.key) onColumnReorder(dragKey, c.key);
-        setDragKey(null);
-        setDropKey(null);
-      } : undefined,
-      onDragEnd: onColumnReorder ? () => {
-        setDragKey(null);
-        setDropKey(null);
-      } : undefined,
-      scope: "col",
-      tabIndex: canSort ? 0 : undefined,
-      "aria-sort": sorted ? dir === "asc" ? "ascending" : "descending" : canSort ? "none" : undefined,
-      onClick: canSort ? e => onSort(c.key, e.shiftKey) : undefined,
-      onKeyDown: canSort ? e => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSort(c.key, e.shiftKey);
-        }
-      } : undefined,
-      title: onColumnPin ? "Double-click to pin" : undefined,
-      onDoubleClick: onColumnPin ? () => onColumnPin(c.key) : undefined
-    }, c.label, canSort && /*#__PURE__*/React.createElement("span", {
-      className: "dds__sort"
-    }, sorted ? dir === "asc" ? "▲" : "▼" : "↕"), info && info.multi && /*#__PURE__*/React.createElement("span", {
-      className: "dds__rank"
-    }, info.rank), onColumnResize && /*#__PURE__*/React.createElement("span", {
-      className: `dds__grip${resizeRef.current === c.key ? " dds__grip--active" : ""}`,
-      onMouseDown: e => startResize(c, e),
-      onClick: e => e.stopPropagation()
-    }));
-  }))), /*#__PURE__*/React.createElement("tbody", null, topSpacer > 0 && /*#__PURE__*/React.createElement("tr", {
-    className: "dds--spacer",
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement("td", {
-    colSpan: colCount,
-    style: {
-      height: topSpacer
-    }
-  })), visibleRows.map((row, i) => {
-    const realIndex = start + i;
-    const isSelected = rowIsSel(row, realIndex);
-    return /*#__PURE__*/React.createElement("tr", {
-      key: realIndex,
-      className: `${onRowClick ? "dds--sel " : ""}${realIndex === selectedIndex ? "dds--on" : ""}${isSelected ? "dds--on" : ""}`.trim(),
-      "aria-selected": isSelected || undefined,
-      tabIndex: onRowClick ? 0 : undefined,
-      onClick: onRowClick ? e => onRowClick(row, realIndex, e) : undefined
-    }, selectable && /*#__PURE__*/React.createElement("td", {
-      className: "dds--checkbox"
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "checkbox",
-      className: "dds__ckbox",
-      checked: isSelected,
-      onChange: e => handleSelectRow(row, realIndex, e),
-      onClick: e => e.stopPropagation(),
-      "aria-label": `Select row ${realIndex + 1}`
-    })), columns.map(c => /*#__PURE__*/React.createElement("td", {
-      key: c.key,
-      className: `${c.align === "right" ? "dds--r " : ""}${c.pinned ? "dds--pin" : ""}`.trim(),
-      style: c.pinned ? {
-        left: c.pinnedOffset || 0,
-        width: c.width,
-        minWidth: c.width,
-        maxWidth: c.width
-      } : c.width ? {
-        width: c.width,
-        minWidth: c.width,
-        maxWidth: c.width
-      } : undefined
-    }, c.render ? c.render(row) : row[c.key])));
-  }), bottomSpacer > 0 && /*#__PURE__*/React.createElement("tr", {
-    className: "dds--spacer",
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement("td", {
-    colSpan: colCount,
-    style: {
-      height: bottomSpacer
-    }
-  })))));
+        e.stopPropagation();
+        const startX = e.clientX;
+        const startW = col.width || 140;
+        resizeRef.current = col.key;
+        const onMove = (ev) => onColumnResize && onColumnResize(col.key, startW + (ev.clientX - startX));
+        const onUp = () => {
+            resizeRef.current = null;
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+        };
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+    };
+    const [scrollTop, setScrollTop] = react_1.default.useState(0);
+    const overscan = 8;
+    const viewportRows = Math.ceil(maxHeight / effRow);
+    const start = shouldVirtualize ? Math.max(0, Math.floor(scrollTop / effRow) - overscan) : 0;
+    const end = shouldVirtualize ? Math.min(rows.length, start + viewportRows + overscan * 2) : rows.length;
+    const visibleRows = shouldVirtualize ? rows.slice(start, end) : rows;
+    const topSpacer = start * effRow;
+    const bottomSpacer = (rows.length - end) * effRow;
+    const colCount = columns.length + (selectable ? 1 : 0);
+    const handleSelectAll = (e) => {
+        onSelectAll?.(!allSelected);
+    };
+    const handleSelectRow = (row, i, e) => {
+        e.stopPropagation();
+        onSelectRow?.(row, i, !selectedRows.includes(i));
+    };
+    return (react_1.default.createElement("div", { className: "dds-wrap", style: shouldVirtualize ? { maxHeight, overflowY: "auto" } : undefined, onScroll: shouldVirtualize ? (e) => setScrollTop(e.currentTarget.scrollTop) : undefined },
+        react_1.default.createElement("table", { className: "dds" },
+            react_1.default.createElement("thead", null,
+                react_1.default.createElement("tr", null,
+                    selectable && (react_1.default.createElement("th", { className: "dds--checkbox" },
+                        react_1.default.createElement("input", { type: "checkbox", className: "dds__ckbox", checked: allSelected, ref: (el) => {
+                                if (el && someSelected)
+                                    el.indeterminate = true;
+                            }, onChange: handleSelectAll, "aria-label": "Select all rows" }))),
+                    columns.map((c) => {
+                        const info = sortInfo ? sortInfo(c.key) : (sortKey === c.key ? { direction: sortDir } : null);
+                        const sorted = !!info;
+                        const dir = info ? info.direction : sortDir;
+                        const canSort = onSort && c.sortable !== false;
+                        const pinStyle = c.pinned ? { left: c.pinnedOffset || 0 } : undefined;
+                        const cls = `${c.align === "right" ? "dds--r " : ""}${sorted ? "dds--sorted " : ""}${c.pinned ? "dds--pin " : ""}${dragKey === c.key ? "dds--drag " : ""}${dropKey === c.key ? "dds--drop" : ""}`.trim();
+                        return (react_1.default.createElement("th", { key: c.key, className: cls, style: { cursor: canSort ? "pointer" : "default", width: c.width, minWidth: c.width, maxWidth: c.width, ...pinStyle }, draggable: !!onColumnReorder, onDragStart: onColumnReorder ? () => setDragKey(c.key) : undefined, onDragOver: onColumnReorder ? (e) => { e.preventDefault(); setDropKey(c.key); } : undefined, onDrop: onColumnReorder ? () => { if (dragKey && dragKey !== c.key)
+                                onColumnReorder(dragKey, c.key); setDragKey(null); setDropKey(null); } : undefined, onDragEnd: onColumnReorder ? () => { setDragKey(null); setDropKey(null); } : undefined, scope: "col", tabIndex: canSort ? 0 : undefined, "aria-sort": sorted ? (dir === "asc" ? "ascending" : "descending") : (canSort ? "none" : undefined), onClick: canSort ? (e) => onSort(c.key, e.shiftKey) : undefined, onKeyDown: canSort ? (e) => { if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                onSort(c.key, e.shiftKey);
+                            } } : undefined, title: onColumnPin ? "Double-click to pin" : undefined, onDoubleClick: onColumnPin ? () => onColumnPin(c.key) : undefined },
+                            c.label,
+                            canSort && (react_1.default.createElement("span", { className: "dds__sort" }, sorted ? (dir === "asc" ? "▲" : "▼") : "↕")),
+                            info && info.multi && react_1.default.createElement("span", { className: "dds__rank" }, info.rank),
+                            onColumnResize && (react_1.default.createElement("span", { className: `dds__grip${resizeRef.current === c.key ? " dds__grip--active" : ""}`, onMouseDown: (e) => startResize(c, e), onClick: (e) => e.stopPropagation() }))));
+                    }))),
+            react_1.default.createElement("tbody", null,
+                topSpacer > 0 && (react_1.default.createElement("tr", { className: "dds--spacer", "aria-hidden": "true" },
+                    react_1.default.createElement("td", { colSpan: colCount, style: { height: topSpacer } }))),
+                visibleRows.map((row, i) => {
+                    const realIndex = start + i;
+                    const isSelected = rowIsSel(row, realIndex);
+                    return (react_1.default.createElement("tr", { key: realIndex, className: `${onRowClick ? "dds--sel " : ""}${realIndex === selectedIndex ? "dds--on" : ""}${isSelected ? "dds--on" : ""}`.trim(), "aria-selected": isSelected || undefined, tabIndex: onRowClick ? 0 : undefined, onClick: onRowClick ? (e) => onRowClick(row, realIndex, e) : undefined },
+                        selectable && (react_1.default.createElement("td", { className: "dds--checkbox" },
+                            react_1.default.createElement("input", { type: "checkbox", className: "dds__ckbox", checked: isSelected, onChange: (e) => handleSelectRow(row, realIndex, e), onClick: (e) => e.stopPropagation(), "aria-label": `Select row ${realIndex + 1}` }))),
+                        columns.map((c) => (react_1.default.createElement("td", { key: c.key, className: `${c.align === "right" ? "dds--r " : ""}${c.pinned ? "dds--pin" : ""}`.trim(), style: c.pinned ? { left: c.pinnedOffset || 0, width: c.width, minWidth: c.width, maxWidth: c.width } : (c.width ? { width: c.width, minWidth: c.width, maxWidth: c.width } : undefined) }, c.render ? c.render(row) : row[c.key])))));
+                }),
+                bottomSpacer > 0 && (react_1.default.createElement("tr", { className: "dds--spacer", "aria-hidden": "true" },
+                    react_1.default.createElement("td", { colSpan: colCount, style: { height: bottomSpacer } })))))));
 }
-Object.assign(__ds_scope, { DenseDataTable });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/data/DenseDataTable.jsx", error: String((e && e.message) || e) }); }
 
 // components/data/FilteredDataTable.jsx
 try { (() => {
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FilteredDataTable = FilteredDataTable;
 // Meridian FilteredDataTable — compound component unifying FilterBar + DenseDataTable + export.
 // Wraps useTableState hook; manages search, column filters, sort, and CSV export in one UI.
 // Uses Core Input, Button, Checkbox, ColumnChooser primitives.
@@ -14582,12 +14276,19 @@ try { (() => {
 // Rows past `virtualizeThreshold` (default 500) window to the visible slice, same technique as
 // DenseDataTable — see that file's comment for why this uses spacer <tr>s rather than
 // VirtualizedList directly (VirtualizedList renders <div> rows; a CSS table needs real cells).
-
+const react_1 = __importDefault(require("react"));
+const useTableState_js_1 = require("./useTableState.js");
+const useThemeRowHeight_1 = require("./useThemeRowHeight");
+const Input_1 = require("../core/Input");
+const Button_1 = require("../core/Button");
+const Checkbox_1 = require("../core/Checkbox");
+const ColumnChooser_1 = require("./ColumnChooser");
 let injected = false;
 function inject() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
-  const css = `
+    if (injected || typeof document === "undefined")
+        return;
+    injected = true;
+    const css = `
 .fdt-wrap { display: flex; flex-direction: column; gap: 12px; }
 .fdt-toolbar {
   display: flex; align-items: center; gap: 12px; padding: 12px;
@@ -14626,7 +14327,7 @@ function inject() {
 .fdt-table td {
   padding: 7px 12px; border-top: 1px solid var(--border, #D7DCE2);
   color: var(--text-primary, #22272E); font-variant-numeric: tabular-nums;
-  height: var(--theme-row-height, 40px); box-sizing: border-box;
+  height: var(--theme-row-height, 32px); box-sizing: border-box;
 }
 /* density: row height tracks --theme-row-height; vertical padding compresses to fit */
 body[data-theme-density="compact"] .fdt-table td { padding-top: 4px; padding-bottom: 4px; }
@@ -14644,130 +14345,67 @@ body[data-theme-density="spacious"] .fdt-table td { padding-top: 13px; padding-b
   font-family: var(--font-body); font-size: 13px;
 }
 `;
-  const el = document.createElement("style");
-  el.setAttribute("data-fdt", "filtered-data-table");
-  el.textContent = css;
-  document.head.appendChild(el);
+    const el = document.createElement("style");
+    el.setAttribute("data-fdt", "filtered-data-table");
+    el.textContent = css;
+    document.head.appendChild(el);
 }
-function FilteredDataTable({
-  data = [],
-  columns = [],
-  // [{ key, label, align?: 'left'|'right', sortable?: bool, filterable?: bool }]
-  title = "",
-  onExport = null,
-  localStorageKey = null,
-  virtualize,
-  virtualizeThreshold = 500,
-  rowHeight,
-  // px — defaults to the density token --theme-row-height (32 compact · 40 cozy · 48 spacious)
-  maxHeight = 560
-}) {
-  inject();
-  const effRow = __ds_scope.useThemeRowHeight(rowHeight);
-  const state = __ds_scope.useTableState(data, localStorageKey);
-  const handleSort = React.useCallback(colKey => {
-    const col = columns.find(c => c.key === colKey);
-    if (col?.sortable !== false) state.toggleSort(colKey);
-  }, [columns, state.toggleSort]);
-  const rows = state.data;
-  const shouldVirtualize = virtualize ?? rows.length > virtualizeThreshold;
-  const [scrollTop, setScrollTop] = React.useState(0);
-  const overscan = 8;
-  const viewportRows = Math.ceil(maxHeight / effRow);
-  const start = shouldVirtualize ? Math.max(0, Math.floor(scrollTop / effRow) - overscan) : 0;
-  const end = shouldVirtualize ? Math.min(rows.length, start + viewportRows + overscan * 2) : rows.length;
-  const visibleRows = shouldVirtualize ? rows.slice(start, end) : rows;
-  const topSpacer = start * effRow;
-  const bottomSpacer = (rows.length - end) * effRow;
-  return /*#__PURE__*/React.createElement("div", {
-    className: "fdt-wrap"
-  }, title && /*#__PURE__*/React.createElement("h3", {
-    style: {
-      margin: "0 0 12px 0",
-      fontSize: "15px",
-      fontFamily: "var(--font-body)",
-      color: "var(--text-primary, #22272E)"
-    }
-  }, title), /*#__PURE__*/React.createElement("div", {
-    className: "fdt-toolbar"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "fdt-search"
-  }, /*#__PURE__*/React.createElement(__ds_scope.Input, {
-    placeholder: "Search all fields\u2026",
-    value: state.query,
-    onChange: e => state.setQuery(e.target.value)
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: "12px",
-      color: "var(--text-muted, #59636F)"
-    }
-  }, state.resultCount, " of ", state.rawData.length, state.filterCount > 0 && /*#__PURE__*/React.createElement("span", {
-    className: "fdt-badge",
-    style: {
-      marginLeft: "8px"
-    }
-  }, state.filterCount, " filter", state.filterCount !== 1 ? "s" : "")), /*#__PURE__*/React.createElement("div", {
-    className: "fdt-actions"
-  }, state.filterCount > 0 && /*#__PURE__*/React.createElement(__ds_scope.Button, {
-    variant: "ghost",
-    onClick: state.clearAllFilters
-  }, "Clear filters"), onExport ? /*#__PURE__*/React.createElement(__ds_scope.Button, {
-    variant: "primary",
-    onClick: () => onExport(state)
-  }, "Export") : /*#__PURE__*/React.createElement(__ds_scope.Button, {
-    variant: "primary",
-    onClick: () => state.exportCSV()
-  }, "Export CSV"))), /*#__PURE__*/React.createElement("div", {
-    className: "fdt-table"
-  }, rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
-    className: "fdt-empty"
-  }, state.resultCount === 0 && data.length > 0 ? "No results match your search" : "No data") : /*#__PURE__*/React.createElement("div", {
-    className: shouldVirtualize ? "fdt-table-scroll" : undefined,
-    style: shouldVirtualize ? {
-      maxHeight
-    } : undefined,
-    onScroll: shouldVirtualize ? e => setScrollTop(e.currentTarget.scrollTop) : undefined
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, columns.map(col => /*#__PURE__*/React.createElement("th", {
-    key: col.key,
-    className: `${state.sortBy?.column === col.key ? "fdt--sorted" : ""} ${col.align === "right" ? "fdt--r" : ""}`,
-    scope: "col",
-    tabIndex: col.sortable !== false ? 0 : undefined,
-    "aria-sort": state.sortBy?.column === col.key ? state.sortBy.direction === "asc" ? "ascending" : "descending" : col.sortable !== false ? "none" : undefined,
-    onClick: () => handleSort(col.key),
-    onKeyDown: col.sortable !== false ? e => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        handleSort(col.key);
-      }
-    } : undefined
-  }, col.label, col.sortable !== false && state.sortBy?.column === col.key && /*#__PURE__*/React.createElement("span", {
-    style: {
-      marginLeft: "4px"
-    }
-  }, state.sortBy.direction === "asc" ? "↑" : "↓"))))), /*#__PURE__*/React.createElement("tbody", null, topSpacer > 0 && /*#__PURE__*/React.createElement("tr", {
-    className: "fdt--spacer",
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement("td", {
-    colSpan: columns.length,
-    style: {
-      height: topSpacer
-    }
-  })), visibleRows.map((row, i) => /*#__PURE__*/React.createElement("tr", {
-    key: start + i
-  }, columns.map(col => /*#__PURE__*/React.createElement("td", {
-    key: col.key,
-    className: col.align === "right" ? "fdt--r" : ""
-  }, row[col.key])))), bottomSpacer > 0 && /*#__PURE__*/React.createElement("tr", {
-    className: "fdt--spacer",
-    "aria-hidden": "true"
-  }, /*#__PURE__*/React.createElement("td", {
-    colSpan: columns.length,
-    style: {
-      height: bottomSpacer
-    }
-  })))))));
+function FilteredDataTable({ data = [], columns = [], // [{ key, label, align?: 'left'|'right', sortable?: bool, filterable?: bool }]
+title = "", onExport = null, localStorageKey = null, virtualize, virtualizeThreshold = 500, rowHeight, // px — defaults to --theme-row-height (26 terminal · 32 default/compact · 48 spacious)
+maxHeight = 560, }) {
+    inject();
+    const effRow = (0, useThemeRowHeight_1.useThemeRowHeight)(rowHeight);
+    const state = (0, useTableState_js_1.useTableState)(data, localStorageKey);
+    const handleSort = react_1.default.useCallback((colKey) => {
+        const col = columns.find((c) => c.key === colKey);
+        if (col?.sortable !== false)
+            state.toggleSort(colKey);
+    }, [columns, state.toggleSort]);
+    const rows = state.data;
+    const shouldVirtualize = virtualize ?? rows.length > virtualizeThreshold;
+    const [scrollTop, setScrollTop] = react_1.default.useState(0);
+    const overscan = 8;
+    const viewportRows = Math.ceil(maxHeight / effRow);
+    const start = shouldVirtualize ? Math.max(0, Math.floor(scrollTop / effRow) - overscan) : 0;
+    const end = shouldVirtualize ? Math.min(rows.length, start + viewportRows + overscan * 2) : rows.length;
+    const visibleRows = shouldVirtualize ? rows.slice(start, end) : rows;
+    const topSpacer = start * effRow;
+    const bottomSpacer = (rows.length - end) * effRow;
+    return (react_1.default.createElement("div", { className: "fdt-wrap" },
+        title && react_1.default.createElement("h3", { style: { margin: "0 0 12px 0", fontSize: "15px", fontFamily: "var(--font-body)", color: "var(--text-primary, #22272E)" } }, title),
+        react_1.default.createElement("div", { className: "fdt-toolbar" },
+            react_1.default.createElement("div", { className: "fdt-search" },
+                react_1.default.createElement(Input_1.Input, { placeholder: "Search all fields\u2026", value: state.query, onChange: (e) => state.setQuery(e.target.value) })),
+            react_1.default.createElement("div", { style: { fontSize: "12px", color: "var(--text-muted, #59636F)" } },
+                state.resultCount,
+                " of ",
+                state.rawData.length,
+                state.filterCount > 0 && react_1.default.createElement("span", { className: "fdt-badge", style: { marginLeft: "8px" } },
+                    state.filterCount,
+                    " filter",
+                    state.filterCount !== 1 ? "s" : "")),
+            react_1.default.createElement("div", { className: "fdt-actions" },
+                state.filterCount > 0 && (react_1.default.createElement(Button_1.Button, { variant: "ghost", onClick: state.clearAllFilters }, "Clear filters")),
+                onExport ? (react_1.default.createElement(Button_1.Button, { variant: "primary", onClick: () => onExport(state) }, "Export")) : (react_1.default.createElement(Button_1.Button, { variant: "primary", onClick: () => state.exportCSV() }, "Export CSV")))),
+        react_1.default.createElement("div", { className: "fdt-table" }, rows.length === 0 ? (react_1.default.createElement("div", { className: "fdt-empty" }, state.resultCount === 0 && data.length > 0
+            ? "No results match your search"
+            : "No data")) : (react_1.default.createElement("div", { className: shouldVirtualize ? "fdt-table-scroll" : undefined, style: shouldVirtualize ? { maxHeight } : undefined, onScroll: shouldVirtualize ? (e) => setScrollTop(e.currentTarget.scrollTop) : undefined },
+            react_1.default.createElement("table", null,
+                react_1.default.createElement("thead", null,
+                    react_1.default.createElement("tr", null, columns.map((col) => (react_1.default.createElement("th", { key: col.key, className: `${state.sortBy?.column === col.key ? "fdt--sorted" : ""} ${col.align === "right" ? "fdt--r" : ""}`, scope: "col", tabIndex: col.sortable !== false ? 0 : undefined, "aria-sort": state.sortBy?.column === col.key ? (state.sortBy.direction === "asc" ? "ascending" : "descending") : (col.sortable !== false ? "none" : undefined), onClick: () => handleSort(col.key), onKeyDown: col.sortable !== false ? (e) => { if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleSort(col.key);
+                        } } : undefined },
+                        col.label,
+                        col.sortable !== false && state.sortBy?.column === col.key && (react_1.default.createElement("span", { style: { marginLeft: "4px" } }, state.sortBy.direction === "asc" ? "↑" : "↓"))))))),
+                react_1.default.createElement("tbody", null,
+                    topSpacer > 0 && (react_1.default.createElement("tr", { className: "fdt--spacer", "aria-hidden": "true" },
+                        react_1.default.createElement("td", { colSpan: columns.length, style: { height: topSpacer } }))),
+                    visibleRows.map((row, i) => (react_1.default.createElement("tr", { key: start + i }, columns.map((col) => (react_1.default.createElement("td", { key: col.key, className: col.align === "right" ? "fdt--r" : "" }, row[col.key])))))),
+                    bottomSpacer > 0 && (react_1.default.createElement("tr", { className: "fdt--spacer", "aria-hidden": "true" },
+                        react_1.default.createElement("td", { colSpan: columns.length, style: { height: bottomSpacer } }))))))))));
 }
-Object.assign(__ds_scope, { FilteredDataTable });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/data/FilteredDataTable.jsx", error: String((e && e.message) || e) }); }
 
 // components/operations/DiffView.jsx
@@ -15799,24 +15437,68 @@ Object.assign(__ds_scope, { formatSlaDuration, SlaChip });
 
 // components/operations/CaseQueue.jsx
 try { (() => {
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+const __ds_module = { exports: {} };
+const module = __ds_module;
+const exports = __ds_module.exports;
+const require = (specifier) => {
+  if (specifier === "react") return { ...React, default: React };
+  if (specifier.startsWith(".")) return __ds_scope;
+  throw new Error(`Unsupported design-system module import: ${specifier}`);
+};
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CaseQueue = CaseQueue;
 // Meridian case queue — operator triage list mirroring the server case models
 // (`ReconciliationCaseSummaryDto`, `OperationsBreakCaseDto`): id · summary · category ·
 // status · priority · assignee · SLA. Priority renders as a 3px left rail; status as a
 // SeverityBadge; SLA as an SlaChip. Selection follows the listbox pattern (click,
 // ArrowUp/Down + Enter). The queue owns no state — pass `selectedId` + `onSelect`.
-const {
-  useRef
-} = React;
+const react_1 = __importStar(require("react"));
+const SeverityBadge_1 = require("./SeverityBadge");
+const SlaChip_1 = require("./SlaChip");
 let injected = false;
 function inject() {
-  if (injected || typeof document === "undefined") return;
-  injected = true;
-  const css = `
+    if (injected || typeof document === "undefined")
+        return;
+    injected = true;
+    const css = `
 .mds-caseq{display:flex;flex-direction:column;border:1px solid var(--border,#D7DCE2);
   border-radius:var(--radius-card,6px);background:var(--bg-light,#FFFFFF);overflow:hidden;}
 .mds-caseq__row{display:grid;grid-template-columns:3px auto 1fr auto;align-items:center;gap:10px;
-  padding:0 12px 0 0;min-height:var(--theme-row-height,40px);border-bottom:1px solid var(--border,#E4E8EC);
+  padding:0 12px 0 0;min-height:var(--theme-row-height,32px);border-bottom:1px solid var(--border,#E4E8EC);
   background:transparent;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer;
   font-family:var(--font-body,"Segoe UI Variable Text",sans-serif);}
 .mds-caseq__row:last-child{border-bottom:0;}
@@ -15838,90 +15520,60 @@ function inject() {
 .mds-caseq__who--none{color:var(--severity-action-fg,#8A520E);font-style:italic;}
 .mds-caseq__empty{padding:18px 14px;font-size:12px;color:var(--text-muted,#6E7781);text-align:center;}
 `;
-  const el = document.createElement("style");
-  el.setAttribute("data-mds", "case-queue");
-  el.textContent = css;
-  document.head.appendChild(el);
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "case-queue");
+    el.textContent = css;
+    document.head.appendChild(el);
 }
 function railClass(priority) {
-  const p = String(priority || "").toLowerCase();
-  if (p === "critical" || p === "urgent") return "mds-caseq__rail--critical";
-  if (p === "high") return "mds-caseq__rail--high";
-  return "";
+    const p = String(priority || "").toLowerCase();
+    if (p === "critical" || p === "urgent")
+        return "mds-caseq__rail--critical";
+    if (p === "high")
+        return "mds-caseq__rail--high";
+    return "";
 }
-function CaseQueue({
-  items = [],
-  selectedId,
-  onSelect,
-  now,
-  emptyLabel = "No open cases",
-  className = "",
-  ...rest
-}) {
-  inject();
-  const listRef = useRef(null);
-  const move = dir => {
-    const idx = items.findIndex(it => it.id === selectedId);
-    const next = Math.min(items.length - 1, Math.max(0, idx < 0 ? 0 : idx + dir));
-    const item = items[next];
-    if (item && onSelect) onSelect(item.id, item);
-  };
-  const onKeyDown = e => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      move(1);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      move(-1);
+function CaseQueue({ items = [], selectedId, onSelect, now, emptyLabel = "No open cases", className = "", ...rest }) {
+    inject();
+    const listRef = (0, react_1.useRef)(null);
+    const move = (dir) => {
+        const idx = items.findIndex((it) => it.id === selectedId);
+        const next = Math.min(items.length - 1, Math.max(0, (idx < 0 ? 0 : idx + dir)));
+        const item = items[next];
+        if (item && onSelect)
+            onSelect(item.id, item);
+    };
+    const onKeyDown = (e) => {
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            move(1);
+        }
+        else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            move(-1);
+        }
+    };
+    if (!items.length) {
+        return (react_1.default.createElement("div", { className: `mds-caseq${className ? " " + className : ""}`, ...rest },
+            react_1.default.createElement("div", { className: "mds-caseq__empty" }, emptyLabel)));
     }
-  };
-  if (!items.length) {
-    return /*#__PURE__*/React.createElement("div", _extends({
-      className: `mds-caseq${className ? " " + className : ""}`
-    }, rest), /*#__PURE__*/React.createElement("div", {
-      className: "mds-caseq__empty"
-    }, emptyLabel));
-  }
-  return /*#__PURE__*/React.createElement("div", _extends({
-    className: `mds-caseq${className ? " " + className : ""}`,
-    role: "listbox",
-    "aria-label": "Case queue",
-    ref: listRef,
-    onKeyDown: onKeyDown
-  }, rest), items.map(it => {
-    const selected = it.id === selectedId;
-    const subParts = [it.category, it.reason, it.openedAtUtc && `opened ${it.openedAtUtc}`].filter(Boolean);
-    return /*#__PURE__*/React.createElement("button", {
-      key: it.id,
-      type: "button",
-      role: "option",
-      "aria-selected": selected,
-      className: "mds-caseq__row",
-      tabIndex: selected || !selectedId && it === items[0] ? 0 : -1,
-      onClick: () => onSelect && onSelect(it.id, it)
-    }, /*#__PURE__*/React.createElement("span", {
-      className: `mds-caseq__rail ${railClass(it.priority)}`,
-      "aria-hidden": "true"
-    }), /*#__PURE__*/React.createElement("span", {
-      className: "mds-caseq__id"
-    }, it.id), /*#__PURE__*/React.createElement("span", {
-      className: "mds-caseq__mid"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "mds-caseq__summary"
-    }, it.summary), subParts.length ? /*#__PURE__*/React.createElement("span", {
-      className: "mds-caseq__sub"
-    }, subParts.join(" · ")) : null), /*#__PURE__*/React.createElement("span", {
-      className: "mds-caseq__end"
-    }, it.sla ? /*#__PURE__*/React.createElement(__ds_scope.SlaChip, _extends({
-      now: now
-    }, it.sla)) : null, it.status ? /*#__PURE__*/React.createElement(__ds_scope.SeverityBadge, {
-      status: it.status
-    }) : null, /*#__PURE__*/React.createElement("span", {
-      className: `mds-caseq__who${it.assignee ? "" : " mds-caseq__who--none"}`
-    }, it.assignee || "Unassigned")));
-  }));
+    return (react_1.default.createElement("div", { className: `mds-caseq${className ? " " + className : ""}`, role: "listbox", "aria-label": "Case queue", ref: listRef, onKeyDown: onKeyDown, ...rest }, items.map((it) => {
+        const selected = it.id === selectedId;
+        const subParts = [it.category, it.reason, it.openedAtUtc && `opened ${it.openedAtUtc}`]
+            .filter(Boolean);
+        return (react_1.default.createElement("button", { key: it.id, type: "button", role: "option", "aria-selected": selected, className: "mds-caseq__row", tabIndex: selected || (!selectedId && it === items[0]) ? 0 : -1, onClick: () => onSelect && onSelect(it.id, it) },
+            react_1.default.createElement("span", { className: `mds-caseq__rail ${railClass(it.priority)}`, "aria-hidden": "true" }),
+            react_1.default.createElement("span", { className: "mds-caseq__id" }, it.id),
+            react_1.default.createElement("span", { className: "mds-caseq__mid" },
+                react_1.default.createElement("span", { className: "mds-caseq__summary" }, it.summary),
+                subParts.length ? react_1.default.createElement("span", { className: "mds-caseq__sub" }, subParts.join(" · ")) : null),
+            react_1.default.createElement("span", { className: "mds-caseq__end" },
+                it.sla ? react_1.default.createElement(SlaChip_1.SlaChip, { now: now, ...it.sla }) : null,
+                it.status ? react_1.default.createElement(SeverityBadge_1.SeverityBadge, { status: it.status }) : null,
+                react_1.default.createElement("span", { className: `mds-caseq__who${it.assignee ? "" : " mds-caseq__who--none"}` }, it.assignee || "Unassigned"))));
+    })));
 }
-Object.assign(__ds_scope, { CaseQueue });
+Object.assign(__ds_scope, __ds_module.exports);
 })(); } catch (e) { __ds_ns.__errors.push({ path: "components/operations/CaseQueue.jsx", error: String((e && e.message) || e) }); }
 
 // components/operations/ValidationIssueList.jsx

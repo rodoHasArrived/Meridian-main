@@ -135,6 +135,10 @@ Reference material lives in `guidelines/` (visual + content + the two new refere
 
 **Components compile to `_ds_bundle.js`** — consume via `const { Button } = window.MeridianDesignSystem_4f61be` after loading the bundle. Each component injects its own scoped CSS keyed to the design tokens, so a consuming page only needs to link `styles.css` and the bundle.
 
+After changing component sources or token CSS, synchronize the checked-in bundle and manifest with
+`node "Meridian Design System/scripts/sync_generated_artifacts.mjs"`. Use the same command with
+`--check` to verify that generated artifacts are current without writing files.
+
 **Templates in `templates/<slug>/`** are the starting point for consuming projects:
 
 1. Copy the folder to your project

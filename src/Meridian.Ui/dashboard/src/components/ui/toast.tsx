@@ -85,7 +85,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
   return (
     <div
       className={cn(
-        "flex min-w-72 max-w-md items-start gap-3 rounded-[2px] border border-l-[3px] border-border bg-popover px-3.5 py-3 text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
+        "flex min-w-72 max-w-md items-start gap-3 rounded-[2px] border border-l-[3px] border-border bg-popover px-3.5 py-3 font-sans text-popover-foreground shadow-[var(--shadow-menu)]",
         toneClasses[toast.tone],
         className
       )}
@@ -93,7 +93,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
     >
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold">{toast.title}</div>
-        {toast.detail ? <div className="mt-0.5 font-mono text-xs leading-5 text-muted-foreground">{toast.detail}</div> : null}
+        {toast.detail ? <div className="mt-0.5 text-xs leading-5 text-muted-foreground">{toast.detail}</div> : null}
       </div>
       {onDismiss ? (
         <button

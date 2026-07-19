@@ -678,6 +678,7 @@ describe("strategy-screen view model", () => {
     });
     expect(plotTool.workspace.scatterChart.gridLines[0]).toMatchObject({ stroke: "var(--chart-grid)" });
     expect(plotTool.workspace.scatterChart.trendLine).toMatchObject({ stroke: "var(--chart-up)", strokeDasharray: "5 4" });
+    expect(plotTool.workspace.scatterChart.marker).toMatchObject({ stroke: "var(--chart-plot)" });
     expect(plotTool.workspace.scatterChart.marker).toMatchObject({
       fill: "var(--state-warn-fg)",
       labelText: "88.40, 73.80"
@@ -1144,9 +1145,9 @@ describe("strategy-screen view model", () => {
         metaItems: [],
         xAxisLabel: "X",
         yAxisLabel: "Y",
-        xTicks: [],
-        yTicks: [],
-        points: [],
+        xTicks: [{ value: 73, label: "fixture-x" }],
+        yTicks: [{ value: 91, label: "fixture-y" }],
+        points: [{ x: 321, y: 123, emphasis: true }],
         studySummary: [],
         legendItems: [],
         focusPoint: { label: "focus", xValueText: "1", yValueText: "2", detail: "api" },
@@ -1161,7 +1162,7 @@ describe("strategy-screen view model", () => {
         title: "API stats",
         description: "From backend",
         summaryTiles: [],
-        distributionBars: [],
+        distributionBars: [17, 43, 29],
         distributionSummary: "summary",
         distributionFootnote: "footnote",
         moments: [],
@@ -1184,7 +1185,15 @@ describe("strategy-screen view model", () => {
     });
 
     expect(state.plotTool.workspace.title).toBe("API workspace");
+    expect(state.plotTool.workspace.xTicks).toEqual([{ value: 73, label: "fixture-x" }]);
+    expect(state.plotTool.workspace.yTicks).toEqual([{ value: 91, label: "fixture-y" }]);
+    expect(state.plotTool.workspace.points).toEqual([{ x: 321, y: 123, emphasis: true }]);
+    expect(state.plotTool.workspace.scatterChart.points).toMatchObject([
+      { x: 321, y: 123, radius: 5 }
+    ]);
     expect(state.plotTool.statistics.title).toBe("API stats");
+    expect(state.plotTool.statistics.distributionBars).toEqual([17, 43, 29]);
+    expect(state.plotTool.statistics.distributionChart.bars.map((bar) => bar.heightPercent)).toEqual([17, 43, 29]);
   });
 
   it("uses an honest empty PlotTool state when no API payload is provided", () => {

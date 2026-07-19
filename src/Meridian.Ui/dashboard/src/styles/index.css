@@ -208,6 +208,11 @@
     --ws-accent: #2F6F8F;
     --ws-accent-hover: #3B82A6;
     --ws-accent-pressed: #255B75;
+    --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    --font-data: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+    --theme-row-height: 32px;
+    --row-height: var(--theme-row-height);
     /* Concrete is flat: the workstation shadow token carries NO card shadow;
        borders carry structure. Only detached overlays float (--shadow-float). */
     --ws-shadow: none;
@@ -299,16 +304,24 @@
     --severity-info-bg: var(--ws-surface-subtle);
 
     /* ─── Charts — Concrete series + grid. ─────────────────────────────────*/
-    --chart-grid: #D2D9E2;
-    --chart-grid-major: #CBD3DC;
-    --chart-up: #16885F;
-    --chart-dn: #BA3F55;
-    --chart-ma20: #2F6F8F;
-    --chart-ma50: #8A520E;
-    --chart-bench: #6E8597;
+    --chart-plot: var(--ws-surface);
+    --chart-grid: var(--ws-row-border);
+    --chart-grid-major: var(--ws-border-strong);
+    --chart-axis: var(--ws-text-muted);
+    --chart-border: var(--ws-border-strong);
+    --chart-up: var(--green);
+    --chart-dn: var(--red);
+    --chart-ma20: var(--ws-accent);
+    --chart-ma50: var(--orange);
+    --chart-bench: var(--ws-text-secondary);
     --chart-band: color-mix(in srgb, var(--ws-accent) 10%, transparent);
-    --chart-crosshair: #2F6F8F;
+    --chart-crosshair: var(--ws-accent);
     --chart-dd: color-mix(in srgb, var(--red) 22%, transparent);
+    --chart-equity: var(--chart-up);
+    --chart-drawdown: var(--chart-dn);
+    --chart-primary: var(--chart-ma20);
+    --chart-secondary: var(--chart-bench);
+    --chart-warning: var(--chart-ma50);
 
     /* ─── Elevation — flat by mandate. Panels/cards carry no shadow; only
        detached overlays (menus/popovers) float. ───────────────────────────*/
@@ -944,7 +957,7 @@
   }
 
   .eyebrow-label {
-    @apply font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground;
+    @apply font-sans text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
   }
 
   .glass-card {
@@ -960,7 +973,7 @@
   }
 
   .security-master-print-sheet__eyebrow {
-    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground;
+    @apply font-sans text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground;
   }
 
   .security-master-print-sheet__title {
@@ -980,7 +993,7 @@
   }
 
   .security-master-print-sheet__cell span {
-    @apply block font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground;
+    @apply block font-sans text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground;
   }
 
   .security-master-print-sheet__cell strong {
@@ -1052,15 +1065,16 @@
   }
 
   .plottool-chart-shell {
-    --foreground: 210 24% 92%;
-    --muted-foreground: 212 11% 70%;
-    --border: 211 14% 32%;
-    --secondary: 212 18% 17%;
-    border: 1px solid rgba(31, 52, 76, 0.95);
+    border: 1px solid var(--chart-border);
     border-radius: var(--radius-xl);
-    background: #05101b;
+    background: var(--chart-plot);
+    color: var(--ws-text);
     padding: 0.875rem;
     box-shadow: var(--shadow-panel);
+  }
+
+  .plottool-chart-shell svg {
+    background: var(--chart-plot);
   }
 
   .plottool-chart-legend {
@@ -1075,9 +1089,9 @@
     gap: 0.25rem;
     height: 14rem;
     padding: 1rem 0.75rem;
-    border: 1px solid rgba(31, 52, 76, 0.95);
+    border: 1px solid var(--chart-border);
     border-radius: var(--radius-lg);
-    background: var(--surface-topbar);
+    background: var(--chart-plot);
   }
 
   .plottool-legend-card {

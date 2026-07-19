@@ -16,8 +16,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
-import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "@/components/accounting/TrialBalanceRowDetail";
-import { ReconciliationComparisonPanel, TrialBalanceTable } from "@/components/accounting";
+import { ReconciliationComparisonPanel } from "@/components/accounting";
 import {
   approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
@@ -42,7 +41,6 @@ import {
   saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowBadgeClass, cashFlowTextClass, reportingBadgeClass } from "@/screens/accounting-screen.styles";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
@@ -60,16 +58,8 @@ import {
   OperationalExceptionWorkbenchPanel,
   ReconciliationQueueSummaryCard,
   TradingParametersPanel,
-  reconciliationQueueColumns,
 } from "@/screens/accounting-screen.operations-panels";
-import {
-  ChartAccountPathBuilder,
-  ConfigureActivationRail,
-  ConfigureChangePreviewPanel,
-  ConfigureCommandBar,
-  ConfigureProductionReadinessCard,
-  LedgerBookSetupWizard
-} from "@/screens/accounting-screen.configure-panel";
+import { AccountingConfigurationPanel } from "@/screens/accounting-screen.configuration-panel";
 import {
   buildAccountingSectionVisibility,
   buildAccountingTaskMode,
@@ -92,8 +82,6 @@ import {
 } from "@/screens/accounting-screen.view-model";
 import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-model";
 import type {
-  AccountingConfigurationViewModel,
-  AccountingRulesStudioPromotionReadinessViewModel,
   ManualJournalEntryWorkbenchViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
@@ -214,8 +202,6 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
   { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
-
-// trialBalanceColumns moved to components/accounting/TrialBalanceRowDetail.tsx for reuse by trial-balance-screen.tsx.
 
 const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[] = [
   {
@@ -1644,12 +1630,14 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
-  // On the reconciliation route the casework band stays primary; break
-  // actions and history collapse unless they are the route's own workstream
-  // (exceptions) or a hash deep-link targets them.
-  const reconciliationActionsExpanded =
-    workstream === "exceptions" ||
-    ["accounting-actions", "accounting-history", "reconciliation-break-queue"].includes(hash.replace(/^#/, ""));
+  const reconciliationActionHashTarget = [
+    "accounting-actions",
+    "accounting-history",
+    "reconciliation-break-queue"
+  ].includes(hash.replace(/^#/, ""));
+  const showLegacyReconciliationActions = workstream !== "reconciliation"
+    && sectionVisibility.showReconciliationActions
+    && (workstream === "exceptions" || reconciliationActionHashTarget);
   const workspace = workspaceForPath(pathname);
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
@@ -1669,10 +1657,24 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     !selectedBreakPrimaryFields.includes(field)
   )) ?? [];
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
-  const selectedReconciliation = reconciliation.selectedReconciliation;
   const selectedReconciliationDetail = reconciliation.detailView;
-  const selectedReconciliationOpenBreakLabel = `${selectedReconciliation?.openBreakCount ?? 0} open break${selectedReconciliation?.openBreakCount === 1 ? "" : "s"}`;
-  const selectedReconciliationOpenBreakTone = (selectedReconciliation?.openBreakCount ?? 0) === 0 ? "success" : "warning";
+  const selectedBreak = reconciliation.selectedBreakId
+    ? reconciliation.rows.find((item) => item.breakId === reconciliation.selectedBreakId) ?? null
+    : null;
+  const reconciliationPageErrorMessages = [
+    ...(reconciliation.actionErrorText
+      ? [reconciliation.actionErrorText, ...reconciliation.actionErrorDetails]
+      : []),
+    ...(reconciliation.errorText
+      ? [reconciliation.errorText, ...reconciliation.errorDetails]
+      : []),
+    ...(reconciliation.statementRunsView.errorText
+      ? [reconciliation.statementRunsView.errorText, ...reconciliation.statementRunsView.errorDetails]
+      : [])
+  ];
+  const reconciliationPageErrorTitle = reconciliationPageErrorMessages[0] ?? null;
+  const reconciliationPageErrorDetails = reconciliationPageErrorMessages.slice(1);
+  const reconciliationPageLoadingText = reconciliation.loadingText ?? reconciliation.statementRunsView.loadingText;
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel(undefined, sectionVisibility.showConfiguration);
@@ -1707,7 +1709,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
-  const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const securityInstrumentExplorerView = useMemo(() => {
     if (!securityInstrumentExplorer) {
@@ -1870,27 +1871,6 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     : null;
 
   useEffect(() => {
-    if (!sectionVisibility.showLedgerExplorer) {
-      return;
-    }
-
-    let cancelled = false;
-    void getFinancialRecordExplorer("ledger").then((explorer) => {
-      if (!cancelled) {
-        setLedgerExplorer(explorer);
-      }
-    }).catch(() => {
-      if (!cancelled) {
-        setLedgerExplorer(null);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [sectionVisibility.showLedgerExplorer]);
-
-  useEffect(() => {
     if (!sectionVisibility.showSecurityMaster) {
       return;
     }
@@ -1911,69 +1891,11 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
     };
   }, [sectionVisibility.showSecurityMaster]);
 
-  async function saveAccountingExplorerView(
-    explorerId: "ledger" | "security-instrument",
-    request: FinancialRecordExplorerSavedViewSaveRequestDto
-  ) {
-    await saveFinancialRecordExplorerView(explorerId, request);
-    const refreshed = await getFinancialRecordExplorer(explorerId);
-    if (explorerId === "ledger") {
-      setLedgerExplorer(refreshed);
-    } else {
-      setSecurityInstrumentExplorer(refreshed);
-    }
+  async function saveSecurityInstrumentExplorerView(request: FinancialRecordExplorerSavedViewSaveRequestDto) {
+    await saveFinancialRecordExplorerView("security-instrument", request);
+    const refreshed = await getFinancialRecordExplorer("security-instrument");
+    setSecurityInstrumentExplorer(refreshed);
   }
-  const reconciliationBreakTableColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
-    ...reconciliationBreakColumns,
-    {
-      id: "actions",
-      label: "Actions",
-      render: (item) => (
-        <div className="panel-action-zone">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={!item.canAssign}
-            disabledReason={item.assignDisabledReason}
-            aria-label={item.assignAriaLabel}
-            onClick={() => {
-              reconciliation.selectBreak(item.breakId);
-              void reconciliation.assignBreak(item.breakId);
-            }}
-          >
-            {item.assignLabel}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={!item.canResolve || resolveDialog.isOpenFor(item.breakId)}
-            disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "resolve", item.resolveDisabledReason)}
-            aria-label={item.resolveAriaLabel}
-            onClick={() => {
-              reconciliation.selectBreak(item.breakId);
-              resolveDialog.open(item.breakId, "Resolved");
-            }}
-          >
-            {item.resolveLabel}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!item.canDismiss || resolveDialog.isOpenFor(item.breakId)}
-            disabledReason={resolveDialog.getActionDisabledReason(item.breakId, "dismiss", item.dismissDisabledReason)}
-            aria-label={item.dismissAriaLabel}
-            onClick={() => {
-              reconciliation.selectBreak(item.breakId);
-              resolveDialog.open(item.breakId, "Dismissed");
-            }}
-          >
-            {item.dismissLabel}
-          </Button>
-        </div>
-      )
-    }
-  ];
-
   const refreshAccountingSystem = async (persistPreview = false) => {
     setAccountingSystemLoading(true);
     setAccountingSystemError(null);
@@ -2687,575 +2609,397 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
           <div className="workspace-section-subheader">
             <div className="min-w-0">
-              <p className="eyebrow-label">Exceptions</p>
-              <h3 id="accounting-exceptions-heading" className="workspace-section-title">Reconciliation exceptions and evidence</h3>
-              <p className="workspace-section-summary">Statement runs, selected queue detail, and evidence links are grouped for investigation.</p>
+              <p className="eyebrow-label">Reconciliation</p>
+              <h3 id="accounting-exceptions-heading" className="workspace-section-title">Reconciliation comparison and casework</h3>
+              <p className="workspace-section-summary">Compare statement and ledger evidence, select the active run, and resolve its breaks from one master-detail workspace.</p>
             </div>
-            <a className="workspace-section-jump" href="#accounting-actions">Actions</a>
-          </div>
-        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <div className="xl:col-span-2">
-            <ReconciliationComparisonPanel view={reconciliation.comparisonView} />
+            <a className="workspace-section-jump" href="#reconciliation-break-queue">Break queue</a>
           </div>
 
-          <Card className="panel-surface xl:col-span-2">
-            <CardHeader>
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Landmark className="h-4 w-4 text-primary" aria-hidden="true" />
-                    {reconciliation.statementRunsView.title}
-                  </CardTitle>
-                  <CardDescription className="mt-2">{reconciliation.statementRunsView.description}</CardDescription>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={reconciliation.statementRunsView.loadingText !== null}
-                  disabledReason={reconciliation.statementRunsView.loadingText ? "Statement run refresh is already in progress." : null}
-                  aria-label={reconciliation.statementRunsView.recoveryActionAriaLabel}
-                  onClick={reconciliation.refreshStatementRuns}
-                >
-                  <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                  {reconciliation.statementRunsView.recoveryActionLabel}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <span className="sr-only" aria-live="polite">{reconciliation.statementRunsView.statusAnnouncement}</span>
-              {reconciliation.statementRunsView.loadingText ? (
-                <StatusBanner
-                  role="status"
-                  tone="info"
-                  title="Statement runs loading"
-                  detail={reconciliation.statementRunsView.loadingText}
-                />
-              ) : null}
-              {reconciliation.statementRunsView.errorText ? (
-                <StatusBanner
-                  role="alert"
-                  tone="danger"
-                  title={reconciliation.statementRunsView.errorText}
-                  detail={reconciliation.statementRunsView.errorDetails.length > 0 ? (
-                    <ul className="mt-2 list-disc pl-5">
-                      {reconciliation.statementRunsView.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
+          {reconciliationPageErrorTitle || reconciliationPageLoadingText ? (
+            <StatusBanner
+              role={reconciliationPageErrorTitle ? "alert" : "status"}
+              tone={reconciliationPageErrorTitle ? "danger" : "info"}
+              title={reconciliationPageErrorTitle ?? "Reconciliation casework loading"}
+              detail={reconciliationPageErrorTitle
+                ? reconciliationPageErrorDetails.length > 0 ? (
+                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                      {reconciliationPageErrorDetails.map((detail, index) => (
+                        <li key={index + "-" + detail}>{detail}</li>
+                      ))}
                     </ul>
-                  ) : null}
-                />
-              ) : null}
-              <DenseDataTable
-                columns={reconciliationStatementRunColumns}
-                rows={reconciliation.statementRunsView.rows}
-                getRowId={(row) => row.runId}
-                getRowAriaLabel={(row) => row.ariaLabel}
-                getRowSelectAriaLabel={(row) => row.selectAriaLabel}
-                getRowAriaControls={(row) => row.controlsId}
-                getRowAriaExpanded={(row) => row.isSelected}
-                selectedRowId={reconciliation.selectedRunId}
-                onRowSelect={(row) => reconciliation.selectRun(row.runId)}
-                emptyText={reconciliation.statementRunsView.emptyText}
-                ariaLabel={reconciliation.statementRunsView.tableLabel}
-                caption={reconciliation.statementRunsView.tableCaption}
-              />
-              <Tabs
-                id={reconciliation.statementRunsView.detailPanelId}
-                aria-label="Statement run detail tabs"
-                tabs={reconciliation.statementRunsView.tabs.map((tab) => ({
-                  ariaLabel: tab.ariaLabel,
-                  count: tab.badgeLabel,
-                  disabled: tab.disabled,
-                  id: tab.id,
-                  label: tab.label
-                }))}
-              >
-                {reconciliation.statementRunsView.tabs.map((tab) => (
-                  <TabPanel key={tab.id}>
-                    <StatusBanner
-                      role={tab.disabled ? "status" : undefined}
-                      tone={tab.disabled ? "warning" : "info"}
-                      title={tab.label}
-                      detail={tab.disabledReason ?? tab.description}
-                    />
-                  </TabPanel>
-                ))}
-              </Tabs>
-              <p className="text-xs text-muted-foreground">
-                Matching, tolerance, validation, and case-state decisions remain in reconciliation services; this view shows service-reviewed results.
-              </p>
-            </CardContent>
-          </Card>
+                  ) : null
+                : reconciliationPageLoadingText}
+            />
+          ) : null}
 
-          <Card className="panel-surface">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <BookCheck className="h-4 w-4 text-primary" />
-                {reconciliation.queuePanelView.title}
-              </CardTitle>
-              <CardDescription>{reconciliation.queuePanelView.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {reconciliation.queuePanelView.hasRows ? (
-                <DenseDataTable
-                  columns={reconciliationQueueColumns}
-                  rows={reconciliation.queuePanelView.rows}
-                  getRowId={(row) => row.runId}
-                  getRowAriaLabel={(row) => row.ariaLabel}
-                  getRowSelectAriaLabel={(row) => row.selectAriaLabel}
-                  getRowAriaControls={(row) => row.controlsId}
-                  getRowAriaExpanded={(row) => row.isExpanded}
-                  selectedRowId={selectedReconciliation?.runId ?? null}
-                  onRowSelect={(row) => reconciliation.selectRun(row.runId)}
-                  emptyText={reconciliation.queuePanelView.emptyText}
-                  ariaLabel={reconciliation.queuePanelView.listLabel}
-                  caption={reconciliation.queuePanelView.description}
-                />
-              ) : (
-                <StatusBanner
-                  role="status"
-                  tone="warning"
-                  title="Reconciliation queue empty"
-                  detail={reconciliation.queuePanelView.emptyText}
-                />
-              )}
-            </CardContent>
-          </Card>
-
-          <Card
-            id={reconciliation.queuePanelView.detailPanelId}
-            data-selected-source="Selected from reconciliation queue"
-            className="row-detail-panel panel-surface-strong bg-panel-strong text-foreground"
-            role="region"
-            aria-live="polite"
-            aria-label={selectedReconciliationDetail?.ariaLabel ?? reconciliation.queuePanelView.detailEmptyAriaLabel}
+          <section
+            className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_380px]"
+            aria-label="Reconciliation casework master detail"
           >
-            <CardHeader>
-              <div className="eyebrow-label">{selectedReconciliationDetail?.eyebrow ?? "Reconciliation detail"}</div>
-              <CardTitle>{selectedReconciliationDetail?.title ?? reconciliation.queuePanelView.detailEmptyTitle}</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                {selectedReconciliationDetail?.description ?? reconciliation.queuePanelView.detailEmptyText}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-              {selectedReconciliationDetail ? (
-                <>
-                  {selectedReconciliationDetail.fields.map((field) => (
-                    <AccountingValue
-                      key={field.label}
-                      label={field.label}
-                      value={field.value}
-                      tone={cashFlowTextClass(field.tone)}
-                      ariaLabel={field.ariaLabel}
-                    />
-                  ))}
-                  <div
-                    aria-label={selectedReconciliationDetail.narrativeLabel}
-                    className="rounded-lg border border-border/70 bg-background/70 p-4 text-muted-foreground"
-                  >
-                    {selectedReconciliationDetail.narrative}
-                  </div>
-                  {reconciliation.detailActions ? (
-                    <div className="panel-action-footer">
-                      <Button asChild variant="secondary">
-                        <Link
-                          to={reconciliation.detailActions.evidencePacketHref}
-                          aria-label={reconciliation.detailActions.evidencePacketAriaLabel}
-                        >
-                          <Network className="h-4 w-4" />
-                          {reconciliation.detailActions.evidencePacketLabel}
-                        </Link>
-                      </Button>
-                      <Button asChild variant="secondary">
-                        <a
-                          href={reconciliation.detailActions.breakChecklistHref}
-                          aria-label={reconciliation.detailActions.breakChecklistAriaLabel}
-                        >
-                          {reconciliation.detailActions.breakChecklistLabel}
-                        </a>
-                      </Button>
-                      <Button asChild variant="outline" className="border-border/70 bg-transparent text-foreground hover:bg-secondary/60">
-                        <a
-                          href={reconciliation.detailActions.auditPacketHref}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={reconciliation.detailActions.auditPacketAriaLabel}
-                        >
-                          {reconciliation.detailActions.auditPacketLabel}
-                        </a>
-                      </Button>
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <div role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-                  {reconciliation.queuePanelView.detailEmptyText}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </section>
-        </section>
-      ) : null}
+            <div className="min-w-0 space-y-4">
+              <ReconciliationComparisonPanel
+                view={reconciliation.comparisonView}
+                selectedRunId={reconciliation.selectedRunId}
+                onSelectRun={reconciliation.selectRun}
+              />
 
-      {sectionVisibility.showLedgerExplorer && selectedReconciliation ? (
-        <FinancialRecordExplorerShell
-          explorerLabel="Financial Record Explorer"
-          title="Ledger Explorer"
-          titleId="accounting-ledger-explorer-title"
-          description="Filter accounting ledger records, inspect dense trial-balance rows, and drill into journals, ledger lines, source documents, approvals, reconciliations, report usage, and audit history without leaving the Accounting workspace."
-          scopeItems={[
-            { id: "workspace", label: "Workspace", value: "Accounting" },
-            { id: "record-set", label: "Record set", value: "Journal entries and ledger detail" },
-            { id: "run", label: "Reconciliation run", value: selectedReconciliation.strategyName },
-            { id: "run-id", label: "Run ID", value: selectedReconciliation.runId }
-          ]}
-          savedViews={[
-            {
-              id: "controller-review",
-              label: "Controller review",
-              detail: "Default ledger explorer view for trial balance, proof drawer, approvals, and report usage.",
-              active: true
-            },
-            {
-              id: "exceptions",
-              label: "Exceptions",
-              detail: "Focuses the ledger grid on unreconciled accounts, blockers, and missing evidence."
-            },
-            {
-              id: "report-usage",
-              label: "Report usage",
-              detail: "Keeps journal, ledger line, and report export proof paths visible together."
-            }
-          ]}
-          summaryItems={[
-            { id: "rows", label: "Rows", value: reconciliation.trialBalanceView.filteredRowCountLabel },
-            { id: "basis", label: "Basis", value: reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "Primary" },
-            { id: "breaks", label: "Open breaks", value: selectedReconciliationOpenBreakLabel, tone: selectedReconciliationOpenBreakTone },
-            { id: "reconciliation", label: "Reconciliation", value: selectedReconciliation.reconciliationStatus, tone: selectedReconciliationOpenBreakTone }
-          ]}
-          appliedFilters={[
-            { id: "account", label: "GL account", value: reconciliation.trialBalanceView.accountFilterValue.trim() || "All accounts" },
-            { id: "basis-filter", label: "Accounting basis", value: reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "Primary" },
-            { id: "run-filter", label: "Run", value: selectedReconciliation.runId }
-          ]}
-          actions={[
-            {
-              id: "evidence",
-              label: reconciliation.detailActions?.evidencePacketLabel ?? "Open evidence packet",
-              href: reconciliation.detailActions?.evidencePacketHref,
-              ariaLabel: reconciliation.detailActions?.evidencePacketAriaLabel
-            },
-            {
-              id: "audit",
-              label: reconciliation.detailActions?.auditPacketLabel ?? "Review audit packet",
-              href: reconciliation.detailActions?.auditPacketHref,
-              ariaLabel: reconciliation.detailActions?.auditPacketAriaLabel
-            }
-          ]}
-          explorer={ledgerExplorer}
-          onSaveView={(request) => saveAccountingExplorerView("ledger", request)}
-        >
-        <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-          <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description" className="panel-surface">
-            <CardHeader>
-              <CardTitle id="trial-balance-title">{reconciliation.trialBalanceView.title}</CardTitle>
-              <CardDescription id="trial-balance-description">{reconciliation.trialBalanceView.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <span className="sr-only" aria-live="polite">{reconciliation.trialBalanceView.statusAnnouncement}</span>
-              <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Accounting basis">
-                {reconciliation.trialBalanceView.basisOptions.map((option) => (
-                  <Button
-                    key={option.id}
-                    type="button"
-                    size="sm"
-                    variant={option.isSelected ? "default" : "outline"}
-                    aria-pressed={option.isSelected}
-                    aria-label={`${option.label} basis, ${option.rowCountLabel}. ${option.description}`}
-                    onClick={() => reconciliation.selectAccountingBasis(option.id)}
-                  >
-                    <span>{option.label}</span>
-                    <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
-                  </Button>
-                ))}
-              </div>
-              <div className="mb-4 rounded-md border border-border/70 bg-secondary/15 p-3">
-                <FormRow
-                  label={reconciliation.trialBalanceView.accountFilterLabel}
-                  labelFor="ledger-account-filter"
-                >
-                  <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-                    <div className="relative min-w-0 flex-1">
-                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                      <Input
-                        id="ledger-account-filter"
-                        type="search"
-                        value={reconciliation.trialBalanceView.accountFilterValue}
-                        onChange={(event) => reconciliation.updateLedgerAccountFilter(event.target.value)}
-                        placeholder={reconciliation.trialBalanceView.accountFilterPlaceholder}
-                        className="pl-9"
-                      />
+              <Card className="panel-surface">
+                <CardHeader>
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <Landmark className="h-4 w-4 text-primary" aria-hidden="true" />
+                        {reconciliation.statementRunsView.title}
+                      </CardTitle>
+                      <CardDescription className="mt-2">{reconciliation.statementRunsView.description}</CardDescription>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-muted-foreground">{reconciliation.trialBalanceView.filteredRowCountLabel}</span>
-                      {reconciliation.trialBalanceView.accountFilterValue.trim() ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={reconciliation.statementRunsView.loadingText !== null}
+                      disabledReason={reconciliation.statementRunsView.loadingText ? "Statement run refresh is already in progress." : null}
+                      aria-label={reconciliation.statementRunsView.recoveryActionAriaLabel}
+                      onClick={reconciliation.refreshStatementRuns}
+                    >
+                      <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+                      {reconciliation.statementRunsView.recoveryActionLabel}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <span className="sr-only" aria-live="polite">{reconciliation.statementRunsView.statusAnnouncement}</span>
+                  <DenseDataTable
+                    columns={reconciliationStatementRunColumns}
+                    rows={reconciliation.statementRunsView.rows}
+                    getRowId={(row) => row.runId}
+                    getRowAriaLabel={(row) => row.ariaLabel}
+                    getRowSelectAriaLabel={(row) => row.selectAriaLabel}
+                    getRowAriaControls={(row) => row.controlsId}
+                    getRowAriaExpanded={(row) => row.isSelected}
+                    selectedRowId={reconciliation.selectedRunId}
+                    onRowSelect={(row) => reconciliation.selectRun(row.runId)}
+                    emptyText={reconciliation.statementRunsView.emptyText}
+                    ariaLabel={reconciliation.statementRunsView.tableLabel}
+                    caption={reconciliation.statementRunsView.tableCaption}
+                  />
+                  <Tabs
+                    id={reconciliation.statementRunsView.detailPanelId}
+                    aria-label="Statement run detail tabs"
+                    tabs={reconciliation.statementRunsView.tabs.map((tab) => ({
+                      ariaLabel: tab.ariaLabel,
+                      count: tab.badgeLabel,
+                      disabled: tab.disabled,
+                      id: tab.id,
+                      label: tab.label
+                    }))}
+                  >
+                    {reconciliation.statementRunsView.tabs.map((tab) => (
+                      <TabPanel key={tab.id}>
+                        <div className="rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-sm">
+                          <div className="font-semibold text-foreground">{tab.label}</div>
+                          <p className="mt-1 leading-5 text-muted-foreground">{tab.disabledReason ?? tab.description}</p>
+                        </div>
+                      </TabPanel>
+                    ))}
+                  </Tabs>
+                  <p className="text-xs text-muted-foreground">
+                    Matching, tolerance, validation, and case-state decisions remain in reconciliation services; this view shows service-reviewed results.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card id={reconciliation.detailActions?.breakChecklistTargetId ?? "reconciliation-break-queue"} className="panel-surface">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+                    Reconciliation break queue
+                  </CardTitle>
+                  <CardDescription>{reconciliation.tableCaption}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <span className="sr-only" aria-live="polite">{reconciliation.statusAnnouncement}</span>
+                  <DenseDataTable
+                    columns={reconciliationBreakColumns}
+                    rows={reconciliation.rows}
+                    getRowId={(item) => item.breakId}
+                    getRowAriaLabel={(item) => item.rowAriaLabel}
+                    getRowSelectAriaLabel={(item) => item.rowSelectAriaLabel}
+                    getRowAriaControls={(item) => item.detailPanelId}
+                    getRowAriaExpanded={(item) => item.isExpanded}
+                    onRowSelect={(item) => reconciliation.selectBreak(item.breakId)}
+                    selectedRowId={reconciliation.selectedBreakId}
+                    emptyText={reconciliation.emptyText}
+                    ariaLabel={reconciliation.tableLabel}
+                    caption={reconciliation.tableCaption}
+                  />
+                </CardContent>
+              </Card>
+
+              {!showLegacyReconciliationActions ? (
+                <CalibrationSummaryPanel view={reconciliation.calibrationView} compact />
+              ) : null}
+            </div>
+
+            <div
+              role="region"
+              className="min-w-0 xl:sticky xl:top-4 xl:max-h-[calc(100dvh-9rem)] xl:overflow-y-auto xl:[scrollbar-gutter:stable]"
+              aria-label="Selected reconciliation case detail"
+              data-master-detail-rail="reconciliation"
+            >
+              <Card
+                id={reconciliation.detailPanelId}
+                data-selected-source="Selected from reconciliation break queue"
+                className="row-detail-panel panel-surface-strong bg-panel-strong text-foreground"
+                role="region"
+                aria-live="polite"
+                aria-label={
+                  reconciliation.selectedDetail?.ariaLabel
+                  ?? selectedReconciliationDetail?.ariaLabel
+                  ?? reconciliation.detailEmptyAriaLabel
+                }
+              >
+                <CardHeader>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="eyebrow-label">{reconciliation.selectedDetail?.eyebrow ?? "Selected reconciliation case"}</div>
+                      <CardTitle>
+                        {reconciliation.selectedDetail?.title
+                          ?? selectedReconciliationDetail?.title
+                          ?? reconciliation.detailEmptyTitle}
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground">
+                        {reconciliation.selectedDetail?.description
+                          ?? selectedReconciliationDetail?.description
+                          ?? reconciliation.detailEmptyText}
+                      </CardDescription>
+                    </div>
+                    {reconciliation.selectedDetail ? (
+                      <Badge variant={reconciliation.selectedDetail.statusBadgeVariant}>
+                        {reconciliation.selectedDetail.statusLabel}
+                      </Badge>
+                    ) : null}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                  <section
+                    aria-label="Selected reconciliation run context"
+                    className="rounded-lg border border-border/70 bg-background/70 p-3"
+                  >
+                    <div className="eyebrow-label">Run context</div>
+                    {selectedReconciliationDetail ? (
+                      <div className="mt-2 space-y-3">
+                        <div>
+                          <h4 className="font-semibold text-foreground">{selectedReconciliationDetail.title}</h4>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">{selectedReconciliationDetail.description}</p>
+                        </div>
+                        <div className="grid gap-2">
+                          {selectedReconciliationDetail.fields.map((field) => (
+                            <AccountingValue
+                              key={field.label}
+                              label={field.label}
+                              value={field.value}
+                              tone={cashFlowTextClass(field.tone)}
+                              ariaLabel={field.ariaLabel}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-xs leading-5 text-muted-foreground">{selectedReconciliationDetail.narrative}</p>
+                        {reconciliation.detailActions ? (
+                          <div className="panel-action-zone justify-start">
+                            <Button asChild size="sm" variant="secondary">
+                              <Link
+                                to={reconciliation.detailActions.evidencePacketHref}
+                                aria-label={reconciliation.detailActions.evidencePacketAriaLabel}
+                              >
+                                <Network className="h-4 w-4" aria-hidden="true" />
+                                {reconciliation.detailActions.evidencePacketLabel}
+                              </Link>
+                            </Button>
+                            <Button asChild size="sm" variant="outline">
+                              <a
+                                href={reconciliation.detailActions.auditPacketHref}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label={reconciliation.detailActions.auditPacketAriaLabel}
+                              >
+                                {reconciliation.detailActions.auditPacketLabel}
+                              </a>
+                            </Button>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <p role="status" className="mt-2 text-sm text-muted-foreground">
+                        Select a statement run to load its case context and retained evidence.
+                      </p>
+                    )}
+                  </section>
+
+                  {reconciliation.selectedDetail ? (
+                    <section className="space-y-3" aria-label="Selected reconciliation break summary">
+                      <div className="grid gap-2">
+                        {selectedBreakPrimaryFields.map((field) => (
+                          <AccountingValue key={field.label} label={field.label} value={field.value} />
+                        ))}
+                      </div>
+
+                      {reconciliation.selectedDetail.analysisText ? (
+                        <div className="rounded-md border border-border/50 bg-secondary/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                          <span className="font-medium text-foreground">Analysis: </span>
+                          {reconciliation.selectedDetail.analysisText}
+                        </div>
+                      ) : null}
+
+                      {reconciliation.selectedDetail.recommendedActionText ? (
+                        <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-5">
+                          <span className="font-medium text-primary">Recommended: </span>
+                          <span className="text-foreground">{reconciliation.selectedDetail.recommendedActionText}</span>
+                        </div>
+                      ) : null}
+
+                      {selectedBreakTechnicalFields.length > 0 ? (
+                        <TechnicalDetails
+                          label="Break metadata"
+                          description="Identifiers, routing metadata, policy values, and retained explanation detail for audit and support use."
+                        >
+                          <div className="grid gap-2">
+                            <AccountingValue label="Break ID" value={reconciliation.selectedBreakId ?? "Not retained"} />
+                            {selectedBreakTechnicalFields.map((field) => (
+                              <AccountingValue key={field.label} label={field.label} value={field.value} />
+                            ))}
+                          </div>
+                        </TechnicalDetails>
+                      ) : null}
+
+                      {reconciliation.selectedDetail.routingActionHref && reconciliation.selectedDetail.routingActionLabel ? (
+                        <Button asChild variant="secondary" className="w-full justify-start">
+                          <Link
+                            to={reconciliation.selectedDetail.routingActionHref}
+                            aria-label={
+                              reconciliation.selectedDetail.routingActionAriaLabel
+                              ?? reconciliation.selectedDetail.routingActionLabel
+                            }
+                          >
+                            <Network className="h-4 w-4" aria-hidden="true" />
+                            {reconciliation.selectedDetail.routingActionLabel}
+                          </Link>
+                        </Button>
+                      ) : null}
+
+                      <div className="panel-action-zone justify-start" aria-label="Selected reconciliation break actions">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={!selectedBreak || !selectedBreak.canAssign}
+                          disabledReason={selectedBreak?.assignDisabledReason ?? "Select a reconciliation break before assigning it."}
+                          aria-label={selectedBreak?.assignAriaLabel ?? "Assign selected reconciliation break"}
+                          onClick={() => {
+                            if (selectedBreak) {
+                              void reconciliation.assignBreak(selectedBreak.breakId);
+                            }
+                          }}
+                        >
+                          {selectedBreak?.assignLabel ?? "Assign"}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={!selectedBreak || !selectedBreak.canResolve || resolveDialog.isOpenFor(selectedBreak.breakId)}
+                          disabledReason={selectedBreak
+                            ? resolveDialog.getActionDisabledReason(selectedBreak.breakId, "resolve", selectedBreak.resolveDisabledReason)
+                            : "Select a reconciliation break before resolving it."}
+                          aria-label={selectedBreak?.resolveAriaLabel ?? "Resolve selected reconciliation break"}
+                          onClick={() => {
+                            if (selectedBreak) {
+                              resolveDialog.open(selectedBreak.breakId, "Resolved");
+                            }
+                          }}
+                        >
+                          {selectedBreak?.resolveLabel ?? "Resolve"}
+                        </Button>
                         <Button
                           type="button"
                           size="sm"
                           variant="ghost"
-                          onClick={() => reconciliation.updateLedgerAccountFilter("")}
+                          disabled={!selectedBreak || !selectedBreak.canDismiss || resolveDialog.isOpenFor(selectedBreak.breakId)}
+                          disabledReason={selectedBreak
+                            ? resolveDialog.getActionDisabledReason(selectedBreak.breakId, "dismiss", selectedBreak.dismissDisabledReason)
+                            : "Select a reconciliation break before dismissing it."}
+                          aria-label={selectedBreak?.dismissAriaLabel ?? "Dismiss selected reconciliation break"}
+                          onClick={() => {
+                            if (selectedBreak) {
+                              resolveDialog.open(selectedBreak.breakId, "Dismissed");
+                            }
+                          }}
                         >
-                          {reconciliation.trialBalanceView.clearAccountFilterLabel}
+                          {selectedBreak?.dismissLabel ?? "Dismiss"}
                         </Button>
+                      </div>
+
+                      {activeResolveBreak && resolveDialog.active ? (
+                        <form
+                          className="space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
+                          aria-label={resolveDialog.active.formAriaLabel}
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            void resolveDialog.submit();
+                          }}
+                        >
+                          <FormRow
+                            label={resolveDialog.active.label}
+                            labelFor={resolveDialog.active.inputId}
+                            hint={resolveDialog.active.helpText}
+                          >
+                            <Input
+                              id={resolveDialog.active.inputId}
+                              type="text"
+                              required
+                              autoFocus
+                              aria-describedby={resolveDialog.active.helpId}
+                              placeholder={resolveDialog.active.placeholder}
+                              value={resolveDialog.active.rationale}
+                              onChange={(event) => resolveDialog.updateRationale(event.target.value)}
+                            />
+                            <span id={resolveDialog.active.helpId} className="sr-only">
+                              {resolveDialog.active.helpText}
+                            </span>
+                          </FormRow>
+                          <div className="panel-action-zone justify-start">
+                            <Button
+                              type="submit"
+                              size="sm"
+                              disabled={resolveDialog.active.isSubmitDisabled}
+                              disabledReason={resolveDialog.active.submitDisabledReason}
+                              aria-label={resolveDialog.active.submitAriaLabel}
+                            >
+                              {resolveDialog.active.submitLabel}
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              aria-label={resolveDialog.active.cancelAriaLabel}
+                              onClick={resolveDialog.close}
+                            >
+                              {resolveDialog.active.cancelLabel}
+                            </Button>
+                          </div>
+                        </form>
                       ) : null}
+                    </section>
+                  ) : (
+                    <div role="status" className="rounded-lg border border-border/70 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground">
+                      {reconciliation.detailEmptyText}
                     </div>
-                  </div>
-                </FormRow>
-                {reconciliation.trialBalanceView.accountFilterOptions.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="General Ledger account shortcuts">
-                    {reconciliation.trialBalanceView.accountFilterOptions.map((option) => (
-                      <Button
-                        key={option.id}
-                        type="button"
-                        size="sm"
-                        variant={option.isSelected ? "secondary" : "outline"}
-                        aria-pressed={option.isSelected}
-                        aria-label={`${option.label}, ${option.detail}, ${option.rowCountLabel}`}
-                        onClick={() => reconciliation.updateLedgerAccountFilter(option.label)}
-                      >
-                        <span className="truncate">{option.label}</span>
-                        <span className="ml-2 font-mono text-[10px] opacity-75">{option.rowCount}</span>
-                      </Button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-              {reconciliation.trialBalanceView.hasRows ? (
-                <div className="grid gap-3 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
-                  {reconciliation.trialBalanceView.rows.length > DENSE_VIRTUALIZATION_THRESHOLD ? (
-                    <DenseDataTable
-                      columns={trialBalanceColumns}
-                      rows={reconciliation.trialBalanceView.rows}
-                      getRowId={(line) => line.rowId}
-                      getRowAriaLabel={(line) => line.ariaLabel}
-                      getRowSelectAriaLabel={(line) => line.selectAriaLabel}
-                      getRowAriaControls={(line) => line.detailPanelId}
-                      getRowAriaExpanded={(line) => line.isExpanded}
-                      selectedRowId={reconciliation.trialBalanceView.selectedRowId}
-                      onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
-                      emptyText={reconciliation.trialBalanceView.emptyDetail}
-                      ariaLabel={reconciliation.trialBalanceView.tableLabel}
-                    />
-                  ) : (
-                    <TrialBalanceTable
-                      rows={reconciliation.trialBalanceView.rows}
-                      selectedRowId={reconciliation.trialBalanceView.selectedRowId}
-                      caption={reconciliation.trialBalanceView.tableLabel}
-                      onRowSelect={(line) => reconciliation.selectTrialBalanceRow(line.rowId)}
-                    />
                   )}
-                  {reconciliation.trialBalanceView.selectedDetail ? (
-                    <AccountingTrialBalanceSelectedDetailPanel
-                      panelId={reconciliation.trialBalanceView.detailPanelId}
-                      detail={reconciliation.trialBalanceView.selectedDetail}
-                    />
-                  ) : (
-                    <aside
-                      id={reconciliation.trialBalanceView.detailPanelId}
-                      role="region"
-                      aria-label={reconciliation.trialBalanceView.detailEmptyAriaLabel}
-                      data-selected-source="Selected from trial balance"
-                      className="row-detail-panel h-fit min-w-0"
-                    >
-                      <div className="eyebrow-label">Trial-balance detail</div>
-                      <h3 className="mt-1 text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.detailEmptyTitle}</h3>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{reconciliation.trialBalanceView.detailEmptyText}</p>
-                    </aside>
-                  )}
-                </div>
-              ) : (
-                <div
-                  role={reconciliation.trialBalanceView.state === "error" ? "alert" : "status"}
-                  className={cn(
-                    "rounded-lg border px-4 py-4",
-                    reconciliation.trialBalanceView.state === "error"
-                      ? "border-danger/35 bg-danger/10 text-danger"
-                      : "border-border/70 bg-secondary/25 text-muted-foreground"
-                  )}
-                >
-                  <div className="text-sm font-semibold text-foreground">{reconciliation.trialBalanceView.emptyTitle}</div>
-                  <p className="mt-2 text-sm leading-6">
-                    {reconciliation.trialBalanceView.errorText ?? reconciliation.trialBalanceView.loadingText ?? reconciliation.trialBalanceView.emptyDetail}
-                  </p>
-                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
-                        <li key={detail}>{detail}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-              )}
-              {reconciliation.trialBalanceView.loadingText && reconciliation.trialBalanceView.hasRows ? (
-                <p role="status" className="mt-3 text-sm text-muted-foreground">
-                  {reconciliation.trialBalanceView.loadingText}
-                </p>
-              ) : null}
-              {reconciliation.trialBalanceView.errorText && reconciliation.trialBalanceView.hasRows ? (
-                <StatusBanner
-                  role="alert"
-                  className="mt-3"
-                  tone="danger"
-                  title={reconciliation.trialBalanceView.errorText}
-                  detail={reconciliation.trialBalanceView.errorDetails.length > 0 ? (
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                      {reconciliation.trialBalanceView.errorDetails.map((detail) => (
-                        <li key={detail}>{detail}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                />
-              ) : null}
-            </CardContent>
-          </Card>
-          <Card className="panel-surface">
-            <CardHeader>
-              <CardTitle>{reconciliation.trialBalanceView.basisBridge.title}</CardTitle>
-              <CardDescription>{reconciliation.trialBalanceView.basisBridge.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div role="region" aria-label={reconciliation.trialBalanceView.basisBridge.tableLabel}>
-                {reconciliation.trialBalanceView.basisBridge.hasRows ? (
-                  <div className="space-y-2">
-                    {reconciliation.trialBalanceView.basisBridge.rows.map((row) => (
-                      <div key={row.rowId} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2" aria-label={row.ariaLabel}>
-                        <div className="flex items-start justify-between gap-3">
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-semibold text-foreground">{row.accountLabel}</span>
-                            <span className="mt-1 block text-xs text-muted-foreground">{row.sourceLabel}</span>
-                          </span>
-                          <Badge variant={row.varianceTone}>{row.varianceLabel}</Badge>
-                        </div>
-                        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                          <span className="font-mono tabular-nums">Primary {row.primaryBalanceLabel}</span>
-                          <span className="font-mono tabular-nums">{row.comparisonBalanceLabel}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-sm leading-6 text-muted-foreground">
-                    {reconciliation.trialBalanceView.basisBridge.emptyText}
-                  </p>
-                )}
-              </div>
-              <div className="border-t border-border/70 pt-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">{reconciliation.transactionLabView.title}</h3>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{reconciliation.transactionLabView.description}</p>
-                  </div>
-                  <Badge variant={reconciliation.transactionLabView.statusTone === "default" ? "outline" : reconciliation.transactionLabView.statusTone} dot>
-                    {reconciliation.transactionLabView.requestSummaryLabel}
-                  </Badge>
-                </div>
-                <p
-                  role={reconciliation.transactionLabView.statusRole}
-                  className={cn(
-                    "mt-3 rounded-md border px-3 py-2 text-sm",
-                    reconciliation.transactionLabView.statusTone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : "",
-                    reconciliation.transactionLabView.statusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
-                    reconciliation.transactionLabView.statusTone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
-                    reconciliation.transactionLabView.statusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : ""
-                  )}
-                >
-                  {reconciliation.transactionLabView.statusText}
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Journal</span>
-                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.journalLineCountLabel}</span>
-                  </div>
-                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Ledger impact</span>
-                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.ledgerImpactLabel}</span>
-                  </div>
-                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Reconciliation</span>
-                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.reconciliationLabel}</span>
-                  </div>
-                  <div className="rounded-md border border-border/70 bg-background px-3 py-2">
-                    <span className="block text-muted-foreground">Evidence</span>
-                    <span className="mt-1 block font-mono text-foreground">{reconciliation.transactionLabView.evidenceLabel}</span>
-                  </div>
-                </div>
-                {reconciliation.transactionLabView.impactRows.length > 0 ? (
-                  <div className="mt-3 space-y-2" aria-label="Transaction Lab trial-balance impact">
-                    {reconciliation.transactionLabView.impactRows.map((row) => (
-                      <div key={row.id} className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
-                        <span className="min-w-0 truncate text-foreground">{row.label}</span>
-                        <Badge variant={row.tone === "default" ? "outline" : row.tone}>{row.value}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="mt-3 w-full"
-                  disabled={!reconciliation.transactionLabView.canPreview}
-                  disabledReason={reconciliation.transactionLabView.disabledReason}
-                  busy={reconciliation.transactionLabView.busy}
-                  busyLabel={reconciliation.transactionLabView.previewButtonLabel}
-                  aria-label={reconciliation.transactionLabView.previewButtonAriaLabel}
-                  onClick={() => void reconciliation.runTransactionLabPreview()}
-                >
-                  {reconciliation.transactionLabView.previewButtonLabel}
-                </Button>
-              </div>
-              <div className="border-t border-border/70 pt-4">
-                <h3 className="text-sm font-semibold text-foreground">Reporting exports</h3>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">Entry points for report/export handoff using existing export infrastructure.</p>
-              </div>
-              <Button asChild>
-                <a href={reporting.backendLinks[0].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[0].ariaLabel}>
-                  {reporting.backendLinks[0].label}
-                </a>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={!reporting.exportCanRun}
-                disabledReason={reporting.exportDisabledReason}
-                busy={reporting.exportBusy}
-                busyLabel={reporting.exportButtonLabel}
-                aria-label={reporting.exportAriaLabel}
-                onClick={() => void reporting.runExport()}
-              >
-                {reporting.exportButtonLabel}
-              </Button>
-              <Button asChild variant="outline">
-                <a href={reporting.backendLinks[1].href} target="_blank" rel="noreferrer" aria-label={reporting.backendLinks[1].ariaLabel}>
-                  {reporting.backendLinks[1].label}
-                </a>
-              </Button>
-              {reporting.exportStatusText ? (
-                <p
-                  role={reporting.exportStatusRole}
-                  className={cn(
-                    "rounded-lg border px-3 py-2 text-sm",
-                    reporting.exportStatusTone === "success" ? "border-success/30 bg-success/10 text-success" : "",
-                    reporting.exportStatusTone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : "",
-                    reporting.exportStatusTone === "neutral" ? "border-border/70 bg-secondary/25 text-muted-foreground" : ""
-                  )}
-                >
-                  {reporting.exportStatusText}
-                </p>
-              ) : null}
-            </CardContent>
-          </Card>
-        </div>
-        </FinancialRecordExplorerShell>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        </section>
       ) : null}
 
       {sectionVisibility.showReporting ? (
@@ -3429,7 +3173,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             }
           ]}
           explorer={securityInstrumentExplorerView}
-          onSaveView={(request) => saveAccountingExplorerView("security-instrument", request)}
+          onSaveView={saveSecurityInstrumentExplorerView}
           onSelectRecord={selectSecurityFromExplorer}
         >
         <section className="space-y-6">
@@ -3851,7 +3595,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         </FinancialRecordExplorerShell>
       )}
 
-      {sectionVisibility.showReconciliationActions && (
+      {showLegacyReconciliationActions && (
         <section id="accounting-actions" className="workspace-section-band" aria-labelledby="accounting-actions-heading">
           <div className="workspace-section-subheader">
             <div className="min-w-0">
@@ -3863,7 +3607,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           </div>
         <details
           className="panel-surface rounded-lg border border-border/70 px-4 py-3"
-          open={reconciliationActionsExpanded}
+          open={showLegacyReconciliationActions}
         >
           <summary className="cursor-pointer text-sm font-semibold text-foreground">
             Break resolution actions and history
@@ -3913,7 +3657,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 />
               )}
               <DenseDataTable
-                columns={reconciliationBreakTableColumns}
+                columns={reconciliationBreakColumns}
                 rows={reconciliation.rows}
                 getRowId={(item) => item.breakId}
                 getRowAriaLabel={(item) => item.rowAriaLabel}
@@ -5440,749 +5184,6 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
 function parseJournalAmount(value: string): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {
-  return (
-    <section className="workspace-section-band" aria-labelledby="accounting-configure-heading">
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Configure</p>
-          <h3 id="accounting-configure-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={view.statusTone === "success" ? "success" : view.statusTone === "danger" ? "danger" : view.statusTone === "warning" ? "warning" : "outline"} dot>
-            {view.statusLabel}
-          </Badge>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={view.loading}
-            disabledReason={view.loading ? "Configuration refresh is already in progress." : null}
-            onClick={() => void view.refresh()}
-          >
-            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            Refresh
-          </Button>
-          <Button
-            size="sm"
-            disabled={!view.canActivate}
-            disabledReason={view.activateDisabledReason}
-            busy={view.activateBusy}
-            busyLabel={view.activateButtonLabel}
-            onClick={() => void view.activate()}
-          >
-            {view.activateButtonLabel}
-          </Button>
-        </div>
-      </div>
-
-      <ConfigureCommandBar />
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="min-w-0 space-y-4">
-      {view.errorText ? (
-        <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-          <div className="font-semibold">{view.errorText}</div>
-          {view.errorDetails.length > 0 ? (
-            <ul className="mt-2 list-disc pl-4">
-              {view.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
-            </ul>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div id="configure-section-setup" className="configure-anchor scroll-mt-20 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        {view.metricRows.map((metric) => (
-          <div key={metric.id} className="panel-surface px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
-            <div className={cn("mt-2 font-mono text-xl font-semibold", cashFlowTextClass(metric.tone))}>{metric.value}</div>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {view.setupReadinessRows.map((row) => (
-          <div key={row.id} className="rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{row.label}</div>
-            <div className={cn("mt-2 text-sm font-semibold", cashFlowTextClass(row.tone))}>{row.value}</div>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.detail}</p>
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-wrap items-center gap-3 rounded-md border border-border/70 bg-background px-4 py-3">
-        <Button
-          size="sm"
-          variant="secondary"
-          disabled={!view.canCreateLedgerBook}
-          disabledReason={view.createLedgerBookDisabledReason}
-          busy={view.createLedgerBookBusy}
-          busyLabel={view.createLedgerBookButtonLabel}
-          onClick={() => void view.createLedgerBookFromSetupCandidate()}
-        >
-          {view.createLedgerBookButtonLabel}
-        </Button>
-        <LedgerBookSetupWizard view={view} />
-        {view.createLedgerBookStatusText ? (
-          <p className="text-xs leading-5 text-muted-foreground">{view.createLedgerBookStatusText}</p>
-        ) : null}
-      </div>
-
-      <Card id="configure-section-books" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-ledger-books-heading">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle id="accounting-ledger-books-heading">Ledger book administration</CardTitle>
-              <CardDescription>{view.ledgerBookSummaryLabel}</CardDescription>
-            </div>
-            <Badge variant={view.ledgerBookRows.some((book) => book.statusLabel === "Selected") ? "success" : view.ledgerBookRows.length > 0 ? "warning" : "outline"}>
-              {view.ledgerBookRows.length} book{view.ledgerBookRows.length === 1 ? "" : "s"}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {view.ledgerBookEmptyText ? (
-            <p className="text-sm text-muted-foreground">{view.ledgerBookEmptyText}</p>
-          ) : (
-            <div className="grid gap-3 lg:grid-cols-2" role="region" aria-label="Accounting ledger book catalog">
-              {view.ledgerBookRows.map((book) => (
-                <div key={book.id} className={cn("rounded-md border px-4 py-3", accountingToolingBorderClass(book.tone))}>
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{book.title}</div>
-                      <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{book.id}</div>
-                    </div>
-                    <Badge variant={accountingToolingBadgeVariant(book.tone)}>{book.statusLabel}</Badge>
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{book.description}</p>
-                  <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2">
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Basis</dt>
-                      <dd className="mt-1 text-foreground">{book.subtitle}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Policy</dt>
-                      <dd className="mt-1 text-foreground">{book.policyLabel}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Currency</dt>
-                      <dd className="mt-1 text-foreground">{book.currencyLabel}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Scope</dt>
-                      <dd className="mt-1 break-words text-foreground">{book.scopeLabel}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-semibold text-muted-foreground">Updated</dt>
-                      <dd className="mt-1 text-foreground">{book.updatedLabel}</dd>
-                    </div>
-                  </dl>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card id="configure-section-chart" className="panel-surface configure-anchor scroll-mt-20" aria-labelledby="accounting-chart-account-editor-heading">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle id="accounting-chart-account-editor-heading">Chart account setup</CardTitle>
-              <CardDescription>Author ledger-book chart nodes through the shared accounting configuration API.</CardDescription>
-            </div>
-            <Button
-              size="sm"
-              disabled={!view.chartAccountEditor.canSave}
-              disabledReason={view.chartAccountEditor.saveDisabledReason}
-              busy={view.chartAccountEditor.saveBusy}
-              busyLabel={view.chartAccountEditor.saveButtonLabel}
-              onClick={() => void view.chartAccountEditor.save()}
-            >
-              {view.chartAccountEditor.saveButtonLabel}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-3">
-            <FormRow label="Account path" labelFor="accounting-chart-path">
-              <Input
-                id="accounting-chart-path"
-                value={view.chartAccountEditor.pathValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ path: event.currentTarget.value })}
-              />
-            </FormRow>
-            <FormRow label="Account name" labelFor="accounting-chart-account-name">
-              <Input
-                id="accounting-chart-account-name"
-                value={view.chartAccountEditor.accountNameValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ accountName: event.currentTarget.value })}
-              />
-            </FormRow>
-            <FormRow label="Account type" labelFor="accounting-chart-account-type">
-              <Input
-                id="accounting-chart-account-type"
-                value={view.chartAccountEditor.accountTypeValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ accountType: event.currentTarget.value })}
-              />
-            </FormRow>
-          </div>
-          <div className="grid gap-3 md:grid-cols-2">
-            <FormRow label="Parent path" labelFor="accounting-chart-parent-path">
-              <Input
-                id="accounting-chart-parent-path"
-                value={view.chartAccountEditor.parentPathValue}
-                onChange={(event) => view.chartAccountEditor.updateDraft({ parentPath: event.currentTarget.value })}
-              />
-            </FormRow>
-          </div>
-          <TechnicalDetails
-            label="Chart account identifiers and evidence"
-            description="Stable node identity, linked financial account, and retained evidence reference for audit and support use."
-          >
-            <div className="grid gap-3 md:grid-cols-3">
-              <FormRow label="Node id" labelFor="accounting-chart-node-id">
-                <Input
-                  id="accounting-chart-node-id"
-                  value={view.chartAccountEditor.nodeIdValue}
-                  onChange={(event) => view.chartAccountEditor.updateDraft({ nodeId: event.currentTarget.value })}
-                />
-              </FormRow>
-              <FormRow label="Financial account id" labelFor="accounting-chart-financial-account-id">
-                <Input
-                  id="accounting-chart-financial-account-id"
-                  value={view.chartAccountEditor.financialAccountIdValue}
-                  onChange={(event) => view.chartAccountEditor.updateDraft({ financialAccountId: event.currentTarget.value })}
-                />
-              </FormRow>
-              <FormRow label="Retained evidence" labelFor="accounting-chart-evidence">
-                <Input
-                  id="accounting-chart-evidence"
-                  value={view.chartAccountEditor.evidenceValue}
-                  onChange={(event) => view.chartAccountEditor.updateDraft({ evidenceText: event.currentTarget.value })}
-                />
-              </FormRow>
-            </div>
-          </TechnicalDetails>
-          <ChartAccountPathBuilder editor={view.chartAccountEditor} />
-          {view.chartAccountEditor.statusText ? (
-            <p className="text-sm text-muted-foreground">{view.chartAccountEditor.statusText}</p>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <ConfigureProductionReadinessCard view={view} />
-
-      <Card id="configure-section-rules" className="panel-surface configure-anchor scroll-mt-20">
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <BookCheck className="h-5 w-5 text-primary" />
-                Accounting Rules Studio
-              </CardTitle>
-              <CardDescription>Effective-dated posting rules, predicates, formulas, allocations, generated postings, versions, promotion approvals, and dry-run previews use the shared configuration API.</CardDescription>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                disabled={!view.canDryRun}
-                disabledReason={view.dryRunDisabledReason}
-                busy={view.dryRunBusy}
-                busyLabel={view.dryRunButtonLabel}
-                onClick={() => void view.dryRunSelectedRule()}
-              >
-                {view.dryRunButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={!view.canBuildJournalCandidate}
-                disabledReason={view.journalCandidateDisabledReason}
-                busy={view.journalCandidateBusy}
-                busyLabel={view.journalCandidateButtonLabel}
-                onClick={() => void view.buildJournalCandidate()}
-              >
-                {view.journalCandidateButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyThreshold}
-                disabledReason={view.applyThresholdDisabledReason}
-                busy={view.applyThresholdBusy}
-                busyLabel={view.applyThresholdButtonLabel}
-                onClick={() => void view.applyDryRunAmountThreshold()}
-              >
-                {view.applyThresholdButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyEventPredicate}
-                disabledReason={view.applyEventPredicateDisabledReason}
-                busy={view.applyEventPredicateBusy}
-                busyLabel={view.applyEventPredicateButtonLabel}
-                onClick={() => void view.applyDryRunEventPredicate()}
-              >
-                {view.applyEventPredicateButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyEffectiveStart}
-                disabledReason={view.applyEffectiveStartDisabledReason}
-                busy={view.applyEffectiveStartBusy}
-                busyLabel={view.applyEffectiveStartButtonLabel}
-                onClick={() => void view.applyDryRunEffectiveStart()}
-              >
-                {view.applyEffectiveStartButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canCapturePostings}
-                disabledReason={view.capturePostingsDisabledReason}
-                busy={view.capturePostingsBusy}
-                busyLabel={view.capturePostingsButtonLabel}
-                onClick={() => void view.captureDryRunGeneratedPostings()}
-              >
-                {view.capturePostingsButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyFormula}
-                disabledReason={view.applyFormulaDisabledReason}
-                busy={view.applyFormulaBusy}
-                busyLabel={view.applyFormulaButtonLabel}
-                onClick={() => void view.applyDryRunFormulaAmount()}
-              >
-                {view.applyFormulaButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyAllocation}
-                disabledReason={view.applyAllocationDisabledReason}
-                busy={view.applyAllocationBusy}
-                busyLabel={view.applyAllocationButtonLabel}
-                onClick={() => void view.applyDryRunAllocationTargets()}
-              >
-                {view.applyAllocationButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canApplyScope}
-                disabledReason={view.applyScopeDisabledReason}
-                busy={view.applyScopeBusy}
-                busyLabel={view.applyScopeButtonLabel}
-                onClick={() => void view.applyDryRunScope()}
-              >
-                {view.applyScopeButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canDuplicateRule}
-                disabledReason={view.duplicateRuleDisabledReason}
-                busy={view.duplicateRuleBusy}
-                busyLabel={view.duplicateRuleButtonLabel}
-                onClick={() => void view.duplicateSelectedRule()}
-              >
-                {view.duplicateRuleButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canRaisePriority}
-                disabledReason={view.raisePriorityDisabledReason}
-                busy={view.raisePriorityBusy}
-                busyLabel={view.raisePriorityButtonLabel}
-                onClick={() => void view.raiseSelectedRulePriority()}
-              >
-                {view.raisePriorityButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canSaveDryRunAsRuleTest}
-                disabledReason={view.saveDryRunAsRuleTestDisabledReason}
-                busy={view.saveDryRunAsRuleTestBusy}
-                busyLabel={view.saveDryRunAsRuleTestButtonLabel}
-                onClick={() => void view.saveDryRunAsRuleTest()}
-              >
-                {view.saveDryRunAsRuleTestButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canArchiveRule}
-                disabledReason={view.archiveRuleDisabledReason}
-                busy={view.archiveRuleBusy}
-                busyLabel={view.archiveRuleButtonLabel}
-                onClick={() => void view.archiveSelectedRule()}
-              >
-                {view.archiveRuleButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={!view.canRunRuleTests}
-                disabledReason={view.ruleTestDisabledReason}
-                busy={view.ruleTestBusy}
-                busyLabel={view.ruleTestButtonLabel}
-                onClick={() => void view.runRuleTests()}
-              >
-                {view.ruleTestButtonLabel}
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={!view.canApproveRulePromotion}
-                disabledReason={view.approveRulePromotionDisabledReason}
-                busy={view.approveRulePromotionBusy}
-                busyLabel={view.approveRulePromotionButtonLabel}
-                onClick={() => void view.approveRulePromotion()}
-              >
-                {view.approveRulePromotionButtonLabel}
-              </Button>
-              {view.dryRunStatusText ? <span className="text-sm text-muted-foreground">{view.dryRunStatusText}</span> : null}
-              {view.journalCandidateStatusText ? <span className="text-sm text-muted-foreground">{view.journalCandidateStatusText}</span> : null}
-              {view.applyEventPredicateStatusText ? <span className="text-sm text-muted-foreground">{view.applyEventPredicateStatusText}</span> : null}
-              {view.applyThresholdStatusText ? <span className="text-sm text-muted-foreground">{view.applyThresholdStatusText}</span> : null}
-              {view.applyEffectiveStartStatusText ? <span className="text-sm text-muted-foreground">{view.applyEffectiveStartStatusText}</span> : null}
-              {view.capturePostingsStatusText ? <span className="text-sm text-muted-foreground">{view.capturePostingsStatusText}</span> : null}
-              {view.applyFormulaStatusText ? <span className="text-sm text-muted-foreground">{view.applyFormulaStatusText}</span> : null}
-              {view.applyAllocationStatusText ? <span className="text-sm text-muted-foreground">{view.applyAllocationStatusText}</span> : null}
-              {view.applyScopeStatusText ? <span className="text-sm text-muted-foreground">{view.applyScopeStatusText}</span> : null}
-              {view.duplicateRuleStatusText ? <span className="text-sm text-muted-foreground">{view.duplicateRuleStatusText}</span> : null}
-              {view.raisePriorityStatusText ? <span className="text-sm text-muted-foreground">{view.raisePriorityStatusText}</span> : null}
-              {view.archiveRuleStatusText ? <span className="text-sm text-muted-foreground">{view.archiveRuleStatusText}</span> : null}
-              {view.saveDryRunAsRuleTestStatusText ? <span className="text-sm text-muted-foreground">{view.saveDryRunAsRuleTestStatusText}</span> : null}
-              {view.ruleTestStatusText ? <span className="text-sm text-muted-foreground">{view.ruleTestStatusText}</span> : null}
-              {view.approveRulePromotionStatusText ? <span className="text-sm text-muted-foreground">{view.approveRulePromotionStatusText}</span> : null}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {view.rules.length > 0 ? (
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-              <div className="space-y-2" role="list" aria-label="Accounting posting rules">
-                {view.rules.map((rule) => (
-                  <div key={rule.id} role="listitem">
-                    <button
-                      type="button"
-                      aria-label={rule.selectAriaLabel}
-                      aria-pressed={rule.isSelected}
-                      className={cn(
-                        "w-full rounded-lg border px-3 py-3 text-left transition hover:bg-secondary/35",
-                        rule.isSelected ? "border-primary/45 bg-primary/10" : "border-border/70 bg-secondary/20"
-                      )}
-                      onClick={() => view.selectRule(rule.id)}
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="font-semibold text-foreground">{rule.title}</div>
-                          <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{rule.subtitle}</div>
-                        </div>
-                        <Badge variant={rule.statusTone}>{rule.statusLabel}</Badge>
-                      </div>
-                      <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
-                        <span className="font-mono">{rule.eventLabel}</span>
-                        <span className="font-mono">{rule.effectiveLabel}</span>
-                        <span className="font-mono">{rule.priorityLabel}</span>
-                      </div>
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-lg border border-border/70 bg-background/35 p-3">
-                {view.selectedRule ? (
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <div className="font-semibold text-foreground">{view.selectedRule.title}</div>
-                        <div className="mt-1 font-mono text-xs text-muted-foreground">{view.selectedRule.eventLabel} | {view.selectedRule.effectiveLabel} | {view.selectedRule.priorityLabel}</div>
-                      </div>
-                      <Badge variant={view.selectedRule.promotionTone}>{view.selectedRule.promotionLabel}</Badge>
-                    </div>
-                    <div className="rounded-lg border border-border/70 bg-secondary/10 p-3" role="region" aria-label="Posting rule promotion readiness">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Promotion readiness</div>
-                        <Badge variant={accountingToolingBadgeVariant(hasPromotionReadinessBlocker(view.selectedRule.promotionReadiness) ? "warning" : "success")}>
-                          {view.selectedRule.promotionReadiness.find((item) => item.id === "activation-gate")?.value ?? "Review"}
-                        </Badge>
-                      </div>
-                      <div className="mt-3 grid gap-2 md:grid-cols-2">
-                        {view.selectedRule.promotionReadiness.map((item) => (
-                          <div key={item.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(item.tone))}>
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <span className="font-semibold text-foreground">{item.label}</span>
-                              <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.value}</Badge>
-                            </div>
-                            <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <TechnicalDetails
-                      label="Rule scope and posting internals"
-                      description="Inspect effective scope, predicates, formula logic, allocations, generated postings, and retained versions for the selected rule."
-                      contentClassName="space-y-4"
-                    >
-                      <RulesStudioList title="Scope" rows={view.selectedRule.scopeLabels.length > 0 ? view.selectedRule.scopeLabels : ["No dimensional scope configured."]} />
-                      <RulesStudioList title="Predicates" rows={view.selectedRule.conditionRows} />
-                      <RulesStudioList title="Formulas" rows={view.selectedRule.formulaRows} />
-                      <RulesStudioList title="Allocations" rows={view.selectedRule.allocationRows} />
-                      <RulesStudioList title="Generated postings" rows={view.selectedRule.generatedPostingRows} />
-                      <RulesStudioList title="Version history" rows={view.selectedRule.versionRows} />
-                    </TechnicalDetails>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Select a posting rule to inspect its effective dating, predicates, formula logic, allocation behavior, generated postings, and promotion evidence.</p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
-          )}
-
-          {view.dryRunPreview ? (
-            <div className="rounded-lg border border-primary/25 bg-primary/5 p-3" role="region" aria-label="Accounting rule dry-run preview">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-semibold text-foreground">{view.dryRunPreview.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{view.dryRunPreview.selectedRuleLabel}</div>
-                </div>
-                <Badge variant={view.dryRunPreview.balanceLabel.startsWith("Balanced") ? "success" : "warning"}>{view.dryRunPreview.balanceLabel}</Badge>
-              </div>
-              <div className="mt-3 grid gap-3 xl:grid-cols-3">
-                <RulesStudioList title="Rule resolution" rows={view.dryRunPreview.matchRows.length > 0 ? view.dryRunPreview.matchRows : ["No rule matches were returned."]} />
-                <RulesStudioList title="Generated journal lines" rows={view.dryRunPreview.generatedLineRows.length > 0 ? view.dryRunPreview.generatedLineRows : ["No generated journal lines were returned."]} />
-                <RulesStudioList title="Generated posting metadata" rows={view.dryRunPreview.generatedPostingRows} />
-              </div>
-              {view.dryRunPreview.validationRows.length > 0 ? (
-                <div className="mt-3 space-y-2">
-                  {view.dryRunPreview.validationRows.map((issue) => (
-                    <div key={issue.id} className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
-                      <div className="font-semibold">{issue.label}</div>
-                      <div className="mt-1">{issue.message}</div>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          {view.journalCandidatePreview ? (
-            <div className="rounded-lg border border-border/70 bg-secondary/15 p-3" role="region" aria-label="Accounting rule journal draft candidate">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-semibold text-foreground">{view.journalCandidatePreview.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{view.journalCandidatePreview.selectedRuleLabel}</div>
-                </div>
-                <Badge variant={view.journalCandidatePreview.balanceLabel.startsWith("Balanced") ? "success" : "warning"}>{view.journalCandidatePreview.balanceLabel}</Badge>
-              </div>
-              <div className="mt-3 grid gap-3 xl:grid-cols-3">
-                <RulesStudioList title="Draft command" rows={[view.journalCandidatePreview.commandLabel, view.journalCandidatePreview.approvalLabel, view.journalCandidatePreview.evidenceLabel]} />
-                <RulesStudioList title="Candidate posting lines" rows={view.journalCandidatePreview.generatedLineRows} />
-                <RulesStudioList
-                  title="Candidate issues"
-                  rows={view.journalCandidatePreview.issueRows.length > 0
-                    ? view.journalCandidatePreview.issueRows.map((issue) => `${issue.label}: ${issue.message}`)
-                    : ["No blocking candidate issues returned."]}
-                />
-              </div>
-            </div>
-          ) : null}
-
-          <div className="rounded-lg border border-border/70 bg-background p-3" role="region" aria-label="Saved accounting rule test cases">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <div className="font-semibold text-foreground">Saved regression cases</div>
-                <div className="mt-1 text-xs text-muted-foreground">Persisted dry-run assertions used for rule promotion checks.</div>
-              </div>
-              <Badge variant={view.ruleTestCases.length > 0 ? "success" : "warning"}>{view.ruleTestCases.length} saved</Badge>
-            </div>
-            <div className="mt-3 grid gap-2 md:grid-cols-2">
-              {view.ruleTestCases.length > 0 ? view.ruleTestCases.map((testCase) => (
-                <div key={testCase.id} className="rounded-md border border-border/70 bg-secondary/10 px-3 py-2 text-sm">
-                  <div className="font-semibold text-foreground">{testCase.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{testCase.subtitle}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">{testCase.assertionLabel}</div>
-                  <Badge variant={testCase.evidenceTone} className="mt-2">{testCase.evidenceLabel}</Badge>
-                </div>
-              )) : (
-                <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning md:col-span-2">
-                  No saved rule test cases. Running tests will generate temporary cases from active posting rules.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {view.ruleTestSuite ? (
-            <div className="rounded-lg border border-border/70 bg-secondary/15 p-3" role="region" aria-label="Accounting rule test cases">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-semibold text-foreground">{view.ruleTestSuite.title}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{view.ruleTestSuite.executedLabel}</div>
-                </div>
-                <Badge variant={view.ruleTestSuite.statusTone}>{view.ruleTestSuite.summaryLabel}</Badge>
-              </div>
-              <div className="mt-3 grid gap-3 xl:grid-cols-2">
-                <RulesStudioList title="Regression cases" rows={view.ruleTestSuite.resultRows} />
-                <RulesStudioList
-                  title="Assertion issues"
-                  rows={view.ruleTestSuite.validationRows.length > 0
-                    ? view.ruleTestSuite.validationRows.map((issue) => `${issue.label}: ${issue.message}`)
-                    : ["No rule-test assertion issues returned."]}
-                />
-              </div>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Network className="h-5 w-5 text-primary" />
-              Journal templates and preview
-            </CardTitle>
-            <CardDescription>Preview uses accounting configuration services and does not persist journal entries.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                disabled={!view.canPreview}
-                disabledReason={view.previewDisabledReason}
-                busy={view.previewBusy}
-                busyLabel={view.previewButtonLabel}
-                onClick={() => void view.previewFirstTemplate()}
-              >
-                {view.previewButtonLabel}
-              </Button>
-              {view.previewStatusText ? <span className="text-sm text-muted-foreground">{view.previewStatusText}</span> : null}
-            </div>
-
-            <div className="space-y-2">
-              {view.templates.length > 0 ? view.templates.map((template) => (
-                <div key={template.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-foreground">{template.title}</div>
-                      <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{template.subtitle}</div>
-                    </div>
-                    <Badge variant={template.statusLabel === "Balanced" ? "success" : template.statusLabel === "Archived" ? "outline" : "warning"}>
-                      {template.statusLabel}
-                    </Badge>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <span>{template.lineCountLabel}</span>
-                    <span>{template.balanceLabel}</span>
-                  </div>
-                </div>
-              )) : (
-                <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
-              )}
-            </div>
-
-            {view.preview ? (
-              <div className="rounded-lg border border-border/70 bg-background/35 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <div className="font-semibold text-foreground">{view.preview.title}</div>
-                    <div className="mt-1 font-mono tabular-nums text-xs text-muted-foreground">{view.preview.balanceLabel}</div>
-                  </div>
-                  <Badge variant={view.preview.statusLabel.startsWith("Balanced") ? "success" : "warning"}>{view.preview.statusLabel}</Badge>
-                </div>
-                <div className="mt-3 space-y-2">
-                  {view.preview.lineRows.map((line) => (
-                    <div key={line.id} className="grid gap-2 rounded border border-border/60 px-2 py-2 text-xs sm:grid-cols-[1fr_auto_auto]">
-                      <span className="min-w-0 break-words font-mono text-foreground">{line.account}</span>
-                      <span className="font-mono text-muted-foreground">{line.side}</span>
-                      <span className="font-mono tabular-nums text-foreground">{line.amount}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle>Validation and audit trail</CardTitle>
-            <CardDescription>Configuration readiness and append-only mutation evidence stay visible before activation.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
-                <div key={issue.id} className={cn(
-                  "rounded-lg border px-3 py-2 text-sm",
-                  issue.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" : "",
-                  issue.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" : "",
-                  issue.tone === "default" ? "border-border/70 bg-secondary/25 text-muted-foreground" : ""
-                )}>
-                  <div className="font-semibold">{issue.label}</div>
-                  <div className="mt-1">{issue.message}</div>
-                  <div className="mt-1 font-mono text-xs">{issue.detail}</div>
-                </div>
-              )) : (
-                <div className="rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-                  No critical configuration validation issues.
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <div className="eyebrow-label">Recent audit events</div>
-              {view.auditTrail.length > 0 ? view.auditTrail.map((event) => (
-                <div key={event.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm">
-                  <div className="font-semibold text-foreground">{event.title}</div>
-                  <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{event.subtitle}</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">{event.hashLabel}</div>
-                </div>
-              )) : (
-                <p className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">{view.emptyText}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-          <ConfigureChangePreviewPanel view={view} />
-        </div>
-        <ConfigureActivationRail view={view} />
-      </div>
-    </section>
-  );
-}
-
-function RulesStudioList({ title, rows }: { title: string; rows: string[] }) {
-  return (
-    <div>
-      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</div>
-      <div className="mt-2 space-y-1.5">
-        {rows.map((row, index) => (
-          <div key={`${title}-${index}-${row}`} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs leading-5 text-muted-foreground">
-            {row}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function hasPromotionReadinessBlocker(items: AccountingRulesStudioPromotionReadinessViewModel[]): boolean {
-  return items.some((item) => item.tone === "danger" || (item.id === "activation-gate" && item.tone === "warning"));
 }
 
 function AccountingValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {

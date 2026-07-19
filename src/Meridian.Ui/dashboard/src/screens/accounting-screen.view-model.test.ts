@@ -49,12 +49,14 @@ import type {
   AccountingWorkspaceResponse,
   LedgerJournalLine,
   LedgerTrialBalanceLine,
+  ReconciliationBreakQueueItem,
   ReconciliationCalibrationSummary,
   SecurityMasterConflict,
   SecurityMasterEntry,
   SecurityIdentityDrillIn,
   SecurityMasterTrustSnapshot,
   InvestmentAccountingTransactionLabPreview,
+  StatementRunSummary,
   TradingParameters,
   InstrumentPassport
 } from "@/types";
@@ -81,6 +83,42 @@ const reconciliationQueue: AccountingWorkspaceResponse["reconciliationQueue"] = 
     reconciliationStatus: "Resolved"
   }
 ];
+
+const emptyCalibrationSummary: ReconciliationCalibrationSummary = {
+  status: "Ready",
+  summary: "Reconciliation calibration is ready.",
+  asOf: "2026-05-09T16:00:00Z",
+  totalBreakCount: 0,
+  activeBreakCount: 0,
+  openBreakCount: 0,
+  inReviewBreakCount: 0,
+  resolvedBreakCount: 0,
+  dismissedBreakCount: 0,
+  criticalOpenBreakCount: 0,
+  pendingSignoffCount: 0,
+  signedOffCount: 0,
+  missingCalibrationMetadataCount: 0,
+  profiles: []
+};
+
+function createReconciliationServices({
+  breakQueue = [],
+  statementRuns = []
+}: {
+  breakQueue?: ReconciliationBreakQueueItem[];
+  statementRuns?: StatementRunSummary[];
+} = {}): AccountingReconciliationServices {
+  return {
+    getBreakQueue: vi.fn().mockResolvedValue(breakQueue),
+    reviewBreak: vi.fn(),
+    resolveBreak: vi.fn(),
+    getTrialBalance: vi.fn().mockResolvedValue([]),
+    getCalibrationSummary: vi.fn().mockResolvedValue(emptyCalibrationSummary),
+    getStatementRuns: vi.fn().mockResolvedValue(statementRuns),
+    getStatementRun: vi.fn(),
+    previewTransactionLab: vi.fn()
+  };
+}
 
 const securityResult: SecurityMasterEntry = {
   securityId: "sec-1",
@@ -903,6 +941,219 @@ describe("accounting-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("scopes reconciliation cases to the selected run and resets case selection when the run changes", async () => {
+    const breakQueue: ReconciliationBreakQueueItem[] = [
+      {
+        breakId: "run-42:cash",
+        runId: "run-42",
+        strategyName: "Paper Index Mean Reversion",
+        category: "AmountMismatch",
+        status: "Open",
+        variance: 500,
+        reason: "Cash variance over tolerance.",
+        assignedTo: null,
+        detectedAt: "2026-01-01T00:00:00Z",
+        lastUpdatedAt: "2026-01-01T00:00:00Z",
+        reviewedBy: null,
+        reviewedAt: null,
+        resolvedBy: null,
+        resolvedAt: null,
+        resolutionNote: null
+      },
+      {
+        breakId: "run-42:fees",
+        runId: "run-42",
+        strategyName: "Paper Index Mean Reversion",
+        category: "FeeMismatch",
+        status: "Open",
+        variance: 25,
+        reason: "Fee variance over tolerance.",
+        assignedTo: null,
+        detectedAt: "2026-01-01T00:01:00Z",
+        lastUpdatedAt: "2026-01-01T00:01:00Z",
+        reviewedBy: null,
+        reviewedAt: null,
+        resolvedBy: null,
+        resolvedAt: null,
+        resolutionNote: null
+      },
+      {
+        breakId: "run-57:settlement",
+        runId: "run-57",
+        strategyName: "Intraday Vol Carry",
+        category: "SettlementMismatch",
+        status: "Open",
+        variance: 75,
+        reason: "Settlement variance over tolerance.",
+        assignedTo: null,
+        detectedAt: "2026-01-02T00:00:00Z",
+        lastUpdatedAt: "2026-01-02T00:00:00Z",
+        reviewedBy: null,
+        reviewedAt: null,
+        resolvedBy: null,
+        resolvedAt: null,
+        resolutionNote: null
+      }
+    ];
+    const services = createReconciliationServices({ breakQueue });
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue,
+      breakQueue,
+      cashFlow: null,
+      reporting: null
+    } as unknown as AccountingWorkspaceResponse;
+
+    const { result } = renderHook(() => useAccountingReconciliationViewModel(
+      bootstrapData,
+      "reconciliation",
+      services
+    ));
+
+    await waitFor(() => expect(result.current.selectedRunId).toBe("run-42"));
+    await waitFor(() => expect(result.current.rows.map((row) => row.breakId)).toEqual([
+      "run-42:cash",
+      "run-42:fees"
+    ]));
+    expect(result.current.selectedBreakId).toBe("run-42:cash");
+
+    act(() => result.current.selectBreak("run-42:fees"));
+    await waitFor(() => expect(result.current.selectedBreakId).toBe("run-42:fees"));
+
+    act(() => result.current.selectRun("run-57"));
+    await waitFor(() => expect(result.current.rows.map((row) => row.breakId)).toEqual([
+      "run-57:settlement"
+    ]));
+    expect(result.current.selectedBreakId).toBe("run-57:settlement");
+  });
+
+  it("keeps statement-only run selection synchronized with an empty reconciliation case set", async () => {
+    const statementRun: StatementRunSummary = {
+      runId: "statement-run-1",
+      importId: "import-1",
+      startedAtUtc: "2026-05-01T00:00:00Z",
+      completedAtUtc: "2026-05-01T00:03:00Z",
+      positionMatches: 8,
+      cashMatches: 3,
+      transactionMatches: 13,
+      openExceptionCount: 2,
+      brokerCustodian: "Northern Trust",
+      account: "Fund A - Prime",
+      period: "2026-04",
+      status: "ReviewRequired"
+    };
+    const queueBreak: ReconciliationBreakQueueItem = {
+      breakId: "run-42:cash",
+      runId: "run-42",
+      strategyName: "Paper Index Mean Reversion",
+      category: "AmountMismatch",
+      status: "Open",
+      variance: 500,
+      reason: "Cash variance over tolerance.",
+      assignedTo: null,
+      detectedAt: "2026-01-01T00:00:00Z",
+      lastUpdatedAt: "2026-01-01T00:00:00Z",
+      reviewedBy: null,
+      reviewedAt: null,
+      resolvedBy: null,
+      resolvedAt: null,
+      resolutionNote: null
+    };
+    const services = createReconciliationServices({
+      breakQueue: [queueBreak],
+      statementRuns: [statementRun]
+    });
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue,
+      breakQueue: [queueBreak],
+      cashFlow: null,
+      reporting: null
+    } as unknown as AccountingWorkspaceResponse;
+
+    const { result } = renderHook(() => useAccountingReconciliationViewModel(
+      bootstrapData,
+      "reconciliation",
+      services
+    ));
+
+    await waitFor(() => expect(result.current.selectedRunId).toBe("statement-run-1"));
+    expect(result.current.selectedReconciliation).toBeNull();
+    expect(result.current.rows).toEqual([]);
+    expect(result.current.selectedBreakId).toBeNull();
+    expect(result.current.statementRunsView.rows[0]).toMatchObject({
+      runId: "statement-run-1",
+      isSelected: true
+    });
+    expect(result.current.queuePanelView.rows.every((row) => !row.isSelected)).toBe(true);
+  });
+
+  it("keeps the complete break queue available outside reconciliation casework", async () => {
+    const breakQueue: ReconciliationBreakQueueItem[] = [
+      {
+        breakId: "run-42:cash",
+        runId: "run-42",
+        strategyName: "Paper Index Mean Reversion",
+        category: "AmountMismatch",
+        status: "Open",
+        variance: 500,
+        reason: "Cash variance over tolerance.",
+        assignedTo: null,
+        detectedAt: "2026-01-01T00:00:00Z",
+        lastUpdatedAt: "2026-01-01T00:00:00Z",
+        reviewedBy: null,
+        reviewedAt: null,
+        resolvedBy: null,
+        resolvedAt: null,
+        resolutionNote: null
+      },
+      {
+        breakId: "run-57:settlement",
+        runId: "run-57",
+        strategyName: "Intraday Vol Carry",
+        category: "SettlementMismatch",
+        status: "Open",
+        variance: 75,
+        reason: "Settlement variance over tolerance.",
+        assignedTo: null,
+        detectedAt: "2026-01-02T00:00:00Z",
+        lastUpdatedAt: "2026-01-02T00:00:00Z",
+        reviewedBy: null,
+        reviewedAt: null,
+        resolvedBy: null,
+        resolvedAt: null,
+        resolutionNote: null
+      }
+    ];
+    const services = createReconciliationServices({ breakQueue });
+    const bootstrapData = {
+      metrics: [],
+      reconciliationQueue,
+      breakQueue,
+      cashFlow: null,
+      reporting: null
+    } as unknown as AccountingWorkspaceResponse;
+    const { result, rerender } = renderHook(
+      ({ workstream }: { workstream: "ledger" | "exceptions" }) => useAccountingReconciliationViewModel(
+        bootstrapData,
+        workstream,
+        services
+      ),
+      { initialProps: { workstream: "ledger" as const } }
+    );
+
+    expect(result.current.rows.map((row) => row.breakId)).toEqual([
+      "run-42:cash",
+      "run-57:settlement"
+    ]);
+
+    rerender({ workstream: "exceptions" });
+    await waitFor(() => expect(result.current.rows.map((row) => row.breakId)).toEqual([
+      "run-42:cash",
+      "run-57:settlement"
+    ]));
   });
 
   it("derives canonical Accounting and Reporting loading states", () => {

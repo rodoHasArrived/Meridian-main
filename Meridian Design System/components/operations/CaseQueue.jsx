@@ -15,7 +15,7 @@ function inject() {
 .mds-caseq{display:flex;flex-direction:column;border:1px solid var(--border,#D7DCE2);
   border-radius:var(--radius-card,6px);background:var(--bg-light,#FFFFFF);overflow:hidden;}
 .mds-caseq__row{display:grid;grid-template-columns:3px auto 1fr auto;align-items:center;gap:10px;
-  padding:0 12px 0 0;min-height:var(--theme-row-height,40px);border-bottom:1px solid var(--border,#E4E8EC);
+  padding:0 12px 0 0;min-height:var(--theme-row-height,32px);border-bottom:1px solid var(--border,#E4E8EC);
   background:transparent;border-left:0;border-right:0;border-top:0;text-align:left;cursor:pointer;
   font-family:var(--font-body,"Segoe UI Variable Text",sans-serif);}
 .mds-caseq__row:last-child{border-bottom:0;}

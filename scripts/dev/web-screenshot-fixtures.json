@@ -610,7 +610,129 @@
           "lastUpdated": "5m ago",
           "notes": "Completed backtest run available for compare and diff review."
         }
-      ]
+      ],
+      "plotTool": {
+        "activeView": "workspace",
+        "tabs": [],
+        "studies": [],
+        "workspace": {
+          "eyebrow": "Screenshot fixture",
+          "title": "Governed factor scatter",
+          "description": "Fixture-backed PlotTool observations verify the light chart surface and workstation token contract.",
+          "statusBadgeLabel": "PAPER",
+          "statusBadgeVariant": "paper",
+          "expression": "scatter(spread_bps, implied_vol_3m)",
+          "toolbarPills": ["90d", "Daily", "Single study", "Fixture proof"],
+          "notebookToolbarAriaLabel": "Strategy notebook filters",
+          "notebookToolbarItems": [],
+          "studyTableEmptyText": "No retained notebook rows are required for the chart fixture.",
+          "studyTableCaption": "Fixture-backed PlotTool notebook catalog.",
+          "selectedStudyEmptyText": "Select a retained PlotTool notebook to inspect its detail.",
+          "metaItems": ["FX Majors", "12 fixture obs", "R² 0.71"],
+          "xAxisLabel": "Spread (bps)",
+          "yAxisLabel": "3m implied vol",
+          "xTicks": [
+            { "value": 40, "label": "20" },
+            { "value": 120, "label": "40" },
+            { "value": 200, "label": "60" },
+            { "value": 280, "label": "80" },
+            { "value": 360, "label": "100" },
+            { "value": 440, "label": "120" },
+            { "value": 520, "label": "140" },
+            { "value": 600, "label": "160" }
+          ],
+          "yTicks": [
+            { "value": 44, "label": "120" },
+            { "value": 98, "label": "100" },
+            { "value": 152, "label": "80" },
+            { "value": 206, "label": "60" },
+            { "value": 260, "label": "40" }
+          ],
+          "points": [
+            { "x": 88, "y": 236, "emphasis": false },
+            { "x": 126, "y": 221, "emphasis": false },
+            { "x": 172, "y": 204, "emphasis": false },
+            { "x": 214, "y": 197, "emphasis": false },
+            { "x": 258, "y": 178, "emphasis": false },
+            { "x": 292, "y": 163, "emphasis": false },
+            { "x": 334, "y": 169, "emphasis": true },
+            { "x": 374, "y": 139, "emphasis": false },
+            { "x": 416, "y": 126, "emphasis": false },
+            { "x": 460, "y": 108, "emphasis": false },
+            { "x": 508, "y": 86, "emphasis": false },
+            { "x": 556, "y": 64, "emphasis": false }
+          ],
+          "studySummary": [
+            {
+              "id": "source",
+              "label": "Source",
+              "value": "Screenshot fixture"
+            },
+            {
+              "id": "proof",
+              "label": "Visual proof",
+              "value": "Light plot tokens"
+            }
+          ],
+          "legendItems": [
+            {
+              "id": "history",
+              "label": "History",
+              "detail": "12 fixture observations",
+              "tone": "history"
+            },
+            {
+              "id": "current",
+              "label": "Current",
+              "detail": "Selected marker",
+              "tone": "current"
+            },
+            {
+              "id": "trend",
+              "label": "OLS fit",
+              "detail": "Fixture trend",
+              "tone": "trend"
+            }
+          ],
+          "focusPoint": {
+            "label": "Current marker",
+            "xValueText": "88.40 bps",
+            "yValueText": "73.80%",
+            "detail": "Fixture observation 7 of 12 retained for screenshot verification."
+          },
+          "signalCards": [
+            {
+              "id": "surface",
+              "label": "Chart surface",
+              "value": "Tokenized",
+              "detail": "Plot fill, grid, axes, and marker outlines resolve through semantic light-theme tokens.",
+              "tone": "success"
+            }
+          ],
+          "consoleTitle": "PlotTool expression",
+          "consoleBody": "The expression is fixture-backed and does not execute a synthetic research calculation in the browser.",
+          "overlayTitle": "Meridian overlays",
+          "overlayItems": [
+            "Fixture observation coverage is retained for visual verification.",
+            "Chart colors resolve from the Concrete semantic token contract."
+          ]
+        },
+        "statistics": {
+          "eyebrow": "Statistics view",
+          "title": "Fixture PlotTool statistics",
+          "description": "Fixture-backed distribution and regression presentation.",
+          "summaryTiles": [],
+          "distributionBars": [8, 14, 22, 34, 49, 68, 86, 100, 91, 74, 55, 38, 24, 13, 7],
+          "distributionSummary": "Fixture distribution rendered from the API-backed PlotTool payload.",
+          "distributionFootnote": "Visual proof only; no production analytics are inferred.",
+          "moments": [],
+          "regression": {
+            "equation": "y = 0.48x + 39.31",
+            "detailItems": ["Fixture regression presentation"]
+          },
+          "sampleRows": []
+        }
+      }
     },
     "/api/quant/templates": {
       "templates": [

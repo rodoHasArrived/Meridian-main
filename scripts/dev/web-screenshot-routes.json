@@ -823,7 +823,14 @@
       ],
       "waitForTexts": [
         "PlotTool workstation",
+        "Scatter / residual view",
+        "Governed factor scatter",
+        "12 fixture obs",
+        "88.40 bps",
         "Promotions"
+      ],
+      "waitForSelectors": [
+        "svg[aria-labelledby=\"plottool-scatter-title\"] circle[cx=\"334\"][cy=\"169\"]"
       ]
     },
     {

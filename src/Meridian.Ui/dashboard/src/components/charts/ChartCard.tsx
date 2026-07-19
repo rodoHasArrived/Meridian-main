@@ -45,7 +45,8 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
           alignItems: "center",
           gap: 12,
           padding: "12px 14px",
-          borderBottom: "1px solid var(--border, #CBD3DC)"
+          background: "var(--ws-surface-subtle, #EBEFF4)",
+          borderBottom: "1px solid var(--chart-border, var(--border-strong, #99A5B2))"
         }}
       >
         <div style={{ minWidth: 0 }}>
@@ -80,7 +81,7 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
                   style={{
                     fontFamily: "var(--font-data, monospace)",
                     fontSize: 12,
-                    fontVariantNumeric: "tabular-nums",
+                    fontVariantNumeric: "slashed-zero tabular-nums",
                     color: r.color || "var(--text-primary, #22272E)"
                   }}
                 >

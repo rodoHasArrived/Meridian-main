@@ -5,7 +5,7 @@ export const Eyebrow = forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpan
   ({ className, ...props }, ref) => (
     <span
       ref={ref}
-      className={cn("font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground", className)}
+      className={cn("font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground", className)}
       {...props}
     />
   )

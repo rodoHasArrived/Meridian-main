@@ -3979,22 +3979,26 @@ export function useAccountingReconciliationViewModel(
   const [transactionLabError, setTransactionLabError] = useState<ApiErrorDisplay | null>(null);
   const calibrationRequestRevisionRef = useRef(0);
 
-  const reconciliationQueue = data?.reconciliationQueue ?? [];
+  const reconciliationQueue = useMemo(
+    () => data?.reconciliationQueue ?? [],
+    [data?.reconciliationQueue]
+  );
   const selectedReconciliation = useMemo(
     () => resolveSelectedReconciliation(reconciliationQueue, selectedRunId),
     [reconciliationQueue, selectedRunId]
   );
 
   useEffect(() => {
+    const availableRuns = statementRuns.length > 0 ? statementRuns : reconciliationQueue;
     const hasSelectedRun = selectedRunId
-      ? reconciliationQueue.some((item) => item.runId === selectedRunId) || statementRuns.some((item) => item.runId === selectedRunId)
+      ? availableRuns.some((item) => item.runId === selectedRunId)
       : false;
 
     if (hasSelectedRun) {
       return;
     }
 
-    const nextRunId = statementRuns[0]?.runId ?? reconciliationQueue[0]?.runId ?? null;
+    const nextRunId = availableRuns[0]?.runId ?? null;
     setSelectedRunId(nextRunId);
   }, [reconciliationQueue, selectedRunId, statementRuns]);
 
@@ -4091,6 +4095,33 @@ export function useAccountingReconciliationViewModel(
         setStatementRunsLoading(false);
       });
   }, [services]);
+
+  const scopedBreakQueue = useMemo(
+    () => workstream === "reconciliation"
+      ? selectedRunId
+        ? breakQueue.filter((item) => item.runId === selectedRunId)
+        : []
+      : breakQueue,
+    [breakQueue, selectedRunId, workstream]
+  );
+  const selectedBreakRunIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (workstream !== "reconciliation") {
+      selectedBreakRunIdRef.current = null;
+      return;
+    }
+
+    const runChanged = selectedBreakRunIdRef.current !== selectedRunId;
+    selectedBreakRunIdRef.current = selectedRunId;
+    setSelectedBreakId((current) => {
+      if (!runChanged && current && scopedBreakQueue.some((item) => item.breakId === current)) {
+        return current;
+      }
+
+      return scopedBreakQueue[0]?.breakId ?? null;
+    });
+  }, [scopedBreakQueue, selectedRunId, workstream]);
 
   useEffect(() => {
     if (workstream !== "reconciliation" && workstream !== "exceptions") {
@@ -4215,14 +4246,14 @@ export function useAccountingReconciliationViewModel(
 
   const breakQueueState = useMemo(
     () => buildReconciliationBreakQueueState({
-      breakQueue,
+      breakQueue: scopedBreakQueue,
       selectedBreakId,
       loading: breakQueueLoading,
       loadError: breakQueueError,
       action: breakAction,
       actionError: breakActionError
     }),
-    [breakAction, breakActionError, breakQueue, breakQueueError, breakQueueLoading, selectedBreakId]
+    [breakAction, breakActionError, breakQueueError, breakQueueLoading, scopedBreakQueue, selectedBreakId]
   );
   const trialBalanceView = useMemo(
     () => buildAccountingTrialBalanceViewState({
@@ -4273,8 +4304,8 @@ export function useAccountingReconciliationViewModel(
     [selectedReconciliation]
   );
   const queuePanelView = useMemo(
-    () => buildReconciliationQueuePanelViewState(reconciliationQueue, selectedReconciliation?.runId ?? null),
-    [reconciliationQueue, selectedReconciliation?.runId]
+    () => buildReconciliationQueuePanelViewState(reconciliationQueue, selectedRunId),
+    [reconciliationQueue, selectedRunId]
   );
   const statementRunsView = useMemo(
     () => buildReconciliationStatementRunsViewState({

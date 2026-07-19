@@ -36,13 +36,13 @@
   --theme-statusbar-bg: #171A1F;
   --theme-statusbar-text: #D7DCE2;
 
-  /* ── Default Spacing (cozy) ── */
+  /* ── Default Spacing (compact workstation baseline) ── */
   --theme-spacing-xs: 4px;
   --theme-spacing-sm: 8px;
   --theme-spacing-md: 12px;
   --theme-spacing-lg: 16px;
   --theme-spacing-xl: 24px;
-  --theme-row-height: 40px;
+  --theme-row-height: 32px;
 
   /* ── Brand & Font ── */
   --theme-brand-name: "Meridian"; /* @kind other */

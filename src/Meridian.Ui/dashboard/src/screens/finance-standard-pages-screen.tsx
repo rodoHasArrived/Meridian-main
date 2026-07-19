@@ -1,17 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatCurrency } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormRow } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
-import { getOperationsCloseCalendar, getRunLedgerJournal, getRunTrialBalance } from "@/lib/api";
+import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
+import {
+  getFinancialRecordExplorer,
+  getOperationsCloseCalendar,
+  getRunLedgerJournal,
+  getRunTrialBalance,
+  saveFinancialRecordExplorerView
+} from "@/lib/api";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
@@ -25,6 +31,8 @@ import {
 } from "@/screens/reporting-screen.view-model";
 import type {
   AccountingWorkspaceResponse,
+  FinancialRecordExplorerDto,
+  FinancialRecordExplorerSavedViewSaveRequestDto,
   LedgerJournalLine,
   LedgerTrialBalanceLine,
   OperationsCloseCalendar,
@@ -395,12 +403,33 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const runs = readRecordArray(asRecord(data), "reconciliationQueue");
   const selectedRunId = searchParams.get("runId") ?? readString(runs[0] ?? null, "runId", "");
-  const [searchText, setSearchText] = useState("");
-  const [savedView, setSavedView] = useState("Selected run");
-  const [statusFilter, setStatusFilter] = useState("All statuses");
-  const [sourceTypeFilter, setSourceTypeFilter] = useState("All source types");
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
   const [loading, setLoading] = useState(false);
+  const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorerDto | null>(null);
+  const [explorerLoadState, setExplorerLoadState] = useState<"loading" | "ready" | "unavailable">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    setExplorerLoadState("loading");
+
+    void getFinancialRecordExplorer("ledger")
+      .then((explorer) => {
+        if (!cancelled) {
+          setLedgerExplorer(explorer);
+          setExplorerLoadState("ready");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLedgerExplorer(null);
+          setExplorerLoadState("unavailable");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!selectedRunId) {
@@ -432,45 +461,66 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
     };
   }, [selectedRunId]);
 
-  const filteredRows = useMemo(() => {
-    const needle = searchText.trim().toLowerCase();
-    if (!needle) {
-      return journalLines;
-    }
-    return journalLines.filter((line) => [
-      line.journalEntryId,
-      line.description,
-      line.accountScopeDisplayName,
-      line.entityScopeDisplayName,
-      line.dimensions?.instrumentId,
-      String(line.totalDebits),
-      String(line.totalCredits)
-    ].some((value) => String(value ?? "").toLowerCase().includes(needle)));
-  }, [journalLines, searchText]);
+  const selectedRunIsListed = runs.some((run) => readString(run, "runId", "") === selectedRunId);
+
+  async function saveLedgerExplorerView(request: FinancialRecordExplorerSavedViewSaveRequestDto) {
+    await saveFinancialRecordExplorerView("ledger", request);
+    const refreshed = await getFinancialRecordExplorer("ledger");
+    setLedgerExplorer(refreshed);
+    setExplorerLoadState("ready");
+  }
 
   return (
+    <FinancialRecordExplorerShell
+      explorerLabel="Financial Record Explorer"
+      title="Ledger Explorer"
+      titleId="accounting-ledger-explorer-title"
+      description="Search retained ledger records, preserve run-scoped journal activity, and follow source, approval, reconciliation, report, and evidence proof links."
+      scopeItems={[
+        { id: "workspace", label: "Workspace", value: "Accounting" },
+        { id: "run", label: "Run / period", value: selectedRunId || "No run selected" },
+        { id: "source", label: "Journal source", value: selectedRunId ? "Retained run journal" : "Awaiting run selection" },
+        { id: "explorer-source", label: "Explorer source", value: explorerLoadState === "loading" ? "Loading shared records" : explorerLoadState === "ready" ? "Shared records loaded" : "Journal fallback available" }
+      ]}
+      savedViews={[]}
+      summaryItems={[
+        { id: "runs", label: "Available runs", value: String(runs.length) },
+        { id: "journal-rows", label: "Journal rows", value: String(journalLines.length), tone: journalLines.length > 0 ? "success" : "default" },
+        { id: "explorer-state", label: "Explorer state", value: explorerLoadState === "loading" ? "Loading" : explorerLoadState === "ready" ? "Shared" : "Fallback" }
+      ]}
+      appliedFilters={[
+        { id: "run", label: "Journal run context", value: selectedRunId || "None" }
+      ]}
+      explorer={ledgerExplorer}
+      onSaveView={saveLedgerExplorerView}
+    >
     <div className="space-y-4">
       <Card className="panel-surface">
         <CardHeader>
-          <CardTitle>Ledger Explorer</CardTitle>
-          <CardDescription>Search journal activity by account, amount, journal ID, source, security, or entity.</CardDescription>
+          <CardTitle>Run-scoped journal evidence</CardTitle>
+          <CardDescription>The shared explorer above owns record search, filters, and saved views. Select a retained run here to inspect its underlying journal evidence.</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.25fr)_minmax(15rem,0.7fr)_minmax(9rem,0.45fr)_minmax(10rem,0.5fr)]">
-          <FormRow label="Search by account, amount, journal ID, source, security, entity" labelFor="ledger-search">
-            <Input
-              id="ledger-search"
-              type="search"
-              value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Cash, $120,500, AAPL, cash sweep"
-            />
-          </FormRow>
-          <FormRow label="Run / period" labelFor="ledger-run-select">
+        <CardContent className="max-w-xl">
+          <FormRow label="Journal run context" labelFor="ledger-run-select">
             <Select
               id="ledger-run-select"
               value={selectedRunId}
-              onChange={(event) => setSearchParams({ runId: event.target.value })}
+              onChange={(event) => {
+                const runId = event.target.value;
+                setSearchParams((current) => {
+                  const next = new URLSearchParams(current);
+                  if (runId) {
+                    next.set("runId", runId);
+                  } else {
+                    next.delete("runId");
+                  }
+                  return next;
+                });
+              }}
             >
+              {selectedRunId && !selectedRunIsListed ? (
+                <option value={selectedRunId}>{selectedRunId}</option>
+              ) : null}
               {runs.length > 0 ? runs.map((run) => (
                 <option key={readString(run, "runId", "run")} value={readString(run, "runId", "")}>
                   {readString(run, "strategyName", readString(run, "runId", "Ledger run"))}
@@ -478,59 +528,20 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
               )) : <option value="">No run available</option>}
             </Select>
           </FormRow>
-          <FormRow label="Status" labelFor="ledger-status-filter">
-            <Select id="ledger-status-filter" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-              <option>All statuses</option>
-              <option>Posted</option>
-              <option>Unposted</option>
-              <option>Reversed</option>
-            </Select>
-          </FormRow>
-          <FormRow label="Source type" labelFor="ledger-source-filter">
-            <Select id="ledger-source-filter" value={sourceTypeFilter} onChange={(event) => setSourceTypeFilter(event.target.value)}>
-              <option>All source types</option>
-              <option>Manual JEs</option>
-              <option>System Generated</option>
-              <option>Reversals</option>
-            </Select>
-          </FormRow>
-        </CardContent>
-      </Card>
-
-      <Card className="panel-surface">
-        <CardHeader>
-          <CardTitle>Saved views</CardTitle>
-          <CardDescription>Use standard accounting cuts before drilling into Journal Entry Detail.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Saved ledger views">
-            {["Selected run", "Unposted", "Reversals", "Manual JEs", "System Generated"].map((view) => (
-              <Button
-                key={view}
-                type="button"
-                size="sm"
-                variant={savedView === view ? "default" : "outline"}
-                aria-pressed={savedView === view}
-                onClick={() => setSavedView(view)}
-              >
-                {view}
-              </Button>
-            ))}
-          </div>
         </CardContent>
       </Card>
 
       <Card className="panel-surface">
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle>Ledger search results</CardTitle>
-            <CardDescription>{loading ? "Loading ledger rows." : `${filteredRows.length} row(s) for ${savedView}.`}</CardDescription>
+            <CardTitle>Journal evidence rows</CardTitle>
+            <CardDescription>{loading ? "Loading journal evidence." : `${journalLines.length} row(s) for ${selectedRunId || "no selected run"}.`}</CardDescription>
           </div>
-          <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
+          <Badge variant={journalLines.length > 0 ? "success" : "outline"}>{journalLines.length}</Badge>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="min-w-full text-sm" aria-label="Ledger Explorer results">
+            <table className="min-w-full text-sm" aria-label="Run-scoped ledger journal results">
               <thead className="bg-secondary/30 text-left text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                 <tr>
                   <th className="px-3 py-2" scope="col">Date</th>
@@ -545,7 +556,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
                 </tr>
               </thead>
               <tbody>
-                {filteredRows.length > 0 ? filteredRows.map((line) => (
+                {journalLines.length > 0 ? journalLines.map((line) => (
                   <tr key={line.journalEntryId} className="border-t border-border/70">
                     <td className="px-3 py-2 text-xs">{formatDateTimeLabel(line.timestamp)}</td>
                     <td className="px-3 py-2">
@@ -570,17 +581,17 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
                 )) : (
                   <tr>
                     <td className="px-3 py-4 text-muted-foreground" colSpan={9}>
-                      No ledger rows match the current search and filters.
+                      No journal evidence rows are available for the selected run.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-          {filteredRows.length > 0 ? (
+          {journalLines.length > 0 ? (
             <TechnicalDetails label="Journal references" className="mt-3">
               <ul className="space-y-1 text-xs text-muted-foreground">
-                {filteredRows.map((line) => (
+                {journalLines.map((line) => (
                   <li key={line.journalEntryId} className="break-all font-mono">{line.journalEntryId}</li>
                 ))}
               </ul>
@@ -589,6 +600,7 @@ export function LedgerExplorerScreen({ data }: FinanceStandardScreenProps) {
         </CardContent>
       </Card>
     </div>
+    </FinancialRecordExplorerShell>
   );
 }
 

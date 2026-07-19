@@ -73,7 +73,7 @@
 
   /* Panel padding — density-aware. Unlike --space-* (fixed), these track
      data-theme-density so compact mode compresses panel interiors, not just row height.
-     Cozy defaults here; density overrides live in theme.css alongside --theme-spacing-*. */
+     Compact operator defaults live here; density overrides live in theme.css alongside --theme-spacing-*. */
   --pad-panel:       var(--theme-spacing-lg, 16px); /* standard panel/card interior */
   --pad-panel-tight: var(--theme-spacing-md, 12px); /* dense panels, inspector rails */
   --gap-panel:       var(--theme-spacing-md, 12px); /* gap between stacked panel children */

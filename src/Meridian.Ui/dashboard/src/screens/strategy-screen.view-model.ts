@@ -3167,7 +3167,7 @@ function buildPlotToolScatterChartState({
       y: markerPoint.y,
       radius: 6,
       fill: "var(--state-warn-fg)",
-      stroke: "var(--surface-topbar)",
+      stroke: "var(--chart-plot)",
       strokeWidth: 2,
       labelX,
       labelY,

@@ -23,12 +23,14 @@ body {
 }
 
 .workspace-header-shell h1 {
-  font-size: 1rem;
-  line-height: 1.25rem;
+  font-family: var(--font-display, var(--font-body));
+  font-size: 1.25rem;
+  line-height: 1.5rem;
 }
 
 .workspace-header-shell p {
   max-width: 60rem;
+  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
   font-size: 0.75rem;
   line-height: 1.15rem;
 }
@@ -124,6 +126,7 @@ body {
 
 .eyebrow-label {
   color: var(--ws-text-muted);
+  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
   letter-spacing: 0;
 }
 
@@ -152,9 +155,14 @@ body {
   color: var(--mds-workspace-text, var(--ws-text));
 }
 
+.workspace-section-title {
+  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
+}
+
 .panel-state-detail,
 .workspace-section-summary {
   color: var(--mds-workspace-text-muted, var(--ws-text-muted));
+  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
 }
 
 .workspace-header-card:hover {

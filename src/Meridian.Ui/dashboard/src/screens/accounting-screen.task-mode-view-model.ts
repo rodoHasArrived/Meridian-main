@@ -56,7 +56,6 @@ export interface AccountingSectionVisibilityViewModel {
   showExceptionWorkbench: boolean;
   showPosture: boolean;
   showReconciliation: boolean;
-  showLedgerExplorer: boolean;
   showSecurityMaster: boolean;
   showReconciliationActions: boolean;
   showReporting: boolean;
@@ -252,7 +251,6 @@ export function buildAccountingSectionVisibility(
     showExceptionWorkbench: taskMode.workstream === "exceptions",
     showPosture: false,
     showReconciliation: taskMode.workstream === "reconciliation",
-    showLedgerExplorer: taskMode.workstream === "ledger" && !isCloseCockpitLanding,
     showSecurityMaster: taskMode.workstream === "security-master",
     showReconciliationActions: taskMode.workstream === "reconciliation" || taskMode.workstream === "exceptions",
     showReporting: taskMode.workstream === "reporting"

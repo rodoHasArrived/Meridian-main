@@ -56,7 +56,7 @@ function inject() {
 .fdt-table td {
   padding: 7px 12px; border-top: 1px solid var(--border, #D7DCE2);
   color: var(--text-primary, #22272E); font-variant-numeric: tabular-nums;
-  height: var(--theme-row-height, 40px); box-sizing: border-box;
+  height: var(--theme-row-height, 32px); box-sizing: border-box;
 }
 /* density: row height tracks --theme-row-height; vertical padding compresses to fit */
 body[data-theme-density="compact"] .fdt-table td { padding-top: 4px; padding-bottom: 4px; }
@@ -88,7 +88,7 @@ export function FilteredDataTable({
   localStorageKey = null,
   virtualize,
   virtualizeThreshold = 500,
-  rowHeight, // px — defaults to the density token --theme-row-height (32 compact · 40 cozy · 48 spacious)
+  rowHeight, // px — defaults to --theme-row-height (26 terminal · 32 default/compact · 48 spacious)
   maxHeight = 560,
 }) {
   inject();

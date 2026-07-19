@@ -248,8 +248,8 @@ statement, positions — the figures tie out across sheets.
 
 ## Performance
 
-- **Density is live:** table row heights read `--theme-row-height` (32 compact · 40 cozy · 48
-  spacious) via `data/useThemeRowHeight.js`, so `DensityToggle` compacts real tables — the
+- **Density is live:** table row heights read `--theme-row-height` (26 terminal · 32 default/
+  compact · 48 spacious) via `data/useThemeRowHeight.js`, so `DensityToggle` resizes real tables — the
   virtualization math tracks the token too. Pass an explicit `rowHeight` only to opt out.
 
 - **Large lists:** `DenseDataTable` and `FilteredDataTable` auto-window past 500 rows (spacer

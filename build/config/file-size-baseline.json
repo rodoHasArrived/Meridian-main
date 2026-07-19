@@ -30,7 +30,7 @@
     "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts": 6663,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-cockpit.view-model.ts": 3576,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.governance.view-model.ts": 5028,
-    "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx": 6583,
+    "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx": 5196,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts": 7269,
     "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx": 2200,
     "src/Meridian.Ui/dashboard/src/screens/data-screen.view-model.ts": 5042,

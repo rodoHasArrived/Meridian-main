@@ -56,7 +56,7 @@ export function FormRow({
       {...props}
     >
       {label ? (
-        <label htmlFor={labelFor} className="pt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <label htmlFor={labelFor} className="pt-1 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </label>
       ) : null}
@@ -75,7 +75,7 @@ export function FormDivider({ className, ...props }: React.HTMLAttributes<HTMLDi
 export function FormSectionLabel({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("border-b border-border pb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground", className)}
+      className={cn("border-b border-border pb-2 font-sans text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground", className)}
       {...props}
     >
       {children}

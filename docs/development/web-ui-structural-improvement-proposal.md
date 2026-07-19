@@ -1,8 +1,8 @@
 # Web UI Structural Improvement Proposal
 
-**Status:** in delivery (Phases A–D shipped; shell pattern rolled out to every workspace)
+**Status:** delivered (Phases A–E and the Accounting Phase-D follow-ups shipped)
 **Owner:** core-team
-**Reviewed:** 2026-07-13
+**Reviewed:** 2026-07-17
 
 > **Delivery status (2026-07-13).** Phase A landed app-wide: the decision brief renders as a
 > masthead status pill (`DecisionBriefPill`) instead of a per-route banner, the onboarding coach
@@ -23,9 +23,12 @@
 > on reconciliation; Strategy, Portfolio, and Reporting adopted route-scoped views
 > (`resolveStrategyRouteView`, `resolvePortfolioRouteView`, and the Reporting task-mode tab
 > strip), with the Reporting task-mode launcher card grid retired in favor of the tab strip.
-> Remaining: Phase E (token/chart/density polish); the deferred Accounting
-> configuration-panel extraction and reconciliation master–detail follow-ups are recorded
-> under the phase table in section 5.
+> Phase E and the Accounting follow-ups landed on 2026-07-17: shared font, chart, plot-surface,
+> and compact-row tokens now govern the browser and checked-in design-system package; the Configure
+> surface moved into its own module; reconciliation uses a sticky case-detail rail; the dedicated
+> Ledger Explorer and shared explorer shell are owned by the canonical `/accounting/ledger` route;
+> and the workflow, posture, external-GL, and
+> multi-asset tail is scoped to its owning Accounting workstreams.
 
 This document reviews the browser workstation as captured in the current screenshot catalog and
 proposes a set of improvements, including large structural changes to page architecture, routing,
@@ -39,7 +42,7 @@ templates.
 
 Related material:
 
-- Screenshot catalog: `docs/screenshots/web/*.png` (74 fixture-backed captures at 1440 px wide)
+- Screenshot catalog: `docs/screenshots/web/*.png` (77 fixture-backed captures at 1440 px wide)
 - Design charter: [`../product/meridian-design-document.md`](../product/meridian-design-document.md)
 - Visual design system: `Meridian Design System/` ("Concrete / Institutional Ops", the active
   reference; enforced against the dashboard by
@@ -50,7 +53,8 @@ Related material:
 
 - Direct review of key captures: all seven workspace landings, the Daily Control Tower,
   `/trading/orders`, `/strategy/designer`, and `/accounting/reconciliation`.
-- Measured page heights across the full 74-capture catalog.
+- Measured page heights across the original 74-capture audit baseline; release verification follows
+  the current 77-capture route catalog.
 - The 2026-06/07 audit pass in `docs/screenshots/web-audit.md`.
 - Code-structure survey of `src/Meridian.Ui/dashboard/` (shell, routing, screens, tokens, tests).
 
@@ -347,22 +351,18 @@ Validation per phase: targeted vitest suites (including the per-screen `*.a11y.t
 suites), `npm --prefix src/Meridian.Ui/dashboard run build`, screenshot regeneration for touched
 routes, and a re-grade of the affected rows in `docs/screenshots/web-audit.md`.
 
-**Phase D deferred scope (recorded 2026-07-13).** Four Accounting items were intentionally left
-out of the Phase D delivery and remain open follow-ups: extracting the ~730-line inline
-`AccountingConfigurationPanel` from `accounting-screen.tsx` into its own module, converting the
-reconciliation comparison/casework band to the full master–detail rail, resolving the latent
-`showLedgerExplorer` branch that is only reachable via hash deep link (document-or-remove
-decision), and scoping the shared workflow/posture/external-GL/multi-asset-coverage tail that
-still renders on every non-landing Accounting route (`showWorkflowDetails`, `showPosture`,
-`showExternalGl`, and `showMultiAssetCoverage` are all `!isCloseCockpitLanding` today) — that
-tail is why the deep Accounting routes remain 10–12k px after the Phase D reporting-band gating
-(−11–22%) while the close-cockpit landing sits at one viewport. None of these change
-operator-visible behavior shipped in Phase D.
+**Phase D follow-up completion (2026-07-17).** The four recorded Accounting follow-ups are closed.
+`AccountingConfigurationPanel` now lives in `accounting-screen.configuration-panel.tsx`;
+reconciliation comparison, statement runs, and case queue drive one sticky master–detail rail;
+the unreachable `AccountingScreen.showLedgerExplorer` branch was removed in favor of the dedicated
+shared-shell `/accounting/ledger` screen, with no hash-only alias; and the workflow, posture,
+external-GL, and multi-asset sections default closed and open only for their owning task-mode or
+explicit deep-link context. Route-ownership and accessibility assertions protect these seams.
 
 ## 6. Success metrics
 
 - **Page height:** no route capture exceeds 2 viewport-heights (2,200 px at the standard 1440×1100
-  capture); today 43 of 74 do.
+  capture); the original audit baseline had 43 of 74 above that threshold.
 - **First viewport:** every route shows operable task content (a table, queue, canvas, or form)
   without scrolling.
 - **Catalog distinctness:** zero byte-identical-height sub-route groups (today: 4 Trading routes

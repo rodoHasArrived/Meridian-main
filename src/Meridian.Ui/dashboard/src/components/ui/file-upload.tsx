@@ -48,7 +48,7 @@ export function FileUpload({
   return (
     <div className={cn("w-full", className)}>
       {label ? (
-        <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className="mb-1.5 block font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </span>
       ) : null}
@@ -73,14 +73,14 @@ export function FileUpload({
         className={cn(
           "flex w-full flex-col items-center gap-2 rounded-[2px] border-2 border-dashed px-5 py-5 text-center transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-          dragging ? "border-primary bg-primary/10" : "border-border bg-[#F3F6F9] hover:border-[#ADB8C4]",
+          dragging ? "border-primary bg-primary/10" : "border-border bg-[var(--surface-input)] hover:border-[var(--border-hover)]",
           disabled && "cursor-not-allowed opacity-55"
         )}
       >
         <Upload className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
         <span className="text-xs text-muted-foreground">Drag files here or click to browse</span>
-        <span className="font-mono text-[10px] text-muted-foreground">
-          {accept !== "*" ? `Accepts: ${accept}` : "Any file type"}
+        <span className="font-sans text-[10px] text-muted-foreground">
+          {accept !== "*" ? <>Accepts: <span className="font-mono">{accept}</span></> : "Any file type"}
         </span>
       </button>
       <input

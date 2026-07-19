@@ -20,7 +20,6 @@ import type {
   ExternalGlMappingProfile,
   ClosePeriodPlan,
   DailyValuationScheduleWorkItem,
-  LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -726,30 +725,6 @@ const corporateActions: CorporateAction[] = [
     exchangeRatio: null,
     subscriptionPricePerShare: null,
     rightsPerShare: null
-  }
-];
-
-const trialBalanceLines: LedgerTrialBalanceLine[] = [
-  {
-    accountName: "Cash",
-    accountType: "Asset",
-    symbol: null,
-    financialAccountId: "acct-cash",
-    balance: 120500,
-    entryCount: 12,
-    security: null,
-    sourceJournalEntryId: "je-cash-1",
-    sourceEventIds: ["evt-cash-1"],
-    approvalIds: ["approval-cash-1"]
-  },
-  {
-    accountName: "Financing payable",
-    accountType: "Liability",
-    symbol: null,
-    financialAccountId: "acct-financing",
-    balance: -500,
-    entryCount: 2,
-    security: null
   }
 ];
 
@@ -3479,8 +3454,9 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting#accounting-exceptions");
 
     expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Reconciliation exceptions and evidence" })).toBeInTheDocument();
-    expect(screen.getByRole("treegrid", { name: "Reconciliation runs" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Reconciliation comparison and casework" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Accounting statement runs" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Accounting case workbench" })).not.toBeInTheDocument();
   });
 
@@ -4239,23 +4215,25 @@ describe("AccountingScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
+    const masterDetail = screen.getByRole("region", { name: "Reconciliation casework master detail" });
+    const detailRail = within(masterDetail).getByRole("region", { name: "Selected reconciliation case detail" });
     const comparison = screen.getByRole("region", { name: "Cash reconciliation broker statement versus ledger comparison" });
     expect(comparison).toHaveTextContent("Cash reconciliation - broker statement vs. ledger");
     expect(comparison).toHaveTextContent("Statement balance");
     expect(comparison).toHaveTextContent("Ledger balance");
     expect(comparison).toHaveTextContent("Out by $500");
-    expect(screen.getAllByRole("treegrid", { name: "Reconciliation runs" })).toHaveLength(1);
+    expect(within(masterDetail).getByRole("treegrid", { name: "Accounting statement runs" })).toBeInTheDocument();
+    expect(within(masterDetail).getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Open Accounting reconciliation workstream" })).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
-    const selectedRun = screen.getByRole("row", { name: "Inspect reconciliation run Paper Index Mean Reversion" });
+    expect(detailRail).toHaveAttribute("data-master-detail-rail", "reconciliation");
+    expect(within(detailRail).getByRole("region", { name: "Selected reconciliation run context" })).toHaveTextContent(
+      "Paper Index Mean Reversion"
+    );
+    const selectedRun = screen.getByRole("row", { name: "Inspect statement run run-42" });
     expect(selectedRun).toHaveAttribute("aria-selected", "true");
     expect(selectedRun).toHaveAttribute("aria-expanded", "true");
-    expect(selectedRun).toHaveAttribute("aria-controls", "reconciliation-run-detail-panel");
-    expect(screen.getByRole("treegrid", { name: "Reconciliation runs" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Open breaks: 1")).toHaveTextContent("1");
-    expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
-      "Open reconciliation breaks remain on this run."
-    );
+    expect(selectedRun).toHaveAttribute("aria-controls", "statement-run-detail-tabs");
+    expect(within(detailRail).getByText(/Open reconciliation breaks remain on this run\./)).toBeInTheDocument();
   });
 
   it("renders operational exception workbench with queue, comment, audit, and workflow handoffs", async () => {
@@ -4395,10 +4373,13 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
+    const masterDetail = screen.getByRole("region", { name: "Reconciliation casework master detail" });
+    const detailRail = within(masterDetail).getByRole("region", { name: "Selected reconciliation case detail" });
+    expect(detailRail).toHaveAttribute("data-master-detail-rail", "reconciliation");
     expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting/ledger");
     expect(screen.getByText("Review cash ledger entries before resolving.")).toBeInTheDocument();
 
-    const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
+    const nextRun = screen.getByRole("row", { name: "Inspect statement run run-57" });
     expect(nextRun).not.toHaveAttribute("aria-selected");
     expect(nextRun).toHaveAttribute("aria-expanded", "false");
 
@@ -4406,177 +4387,31 @@ describe("AccountingScreen", () => {
 
     expect(nextRun).toHaveAttribute("aria-selected", "true");
     expect(nextRun).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: "Reconciliation detail for Intraday Vol Carry" })).toBeInTheDocument();
+    expect(within(detailRail).getByRole("region", { name: "Selected reconciliation run context" })).toHaveTextContent(
+      "Intraday Vol Carry"
+    );
   });
 
   it("supports keyboard selection from the reconciliation detail queue table", async () => {
     const user = userEvent.setup();
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
+    const nextRun = screen.getByRole("row", { name: "Inspect statement run run-57" });
     nextRun.focus();
 
     await user.keyboard("{Enter}");
 
     expect(nextRun).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("region", { name: "Reconciliation detail for Intraday Vol Carry" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected reconciliation run context" })).toHaveTextContent("Intraday Vol Carry");
   });
 
   it("renders reconciliation detail queue empty state when no runs are available", async () => {
     await renderAccountingScreen({ ...data, reconciliationQueue: [] }, "/accounting/reconciliation");
 
-    expect(screen.getByText("No reconciliation runs are available for this accounting scope.")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "No reconciliation run selected" })).toHaveTextContent(
-      "Reconciliation evidence is unavailable until workspace data includes at least one run."
+    expect(screen.getByText("No broker or custodian statement runs are available for this accounting period.")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Selected reconciliation run context" })).toHaveTextContent(
+      "Select a statement run to load its case context and retained evidence."
     );
-  });
-
-  it("renders trial-balance rows with accessible table evidence", async () => {
-    const user = userEvent.setup();
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce(trialBalanceLines);
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    const table = await screen.findByRole("region", { name: "Primary trial balance lines for the selected ledger run" });
-    expect(table).toBeInTheDocument();
-    const cashRow = screen.getByRole("row", { name: /Cash Asset\. Primary basis/ });
-    const financingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
-    expect(cashRow).toHaveAttribute("aria-selected", "true");
-    expect(cashRow).toHaveAttribute("aria-expanded", "true");
-    expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
-    expect(screen.getByRole("region", { name: "Trial-balance detail for Cash" })).toHaveTextContent("$120,500");
-    expect(screen.getByLabelText("Filter by General Ledger account")).toHaveValue("");
-    expect(screen.getAllByText("2 GL account rows").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole("list", { name: "Ledger lines for selected account" })).toHaveTextContent("je-cash-1");
-    expect(screen.getByRole("link", { name: "Open source event evt-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/audit?sourceEventId=evt-cash-1"
-    );
-    expect(screen.getByRole("link", { name: "Open journal entry je-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/ledger?journalEntryId=je-cash-1"
-    );
-    expect(screen.getByRole("link", { name: "Open approval approval-cash-1 for Cash" })).toHaveAttribute(
-      "href",
-      "/accounting/approvals?approvalId=approval-cash-1"
-    );
-    expect(financingRow).toHaveAttribute("aria-expanded", "false");
-    expect(financingRow).toHaveAccessibleName(/Balance -\$500/);
-
-    await user.type(screen.getByLabelText("Filter by General Ledger account"), "financing");
-
-    expect(screen.getAllByText("1 of 2 GL account rows").length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByRole("row", { name: /Cash Asset\. Primary basis/ })).not.toBeInTheDocument();
-    const filteredFinancingRow = screen.getByRole("row", { name: /Financing payable Liability\. Primary basis/ });
-    expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
-
-    await user.click(filteredFinancingRow);
-
-    expect(screen.getByRole("region", { name: "Trial-balance detail for Financing payable" })).toHaveTextContent("Credit / payable");
-    expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");
-  });
-
-  it("renders a useful trial-balance empty state instead of a blank table", async () => {
-    vi.mocked(api.getRunTrialBalance).mockResolvedValueOnce([]);
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
-  });
-
-  it("renders structured trial-balance api-errors with endpoint and validation detail", async () => {
-    vi.mocked(api.getRunTrialBalance).mockRejectedValueOnce(new ApiError({
-      path: "/api/workstation/runs/run-42/trial-balance",
-      status: 422,
-      title: "Validation failed",
-      detail: "Fund account is required.",
-      validationIssues: [
-        {
-          field: "fundAccountId",
-          label: "Fund account",
-          messages: ["Select a fund account before loading accounting evidence."]
-        }
-      ]
-    }));
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Fund account is required.");
-    expect(alert).toHaveTextContent("Meridian service returned 422. Open diagnostics for technical details.");
-    expect(alert).toHaveTextContent("Validation failed");
-    expect(alert).toHaveTextContent("Fund account: Select a fund account before loading accounting evidence.");
-  });
-
-  it("runs ledger reporting export through the POST mutation instead of a GET link", async () => {
-    const user = userEvent.setup();
-    vi.mocked(api.runAnalysisExport).mockResolvedValueOnce({
-      jobId: "export-1",
-      success: true,
-      status: "completed",
-      profileId: "excel",
-      symbols: [],
-      filesGenerated: 2,
-      totalRecords: 12,
-      totalBytes: 2048,
-      outputDirectory: "artifacts/exports/export-1",
-      durationSeconds: 1.5,
-      error: null,
-      warnings: [],
-      files: [],
-      timestamp: "2026-01-01T00:00:00Z"
-    });
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    await user.click(screen.getByRole("button", { name: "Run reporting export for Excel" }));
-
-    expect(api.runAnalysisExport).toHaveBeenCalledWith("excel");
-    expect(await screen.findByText("Export export-1 completed with 2 file(s), 12 record(s), and 2 KB. Output artifacts/exports/export-1.")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Run reporting export" })).not.toBeInTheDocument();
-  });
-
-  it("surfaces the reporting export busy reason on the command button", async () => {
-    const user = userEvent.setup();
-    let finishExport!: () => void;
-    vi.mocked(api.runAnalysisExport).mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          finishExport = () => resolve({
-            jobId: "export-busy",
-            success: true,
-            status: "completed",
-            profileId: "excel",
-            symbols: [],
-            filesGenerated: 1,
-            totalRecords: 4,
-            totalBytes: 1024,
-            outputDirectory: "artifacts/exports/export-busy",
-            durationSeconds: 1,
-            error: null,
-            warnings: [],
-            files: [],
-            timestamp: "2026-01-01T00:00:00Z"
-          });
-        })
-    );
-
-    await renderAccountingScreen(data, "/accounting/ledger");
-
-    await user.click(screen.getByRole("button", { name: "Run reporting export for Excel" }));
-
-    const busyButton = await screen.findByRole("button", { name: "Excel reporting export is already running" });
-    expect(busyButton).toBeDisabled();
-    expect(busyButton).toHaveAttribute("aria-busy", "true");
-    expect(busyButton).toHaveAttribute("title", "Excel reporting export is already running.");
-    expect(busyButton).toHaveTextContent("Export running...");
-
-    finishExport();
-
-    await waitFor(() => {
-      expect(screen.getByText("Export export-busy completed with 1 file(s), 4 record(s), and 1 KB. Output artifacts/exports/export-busy.")).toBeInTheDocument();
-    });
   });
 
   it("renders reporting profile detail state and updates selected profile", async () => {
@@ -5193,20 +5028,29 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
+    const runContext = screen.getByRole("region", { name: "Selected reconciliation run context" });
+    expect(runContext).toHaveTextContent("Paper Index Mean Reversion");
+    expect(runContext).toHaveTextContent(
       /Open reconciliation breaks remain on this run/
     );
-    expect(screen.getByRole("link", { name: "Open break checklist for Paper Index Mean Reversion; 1 open break" }))
-      .toHaveAttribute("href", "#reconciliation-break-queue");
     expect(screen.getByRole("link", { name: "Review audit packet for Paper Index Mean Reversion" }))
       .toHaveAttribute("href", "/api/workstation/runs/run-42/review-packet");
-    expect(screen.getByRole("region", { name: "Reconciliation break checklist" }))
-      .toHaveAttribute("id", "reconciliation-break-queue");
+    expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" }));
+    await user.click(screen.getByRole("row", { name: "Inspect statement run run-57" }));
 
-    expect(screen.getByText(/Historical breaks have been worked through/)).toBeInTheDocument();
+    expect(runContext).toHaveTextContent(/Historical breaks have been worked through/);
+  });
+
+  it("keeps the reconciliation rail as the sole case action owner for action hashes", async () => {
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+
+    await renderAccountingScreen(data, "/accounting/reconciliation#accounting-actions");
+
+    expect(screen.getAllByRole("treegrid", { name: "Reconciliation break queue" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Resolve reconciliation break run-42:cash" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Dismiss reconciliation break run-42:cash" })).toHaveLength(1);
+    expect(screen.queryByRole("heading", { name: "Break resolution actions" })).not.toBeInTheDocument();
   });
 
   it("assigns reconciliation breaks through the view model workflow", async () => {
@@ -5267,10 +5111,13 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    expect(await screen.findByRole("button", { name: "Assign reconciliation break run-42:resolved" }))
+    await user.click(await screen.findByRole("row", { name: "Inspect reconciliation break run-42:resolved" }));
+    expect(screen.getByRole("button", { name: "Assign reconciliation break run-42:resolved" }))
       .toHaveAttribute("title", "Only open breaks can be assigned; this break is Resolved.");
     expect(screen.getByRole("button", { name: "Resolve reconciliation break run-42:resolved" }))
       .toHaveAttribute("title", "This break is already resolved.");
+
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:dismissed" }));
     expect(screen.getByRole("button", { name: "Dismiss reconciliation break run-42:dismissed" }))
       .toHaveAttribute("title", "This break is already dismissed.");
 
@@ -5279,6 +5126,7 @@ describe("AccountingScreen", () => {
     expect(resolvedDetail).toHaveTextContent("Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked.");
     expect(resolvedDetail).toHaveTextContent("Matched ledger adjustment.");
 
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:cash" }));
     await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
 
     expect(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }))
@@ -5287,7 +5135,7 @@ describe("AccountingScreen", () => {
       .toHaveAttribute("title", "Enter an operator rationale before confirming this queue action.");
   });
 
-  it("selects a reconciliation break before opening its queue action", async () => {
+  it("keeps reconciliation actions in the detail rail after selecting a break", async () => {
     const user = userEvent.setup();
     const feeBreak = {
       ...data.breakQueue[0],
@@ -5309,10 +5157,15 @@ describe("AccountingScreen", () => {
     expect(await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" }))
       .toHaveTextContent("Paper Index Mean Reversion - Cash variance needs review");
 
-    await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-57:fees" }));
+    const breakQueue = screen.getByRole("treegrid", { name: "Reconciliation break queue" });
+    expect(within(breakQueue).queryByRole("button", { name: "Resolve reconciliation break run-57:fees" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("row", { name: "Inspect statement run run-57" }));
+    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-57:fees" }));
 
-    expect(screen.getByRole("region", { name: "Reconciliation break detail for run-57:fees" }))
+    const feeDetail = screen.getByRole("region", { name: "Reconciliation break detail for run-57:fees" });
+    expect(feeDetail)
       .toHaveTextContent("Intraday Vol Carry - Cash variance needs review");
+    await user.click(within(feeDetail).getByRole("button", { name: "Resolve reconciliation break run-57:fees" }));
     expect(screen.getByRole("textbox", { name: "Resolve rationale" })).toBeInTheDocument();
   });
 

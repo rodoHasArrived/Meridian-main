@@ -29,9 +29,9 @@ function inject() {
 .dds th:last-child{border-right:none;}
 .dds th.dds--r{text-align:right;}
 .dds th.dds--checkbox{padding:9px 10px;width:34px;text-align:center;}
-.dds td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
+.dds td{padding:7px 12px;white-space:nowrap;color:var(--text-primary,#22272E);
   border-top:1px solid var(--border,#D7DCE2);border-right:1px solid var(--border-divider,#DDE3EA);
-  font-variant-numeric:tabular-nums;height:var(--theme-row-height,40px);box-sizing:border-box;}
+  font-variant-numeric:tabular-nums;height:var(--theme-row-height,32px);box-sizing:border-box;}
 .dds td:last-child{border-right:none;}
 /* density: row height tracks --theme-row-height; vertical padding compresses to fit */
 body[data-theme-density="compact"] .dds td{padding-top:5px;padding-bottom:5px;}
@@ -98,7 +98,7 @@ export function DenseDataTable({
   onSelectAll,
   virtualize,
   virtualizeThreshold = 500,
-  rowHeight, // px — defaults to the density token --theme-row-height (32 compact · 40 cozy · 48 spacious)
+  rowHeight, // px — defaults to --theme-row-height (26 terminal · 32 default/compact · 48 spacious)
   maxHeight = 560,
 }) {
   inject();

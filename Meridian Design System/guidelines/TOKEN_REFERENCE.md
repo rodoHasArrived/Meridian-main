@@ -24,7 +24,7 @@ re-brand and a broken one.
 
 **Tier 1 — Theme.** `--theme-accent`, `--theme-bg-canvas`, `--theme-spacing-*`, `--theme-row-height`,
 the `--theme-font-*` stack, plus the `data-brand` (indigo / emerald / rose / slate / cyan / amber)
-and `data-theme-density` (compact / cozy / spacious) switches. This is the **only** layer a
+and `data-theme-density` (terminal / compact / spacious) switches. This is the **only** layer a
 consumer should override to re-skin. Setting `data-brand="indigo"` re-points `--theme-accent`,
 which flows down through Tier 2 and Tier 3 with zero component edits.
 
@@ -89,7 +89,7 @@ for splitting sections *inside* a surface where a full border would be too much.
 
 **Spacing** is a 6-step scale: `--space-xs 3px · sm 6px · md 12px · lg 16px · xl 24px · 2xl 32px`.
 The density switch rescales the *theme* spacing (`--theme-spacing-*`) and `--theme-row-height`
-(compact 32px · cozy 40px · spacious 48px). Use the scale tokens; don't type pixel padding.
+(terminal 26px · default/compact 32px · spacious 48px). Use the scale tokens; don't type pixel padding.
 
 **Radius is intentionally tiny.** Everything is `2px` (`--radius-chip` / `-button` / `-card` all
 2px); the named scale tops out at `--radius-xl 6px` for large sheets only. *Structure comes from

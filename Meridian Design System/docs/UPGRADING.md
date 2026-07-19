@@ -22,10 +22,10 @@ these components, it will no longer receive them.
 
 **Table row heights now follow the density token.**
 `DenseDataTable` and `FilteredDataTable` previously hardcoded `rowHeight = 40` (dense: 32) for
-both CSS and virtualization math. They now read `--theme-row-height` (32 compact · 40 cozy ·
-48 spacious), so `DensityToggle` / `body[data-theme-density]` actually resizes tables.
+both CSS and virtualization math. They now read `--theme-row-height` (26 terminal · 32 default/
+compact · 48 spacious), so `DensityToggle` / `body[data-theme-density]` actually resizes tables.
 
-- **If you never set density:** cozy default is 40px — no visible change.
+- **If you never set density:** the compact operator default is 32px.
 - **If you set `data-theme-density`:** tables will now (correctly) change height. If a screen
   relied on tables ignoring density, pass an explicit `rowHeight={40}` to opt out.
 - **If you passed `rowHeight`:** unchanged — an explicit prop still wins.

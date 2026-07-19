@@ -118,13 +118,39 @@ function ReconciliationComparisonPane({
   );
 }
 
-export function ReconciliationComparisonPanel({ view }: { view: ReconciliationComparisonViewState }) {
-  const [selection, setSelection] = useState<ReconciliationComparisonSelection>(null);
+export function ReconciliationComparisonPanel({
+  view,
+  selectedRunId,
+  onSelectRun
+}: {
+  view: ReconciliationComparisonViewState;
+  selectedRunId: string | null;
+  onSelectRun?: (runId: string) => void;
+}) {
+  const [localSelection, setLocalSelection] = useState<ReconciliationComparisonSelection>(null);
   const statementScrollRef = useRef<HTMLDivElement>(null);
   const ledgerScrollRef = useRef<HTMLDivElement>(null);
+  const selection: ReconciliationComparisonSelection = view.lineSource === "runs" && selectedRunId
+    ? {
+        matchKey: selectedRunId,
+        side: localSelection?.matchKey === selectedRunId
+          ? localSelection.side
+          : view.statementLines.some((line) => line.matchKey === selectedRunId)
+            ? "statement"
+            : "ledger"
+      }
+    : view.lineSource === "runs"
+      ? null
+      : localSelection;
 
   const handleSelect = (matchKey: string, side: ReconciliationComparisonSide) => {
-    setSelection((previous) =>
+    if (view.lineSource === "runs") {
+      setLocalSelection({ matchKey, side });
+      onSelectRun?.(matchKey);
+      return;
+    }
+
+    setLocalSelection((previous) =>
       previous && previous.matchKey === matchKey && previous.side === side ? null : { matchKey, side }
     );
   };

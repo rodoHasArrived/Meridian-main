@@ -51,6 +51,24 @@ async function pathExists(candidate) {
   }
 }
 
+const retryableScreenshotWriteCodes = new Set(["EACCES", "EBUSY", "EPERM", "UNKNOWN"]);
+
+async function writeScreenshotWithRetry(outputPath, buffer, maxAttempts = 6) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await fs.writeFile(outputPath, buffer);
+      return;
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
+      if (!retryableScreenshotWriteCodes.has(code) || attempt === maxAttempts) {
+        throw error;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 100 * (2 ** (attempt - 1))));
+    }
+  }
+}
+
 async function findRepoRoot(startDir) {
   let current = path.resolve(startDir);
   while (true) {
@@ -637,10 +655,11 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   }
 
   await fs.mkdir(outputDir, { recursive: true });
-  const buffer = await page.screenshot({ path: outputPath, fullPage: true });
+  const buffer = await page.screenshot({ fullPage: true });
   if (buffer.length < minBytes) {
     throw new Error(`Screenshot ${fileName} is ${buffer.length} bytes, below minimum ${minBytes}`);
   }
+  await writeScreenshotWithRetry(outputPath, buffer);
 
   return {
     id: capture.id,

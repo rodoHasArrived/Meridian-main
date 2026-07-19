@@ -6,12 +6,12 @@ import type { DenseDataTableVirtualization } from "@/components/meridian/ui-kit-
 // every node. Standardizing this here means every dense grid virtualizes the
 // same way instead of each screen re-deriving row heights and thresholds.
 
-export const DENSE_VIRTUALIZATION_ROW_HEIGHT = 36;
+export const DENSE_VIRTUALIZATION_ROW_HEIGHT = 32;
 export const DENSE_VIRTUALIZATION_VIEWPORT_ROWS = 14;
 export const DENSE_VIRTUALIZATION_THRESHOLD = 40;
 
 export interface DenseVirtualizationOptions {
-  /** Fixed row height used by the windowing math. Defaults to 36px (dense row). */
+  /** Fixed row height used by the windowing math. Defaults to the compact 32px dense-row token. */
   rowHeight?: number;
   /** How many rows are visible in the scroll viewport. */
   viewportRowCount?: number;

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -63,6 +64,18 @@ function readDashboardPrimitive(path: string) {
 }
 
 describe("dashboard design-system contract", () => {
+  it("keeps the checked-in design-system bundle and manifest synchronized", () => {
+    const script = resolve(
+      process.cwd(),
+      "../../../Meridian Design System/scripts/sync_generated_artifacts.mjs"
+    );
+
+    expect(() => execFileSync(process.execPath, [script, "--check"], {
+      cwd: resolve(process.cwd(), "../../.."),
+      stdio: "pipe"
+    })).not.toThrow();
+  });
+
   it("vendors the Meridian design-system source package beside the dashboard bridge", () => {
     const manifest = JSON.parse(readDesignSystemPackageFile("_ds_manifest.json")) as {
       components: Array<{ name: string; sourcePath: string }>;
@@ -405,6 +418,99 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("\"Segoe UI Variable Display\"");
     expect(tailwindConfig).toContain("\"Cascadia Mono\"");
     expect(tailwindConfig).toContain("\"JetBrains Mono\"");
+  });
+
+  it("keeps Phase E chart, label, and dense-table defaults on the Concrete token contract", () => {
+    const styles = readDashboardStyles();
+    const tailwindConfig = readTailwindConfig();
+    const uiKit = readRepositoryFile("src/Meridian.Ui/dashboard/src/styles/ui-kit-primitives.css");
+    const chartCard = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/charts/ChartCard.tsx");
+    const strategyViewModel = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/strategy-screen.view-model.ts");
+    const designSystemTheme = readDesignSystemPackageFile("tokens/theme.css");
+    const designSystemColors = readDesignSystemPackageFile("tokens/colors.css");
+
+    expect(styles).toContain("--font-body: \"Segoe UI Variable Text\"");
+    expect(styles).toContain("--font-data: \"Cascadia Mono\"");
+    expect(styles).toContain("--theme-row-height: 32px");
+    expect(styles).toContain("--chart-plot: var(--ws-surface)");
+    expect(styles).toContain("background: var(--chart-plot)");
+    expect(styles).not.toContain("background: #05101b");
+    expect(tailwindConfig).toContain('"chart-plot": "var(--chart-plot)"');
+    expect(tailwindConfig).toContain('"dense-row": "var(--theme-row-height)"');
+    expect(uiKit).toContain('font-family: var(--font-body, "Segoe UI Variable Text"');
+    expect(uiKit).toContain("height: var(--theme-row-height, 32px)");
+    expect(chartCard).toContain('background: "var(--ws-surface-subtle, #EBEFF4)"');
+    expect(chartCard).toContain('background: "var(--chart-plot, #FFFFFF)"');
+    expect(strategyViewModel).toContain('stroke: "var(--chart-plot)"');
+    expect(designSystemTheme).toContain("--theme-row-height: 32px");
+    expect(designSystemColors).toContain("--chart-plot:         var(--bg-light)");
+    expect(designSystemColors).toContain("--ws-page-bg:        #DEE3EA");
+  });
+
+  it("keeps Phase E hierarchy, typography, feedback, and surface primitives semantic", () => {
+    const workspaceSurface = readWorkspaceSurfaceStyles();
+    const workspaceHeader = readRepositoryFile("src/Meridian.Ui/dashboard/src/components/meridian/workspace-header.tsx");
+    const screenLayout = readDashboardPrimitive("screen-layout.tsx");
+    const card = readDashboardPrimitive("card.tsx");
+    const virtualization = readRepositoryFile("src/Meridian.Ui/dashboard/src/lib/dense-table-virtualization.ts");
+    const denseTable = readDesignSystemPackageFile("components/data/DenseDataTable.jsx");
+    const designSystemRowHeight = readDesignSystemPackageFile("components/data/useThemeRowHeight.js");
+    const statusBanner = readDashboardPrimitive("status-banner.tsx");
+    const designSystemStatusBanner = readDesignSystemPackageFile("components/core/StatusBanner.jsx");
+    const sharedLabelPrimitives = [
+      "combobox.tsx",
+      "date-picker.tsx",
+      "date-range-picker.tsx",
+      "eyebrow.tsx",
+      "file-upload.tsx",
+      "form.tsx",
+      "number-input.tsx",
+      "text-area.tsx"
+    ].map(readDashboardPrimitive).join("\n");
+    const sharedSurfacePrimitives = [
+      "card.tsx",
+      "combobox.tsx",
+      "date-picker.tsx",
+      "date-range-picker.tsx",
+      "file-upload.tsx",
+      "number-input.tsx",
+      "panel-surface.tsx",
+      "text-area.tsx",
+      "toast.tsx"
+    ].map(readDashboardPrimitive).join("\n");
+
+    expect(virtualization).toContain("DENSE_VIRTUALIZATION_ROW_HEIGHT = 32");
+    expect(denseTable).toContain("height:var(--theme-row-height,32px)");
+    expect(designSystemRowHeight).toContain("DEFAULT_THEME_ROW_HEIGHT = 32");
+    expect(designSystemRowHeight).toContain("Number.isFinite(v) && v > 0 ? v : DEFAULT_THEME_ROW_HEIGHT");
+    expect(designSystemRowHeight).not.toMatch(/return 40|\? v : 40/);
+
+    // The semantic and visual ramp is page H1 (20px), task H2 (16px), then card H3 (14px).
+    expect(workspaceHeader).toContain("<h1");
+    expect(workspaceSurface).toContain("font-size: 1.25rem");
+    expect(screenLayout).toContain("<h2");
+    expect(screenLayout).toContain("text-base");
+    expect(card).toContain("<h3");
+    expect(card).toContain("text-[0.875rem]");
+
+    expect(sharedLabelPrimitives).toContain("font-sans");
+    expect(readDashboardPrimitive("number-input.tsx")).toContain("font-mono");
+    expect(readDashboardPrimitive("date-picker.tsx")).toContain("font-mono");
+    expect(readDashboardPrimitive("date-range-picker.tsx")).toContain("font-mono");
+    expect(readDashboardPrimitive("file-upload.tsx")).toContain('className="font-mono"');
+
+    expect(statusBanner).toContain("var(--severity-info-bd)");
+    expect(statusBanner).toContain("var(--severity-info-bg)");
+    expect(statusBanner).toContain("var(--severity-info-fg)");
+    expect(statusBanner).not.toContain('info: "border-l-primary');
+    expect(designSystemStatusBanner).toContain("var(--severity-info-bg");
+    expect(designSystemStatusBanner).toContain("var(--severity-info-bd");
+
+    expect(sharedSurfacePrimitives).toContain("var(--surface-input)");
+    expect(sharedSurfacePrimitives).toContain("var(--surface-raise-bg)");
+    expect(sharedSurfacePrimitives).toContain("var(--shadow-menu)");
+    expect(sharedSurfacePrimitives).not.toMatch(/(?:bg|border|hover:bg|hover:border)-\[#[0-9a-f]{3,8}\]/i);
+    expect(sharedSurfacePrimitives).not.toContain("shadow-[0_2px_6px_rgba(0,0,0,0.18)]");
   });
 
   it("declares local Segoe/Cascadia faces and fetches no external fonts", () => {

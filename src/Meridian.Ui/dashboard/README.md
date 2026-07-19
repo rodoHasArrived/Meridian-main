@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian.Ui/dashboard
@@ -31,6 +31,12 @@ Institutional Ops palette: paper canvas, white cards, near-black masthead/status
 borders, shallow shadows, Segoe UI body/display type, and Cascadia/JetBrains Mono data text. Keep
 visual changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
 instead of introducing one-off screen styling.
+The Phase-E baseline reserves the shared sans stacks for display/body labels and monospace for data,
+uses semantic chart and plot-surface tokens in light cards, and defaults dense workstation rows and
+virtualization to the compact 32 px token. The Strategy Lab screenshot fixture supplies an API-backed
+PlotTool payload so the maintained visual lane renders the light plot surface instead of certifying
+only its disconnected state. Keep `tailwind.config.ts`, the checked-in `Meridian Design System/`
+package, and `src/design-system-contract.test.ts` aligned when those foundations change.
 
 ## Key folders and files
 
@@ -43,6 +49,7 @@ instead of introducing one-off screen styling.
 - `src/app-shell.workflow-continuity-types.ts` - shell workflow-continuity view model contract.
 - `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
 - `src/design-system/assets.ts` - dashboard bridge for the checked-in `Meridian Design System/` package, centralizing brand and workspace icon imports before app-shell or navigation components consume them.
+- `src/screens/accounting-screen.configuration-panel.tsx` - extracted Accounting Configure workstream and Rules Studio composition.
 - `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.
 - `src/types.ts` - compatibility barrel for browser DTO mirrors. Add new domain-specific DTO mirrors under `src/types/` and re-export them from this file instead of growing the barrel directly.
 - `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
@@ -182,6 +189,11 @@ command-triggered refresh paths on that lifecycle instead of adding ad-hoc revis
 Shared workflow targets must land on the same operator lane as WPF. `FundTrialBalance` resolves to
 the browser accounting ledger route (`/accounting/ledger`) so Lane B/W3 continuity actions from the
 shared workflow registry do not collapse to the accounting root.
+`/accounting/ledger` is also the sole route owner for the dedicated `LedgerExplorerScreen`;
+`AccountingScreen` does not retain a hash-only ledger alias or an unreachable ledger-rendering flag.
+Accounting task-mode flags default closed, so workflow detail, posture,
+external-GL, and multi-asset coverage render only on their owning workstreams rather than forming a
+shared tail on every deep Accounting route.
 Browser workflow target routing accepts the desktop compatibility page tags
 `ResearchShell`, `DataOperationsShell`, and `GovernanceShell`, but materializes them as canonical
 browser routes under `/strategy`, `/data`, and `/accounting`.
@@ -223,6 +235,8 @@ Accounting reconciliation statement runs now use the shared statement-run endpoi
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
 validation, or case-state rules.
+The comparison, statement-run list, and case queue form the reconciliation master column; selection
+updates one sticky, independently scrolling detail rail beside it with retained evidence and actions.
 The Accounting external-GL panel renders the shared accounting-system reconciliation evidence
 packages for external import, Meridian ledger support, and GL tie-out posture when the API returns
 them, keeping package readiness and required actions service-owned rather than deriving package
@@ -1013,12 +1027,10 @@ The browser API helpers for run ledger trial-balance and retained journal reads 
 canonical ledger dimension filter set plus external GL dimension keys, so Accounting workstreams can
 request server-scoped fund, entity, sleeve, strategy, investor, capital-account, instrument, tax-lot,
 cost-center, counterparty, and external-GL results instead of relying on client-only filtering.
-The same `/accounting/ledger` route is the first browser implementation of the shared Financial
-Record Explorer pattern from the design document. It wraps the existing shared trial-balance,
-ledger-line, reconciliation, evidence-packet, audit-packet, and report-usage read models with
-explorer scope, saved-view labels, filter chips, summary signals, and proof drill-through actions
-without creating a separate browser ledger state or adding new root navigation.
-That shared explorer shell also wraps `/portfolio` and `/accounting/security-master`: Portfolio
+The dedicated `/accounting/ledger` route wraps run-scoped journal search, saved cuts, and journal
+detail handoff in the shared Financial Record Explorer shell without duplicating that screen behind
+an Accounting hash target. The same shared shell remains on `/portfolio` and
+`/accounting/security-master`: Portfolio
 anchors open holdings, selected run evidence, brokerage posture, and coverage proof to the existing
 Portfolio view model, while Security Master anchors instrument search, identity evidence, conflicts,
 schedules, lots, and trading controls to the Accounting-owned Security Master view model.
@@ -1179,9 +1191,9 @@ Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `W
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected
 package CSS into the dashboard build.
 Accounting exposes route-owned task modes over the existing shared workstreams: `/accounting` is
-Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, `/accounting/ledger` is
-Ledger Explorer, `/accounting/journal-entries` is Journal Entry, and `/accounting/configure` is
-Governance. Accounting only resolves its internal reporting workstream under `/accounting/reporting`,
+Close Cockpit, `/accounting/reconciliation` is Reconciliation Casework, the Ledger Explorer launcher
+hands off to the dedicated `/accounting/ledger` screen, `/accounting/journal-entries` is Journal Entry,
+and `/accounting/configure` is Governance. Accounting only resolves its internal reporting workstream under `/accounting/reporting`,
 keeping close/accounting tasks distinct from governed report-output tasks.
 The Accounting task-mode route resolver, mode catalog, and launcher links live in
 `accounting-screen.task-mode-view-model.ts` so task-mode IA can evolve without adding more route
@@ -1302,4 +1314,4 @@ Browser extensibility route helpers expose the shared core extensibility catalog
 
 ## Accounting close browser surface
 
-The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in the `src/screens/accounting-screen*.tsx` family and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  accountingTaskModeLauncherLinks,
   buildAccountingSectionVisibility,
   buildAccountingTaskMode
 } from "@/screens/accounting-screen.task-mode-view-model";
@@ -53,7 +54,6 @@ describe("buildAccountingSectionVisibility", () => {
       "showApprovals",
       "showExceptionWorkbench",
       "showReconciliation",
-      "showLedgerExplorer",
       "showSecurityMaster",
       "showReporting"
     ] as const;
@@ -77,6 +77,27 @@ describe("buildAccountingSectionVisibility", () => {
     ]) {
       expect(visibilityFor(pathname).showReporting).toBe(false);
     }
+  });
+
+  it("links Ledger Explorer through its canonical route without making AccountingScreen own the explorer", () => {
+    const taskMode = buildAccountingTaskMode("/accounting/ledger");
+    expect(taskMode).toMatchObject({
+      id: "ledger-explorer",
+      href: "/accounting/ledger",
+      workstream: "ledger"
+    });
+    expect(accountingTaskModeLauncherLinks).toContainEqual(expect.objectContaining({
+      id: "ledger-explorer",
+      href: "/accounting/ledger"
+    }));
+
+    const routeVisibility = buildAccountingSectionVisibility(taskMode);
+    expect(routeVisibility).not.toHaveProperty("showLedgerExplorer");
+    expect(routeVisibility.showCloseCockpitLanding).toBe(false);
+
+    const retiredHashVisibility = visibilityFor("/accounting", "#accounting-ledger-explorer");
+    expect(retiredHashVisibility.showCloseCockpitLanding).toBe(true);
+    expect(retiredHashVisibility.showWorkflowDetails).toBe(false);
   });
 
   it("forces the reporting band visible for its hash deep link", () => {

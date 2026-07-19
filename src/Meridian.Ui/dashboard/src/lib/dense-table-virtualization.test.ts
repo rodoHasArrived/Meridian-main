@@ -13,6 +13,7 @@ describe("denseTableVirtualization", () => {
   });
 
   it("windows once the row count exceeds the threshold", () => {
+    expect(DENSE_VIRTUALIZATION_ROW_HEIGHT).toBe(32);
     const config = denseTableVirtualization(DENSE_VIRTUALIZATION_THRESHOLD + 1);
     expect(config).toEqual({
       rowHeight: DENSE_VIRTUALIZATION_ROW_HEIGHT,

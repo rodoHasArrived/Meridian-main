@@ -228,7 +228,7 @@ Override the brand accent color:
 
 Or density:
 ```html
-<body data-theme-density="compact">  <!-- compact | cozy (default) | spacious -->
+<body data-theme-density="compact">  <!-- terminal | compact (default) | spacious -->
 ```
 
 ## Support

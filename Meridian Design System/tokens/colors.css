@@ -141,22 +141,22 @@
    against these names. Declared here so app component CSS resolves verbatim when
    pasted into a consumer. Values are the canonical light Institutional Ops palette. */
 :root {
-  --ws-page-bg:        #ECEFF3;
+  --ws-page-bg:        #DEE3EA;
   --ws-surface:        #FFFFFF;
-  --ws-surface-subtle: #F5F7FA;
-  --ws-surface-raised: #FAFBFC;
-  --ws-border:         #D7DCE2;
-  --ws-border-strong:  #B8C2CC;
+  --ws-surface-subtle: #EBEFF4;
+  --ws-surface-raised: #F3F6F9;
+  --ws-border:         #CBD3DC;
+  --ws-border-strong:  #99A5B2;
   --ws-text:           #22272E;
   --ws-text-muted:     #59636F;
   --ws-text-secondary: #4D5967;
   --ws-masthead-bg:    #171A1F;
   --ws-masthead-fg:    #F4F6F8;
-  --ws-rail-bg:        #F4F6F8;
-  --ws-rail-active:    #E1EAF2;
-  --ws-row-hover:      #F1F4F7;
-  --ws-row-selected:   #E6EEF5;
-  --ws-row-border:     #DDE3EA;
+  --ws-rail-bg:        #EBEFF4;
+  --ws-rail-active:    #D7E5F1;
+  --ws-row-hover:      #EAEEF3;
+  --ws-row-selected:   #D7E5F1;
+  --ws-row-border:     #CBD3DC;
   --ws-accent:         #2F6F8F;
   --ws-accent-hover:   #3B82A6;
   --ws-accent-pressed: #255B75;
