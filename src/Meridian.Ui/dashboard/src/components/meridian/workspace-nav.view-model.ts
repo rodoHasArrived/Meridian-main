@@ -95,6 +95,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, match: "exact" },
     { label: "External GL", route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation },
     { label: "Import statement", route: WORKSTATION_ROUTE_CATALOG.accountingStatementImport },
+    { label: "Margin control", route: WORKSTATION_ROUTE_CATALOG.accountingMarginControl },
     { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
     { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
     { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals },

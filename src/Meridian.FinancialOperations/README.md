@@ -73,12 +73,15 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Reconciliation/Connectors/` - custodian/broker statement connector library (ADR-018):
   declarative versioned CSV/OFX mapping-profile documents with a file-backed store, live catalog,
   and format-drift detection; per-column mapping-confidence scoring; connectors for
-  profile-driven CSV, OFX 1.x/2.x bank + investment statements, IB Flex Report XML, and
-  fetch-capable Alpaca activity + portfolio snapshots; `StatementImportService` preview/commit
+  profile-driven CSV, OFX 1.x/2.x bank + investment statements, remotely fetched or uploaded IB
+  Flex Report XML, and fetch-capable Alpaca activity + portfolio snapshots with bounded complete
+  pagination; `StatementImportService` preview/commit
   orchestration that renders deterministic canonical-CSV artifacts into the existing
   statement-run workflow (positions, transactions, cash balances, fees, and dividends all
-  classify per kind), returning retained break ids plus structured reconciliation case links for
-  the opened reconciliation work while retaining legacy case id/route arrays for compatibility; and
+  classify per kind), retains a structured canonical-evidence sidecar for account margin, complete
+  activity cursors, option lifecycle, tax-lot, and borrow evidence, and returns retained break ids
+  plus structured reconciliation case links for the opened reconciliation work while retaining
+  legacy case id/route arrays for compatibility; and
   persisted broker/custodian-classified fetch schedules with an idempotent schedule runner whose
   transient failures retain a stable non-sensitive status without advancing the last-successful-fetch
   watermark.
@@ -91,7 +94,14 @@ Use this README to understand the module before editing source files. Update the
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
-The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type, preserves the prior success watermark, and remains due for safe retry.
+The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type, preserves the prior success watermark, and remains due for safe retry.
+
+The shared Margin Control Center reads retained canonical evidence across providers, accounts, and
+prime brokers. Provider-reported buying power, maintenance margin, excess liquidity, and restriction
+flags remain authoritative. Meridian displays a clearly labelled Reg T or portfolio-margin shadow
+estimate only as a diagnostic comparison, never as liquidation or posting authority. Intraday
+snapshots are provisional; end-of-day certification is permission checked and blocked for stale,
+incomplete, or critical evidence.
 The commit result also carries the specific break ids and structured reconciliation case links
 created by the Financial Operations workflow, including each case route, status, priority, reason,
 and suggested next action, allowing Evidence Vault and browser clients to point operators directly

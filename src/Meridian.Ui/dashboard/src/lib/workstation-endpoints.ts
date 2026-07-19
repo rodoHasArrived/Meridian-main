@@ -388,7 +388,9 @@ export const STATEMENT_CONNECTOR_API_ENDPOINTS = {
   fetchPreview: UI_API_ROUTES.ReconciliationStatementFetchPreview,
   fetchSchedules: UI_API_ROUTES.ReconciliationStatementFetchSchedules,
   fetchSchedule: UI_API_ROUTES.ReconciliationStatementFetchScheduleById,
-  fetchScheduleRun: UI_API_ROUTES.ReconciliationStatementFetchScheduleRun
+  fetchScheduleRun: UI_API_ROUTES.ReconciliationStatementFetchScheduleRun,
+  marginControl: UI_API_ROUTES.ReconciliationMarginControl,
+  marginCertifications: UI_API_ROUTES.ReconciliationMarginCertifications
 } as const;
 
 export const BACKFILL_API_ENDPOINTS = {

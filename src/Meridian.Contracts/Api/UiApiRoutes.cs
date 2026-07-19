@@ -749,6 +749,8 @@ public static class UiApiRoutes
     public const string ReconciliationStatementFetchSchedules = "/api/workstation/reconciliation/statement-fetch-schedules";
     public const string ReconciliationStatementFetchScheduleById = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}";
     public const string ReconciliationStatementFetchScheduleRun = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}/run";
+    public const string ReconciliationMarginControl = "/api/workstation/reconciliation/margin-control";
+    public const string ReconciliationMarginCertifications = "/api/workstation/reconciliation/margin-control/certifications";
     public const string ReconciliationOpenCases = "/api/workstation/reconciliation/cases";
     public const string DirectLendingServicerStatementPreview = "/api/loans/servicer-statements/preview";
     public const string DirectLendingServicerStatementImport = "/api/loans/servicer-statements/import";

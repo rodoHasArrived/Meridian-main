@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-18
 
 This is the canonical operator procedure lane for Interactive Brokers setup and validation in Meridian.
 
@@ -11,6 +11,7 @@ This is the canonical operator procedure lane for Interactive Brokers setup and 
 - local vendor/SDK placement and build mode selection,
 - TWS/Gateway socket setup,
 - client-portal import posture,
+- Flex Web Service statement-fetch setup,
 - paper-safe verification and live promotion checks.
 
 ## Quick operator flow
@@ -22,6 +23,26 @@ This is the canonical operator procedure lane for Interactive Brokers setup and 
 3. Build and validate selected mode.
 4. Configure socket + optional Client Portal settings.
 5. Run staged connectivity and trade-flow checks before live routing.
+
+## Flex Web Service statement setup
+
+IB Flex statements are an accounting/reconciliation evidence path and do not require the TWS socket
+session used for order routing. In Interactive Brokers, create and activate a Flex Query that includes
+the accounts and currencies Meridian must reconcile. For complete Margin Control Center evidence,
+include Account Information, Cash Report, Trades, Open Positions, Open Lots, Interest Details or
+Accruals, Borrow Fees, Commissions, Corporate Actions, Transfers, Option Exercises/Assignments/
+Expirations, and Securities Borrowed/Lent where the account is entitled to those sections.
+
+Store the Flex token and query id in Meridian's existing credential vault under provider id
+`ib-flex`, using credential names `Token` and `QueryId`. The connector submits the documented v3
+request, polls the returned statement reference within a bounded window, verifies that the fetch host
+is an Interactive Brokers HTTPS endpoint, and retains the raw XML before canonical mapping. Do not
+put the token or query id in a schedule, mapping profile, source file, log, or support bundle.
+
+After saving credentials, open `Accounting` -> `Import statement` -> `Scheduled fetch`, select
+`IB Flex Report`, preview the canonical rows and completeness evidence, and create or run the desired
+broker-classified schedule. One Flex query may return multiple accounts; Meridian keeps account and
+provider-prime scope on the retained evidence and Margin Control Center rollup.
 
 ## Setup modes
 

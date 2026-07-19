@@ -41,6 +41,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingExternalGlReconciliation: "/accounting/reconciliation/external-gl",
   accountingReconciliationMatch: "/accounting/reconciliation/match",
   accountingStatementImport: "/accounting/statement-import",
+  accountingMarginControl: "/accounting/margin-control",
   accountingCloseCalendar: "/accounting/close-calendar",
   accountingExceptions: "/accounting/exceptions",
   accountingSecurityMaster: "/accounting/security-master",

@@ -118,6 +118,10 @@ delete, refresh, or run persisted schedules with an explicit broker/custodian cl
 collecting credentials in the browser. Run-now
 results render the shared Evidence Vault and reconciliation routes. File-import commit results also
 render Evidence Vault identity, the Evidence Workbench route, reconciliation route, and structured
+account-margin, activity-completeness, option-lifecycle, tax-lot, and borrow evidence retained beside
+the canonical CSV. `/accounting/margin-control` projects that retained evidence across accounts and
+prime brokers, compares provider-authoritative values with a labelled Meridian shadow estimate, and
+permits durable end-of-day certification only through the shared permission-checked endpoint.
 reconciliation case links directly from the commit response, including status, priority, reason,
 and suggested next action. The browser blocks file commit while preview errors remain, so operators
 can move from imported custodian/broker source to retained proof and exact casework without

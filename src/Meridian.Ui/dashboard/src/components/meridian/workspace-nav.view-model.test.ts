@@ -151,6 +151,7 @@ describe("workspace nav view model", () => {
       "/accounting/reconciliation",
       "/accounting/reconciliation/external-gl",
       "/accounting/statement-import",
+      "/accounting/margin-control",
       "/accounting/exceptions",
       "/accounting/security-master",
       "/accounting/approvals",

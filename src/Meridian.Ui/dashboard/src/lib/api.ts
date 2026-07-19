@@ -129,6 +129,9 @@ import type {
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
   ManualCsvProviderIntegrationDryRunRequest,
+  MarginControlCenter,
+  MarginCertificationRequest,
+  MarginCertificationResult,
   ProviderIntegrationActivationReadiness,
   ProviderIntegrationActivationRequest,
   ProviderIntegrationActivationResult,
@@ -3085,6 +3088,14 @@ export const getStatementRunExceptions = getReconciliationStatementExceptions;
 
 export function getStatementConnectors(options: ApiRequestOptions = {}) {
   return getJson<StatementConnectorDescriptor[]>(STATEMENT_CONNECTOR_API_ENDPOINTS.connectors, options);
+}
+
+export function getMarginControlCenter(options: ApiRequestOptions = {}) {
+  return getJson<MarginControlCenter>(STATEMENT_CONNECTOR_API_ENDPOINTS.marginControl, options);
+}
+
+export function certifyMarginSnapshot(request: MarginCertificationRequest, options: ApiRequestOptions = {}) {
+  return postJson<MarginCertificationResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.marginCertifications, request, options);
 }
 
 export function listStatementMappingProfiles(options: ApiRequestOptions = {}) {

@@ -37,6 +37,7 @@ export function StatementImportPreviewDetails({
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
+        <StatementEvidenceSummary preview={preview} />
         <StatementColumnMappingTable preview={preview} />
         <StatementKindSummarySection
           preview={preview}
@@ -47,6 +48,53 @@ export function StatementImportPreviewDetails({
       </CardContent>
     </Card>
   );
+}
+
+function StatementEvidenceSummary({ preview }: { preview: StatementImportPreview }) {
+  const accounts = preview.accountSnapshots ?? [];
+  const subtypes = preview.activitySubtypeSummaries ?? [];
+  const completeness = preview.activityCompleteness ?? [];
+  if (accounts.length === 0 && subtypes.length === 0 && completeness.length === 0 &&
+      !preview.taxLotCount && !preview.borrowPositionCount) return null;
+
+  return (
+    <div className="flex flex-col gap-3 rounded-[2px] border border-border bg-muted/15 p-3" aria-label="Canonical statement evidence">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-semibold">Canonical provider evidence</p>
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant="outline">Tax lots {preview.taxLotCount ?? 0}</Badge>
+          <Badge variant="outline">Borrow positions {preview.borrowPositionCount ?? 0}</Badge>
+          {completeness.map((cursor, index) => (
+            <Badge key={`${cursor.lastEventId ?? "cursor"}-${index}`} variant={cursor.isComplete ? "success" : "danger"}>
+              Activity {cursor.isComplete ? "complete" : "incomplete"} · {cursor.sourceRecordCount} records / {cursor.pageCount} pages
+            </Badge>
+          ))}
+        </div>
+      </div>
+      {accounts.map((account) => (
+        <div key={`${account.providerId}:${account.accountId}`} className="grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
+          <EvidenceMetric label="Account" value={`${account.providerId} · ${account.accountId}`} />
+          <EvidenceMetric label="Regime" value={account.marginRegime} />
+          <EvidenceMetric label="Provider maintenance" value={formatAmount(account.maintenanceMargin, account.currency)} />
+          <EvidenceMetric label="Provider excess" value={formatAmount(account.excessLiquidity, account.currency)} />
+          {account.restrictions.length ? <p className="text-destructive sm:col-span-2 lg:col-span-4">{account.restrictions.join("; ")}</p> : null}
+        </div>
+      ))}
+      {subtypes.length ? (
+        <div className="flex flex-wrap gap-1.5">
+          {subtypes.map((item) => <Badge key={`${item.category}:${item.subtype}`} variant="outline">{item.category} · {item.subtype} {item.recordCount}</Badge>)}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function EvidenceMetric({ label, value }: { label: string; value: string }) {
+  return <div><p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p><p className="mt-1 font-mono">{value}</p></div>;
+}
+
+function formatAmount(value: number | null, currency: string) {
+  return value == null ? "Not reported" : new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value);
 }
 
 function StatementColumnMappingTable({ preview }: { preview: StatementImportPreview }) {
@@ -142,7 +190,9 @@ function StatementKindSummarySection({
                 <tr key={`${record.externalTransactionId ?? record.symbol}-${index}`} className="border-b border-border/60">
                   <td className="px-2 py-1.5 font-mono">{record.account}</td>
                   <td className="px-2 py-1.5 font-mono">{record.symbol}</td>
-                  <td className="px-2 py-1.5">{record.activityType}</td>
+                  <td className="px-2 py-1.5" title={record.providerActivityCode ?? undefined}>
+                    {record.activitySubtype ?? record.activityType}
+                  </td>
                   <td className="px-2 py-1.5 font-mono">{record.tradeDate}</td>
                   <td className="px-2 py-1.5 text-right font-mono">{record.quantity}</td>
                   <td className="px-2 py-1.5 text-right font-mono">{record.price}</td>

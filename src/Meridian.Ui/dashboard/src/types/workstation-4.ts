@@ -36,6 +36,49 @@ export interface StatementImportPreview {
   profileSuggestions: StatementProfileSuggestion[];
   status: "ReadyToImport" | "NeedsAttention" | string;
   nextAction: string;
+  accountSnapshots?: StatementAccountSnapshotPreview[];
+  activitySubtypeSummaries?: StatementActivitySubtypeSummary[];
+  activityCompleteness?: StatementActivityCompleteness[];
+  taxLotCount?: number;
+  borrowPositionCount?: number;
+}
+
+export interface StatementAccountSnapshotPreview {
+  providerId: string;
+  accountId: string;
+  asOf: string;
+  currency: string;
+  status: string;
+  marginRegime: string;
+  cash: number;
+  equity: number;
+  buyingPower: number;
+  initialMargin: number | null;
+  maintenanceMargin: number | null;
+  excessLiquidity: number | null;
+  marginLoan: number | null;
+  multiplier: number | null;
+  tradingBlocked: boolean;
+  transfersBlocked: boolean;
+  accountBlocked: boolean;
+  shortingEnabled: boolean;
+  optionsApprovedLevel: number | null;
+  optionsTradingLevel: number | null;
+  restrictions: string[];
+}
+
+export interface StatementActivitySubtypeSummary {
+  category: string;
+  subtype: string;
+  recordCount: number;
+}
+
+export interface StatementActivityCompleteness {
+  lastEventId: string | null;
+  highWatermark: string | null;
+  pageCount: number;
+  sourceRecordCount: number;
+  isComplete: boolean;
 }
 
 export interface StatementImportCommitResult {
@@ -57,6 +100,99 @@ export interface StatementImportCommitResult {
   reconciliationCaseRoutes?: string[];
   reconciliationCaseLinks?: StatementImportReconciliationCaseLink[];
   nextActions?: string[];
+  retainedCanonicalEvidencePath?: string | null;
+}
+
+export interface MarginPositionContribution {
+  symbol: string;
+  quantity: number;
+  marketValue: number;
+  shadowInitialMargin: number;
+  shadowMaintenanceMargin: number;
+  borrowStatus: string | null;
+  borrowRate: number | null;
+  taxLotCount: number;
+  optionLifecycleEventCount: number;
+  securityId?: string | null;
+  securityMasterSource?: string | null;
+}
+
+export interface MarginControlAccount {
+  providerId: string;
+  accountId: string;
+  asOf: string;
+  snapshotPhase: string;
+  certificationState: string;
+  currency: string;
+  marginRegime: string;
+  cash: number;
+  equity: number;
+  buyingPower: number;
+  providerInitialMargin: number | null;
+  providerMaintenanceMargin: number | null;
+  providerExcessLiquidity: number | null;
+  providerMarginLoan: number | null;
+  shadowModelName: string;
+  shadowInitialMargin: number | null;
+  shadowMaintenanceMargin: number | null;
+  shadowExcessLiquidity: number | null;
+  maintenanceVariance: number | null;
+  riskLevel: string;
+  activityComplete: boolean | null;
+  restrictions: string[];
+  positionContributions: MarginPositionContribution[];
+  optionLifecycleEventCount: number;
+  borrowPositionCount: number;
+  taxLotCount: number;
+  evidencePath: string;
+  certifiedBy?: string | null;
+  certifiedAtUtc?: string | null;
+  certificationNote?: string | null;
+}
+
+export interface MarginControlPrimeSummary {
+  providerId: string;
+  accountCount: number;
+  totalEquity: number;
+  providerMaintenanceMargin: number | null;
+  providerExcessLiquidity: number | null;
+  criticalAccountCount: number;
+}
+
+export interface MarginControlAlert {
+  severity: string;
+  providerId: string;
+  accountId: string;
+  code: string;
+  message: string;
+  suggestedAction: string;
+}
+
+export interface MarginControlCenter {
+  generatedAtUtc: string;
+  accounts: MarginControlAccount[];
+  primeSummaries: MarginControlPrimeSummary[];
+  alerts: MarginControlAlert[];
+  providerCount: number;
+  accountCount: number;
+  provisionalAccountCount: number;
+  endOfDayCertificationCandidateCount: number;
+  authorityNote: string;
+  nextAction: string;
+}
+
+export interface MarginCertificationRequest {
+  providerId: string;
+  accountId: string;
+  asOf: string;
+  evidencePath: string;
+  note: string;
+}
+
+export interface MarginCertificationResult extends MarginCertificationRequest {
+  certifiedBy: string;
+  certifiedAtUtc: string;
+  status: string;
 }
 
 export interface StatementImportReconciliationCaseLink {

@@ -36,6 +36,21 @@ public sealed class AlpacaBrokerageGatewayTests
             equity = "100000.00",
             cash = "50000.00",
             buying_power = "90000.00",
+            multiplier = "2",
+            regt_buying_power = "85000.00",
+            initial_margin = "12500.00",
+            maintenance_margin = "10000.00",
+            last_maintenance_margin = "9750.00",
+            sma = "2500.00",
+            long_market_value = "50000.00",
+            short_market_value = "0.00",
+            non_marginable_buying_power = "40000.00",
+            trading_blocked = false,
+            transfers_blocked = false,
+            account_blocked = false,
+            shorting_enabled = true,
+            options_approved_level = 2,
+            options_trading_level = 2,
             currency = "USD",
             status
         });
@@ -733,6 +748,16 @@ public sealed class AlpacaBrokerageGatewayTests
                             market_value = "18750.00",
                             unrealized_pl = "1250.00",
                             asset_class = "equity",
+                        },
+                        new
+                        {
+                            symbol = "MSFT",
+                            qty = "-25",
+                            avg_entry_price = "430.00",
+                            current_price = "425.00",
+                            market_value = "-10625.00",
+                            unrealized_pl = "125.00",
+                            asset_class = "equity",
                         }
                     });
                 }
@@ -804,10 +829,21 @@ public sealed class AlpacaBrokerageGatewayTests
             account.AccountId == "TEST123" &&
             account.Currency == "USD");
         portfolio.Balance.Equity.Should().Be(100000m);
+        portfolio.AccountSnapshot.Should().NotBeNull();
+        portfolio.AccountSnapshot!.MarginRegime.Should().Be(BrokerageMarginRegime.RegulationT);
+        portfolio.AccountSnapshot.MaintenanceMargin.Should().Be(10000m);
+        portfolio.AccountSnapshot.ExcessLiquidity.Should().Be(90000m);
+        portfolio.AccountSnapshot.ShortingEnabled.Should().BeTrue();
+        portfolio.AccountSnapshot.OptionsTradingLevel.Should().Be(2);
         portfolio.Positions.Should().ContainSingle(position =>
             position.Symbol == "AAPL" &&
             position.Quantity == 100m &&
             position.MarketValue == 18750m);
+        portfolio.BorrowPositions.Should().ContainSingle(position =>
+            position.AccountId == "TEST123" &&
+            position.Symbol == "MSFT" &&
+            position.Quantity == -25m &&
+            position.Status == BrokerageBorrowStatus.Unknown);
         activity.Orders.Should().ContainSingle(order =>
             order.OrderId == "ord-open-1" &&
             order.Status == OrderStatus.Accepted);
@@ -819,8 +855,116 @@ public sealed class AlpacaBrokerageGatewayTests
             cash.TransactionId == "cash-1" &&
             cash.TransactionType == "DIV" &&
             cash.Amount == 42.50m);
+        activity.Activities.Should().ContainSingle(item =>
+            item.EventId == "fill-1" &&
+            item.Category == BrokerageActivityCategory.Trade &&
+            item.Subtype == BrokerageActivitySubtype.TradeFill);
+        activity.Activities.Should().ContainSingle(item =>
+            item.EventId == "cash-1" &&
+            item.Category == BrokerageActivityCategory.Dividend &&
+            item.Subtype == BrokerageActivitySubtype.CashDividend);
+        activity.Cursor.Should().BeEquivalentTo(new BrokerageActivityCursorDto(
+            LastEventId: "cash-1",
+            HighWatermark: new DateTimeOffset(2026, 4, 25, 14, 35, 0, TimeSpan.Zero),
+            PageCount: 1,
+            SourceRecordCount: 2,
+            IsComplete: true));
         capturedPaths.Should().Contain(path =>
-            path.StartsWith("/v2/account/activities?direction=desc&page_size=100&after=", StringComparison.Ordinal));
+            path.StartsWith("/v2/account/activities?direction=asc&page_size=100&after=", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_MoreThanOnePage_ReturnsCompleteDeduplicatedCursor()
+    {
+        var capturedPaths = new List<string>();
+        var firstPage = Enumerable.Range(1, 100)
+            .Select(index => new
+            {
+                id = $"activity-{index:000}",
+                activity_type = "FEE",
+                transaction_time = $"2026-04-25T{index % 24:00}:00:00Z",
+                net_amount = "-0.01",
+                currency = "USD"
+            })
+            .ToArray();
+        var handler = new CapturingStubHandler(
+            request => capturedPaths.Add(request.RequestUri?.PathAndQuery ?? string.Empty),
+            request =>
+            {
+                var uri = request.RequestUri!;
+                if (uri.AbsolutePath == "/v2/orders")
+                    return BuildJson(Array.Empty<object>());
+                if (uri.AbsolutePath == "/v2/account/activities" &&
+                    uri.Query.Contains("page_token=activity-100", StringComparison.Ordinal))
+                {
+                    return BuildJson(new object[]
+                    {
+                        new
+                        {
+                            id = "activity-101",
+                            activity_type = "DIV",
+                            transaction_time = "2026-04-26T12:00:00Z",
+                            net_amount = "5.00",
+                            currency = "USD"
+                        }
+                    });
+                }
+
+                if (uri.AbsolutePath == "/v2/account/activities")
+                    return BuildJson(firstPage);
+                return BuildJson(new { });
+            });
+        var sut = CreateSut(handler);
+
+        var snapshot = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("TEST123");
+
+        snapshot.Activities.Should().HaveCount(101);
+        snapshot.Activities!.Select(item => item.EventId).Should().OnlyHaveUniqueItems();
+        snapshot.Cursor.Should().BeEquivalentTo(new BrokerageActivityCursorDto(
+            LastEventId: "activity-101",
+            HighWatermark: new DateTimeOffset(2026, 4, 26, 12, 0, 0, TimeSpan.Zero),
+            PageCount: 2,
+            SourceRecordCount: 101,
+            IsComplete: true));
+        capturedPaths.Should().Contain(path =>
+            path.Contains("page_token=activity-100", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_RichProviderCodes_PreservesCanonicalSubtypesAndOptionTerms()
+    {
+        var handler = new CapturingStubHandler(
+            _ => { },
+            request => request.RequestUri!.AbsolutePath switch
+            {
+                "/v2/orders" => BuildJson(Array.Empty<object>()),
+                "/v2/account/activities" => BuildJson(new object[]
+                {
+                    new { id = "crypto-fee", activity_type = "CFEE", transaction_time = "2026-04-25T10:00:00Z", net_amount = "-1.00", currency = "USD" },
+                    new { id = "margin-interest", activity_type = "INT", transaction_time = "2026-04-25T11:00:00Z", net_amount = "-2.00", currency = "USD", description = "Margin interest" },
+                    new { id = "assignment", activity_type = "OPASN", transaction_time = "2026-04-25T12:00:00Z", symbol = "AAPL260116C00190000", qty = "1", currency = "USD" },
+                    new { id = "transfer", activity_type = "ACATS", transaction_time = "2026-04-25T13:00:00Z", symbol = "MSFT", qty = "3", currency = "USD" },
+                    new { id = "withholding", activity_type = "DIVTW", transaction_time = "2026-04-25T14:00:00Z", net_amount = "-3.00", currency = "USD" },
+                    new { id = "borrow-rebate", activity_type = "BORROW_REBATE", transaction_time = "2026-04-25T15:00:00Z", net_amount = "0.50", currency = "USD" }
+                }),
+                _ => BuildJson(new { })
+            });
+        var sut = CreateSut(handler);
+
+        var snapshot = await ((IBrokerageActivitySync)sut).GetActivitySnapshotAsync("TEST123");
+
+        snapshot.Activities.Should().Contain(item => item.EventId == "crypto-fee" && item.Subtype == BrokerageActivitySubtype.CryptoFee);
+        snapshot.Activities.Should().Contain(item => item.EventId == "margin-interest" && item.Subtype == BrokerageActivitySubtype.MarginInterest);
+        snapshot.Activities.Should().Contain(item => item.EventId == "transfer" && item.Subtype == BrokerageActivitySubtype.AcatsSecurity);
+        snapshot.Activities.Should().Contain(item => item.EventId == "withholding" && item.Subtype == BrokerageActivitySubtype.DividendWithholding);
+        snapshot.Activities.Should().Contain(item => item.EventId == "borrow-rebate" && item.Subtype == BrokerageActivitySubtype.BorrowRebate);
+        var assignment = snapshot.Activities.Should().ContainSingle(item => item.EventId == "assignment").Subject;
+        assignment.Option.Should().NotBeNull();
+        assignment.Option!.UnderlyingSymbol.Should().Be("AAPL");
+        assignment.Option.OptionType.Should().Be("Call");
+        assignment.Option.StrikePrice.Should().Be(190m);
+        assignment.Option.ExpirationDate.Should().Be(new DateOnly(2026, 1, 16));
+        assignment.Option.LifecycleAction.Should().Be("Assignment");
     }
 
 

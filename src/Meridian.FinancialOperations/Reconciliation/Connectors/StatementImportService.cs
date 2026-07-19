@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
@@ -39,7 +40,8 @@ public sealed class StatementImportService(
     private static readonly string[] CanonicalArtifactHeader =
     [
         "account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate",
-        "settlementDate", "currency", "feesCommission", "externalTransactionId"
+        "settlementDate", "currency", "feesCommission", "externalTransactionId", "activityCategory",
+        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
     ];
 
     private readonly string _retainedRoot = Path.Combine(dataRoot, "reconciliation", "statement-connector-imports");
@@ -117,8 +119,24 @@ public sealed class StatementImportService(
         var safeSourceName = SanitizeFileName(request.Document.FileName);
         var rawPath = Path.Combine(retainedDirectory, safeSourceName);
         var canonicalPath = Path.Combine(retainedDirectory, "canonical.csv");
+        var canonicalEvidencePath = Path.Combine(retainedDirectory, "canonical-evidence.json");
+        var canonicalEvidence = new StatementCanonicalEvidenceArtifact(
+            ConnectorId: parse.ConnectorId,
+            ProfileId: parse.ProfileId,
+            RetainedAtUtc: DateTimeOffset.UtcNow,
+            Fingerprint: parse.Fingerprint,
+            Records: parse.Records,
+            AccountSnapshots: parse.AccountSnapshots ?? [],
+            ActivityEvents: parse.ActivityEvents ?? [],
+            ActivityCursors: parse.ActivityCursors ?? [],
+            TaxLots: parse.TaxLots ?? [],
+            BorrowPositions: parse.BorrowPositions ?? []);
+        var canonicalEvidenceBytes = JsonSerializer.SerializeToUtf8Bytes(
+            canonicalEvidence,
+            StatementCanonicalEvidenceJsonContext.Default.StatementCanonicalEvidenceArtifact);
         await AtomicFileWriter.WriteAsync(rawPath, request.Document.Content.ToArray(), ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(canonicalPath, artifactBytes, ct).ConfigureAwait(false);
+        await AtomicFileWriter.WriteAsync(canonicalEvidencePath, canonicalEvidenceBytes, ct).ConfigureAwait(false);
 
         var runRequest = await StatementRunCreateRequest.FromFileAsync(
                 broker: sourceKind,
@@ -140,6 +158,7 @@ public sealed class StatementImportService(
         var kindSummaries = BuildKindSummaries(parse.Records);
         var relativeRaw = ToRelativeRetainedPath(uploadId, safeSourceName);
         var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
+        var relativeCanonicalEvidence = ToRelativeRetainedPath(uploadId, "canonical-evidence.json");
 
         StatementRunWorkflowResult result;
         try
@@ -160,7 +179,10 @@ public sealed class StatementImportService(
                 RetainedSourcePath: relativeRaw,
                 RetainedCanonicalPath: relativeCanonical,
                 Status: "Duplicate",
-                NextAction: "This statement was already imported for the fund account and period; review the existing reconciliation run.");
+                NextAction: "This statement was already imported for the fund account and period; review the existing reconciliation run.")
+            {
+                RetainedCanonicalEvidencePath = relativeCanonicalEvidence
+            };
         }
 
         await catalog.RecordAcceptedFingerprintAsync(parse.ProfileId, parse.Fingerprint, ct).ConfigureAwait(false);
@@ -194,7 +216,8 @@ public sealed class StatementImportService(
             ReconciliationCaseRoutes = caseLinks
                 .Select(static item => item.Route)
                 .ToArray(),
-            ReconciliationCaseLinks = caseLinks
+            ReconciliationCaseLinks = caseLinks,
+            RetainedCanonicalEvidencePath = relativeCanonicalEvidence
         };
     }
 
@@ -298,7 +321,52 @@ public sealed class StatementImportService(
             Status: hasErrors ? NeedsAttentionStatus : ReadyStatus,
             NextAction: hasErrors
                 ? "Resolve the blocking issues (adjust the mapping profile or repair the source file), then preview again."
-                : "Review the per-column mappings and per-kind records, then commit the import into the reconciliation queue.");
+                : "Review the per-column mappings and per-kind records, then commit the import into the reconciliation queue.")
+        {
+            AccountSnapshots = (parse?.AccountSnapshots ?? [])
+                .Select(static snapshot => new StatementAccountSnapshotPreviewDto(
+                    snapshot.ProviderId,
+                    snapshot.AccountId,
+                    snapshot.AsOf,
+                    snapshot.Currency,
+                    snapshot.Status,
+                    snapshot.MarginRegime.ToString(),
+                    snapshot.Cash,
+                    snapshot.Equity,
+                    snapshot.BuyingPower,
+                    snapshot.InitialMargin,
+                    snapshot.MaintenanceMargin,
+                    snapshot.ExcessLiquidity,
+                    snapshot.MarginLoan,
+                    snapshot.Multiplier,
+                    snapshot.TradingBlocked,
+                    snapshot.TransfersBlocked,
+                    snapshot.AccountBlocked,
+                    snapshot.ShortingEnabled,
+                    snapshot.OptionsApprovedLevel,
+                    snapshot.OptionsTradingLevel,
+                    snapshot.Restrictions ?? []))
+                .ToArray(),
+            ActivitySubtypeSummaries = (parse?.ActivityEvents ?? [])
+                .GroupBy(static activity => new { activity.Category, activity.Subtype })
+                .OrderBy(static group => group.Key.Category)
+                .ThenBy(static group => group.Key.Subtype)
+                .Select(static group => new StatementActivitySubtypeSummaryDto(
+                    group.Key.Category.ToString(),
+                    group.Key.Subtype.ToString(),
+                    group.Count()))
+                .ToArray(),
+            ActivityCompleteness = (parse?.ActivityCursors ?? [])
+                .Select(static cursor => new StatementActivityCompletenessDto(
+                    cursor.LastEventId,
+                    cursor.HighWatermark,
+                    cursor.PageCount,
+                    cursor.SourceRecordCount,
+                    cursor.IsComplete))
+                .ToArray(),
+            TaxLotCount = parse?.TaxLots?.Count ?? 0,
+            BorrowPositionCount = parse?.BorrowPositions?.Count ?? 0
+        };
     }
 
     private static IReadOnlyList<StatementKindSummaryDto> BuildKindSummaries(IReadOnlyList<StatementCanonicalRecord> records)
@@ -321,7 +389,13 @@ public sealed class StatementImportService(
                         record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                         record.Currency,
                         record.FeesCommission,
-                        record.ExternalTransactionId))
+                        record.ExternalTransactionId,
+                        record.ActivityCategory,
+                        record.ActivitySubtype,
+                        record.ProviderActivityCode,
+                        record.RelatedTransactionId,
+                        record.OrderId,
+                        record.Description))
                     .ToArray()))
             .ToArray();
 
@@ -347,7 +421,13 @@ public sealed class StatementImportService(
                 .Append(record.SettlementDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',')
                 .Append(SanitizeArtifactValue(record.Currency)).Append(',')
                 .Append(record.FeesCommission?.ToString(CultureInfo.InvariantCulture)).Append(',')
-                .Append(SanitizeArtifactValue(record.ExternalTransactionId)).Append('\n');
+                .Append(SanitizeArtifactValue(record.ExternalTransactionId)).Append(',')
+                .Append(SanitizeArtifactValue(record.ActivityCategory)).Append(',')
+                .Append(SanitizeArtifactValue(record.ActivitySubtype)).Append(',')
+                .Append(SanitizeArtifactValue(record.ProviderActivityCode)).Append(',')
+                .Append(SanitizeArtifactValue(record.RelatedTransactionId)).Append(',')
+                .Append(SanitizeArtifactValue(record.OrderId)).Append(',')
+                .Append(SanitizeArtifactValue(record.Description)).Append('\n');
         }
 
         return builder.ToString();
