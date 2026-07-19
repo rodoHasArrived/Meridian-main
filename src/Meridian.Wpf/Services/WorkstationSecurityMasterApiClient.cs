@@ -57,17 +57,17 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
-    public Task<OperatorOverridesDto?> GetOperatorOverridesAsync(
+    public async Task<OperatorOverridesDto?> GetOperatorOverridesAsync(
         Guid securityId, CancellationToken ct = default)
-        => _apiClient.GetAsync<OperatorOverridesDto>(
-            SecurityIdRoute(UiApiRoutes.SecurityMasterOperatorOverrides, securityId), ct);
+        => (await _apiClient.GetWithResponseAsync<OperatorOverridesDto>(
+            SecurityIdRoute(UiApiRoutes.SecurityMasterOperatorOverrides, securityId), ct).ConfigureAwait(false)).DataOrLoggedNull("Get operator overrides");
 
     public Task<ApiResponse<OperatorOverridesDto>> RecordOperatorOverrideDecisionAsync(
         Guid securityId, OperatorOverrideDecisionRequest request, CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<OperatorOverridesDto>(
             SecurityIdRoute(UiApiRoutes.SecurityMasterOperatorOverrideDecision, securityId), request, ct);
 
-    public Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
+    public async Task<SecurityMasterTrustSnapshotDto?> GetTrustSnapshotAsync(
         Guid securityId,
         string? fundProfileId,
         CancellationToken ct = default)
@@ -78,10 +78,10 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
             endpoint += $"?fundProfileId={Uri.EscapeDataString(fundProfileId.Trim())}";
         }
 
-        return _apiClient.GetAsync<SecurityMasterTrustSnapshotDto>(endpoint, ct);
+        return (await _apiClient.GetWithResponseAsync<SecurityMasterTrustSnapshotDto>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("Get security trust snapshot");
     }
 
-    public Task<InstrumentPassportDto?> GetInstrumentPassportAsync(
+    public async Task<InstrumentPassportDto?> GetInstrumentPassportAsync(
         Guid securityId,
         string? fundProfileId,
         CancellationToken ct = default)
@@ -92,7 +92,7 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
             endpoint += $"?fundProfileId={Uri.EscapeDataString(fundProfileId.Trim())}";
         }
 
-        return _apiClient.GetAsync<InstrumentPassportDto>(endpoint, ct);
+        return (await _apiClient.GetWithResponseAsync<InstrumentPassportDto>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("Get instrument passport");
     }
 
     public Task<ApiResponse<BulkResolveSecurityMasterConflictsResult>> BulkResolveConflictsAsync(
