@@ -279,7 +279,8 @@ public sealed class TierMigrationService : ITierMigrationService
         // Reject conversions this service does not actually implement. Renaming the target
         // extension without converting the payload would ship mislabeled bytes and — with
         // DeleteSource — destroy the only correct copy.
-        if (targetTier.Format == "parquet" && !sourcePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(targetTier.Format, "parquet", StringComparison.OrdinalIgnoreCase)
+            && !sourcePath.EndsWith(".parquet", StringComparison.OrdinalIgnoreCase))
         {
             throw new NotSupportedException(
                 $"Tier '{targetTier.Path}' requests parquet format, but converting '{Path.GetExtension(sourcePath)}' " +

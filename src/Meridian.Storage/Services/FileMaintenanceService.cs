@@ -555,18 +555,18 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                 $"TruncateCorrupted repair only supports plain .jsonl files; '{Path.GetFileName(filePath)}' must be repaired by re-ingest or restore.");
         }
 
-        var lines = await File.ReadAllLinesAsync(filePath, ct);
-        var validLines = new List<string>(lines.Length);
+        // Pass 1: stream the file, buffering only the rejected lines (bounded by corruption
+        // volume) so multi-GB day files are never loaded whole into memory.
+        var validCount = 0;
         var rejectedLines = new List<string>();
-
-        foreach (var line in lines)
+        await foreach (var line in File.ReadLinesAsync(filePath, ct))
         {
             if (string.IsNullOrWhiteSpace(line))
                 continue;
             try
             {
                 JsonDocument.Parse(line);
-                validLines.Add(line);
+                validCount++;
             }
             catch (JsonException)
             {
@@ -579,21 +579,42 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         if (rejectedLines.Count == 0)
             return false;
 
-        await AtomicFileWriter.WriteAsync(
-            filePath + ".corrupt-lines",
-            string.Join(Environment.NewLine, rejectedLines) + Environment.NewLine,
-            ct);
+        await AtomicFileWriter.WriteStreamAsync(filePath + ".corrupt-lines", async stream =>
+        {
+            // encoding: null selects BOM-less UTF-8; a BOM would corrupt line-oriented readers
+            // (same rationale as AtomicFileWriter.Utf8NoBom).
+            await using var writer = new StreamWriter(stream, encoding: null, leaveOpen: true);
+            foreach (var line in rejectedLines)
+                await writer.WriteLineAsync(line.AsMemory(), ct);
+        }, ct);
 
-        var salvagedContent = validLines.Count == 0
-            ? string.Empty
-            : string.Join(Environment.NewLine, validLines) + Environment.NewLine;
-        await AtomicFileWriter.WriteAsync(filePath, salvagedContent, ct);
+        // Pass 2: stream the salvaged content into the atomic temp file. The source is re-read
+        // and fully closed inside the callback, before the atomic rename replaces it.
+        await AtomicFileWriter.WriteStreamAsync(filePath, async stream =>
+        {
+            await using var writer = new StreamWriter(stream, encoding: null, leaveOpen: true);
+            await foreach (var line in File.ReadLinesAsync(filePath, ct))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+                try
+                {
+                    JsonDocument.Parse(line);
+                }
+                catch (JsonException)
+                {
+                    continue;
+                }
+
+                await writer.WriteLineAsync(line.AsMemory(), ct);
+            }
+        }, ct);
 
         await RefreshChecksumSidecarAsync(filePath, ct);
 
         _log.Information(
             "Truncate repair salvaged {ValidCount} lines and quarantined {RejectedCount} corrupt lines for {FilePath}",
-            validLines.Count, rejectedLines.Count, filePath);
+            validCount, rejectedLines.Count, filePath);
         return true;
     }
 
