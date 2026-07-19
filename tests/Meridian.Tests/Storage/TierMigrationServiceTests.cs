@@ -293,6 +293,34 @@ public sealed class TierMigrationServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Scenario_SourceOutsideStorageRoot_IsRefusedWithoutReadingOrDeletingTheFile()
+    {
+        var outsideDirectory = Path.Combine(Path.GetTempPath(), $"meridian-outside-root-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outsideDirectory);
+        try
+        {
+            var outsideFile = Path.Combine(outsideDirectory, "secrets.jsonl");
+            await File.WriteAllTextAsync(outsideFile, "{\"symbol\":\"AAPL\",\"price\":213.45}");
+            var traversalSource = Path.Combine(_root, "hot", "..", "..", Path.GetFileName(outsideDirectory), "secrets.jsonl");
+
+            var result = await _sut.MigrateAsync(
+                traversalSource,
+                StorageTier.Warm,
+                new MigrationOptions(DeleteSource: true, VerifyChecksum: true, ParallelFiles: 1));
+
+            result.Success.Should().BeFalse();
+            result.FilesProcessed.Should().Be(0);
+            result.Errors.Should().ContainSingle(error => error.Contains("outside the storage root", StringComparison.Ordinal));
+            File.Exists(outsideFile).Should().BeTrue("a refused out-of-root migration must not delete the source");
+            Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().BeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(outsideDirectory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Scenario_TierObservability_StatisticsReportHotAndWarmEvidenceInventory()
     {
         var firstHotFile = Path.Combine(_hot, "alpaca", "AAPL", "Trade", "2026-06-28.jsonl");

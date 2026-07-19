@@ -69,7 +69,26 @@ public sealed class TierMigrationService : ITierMigrationService
             );
         }
 
-        var files = GetFilesToMigrate(sourcePath);
+        // This surface is reachable from operator HTTP endpoints, so pin the source inside the
+        // storage root before any filesystem access: an unconstrained source path would let a
+        // request read — and with DeleteSource, delete — arbitrary files the process can touch.
+        var storageRoot = Path.GetFullPath(_options.RootPath);
+        var resolvedSourcePath = Path.GetFullPath(sourcePath);
+        if (!resolvedSourcePath.StartsWith(storageRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            && !string.Equals(resolvedSourcePath, storageRoot, StringComparison.Ordinal))
+        {
+            return new MigrationResult(
+                Success: false,
+                FilesProcessed: 0,
+                FilesFailed: 0,
+                BytesProcessed: 0,
+                BytesSaved: 0,
+                Duration: DateTime.UtcNow - startTime,
+                Errors: new[] { $"Refusing migration: source path '{sourcePath}' resolves outside the storage root '{storageRoot}'." }
+            );
+        }
+
+        var files = GetFilesToMigrate(resolvedSourcePath);
         var semaphore = new SemaphoreSlim(options.ParallelFiles);
 
         var tasks = files.Select(async file =>
