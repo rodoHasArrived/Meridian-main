@@ -1,45 +1,43 @@
 # Review Modes
 
-Treat the simulated-user-panel system as two layers:
-
-1. **Invocation mode** — why the review is being run now
-2. **Focus areas** — what lens the personas should emphasize
+Choose an invocation mode for why the review runs and focus areas for what the panel emphasizes.
 
 ## Invocation Modes
 
-| Mode | Use when | Expected recommendation style |
-|---|---|---|
-| `design_partner` | Early critique, roadmap shaping, surface reviews, and owner-level product direction | steer, refine, prototype, or defer |
-| `release_gate` | The feature is near shipping and needs explicit launch confidence | ship, ship_with_caveats, or hold |
-| `usability_lab` | You want repeatable comparison, trend tracking, or benchmarkable persona output | compare against prior runs and cluster repeated complaints |
+| Mode | Use when | Evidence minimum | Recommendation |
+| --- | --- | --- | --- |
+| `design_partner` | Early critique, roadmap shaping, and product-direction review | One accessible artifact plus explicit constraints | `steer`, `prototype`, or `defer` |
+| `release_gate` | A feature is near shipping and needs advisory user-fit evidence | Current functional evidence plus success criteria | `ship`, `ship_with_caveats`, or `hold` |
+| `usability_lab` | Repeatable comparison or quality-drift tracking | Stable manifest version and comparable artifact bundle | `advance_to_release_gate`, `rerun_after_changes`, or `defer` |
 
-Default: `design_partner`
+Default: `design_partner`.
 
 ## Focus Areas
 
-| Focus area | Use when | Best personas |
-|---|---|---|
-| `first_impression` | screenshots, demos, onboarding, or first-look UI critique | Hobbyist Builder, Individual Trader, Support / Onboarding Lead |
-| `workflow_fit` | daily-use screens and job completion | Fund Manager, Fund Operations Lead, Quantitative Analyst |
-| `trust_and_controls` | accounting, governance, lineage, approvals, and auditability | Fund Accountant, Risk / Compliance Lead, Data Operations Manager |
-| `power_user_depth` | research, export, scripting, and dense operator workflows | Quantitative Analyst, Academic Researcher, Data Engineer |
-| `adoption_and_positioning` | roadmap, packaging, audience fit, and differentiation | Owner-Operator, Hobbyist Builder, Implementation Consultant |
-| `release_readiness` | near-ship launch risk and delight analysis | Owner-Operator plus 3 role-specific personas |
+| Focus area | Emphasis |
+| --- | --- |
+| `first_impression` | Purpose, hierarchy, first action, and onboarding clarity |
+| `workflow_fit` | Core job completion, state, handoffs, and cadence |
+| `trust_and_controls` | Approvals, auditability, policy, and explainability |
+| `power_user_depth` | Dense workflows, exports, research, and automation leverage |
+| `adoption_and_positioning` | Audience fit, support burden, and differentiation |
+| `release_readiness` | Blockers, recovery, validation, and operational confidence |
+| `accessibility_and_inclusion` | Keyboard, semantics, contrast, cognitive load, and accessible alternatives |
+| `failure_recovery` | Error visibility, ownership, retry, rollback, and continuity |
+| `evidence_traceability` | Source, freshness, lineage, evidence, and reproducibility |
+| `role_permissions` | Entitlements, segregation of duties, and scoped actions |
+| `cross_surface_parity` | Shared product state and workflow parity across browser and WPF |
+| `supportability` | Diagnostics, teachability, prerequisites, and likely support load |
 
-## Artifact-Type Defaults
+## Artifact Defaults
 
-| Artifact type | Best invocation mode | Best focus areas |
-|---|---|---|
+| Artifact type | Best mode | Default focus |
+| --- | --- | --- |
 | `screen-review` | `design_partner` | `first_impression`, `workflow_fit` |
-| `workflow-walkthrough` | `release_gate` or `usability_lab` | `workflow_fit`, `trust_and_controls` |
+| `workflow-walkthrough` | `release_gate` or `usability_lab` | `workflow_fit`, `failure_recovery`, `trust_and_controls` |
 | `roadmap-review` | `design_partner` | `adoption_and_positioning`, `power_user_depth` |
 | `ship-readiness` | `release_gate` | `release_readiness`, `trust_and_controls` |
+| `cross-surface-review` | `design_partner` or `usability_lab` | `cross_surface_parity`, `workflow_fit`, `supportability` |
 
-## Selection Heuristics
-
-- If the evidence is mostly screenshots or static UI, start with `screen-review`.
-- If the evidence includes manifests, step notes, and smoke outputs, prefer
-  `workflow-walkthrough`.
-- If the target is a concept, blueprint, or roadmap item, use `roadmap-review`.
-- If the user asks "is this ready?", use `ship-readiness` with `release_gate`.
-- If the user wants cross-run comparison or trend tracking, switch to `usability_lab`.
+Use `hold` when a release-gate bundle lacks current functional evidence. Do not use a visually
+complete screenshot as proof that a workflow succeeds, persists, authorizes, or recovers correctly.

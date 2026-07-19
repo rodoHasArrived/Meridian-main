@@ -4,9 +4,12 @@
   "title": "Meridian Simulated User Panel Review Manifest",
   "type": "object",
   "required": [
+    "schema_version",
     "mode",
     "artifact_type",
     "artifact_paths",
+    "artifact_evidence",
+    "artifact_freshness",
     "persona_set",
     "focus_areas",
     "constraints",
@@ -14,16 +17,12 @@
   ],
   "properties": {
     "schema_version": {
-      "type": "string",
-      "default": "2026-04-14"
+      "const": "2026-07-19",
+      "default": "2026-07-19"
     },
     "mode": {
       "type": "string",
-      "enum": [
-        "design_partner",
-        "release_gate",
-        "usability_lab"
-      ]
+      "enum": ["design_partner", "release_gate", "usability_lab"]
     },
     "artifact_type": {
       "type": "string",
@@ -31,65 +30,72 @@
         "screen-review",
         "workflow-walkthrough",
         "roadmap-review",
-        "ship-readiness"
+        "ship-readiness",
+        "cross-surface-review"
       ]
     },
     "artifact_paths": {
       "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
     },
-    "artifact_summary": {
-      "type": "string"
+    "artifact_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/evidence_item"}
     },
+    "artifact_freshness": {
+      "type": "string",
+      "enum": ["current", "stale", "unknown"]
+    },
+    "artifact_summary": {"type": "string", "minLength": 1},
     "persona_set": {
       "oneOf": [
-        {
-          "type": "string",
-          "enum": [
-            "core-finance",
-            "research",
-            "operations-controls",
-            "growth-adoption"
-          ]
-        },
+        {"$ref": "#/$defs/panel_name"},
         {
           "type": "object",
-          "required": [
-            "panel"
-          ],
+          "required": ["panel"],
           "properties": {
             "panel": {
-              "type": "string",
-              "enum": [
-                "core-finance",
-                "research",
-                "operations-controls",
-                "growth-adoption",
-                "custom"
+              "oneOf": [
+                {"$ref": "#/$defs/panel_name"},
+                {"const": "custom"}
               ]
             },
             "required_roles": {
               "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
             },
             "optional_roles": {
               "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "advisory_lenses": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
             }
           },
-          "additionalProperties": false
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {"properties": {"panel": {"const": "custom"}}},
+              "then": {
+                "required": ["required_roles"],
+                "properties": {"required_roles": {"minItems": 1}}
+              }
+            }
+          ]
         }
       ]
     },
     "focus_areas": {
       "type": "array",
       "minItems": 1,
+      "uniqueItems": true,
       "items": {
         "type": "string",
         "enum": [
@@ -98,32 +104,97 @@
           "trust_and_controls",
           "power_user_depth",
           "adoption_and_positioning",
-          "release_readiness"
+          "release_readiness",
+          "accessibility_and_inclusion",
+          "failure_recovery",
+          "evidence_traceability",
+          "role_permissions",
+          "cross_surface_parity",
+          "supportability"
         ]
       }
     },
     "constraints": {
       "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
     },
     "success_criteria": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "type": "string"
-      }
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
     },
-    "decision_deadline": {
-      "type": "string"
-    },
+    "decision_deadline": {"type": "string", "minLength": 1},
     "notes": {
       "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"properties": {"artifact_type": {"const": "cross-surface-review"}}},
+      "then": {"properties": {"artifact_paths": {"minItems": 2}}}
+    },
+    {
+      "if": {"properties": {"mode": {"const": "release_gate"}}},
+      "then": {
+        "properties": {
+          "artifact_freshness": {"const": "current"},
+          "artifact_evidence": {
+            "contains": {
+              "type": "object",
+              "required": ["kind", "status"],
+              "properties": {
+                "kind": {"enum": ["workflow-manifest", "smoke-result", "test-result"]},
+                "status": {"const": "verified"}
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "panel_name": {
+      "type": "string",
+      "enum": [
+        "core-finance",
+        "research",
+        "operations-controls",
+        "growth-adoption",
+        "trading-risk",
+        "data-operations",
+        "reporting-stakeholders",
+        "admin-security"
+      ]
+    },
+    "evidence_item": {
+      "type": "object",
+      "required": ["path", "kind", "status"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "kind": {
+          "type": "string",
+          "enum": [
+            "screenshot",
+            "workflow-manifest",
+            "smoke-result",
+            "test-result",
+            "source",
+            "document",
+            "roadmap",
+            "other"
+          ]
+        },
+        "status": {"type": "string", "enum": ["verified", "supplied", "missing"]},
+        "captured_at": {"type": "string", "format": "date-time"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  }
 }

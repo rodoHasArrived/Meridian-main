@@ -1,7 +1,7 @@
 {
   "skill_name": "meridian-simulated-user-panel",
-  "schema_version": "2026-04-14",
-  "last_updated": "2026-04-14",
+  "schema_version": "2026-07-19",
+  "last_updated": "2026-07-19",
   "required_sections": [
     "executive_summary",
     "panel",
@@ -29,18 +29,18 @@
       "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
       "expected_output": "A design-partner review that flags onboarding discoverability gaps, chooses sensible onboarding personas, and recommends the highest-leverage improvements first.",
       "artifact_manifest": {
-        "schema_version": "2026-04-14",
+        "schema_version": "2026-07-19",
         "mode": "design_partner",
         "artifact_type": "screen-review",
         "artifact_paths": [
-          "src/Meridian.Wpf/Views/WelcomePage.xaml",
-          "docs/screenshots/desktop/welcome-page.png"
+          "fixture://eval-01/WelcomePage.xaml",
+          "fixture://eval-01/welcome-page.png"
         ],
         "artifact_summary": "The welcome screen headline is 'Start Your Desktop Workstation'. It shows cards for Connect a Provider, Add Symbols, and Launch Live Session. A note says runtime config is stored outside the install directory, but the path is not named. Launch Live Session stays disabled until provider credentials exist, but the reason is not clear. There is no visible estimate of setup time.",
         "persona_set": {
           "panel": "growth-adoption",
           "required_roles": [
-            "Owner-Operator"
+            "Financial Operations Professional"
           ]
         },
         "focus_areas": [
@@ -56,16 +56,29 @@
           "Identify what new users would understand immediately.",
           "Flag onboarding friction that would create support burden."
         ],
-        "decision_deadline": "before the next workstation onboarding pass"
+        "decision_deadline": "before the next workstation onboarding pass",
+        "artifact_evidence": [
+          {
+            "path": "fixture://eval-01/WelcomePage.xaml",
+            "kind": "source",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-01/welcome-page.png",
+            "kind": "screenshot",
+            "status": "supplied"
+          }
+        ],
+        "artifact_freshness": "unknown"
       },
       "checks": {
         "minimum_personas": 4,
         "required_personas_all": [
-          "Owner-Operator"
+          "Financial Operations Professional"
         ],
         "required_personas_any": [
-          "Hobbyist Builder",
-          "Support / Onboarding Lead"
+          "Portfolio Manager",
+          "Integration Administrator"
         ],
         "required_phrases": [
           {
@@ -103,21 +116,21 @@
       "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
       "expected_output": "A release-gate review grounded in a WPF workflow bundle that calls out operator friction, launch blockers, and a clear ship recommendation.",
       "artifact_manifest": {
-        "schema_version": "2026-04-14",
+        "schema_version": "2026-07-19",
         "mode": "release_gate",
         "artifact_type": "workflow-walkthrough",
         "artifact_paths": [
-          "src/Meridian.Wpf/Views/AddProviderWizardPage.xaml",
-          "src/Meridian.Wpf/Views/ProviderHealthPage.xaml",
-          "artifacts/desktop-workflows/provider-onboarding/manifest.json",
-          "artifacts/desktop-workflows/provider-onboarding/screenshots/01-provider-wizard.png"
+          "fixture://eval-02/AddProviderWizardPage.xaml",
+          "fixture://eval-02/ProviderHealthPage.xaml",
+          "fixture://eval-02/manifest.json",
+          "fixture://eval-02/01-provider-wizard.png"
         ],
         "artifact_summary": "The bundle walks through Add Provider Wizard, Data Sources, and Provider Health. The wizard shows credential inputs and a Connect action. Provider Health shows provider status and retry actions. The flow captures screenshots and a workflow manifest, but there is no strong confirmation that credentials were saved successfully, and recovery guidance after a failed validation is thin.",
         "persona_set": {
           "panel": "operations-controls",
           "required_roles": [
-            "Fund Operations Lead",
-            "Owner-Operator"
+            "Operations Manager",
+            "Financial Operations Professional"
           ]
         },
         "focus_areas": [
@@ -134,17 +147,40 @@
           "A failed validation has an obvious recovery path.",
           "End with ship, ship_with_caveats, or hold."
         ],
-        "decision_deadline": "before the next desktop release candidate"
+        "decision_deadline": "before the next desktop release candidate",
+        "artifact_evidence": [
+          {
+            "path": "fixture://eval-02/AddProviderWizardPage.xaml",
+            "kind": "source",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-02/ProviderHealthPage.xaml",
+            "kind": "source",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-02/manifest.json",
+            "kind": "workflow-manifest",
+            "status": "verified"
+          },
+          {
+            "path": "fixture://eval-02/01-provider-wizard.png",
+            "kind": "screenshot",
+            "status": "supplied"
+          }
+        ],
+        "artifact_freshness": "current"
       },
       "checks": {
         "minimum_personas": 4,
         "required_personas_all": [
-          "Fund Operations Lead",
-          "Owner-Operator"
+          "Operations Manager",
+          "Financial Operations Professional"
         ],
         "required_personas_any": [
-          "Support / Onboarding Lead",
-          "Data Operations Manager"
+          "Integration Administrator",
+          "Data Operations Analyst"
         ],
         "required_phrases": [
           {
@@ -190,20 +226,20 @@
       "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
       "expected_output": "A controls-heavy panel that surfaces approval-state gaps, audit issues, and a production-trust verdict.",
       "artifact_manifest": {
-        "schema_version": "2026-04-14",
+        "schema_version": "2026-07-19",
         "mode": "release_gate",
         "artifact_type": "ship-readiness",
         "artifact_paths": [
-          "src/Meridian.Wpf/Views/FundLedgerPage.xaml",
-          "src/Meridian.Wpf/Views/NotificationCenterPage.xaml",
-          "docs/screenshots/desktop/fund-ledger.png"
+          "fixture://eval-03/FundLedgerPage.xaml",
+          "fixture://eval-03/NotificationCenterPage.xaml",
+          "fixture://eval-03/fund-ledger.png"
         ],
         "artifact_summary": "A Fund Ledger page shows balances, unsettled cash, and recent journal events. A separate Approvals panel exists, but the ledger page does not show whether a balance change is pending approval, approved, or rejected. Exceptions are logged in an activity feed, but there is no dedicated exception queue or owner assignment. CSV export exists, but there is no audit snapshot bundle or reviewer sign-off artifact.",
         "persona_set": {
           "panel": "operations-controls",
           "required_roles": [
             "Fund Accountant",
-            "Risk / Compliance Lead"
+            "Compliance Officer"
           ]
         },
         "focus_areas": [
@@ -218,17 +254,35 @@
           "Call out missing approval-state visibility.",
           "State whether the control surface looks safe enough to ship."
         ],
-        "decision_deadline": "before governance rollout"
+        "decision_deadline": "before governance rollout",
+        "artifact_evidence": [
+          {
+            "path": "fixture://eval-03/FundLedgerPage.xaml",
+            "kind": "source",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-03/NotificationCenterPage.xaml",
+            "kind": "source",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-03/fund-ledger.png",
+            "kind": "screenshot",
+            "status": "supplied"
+          }
+        ],
+        "artifact_freshness": "current"
       },
       "checks": {
         "minimum_personas": 4,
         "required_personas_all": [
           "Fund Accountant",
-          "Risk / Compliance Lead"
+          "Compliance Officer"
         ],
         "required_personas_any": [
-          "Fund Operations Lead",
-          "Owner-Operator"
+          "Operations Manager",
+          "Financial Operations Professional"
         ],
         "required_phrases": [
           {
@@ -275,19 +329,19 @@
       "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
       "expected_output": "A power-user review that identifies repeated manual work, provenance risk, and the next leverage features for researchers.",
       "artifact_manifest": {
-        "schema_version": "2026-04-14",
+        "schema_version": "2026-07-19",
         "mode": "design_partner",
         "artifact_type": "workflow-walkthrough",
         "artifact_paths": [
-          "src/Meridian.Wpf/Views/AnalysisExportPage.xaml",
-          "src/Meridian.Wpf/Views/AnalysisExportWizardPage.xaml",
-          "docs/screenshots/desktop/analysis-export.png"
+          "fixture://eval-04/AnalysisExportPage.xaml",
+          "fixture://eval-04/AnalysisExportWizardPage.xaml",
+          "fixture://eval-04/analysis-export.png"
         ],
         "artifact_summary": "The Analysis Export flow can export filtered datasets to CSV and Parquet. Filters must be re-entered each time because saved export presets are not visible in the current flow. There is no direct handoff to DuckDB, Jupyter, or notebook-oriented launch tooling. Export progress is visible, but there is no provenance summary explaining exactly which symbols, time ranges, or providers were included.",
         "persona_set": {
           "panel": "research",
           "required_roles": [
-            "Quantitative Analyst"
+            "Quantitative Researcher"
           ]
         },
         "focus_areas": [
@@ -302,16 +356,34 @@
           "Identify the current design ceiling for advanced users.",
           "Recommend concrete leverage improvements."
         ],
-        "decision_deadline": "before export workflow planning"
+        "decision_deadline": "before export workflow planning",
+        "artifact_evidence": [
+          {
+            "path": "fixture://eval-04/AnalysisExportPage.xaml",
+            "kind": "source",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-04/AnalysisExportWizardPage.xaml",
+            "kind": "source",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-04/analysis-export.png",
+            "kind": "screenshot",
+            "status": "supplied"
+          }
+        ],
+        "artifact_freshness": "unknown"
       },
       "checks": {
         "minimum_personas": 4,
         "required_personas_all": [
-          "Quantitative Analyst"
+          "Quantitative Researcher"
         ],
         "required_personas_any": [
-          "Academic Researcher",
-          "Data Engineer"
+          "Investment Analyst",
+          "Data Operations Analyst"
         ],
         "required_phrases": [
           {
@@ -359,19 +431,19 @@
       "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
       "expected_output": "A roadmap critique that identifies likely first adopters, blockers, and whether the bet strengthens Meridian's product direction.",
       "artifact_manifest": {
-        "schema_version": "2026-04-14",
+        "schema_version": "2026-07-19",
         "mode": "design_partner",
         "artifact_type": "roadmap-review",
         "artifact_paths": [
-          "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
-          "docs/status/ROADMAP.md"
+          "fixture://eval-05/research-backtest-trust-and-velocity-blueprint.md",
+          "fixture://eval-05/ROADMAP.md"
         ],
         "artifact_summary": "Roadmap item: create a research-to-live promotion workspace that lets operators compare a paper strategy run, inspect risk and portfolio impacts, approve a promotion plan, and transition the strategy into a later live workflow with recorded sign-off.",
         "persona_set": {
           "panel": "core-finance",
           "required_roles": [
-            "Owner-Operator",
-            "Fund Manager"
+            "CIO",
+            "Portfolio Manager"
           ]
         },
         "focus_areas": [
@@ -387,17 +459,30 @@
           "Identify what could block adoption.",
           "State whether the bet strengthens Meridian's strategic coherence."
         ],
-        "decision_deadline": "before roadmap reprioritization"
+        "decision_deadline": "before roadmap reprioritization",
+        "artifact_evidence": [
+          {
+            "path": "fixture://eval-05/research-backtest-trust-and-velocity-blueprint.md",
+            "kind": "roadmap",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-05/ROADMAP.md",
+            "kind": "roadmap",
+            "status": "supplied"
+          }
+        ],
+        "artifact_freshness": "unknown"
       },
       "checks": {
         "minimum_personas": 4,
         "required_personas_all": [
-          "Owner-Operator",
-          "Fund Manager"
+          "CIO",
+          "Portfolio Manager"
         ],
         "required_personas_any": [
-          "Academic Researcher",
-          "Implementation Consultant"
+          "Investment Analyst",
+          "Investment Analyst"
         ],
         "required_phrases": [
           {
@@ -443,20 +528,20 @@
       "instruction": "Run the simulated user panel using the bundled manifest and return the full output contract.",
       "expected_output": "A benchmark-style review that clusters repeated complaints, names disagreements, and recommends whether the flow should advance to a release gate.",
       "artifact_manifest": {
-        "schema_version": "2026-04-14",
+        "schema_version": "2026-07-19",
         "mode": "usability_lab",
         "artifact_type": "workflow-walkthrough",
         "artifact_paths": [
-          "src/Meridian.Wpf/Views/ProviderHealthPage.xaml",
-          "artifacts/desktop-workflows/provider-health/manifest.json",
-          "artifacts/desktop-workflows/provider-health/screenshots/01-health.png"
+          "fixture://eval-06/ProviderHealthPage.xaml",
+          "fixture://eval-06/manifest.json",
+          "fixture://eval-06/01-health.png"
         ],
         "artifact_summary": "A comparison bundle captures three provider health runs. The page lists provider status, warnings, and retry actions. One run shows a stale warning badge that remains after a successful retry. Another run records a failed retry without clear owner assignment. The page shows heartbeat and data-gap indicators, but alert severity and operator next steps are inconsistent across runs.",
         "persona_set": {
           "panel": "operations-controls",
           "required_roles": [
-            "Data Operations Manager",
-            "Owner-Operator"
+            "Data Operations Analyst",
+            "System Administrator"
           ]
         },
         "focus_areas": [
@@ -473,17 +558,35 @@
           "Call out any disagreement between operator personas and owner priorities.",
           "Recommend advance_to_release_gate, rerun_after_changes, or defer."
         ],
-        "decision_deadline": "before the next ops reliability checkpoint"
+        "decision_deadline": "before the next ops reliability checkpoint",
+        "artifact_evidence": [
+          {
+            "path": "fixture://eval-06/ProviderHealthPage.xaml",
+            "kind": "source",
+            "status": "supplied"
+          },
+          {
+            "path": "fixture://eval-06/manifest.json",
+            "kind": "workflow-manifest",
+            "status": "verified"
+          },
+          {
+            "path": "fixture://eval-06/01-health.png",
+            "kind": "screenshot",
+            "status": "supplied"
+          }
+        ],
+        "artifact_freshness": "current"
       },
       "checks": {
         "minimum_personas": 4,
         "required_personas_all": [
-          "Data Operations Manager",
-          "Owner-Operator"
+          "Data Operations Analyst",
+          "System Administrator"
         ],
         "required_personas_any": [
-          "Risk / Compliance Lead",
-          "Trading Operations Lead"
+          "Compliance Officer",
+          "Operations Manager"
         ],
         "required_phrases": [
           {

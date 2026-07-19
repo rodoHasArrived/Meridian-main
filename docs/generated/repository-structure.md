@@ -99,12 +99,14 @@ Meridian-main
 │       │   │   └── grader.md
 │       │   ├── assets
 │       │   │   ├── bundles
+│       │   │   │   ├── cross-surface-review.manifest.json
 │       │   │   │   ├── roadmap-review.manifest.json
 │       │   │   │   ├── screen-review.manifest.json
 │       │   │   │   ├── ship-readiness.manifest.json
 │       │   │   │   └── workflow-walkthrough.manifest.json
 │       │   │   ├── eval-result.schema.json
-│       │   │   └── review-manifest.schema.json
+│       │   │   ├── review-manifest.schema.json
+│       │   │   └── review-result.schema.json
 │       │   ├── evals
 │       │   │   ├── golden
 │       │   │   │   ├── eval-01-welcome-onboarding-design-partner.md
@@ -120,6 +122,7 @@ Meridian-main
 │       │   │   ├── personas.md
 │       │   │   ├── review-contract.md
 │       │   │   ├── review-modes.md
+│       │   │   ├── rubric.md
 │       │   │   └── sample-prompts.md
 │       │   ├── scripts
 │       │   │   ├── __init__.py
@@ -275,12 +278,14 @@ Meridian-main
 │   │   │   │   └── grader.md
 │   │   │   ├── assets
 │   │   │   │   ├── bundles
+│   │   │   │   │   ├── cross-surface-review.manifest.json
 │   │   │   │   │   ├── roadmap-review.manifest.json
 │   │   │   │   │   ├── screen-review.manifest.json
 │   │   │   │   │   ├── ship-readiness.manifest.json
 │   │   │   │   │   └── workflow-walkthrough.manifest.json
 │   │   │   │   ├── eval-result.schema.json
-│   │   │   │   └── review-manifest.schema.json
+│   │   │   │   ├── review-manifest.schema.json
+│   │   │   │   └── review-result.schema.json
 │   │   │   ├── evals
 │   │   │   │   ├── golden
 │   │   │   │   │   ├── eval-01-welcome-onboarding-design-partner.md
@@ -296,6 +301,7 @@ Meridian-main
 │   │   │   │   ├── personas.md
 │   │   │   │   ├── review-contract.md
 │   │   │   │   ├── review-modes.md
+│   │   │   │   ├── rubric.md
 │   │   │   │   └── sample-prompts.md
 │   │   │   ├── scripts
 │   │   │   │   ├── __init__.py
@@ -684,24 +690,41 @@ Meridian-main
 │   │   │   │   └── openai.yaml
 │   │   │   ├── assets
 │   │   │   │   ├── bundles
+│   │   │   │   │   ├── cross-surface-review.manifest.json
 │   │   │   │   │   ├── roadmap-review.manifest.json
 │   │   │   │   │   ├── screen-review.manifest.json
 │   │   │   │   │   ├── ship-readiness.manifest.json
 │   │   │   │   │   └── workflow-walkthrough.manifest.json
 │   │   │   │   ├── eval-result.schema.json
-│   │   │   │   └── review-manifest.schema.json
+│   │   │   │   ├── review-manifest.schema.json
+│   │   │   │   └── review-result.schema.json
 │   │   │   ├── evals
+│   │   │   │   ├── golden
+│   │   │   │   │   ├── eval-01-welcome-onboarding-design-partner.md
+│   │   │   │   │   ├── eval-02-provider-onboarding-release-gate.md
+│   │   │   │   │   ├── eval-03-fund-ledger-controls-review.md
+│   │   │   │   │   ├── eval-04-analysis-export-power-user-review.md
+│   │   │   │   │   ├── eval-05-research-promotion-roadmap-review.md
+│   │   │   │   │   └── eval-06-provider-health-usability-lab.md
+│   │   │   │   ├── negative
+│   │   │   │   │   ├── release-gate-insufficient-ship.md
+│   │   │   │   │   └── shallow-panel.md
 │   │   │   │   ├── benchmark_baseline.json
-│   │   │   │   └── evals.json
+│   │   │   │   ├── evals.json
+│   │   │   │   └── trigger-prompts.csv
 │   │   │   ├── references
 │   │   │   │   ├── artifact-bundles.md
 │   │   │   │   ├── personas.md
 │   │   │   │   ├── review-contract.md
-│   │   │   │   └── review-modes.md
+│   │   │   │   ├── review-modes.md
+│   │   │   │   └── rubric.md
 │   │   │   ├── scripts
+│   │   │   │   ├── check_shared_contracts.py
+│   │   │   │   ├── check_trigger_prompts.py
 │   │   │   │   ├── run_evals.py
 │   │   │   │   ├── score_eval.py
-│   │   │   │   └── simulated_user_output_check.py
+│   │   │   │   ├── simulated_user_output_check.py
+│   │   │   │   └── validate_review_manifest.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-test-writer
 │   │   │   ├── agents

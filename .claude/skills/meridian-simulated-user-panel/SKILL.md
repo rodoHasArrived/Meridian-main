@@ -1,150 +1,114 @@
 ---
 name: meridian-simulated-user-panel
 description: >
-  Simulate structured Meridian product feedback from multiple realistic user personas such as
-  quantitative analysts, fund managers, fund accountants, fund operators, hobbyists, individual
-  traders, academics, compliance leads, data engineers, support and onboarding leads,
-  implementation consultants, and owner-operators. Use when the user asks for simulated user
-  testing, persona-based critique, multi-role reactions, likes and dislikes, release-gate review,
-  usability-lab benchmarking, adoption-risk analysis, workflow-fit analysis, or improvement ideas
-  for Meridian screens, workflows, documents, roadmap directions, or overall product strategy.
+  Critique concrete Meridian screens, workflows, documents, roadmaps, and release candidates with
+  artifact-grounded multi-persona panels. Use for simulated user testing, persona-based product
+  critique, multi-role reactions, workflow-fit and adoption-risk analysis, usability-lab
+  comparison, or advisory release-gate feedback. Do not use as a substitute for real user research,
+  for code correctness review, for unconstrained brainstorming without an artifact, or for final
+  roadmap sequencing.
 license: See repository LICENSE
 compatibility: >
   Portable Agent Skill package for Agent Skills-compatible hosts. Provides manifest-driven review
   instructions, bundle templates, eval fixtures, and a deterministic local scoring harness.
 metadata:
   owner: meridian-ai
-  version: "2.0"
+  version: "3.0"
   spec: open-agent-skills-v1
 ---
+
 # Meridian Simulated User Panel
 
-Run artifact-driven Meridian product reviews that can behave as a `design_partner`,
-`release_gate`, or `usability_lab` depending on the request.
+Run evidence-led product reviews in `design_partner`, `release_gate`, or `usability_lab` mode.
+Treat every reaction as a simulation, never as observed user research.
 
-> **Shared project context:** [`../_shared/project-context.md`](../_shared/project-context.md) —
-> read before making claims about current Meridian capabilities or product direction.
-> **GitHub agent equivalent:** [`.github/agents/simulated-user-panel-agent.md`](../../../.github/agents/simulated-user-panel-agent.md)
-> **Claude agent equivalent:** [`.claude/agents/meridian-user-panel.md`](../../../.claude/agents/meridian-user-panel.md)
+Read `../_shared/project-context.md` before making current-capability claims. Load these references
+as needed:
 
-## Reference Files
+- `references/review-contract.md` for manifest, output, evidence, and verdict rules.
+- `references/personas.md` before selecting or normalizing a panel.
+- `references/rubric.md` before scoring personas.
+- `references/review-modes.md` when mode, focus, or evidence requirements are unclear.
+- `references/artifact-bundles.md` for screenshots, workflows, browser/WPF comparisons, and
+  freshness evidence.
+- `references/sample-prompts.md` for ready invocation examples.
 
-Read these `references/` files on demand:
+Use the templates under `assets/bundles/` when a review needs a repeatable manifest.
 
-- [`references/review-contract.md`](references/review-contract.md) — stable manifest fields, output contract, rubric, and verdict
-  rules
-- [`references/personas.md`](references/personas.md) — tagged persona panels, role pressures, and pairing guidance
-- [`references/review-modes.md`](references/review-modes.md) — invocation modes, focus areas, and artifact-type defaults
-- [`references/artifact-bundles.md`](references/artifact-bundles.md) — how to use screenshots, workflow manifests, and smoke output
-- [`references/sample-prompts.md`](references/sample-prompts.md) — ready-to-use prompt starters for each mode
+## Use When
 
-## Assets
+Use this skill for structured persona feedback on a concrete Meridian artifact, including release
+advice, usability comparison, workflow fit, adoption risk, and owner-priority synthesis.
 
-Use these machine-readable assets when building or validating a review:
+Trigger examples:
 
-- `assets/review-manifest.schema.json`
-- `assets/eval-result.schema.json`
-- `assets/bundles/screen-review.manifest.json`
-- `assets/bundles/workflow-walkthrough.manifest.json`
-- `assets/bundles/roadmap-review.manifest.json`
-- `assets/bundles/ship-readiness.manifest.json`
+- "Run a simulated user panel on this workstation screen."
+- "Give release-gate feedback from accounting and compliance users."
+- "Compare the browser and WPF workflows with realistic personas."
 
-## Eval Resources
+## Do Not Use When
 
-Use these when testing or improving the skill:
+- Use code-review guidance for code correctness.
+- Use brainstorming guidance for idea generation without a concrete artifact.
+- Use roadmap strategy guidance for final sequencing.
+- Do not present simulated reactions as interviews, telemetry, or validated customer demand.
 
-- `evals/evals.json` — mode-by-artifact eval matrix
-- `evals/benchmark_baseline.json` — accepted pass-rate floor per eval
-- [`agents/grader.md`](agents/grader.md) — grading instructions for judging whether a run produced grounded,
-  owner-minded output
-- `scripts/run_eval.py` — manifest-aware helper for materializing, scoring, aggregating, and
-  comparing eval runs
+## Invocation Modes
 
-Golden eval fixtures (one per eval scenario):
-
-- [`evals/golden/eval-01-welcome-onboarding-design-partner.md`](evals/golden/eval-01-welcome-onboarding-design-partner.md)
-- [`evals/golden/eval-02-provider-onboarding-release-gate.md`](evals/golden/eval-02-provider-onboarding-release-gate.md)
-- [`evals/golden/eval-03-fund-ledger-controls-review.md`](evals/golden/eval-03-fund-ledger-controls-review.md)
-- [`evals/golden/eval-04-analysis-export-power-user-review.md`](evals/golden/eval-04-analysis-export-power-user-review.md)
-- [`evals/golden/eval-05-research-promotion-roadmap-review.md`](evals/golden/eval-05-research-promotion-roadmap-review.md)
-- [`evals/golden/eval-06-provider-health-usability-lab.md`](evals/golden/eval-06-provider-health-usability-lab.md)
-
-## Core Rules
-
-- Inspect the most concrete artifact available before simulating reactions.
-- Keep every persona owner-minded: each role should care about Meridian's future quality, trust,
-  support burden, and strategic coherence.
-- Separate verified repo evidence from inferred user reaction.
-- Prefer concrete, buildable recommendations over generic product advice.
-- Use at least 4 personas when the request asks for a panel.
+- `design_partner`: end with `steer`, `prototype`, or `defer`.
+- `release_gate`: advisory only; fail closed when critical evidence is missing and end with `ship`,
+  `ship_with_caveats`, or `hold`.
+- `usability_lab`: compare repeatable runs and end with `advance_to_release_gate`,
+  `rerun_after_changes`, or `defer`.
 
 ## Workflow
 
-1. Validate or construct the review manifest.
-2. Inspect the artifact bundle: code, XAML, screenshots, workflow manifests, smoke-test notes,
-   docs, or roadmap text.
-3. Choose the right invocation mode and focus areas.
-4. Build the panel from `references/personas.md`, honoring user-specified roles exactly.
-5. For each persona, evaluate first reaction, core task, trust check, adoption decision, and
-   owner-minded improvement push.
-6. Score the six rubric dimensions with 1-5 evidence-backed ratings:
-   - Workflow Fit
-   - Trust / Controls
-   - Time-to-Value
-   - Data Confidence
-   - Extensibility
-   - Learning Curve
-7. End with the shared output contract from `references/review-contract.md`.
+1. Validate or construct a manifest from `assets/review-manifest.schema.json`.
+2. Inspect every accessible artifact and classify evidence as `sufficient`, `partial`, or
+   `insufficient`.
+3. Select at least four roles from the canonical Persona Matrix. Label advisory lenses and honor
+   user-specified custom roles without silently relabeling them.
+4. Evaluate each persona's first reaction, core-task attempt, trust check, adoption decision, and
+   one owner-minded improvement push.
+5. Score all six rubric dimensions with bounded 1-5 ratings and artifact evidence. Do not average
+   conflicting roles into one panel score.
+6. Synthesize repeated strengths, complaint clusters, disagreements, blockers, and owner actions.
+7. Apply mode-specific verdict rules. `ship` requires current sufficient evidence and every
+   success criterion verified.
+8. Return the ordered output contract and simulation disclaimer.
 
-## Output Contract
+## Handoffs
 
-Use these headings unless the host or user explicitly asks for another format:
+- Hand opportunity generation to the brainstorm lane.
+- Hand one selected action to a blueprint or technical-design lane.
+- Hand release blockers to implementation assurance.
 
-- `Executive Summary`
-- `Panel`
-- `Persona Findings`
-- `Cross-Persona Tensions`
-- `Owner Actions`
-- `Release Recommendation`
-- `Confidence Notes`
+## Validation
 
-Within `Persona Findings`, every persona must include:
+- Validate the manifest and result against the schemas under `assets/`.
+- Use `scripts/run_eval.py` to materialize, score, aggregate, and compare scenario runs.
+- Use `agents/grader.md` for qualitative failures that deterministic checks cannot capture.
 
-- `Liked`
-- `Didn't like`
-- `Missing or risky`
-- `Owner-minded improvement ideas`
-- `Adoption verdict`
-- `Rubric (1-5 with evidence)` across the six required dimensions
+## Output Standards
 
-Within `Owner Actions`, group recommendations as:
+Use these exact H2 headings in order unless the user explicitly requests a shorter artifact; do
+not promote or demote them. Start every persona with an H3 heading under `Persona Findings`.
 
-- `Now`
-- `Next`
-- `Later`
+1. `## Executive Summary`
+2. `## Panel`
+3. `## Persona Findings`
+4. `## Cross-Persona Tensions`
+5. `## Owner Actions`
+6. `## Release Recommendation`
+7. `## Confidence Notes`
 
-Within `Confidence Notes`, always separate:
-
-- `Verified`
-- `Inferred`
-- `Missing evidence`
-
-## Scripts
-
-Typical commands:
-
-```bash
-python .claude/skills/meridian-simulated-user-panel/scripts/run_eval.py list
-python .claude/skills/meridian-simulated-user-panel/scripts/run_eval.py materialize --eval-id 2
-python .claude/skills/meridian-simulated-user-panel/scripts/run_eval.py score --workspace .claude/skills/meridian-simulated-user-panel/tmp-evals/eval-02-provider-onboarding-release-gate
-python .claude/skills/meridian-simulated-user-panel/scripts/run_eval.py aggregate --input .claude/skills/meridian-simulated-user-panel/tmp-evals
-python .claude/skills/meridian-simulated-user-panel/scripts/run_eval.py compare-baseline --aggregate .claude/skills/meridian-simulated-user-panel/tmp-evals/aggregate.json
-```
+Follow `references/review-contract.md` for required persona fields, action buckets, evidence
+boundaries, verdict rules, and `assets/review-result.schema.json`.
 
 ## Quality Bar
 
-- In `release_gate`, separate blockers from polish and end with `ship`, `ship_with_caveats`, or
-  `hold`.
-- In `usability_lab`, surface repeated complaint clusters and note whether the run is strong
-  enough to compare against prior results.
-- If the artifact bundle is weak or incomplete, say so plainly and treat that as product evidence.
+- Use at least four distinct personas for a panel.
+- Name tradeoffs when one role's request harms another role's workflow.
+- Keep browser and WPF evidence co-equal when both surfaces are in scope.
+- Treat missing or stale evidence as a finding; in `release_gate`, critical gaps force `hold`.
+- Treat mobile-only requests as out of scope unless Meridian's product direction explicitly changes.
