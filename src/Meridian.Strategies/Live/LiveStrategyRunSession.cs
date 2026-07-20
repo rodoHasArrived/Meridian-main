@@ -157,20 +157,39 @@ internal sealed class LiveStrategyRunSession
     {
         await using var events = _feed.SubscribeAsync(_context.Universe, ct).GetAsyncEnumerator(ct);
         Task<bool>? moveNext = null;
+        Task<bool>? fillReady = null;
+        var fillChannelCompleted = false;
         try
         {
             while (!ct.IsCancellationRequested && _strategy.Status != StrategyStatus.Stopped)
             {
                 moveNext ??= events.MoveNextAsync().AsTask();
-                var fillReady = _fillReports.Reader.WaitToReadAsync(ct).AsTask();
-                var completed = await Task.WhenAny(moveNext, fillReady).ConfigureAwait(false);
-
-                while (_fillReports.Reader.TryRead(out var report))
+                // Track the pending wait across iterations: the fill channel is
+                // SingleReader, so only one WaitToReadAsync may ever be in flight.
+                if (!fillChannelCompleted)
                 {
-                    HandleExecutionReport(report);
+                    fillReady ??= _fillReports.Reader.WaitToReadAsync(ct).AsTask();
                 }
 
-                if (!ReferenceEquals(completed, moveNext))
+                if (fillReady is null)
+                {
+                    await moveNext.ConfigureAwait(false);
+                }
+                else
+                {
+                    await Task.WhenAny(moveNext, fillReady).ConfigureAwait(false);
+                    if (fillReady.IsCompleted)
+                    {
+                        fillChannelCompleted = !await fillReady.ConfigureAwait(false);
+                        fillReady = null;
+                        while (_fillReports.Reader.TryRead(out var report))
+                        {
+                            HandleExecutionReport(report);
+                        }
+                    }
+                }
+
+                if (!moveNext.IsCompleted)
                 {
                     continue;
                 }
@@ -199,6 +218,18 @@ internal sealed class LiveStrategyRunSession
                 catch
                 {
                     // Cancellation/teardown of the pending advance is expected here.
+                }
+            }
+
+            if (fillReady is not null)
+            {
+                try
+                {
+                    await fillReady.ConfigureAwait(false);
+                }
+                catch
+                {
+                    // Cancellation of the pending fill wait is expected here.
                 }
             }
         }

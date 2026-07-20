@@ -317,9 +317,11 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             }
         }
 
-        if (symbols.Count == 0)
+        // A null-valued configuration binding can leave DefaultSymbols null despite the
+        // non-null property default; treat that the same as "no fallback configured".
+        if (symbols.Count == 0 && _options.DefaultSymbols is { } defaultSymbols)
         {
-            symbols.UnionWith(_options.DefaultSymbols.Where(static symbol => !string.IsNullOrWhiteSpace(symbol)));
+            symbols.UnionWith(defaultSymbols.Where(static symbol => !string.IsNullOrWhiteSpace(symbol)));
         }
 
         return symbols;
