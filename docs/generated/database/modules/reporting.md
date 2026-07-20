@@ -2,9 +2,9 @@
 
 # `reporting` schema
 
-- Relations: 14
-- Functions/procedures: 11
-- Triggers: 13
+- Relations: 15
+- Functions/procedures: 12
+- Triggers: 14
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -160,6 +160,26 @@ erDiagram
         text receipt_hash_sha256
         timestamp_with_time_zone retained_at_utc
     }
+    reporting_reporting_reconciliation_evidence_v2 {
+        text tenant_id PK
+        text receipt_key_sha256 PK
+        text organization_id
+        text company_id
+        text fund_id
+        text ledger_book_id
+        text accounting_period_id
+        text accounting_basis
+        date as_of_date
+        text source_checkpoint_id
+        text source_checkpoint_hash
+        text reconciliation_checkpoint_id
+        text reconciliation_checkpoint_hash
+        text receipt_payload
+        text receipt_hash_sha256
+        timestamp_with_time_zone retained_at_utc
+        smallint receipt_format_version
+        text supersedes_legacy_receipt_key_sha256
+    }
     reporting_reporting_restatement_requests {
         text tenant_id PK,FK
         text request_id PK
@@ -197,5 +217,6 @@ erDiagram
 | `reporting_governance_audit` | table | 11 | `tenant_id`, `aggregate_kind`, `aggregate_id`, `aggregate_version` | 0 | 3 | - |
 | `reporting_governed_runs` | table | 14 | `tenant_id`, `run_id` | 0 | 4 | - |
 | `reporting_reconciliation_evidence` | table | 16 | `tenant_id`, `receipt_key_sha256` | 0 | 3 | - |
+| `reporting_reconciliation_evidence_v2` | table | 18 | `tenant_id`, `receipt_key_sha256` | 0 | 3 | - |
 | `reporting_restatement_requests` | table | 11 | `tenant_id`, `request_id` | 1 | 2 | - |
 | `reporting_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |

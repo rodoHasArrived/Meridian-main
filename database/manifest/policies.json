@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 183,
-    "warning": 183
+    "total": 185,
+    "warning": 185
   },
   "failed": false,
   "findings": [
@@ -684,6 +684,16 @@
       },
       "message": "Business table reporting.reporting_reconciliation_evidence does not have a table comment.",
       "object": "reporting.reporting_reconciliation_evidence",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
+        "table": "reporting_reconciliation_evidence_v2"
+      },
+      "message": "Business table reporting.reporting_reconciliation_evidence_v2 does not have a table comment.",
+      "object": "reporting.reporting_reconciliation_evidence_v2",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1959,6 +1969,16 @@
     {
       "details": {
         "schema": "reporting",
+        "table": "reporting_reconciliation_evidence_v2"
+      },
+      "message": "Table reporting.reporting_reconciliation_evidence_v2 is in an RLS-required schema but row-level security is disabled.",
+      "object": "reporting.reporting_reconciliation_evidence_v2",
+      "rule_id": "schema-rls-required",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "reporting",
         "table": "reporting_restatement_requests"
       },
       "message": "Table reporting.reporting_restatement_requests is in an RLS-required schema but row-level security is disabled.",
@@ -1977,5 +1997,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "a48dce3e060f710c51f23225e6ee344a6fadee99eae677d57bca058c6b56aae2"
+  "fingerprint": "60e431a9e3c3e7b3fd8129e75af5a0c52c260bf19216f837d2213a60bb3ddee9"
 }
