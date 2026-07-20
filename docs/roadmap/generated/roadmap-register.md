@@ -462,6 +462,33 @@ Closed 2026-07-05 as bounded live-readiness governance. Paper-to-live promotion 
 - `SRC-STRATEGIES`
 - `SRC-UI-DASHBOARD`
 
+## W8-UX-CONSOL-001 - Browser workstation screen consolidation
+| Field | Value |
+| --- | --- |
+| Wave | W8 |
+| Status | in_progress |
+| Health | on_track |
+| Priority | medium |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-07-19 |
+
+### Current Summary
+
+Reduces standalone browser-workstation screens by folding closely related tools into deeper host screens behind the seven charter root workspaces. Phase 1 folds Trial Balance into the Ledger Explorer and the Formula Workbench into Quant Lab; Phase 2 canonicalizes the Evidence Workbench to a single Reporting home; Phase 3 merges Live Quotes, Watchlist, and Price Alerts into one Market Data desk. Every retired route remains a redirect that preserves query and hash scope, and the WPF parity matrix is refreshed in the same change as each fold. Reporting run-flow consolidation and reconciliation module extraction are sequenced as later phases.
+
+### Exit Criteria
+
+- Retired screen routes redirect to their host screens with query and hash scope preserved.
+- Sidebar sub-items, the workstation route catalog, mounted routes, and command palette route commands stay one taxonomy for each fold.
+- The WPF web-UI alignment plan parity matrix reflects consolidated browser screen names in the same change that folds them.
+- Folds compose tabs, master panes, or context rails without stacking screen content beyond the structural proposal page-height budget.
+- No read-model, contract, or endpoint changes ship as part of screen consolidation.
+
+### Source Modules
+
+- `SRC-UI-DASHBOARD`
+
 ## W8-WPF-PARITY-001 - WPF desktop workstation reactivation and web-UI parity
 | Field | Value |
 | --- | --- |

@@ -6115,6 +6115,8 @@ Meridian-main
 │   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── live-quotes-screen.view-model.test.ts
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
+│   │   │   │   │   ├── market-data-screen.test.tsx
+│   │   │   │   │   ├── market-data-screen.tsx
 │   │   │   │   │   ├── operations-continuity-reviewed-automation.view-model.ts
 │   │   │   │   │   ├── operations-continuity-screen.command-state.ts
 │   │   │   │   │   ├── operations-continuity-screen.test.tsx
@@ -6145,6 +6147,7 @@ Meridian-main
 │   │   │   │   │   ├── price-alerts-screen.tsx
 │   │   │   │   │   ├── price-alerts-screen.view-model.test.ts
 │   │   │   │   │   ├── price-alerts-screen.view-model.ts
+│   │   │   │   │   ├── quant-lab-screen.formulas-tab.test.tsx
 │   │   │   │   │   ├── quant-lab-screen.test.tsx
 │   │   │   │   │   ├── quant-lab-screen.tsx
 │   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
@@ -6206,8 +6209,6 @@ Meridian-main
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-designer-screen.view-model.ts
-│   │   │   │   │   ├── strategy-formula-workbench-screen.test.tsx
-│   │   │   │   │   ├── strategy-formula-workbench-screen.tsx
 │   │   │   │   │   ├── strategy-screen.a11y.test.tsx
 │   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
 │   │   │   │   │   ├── strategy-screen.operator-focus.ts

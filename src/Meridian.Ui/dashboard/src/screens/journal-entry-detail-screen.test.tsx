@@ -134,7 +134,7 @@ describe("JournalEntryDetailScreen", () => {
     expect(screen.getByRole("button", { name: "Export" })).toBeDisabled();
     expect(screen.getByRole("link", { name: "Back to Trial Balance" })).toHaveAttribute(
       "href",
-      "/accounting/trial-balance?runId=run-42"
+      "/accounting/ledger?view=trial-balance&runId=run-42"
     );
   });
 

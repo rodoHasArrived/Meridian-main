@@ -99,12 +99,16 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         route_catalog = self.extract_workstation_route_catalog()
 
         compatibility_redirect_routes = {
+            "accountingTrialBalanceLegacy",
+            "dataAlertsLegacy",
             "dataSecurityMasterLegacy",
+            "dataWatchlistLegacy",
             "settingsIntegrations",
             "settingsFeatureCoverage",
             "settingsAlpacaProviderSetup",
             "settingsBackendCapabilityCoverage",
             "settingsDiagnosticEndpoints",
+            "strategyFormulaWorkbenchLegacy",
         }
         expected_paths = {
             self.screenshot_coverage_path(path)
@@ -125,12 +129,16 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         }
         route_paths = set(re.findall(r'<Route\s+path="([^"]+)"', self.workstation_app_shell))
         compatibility_redirect_routes = {
+            "/accounting/trial-balance",
+            "/data/alerts",
             "/data/security-master",
             "/data/security-master/*",
+            "/data/watchlist",
             "/overview/*",
             "/research/*",
             "/data-operations/*",
             "/governance/*",
+            "/strategy/formula-workbench",
         }
         explicit_pages = {
             self.screenshot_coverage_path(path)
@@ -270,8 +278,8 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             captures["W03J1"].get("waitForText"),
         )
         self.assertIn("Retained posting evidence 1", captures["W03J1"].get("waitForTexts", []))
-        self.assertIn("Evidence reference ready for inspection", captures["W03I5"].get("waitForTexts", []))
-        self.assertIn("Ready to inspect", captures["W03I5"].get("waitForTexts", []))
+        self.assertIn("Evidence Workbench", captures["W03I5"].get("waitForTexts", []))
+        self.assertIn("Document intake", captures["W03I5"].get("waitForTexts", []))
 
     def test_accounting_capture_contracts_use_current_operator_labels(self) -> None:
         captures = {

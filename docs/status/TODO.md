@@ -55,9 +55,9 @@ Total items: **217**
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2030 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2084 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 377 | `NOTE` | ❌ | note: "Heartbeat delayed" |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 758 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 833 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
-| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1290 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 752 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 827 | `NOTE` | ❌ | note: "Streaming quote path is healthy." |
+| `src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts` | 1282 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 221 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 386 | `NOTE` | ❌ | note: "Credential check failed" |
 | `src/Meridian.Ui/dashboard/src/app.test.tsx` | 642 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
