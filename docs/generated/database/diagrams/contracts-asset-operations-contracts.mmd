@@ -311,14 +311,14 @@ classDiagram
         +IReadOnlyList~string~ Assumptions
         +IReadOnlyList~PortfolioCashScenarioDto~ AvailableScenarios
         +string BaseCurrency
+        +IReadOnlyList~string~ BlockingReasons
         +IReadOnlyList~PortfolioCashLadderBucketDto~ Buckets
         +IReadOnlyList~PortfolioCashLadderContributionDto~ Contributions
         +string EngineVersion
         +DateTimeOffset GeneratedAt
         +int HorizonDays
+        +bool IsDecisionReady
         +decimal MinimumCashThreshold
-        +decimal OpeningCash
-        +string ScenarioId
     }
     class Meridian_Contracts_AssetOperations_PortfolioCashLadderPositionDto["PortfolioCashLadderPositionDto"] {
         +AssetOperationsDetailDto Operations

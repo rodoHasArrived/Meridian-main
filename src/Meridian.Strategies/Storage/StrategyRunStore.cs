@@ -1123,3 +1123,8 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
     }
 }
+
+public sealed record StrategyRunStoreOptions(string RootDirectory)
+{
+    public string SnapshotPath => Path.Combine(RootDirectory, "strategy-runs.json");
+}

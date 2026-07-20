@@ -167,22 +167,34 @@ public partial class App : System.Windows.Application
         _isFixtureMode = DetectFixtureMode(_launchArgs);
         ApplyRenderModeOverrides();
 
+        var includeDesktopConfiguration = true;
+        try
+        {
+            var recoveryOutcome = await WpfServices.FirstRunService.Instance.EnsureConfigurationExistsAsync();
+            WpfServices.LoggingService.Instance.LogInfo(
+                "Desktop configuration preflight completed before host construction",
+                ("Outcome", recoveryOutcome.ToString()));
+        }
+        catch (Exception ex) when (IsConfigurationStartupFailure(ex))
+        {
+            includeDesktopConfiguration = false;
+            WpfServices.LoggingService.Instance.LogError(
+                "Desktop configuration could not be recovered; starting with host defaults so configuration can be repaired in-app",
+                ex);
+        }
+
         // Configure the host with dependency injection
-        _host = Host.CreateDefaultBuilder()
-            .ConfigureAppConfiguration(config =>
-            {
-                // The operator's desktop settings file is the source for host-level
-                // sections (e.g. Connectivity:Probes); layer it over the process defaults.
-                config.AddJsonFile(
-                    Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath(),
-                    optional: true,
-                    reloadOnChange: false);
-            })
-            .ConfigureServices((context, services) =>
-            {
-                ConfigureServices(services, context.Configuration);
-            })
-            .Build();
+        try
+        {
+            _host = BuildDesktopHost(includeDesktopConfiguration);
+        }
+        catch (Exception ex) when (includeDesktopConfiguration && IsConfigurationStartupFailure(ex))
+        {
+            WpfServices.LoggingService.Instance.LogError(
+                "Desktop configuration failed during host construction; retrying startup with host defaults",
+                ex);
+            _host = BuildDesktopHost(includeDesktopConfiguration: false);
+        }
         WpfServices.LoggingService.Instance.LogInfo("WPF application host built");
 
         Services = _host.Services;
@@ -231,6 +243,39 @@ public partial class App : System.Windows.Application
         WpfServices.LoggingService.Instance.LogInfo("WPF async startup completed");
         EnsureMainWindowVisible(mainWindow);
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
+    }
+
+    private static IHost BuildDesktopHost(bool includeDesktopConfiguration)
+    {
+        return Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(config =>
+            {
+                // The operator's desktop settings file is the source for host-level
+                // sections (e.g. Connectivity:Probes); layer it over the process defaults.
+                if (includeDesktopConfiguration)
+                {
+                    config.AddJsonFile(
+                        Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath(),
+                        optional: true,
+                        reloadOnChange: false);
+                }
+            })
+            .ConfigureServices((context, services) =>
+            {
+                ConfigureServices(services, context.Configuration);
+            })
+            .Build();
+    }
+
+    private static bool IsConfigurationStartupFailure(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is JsonException or FormatException or InvalidDataException or IOException or UnauthorizedAccessException)
+                return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -928,7 +973,9 @@ public partial class App : System.Windows.Application
                  System.Net.Http.HttpRequestException or
                  TimeoutException or
                  OperationCanceledException or
-                 System.IO.IOException;
+                 System.IO.IOException or
+                 UnauthorizedAccessException or
+                 JsonException;
 
         // Always log with structured logging so the error is visible in the log file.
         WpfServices.LoggingService.Instance.LogError("Dispatcher unhandled exception", ex);

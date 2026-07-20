@@ -97,6 +97,50 @@ public sealed class ProductionServiceRegistrationPolicyTests
         ProductionServiceRegistrationPolicy.IsProductionEnvironment().Should().BeTrue();
     }
 
+    [Fact]
+    public void EnsureInProcessQuantLabIsAllowed_WhenProductionPostureAndEnabled_RejectsStartup()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+
+        Action act = () => ProductionServiceRegistrationPolicy
+            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*isolated worker*");
+    }
+
+    [Fact]
+    public void EnsureInProcessQuantLabIsAllowed_WhenPackagedBuildAndEnabled_RejectsStartup()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var packagedBuild = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", "true");
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+
+        Action act = () => ProductionServiceRegistrationPolicy
+            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*packaged*");
+    }
+
+    [Fact]
+    public void EnsureInProcessQuantLabIsAllowed_WhenDevelopmentPosture_AllowsExplicitOptIn()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var packagedBuild = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", null);
+        using var customerBuild = new EnvironmentVariableScope("MERIDIAN_CUSTOMER_BUILD", null);
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+
+        Action act = () => ProductionServiceRegistrationPolicy
+            .EnsureInProcessQuantLabIsAllowed(services, enabled: true);
+
+        act.Should().NotThrow();
+    }
+
     [Theory]
     [InlineData(typeof(MarkerOnlyService))]
     [InlineData(typeof(InMemorySampleService))]

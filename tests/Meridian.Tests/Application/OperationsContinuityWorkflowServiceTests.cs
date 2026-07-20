@@ -4291,7 +4291,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
                 SecurityId: securityId,
                 LedgerBook: "fund-close"),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private static OperationsLedgerJournalCandidateDto CreateInstrumentJournalCandidate(
@@ -4349,7 +4350,8 @@ public sealed class OperationsContinuityWorkflowServiceTests
                 SecurityId: securityId,
                 LedgerBook: "fund-close"),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: provenance);
+            SecurityMasterProvenance: provenance,
+            ExpectedLedgerVersion: 1);
     }
 
     private static OperationsWorkflowAuditDraft CreateAuditDraft(

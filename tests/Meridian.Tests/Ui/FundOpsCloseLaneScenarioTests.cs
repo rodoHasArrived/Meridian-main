@@ -410,8 +410,8 @@ public sealed class FundOpsCloseLaneScenarioTests
             ]);
         blockedClose.NextActions.Select(action => action.Code).Should().Contain(
             [
-                "REPORT_PACK_REQUIRED",
-                "APPROVAL_REQUIRED"
+                "RESOLVE_REPORT_PACK_REQUIRED",
+                "RESOLVE_APPROVAL_REQUIRED"
             ]);
 
         // The approval state stays at Pending — the blocked submit must not record an approval submission.
@@ -756,7 +756,8 @@ public sealed class FundOpsCloseLaneScenarioTests
                 SecurityId: securityId,
                 LedgerBook: "fund-close"),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore

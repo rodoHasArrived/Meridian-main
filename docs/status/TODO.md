@@ -46,11 +46,11 @@ Total items: **223**
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 722 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1051 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1088 | `NOTE` | ❌ | Note: request.Note, |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 735 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 746 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 757 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 768 | `NOTE` | ❌ | Note: hasAudit ? null : "No audit reference was captured for this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 782 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 760 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 771 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 782 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 793 | `NOTE` | ❌ | Note: hasAudit ? null : "No audit reference was captured for this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 807 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 476 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
@@ -222,7 +222,7 @@ Total items: **223**
 | `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 274 | `NOTE` | ❌ | Note: "ready", |
 | `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 186 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |
-| `tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs` | 85 | `NOTE` | ❌ | // NOTE: since this is a singleton shared across tests, if StartScheduler was |
+| `tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs` | 110 | `NOTE` | ❌ | // NOTE: since this is a singleton shared across tests, if StartScheduler was |
 | `tests/Meridian.Ui.Tests/Services/StorageAnalyticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: Full analytics calculation requires file I/O, so these tests |
 | `tests/Meridian.Wpf.Tests/Services/OfflineTrackingPersistenceServiceTests.cs` | 27 | `NOTE` | ❌ | // NOTE: Singleton state may persist across tests. |
 | `tests/Meridian.Wpf.Tests/Services/PendingOperationsQueueServiceTests.cs` | 30 | `NOTE` | ❌ | // NOTE: This may not be false if other tests have run InitializeAsync. |

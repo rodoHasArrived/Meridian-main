@@ -65,4 +65,21 @@ public sealed class AuditChainServiceTests : IDisposable
         Assert.True(result.IsValid);
         Assert.Equal(1, result.EntriesChecked);
     }
+
+    [Fact]
+    public async Task AppendEntryAsync_ConcurrentServiceInstances_PreserveSingleChain()
+    {
+        var services = Enumerable.Range(0, 4).Select(_ => new AuditChainService()).ToArray();
+        var files = Enumerable.Range(0, 24)
+            .Select(index => Path.Combine(_testRoot, $"concurrent-{index:D2}.jsonl"))
+            .ToArray();
+        await Task.WhenAll(files.Select((path, index) => File.WriteAllTextAsync(path, $"payload-{index}")));
+
+        await Task.WhenAll(files.Select((path, index) =>
+            services[index % services.Length].AppendEntryAsync(path)));
+
+        var result = await _service.VerifyChainAsync(Path.Combine(_testRoot, "chain.log"));
+        Assert.True(result.IsValid);
+        Assert.Equal(files.Length, result.EntriesChecked);
+    }
 }

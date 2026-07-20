@@ -12,6 +12,66 @@ namespace Meridian.Tests.Execution;
 public sealed class OrderManagementSystemGovernanceTests
 {
     [Fact]
+    public void ProductionControls_WhenSnapshotIsMissing_OpenCircuitBreaker()
+    {
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(
+                Path.Combine(CreateTempRoot(), "controls"),
+                FailClosedOnMissingOrCorruptSnapshot: true),
+            NullLogger<ExecutionOperatorControlService>.Instance);
+
+        var snapshot = controls.GetSnapshot();
+
+        snapshot.CircuitBreaker.IsOpen.Should().BeTrue();
+        snapshot.CircuitBreaker.Reason.Should().Contain("missing");
+    }
+
+    [Fact]
+    public void ProductionControls_WhenSnapshotIsCorrupt_OpenCircuitBreaker()
+    {
+        var root = Path.Combine(CreateTempRoot(), "controls");
+        Directory.CreateDirectory(root);
+        File.WriteAllText(Path.Combine(root, "controls.json"), "{not-json");
+
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(root, FailClosedOnMissingOrCorruptSnapshot: true),
+            NullLogger<ExecutionOperatorControlService>.Instance);
+
+        var snapshot = controls.GetSnapshot();
+
+        snapshot.CircuitBreaker.IsOpen.Should().BeTrue();
+        snapshot.CircuitBreaker.Reason.Should().Contain("corrupt");
+    }
+
+    [Fact]
+    public async Task ConcurrentControlMutations_AreSerializedVersionedAndRestartDurable()
+    {
+        var root = Path.Combine(CreateTempRoot(), "controls");
+        var options = new ExecutionOperatorControlOptions(root);
+        var controls = new ExecutionOperatorControlService(
+            options,
+            NullLogger<ExecutionOperatorControlService>.Instance);
+
+        await Task.WhenAll(Enumerable.Range(0, 20).Select(index =>
+            controls.SetSymbolPositionLimitAsync(
+                $"SYM{index}",
+                index + 1,
+                "risk",
+                "concurrency proof")));
+
+        var snapshot = controls.GetSnapshot();
+        snapshot.Version.Should().Be(20);
+        snapshot.SymbolPositionLimits.Should().HaveCount(20);
+
+        var restarted = new ExecutionOperatorControlService(
+            options,
+            NullLogger<ExecutionOperatorControlService>.Instance);
+        restarted.GetSnapshot().Should().BeEquivalentTo(
+            snapshot,
+            comparison => comparison.Excluding(item => item.AsOf));
+    }
+
+    [Fact]
     public async Task PlaceOrderAsync_WhenCircuitBreakerOpen_RejectsOrderAndPersistsAudit()
     {
         var tempRoot = CreateTempRoot();

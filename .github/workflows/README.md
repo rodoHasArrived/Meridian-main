@@ -25,6 +25,7 @@ scope.
 | `verify-full` | Local-only broad lane (`make verify-full`) used before PR when needed. |
 | `verify-desktop` | `Windows Desktop Build` (`windows-desktop-build.yml`). |
 | `verify-release` | `Publish Smoke` (`publish-smoke.yml`) and `Desktop Installer Packaging` (`desktop-installer-packaging.yml`). |
+| `production-certification` | `Production Certification` (`production-certification.yml`) for PostgreSQL integrations, zero-skip coverage, dependency scans, encrypted recovery drill, and same-commit docs evidence. |
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
@@ -42,9 +43,10 @@ scope.
 | Roadmap Tools (Manual) | `roadmap-tools-manual.yml` | Manual only | Runs individual roadmap tooling operations on demand — fixture-enum validation, roadmap evidence-file validation, normalized render, or phase-scope enforcement — selected through the `script` dispatch input. | Normalized roadmap render output when `render`/`all` is selected |
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks, validates tooling metadata, validates workflow syntax with `actionlint`, and checks AI contract/navigation drift. | None |
 | Provider Validation | `provider-validation.yml` | Weekly or manual | Runs Wave 1 validation and prepares the DK1 review packet plus pending operator sign-off template. Final DK1 exit evidence remains fail-closed until the required owners sign and validate the template. | Provider validation review evidence |
-| Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime, generates `release-evidence.json` with file hashes and validation lane metadata, and uploads the generated standalone output. | Publish output plus release evidence manifest |
+| Publish Smoke | `publish-smoke.yml` | Manual only | Runs `build/scripts/publish/publish.ps1` for a selected Windows runtime. The `web-workstation`/`win-x64` lane starts the exact published artifact through an isolated production-authenticated install, fetches readiness, health, the workstation shell, and a referenced asset, then generates `release-evidence.json`. | Publish output, installed-startup receipt/probes, and release evidence manifest |
 | Desktop Standalone Publish | `desktop-standalone-publish.yml` | Manual only | Publishes a desktop standalone `win-x64` executable and uploads the output. | Desktop standalone output |
-| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual | Runs a WPF release preflight build/test gate, builds per-runtime MSIX packages for `win-x64` and `win-arm64`, signs tag releases through the protected signing environment, generates `release-evidence.json`, and attaches package assets plus evidence manifests to GitHub releases. | Per-runtime `.msix` packages, consumer setup, and release evidence manifests |
+| Desktop Installer Packaging | `desktop-installer-packaging.yml` | Tag pushes (`v*`), manual | Runs a WPF release preflight, builds x64/ARM64 MSIX and consumer setup artifacts, signs tag releases, generates checksums/SPDX SBOM/GitHub attestations, and blocks release publication on native x64 and ARM64 N-1 install/launch/update/repair/rollback/uninstall receipts. The ARM64 certification job requires a self-hosted Windows ARM64 runner. | Signed installers, checksum/SBOM/provenance, release manifests, and clean-machine lifecycle receipts |
+| Production Certification | `production-certification.yml` | Weekly, release tags, manual | Runs deterministic API/auth/PostgreSQL integrations with coverage and zero tolerated skips, fails on current NuGet/npm vulnerabilities, executes an encrypted database plus data-root backup/clean-restore drill with RPO/RTO receipt, and rejects same-commit documentation drift. Live provider tests remain a separate explicit lane. | TRX/Cobertura/skip evidence, dependency reports, database schema inventory, encrypted recovery drill, and docs automation evidence |
 | Windows Desktop Build Support | `desktop-workflow-runner.yml`, `desktop-screenshot-capture.yml`, `desktop-user-manual.yml` | Manual only | Runs selected desktop workflows, captures desktop screenshots, or generates the desktop user manual. These workflows always upload artifacts; `desktop-screenshot-capture.yml` can additionally open a `peter-evans/create-pull-request` PR with the refreshed catalog when dispatched with `commit: true`. They never push commits directly. | Desktop workflow, screenshot, or manual artifacts; optional screenshot refresh PR |
 | Web Screenshot Capture | `web-screenshot-capture.yml` | Manual only | Captures browser workstation screenshots from the configured route list with `npm install --include=optional`, cached Playwright Chromium setup. Each route is captured independently, so a screen that fails to render is reported and skipped without blocking the rest; artifacts (including partial catalogs) always upload, and the `peter-evans/create-pull-request` refresh PR (`automation/web-screenshot-capture`) opens only when every route rendered. Duplicate dispatches share one workflow concurrency lane so stale queued runs are canceled before they can reopen the same refresh PR. It never pushes commits directly. | Web screenshot artifacts; screenshot refresh PR |
 | Provider Smoke Checks | `ibapi-smoke.yml`, `robinhood-options-smoke.yml` | Path-filtered or manual | Runs provider smoke checks that are too specialized for the normal PR fast path. | Smoke evidence artifacts |
@@ -137,6 +139,7 @@ pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project collector -V
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project desktop -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
 pwsh ./build/scripts/publish/generate-sbom.ps1 -BuildDropPath artifacts/publish/publish-smoke/win-x64/web-workstation -PackageName Meridian -PackageVersion 1.0.0-smoke
+python build/scripts/ci/validate-test-results.py --results-dir artifacts/test-results/production-certification --output artifacts/test-results/production-certification/skip-evidence.json
 ```
 
 Desktop installer release packaging:
@@ -144,6 +147,7 @@ Desktop installer release packaging:
 ```powershell
 pwsh ./build/scripts/install/install.ps1 -Mode Desktop -Architecture x64 -SkipInstall -EnableReadyToRun -NoTrustCert -NoNotify
 pwsh ./build/scripts/install/install.ps1 -Mode Desktop -Architecture ARM64 -SkipInstall -EnableReadyToRun -NoTrustCert -NoNotify
+pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 -Mode Drill -ConnectionString $env:MERIDIAN_LEDGER_CONNECTION_STRING -DataRoot $env:MDC_DATA_ROOT -BackupRoot artifacts/recovery/backups -RestoreConnectionString $env:MERIDIAN_RECOVERY_CONNECTION_STRING -RestoreDataRoot artifacts/recovery/restore-data -AllowDatabaseOverwrite
 ```
 
 Workflow hygiene:

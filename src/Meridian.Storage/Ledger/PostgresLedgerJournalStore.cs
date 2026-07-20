@@ -37,7 +37,10 @@ public sealed partial class PostgresLedgerJournalStore :
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
-        entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
+        entry = AccountingPostingCommandValidator.NormalizeAndValidate(
+            entry,
+            _options.RequireGovernedPostingCommand,
+            _options.RequireExpectedVersion);
 
         if (entry.AggregateId == Guid.Empty)
         {
@@ -72,7 +75,10 @@ public sealed partial class PostgresLedgerJournalStore :
         ArgumentNullException.ThrowIfNull(transaction);
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
-        entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
+        entry = AccountingPostingCommandValidator.NormalizeAndValidate(
+            entry,
+            _options.RequireGovernedPostingCommand,
+            _options.RequireExpectedVersion);
 
         if (entry.AggregateId == Guid.Empty)
         {
@@ -99,6 +105,12 @@ public sealed partial class PostgresLedgerJournalStore :
         if (period is null)
         {
             throw new LedgerValidationException($"Ledger period '{entry.PeriodId}' was not found.");
+        }
+
+        if (entry.PostingCommand?.ExpectedVersion is { } expectedVersion && expectedVersion != period.Version)
+        {
+            throw new LedgerValidationException(
+                $"Accounting period version {period.Version} does not match expected version {expectedVersion}.");
         }
 
         LedgerPeriodPostingGuard.Validate(entry, period);

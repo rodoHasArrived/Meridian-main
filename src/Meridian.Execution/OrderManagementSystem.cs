@@ -111,6 +111,15 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
             }
         }
         _options = options ?? new OrderManagementSystemOptions();
+        if (_options.RequireProductionSafetyDependencies)
+        {
+            if (_riskValidator is null)
+                throw new InvalidOperationException("Production OMS requires a pre-trade risk validator.");
+            if (_portfolioState is null)
+                throw new InvalidOperationException("Production OMS requires authoritative portfolio position state.");
+            if (_operatorControls is null)
+                throw new InvalidOperationException("Production OMS requires durable operator controls.");
+        }
         _gatewayExecutionMode = gateway is IExecutionGatewayModeProvider modeProvider
             ? modeProvider.ExecutionMode
             : BrokerageOrderPlacementGate.ResolveExecutionMode(brokerageConfiguration, gateway.GatewayId);

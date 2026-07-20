@@ -4,7 +4,7 @@
 
 This is a source inventory of public DTOs and related contract objects. Database-to-contract links are explicit module associations; they do not assert one-to-one structural equivalence.
 
-- Public contract objects: 2458
+- Public contract objects: 2462
 - Namespaces: 54
 
 ## Classifications
@@ -13,16 +13,16 @@ This is a source inventory of public DTOs and related contract objects. Database
 | --- | ---: |
 | `catalog` | 10 |
 | `class` | 161 |
-| `configuration` | 18 |
+| `configuration` | 19 |
 | `dto` | 1203 |
-| `enum` | 338 |
+| `enum` | 340 |
 | `event` | 5 |
 | `payload` | 60 |
 | `record` | 301 |
 | `record_struct` | 3 |
 | `request` | 144 |
 | `response` | 87 |
-| `result` | 38 |
+| `result` | 39 |
 | `service_contract` | 83 |
 | `struct` | 7 |
 
@@ -36,4 +36,4 @@ This is a source inventory of public DTOs and related contract objects. Database
 - [`banking-contracts`](contracts/banking-contracts.md): 10 objects; mapped schemas: `banking`.
 - [`money-market-contracts`](contracts/money-market-contracts.md): 1 objects; mapped schemas: `money_market`.
 - [`reporting-contracts`](contracts/reporting-contracts.md): 22 objects; mapped schemas: `reporting`.
-- [`identity-access-contracts`](contracts/identity-access-contracts.md): 47 objects; mapped schemas: `identity_access`.
+- [`identity-access-contracts`](contracts/identity-access-contracts.md): 50 objects; mapped schemas: `identity_access`.

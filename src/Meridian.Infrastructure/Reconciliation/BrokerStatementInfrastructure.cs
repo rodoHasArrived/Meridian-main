@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Globalization;
 using Meridian.Domain.Reconciliation;
 using Meridian.Storage.Archival;
 
@@ -11,6 +12,7 @@ public interface ICanonicalStatementStore
     Task<bool> ImportExistsByChecksumAsync(string checksum, CancellationToken ct = default);
     Task<bool> ImportExistsByDuplicateKeyAsync(string duplicateKey, CancellationToken ct = default);
     Task SaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default);
+    Task<bool> TrySaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default);
     Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default);
 }
 
@@ -69,11 +71,41 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
 
     public async Task SaveImportAsync(CanonicalStatementImport import, IReadOnlyList<CanonicalStatementRow> rows, CancellationToken ct = default)
     {
+        if (!await TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException("Statement already imported (atomic duplicate-key claim already exists).");
+        }
+    }
+
+    public async Task<bool> TrySaveImportAsync(
+        CanonicalStatementImport import,
+        IReadOnlyList<CanonicalStatementRow> rows,
+        CancellationToken ct = default)
+    {
         var payload = JsonSerializer.Serialize(new { import, rows });
-        // Atomic write: a crash mid-import must not leave a truncated statement file that the
-        // duplicate-key scan would then fail to parse.
         var fileName = ReconciliationRecordFileName.For(import.ImportId);
-        await AtomicFileWriter.WriteAsync(Path.Combine(_folder, $"{fileName}.json"), payload, ct).ConfigureAwait(false);
+        var targetPath = Path.Combine(_folder, $"{fileName}.json");
+        Directory.CreateDirectory(_folder);
+        var temporaryPath = Path.Combine(_folder, $".{fileName}.{Guid.NewGuid():N}.tmp");
+        try
+        {
+            await File.WriteAllTextAsync(temporaryPath, payload, Encoding.UTF8, ct).ConfigureAwait(false);
+            // Same-volume rename with overwrite disabled is the atomic uniqueness boundary across
+            // concurrent processes. Exactly one importer can claim this duplicate key.
+            File.Move(temporaryPath, targetPath, overwrite: false);
+            return true;
+        }
+        catch (IOException) when (File.Exists(targetPath))
+        {
+            return false;
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
+        }
     }
 
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default)
@@ -94,6 +126,14 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
 
 public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : IBrokerStatementService
 {
+    private const long MaximumStatementBytes = 32L * 1024 * 1024;
+    private const int MaximumRows = 100_000;
+    private const int MaximumLineCharacters = 64 * 1024;
+    private static readonly string[] ExpectedColumns =
+        ["account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate"];
+    private static readonly string[] OptionalCanonicalColumns =
+        ["settlementDate", "currency", "feesCommission", "externalTransactionId"];
+
     public async Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
         var errors = new List<string>();
@@ -104,20 +144,24 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         if (errors.Count > 0)
             return new BrokerStatementValidationResult(false, errors, 0);
 
-        var lines = await File.ReadAllLinesAsync(request.SourcePath, ct).ConfigureAwait(false);
-        if (lines.Length == 0 || !lines[0].Contains("account,symbol,quantity,price,cashAmount,activityType,tradeDate", StringComparison.OrdinalIgnoreCase))
+        try
         {
-            errors.Add("Invalid header for samplebroker schema.");
+            var rows = await ParseFileAsync(request.SourcePath, request, importId: "validation", ct).ConfigureAwait(false);
+            return new BrokerStatementValidationResult(true, errors, rows.Count);
         }
-
-        return new BrokerStatementValidationResult(errors.Count == 0, errors, Math.Max(0, lines.Length - 1));
+        catch (InvalidDataException ex)
+        {
+            errors.Add(ex.Message);
+            return new BrokerStatementValidationResult(false, errors, 0);
+        }
     }
 
     public async Task<BrokerStatementImportResult> ImportAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
-        var fileBytes = await File.ReadAllBytesAsync(request.SourcePath, ct).ConfigureAwait(false);
-        var content = Encoding.UTF8.GetString(fileBytes);
-        var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash) ? HashBytes(fileBytes) : request.SourceFileHash.Trim().ToUpperInvariant();
+        EnsureBoundedFile(request.SourcePath);
+        var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
+            ? await HashFileAsync(request.SourcePath, ct).ConfigureAwait(false)
+            : request.SourceFileHash.Trim().ToUpperInvariant();
         var duplicateKey = StatementDuplicateKey.Create(
             request.FundAccountId,
             request.StatementPeriodStart,
@@ -129,7 +173,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
 
         var importId = duplicateKey;
         var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
-        var rows = ParseRows(content, normalizedRequest, importId).ToList();
+        var rows = await ParseFileAsync(request.SourcePath, normalizedRequest, importId, ct).ConfigureAwait(false);
         var import = new CanonicalStatementImport(
             importId,
             normalizedRequest.Broker,
@@ -152,31 +196,163 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
             SourceFileHash = sourceFileHash,
             DuplicateKey = duplicateKey
         };
-        await store.SaveImportAsync(import, rows, ct).ConfigureAwait(false);
+        if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException(
+                "Statement already imported (fund account, statement period, and source file hash match).");
+        }
+
         return new BrokerStatementImportResult(import, rows);
     }
 
-    private static IEnumerable<CanonicalStatementRow> ParseRows(string content, BrokerStatementImportRequest request, string importId)
+    private static async Task<IReadOnlyList<CanonicalStatementRow>> ParseFileAsync(
+        string path,
+        BrokerStatementImportRequest request,
+        string importId,
+        CancellationToken ct)
     {
-        var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Skip(1).ToArray();
-        for (var i = 0; i < lines.Length; i++)
+        EnsureBoundedFile(path);
+        var rows = new List<CanonicalStatementRow>();
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 64 * 1024,
+            options: FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var reader = new StreamReader(stream, new UTF8Encoding(false, true), detectEncodingFromByteOrderMarks: true);
+        var headerLine = await reader.ReadLineAsync(ct).ConfigureAwait(false)
+            ?? throw new InvalidDataException("Statement CSV is empty.");
+        var header = ParseCsvLine(headerLine, rowNumber: 1);
+        var optionalColumnCount = header.Count - ExpectedColumns.Length;
+        if (optionalColumnCount < 0 ||
+            optionalColumnCount > OptionalCanonicalColumns.Length ||
+            !header.Take(ExpectedColumns.Length).SequenceEqual(ExpectedColumns, StringComparer.OrdinalIgnoreCase) ||
+            !header.Skip(ExpectedColumns.Length).SequenceEqual(
+                OptionalCanonicalColumns.Take(optionalColumnCount),
+                StringComparer.OrdinalIgnoreCase))
         {
-            var p = lines[i].Split(',');
-            yield return new CanonicalStatementRow(
-                importId,
-                i + 2,
-                p[0], p[1], decimal.Parse(p[2]), decimal.Parse(p[3]), decimal.Parse(p[4]), p[5], DateOnly.Parse(p[6]), Hash(lines[i]));
+            throw new InvalidDataException(
+                $"Invalid statement CSV header. Expected the canonical prefix {string.Join(',', ExpectedColumns)} " +
+                $"followed only by the optional columns {string.Join(',', OptionalCanonicalColumns)} in order.");
         }
+
+        var sourceRowNumber = 1;
+        while (await reader.ReadLineAsync(ct).ConfigureAwait(false) is { } line)
+        {
+            sourceRowNumber++;
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            if (rows.Count >= MaximumRows)
+            {
+                throw new InvalidDataException($"Statement CSV exceeds the {MaximumRows}-row limit.");
+            }
+
+            var fields = ParseCsvLine(line, sourceRowNumber);
+            if (fields.Count != header.Count)
+            {
+                throw new InvalidDataException(
+                    $"Statement CSV row {sourceRowNumber} has {fields.Count} columns; expected {header.Count} from the validated header.");
+            }
+
+            if (!decimal.TryParse(fields[2], NumberStyles.Number, CultureInfo.InvariantCulture, out var quantity) ||
+                !decimal.TryParse(fields[3], NumberStyles.Number, CultureInfo.InvariantCulture, out var price) ||
+                !decimal.TryParse(fields[4], NumberStyles.Number, CultureInfo.InvariantCulture, out var cashAmount) ||
+                !DateOnly.TryParse(fields[6], CultureInfo.InvariantCulture, DateTimeStyles.None, out var tradeDate))
+            {
+                throw new InvalidDataException($"Statement CSV row {sourceRowNumber} contains an invalid numeric or date value.");
+            }
+
+            rows.Add(new CanonicalStatementRow(
+                importId,
+                sourceRowNumber,
+                fields[0],
+                fields[1],
+                quantity,
+                price,
+                cashAmount,
+                fields[5],
+                tradeDate,
+                Hash(line)));
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<string> ParseCsvLine(string line, int rowNumber)
+    {
+        if (line.Length > MaximumLineCharacters || line.Contains("\0", StringComparison.Ordinal))
+        {
+            throw new InvalidDataException($"Statement CSV row {rowNumber} exceeds the line limit or contains a null byte.");
+        }
+
+        var fields = new List<string>();
+        var field = new StringBuilder();
+        var quoted = false;
+        for (var index = 0; index < line.Length; index++)
+        {
+            var current = line[index];
+            if (current == '"')
+            {
+                if (quoted && index + 1 < line.Length && line[index + 1] == '"')
+                {
+                    field.Append('"');
+                    index++;
+                }
+                else
+                {
+                    quoted = !quoted;
+                }
+            }
+            else if (current == ',' && !quoted)
+            {
+                fields.Add(field.ToString().Trim());
+                field.Clear();
+            }
+            else
+            {
+                field.Append(current);
+            }
+        }
+
+        if (quoted)
+        {
+            throw new InvalidDataException($"Statement CSV row {rowNumber} contains an unterminated quoted field.");
+        }
+
+        fields.Add(field.ToString().Trim());
+        return fields;
+    }
+
+    private static void EnsureBoundedFile(string path)
+    {
+        var length = new FileInfo(path).Length;
+        if (length > MaximumStatementBytes)
+        {
+            throw new InvalidDataException($"Statement file exceeds the {MaximumStatementBytes}-byte limit.");
+        }
+    }
+
+    private static async Task<string> HashFileAsync(string path, CancellationToken ct)
+    {
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 64 * 1024,
+            options: FileOptions.Asynchronous | FileOptions.SequentialScan);
+        var hash = await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false);
+        return Convert.ToHexString(hash);
     }
 
     private static string Hash(string input)
         => HashBytes(Encoding.UTF8.GetBytes(input));
 
-    private static string HashBytes(byte[] input)
-    {
-        var bytes = SHA256.HashData(input);
-        return Convert.ToHexString(bytes);
-    }
+    private static string HashBytes(byte[] input) => Convert.ToHexString(SHA256.HashData(input));
 
     private static bool IsSupportedStatementSource(string source) =>
         string.Equals(source, "samplebroker", StringComparison.OrdinalIgnoreCase) ||

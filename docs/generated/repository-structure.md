@@ -892,6 +892,7 @@ Meridian-main
 │   │   ├── ibapi-smoke.yml
 │   │   ├── maintenance.yml
 │   │   ├── meridian-ci.yml
+│   │   ├── production-certification.yml
 │   │   ├── provider-validation.yml
 │   │   ├── publish-smoke.yml
 │   │   ├── README.md
@@ -1095,7 +1096,8 @@ Meridian-main
 │       │   ├── run-dotnet-ci-tests.py
 │       │   ├── run-script-tests.py
 │       │   ├── script-test-quarantine.json
-│       │   └── summarize-ci-artifacts.py
+│       │   ├── summarize-ci-artifacts.py
+│       │   └── validate-test-results.py
 │       ├── docs
 │       │   ├── tests
 │       │   │   ├── test_check_ai_handoff.py
@@ -1175,6 +1177,7 @@ Meridian-main
 │       │   └── pre-commit
 │       ├── install
 │       │   ├── build-consumer-setup.ps1
+│       │   ├── certify-desktop-install-lifecycle.ps1
 │       │   ├── install-web-workstation.ps1
 │       │   ├── install.ps1
 │       │   ├── install.sh
@@ -1188,6 +1191,8 @@ Meridian-main
 │       │   ├── measure-size.ps1
 │       │   ├── publish.ps1
 │       │   └── publish.sh
+│       ├── recovery
+│       │   └── invoke-production-recovery.ps1
 │       ├── run
 │       │   ├── start-collector.ps1
 │       │   ├── start-collector.sh
@@ -1804,6 +1809,7 @@ Meridian-main
 │   │   ├── provider-onboarding-interactive-brokers.md
 │   │   ├── README.md
 │   │   ├── reconciliation-operations.md
+│   │   ├── statement-to-report-operations.md
 │   │   └── verified-outcome-recovery.md
 │   ├── plans
 │   │   ├── codebase-audit-cleanup-roadmap.md
@@ -3570,6 +3576,7 @@ Meridian-main
 │   │   │   ├── BacktestContext.cs
 │   │   │   ├── BacktestEngine.cs
 │   │   │   ├── ContingentOrderManager.cs
+│   │   │   ├── DelistingMonitor.cs
 │   │   │   ├── MultiSymbolMergeEnumerator.cs
 │   │   │   ├── StageTimer.cs
 │   │   │   └── UniverseDiscovery.cs
@@ -3589,6 +3596,9 @@ Meridian-main
 │   │   │   ├── ICommissionModel.cs
 │   │   │   ├── LinkedListExtensions.cs
 │   │   │   └── SimulatedPortfolio.cs
+│   │   ├── WalkForward
+│   │   │   ├── WalkForwardContracts.cs
+│   │   │   └── WalkForwardService.cs
 │   │   ├── BacktestPreflightService.cs
 │   │   ├── BacktestStudioContracts.cs
 │   │   ├── BacktestStudioRunOrchestrator.cs
@@ -3622,9 +3632,11 @@ Meridian-main
 │   │   ├── BacktestStage.cs
 │   │   ├── BacktestStageTelemetryDto.cs
 │   │   ├── BacktestStrategyBase.cs
+│   │   ├── BiasDisclosure.cs
 │   │   ├── CanonicalBacktestResultNormalizer.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
+│   │   ├── ExecutionRealism.cs
 │   │   ├── FillEvent.cs
 │   │   ├── FinancialAccount.cs
 │   │   ├── FinancialAccountSnapshot.cs
@@ -4194,6 +4206,7 @@ Meridian-main
 │   │   │   ├── BrokerageGatewayAdapter.cs
 │   │   │   ├── LiveMarketDataCache.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGateway.cs
+│   │   │   ├── OmsGovernedExecutionOrderGateway.cs
 │   │   │   ├── PaperTradingGateway.cs
 │   │   │   ├── PaperTradingGatewayOptions.cs
 │   │   │   └── PaperTradingGatewaySupport.cs
@@ -5672,6 +5685,7 @@ Meridian-main
 │   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── activity-center.tsx
+│   │   │   │   │   │   ├── bias-disclosure-panel.tsx
 │   │   │   │   │   │   ├── command-palette.actions.test.ts
 │   │   │   │   │   │   ├── command-palette.actions.ts
 │   │   │   │   │   │   ├── command-palette.entity-search.test.ts
@@ -6302,7 +6316,8 @@ Meridian-main
 │   │   │   │   │   └── workspace-workbench-shell.css
 │   │   │   │   ├── test
 │   │   │   │   │   ├── render.tsx
-│   │   │   │   │   └── setup.ts
+│   │   │   │   │   ├── setup.ts
+│   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
 │   │   │   │   │   ├── canonical-symbol.ts
 │   │   │   │   │   ├── covered-call.types.ts
@@ -6634,6 +6649,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
 │   │   │   ├── WorkstationEndpoints.Session.cs
 │   │   │   ├── WorkstationEndpoints.StatementConnectors.cs
+│   │   │   ├── WorkstationEndpoints.StatementToReport.cs
 │   │   │   ├── WorkstationEndpoints.Strategy.cs
 │   │   │   ├── WorkstationEndpoints.StrategyBriefing.cs
 │   │   │   ├── WorkstationEndpoints.Stream.cs
@@ -6653,7 +6669,8 @@ Meridian-main
 │   │   │   ├── EvidenceWorkflowServiceCollectionExtensions.cs
 │   │   │   ├── FileEvidenceArtifactStore.cs
 │   │   │   ├── FileEvidenceArtifactStore.DocumentReview.cs
-│   │   │   └── StatementImportEvidenceBridge.cs
+│   │   │   ├── StatementImportEvidenceBridge.cs
+│   │   │   └── StatementToReportWorkflowService.cs
 │   │   ├── Extensibility
 │   │   │   ├── ExtensibilityCatalogService.cs
 │   │   │   ├── ExtensibilityConfigurationService.cs
@@ -6771,6 +6788,7 @@ Meridian-main
 │   │   │   ├── ReportingDeliveryDispatcher.cs
 │   │   │   ├── ReportingDeliveryReadModelSecurity.cs
 │   │   │   ├── ReportingGovernanceApiProjector.cs
+│   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactAccess.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.ArtifactValidation.cs
 │   │   │   ├── ReportingGovernanceCoordinatorService.cs
 │   │   │   ├── ReportingGovernanceReleaseAuthorizationVerifier.cs
@@ -7074,6 +7092,7 @@ Meridian-main
 │   │   │   ├── DataWorkspacePresentationBuilder.cs
 │   │   │   ├── DemoTourService.cs
 │   │   │   ├── DesktopAuthenticationSession.cs
+│   │   │   ├── DesktopConfigurationRecoveryService.cs
 │   │   │   ├── DesktopLaunchArguments.cs
 │   │   │   ├── DesktopLaunchTicketClient.cs
 │   │   │   ├── DropImportService.cs
@@ -7644,9 +7663,11 @@ Meridian-main
 │   │   ├── BacktestMetricsEngineTests.cs
 │   │   ├── BacktestPreflightServiceTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
+│   │   ├── BacktestTrustworthinessTests.cs
 │   │   ├── BatchBacktestServiceTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CanonicalBacktestResultNormalizerTests.cs
+│   │   ├── ConservativeFillModelTests.cs
 │   │   ├── CorporateActionAdjustmentPropertyTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
 │   │   ├── CorporateActionGoldenAdjustmentTests.cs
@@ -7666,6 +7687,7 @@ Meridian-main
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
 │   │   ├── TcaReporterTests.cs
+│   │   ├── WalkForwardServiceTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
 │   ├── Meridian.DesignModules.Tests
@@ -8724,6 +8746,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
 │   │   │   ├── StatementImportEvidenceBridgeTests.cs
+│   │   │   ├── StatementToReportWorkflowServiceTests.cs
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── StrategyLifecycleEndpointsTests.cs
 │   │   │   ├── SupportedPostureStartupIntegrationTests.cs
@@ -8889,6 +8912,7 @@ Meridian-main
 │   │   │   ├── CredentialServiceTests.cs
 │   │   │   ├── DataWorkspacePresentationBuilderTests.cs
 │   │   │   ├── DesktopAuthenticationSessionTests.cs
+│   │   │   ├── DesktopConfigurationRecoveryServiceTests.cs
 │   │   │   ├── ExportPresetServiceTests.cs
 │   │   │   ├── FirstRunServiceTests.cs
 │   │   │   ├── FundLedgerReadServiceTests.cs
@@ -9144,6 +9168,7 @@ Meridian-main
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_screenshot_captures.py
 │   │   ├── test_validate_source_readmes.py
+│   │   ├── test_validate_test_results.py
 │   │   ├── test_validate_tooling_metadata.py
 │   │   ├── test_validate_workstation_cockpit_acceptance_matrix.py
 │   │   ├── test_web_workstation_installer.py

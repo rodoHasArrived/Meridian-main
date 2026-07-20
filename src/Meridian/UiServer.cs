@@ -10,6 +10,7 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Platform.Tracing;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Lifecycle;
@@ -168,6 +169,7 @@ public sealed class UiServer : IAsyncDisposable
         }
 
         builder.Services.AddSingleton(new StrategyDesignStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "designer")));
+        builder.Services.AddSingleton(new LoginSessionStoreOptions(Path.Combine(resolvedDataRoot, "identity", "sessions.json")));
         builder.Services.AddWorkstationSharedServices();
         builder.Services.AddOmsIntegrationApiHandlers();
 
@@ -218,7 +220,10 @@ public sealed class UiServer : IAsyncDisposable
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
         builder.Services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(resolvedDataRoot, "execution", "audit")));
         builder.Services.AddSingleton<ExecutionAuditTrailService>();
-        builder.Services.AddSingleton(new ExecutionOperatorControlOptions(Path.Combine(resolvedDataRoot, "execution", "controls")));
+        builder.Services.AddSingleton(new ExecutionOperatorControlOptions(
+            Path.Combine(resolvedDataRoot, "execution", "controls"),
+            FailClosedOnMissingOrCorruptSnapshot:
+                ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)));
         builder.Services.AddSingleton<ExecutionOperatorControlService>();
         // Durable paper-session storage root is operator-tunable via
         // "PaperTrading:Sessions:BaseDirectory"; unset keeps the data-root default.
@@ -258,10 +263,17 @@ public sealed class UiServer : IAsyncDisposable
             builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                 .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
             ?? new Meridian.Execution.Adapters.PaperTradingGatewayOptions());
-        builder.Services.AddSingleton(
-            builder.Configuration.GetSection(OrderManagementSystemOptions.SectionKey)
-                .Get<OrderManagementSystemOptions>()
-            ?? new OrderManagementSystemOptions());
+        var configuredOrderManagement = builder.Configuration
+            .GetSection(OrderManagementSystemOptions.SectionKey)
+            .Get<OrderManagementSystemOptions>() ?? new OrderManagementSystemOptions();
+        builder.Services.AddSingleton(new OrderManagementSystemOptions
+        {
+            MaxRetainedOrders = configuredOrderManagement.MaxRetainedOrders,
+            ExecutionChannelCapacity = configuredOrderManagement.ExecutionChannelCapacity,
+            CancelAllMaxConcurrency = configuredOrderManagement.CancelAllMaxConcurrency,
+            RequireProductionSafetyDependencies =
+                ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)
+        });
         builder.Services.Configure<Meridian.Execution.Margin.RegTMarginOptions>(
             builder.Configuration.GetSection(Meridian.Execution.Margin.RegTMarginOptions.SectionKey));
         builder.Services.AddHostedBrokerageGateways();
@@ -274,7 +286,6 @@ public sealed class UiServer : IAsyncDisposable
                     options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
                     liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
         }
-
         builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
         builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
         // Production IPositionTracker projection over the live portfolio state. Gives the
@@ -286,7 +297,9 @@ public sealed class UiServer : IAsyncDisposable
         {
             var gateway = sp.GetRequiredService<IExecutionGateway>();
             var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
-            var risk = sp.GetService<IRiskValidator>();
+            // Order routing is fail-closed: an OMS without the mandatory pre-trade risk gate is
+            // not a valid host composition in any supported production posture.
+            var risk = sp.GetRequiredService<IRiskValidator>();
             var portfolio = sp.GetRequiredService<PaperTradingPortfolio>();
             return new OrderManagementSystem(
                 gateway,
@@ -323,8 +336,12 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddLiveTradingEngine(builder.Configuration);
 
         // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
-        // engine compiles and executes arbitrary C# in-process; enable only on a trusted host.
+        // engine compiles and executes arbitrary C# in-process. Production/customer distributions
+        // fail closed until execution is moved behind a separately isolated worker boundary.
         var quantLabEnabled = builder.Configuration.GetValue<bool>("QuantLab:Enabled");
+        ProductionServiceRegistrationPolicy.EnsureInProcessQuantLabIsAllowed(
+            builder.Services,
+            quantLabEnabled);
         if (quantLabEnabled)
         {
             builder.Services.AddMeridianQuantScript();

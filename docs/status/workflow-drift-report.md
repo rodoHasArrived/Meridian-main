@@ -71,5 +71,5 @@
 - `build/scripts/ci/run-dotnet-ci-tests.py`
 - `build/scripts/ci/run-script-tests.py`
 - `build/scripts/ci/summarize-ci-artifacts.py`
+- `build/scripts/ci/validate-test-results.py`
 - `build/scripts/docs/add-todos.py`
-- `build/scripts/docs/ai-docs-maintenance.py`

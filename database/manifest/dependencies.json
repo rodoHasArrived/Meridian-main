@@ -9244,18 +9244,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto"
     },
     {
@@ -13186,6 +13174,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementToReportArtifactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StatementValidationIssueDto"
     },
     {
@@ -16450,7 +16456,25 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:identity-access-contracts",
+      "target": "contract:Meridian.Identity.LoginAttemptResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:identity-access-contracts",
+      "target": "contract:Meridian.Identity.LoginAttemptStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:identity-access-contracts",
       "target": "contract:Meridian.Identity.LoginSessionService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:identity-access-contracts",
+      "target": "contract:Meridian.Identity.LoginSessionStoreOptions"
     },
     {
       "kind": "contract-set-member",
@@ -28509,12 +28533,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto",
-      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.BrokerageAccountKindDto"
     },
@@ -34221,6 +34239,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.EvidenceVaultIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementToReportArtifactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementValidationIssueDto",
       "target": "contract:Meridian.Contracts.Workstation.StatementValidationSeverity"
     },
@@ -34444,12 +34480,6 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse",
-      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse",
       "target": "contract:Meridian.Contracts.Workstation.StrategyDesignCompiledScript"
     },
     {
@@ -34625,12 +34655,6 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyRunCrossModeTransitionMetadata",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunMode"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Workstation.StrategyRunDetail",
-      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
     },
     {
       "kind": "contract-reference",
@@ -35854,12 +35878,6 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationStrategyRunCard",
-      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Workstation.WorkstationStrategyRunCard",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationRunDrillInLinks"
     },
     {
@@ -36077,6 +36095,12 @@
       "label": "",
       "source": "contract:Meridian.Identity.FundStructureAccessScopeLineageProvider",
       "target": "contract:Meridian.Identity.IAccessScopeLineageProvider"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Identity.LoginAttemptResult",
+      "target": "contract:Meridian.Identity.LoginAttemptStatus"
     },
     {
       "kind": "contract-reference",
@@ -39748,7 +39772,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "296650eb0496f6c227d46aaf8cdb1ab864ba76c2e21567dd5b9b8da313e65617",
+  "fingerprint": "56838f2254907481f19db7c2ed388252a295706b59499b9214780f1cbe0d4ab1",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -49043,18 +49067,6 @@
     },
     {
       "classification": "dto",
-      "id": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Workstation.BiasDisclosureDto"
-    },
-    {
-      "classification": "dto",
-      "id": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Workstation.BiasDisclosureItemDto"
-    },
-    {
-      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto"
@@ -52985,6 +52997,24 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementToReportArtifactDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementToReportArtifactDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementToReportWorkflowDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.StatementValidationIssueDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StatementValidationIssueDto"
@@ -54502,10 +54532,28 @@
       "label": "Meridian.Identity.IUserAccountStore"
     },
     {
+      "classification": "result",
+      "id": "contract:Meridian.Identity.LoginAttemptResult",
+      "kind": "contract-type",
+      "label": "Meridian.Identity.LoginAttemptResult"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Identity.LoginAttemptStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Identity.LoginAttemptStatus"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Identity.LoginSessionService",
       "kind": "contract-type",
       "label": "Meridian.Identity.LoginSessionService"
+    },
+    {
+      "classification": "configuration",
+      "id": "contract:Meridian.Identity.LoginSessionStoreOptions",
+      "kind": "contract-type",
+      "label": "Meridian.Identity.LoginSessionStoreOptions"
     },
     {
       "classification": "class",
@@ -57572,10 +57620,10 @@
   ],
   "summary": {
     "contract_references": 2796,
-    "contract_set_memberships": 3223,
-    "edges": 6609,
+    "contract_set_memberships": 3227,
+    "edges": 6613,
     "foreign_keys": 77,
     "logical_references": 6,
-    "nodes": 3042
+    "nodes": 3046
   }
 }

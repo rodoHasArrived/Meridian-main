@@ -27,7 +27,8 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
             Enabled = true,
             AggregateId = aggregateId,
             PeriodId = periodId,
-            LedgerBookId = ledgerBookId
+            LedgerBookId = ledgerBookId,
+            ExpectedPeriodVersion = 1
         };
 
         var context = options.BuildContext();
@@ -98,7 +99,8 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
             Enabled = true,
             AggregateId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
             PeriodId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-            LedgerBookId = Guid.Parse("33333333-3333-3333-3333-333333333333")
+            LedgerBookId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+            ExpectedPeriodVersion = 1
         }.BuildContext();
         var retainedFill = new TradeExecutedEvent(
             Guid.NewGuid(),

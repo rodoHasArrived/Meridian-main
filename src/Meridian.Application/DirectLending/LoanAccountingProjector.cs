@@ -243,6 +243,7 @@ public sealed class LoanAccountingProjector
                     SourceEventId: sourceEventId,
                     CorrelationId: metadata.CorrelationId,
                     CausationId: postingCommandId,
+                    ExpectedVersion: period.Version,
                     SourceEventType: eventType,
                     ApprovalState: adjustmentApproval?.Status == LedgerAdjustmentApprovalStatusDto.Approved
                         ? AccountingPostingApprovalStateDto.Approved

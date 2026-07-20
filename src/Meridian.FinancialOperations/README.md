@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.FinancialOperations
@@ -61,6 +61,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that persists canonical imports, linked breaks, and case materialization for shared UI consumers.
+- `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
+  boundary used by the persisted statement-to-report coordinator; a committed import is checkpointed
+  before Evidence Vault linkage or report publication so recovery cannot silently repeat the import.
 - `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection. Position rows match through the shared `StatementMatchingEngine` against internal portfolio positions; rows without internal evidence surface as break cases instead of auto-matching.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.

@@ -376,6 +376,36 @@ public sealed class GovernedLedgerPostingTargetTests
             .Should().BeFalse("idempotency identity is aggregate scoped");
     }
 
+    [Fact]
+    public void ProductionAppendBoundary_RejectsWriteWithoutTypedPostingCommand()
+    {
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(
+            BuildWrite(),
+            requirePostingCommand: true,
+            requireExpectedVersion: true);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*typed accounting posting command*");
+    }
+
+    [Fact]
+    public void ProductionAppendBoundary_RejectsTypedCommandWithoutExpectedVersion()
+    {
+        var write = BuildCommandWrite();
+        write = write with
+        {
+            PostingCommand = write.PostingCommand! with { ExpectedVersion = null }
+        };
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(
+            write,
+            requirePostingCommand: true,
+            requireExpectedVersion: true);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*expected version is required*");
+    }
+
     private static Mock<ILedgerJournalStore> BuildStore(
         List<LedgerJournalEntryRecord> retained,
         Action<LedgerJournalEntryWrite> append)

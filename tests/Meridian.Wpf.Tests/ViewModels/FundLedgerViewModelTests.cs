@@ -2035,7 +2035,8 @@ public sealed class FundLedgerViewModelTests
                 SecurityId: securityId,
                 LedgerBook: "fund-close"),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:wpf-test-source-hash");
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:wpf-test-source-hash",
+            ExpectedLedgerVersion: 1);
     }
 
     private sealed class RecordingLedgerJournalStore : ILedgerJournalStore

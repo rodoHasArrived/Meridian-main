@@ -118,6 +118,31 @@ public static class ProductionServiceRegistrationPolicy
         => ResolveDeclaredPosture(services) == MeridianDeploymentPosture.ProductionApi
            || IsProductionEnvironment();
 
+    /// <summary>
+    /// Rejects the current in-process Quant Lab compiler in every supported production or
+    /// customer-distribution posture. Quant Lab compiles arbitrary C# and must remain unavailable
+    /// until execution is moved behind a separately isolated worker boundary.
+    /// </summary>
+    public static void EnsureInProcessQuantLabIsAllowed(IServiceCollection services, bool enabled)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (!enabled)
+        {
+            return;
+        }
+
+        if (IsProductionComposition(services) ||
+            IsTruthy(Environment.GetEnvironmentVariable("MDC_PACKAGED_BUILD")) ||
+            IsTruthy(Environment.GetEnvironmentVariable("MERIDIAN_CUSTOMER_BUILD")))
+        {
+            throw new InvalidOperationException(
+                "QuantLab:Enabled cannot be used in a production, packaged, or customer build. " +
+                "In-process arbitrary-code execution is outside the ADR-019 supported envelope " +
+                "until Quant Lab runs in an isolated worker.");
+        }
+    }
+
     internal static MeridianDeploymentPosture ResolveDeclaredPosture(IServiceCollection services)
     {
         for (var i = services.Count - 1; i >= 0; i--)
@@ -147,4 +172,10 @@ public static class ProductionServiceRegistrationPolicy
                || string.Equals(mode, "Live", StringComparison.OrdinalIgnoreCase)
                || string.Equals(apiDeploymentMode, nameof(MeridianDeploymentPosture.ProductionApi), StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool IsTruthy(string? value)
+        => value is not null &&
+           (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("yes", StringComparison.OrdinalIgnoreCase));
 }

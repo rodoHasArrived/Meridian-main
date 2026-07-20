@@ -40,6 +40,12 @@ class CheckApiClientCallersTests(unittest.TestCase):
                 "return SendAsync<T>(method, url, () => _httpClient.GetAsync<T>(url), ct);\n",
                 encoding="utf-8",
             )
+            package_dir = root / "src" / "Dashboard" / "node_modules" / "meridian-tools" / "src"
+            package_dir.mkdir(parents=True)
+            (package_dir / "RecursiveCaller.cs").write_text(
+                "var recursive = await api.GetAsync<Foo>(url);\n",
+                encoding="utf-8",
+            )
 
             counts = MODULE.count_call_sites(root)
 
