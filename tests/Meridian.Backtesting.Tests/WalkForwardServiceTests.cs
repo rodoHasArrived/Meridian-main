@@ -66,6 +66,35 @@ public sealed class WalkForwardServiceTests
         windows.Should().BeEmpty("five days of data leave no room for an out-of-sample day after a 5-day training window");
     }
 
+    [Fact]
+    public void BuildWindows_StepShorterThanTestWindow_ThrowsToPreventOverlappingOosWindows()
+    {
+        var act = () => WalkForwardService.BuildWindows(
+            new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 20), trainingDays: 5, testDays: 5, stepDays: 3);
+
+        act.Should().Throw<ArgumentException>().WithMessage("*overlap*",
+            "overlapping test windows would double-count days in the stitched OOS metrics");
+    }
+
+    [Fact]
+    public void BuildWindows_NegativeStep_Throws()
+    {
+        var act = () => WalkForwardService.BuildWindows(
+            new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 20), trainingDays: 5, testDays: 5, stepDays: -1);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void BuildWindows_StepLargerThanTestWindow_LeavesGapsButIsAccepted()
+    {
+        var windows = WalkForwardService.BuildWindows(
+            new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 31), trainingDays: 5, testDays: 3, stepDays: 10);
+
+        windows.Should().NotBeEmpty();
+        windows.Should().OnlyContain(w => w.TestTo.DayNumber - w.TestFrom.DayNumber + 1 <= 3);
+    }
+
     // ────────────────────────────────────────────────────────────────────────
     // End-to-end selection + OOS aggregation (stubbed runs)
     // ────────────────────────────────────────────────────────────────────────

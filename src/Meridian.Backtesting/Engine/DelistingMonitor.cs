@@ -41,7 +41,7 @@ internal sealed class DelistingMonitor(DelistingPolicy policy, decimal haircutPe
         if (policy != DelistingPolicy.LiquidateAtLastPrice)
             return;
 
-        List<string>? liquidatedSymbols = null;
+        HashSet<string>? liquidatedSymbols = null;
         var dayEndTimestamp = new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
 
         foreach (var (accountId, account) in portfolio.GetAccountSnapshots())
@@ -88,7 +88,7 @@ internal sealed class DelistingMonitor(DelistingPolicy policy, decimal haircutPe
 
                 allFills.Add(fill);
                 _liquidations.Add(new DelistingLiquidation(symbol, date, lastDataDate, position.Quantity, price, _haircutPercent));
-                (liquidatedSymbols ??= []).Add(symbol);
+                (liquidatedSymbols ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase)).Add(symbol);
 
                 logger.LogWarning(
                     "Symbol {Symbol} produced no data after {LastDataDate}; force-liquidated {Quantity} shares at {Price} on {Date} (haircut {Haircut:P0}).",
@@ -98,7 +98,7 @@ internal sealed class DelistingMonitor(DelistingPolicy policy, decimal haircutPe
 
         if (liquidatedSymbols is { Count: > 0 })
         {
-            pendingOrders.RemoveAll(order => liquidatedSymbols.Contains(order.Symbol, StringComparer.OrdinalIgnoreCase));
+            pendingOrders.RemoveAll(order => liquidatedSymbols.Contains(order.Symbol));
         }
     }
 }

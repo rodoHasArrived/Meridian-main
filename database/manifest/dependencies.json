@@ -7192,6 +7192,138 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.IOperationalCaseHistoryStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationArtifactReference"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationEvidenceReference"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationIssue"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationIssueSeverity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationPostcondition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationPostconditionState"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationRecoveryAction"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationTerminalState"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseApproval"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseAssignment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryHashing"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryQuery"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseRetry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseStateTransition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.OperationsContractsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcomeValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Options.OptionChainSnapshotDto"
     },
     {
@@ -7571,6 +7703,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Reporting.ReportingGovernanceRestatementRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto"
     },
     {
       "kind": "contract-set-member",
@@ -9101,6 +9239,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.BankStatementImportResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto"
     },
     {
       "kind": "contract-set-member",
@@ -11512,6 +11662,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakDto"
     },
     {
@@ -11519,6 +11675,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakExplanationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto"
     },
     {
       "kind": "contract-set-member",
@@ -11663,6 +11831,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCommand"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult"
     },
     {
       "kind": "contract-set-member",
@@ -18125,6 +18299,12 @@
       "label": "",
       "source": "contract-set:reporting-contracts",
       "target": "contract:Meridian.Contracts.Reporting.ReportingGovernanceRestatementRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:reporting-contracts",
+      "target": "contract:Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto"
     },
     {
       "kind": "contract-set-member",
@@ -25126,6 +25306,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ClosePeriodLockResultDto",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ClosePeriodLockResultDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsTransitionResultDto"
     },
     {
@@ -26961,6 +27147,162 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationIssue",
+      "target": "contract:Meridian.Contracts.Operations.OperationIssueSeverity"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationPostcondition",
+      "target": "contract:Meridian.Contracts.Operations.OperationPostconditionState"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.OperationArtifactReference"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.OperationEvidenceReference"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseApproval"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseAssignment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseRetry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseStateTransition"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.OperationArtifactReference"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.OperationEvidenceReference"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseApproval"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseAssignment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseRetry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.OperationalCaseStateTransition"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "target": "contract:Meridian.Contracts.Operations.OperationArtifactReference"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "target": "contract:Meridian.Contracts.Operations.OperationEvidenceReference"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "target": "contract:Meridian.Contracts.Operations.OperationIssue"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "target": "contract:Meridian.Contracts.Operations.OperationPostcondition"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "target": "contract:Meridian.Contracts.Operations.OperationRecoveryAction"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "target": "contract:Meridian.Contracts.Operations.OperationTerminalState"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Options.OptionChainSnapshotDto",
       "target": "contract:Meridian.Contracts.Options.OptionSeriesDto"
     },
@@ -28163,6 +28505,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.BankStatementImportResultDto",
       "target": "contract:Meridian.Contracts.Workstation.DataUploadValidationIssueDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto"
     },
     {
       "kind": "contract-reference",
@@ -29848,6 +30196,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FundWorkflowState",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundWorkflowState",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowOverallStatus"
     },
     {
@@ -30483,6 +30837,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperationsBreakCaseDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperationsBreakCaseDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperationsCloseCalendarDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsCloseCalendarItemDto"
     },
@@ -31078,6 +31444,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperationsTimelineEntryDto",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperationsTimelineEntryDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsContinuityCorrelationKeysDto"
     },
     {
@@ -31114,6 +31486,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperationsTransitionResultDto",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperationsTransitionResultDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsCloseReadinessDto"
     },
     {
@@ -31133,6 +31511,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperationsTransitionResultDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsWorkflowBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperationsWorkflowAuditDto",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
     },
     {
       "kind": "contract-reference",
@@ -31630,6 +32014,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ProviderLedgerReconciliationDetailDto",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ProviderLedgerReconciliationDetailDto",
       "target": "contract:Meridian.Contracts.Workstation.ProviderCorporateActionReadinessDto"
     },
     {
@@ -31714,6 +32104,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakDto",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakSeverity"
     },
     {
@@ -31725,6 +32121,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakCategory"
     },
@@ -31732,7 +32134,19 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakExplanationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
     },
     {
       "kind": "contract-reference",
@@ -31852,6 +32266,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationBulkCaseworkResult",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBulkCaseworkResult",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBulkCaseworkCaseResult"
     },
     {
@@ -31925,6 +32345,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCommand",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkAction"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult",
+      "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem"
     },
     {
       "kind": "contract-reference",
@@ -33586,6 +34018,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementBreakDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementBreakDto",
       "target": "contract:Meridian.Contracts.Workstation.StatementBreakType"
     },
     {
@@ -34006,6 +34444,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse",
       "target": "contract:Meridian.Contracts.Workstation.StrategyDesignCompiledScript"
     },
     {
@@ -34181,6 +34625,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyRunCrossModeTransitionMetadata",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunMode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyRunDetail",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
     },
     {
       "kind": "contract-reference",
@@ -35399,6 +35849,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationStrategyPayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationTimelineCard"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationStrategyRunCard",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
     },
     {
       "kind": "contract-reference",
@@ -36983,8 +37439,20 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_checkpoint_hash on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence",
       "target": "database:reporting.reporting_reconciliation_evidence.receipt_key_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.receipt_key_sha256"
     },
     {
       "kind": "normal",
@@ -36995,8 +37463,20 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.receipt_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence",
       "target": "database:reporting.reporting_reconciliation_evidence.receipt_payload"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.receipt_payload"
     },
     {
       "kind": "normal",
@@ -37055,8 +37535,80 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.accounting_basis"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.accounting_period_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.fund_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.organization_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.source_checkpoint_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence",
       "target": "database:reporting.reporting_reconciliation_evidence.source_checkpoint_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.source_checkpoint_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_v2_format on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.receipt_format_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:reporting.ck_reporting_reconciliation_v2_supersedes_hash on reporting.reporting_reconciliation_evidence_v2",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2.supersedes_legacy_receipt_key_sha256"
     },
     {
       "kind": "normal",
@@ -38722,6 +39274,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:reporting",
+      "target": "database:reporting.reporting_reconciliation_evidence_v2"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:reporting",
       "target": "database:reporting.reporting_restatement_requests"
     },
     {
@@ -39190,7 +39748,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4581ff5b00f8a44b0e2ea4c8ebb45298cd108ff543e05a7861cf7473d4c86a76",
+  "fingerprint": "296650eb0496f6c227d46aaf8cdb1ab864ba76c2e21567dd5b9b8da313e65617",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -46432,6 +46990,138 @@
       "label": "Meridian.Contracts.Monitoring.MetricsSnapshot"
     },
     {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Operations.IOperationalCaseHistoryStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.IOperationalCaseHistoryStore"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationArtifactReference",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationArtifactReference"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationEvidenceReference",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationEvidenceReference"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationIssue",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationIssue"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Operations.OperationIssueSeverity",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationIssueSeverity"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationPostcondition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationPostcondition"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Operations.OperationPostconditionState",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationPostconditionState"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationRecoveryAction",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationRecoveryAction"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Operations.OperationTerminalState",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationTerminalState"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseApproval",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseApproval"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseAssignment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseAssignment"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseException"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryHashing",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseHistoryHashing"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryQuery",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseHistoryQuery"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseHistoryRecord"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseRetry",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseRetry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.OperationalCaseStateTransition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationalCaseStateTransition"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.OperationsContractsJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.OperationsContractsJsonContext"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcomeValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.VerifiedOperationOutcomeValidator"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Options.OptionChainSnapshotDto",
       "kind": "contract-type",
@@ -46814,6 +47504,12 @@
       "id": "contract:Meridian.Contracts.Reporting.ReportingGovernanceRestatementRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Reporting.ReportingGovernanceRestatementRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto"
     },
     {
       "classification": "dto",
@@ -48344,6 +49040,18 @@
       "id": "contract:Meridian.Contracts.Workstation.BankStatementImportResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.BankStatementImportResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.BiasDisclosureDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.BiasDisclosureItemDto"
     },
     {
       "classification": "dto",
@@ -50752,6 +51460,12 @@
       "label": "Meridian.Contracts.Workstation.ReconciliationBreakCategory"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakDto",
       "kind": "contract-type",
@@ -50762,6 +51476,18 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakExplanationDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationBreakExplanationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto"
     },
     {
       "classification": "record",
@@ -50906,6 +51632,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkCommand",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationCaseworkCommand"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult"
     },
     {
       "classification": "record",
@@ -55098,9 +55830,19 @@
       "label": "reporting.ck_reporting_reconciliation_checkpoint_hash on reporting.reporting_reconciliation_evidence"
     },
     {
+      "id": "database:reporting.ck_reporting_reconciliation_checkpoint_hash on reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_reconciliation_checkpoint_hash on reporting.reporting_reconciliation_evidence_v2"
+    },
+    {
       "id": "database:reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence",
       "kind": "database-object",
       "label": "reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence"
+    },
+    {
+      "id": "database:reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence_v2"
     },
     {
       "id": "database:reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence",
@@ -55108,9 +55850,19 @@
       "label": "reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence"
     },
     {
+      "id": "database:reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence_v2"
+    },
+    {
       "id": "database:reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence",
       "kind": "database-object",
       "label": "reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence"
+    },
+    {
+      "id": "database:reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence_v2"
     },
     {
       "id": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence",
@@ -55118,9 +55870,29 @@
       "label": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence"
     },
     {
+      "id": "database:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2"
+    },
+    {
       "id": "database:reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence",
       "kind": "database-object",
       "label": "reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence"
+    },
+    {
+      "id": "database:reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence_v2"
+    },
+    {
+      "id": "database:reporting.ck_reporting_reconciliation_v2_format on reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_reconciliation_v2_format on reporting.reporting_reconciliation_evidence_v2"
+    },
+    {
+      "id": "database:reporting.ck_reporting_reconciliation_v2_supersedes_hash on reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-object",
+      "label": "reporting.ck_reporting_reconciliation_v2_supersedes_hash on reporting.reporting_reconciliation_evidence_v2"
     },
     {
       "id": "database:reporting.ck_reporting_restatement_request_id on reporting.reporting_restatement_requests",
@@ -55753,6 +56525,92 @@
       "id": "database:reporting.reporting_reconciliation_evidence.tenant_id",
       "kind": "database-object",
       "label": "reporting.reporting_reconciliation_evidence.tenant_id"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2",
+      "kind": "database-table",
+      "label": "reporting.reporting_reconciliation_evidence_v2",
+      "schema": "reporting"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.accounting_basis",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.accounting_basis"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.accounting_period_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.accounting_period_id"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.company_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.company_id"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.fund_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.fund_id"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.ledger_book_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.ledger_book_id"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.organization_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.organization_id"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.receipt_format_version",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.receipt_format_version"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.receipt_hash_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.receipt_hash_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.receipt_key_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.receipt_key_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.receipt_payload",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.receipt_payload"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_hash",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_hash"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_id"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.source_checkpoint_hash",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.source_checkpoint_hash"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.source_checkpoint_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.source_checkpoint_id"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.supersedes_legacy_receipt_key_sha256",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.supersedes_legacy_receipt_key_sha256"
+    },
+    {
+      "id": "database:reporting.reporting_reconciliation_evidence_v2.tenant_id",
+      "kind": "database-object",
+      "label": "reporting.reporting_reconciliation_evidence_v2.tenant_id"
     },
     {
       "id": "database:reporting.reporting_restatement_requests",
@@ -56713,11 +57571,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2750,
-    "contract_set_memberships": 3193,
-    "edges": 6516,
+    "contract_references": 2796,
+    "contract_set_memberships": 3223,
+    "edges": 6609,
     "foreign_keys": 77,
     "logical_references": 6,
-    "nodes": 2988
+    "nodes": 3042
   }
 }

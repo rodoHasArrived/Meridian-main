@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "2eab71e99d7db9d5f6be79b7c6b85c48dbae983cfb0e2823ea26a610f951e9d2",
+  "database_fingerprint": "c9f5f5184772ea98c71567ee7665a837443dfc0af929eaf8fd37339ca004e138",
   "dependencies": [
     {
       "fingerprint": "bd0cffb97d60bc4565436fedefc5799877f5565530ebfa44a25ebebeb8a8a4e5",
@@ -2282,6 +2282,18 @@
       "target_schema": "reporting"
     },
     {
+      "fingerprint": "46098273106bddb2197603c3ba85f514cd8cefc0ebd415d8f5b54a00ce513727",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_checkpoint_hash on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_hash",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
       "fingerprint": "513a14aa408fe170df439c5139d83a0c555cef314f41a7ff31f3ecd2d57fa0e6",
       "kind": "normal",
       "source": "reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence",
@@ -2291,6 +2303,18 @@
       "target": "reporting.reporting_reconciliation_evidence.receipt_key_sha256",
       "target_kind": "table column",
       "target_name": "reporting_reconciliation_evidence",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "1361a06d9d2064a3576190e4666ede3c3996c6fa53ef6ddee65108c98509db23",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.receipt_key_sha256",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
       "target_schema": "reporting"
     },
     {
@@ -2306,6 +2330,18 @@
       "target_schema": "reporting"
     },
     {
+      "fingerprint": "4409a8996399a800699055af712a98658f303d52da53a7dd5e5226cdfc12b087",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.receipt_hash_sha256",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
       "fingerprint": "a42e815508eff4f1f6cca8b276256adf0b2eb9dea0e265dea2fb3b63d9bcd768",
       "kind": "normal",
       "source": "reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence",
@@ -2315,6 +2351,18 @@
       "target": "reporting.reporting_reconciliation_evidence.receipt_payload",
       "target_kind": "table column",
       "target_name": "reporting_reconciliation_evidence",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "c068aff3daf67ac51650266d2a9a9a5b97bc36c5b07bd00e6d289406e4e35e2f",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.receipt_payload",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
       "target_schema": "reporting"
     },
     {
@@ -2426,6 +2474,114 @@
       "target_schema": "reporting"
     },
     {
+      "fingerprint": "d79113b4cd6f068de9be40d381f66c90ffd81518208b9ab8aec44471df4a0302",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.accounting_basis",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "513315fbbe54cbe7cb58497b1b865177c6994678f253644d23a0bd8feb695914",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.accounting_period_id",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "33b11e3e4229fa36e6deaa5c1cb94f0dd418674272209b2a9fc7541650bf6389",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.company_id",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "3bfc00b607bed310e4c5d7fb7b5d8b08aeb4a96b41c2985f681fcc424130dd21",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.fund_id",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "52b783de2863d345d4a3ffd1e50ef00b5fd14ab8bbd699d2dc5db9b02d3f90b3",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "4e6d32f890b340e611dedcc5eada120aed5451eee5d3eb0ac456ace95617ba57",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.organization_id",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "3f192b1c85f0b5592585e931672325e08d28add8149d96e8f92172a2cc7fbe25",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_id",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "9f990e4b62a5d8354693d372aa71681ae9e7ca69ad82c57574ccedb792e8f425",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.source_checkpoint_id",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "e94775020f4a1d13ee5984464ddac839d51faed595947e1df7f4ff29d9c21f82",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.tenant_id",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
       "fingerprint": "2e4b91b577ca73d524e3efdd15713c0a1a8a9ff6482ae771ca0db90be18b1122",
       "kind": "normal",
       "source": "reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence",
@@ -2435,6 +2591,42 @@
       "target": "reporting.reporting_reconciliation_evidence.source_checkpoint_hash",
       "target_kind": "table column",
       "target_name": "reporting_reconciliation_evidence",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "172d7dc3d37d3802f23f0fa4035280771cfb79470d16df0134fe0735aadf87ae",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.source_checkpoint_hash",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "034c618112a3618e47a177578d07378dcabe5f5e02f83de50101754cfb82588c",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_v2_format on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.receipt_format_version",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
+      "target_schema": "reporting"
+    },
+    {
+      "fingerprint": "3f9b503d864a2079dc71b844c58ecffe1af5e40bb14c86235f440fa06fc37b97",
+      "kind": "normal",
+      "source": "reporting.ck_reporting_reconciliation_v2_supersedes_hash on reporting.reporting_reconciliation_evidence_v2",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "reporting",
+      "target": "reporting.reporting_reconciliation_evidence_v2.supersedes_legacy_receipt_key_sha256",
+      "target_kind": "table column",
+      "target_name": "reporting_reconciliation_evidence_v2",
       "target_schema": "reporting"
     },
     {
@@ -7277,6 +7469,78 @@
       "object": "column:reporting.reporting_reconciliation_evidence.tenant_id"
     },
     {
+      "fingerprint": "dfafc0105d6b68e6967a267fbc8cfe5c0d97ee8d99f878bfaf6cb1457fe84d86",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.accounting_basis"
+    },
+    {
+      "fingerprint": "ad117b184dcfef90dcd1703ae6bbc1d130f0ae25b14051b51b22405d4246ea87",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.accounting_period_id"
+    },
+    {
+      "fingerprint": "40c75bf5c92d6f7d9121686bf97fd71d978fd8d7c7f4fc4dab94dbd8e4883d27",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.as_of_date"
+    },
+    {
+      "fingerprint": "982b7c87036132898b39b873f29870fcc3e6b37fc5e6e4e112a5d01091748f18",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.company_id"
+    },
+    {
+      "fingerprint": "d4a4575ff460ab51426b4fa97e784b04ce35b03ea6e73e9f7f2977570d1c7bea",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.fund_id"
+    },
+    {
+      "fingerprint": "95352a12202085fac89f7a75398436784d329365022fb388499154fa63731232",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.ledger_book_id"
+    },
+    {
+      "fingerprint": "fea57a24b335b838d5dcccc6d3c615ccbae962569e424df42babf48f6fc519c1",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.organization_id"
+    },
+    {
+      "fingerprint": "4c7cfc7e9ede0690e4c1e79b896952487b21165d2e15f69e6b5bf0e12f655cd9",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.receipt_format_version"
+    },
+    {
+      "fingerprint": "dc4998e1a29f505bcbbf22b685ce8aa61b924283aa6d83ad334d4a4074a034c1",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.receipt_hash_sha256"
+    },
+    {
+      "fingerprint": "45bfb47bdd4b7c0a4a696ad72651489e969905aab206068328fe95706850123a",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.receipt_key_sha256"
+    },
+    {
+      "fingerprint": "0095e3e475d05ad29250918a38ad7f50ac3c80dcafd931939bcbc5c6a6b54b7a",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.receipt_payload"
+    },
+    {
+      "fingerprint": "9155637bd7344405dce728f115d6bb9aa2ef1de73621dd4954614569abeb474c",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_hash"
+    },
+    {
+      "fingerprint": "5b8cc2480c4283680e3503fe3533eea1b6c7eee2850be3a6c162554a031ce935",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_id"
+    },
+    {
+      "fingerprint": "26af3a3ae6ff3e1145da12016292139cd4c94c43c88d776d4b902e5736963d08",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.retained_at_utc"
+    },
+    {
+      "fingerprint": "b21745ecf3173640a7b7a249ec32fbd838ed344678cf485cffe254b3053515e3",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.source_checkpoint_hash"
+    },
+    {
+      "fingerprint": "077b6737983a71cac48b907e5a4b5d499fe4a6367583ebd1101c2650feb2b9f2",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.source_checkpoint_id"
+    },
+    {
+      "fingerprint": "177b03a80361917db37bff250dd46ac9d6b2330f7ed1476410c006a5ab714315",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.supersedes_legacy_receipt_key_sha256"
+    },
+    {
+      "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+      "object": "column:reporting.reporting_reconciliation_evidence_v2.tenant_id"
+    },
+    {
       "fingerprint": "d5ff958a17f04572c92b536f57ffc9abe064e03d27ed7a0ea09e30fe504102d4",
       "object": "column:reporting.reporting_restatement_requests.aggregate_version"
     },
@@ -11093,6 +11357,42 @@
       "object": "constraint:reporting.reporting_reconciliation_evidence.reporting_reconciliation_evidence_pkey"
     },
     {
+      "fingerprint": "4a593daed8b500727e239640862ab653063c3d21dc8bf32b7445d718d99e7a4b",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.ck_reporting_reconciliation_checkpoint_hash"
+    },
+    {
+      "fingerprint": "2a430e94826d19dff13862ca0ae331f11205f42bf9869433cd35c81cc283f894",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.ck_reporting_reconciliation_key_hash"
+    },
+    {
+      "fingerprint": "c1b780c07086e1ee4c43d587f5d13c255f64af3e39959018b2a4dff6eaf79c0e",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.ck_reporting_reconciliation_payload_hash"
+    },
+    {
+      "fingerprint": "97dd750ed4cff86ede077f27a187ec06eb384e924c0685d5bee0628c668382c6",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.ck_reporting_reconciliation_payload_object"
+    },
+    {
+      "fingerprint": "e1a3c2f180abb1efa38db18c369d80e8eccf06202e1d8ac433e6dabdaed862f7",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.ck_reporting_reconciliation_scope_trimmed"
+    },
+    {
+      "fingerprint": "f9371f9788afffd275d24ea72b0e5fd4ff209de2e71d3c9aff4598a283144de4",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.ck_reporting_reconciliation_source_hash"
+    },
+    {
+      "fingerprint": "6b5aa12fc20a24c7e265eaf53560644001905ca660bffa3fd4ac4eeb2a9cd3ea",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.ck_reporting_reconciliation_v2_format"
+    },
+    {
+      "fingerprint": "ed6984052ab659987cfa311f941ce2b927a3342012739387fd02b2ff3800a251",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.ck_reporting_reconciliation_v2_supersedes_hash"
+    },
+    {
+      "fingerprint": "1dd45c6a989287f4db4ab56bbf23028cb37fd963e7029e1acdae0d9204639591",
+      "object": "constraint:reporting.reporting_reconciliation_evidence_v2.reporting_reconciliation_evidence_v2_pkey"
+    },
+    {
       "fingerprint": "5da73d31a6b77a56c9501d5cbebe9f998792e356f666b1f8beb011344cd27748",
       "object": "constraint:reporting.reporting_restatement_requests.ck_reporting_restatement_request_id"
     },
@@ -12385,16 +12685,32 @@
       "object": "dependency:reporting.ck_reporting_reconciliation_checkpoint_hash on reporting.reporting_reconciliation_evidence->reporting.reporting_reconciliation_evidence.reconciliation_checkpoint_hash:normal"
     },
     {
+      "fingerprint": "46098273106bddb2197603c3ba85f514cd8cefc0ebd415d8f5b54a00ce513727",
+      "object": "dependency:reporting.ck_reporting_reconciliation_checkpoint_hash on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_hash:normal"
+    },
+    {
       "fingerprint": "513a14aa408fe170df439c5139d83a0c555cef314f41a7ff31f3ecd2d57fa0e6",
       "object": "dependency:reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence->reporting.reporting_reconciliation_evidence.receipt_key_sha256:normal"
+    },
+    {
+      "fingerprint": "1361a06d9d2064a3576190e4666ede3c3996c6fa53ef6ddee65108c98509db23",
+      "object": "dependency:reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.receipt_key_sha256:normal"
     },
     {
       "fingerprint": "7a877d071986c6245366a2cdc461f25230bed6d5291d3bf20f8c2540276cfb9d",
       "object": "dependency:reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence->reporting.reporting_reconciliation_evidence.receipt_hash_sha256:normal"
     },
     {
+      "fingerprint": "4409a8996399a800699055af712a98658f303d52da53a7dd5e5226cdfc12b087",
+      "object": "dependency:reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.receipt_hash_sha256:normal"
+    },
+    {
       "fingerprint": "a42e815508eff4f1f6cca8b276256adf0b2eb9dea0e265dea2fb3b63d9bcd768",
       "object": "dependency:reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence->reporting.reporting_reconciliation_evidence.receipt_payload:normal"
+    },
+    {
+      "fingerprint": "c068aff3daf67ac51650266d2a9a9a5b97bc36c5b07bd00e6d289406e4e35e2f",
+      "object": "dependency:reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.receipt_payload:normal"
     },
     {
       "fingerprint": "58688679ccf7802fa860e654244661d74950904e736d1b90b4518cb0ff6fe51d",
@@ -12433,8 +12749,56 @@
       "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence->reporting.reporting_reconciliation_evidence.tenant_id:normal"
     },
     {
+      "fingerprint": "d79113b4cd6f068de9be40d381f66c90ffd81518208b9ab8aec44471df4a0302",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.accounting_basis:normal"
+    },
+    {
+      "fingerprint": "513315fbbe54cbe7cb58497b1b865177c6994678f253644d23a0bd8feb695914",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.accounting_period_id:normal"
+    },
+    {
+      "fingerprint": "33b11e3e4229fa36e6deaa5c1cb94f0dd418674272209b2a9fc7541650bf6389",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.company_id:normal"
+    },
+    {
+      "fingerprint": "3bfc00b607bed310e4c5d7fb7b5d8b08aeb4a96b41c2985f681fcc424130dd21",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.fund_id:normal"
+    },
+    {
+      "fingerprint": "52b783de2863d345d4a3ffd1e50ef00b5fd14ab8bbd699d2dc5db9b02d3f90b3",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.ledger_book_id:normal"
+    },
+    {
+      "fingerprint": "4e6d32f890b340e611dedcc5eada120aed5451eee5d3eb0ac456ace95617ba57",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.organization_id:normal"
+    },
+    {
+      "fingerprint": "3f192b1c85f0b5592585e931672325e08d28add8149d96e8f92172a2cc7fbe25",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_id:normal"
+    },
+    {
+      "fingerprint": "9f990e4b62a5d8354693d372aa71681ae9e7ca69ad82c57574ccedb792e8f425",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.source_checkpoint_id:normal"
+    },
+    {
+      "fingerprint": "e94775020f4a1d13ee5984464ddac839d51faed595947e1df7f4ff29d9c21f82",
+      "object": "dependency:reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.tenant_id:normal"
+    },
+    {
       "fingerprint": "2e4b91b577ca73d524e3efdd15713c0a1a8a9ff6482ae771ca0db90be18b1122",
       "object": "dependency:reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence->reporting.reporting_reconciliation_evidence.source_checkpoint_hash:normal"
+    },
+    {
+      "fingerprint": "172d7dc3d37d3802f23f0fa4035280771cfb79470d16df0134fe0735aadf87ae",
+      "object": "dependency:reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.source_checkpoint_hash:normal"
+    },
+    {
+      "fingerprint": "034c618112a3618e47a177578d07378dcabe5f5e02f83de50101754cfb82588c",
+      "object": "dependency:reporting.ck_reporting_reconciliation_v2_format on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.receipt_format_version:normal"
+    },
+    {
+      "fingerprint": "3f9b503d864a2079dc71b844c58ecffe1af5e40bb14c86235f440fa06fc37b97",
+      "object": "dependency:reporting.ck_reporting_reconciliation_v2_supersedes_hash on reporting.reporting_reconciliation_evidence_v2->reporting.reporting_reconciliation_evidence_v2.supersedes_legacy_receipt_key_sha256:normal"
     },
     {
       "fingerprint": "2be2488e4855fba1077cbf7701b7e278640ed42c83501bf0f825a065b308dce8",
@@ -12927,6 +13291,10 @@
     {
       "fingerprint": "287a67d57d55e9dc6300c99622ef0412c42517503951d882c2804855937df2a1",
       "object": "function:reporting.guard_reporting_reconciliation_evidence_immutable()"
+    },
+    {
+      "fingerprint": "3dc0275fbb0f9f6912681a87450f15f9e2780a79d61eb2b01703b64832e6653b",
+      "object": "function:reporting.guard_reporting_reconciliation_evidence_v2_append()"
     },
     {
       "fingerprint": "487efc8e9c677ca674159033b798bfe8aa858fa1f3fc1e5b519513ca8d9b8e2e",
@@ -13681,6 +14049,10 @@
       "object": "index:reporting.ix_reporting_reconciliation_exact_scope"
     },
     {
+      "fingerprint": "95abef1b6bc9391f4b88eb6a37093cc3abf6a7862b0f9f6d10d74fb21eff5272",
+      "object": "index:reporting.ix_reporting_reconciliation_v2_exact_scope"
+    },
+    {
       "fingerprint": "b602f3e912fb7c809bb324f41a84d733c9667b6fce68db33f1ec8ed5bfedb07e",
       "object": "index:reporting.ix_reporting_restatement_requests_series"
     },
@@ -13745,6 +14117,10 @@
       "object": "index:reporting.reporting_reconciliation_evidence_pkey"
     },
     {
+      "fingerprint": "b891aafba4b10c388a550f9c0ba051e3656ae4096bbc20967d77362bfe362604",
+      "object": "index:reporting.reporting_reconciliation_evidence_v2_pkey"
+    },
+    {
       "fingerprint": "8d225dcd1923d0a21bf49ba7e58f3dd3148e8ca623d0e6a16761b1b2385ad618",
       "object": "index:reporting.reporting_restatement_requests_pkey"
     },
@@ -13763,6 +14139,10 @@
     {
       "fingerprint": "57e286856dcb90ebfb88bb57e392a181872f9ee2ed849568e64abcf6a113f99f",
       "object": "index:reporting.uq_reporting_reconciliation_checkpoint"
+    },
+    {
+      "fingerprint": "f34d53086da72b812d3549aa8d3493823ebaf6a934e84e3f0bb39804e4798051",
+      "object": "index:reporting.uq_reporting_reconciliation_v2_checkpoint"
     },
     {
       "fingerprint": "981b0103fc1be2093131749437fbbda7c8a62cea3369f5d8c4f7543432363755",
@@ -14685,6 +15065,10 @@
       "object": "rls:reporting.reporting_reconciliation_evidence"
     },
     {
+      "fingerprint": "b58e4957f61206111c926bae9fe70912ceb0ca1821e817f36313a0d3bad5d5d2",
+      "object": "rls:reporting.reporting_reconciliation_evidence_v2"
+    },
+    {
       "fingerprint": "87d9fdb97c6eecb430545044077577d4b7c470f0d610ab38910a43788cb36280",
       "object": "rls:reporting.reporting_restatement_requests"
     },
@@ -14989,7 +15373,7 @@
       "object": "schema:public"
     },
     {
-      "fingerprint": "6c80489f9e0c9e17e500beeecdf59ec27a28ffcc0a46307392e35f66b82444fb",
+      "fingerprint": "b27a859e8dd2947fc63c80864098efc45d0600c796e309200454a58548c968c0",
       "object": "schema:reporting"
     },
     {
@@ -15321,6 +15705,10 @@
       "object": "table:reporting.reporting_reconciliation_evidence"
     },
     {
+      "fingerprint": "67bc7028009a18f2d10a3760612c7b3ef90083cb6fc88685eb2c6e3e8b395a36",
+      "object": "table:reporting.reporting_reconciliation_evidence_v2"
+    },
+    {
       "fingerprint": "c28cdd416747f2d302b9a9a44bdb1934cb87895058d2b924c91fbced9de36199",
       "object": "table:reporting.reporting_restatement_requests"
     },
@@ -15639,6 +16027,10 @@
     {
       "fingerprint": "5c052e1f30390862d7e7d7668b6867d95c8a37dd7d1930ff4f352ed20027fbaa",
       "object": "trigger:reporting.reporting_reconciliation_evidence.reporting_reconciliation_evidence_immutable"
+    },
+    {
+      "fingerprint": "e3ceee46a6ea52eaa09657982872612aca437803f85f45adf8f3afa4d9aa57c6",
+      "object": "trigger:reporting.reporting_reconciliation_evidence_v2.reporting_reconciliation_evidence_v2_append"
     },
     {
       "fingerprint": "0bd06b3c294dfbeeb0f29c5900839a06d89d0ddc4166638da368d530cc1af0f0",
@@ -63363,6 +63755,18 @@
           "target_schema": "reporting"
         },
         {
+          "fingerprint": "46098273106bddb2197603c3ba85f514cd8cefc0ebd415d8f5b54a00ce513727",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_checkpoint_hash on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_hash",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
           "fingerprint": "513a14aa408fe170df439c5139d83a0c555cef314f41a7ff31f3ecd2d57fa0e6",
           "kind": "normal",
           "source": "reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence",
@@ -63372,6 +63776,18 @@
           "target": "reporting.reporting_reconciliation_evidence.receipt_key_sha256",
           "target_kind": "table column",
           "target_name": "reporting_reconciliation_evidence",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "1361a06d9d2064a3576190e4666ede3c3996c6fa53ef6ddee65108c98509db23",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_key_hash on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.receipt_key_sha256",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
           "target_schema": "reporting"
         },
         {
@@ -63387,6 +63803,18 @@
           "target_schema": "reporting"
         },
         {
+          "fingerprint": "4409a8996399a800699055af712a98658f303d52da53a7dd5e5226cdfc12b087",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_payload_hash on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.receipt_hash_sha256",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
           "fingerprint": "a42e815508eff4f1f6cca8b276256adf0b2eb9dea0e265dea2fb3b63d9bcd768",
           "kind": "normal",
           "source": "reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence",
@@ -63396,6 +63824,18 @@
           "target": "reporting.reporting_reconciliation_evidence.receipt_payload",
           "target_kind": "table column",
           "target_name": "reporting_reconciliation_evidence",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "c068aff3daf67ac51650266d2a9a9a5b97bc36c5b07bd00e6d289406e4e35e2f",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_payload_object on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.receipt_payload",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
           "target_schema": "reporting"
         },
         {
@@ -63507,6 +63947,114 @@
           "target_schema": "reporting"
         },
         {
+          "fingerprint": "d79113b4cd6f068de9be40d381f66c90ffd81518208b9ab8aec44471df4a0302",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.accounting_basis",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "513315fbbe54cbe7cb58497b1b865177c6994678f253644d23a0bd8feb695914",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.accounting_period_id",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "33b11e3e4229fa36e6deaa5c1cb94f0dd418674272209b2a9fc7541650bf6389",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.company_id",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "3bfc00b607bed310e4c5d7fb7b5d8b08aeb4a96b41c2985f681fcc424130dd21",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.fund_id",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "52b783de2863d345d4a3ffd1e50ef00b5fd14ab8bbd699d2dc5db9b02d3f90b3",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.ledger_book_id",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "4e6d32f890b340e611dedcc5eada120aed5451eee5d3eb0ac456ace95617ba57",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.organization_id",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "3f192b1c85f0b5592585e931672325e08d28add8149d96e8f92172a2cc7fbe25",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.reconciliation_checkpoint_id",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "9f990e4b62a5d8354693d372aa71681ae9e7ca69ad82c57574ccedb792e8f425",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.source_checkpoint_id",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "e94775020f4a1d13ee5984464ddac839d51faed595947e1df7f4ff29d9c21f82",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_scope_trimmed on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.tenant_id",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
           "fingerprint": "2e4b91b577ca73d524e3efdd15713c0a1a8a9ff6482ae771ca0db90be18b1122",
           "kind": "normal",
           "source": "reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence",
@@ -63516,6 +64064,42 @@
           "target": "reporting.reporting_reconciliation_evidence.source_checkpoint_hash",
           "target_kind": "table column",
           "target_name": "reporting_reconciliation_evidence",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "172d7dc3d37d3802f23f0fa4035280771cfb79470d16df0134fe0735aadf87ae",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_source_hash on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.source_checkpoint_hash",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "034c618112a3618e47a177578d07378dcabe5f5e02f83de50101754cfb82588c",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_v2_format on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.receipt_format_version",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
+          "target_schema": "reporting"
+        },
+        {
+          "fingerprint": "3f9b503d864a2079dc71b844c58ecffe1af5e40bb14c86235f440fa06fc37b97",
+          "kind": "normal",
+          "source": "reporting.ck_reporting_reconciliation_v2_supersedes_hash on reporting.reporting_reconciliation_evidence_v2",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "reporting",
+          "target": "reporting.reporting_reconciliation_evidence_v2.supersedes_legacy_receipt_key_sha256",
+          "target_kind": "table column",
+          "target_name": "reporting_reconciliation_evidence_v2",
           "target_schema": "reporting"
         },
         {
@@ -63727,7 +64311,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "6c80489f9e0c9e17e500beeecdf59ec27a28ffcc0a46307392e35f66b82444fb",
+      "fingerprint": "b27a859e8dd2947fc63c80864098efc45d0600c796e309200454a58548c968c0",
       "foreign_tables": [],
       "functions": [
         {
@@ -63882,6 +64466,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "guard_reporting_reconciliation_evidence_immutable()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "b87b3599c59e4093f633dd4475f5888cc2b50c63df342f67f0403274d910294e",
+          "fingerprint": "3dc0275fbb0f9f6912681a87450f15f9e2780a79d61eb2b01703b64832e6653b",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "guard_reporting_reconciliation_evidence_v2_append",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "reporting",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "guard_reporting_reconciliation_evidence_v2_append()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -70039,6 +70654,651 @@
               "comment": null,
               "data_type": "text",
               "default": null,
+              "fingerprint": "45bfb47bdd4b7c0a4a696ad72651489e969905aab206068328fe95706850123a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_key_sha256",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "fea57a24b335b838d5dcccc6d3c615ccbae962569e424df42babf48f6fc519c1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "organization_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "982b7c87036132898b39b873f29870fcc3e6b37fc5e6e4e112a5d01091748f18",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d4a4575ff460ab51426b4fa97e784b04ce35b03ea6e73e9f7f2977570d1c7bea",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fund_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "95352a12202085fac89f7a75398436784d329365022fb388499154fa63731232",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ad117b184dcfef90dcd1703ae6bbc1d130f0ae25b14051b51b22405d4246ea87",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "accounting_period_id",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "dfafc0105d6b68e6967a267fbc8cfe5c0d97ee8d99f878bfaf6cb1457fe84d86",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "accounting_basis",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "40c75bf5c92d6f7d9121686bf97fd71d978fd8d7c7f4fc4dab94dbd8e4883d27",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "as_of_date",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "077b6737983a71cac48b907e5a4b5d499fe4a6367583ebd1101c2650feb2b9f2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_checkpoint_id",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b21745ecf3173640a7b7a249ec32fbd838ed344678cf485cffe254b3053515e3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_checkpoint_hash",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5b8cc2480c4283680e3503fe3533eea1b6c7eee2850be3a6c162554a031ce935",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reconciliation_checkpoint_id",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "9155637bd7344405dce728f115d6bb9aa2ef1de73621dd4954614569abeb474c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reconciliation_checkpoint_hash",
+              "nullable": false,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "0095e3e475d05ad29250918a38ad7f50ac3c80dcafd931939bcbc5c6a6b54b7a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_payload",
+              "nullable": false,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "dc4998e1a29f505bcbbf22b685ce8aa61b924283aa6d83ad334d4a4074a034c1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_hash_sha256",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "26af3a3ae6ff3e1145da12016292139cd4c94c43c88d776d4b902e5736963d08",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "retained_at_utc",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "smallint",
+              "default": null,
+              "fingerprint": "4c7cfc7e9ede0690e4c1e79b896952487b21165d2e15f69e6b5bf0e12f655cd9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_format_version",
+              "nullable": false,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "int2",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "177b03a80361917db37bff250dd46ac9d6b2330f7ed1476410c006a5ab714315",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "supersedes_legacy_receipt_key_sha256",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "reconciliation_checkpoint_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (reconciliation_checkpoint_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "4a593daed8b500727e239640862ab653063c3d21dc8bf32b7445d718d99e7a4b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_checkpoint_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_key_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (receipt_key_sha256 ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "2a430e94826d19dff13862ca0ae331f11205f42bf9869433cd35c81cc283f894",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_key_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_hash_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (receipt_hash_sha256 ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "c1b780c07086e1ee4c43d587f5d13c255f64af3e39959018b2a4dff6eaf79c0e",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_payload_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_payload"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(receipt_payload::jsonb) = 'object'::text)",
+              "delete_action": null,
+              "fingerprint": "97dd750ed4cff86ede077f27a187ec06eb384e924c0685d5bee0628c668382c6",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_payload_object",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "tenant_id",
+                "organization_id",
+                "company_id",
+                "fund_id",
+                "ledger_book_id",
+                "accounting_period_id",
+                "accounting_basis",
+                "source_checkpoint_id",
+                "reconciliation_checkpoint_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (tenant_id = btrim(tenant_id) AND length(tenant_id) >= 1 AND length(tenant_id) <= 256 AND organization_id = btrim(organization_id) AND length(organization_id) >= 1 AND length(organization_id) <= 256 AND company_id = btrim(company_id) AND length(company_id) >= 1 AND length(company_id) <= 256 AND fund_id = btrim(fund_id) AND length(fund_id) >= 1 AND length(fund_id) <= 256 AND ledger_book_id = btrim(ledger_book_id) AND length(ledger_book_id) >= 1 AND length(ledger_book_id) <= 256 AND accounting_period_id = btrim(accounting_period_id) AND length(accounting_period_id) >= 1 AND length(accounting_period_id) <= 256 AND accounting_basis = btrim(accounting_basis) AND length(accounting_basis) >= 1 AND length(accounting_basis) <= 128 AND source_checkpoint_id = btrim(source_checkpoint_id) AND length(source_checkpoint_id) >= 1 AND length(source_checkpoint_id) <= 256 AND reconciliation_checkpoint_id = btrim(reconciliation_checkpoint_id) AND length(reconciliation_checkpoint_id) >= 1 AND length(reconciliation_checkpoint_id) <= 256)",
+              "delete_action": null,
+              "fingerprint": "e1a3c2f180abb1efa38db18c369d80e8eccf06202e1d8ac433e6dabdaed862f7",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_scope_trimmed",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "source_checkpoint_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (source_checkpoint_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "f9371f9788afffd275d24ea72b0e5fd4ff209de2e71d3c9aff4598a283144de4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_source_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_format_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (receipt_format_version = 2)",
+              "delete_action": null,
+              "fingerprint": "6b5aa12fc20a24c7e265eaf53560644001905ca660bffa3fd4ac4eeb2a9cd3ea",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_v2_format",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "supersedes_legacy_receipt_key_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (supersedes_legacy_receipt_key_sha256 IS NULL OR supersedes_legacy_receipt_key_sha256 ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "ed6984052ab659987cfa311f941ce2b927a3342012739387fd02b2ff3800a251",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_v2_supersedes_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "tenant_id",
+                "receipt_key_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (tenant_id, receipt_key_sha256)",
+              "delete_action": null,
+              "fingerprint": "1dd45c6a989287f4db4ab56bbf23028cb37fd963e7029e1acdae0d9204639591",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "reporting_reconciliation_evidence_v2_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "67bc7028009a18f2d10a3760612c7b3ef90083cb6fc88685eb2c6e3e8b395a36",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_reporting_reconciliation_v2_exact_scope ON reporting.reporting_reconciliation_evidence_v2 USING btree (tenant_id, organization_id, company_id, fund_id, ledger_book_id, accounting_period_id, accounting_basis, as_of_date)",
+              "expression": null,
+              "fingerprint": "95abef1b6bc9391f4b88eb6a37093cc3abf6a7862b0f9f6d10d74fb21eff5272",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "organization_id",
+                "company_id",
+                "fund_id",
+                "ledger_book_id",
+                "accounting_period_id",
+                "accounting_basis",
+                "as_of_date"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_reporting_reconciliation_v2_exact_scope",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX reporting_reconciliation_evidence_v2_pkey ON reporting.reporting_reconciliation_evidence_v2 USING btree (tenant_id, receipt_key_sha256)",
+              "expression": null,
+              "fingerprint": "b891aafba4b10c388a550f9c0ba051e3656ae4096bbc20967d77362bfe362604",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "receipt_key_sha256"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "reporting_reconciliation_evidence_v2_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX uq_reporting_reconciliation_v2_checkpoint ON reporting.reporting_reconciliation_evidence_v2 USING btree (tenant_id, reconciliation_checkpoint_id, reconciliation_checkpoint_hash)",
+              "expression": null,
+              "fingerprint": "f34d53086da72b812d3549aa8d3493823ebaf6a934e84e3f0bb39804e4798051",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "reconciliation_checkpoint_id",
+                "reconciliation_checkpoint_hash"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "uq_reporting_reconciliation_v2_checkpoint",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "reporting_reconciliation_evidence_v2",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "reporting",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER reporting_reconciliation_evidence_v2_append BEFORE INSERT OR DELETE OR UPDATE ON reporting.reporting_reconciliation_evidence_v2 FOR EACH ROW EXECUTE FUNCTION reporting.guard_reporting_reconciliation_evidence_v2_append()",
+              "definition_hash": "2f43d030c0c0b1286b6a60fcb66fbf0da72cbb5a8c7982a24213f8168947132d",
+              "enabled": "origin",
+              "events": [
+                "insert",
+                "delete",
+                "update"
+              ],
+              "fingerprint": "e3ceee46a6ea52eaa09657982872612aca437803f85f45adf8f3afa4d9aa57c6",
+              "function_schema": "reporting",
+              "function_signature": "guard_reporting_reconciliation_evidence_v2_append()",
+              "level": "row",
+              "name": "reporting_reconciliation_evidence_v2_append",
+              "relation": "reporting_reconciliation_evidence_v2",
+              "schema": "reporting",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
               "fingerprint": "0aace259b41823a653b630def87c4bb596c04d33527044f879b6c95e1a543597",
               "generated": null,
               "generated_expression": null,
@@ -70742,6 +72002,14 @@
           "forced": false,
           "policies": [],
           "relation": "reporting_reconciliation_evidence",
+          "schema": "reporting"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "b58e4957f61206111c926bae9fe70912ceb0ca1821e817f36313a0d3bad5d5d2",
+          "forced": false,
+          "policies": [],
+          "relation": "reporting_reconciliation_evidence_v2",
           "schema": "reporting"
         },
         {
@@ -76722,6 +77990,651 @@
               "comment": null,
               "data_type": "text",
               "default": null,
+              "fingerprint": "45bfb47bdd4b7c0a4a696ad72651489e969905aab206068328fe95706850123a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_key_sha256",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "fea57a24b335b838d5dcccc6d3c615ccbae962569e424df42babf48f6fc519c1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "organization_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "982b7c87036132898b39b873f29870fcc3e6b37fc5e6e4e112a5d01091748f18",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d4a4575ff460ab51426b4fa97e784b04ce35b03ea6e73e9f7f2977570d1c7bea",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fund_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "95352a12202085fac89f7a75398436784d329365022fb388499154fa63731232",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ad117b184dcfef90dcd1703ae6bbc1d130f0ae25b14051b51b22405d4246ea87",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "accounting_period_id",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "dfafc0105d6b68e6967a267fbc8cfe5c0d97ee8d99f878bfaf6cb1457fe84d86",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "accounting_basis",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "40c75bf5c92d6f7d9121686bf97fd71d978fd8d7c7f4fc4dab94dbd8e4883d27",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "as_of_date",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "077b6737983a71cac48b907e5a4b5d499fe4a6367583ebd1101c2650feb2b9f2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_checkpoint_id",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b21745ecf3173640a7b7a249ec32fbd838ed344678cf485cffe254b3053515e3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source_checkpoint_hash",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5b8cc2480c4283680e3503fe3533eea1b6c7eee2850be3a6c162554a031ce935",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reconciliation_checkpoint_id",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "9155637bd7344405dce728f115d6bb9aa2ef1de73621dd4954614569abeb474c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reconciliation_checkpoint_hash",
+              "nullable": false,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "0095e3e475d05ad29250918a38ad7f50ac3c80dcafd931939bcbc5c6a6b54b7a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_payload",
+              "nullable": false,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "dc4998e1a29f505bcbbf22b685ce8aa61b924283aa6d83ad334d4a4074a034c1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_hash_sha256",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "26af3a3ae6ff3e1145da12016292139cd4c94c43c88d776d4b902e5736963d08",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "retained_at_utc",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "smallint",
+              "default": null,
+              "fingerprint": "4c7cfc7e9ede0690e4c1e79b896952487b21165d2e15f69e6b5bf0e12f655cd9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_format_version",
+              "nullable": false,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "int2",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "177b03a80361917db37bff250dd46ac9d6b2330f7ed1476410c006a5ab714315",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "supersedes_legacy_receipt_key_sha256",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "reconciliation_checkpoint_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (reconciliation_checkpoint_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "4a593daed8b500727e239640862ab653063c3d21dc8bf32b7445d718d99e7a4b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_checkpoint_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_key_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (receipt_key_sha256 ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "2a430e94826d19dff13862ca0ae331f11205f42bf9869433cd35c81cc283f894",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_key_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_hash_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (receipt_hash_sha256 ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "c1b780c07086e1ee4c43d587f5d13c255f64af3e39959018b2a4dff6eaf79c0e",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_payload_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_payload"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(receipt_payload::jsonb) = 'object'::text)",
+              "delete_action": null,
+              "fingerprint": "97dd750ed4cff86ede077f27a187ec06eb384e924c0685d5bee0628c668382c6",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_payload_object",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "tenant_id",
+                "organization_id",
+                "company_id",
+                "fund_id",
+                "ledger_book_id",
+                "accounting_period_id",
+                "accounting_basis",
+                "source_checkpoint_id",
+                "reconciliation_checkpoint_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (tenant_id = btrim(tenant_id) AND length(tenant_id) >= 1 AND length(tenant_id) <= 256 AND organization_id = btrim(organization_id) AND length(organization_id) >= 1 AND length(organization_id) <= 256 AND company_id = btrim(company_id) AND length(company_id) >= 1 AND length(company_id) <= 256 AND fund_id = btrim(fund_id) AND length(fund_id) >= 1 AND length(fund_id) <= 256 AND ledger_book_id = btrim(ledger_book_id) AND length(ledger_book_id) >= 1 AND length(ledger_book_id) <= 256 AND accounting_period_id = btrim(accounting_period_id) AND length(accounting_period_id) >= 1 AND length(accounting_period_id) <= 256 AND accounting_basis = btrim(accounting_basis) AND length(accounting_basis) >= 1 AND length(accounting_basis) <= 128 AND source_checkpoint_id = btrim(source_checkpoint_id) AND length(source_checkpoint_id) >= 1 AND length(source_checkpoint_id) <= 256 AND reconciliation_checkpoint_id = btrim(reconciliation_checkpoint_id) AND length(reconciliation_checkpoint_id) >= 1 AND length(reconciliation_checkpoint_id) <= 256)",
+              "delete_action": null,
+              "fingerprint": "e1a3c2f180abb1efa38db18c369d80e8eccf06202e1d8ac433e6dabdaed862f7",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_scope_trimmed",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "source_checkpoint_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (source_checkpoint_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "f9371f9788afffd275d24ea72b0e5fd4ff209de2e71d3c9aff4598a283144de4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_source_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_format_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (receipt_format_version = 2)",
+              "delete_action": null,
+              "fingerprint": "6b5aa12fc20a24c7e265eaf53560644001905ca660bffa3fd4ac4eeb2a9cd3ea",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_v2_format",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "supersedes_legacy_receipt_key_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (supersedes_legacy_receipt_key_sha256 IS NULL OR supersedes_legacy_receipt_key_sha256 ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "ed6984052ab659987cfa311f941ce2b927a3342012739387fd02b2ff3800a251",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_reporting_reconciliation_v2_supersedes_hash",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "tenant_id",
+                "receipt_key_sha256"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (tenant_id, receipt_key_sha256)",
+              "delete_action": null,
+              "fingerprint": "1dd45c6a989287f4db4ab56bbf23028cb37fd963e7029e1acdae0d9204639591",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "reporting_reconciliation_evidence_v2_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "67bc7028009a18f2d10a3760612c7b3ef90083cb6fc88685eb2c6e3e8b395a36",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_reporting_reconciliation_v2_exact_scope ON reporting.reporting_reconciliation_evidence_v2 USING btree (tenant_id, organization_id, company_id, fund_id, ledger_book_id, accounting_period_id, accounting_basis, as_of_date)",
+              "expression": null,
+              "fingerprint": "95abef1b6bc9391f4b88eb6a37093cc3abf6a7862b0f9f6d10d74fb21eff5272",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "organization_id",
+                "company_id",
+                "fund_id",
+                "ledger_book_id",
+                "accounting_period_id",
+                "accounting_basis",
+                "as_of_date"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_reporting_reconciliation_v2_exact_scope",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX reporting_reconciliation_evidence_v2_pkey ON reporting.reporting_reconciliation_evidence_v2 USING btree (tenant_id, receipt_key_sha256)",
+              "expression": null,
+              "fingerprint": "b891aafba4b10c388a550f9c0ba051e3656ae4096bbc20967d77362bfe362604",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "receipt_key_sha256"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "reporting_reconciliation_evidence_v2_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX uq_reporting_reconciliation_v2_checkpoint ON reporting.reporting_reconciliation_evidence_v2 USING btree (tenant_id, reconciliation_checkpoint_id, reconciliation_checkpoint_hash)",
+              "expression": null,
+              "fingerprint": "f34d53086da72b812d3549aa8d3493823ebaf6a934e84e3f0bb39804e4798051",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "reconciliation_checkpoint_id",
+                "reconciliation_checkpoint_hash"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "uq_reporting_reconciliation_v2_checkpoint",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "reporting_reconciliation_evidence_v2",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "reporting",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER reporting_reconciliation_evidence_v2_append BEFORE INSERT OR DELETE OR UPDATE ON reporting.reporting_reconciliation_evidence_v2 FOR EACH ROW EXECUTE FUNCTION reporting.guard_reporting_reconciliation_evidence_v2_append()",
+              "definition_hash": "2f43d030c0c0b1286b6a60fcb66fbf0da72cbb5a8c7982a24213f8168947132d",
+              "enabled": "origin",
+              "events": [
+                "insert",
+                "delete",
+                "update"
+              ],
+              "fingerprint": "e3ceee46a6ea52eaa09657982872612aca437803f85f45adf8f3afa4d9aa57c6",
+              "function_schema": "reporting",
+              "function_signature": "guard_reporting_reconciliation_evidence_v2_append()",
+              "level": "row",
+              "name": "reporting_reconciliation_evidence_v2_append",
+              "relation": "reporting_reconciliation_evidence_v2",
+              "schema": "reporting",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
               "fingerprint": "0aace259b41823a653b630def87c4bb596c04d33527044f879b6c95e1a543597",
               "generated": null,
               "generated_expression": null,
@@ -77551,6 +79464,25 @@
           "level": "row",
           "name": "reporting_reconciliation_evidence_immutable",
           "relation": "reporting_reconciliation_evidence",
+          "schema": "reporting",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER reporting_reconciliation_evidence_v2_append BEFORE INSERT OR DELETE OR UPDATE ON reporting.reporting_reconciliation_evidence_v2 FOR EACH ROW EXECUTE FUNCTION reporting.guard_reporting_reconciliation_evidence_v2_append()",
+          "definition_hash": "2f43d030c0c0b1286b6a60fcb66fbf0da72cbb5a8c7982a24213f8168947132d",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "delete",
+            "update"
+          ],
+          "fingerprint": "e3ceee46a6ea52eaa09657982872612aca437803f85f45adf8f3afa4d9aa57c6",
+          "function_schema": "reporting",
+          "function_signature": "guard_reporting_reconciliation_evidence_v2_append()",
+          "level": "row",
+          "name": "reporting_reconciliation_evidence_v2_append",
+          "relation": "reporting_reconciliation_evidence_v2",
           "schema": "reporting",
           "timing": "before"
         },

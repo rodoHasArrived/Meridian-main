@@ -71,6 +71,15 @@ public sealed class WalkForwardService : IWalkForwardService
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(trainingDays, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(testDays, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(stepDays);
+        if (stepDays > 0 && stepDays < testDays)
+        {
+            throw new ArgumentException(
+                $"Step of {stepDays} day(s) is shorter than the {testDays}-day test window, which would make " +
+                "out-of-sample windows overlap and double-count days in the stitched OOS metrics. Use a step of " +
+                "at least the test-window length (or 0 for contiguous windows).",
+                nameof(stepDays));
+        }
         if (to < from)
             throw new ArgumentException($"Walk-forward range end {to:yyyy-MM-dd} precedes start {from:yyyy-MM-dd}.", nameof(to));
 

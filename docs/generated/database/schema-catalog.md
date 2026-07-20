@@ -14,7 +14,7 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | [`ledger`](modules/ledger.md) | `ledger` | 19 | 0 | 0 | 0 | `a72d72259357` |
 | [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |
-| [`reporting`](modules/reporting.md) | `reporting` | 14 | 11 | 13 | 0 | `6c80489f9e0c` |
+| [`reporting`](modules/reporting.md) | `reporting` | 15 | 12 | 14 | 0 | `b27a859e8dd2` |
 | [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 70 | 1 | 1 | 0 | `1c9d9e8253b3` |
 
 ## Default topology
