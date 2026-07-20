@@ -46,11 +46,11 @@ Total items: **223**
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 722 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1051 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1088 | `NOTE` | ❌ | Note: request.Note, |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 735 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 746 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 757 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 768 | `NOTE` | ❌ | Note: hasAudit ? null : "No audit reference was captured for this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 782 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 760 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 771 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 782 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 793 | `NOTE` | ❌ | Note: hasAudit ? null : "No audit reference was captured for this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 807 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 476 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
@@ -206,9 +206,9 @@ Total items: **223**
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 86 | `NOTE` | ❌ | // NOTE: Using null! dependencies - we only verify that ArgumentOutOfRangeException is not thrown |
 | `tests/Meridian.Tests/Application/Pipeline/FSharpEventValidatorTests.cs` | 72 | `NOTE` | ❌ | // Note: Trade.ctor only checks Price > 0, so $2,000,000 is constructible. |
 | `tests/Meridian.Tests/DataIntegration/Monitoring/DataQuality/DataFreshnessSlaMonitorTests.cs` | 525 | `NOTE` | ❌ | // NOTE: Actual result depends on current time, so we check the logic is working |
-| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1492 | `NOTE` | ❌ | note: "Canonical pilot run created from the certified renderer manifest."); |
-| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1505 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
-| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1518 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |
+| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1496 | `NOTE` | ❌ | note: "Canonical pilot run created from the certified renderer manifest."); |
+| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1509 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
+| `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1522 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 227 | `NOTE` | ❌ | Note: "Ready for review."); |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 253 | `NOTE` | ❌ | Note: "Submit through gate.", |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 282 | `NOTE` | ❌ | Note: "Submit.", |

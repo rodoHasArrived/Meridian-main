@@ -56,6 +56,9 @@ public sealed class UiServer : IAsyncDisposable
 {
     public const string LocalShutdownTokenHeader = "X-Meridian-Shutdown-Token";
 
+    /// <summary>Configuration section that binds <see cref="BrokerageConfiguration"/> for the host.</summary>
+    public const string ExecutionBrokerageSectionKey = "Execution:Brokerage";
+
     private readonly WebApplication _app;
     private readonly ILogger<UiServer> _logger;
     private readonly IApplicationLifecycleCoordinator _lifecycle;
@@ -242,7 +245,20 @@ public sealed class UiServer : IAsyncDisposable
                 Path.Combine(resolvedDataRoot, "compliance", "audit", "audit-log.jsonl")));
         builder.Services.AddSingleton<AccessReviewService>();
 
-        // Execution layer — paper trading gateway wired for cockpit endpoints
+        // Execution layer — brokerage-configuration-aware gateway composition. The default
+        // configuration ("paper", live execution disabled) preserves the paper-first host:
+        // the paper gateways below are registered ahead of AddBrokerageExecution's TryAdd
+        // fallbacks and now price market fills from the live feed cache. When
+        // "Execution:Brokerage" enables live execution with a named gateway, the host skips
+        // the paper registrations so AddBrokerageExecution routes orders to the registered
+        // brokerage gateway behind the OMS pre-trade gate stack.
+        var brokerageConfiguration = builder.Configuration
+            .GetSection(ExecutionBrokerageSectionKey)
+            .Get<BrokerageConfiguration>()
+            ?? new BrokerageConfiguration();
+        var usesPaperGateway = !brokerageConfiguration.LiveExecutionEnabled
+            || string.IsNullOrWhiteSpace(brokerageConfiguration.Gateway)
+            || string.Equals(brokerageConfiguration.Gateway, "paper", StringComparison.OrdinalIgnoreCase);
         builder.Services.AddSingleton(
             builder.Configuration.GetSection(Meridian.Execution.Adapters.PaperTradingGatewayOptions.SectionKey)
                 .Get<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()
@@ -260,9 +276,16 @@ public sealed class UiServer : IAsyncDisposable
         });
         builder.Services.Configure<Meridian.Execution.Margin.RegTMarginOptions>(
             builder.Configuration.GetSection(Meridian.Execution.Margin.RegTMarginOptions.SectionKey));
-        builder.Services.AddSingleton<IOrderGateway>(sp =>
-            new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(
-                sp.GetRequiredService<IExecutionGateway>()));
+        builder.Services.AddHostedBrokerageGateways();
+        if (usesPaperGateway)
+        {
+            builder.Services.AddSingleton<IOrderGateway>(sp =>
+                new Meridian.Execution.Adapters.PaperTradingGateway(
+                    sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>(),
+                    securityMaster: null,
+                    options: sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
+                    liveFeed: sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+        }
         builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
         builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
         // Production IPositionTracker projection over the live portfolio state. Gives the
@@ -282,19 +305,35 @@ public sealed class UiServer : IAsyncDisposable
                 gateway,
                 logger,
                 riskValidator: risk,
+                securityMasterGate: sp.GetService<ISecurityMasterGate>(),
                 operatorControls: sp.GetService<ExecutionOperatorControlService>(),
                 auditTrail: sp.GetService<ExecutionAuditTrailService>(),
                 portfolioState: portfolio,
                 sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
+                brokerageConfiguration: sp.GetRequiredService<BrokerageConfiguration>(),
+                liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
                 options: sp.GetRequiredService<OrderManagementSystemOptions>(),
                 tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
                 tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>());
         });
-        builder.Services.AddSingleton<IExecutionGateway>(sp =>
-            new Meridian.Execution.PaperTradingGateway(
-                sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
-                sp.GetService<ISecurityMasterQueryService>(),
-                sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>()));
+        if (usesPaperGateway)
+        {
+            builder.Services.AddSingleton<IExecutionGateway>(sp =>
+                new Meridian.Execution.PaperTradingGateway(
+                    sp.GetRequiredService<ILogger<Meridian.Execution.PaperTradingGateway>>(),
+                    sp.GetService<ISecurityMasterQueryService>(),
+                    sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
+                    sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>()));
+        }
+
+        // Registers BrokerageConfiguration plus the live-mode IExecutionGateway/IOrderGateway
+        // selection (TryAdd: the paper registrations above win when paper mode is configured).
+        builder.Services.AddBrokerageExecution(config =>
+            builder.Configuration.GetSection(ExecutionBrokerageSectionKey).Bind(config));
+
+        // Live trading engine — closes the promotion loop by running promoted paper/live
+        // strategies against the live market data feed through the OMS.
+        builder.Services.AddLiveTradingEngine(builder.Configuration);
 
         // Quant Lab — opt-in via configuration "QuantLab:Enabled". Off by default because the
         // engine compiles and executes arbitrary C# in-process. Production/customer distributions

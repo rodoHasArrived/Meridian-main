@@ -5,6 +5,7 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
@@ -59,9 +60,9 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
             sp.GetRequiredService<WpfServices.NavigationService>()));
         services.AddTransient<CashFlowViewModel>();
         services.AddSingleton<WpfServices.BacktestDataAvailabilityService>();
-        services.AddTransient<IBatchBacktestService>(sp => new BatchBacktestService(
-            sp.GetRequiredService<ILogger<BatchBacktestService>>(),
-            request =>
+        services.TryAddSingleton<Func<BacktestRequest, BacktestEngine>>(sp =>
+        {
+            BacktestEngine CreateEngine(BacktestRequest request)
             {
                 var storageOptions = new StorageOptions { RootPath = request.DataRoot };
                 var catalogService = new StorageCatalogService(request.DataRoot, storageOptions);
@@ -71,7 +72,18 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
                     sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                     sp.GetService<Meridian.Backtesting.ICorporateActionAdjustmentService>(),
                     sp.GetService<IBacktestPreflightService>());
-            }));
+            }
+
+            return CreateEngine;
+        });
+        services.AddTransient<IBatchBacktestService>(sp => new BatchBacktestService(
+            sp.GetRequiredService<ILogger<BatchBacktestService>>(),
+            sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>()));
+        services.AddTransient<Meridian.Backtesting.WalkForward.IWalkForwardService>(sp =>
+            new Meridian.Backtesting.WalkForward.WalkForwardService(
+                sp.GetRequiredService<ILogger<Meridian.Backtesting.WalkForward.WalkForwardService>>(),
+                sp.GetRequiredService<IBatchBacktestService>(),
+                sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>()));
         services.AddTransient<BacktestViewModel>();
         services.AddTransient<BatchBacktestViewModel>();
         services.AddTransient<ChartingPageViewModel>();

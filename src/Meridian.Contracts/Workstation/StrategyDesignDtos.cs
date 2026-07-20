@@ -161,6 +161,8 @@ public sealed record StrategyDesignRunBacktestRequest(
 
 /// <summary>
 /// Backtest execution response returned by the Strategy Builder route.
+/// <see cref="BiasDisclosure"/> carries the engine's honest-assumptions report for the captured
+/// run (null when the runner did not capture an engine-level result).
 /// </summary>
 public sealed record StrategyDesignRunBacktestResponse(
     bool Success,
@@ -174,4 +176,5 @@ public sealed record StrategyDesignRunBacktestResponse(
     IReadOnlyDictionary<string, string> Metrics,
     string? RuntimeError,
     string? PromotionCandidatePath,
-    string? ReviewPacketPath);
+    string? ReviewPacketPath,
+    BiasDisclosureDto? BiasDisclosure = null);

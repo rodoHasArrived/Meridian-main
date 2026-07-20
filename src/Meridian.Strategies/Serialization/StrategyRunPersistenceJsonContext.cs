@@ -34,7 +34,56 @@ internal static class StrategyRunPersistenceJson
         var options = new JsonSerializerOptions(StrategyRunPersistenceJsonContext.Default.Options);
         options.Converters.Add(new CashFlowEntryJsonConverter());
         options.Converters.Add(new ReadOnlyLedgerJsonConverter());
+        options.Converters.Add(new ReadOnlyStringSetJsonConverter());
         return options;
+    }
+}
+
+/// <summary>
+/// Round-trips <see cref="IReadOnlySet{T}"/> of strings (e.g. <c>BacktestResult.Universe</c>).
+/// The source-generated metadata can serialize the interface as an enumerable but cannot
+/// instantiate it on deserialize, which breaks the snapshot round-trip in
+/// <c>StrategyRunStore.RecordRunAsync</c> for any run that retains metrics.
+/// </summary>
+internal sealed class ReadOnlyStringSetJsonConverter : JsonConverter<IReadOnlySet<string>>
+{
+    public override IReadOnlySet<string> Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartArray)
+        {
+            throw new JsonException("A retained string set must be a JSON array.");
+        }
+
+        // Symbol universes are case-insensitive throughout the platform.
+        var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+        {
+            if (reader.TokenType != JsonTokenType.String)
+            {
+                throw new JsonException("Retained string-set entries must be JSON strings.");
+            }
+
+            set.Add(reader.GetString()!);
+        }
+
+        return set;
+    }
+
+    public override void Write(
+        Utf8JsonWriter writer,
+        IReadOnlySet<string> value,
+        JsonSerializerOptions options)
+    {
+        writer.WriteStartArray();
+        foreach (var item in value)
+        {
+            writer.WriteStringValue(item);
+        }
+
+        writer.WriteEndArray();
     }
 }
 

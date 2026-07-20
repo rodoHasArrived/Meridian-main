@@ -1683,6 +1683,7 @@ Meridian-main
 │   │   │   └── README.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── free-development-tools.md
+│   │   ├── live-trading-engine.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
 │   │   ├── README.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
@@ -3218,6 +3219,7 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── HostedBrokerageGatewayRuntimeSurfaceCatalog.cs
 │   │   ├── HostedBrokerageGatewayServiceCollectionExtensions.cs
+│   │   ├── LiveTradingEngineHostServiceCollectionExtensions.cs
 │   │   ├── Meridian.csproj
 │   │   ├── Program.cs
 │   │   ├── README.md
@@ -3574,6 +3576,7 @@ Meridian-main
 │   │   │   ├── BacktestContext.cs
 │   │   │   ├── BacktestEngine.cs
 │   │   │   ├── ContingentOrderManager.cs
+│   │   │   ├── DelistingMonitor.cs
 │   │   │   ├── MultiSymbolMergeEnumerator.cs
 │   │   │   ├── StageTimer.cs
 │   │   │   └── UniverseDiscovery.cs
@@ -3593,6 +3596,9 @@ Meridian-main
 │   │   │   ├── ICommissionModel.cs
 │   │   │   ├── LinkedListExtensions.cs
 │   │   │   └── SimulatedPortfolio.cs
+│   │   ├── WalkForward
+│   │   │   ├── WalkForwardContracts.cs
+│   │   │   └── WalkForwardService.cs
 │   │   ├── BacktestPreflightService.cs
 │   │   ├── BacktestStudioContracts.cs
 │   │   ├── BacktestStudioRunOrchestrator.cs
@@ -3626,9 +3632,11 @@ Meridian-main
 │   │   ├── BacktestStage.cs
 │   │   ├── BacktestStageTelemetryDto.cs
 │   │   ├── BacktestStrategyBase.cs
+│   │   ├── BiasDisclosure.cs
 │   │   ├── CanonicalBacktestResultNormalizer.cs
 │   │   ├── CashFlowEntry.cs
 │   │   ├── ClosedLot.cs
+│   │   ├── ExecutionRealism.cs
 │   │   ├── FillEvent.cs
 │   │   ├── FinancialAccount.cs
 │   │   ├── FinancialAccountSnapshot.cs
@@ -4196,6 +4204,7 @@ Meridian-main
 │   │   ├── Adapters
 │   │   │   ├── BaseBrokerageGateway.cs
 │   │   │   ├── BrokerageGatewayAdapter.cs
+│   │   │   ├── LiveMarketDataCache.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGateway.cs
 │   │   │   ├── OmsGovernedExecutionOrderGateway.cs
 │   │   │   ├── PaperTradingGateway.cs
@@ -4225,6 +4234,9 @@ Meridian-main
 │   │   │   ├── IExecutionContext.cs
 │   │   │   ├── ILiveFeedAdapter.cs
 │   │   │   └── IOrderGateway.cs
+│   │   ├── Live
+│   │   │   ├── ILiveMarketEventFeed.cs
+│   │   │   └── LiveMarketEventHub.cs
 │   │   ├── Margin
 │   │   │   ├── IMarginModel.cs
 │   │   │   ├── MarginAccountType.cs
@@ -5461,10 +5473,23 @@ Meridian-main
 │   ├── Meridian.Strategies
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
+│   │   │   ├── IPromotedRunLauncher.cs
 │   │   │   ├── IPromotionRecordStore.cs
 │   │   │   ├── IStrategyDesignRepository.cs
 │   │   │   ├── IStrategyLifecycle.cs
 │   │   │   └── IStrategyRepository.cs
+│   │   ├── Live
+│   │   │   ├── Strategies
+│   │   │   │   ├── BuyAndHoldLiveStrategy.cs
+│   │   │   │   └── MovingAverageCrossoverLiveStrategy.cs
+│   │   │   ├── BacktestStrategyLiveAdapter.cs
+│   │   │   ├── LiveRunMetricsTracker.cs
+│   │   │   ├── LiveStrategyBase.cs
+│   │   │   ├── LiveStrategyCatalog.cs
+│   │   │   ├── LiveStrategyExecutionContext.cs
+│   │   │   ├── LiveStrategyRunSession.cs
+│   │   │   ├── LiveTradingEngine.cs
+│   │   │   └── LiveTradingEngineOptions.cs
 │   │   ├── Models
 │   │   │   ├── RunType.cs
 │   │   │   ├── StrategyRunEntry.cs
@@ -5660,6 +5685,7 @@ Meridian-main
 │   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── activity-center.tsx
+│   │   │   │   │   │   ├── bias-disclosure-panel.tsx
 │   │   │   │   │   │   ├── command-palette.actions.test.ts
 │   │   │   │   │   │   ├── command-palette.actions.ts
 │   │   │   │   │   │   ├── command-palette.entity-search.test.ts
@@ -7637,9 +7663,11 @@ Meridian-main
 │   │   ├── BacktestMetricsEngineTests.cs
 │   │   ├── BacktestPreflightServiceTests.cs
 │   │   ├── BacktestRequestConfigTests.cs
+│   │   ├── BacktestTrustworthinessTests.cs
 │   │   ├── BatchBacktestServiceTests.cs
 │   │   ├── BracketOrderTests.cs
 │   │   ├── CanonicalBacktestResultNormalizerTests.cs
+│   │   ├── ConservativeFillModelTests.cs
 │   │   ├── CorporateActionAdjustmentPropertyTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
 │   │   ├── CorporateActionGoldenAdjustmentTests.cs
@@ -7659,6 +7687,7 @@ Meridian-main
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
 │   │   ├── TcaReporterTests.cs
+│   │   ├── WalkForwardServiceTests.cs
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
 │   ├── Meridian.DesignModules.Tests
@@ -8067,6 +8096,7 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
+│   │   │   ├── PaperGatewayLiveFeedPricingTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   ├── PaperTradingPortfolioLotSelectionTests.cs
@@ -8553,6 +8583,7 @@ Meridian-main
 │   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
@@ -8670,6 +8701,7 @@ Meridian-main
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
+│   │   │   ├── LiveTradingEngineHostRegistrationTests.cs
 │   │   │   ├── OmsIntegrationServiceTests.cs
 │   │   │   ├── OperationsContinuityReconciliationBridgeTests.cs
 │   │   │   ├── OperatorApprovalFlowScenarioTests.cs

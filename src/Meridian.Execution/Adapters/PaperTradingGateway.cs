@@ -20,10 +20,11 @@ namespace Meridian.Execution.Adapters;
 [ImplementsAdr("ADR-015", "Simulated IOrderGateway over live Meridian feed — no real orders")]
 public sealed class PaperTradingGateway : IOrderGateway
 {
-    // Notional fill price used for market orders in this scaffold, configurable via
-    // PaperTradingGatewayOptions. A production implementation would source the
-    // last-traded price from ILiveFeedAdapter.
+    // Notional fallback fill price used for market orders when no live feed price is
+    // available, configurable via PaperTradingGatewayOptions. When a live feed adapter
+    // is supplied, market fills are priced from the last trade (or quote midpoint).
     private readonly decimal _scaffoldMarketFillPrice;
+    private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     private int _scaffoldPriceWarningIssued;
 
     private readonly ILogger<PaperTradingGateway> _logger;
@@ -81,10 +82,15 @@ public sealed class PaperTradingGateway : IOrderGateway
     /// Optional gateway options. When omitted, defaults apply (including the notional
     /// scaffold market fill price).
     /// </param>
+    /// <param name="liveFeed">
+    /// Optional live feed adapter. When provided, market orders fill at the last observed
+    /// trade price (or quote midpoint) instead of the scaffold notional price.
+    /// </param>
     public PaperTradingGateway(
         ILogger<PaperTradingGateway> logger,
         ISecurityMasterQueryService? securityMaster = null,
-        PaperTradingGatewayOptions? options = null)
+        PaperTradingGatewayOptions? options = null,
+        Interfaces.ILiveFeedAdapter? liveFeed = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tradingParameters = new PaperTradingGatewayTradingParameters(
@@ -92,6 +98,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             securityMaster,
             LogLevel.Debug);
         _scaffoldMarketFillPrice = PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
+        _liveFeed = liveFeed;
         // Use EventPipelinePolicy for consistent backpressure settings across the platform (ADR-013).
         // Disposal waits for in-flight fills before completing this bounded update channel.
         _updates = EventPipelinePolicy.CompletionQueue.CreateChannel<OrderStatusUpdate>(
@@ -252,14 +259,17 @@ public sealed class PaperTradingGateway : IOrderGateway
             return;
         }
 
-        // For limit orders use the limit price; for market orders use the scaffold notional price.
-        // A real implementation would source the fill price from the live feed via ILiveFeedAdapter.
+        // For limit orders use the limit price; for market orders source the fill price
+        // from the live feed (last trade, then quote midpoint) before falling back to the
+        // scaffold notional price.
         var referencePrice = ((OrderType)request.Type) switch
         {
             OrderType.Limit or OrderType.StopLimit => request.LimitPrice,
             OrderType.StopMarket => request.StopPrice,
             _ => null
         };
+
+        referencePrice ??= GetLiveReferencePrice(request.Symbol);
 
         if (referencePrice is null)
         {
@@ -292,6 +302,35 @@ public sealed class PaperTradingGateway : IOrderGateway
         _logger.LogInformation(
             "Paper fill: {ClientOrderId} {Quantity} {Symbol} @ {FillPrice}",
             request.ClientOrderId, request.Quantity, request.Symbol, fillPrice);
+    }
+
+    /// <summary>
+    /// Returns the best live reference price for a symbol from the optional feed adapter:
+    /// last trade price first, then best-bid/offer midpoint; <c>null</c> when no feed is
+    /// wired or no tick has been observed yet.
+    /// </summary>
+    private decimal? GetLiveReferencePrice(string symbol)
+    {
+        if (_liveFeed is null)
+        {
+            return null;
+        }
+
+        if (_liveFeed.GetLastTrade(symbol) is { Price: > 0m } trade)
+        {
+            return trade.Price;
+        }
+
+        if (_liveFeed.GetLastQuote(symbol) is { } quote)
+        {
+            var mid = quote.MidPrice ?? (quote.BidPrice + quote.AskPrice) / 2m;
+            if (mid > 0m)
+            {
+                return mid;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
