@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Storage
@@ -56,6 +56,10 @@ lookup paths, and evidence trails those layers rely on.
 - `Integrations/` - file-backed provider integration manifest, connection, raw payload,
   quarantine, quarantine-review decision, quarantine replay payload, staging-record, and
   reconciliation-handoff evidence persistence for replayable no-code provider intake.
+- `Operations/` - the shared append-only operational case-history implementation. It assigns a
+  global sequence and SHA-256 predecessor/current hash, verifies the complete chain before reads or
+  writes, rejects duplicate event identities and corrupt retained data, and uses an OS lock plus
+  `AtomicFileWriter` copy-on-write append for browser/WPF processes sharing one data root.
 - `SecurityMaster/` - reference-data stores that identify securities and preserve provenance.
 - `DirectLending/` - direct-lending state, events, workflow audit, and transactional ledger handoff.
 - `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,
@@ -80,8 +84,39 @@ lookup paths, and evidence trails those layers rely on.
   write-through-then-rename durability posture.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,
   tiering, and scheduled cleanup.
+- `Services/QualityTrendStore.cs` - crash-safe append-only quality history. New score events retain
+  immutable input snapshots, input and canonical result SHA-256 identities, and a verified
+  quality-evaluation outcome. Sequence/predecessor hashes, a durable chain head, deterministic
+  pending-append recovery, and evaluation-id idempotency detect deletion, reordering, duplicate
+  retries, malformed rows, and semantic edits instead of silently skipping them. Scores enter the
+  process cache only after durable append succeeds; evaluation or retention failures return a
+  validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
 
 ## Important workflows
+
+### Operational case history
+
+`FileOperationalCaseHistoryStore` persists Contracts-owned workflow transitions, actors, reasons,
+assignments, retries, exceptions, input hashes, approvals, evidence, artifacts, recovery attempts,
+terminal receipts, and bounded source-owned replay data at
+`<DataRoot>/operations/case-history.jsonl`. Reads validate the whole global chain before filtering
+by case or case type, so corruption is surfaced instead of skipped or silently truncated. The
+browser and WPF composition roots share this same data-root-backed port; source modules such as
+Strategies project their compatible read models from the retained history without depending on
+Storage directly. Chain-head checkpoints are finalized without caller cancellation after the JSONL
+commit, retry transient checkpoint failures, and surface an explicit post-commit exception carrying
+the committed record when repair remains pending so callers never infer that durable work rolled
+back.
+
+Maintenance executions compose the shared terminal-outcome contract. Index rebuild invokes the
+real `IStorageSearchService`; when that dependency is absent the operation returns `Blocked`
+instead of claiming a no-op success. A successful rebuild must supply canonical before, staged,
+and read-back item counts and SHA-256 snapshots; missing, incomplete, or mismatched proof blocks or
+fails the operation. Scheduled, running, and terminal maintenance transitions are
+retained through the same case-history spine when a durable history store is configured. Quality
+maintenance distinguishes complete success, partial `CompletedWithWarnings`, total failure, and
+no-input blocking from attempted/succeeded/failed input counts; cancelled work is not converted to
+a false terminal failure.
 
 ### Market data and evidence
 

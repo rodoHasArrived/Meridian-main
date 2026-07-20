@@ -2,6 +2,8 @@
 
 **Status:** Proposed
 **Date:** 2026-07-17
+**Owner:** core-team
+**Reviewed:** 2026-07-19
 **Deciders:** core-team
 **Supersedes:** —
 **Superseded by:** —
@@ -66,6 +68,10 @@ Stopped -> Preflight -> StartingDatabase -> StartingHost -> WaitingForReadiness
 - Required checks cover configuration, writable `DataRoot`, authentication, workstation assets,
   configured PostgreSQL, and pipeline capacity. Optional providers are degradable unless their
   configuration marks them required.
+- The installed workstation browser opens only after `/readyz` succeeds with exact `Ready` state
+  and the verified startup outcome is retained. `Degraded` remains observable but does not satisfy
+  the browser launch gate. Startup terminal receipts follow
+  [ADR-021](021-verified-operation-outcomes-and-case-history.md).
 
 ### Deterministic shutdown
 

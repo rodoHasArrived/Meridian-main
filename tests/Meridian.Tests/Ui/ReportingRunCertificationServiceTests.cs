@@ -1,14 +1,20 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using FluentAssertions;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
+using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
@@ -16,6 +22,9 @@ public sealed class ReportingRunCertificationServiceTests
 {
     private static readonly DateTimeOffset CapturedAt =
         new(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly Guid AccountingPeriodId =
+        Guid.Parse("33333333-3333-3333-3333-333333333333");
+    private static readonly DateOnly ReportingAsOfDate = new(2026, 7, 31);
 
     [Fact]
     public async Task CertifyAsync_SameAuthoritativeCheckpointProducesStableSnapshotAndNormalizedScope()
@@ -84,6 +93,406 @@ public sealed class ReportingRunCertificationServiceTests
                 "reporting-source-checkpoint:ledger-checkpoint-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:" + new string('b', 64)));
         exception.Readiness.BlockingReasons.Should().ContainSingle(reason =>
             reason.Contains("No retained reconciliation/close checkpoint", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task CertifyAsync_OpenBreakReceiptSurfacesExactMeasuresBlockedOutputsAndEvidenceHash()
+    {
+        var source = new StubAuthoritativeSource(Rows());
+        var parameters = Parameters(ReportingOutputFormatDto.Pdf);
+        var capture = await source.CaptureAsync(parameters, Access());
+        var now = CapturedAt;
+        var breakItem = new ReconciliationBreakQueueItem(
+            BreakId: "break-cost-basis-1",
+            RunId: "reconciliation-run-1",
+            StrategyName: "Fund reconciliation",
+            Category: ReconciliationBreakCategory.ExternalStatementMismatch,
+            Status: ReconciliationBreakQueueStatus.InReview,
+            Variance: 12m,
+            Reason: "Cost-basis mismatch",
+            AssignedTo: "controller-a",
+            DetectedAt: now,
+            LastUpdatedAt: now,
+            EvidenceLinks: ["evidence:statement-1"],
+            Measures:
+            [
+                new(ReconciliationBreakMeasureKindDto.Value, 100m, 112m, 12m, 1m, "USD"),
+                new(ReconciliationBreakMeasureKindDto.Quantity, 10m, 11m, 1m, 0m, "units"),
+                new(ReconciliationBreakMeasureKindDto.CostBasis, 80m, 84m, 4m, 1m, "USD")
+            ],
+            BlockedOutputs: ["FinalReport", "PeriodClose"]);
+        var exactBreak = ReportingReconciliationEvidenceValidation.CreateBreakEvidence(breakItem);
+        var receipt = ReportingReconciliationEvidenceValidation.CreateReceipt(
+            capture.Checkpoint,
+            new ReportingReconciliationCompletionEvidence(
+                "reconciliation-completion-open-1",
+                new string('c', 64),
+                now,
+                HasOpenBreaks: true,
+                ["reconciliation-run:1"],
+                [exactBreak]));
+        var store = new InMemoryReportingReconciliationEvidenceStore();
+        await store.RetainAsync(receipt);
+        var sut = new ReportingRunCertificationService(
+            source,
+            new ReportingReconciliationEvidenceSource(store));
+
+        Func<Task> certify = async () => await sut.CertifyAsync(
+            Template(),
+            Readiness("evaluation-open-break", now),
+            Access());
+
+        var exception = (await certify.Should().ThrowAsync<ReportingRunReadinessBlockedException>()).Which;
+        var check = exception.Readiness.Checks.Single(item => item.CheckId == "exact-reconciliation-evidence");
+        check.IssueCount.Should().Be(1);
+        check.Summary.Should().Contain("break-cost-basis-1");
+        check.EvidenceReferences.Should().Contain("reconciliation-break:break-cost-basis-1");
+        check.EvidenceReferences.Should().Contain($"reconciliation-break:break-cost-basis-1:evidence-sha256:{exactBreak.EvidenceHashSha256}");
+        check.EvidenceReferences.Should().Contain("reconciliation-break:break-cost-basis-1:blocked-output:FinalReport");
+        check.EvidenceReferences.Should().Contain(reference =>
+            reference.Contains("measure:CostBasis:expected=80:actual=84:variance=4", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ReconciliationEvidence_CrossScopeReceiptFailsWithoutExposingOpenBreakDetail()
+    {
+        var source = new StubAuthoritativeSource(Rows());
+        var parameters = Parameters(ReportingOutputFormatDto.Pdf);
+        var capture = await source.CaptureAsync(parameters, Access());
+        var mismatchedCheckpointId = "secret-source-checkpoint-dddddddddddddddddddddddddddddddd";
+        var mismatchedCheckpointHash = new string('d', 64);
+        var mismatchedSource = capture.Checkpoint with
+        {
+            TenantId = "tenant-secret",
+            OrganizationId = "organization-secret",
+            CompanyId = "company-secret",
+            FundId = "fund-secret",
+            LedgerBookId = Guid.NewGuid().ToString("D"),
+            AccountingPeriodId = Guid.NewGuid().ToString("D"),
+            CheckpointId = mismatchedCheckpointId,
+            CheckpointHash = mismatchedCheckpointHash,
+            EvidenceIds = [$"reporting-source-checkpoint:{mismatchedCheckpointId}:{mismatchedCheckpointHash}"]
+        };
+        var sensitiveBreak = ReportingReconciliationEvidenceValidation.CreateBreakEvidence(
+            new ReconciliationBreakQueueItem(
+                BreakId: "secret-break-cost-basis-987",
+                RunId: "secret-run",
+                StrategyName: "Secret fund reconciliation",
+                Category: ReconciliationBreakCategory.ExternalStatementMismatch,
+                Status: ReconciliationBreakQueueStatus.Open,
+                Variance: 987654m,
+                Reason: "Secret cost-basis mismatch",
+                AssignedTo: "secret-controller",
+                DetectedAt: CapturedAt,
+                LastUpdatedAt: CapturedAt,
+                EvidenceLinks: ["secret-evidence:statement-987"],
+                Measures:
+                [
+                    new(ReconciliationBreakMeasureKindDto.Value, 1m, 987655m, 987654m, 0m, "USD"),
+                    new(ReconciliationBreakMeasureKindDto.Quantity, null, null, null, null, "units", "Secret quantity unavailable."),
+                    new(ReconciliationBreakMeasureKindDto.CostBasis, 1m, 987655m, 987654m, 0m, "USD")
+                ],
+                BlockedOutputs: ["SecretFinalReport"]));
+        var mismatchedReceipt = ReportingReconciliationEvidenceValidation.CreateReceipt(
+            mismatchedSource,
+            new ReportingReconciliationCompletionEvidence(
+                "secret-reconciliation-completion",
+                new string('e', 64),
+                CapturedAt,
+                HasOpenBreaks: true,
+                ["secret-completion-evidence"],
+                [sensitiveBreak]));
+        var sut = new ReportingReconciliationEvidenceSource(
+            new ReturningReconciliationStore(mismatchedReceipt));
+
+        Func<Task> resolve = async () => await sut.ResolveAsync(
+            parameters,
+            capture.Checkpoint,
+            Access());
+
+        var exception = (await resolve.Should()
+            .ThrowAsync<ReportingReconciliationEvidenceInvalidException>()).Which;
+        exception.Message.Should().Contain("exact requested reporting tenant/fund/book/period/source scope");
+        exception.Message.Should().NotContain("secret-break");
+        exception.Message.Should().NotContain("987654");
+        exception.Message.Should().NotContain("secret-evidence");
+        exception.EvidenceReferences.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReconciliationEvidence_ResolvedAtCloseThenReopenedBlocksFinalReportingAgainstCurrentQueue()
+    {
+        var parameters = Parameters(ReportingOutputFormatDto.Pdf);
+        var sourceProvider = new StubAuthoritativeSource(Rows());
+        var source = (await sourceProvider.CaptureAsync(parameters, Access())).Checkpoint;
+        var resolved = ScopedBreak("break-reopened-after-close", source.FundId, StubAuthoritativeSource.BookId) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = ReconciliationBreakDispositionDto.Resolved,
+            DispositionReason = "The exact value difference was corrected.",
+            ResolvedBy = "reconciliation-operator",
+            ResolvedAt = CapturedAt,
+            DispositionEvidenceHash = new string('d', 64),
+            DisposedAt = CapturedAt,
+            Version = 2,
+            AccountingPeriodId = StubAuthoritativeSource.PeriodId.ToString("D"),
+            AsOfDate = parameters.AsOfDate
+        };
+        var closeBreakEvidence = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [resolved],
+            source.FundId,
+            StubAuthoritativeSource.BookId,
+            StubAuthoritativeSource.PeriodId,
+            parameters.AsOfDate,
+            expectedOpenBreakCount: 0);
+        var receipt = ReportingReconciliationEvidenceValidation.CreateReceipt(
+            source,
+            new ReportingReconciliationCompletionEvidence(
+                "hard-close-before-reopen",
+                new string('c', 64),
+                CapturedAt,
+                HasOpenBreaks: false,
+                ["period-close:hard-closed"],
+                closeBreakEvidence));
+        var store = new InMemoryReportingReconciliationEvidenceStore();
+        await store.RetainAsync(receipt);
+        var reopened = resolved with
+        {
+            Status = ReconciliationBreakQueueStatus.Open,
+            LifecycleState = ReconciliationCaseLifecycleState.Reopened,
+            Disposition = null,
+            DispositionReason = null,
+            ResolvedBy = null,
+            ResolvedAt = null,
+            DispositionApprovalReference = null,
+            DispositionApprovedBy = null,
+            DispositionEvidenceHash = null,
+            DisposedAt = null,
+            Version = 3,
+            ReopenReason = "New custodian evidence invalidated the resolution."
+        };
+        var queue = Substitute.For<IReconciliationBreakQueueRepository>();
+        queue.GetAllAsync(Arg.Any<ReconciliationBreakQueueStatus?>(), Arg.Any<CancellationToken>())
+            .Returns([reopened]);
+        var sut = new ReportingReconciliationEvidenceSource(store, queue);
+
+        Func<Task> resolve = async () => await sut.ResolveAsync(parameters, source, Access());
+
+        var exception = (await resolve.Should()
+            .ThrowAsync<ReportingReconciliationEvidenceInvalidException>()).Which;
+        exception.Message.Should().Contain("changed after the retained close receipt");
+        exception.Message.Should().Contain(reopened.BreakId);
+        exception.Message.Should().Contain("Re-run reconciliation and close");
+    }
+
+    [Fact]
+    public void CloseEvidence_StaleZeroBreakSummaryFailsAgainstCanonicalQueue()
+    {
+        var bookId = Guid.NewGuid();
+        var exact = ScopedBreak("exact-open", "fund-a", bookId);
+
+        var act = () => AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [exact],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 0);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*reports 0 open reconciliation break(s), but 1 exact scoped case(s)*");
+    }
+
+    [Fact]
+    public void CloseEvidence_UsesCompositeFundAndLedgerIdentityWithoutUnionSubstitution()
+    {
+        var bookId = Guid.NewGuid();
+        var exact = ScopedBreak("exact-open", "fund-a", bookId);
+        var sameFundWrongBook = ScopedBreak("wrong-book", "fund-a", Guid.NewGuid());
+        var sameBookWrongFund = ScopedBreak("wrong-fund", "fund-b", bookId);
+
+        var evidence = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [sameFundWrongBook, sameBookWrongFund, exact],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 1);
+
+        evidence.Should().ContainSingle().Which.BreakId.Should().Be("exact-open");
+        var noExact = () => AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [sameFundWrongBook, sameBookWrongFund],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 1);
+        noExact.Should().Throw<InvalidOperationException>()
+            .WithMessage("*reports 1 open reconciliation break(s), but 0 exact scoped case(s)*");
+    }
+
+    [Fact]
+    public void CloseEvidence_RetainsTerminalDispositionHistoryForExactPeriod()
+    {
+        var bookId = Guid.NewGuid();
+        var active = ScopedBreak("active", "fund-a", bookId);
+        var resolved = ScopedBreak("resolved", "fund-a", bookId) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = ReconciliationBreakDispositionDto.Resolved,
+            DispositionReason = "Matched to retained custodian evidence.",
+            ResolvedBy = "fund-accountant",
+            DispositionEvidenceHash = new string('d', 64),
+            BlockedOutputs = []
+        };
+        var wrongPeriod = ScopedBreak("wrong-period", "fund-a", bookId) with
+        {
+            AccountingPeriodId = Guid.NewGuid().ToString("D")
+        };
+
+        var evidence = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [active, resolved, wrongPeriod],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 1);
+
+        evidence.Select(static item => item.BreakId).Should().Equal("active", "resolved");
+        evidence.Single(static item => item.BreakId == "resolved").Disposition
+            .Should().Be(ReconciliationBreakDispositionDto.Resolved);
+    }
+
+    [Fact]
+    public void CloseEvidence_RejectsStatusDispositionContradictionsBeforeRetention()
+    {
+        var bookId = Guid.NewGuid();
+        var openWithStaleDisposition = ScopedBreak("open-with-stale-disposition", "fund-a", bookId) with
+        {
+            Disposition = ReconciliationBreakDispositionDto.Resolved,
+            DispositionReason = "Stale terminal state.",
+            ResolvedBy = "controller-a",
+            DispositionEvidenceHash = new string('d', 64)
+        };
+        var resolvedWithoutDisposition = ScopedBreak("resolved-without-disposition", "fund-a", bookId) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            BlockedOutputs = []
+        };
+        var activeLifecycleWithTerminalStatus = ScopedBreak(
+            "active-lifecycle-terminal-status",
+            "fund-a",
+            bookId) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Investigating,
+            Disposition = ReconciliationBreakDispositionDto.Resolved,
+            DispositionReason = "Contradictory retained terminal disposition.",
+            ResolvedBy = "controller-b",
+            DispositionEvidenceHash = new string('e', 64),
+            BlockedOutputs = []
+        };
+        var terminalLifecycleWithOpenStatus = ScopedBreak(
+            "terminal-lifecycle-open-status",
+            "fund-a",
+            bookId) with
+        {
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved
+        };
+
+        var staleDispositionAct = () => AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [openWithStaleDisposition],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 0);
+        var missingDispositionAct = () => AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [resolvedWithoutDisposition],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 0);
+        var activeLifecycleAct = () => AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [activeLifecycleWithTerminalStatus],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 0);
+        var terminalLifecycleAct = () => AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [terminalLifecycleWithOpenStatus],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 1);
+
+        staleDispositionAct.Should().Throw<InvalidOperationException>()
+            .WithMessage("*open-with-stale-disposition*contradictory lifecycle*queue status*disposition*");
+        missingDispositionAct.Should().Throw<InvalidOperationException>()
+            .WithMessage("*resolved-without-disposition*contradictory lifecycle*queue status*disposition*");
+        activeLifecycleAct.Should().Throw<InvalidOperationException>()
+            .WithMessage("*active-lifecycle-terminal-status*contradictory*");
+        terminalLifecycleAct.Should().Throw<InvalidOperationException>()
+            .WithMessage("*terminal-lifecycle-open-status*contradictory*");
+    }
+
+    [Fact]
+    public void CloseGate_BlocksOpenExactBreakWithRecoveryGuidance_AndAllowsDisposedEvidence()
+    {
+        var bookId = Guid.NewGuid();
+        var period = new LedgerPeriodDto(
+            AccountingPeriodId,
+            bookId,
+            2026,
+            7,
+            "2026-07",
+            new DateOnly(2026, 7, 1),
+            ReportingAsOfDate,
+            LedgerPeriodStatusDto.SoftClosed,
+            CapturedAt,
+            ClosedAt: null,
+            Version: 1);
+        var openEvidence = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [ScopedBreak("open-exact", "fund-a", bookId)],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 1);
+        var resolvedBreak = ScopedBreak("resolved-exact", "fund-a", bookId) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = ReconciliationBreakDispositionDto.Resolved,
+            DispositionReason = "Matched to retained custodian evidence.",
+            ResolvedBy = "fund-controller",
+            DispositionEvidenceHash = new string('d', 64),
+            BlockedOutputs = []
+        };
+        var disposedEvidence = AccountingClosePostingWorkbenchBridge.BuildExactReportingBreakEvidence(
+            [resolvedBreak],
+            "fund-a",
+            bookId,
+            AccountingPeriodId,
+            ReportingAsOfDate,
+            expectedOpenBreakCount: 0);
+
+        var blockedAct = () => AccountingClosePostingWorkbenchBridge.EnsureNoOpenReportingBreaks(
+            openEvidence,
+            period);
+        var allowedAct = () => AccountingClosePostingWorkbenchBridge.EnsureNoOpenReportingBreaks(
+            disposedEvidence,
+            period);
+
+        blockedAct.Should().Throw<InvalidOperationException>()
+            .WithMessage("*open-exact*Assign and resolve, waive, or supersede each case, then retry hard close.*");
+        allowedAct.Should().NotThrow();
     }
 
     [Theory]
@@ -218,6 +627,117 @@ public sealed class ReportingRunCertificationServiceTests
     }
 
     [Fact]
+    public async Task ProduceAsync_RetainsDeterministicPreviewWithPackageHashAndDownloadIdentity()
+    {
+        var production = await ProduceAsync("run-preview", ReportingOutputFormatDto.Pdf);
+        var preview = production.Artifacts.Single(item => item.FileName == "run-preview.preview.json");
+        preview.ContentType.Should().Be("application/vnd.meridian.reporting-preview+json");
+        var document = JsonNode.Parse(preview.Content.Span)!;
+        document["schemaVersion"]!.GetValue<string>().Should().Be("meridian.reporting.retained-preview.v1");
+        document["certifiedDatasetRowCount"]!.GetValue<int>().Should().Be(Rows().Length);
+        document["previewRowCount"]!.GetValue<int>().Should().Be(Rows().Length);
+        document["rows"]!.AsArray().Should().HaveCount(Rows().Length);
+        document["primaryArtifact"]!["artifactId"]!.GetValue<string>().Should().Be("run-preview.pdf");
+
+        var retainedManifestArtifact = production.Artifacts.Single(item => item.ArtifactId == production.ManifestArtifactId);
+        var retainedManifest = DeterministicReportingCertifiedArtifactProducer.ParseRetainedManifest(
+            retainedManifestArtifact.Content.Span);
+        document["certifiedDatasetHashSha256"]!.GetValue<string>()
+            .Should().Be(retainedManifest.CertifiedDatasetHashSha256);
+        var descriptor = retainedManifest.Artifacts.Single(item => item.ArtifactId == preview.ArtifactId);
+        descriptor.FileName.Should().Be(preview.FileName);
+        descriptor.ContentType.Should().Be(preview.ContentType);
+        descriptor.ByteLength.Should().Be(preview.Content.Length);
+        descriptor.ContentHashSha256.Should().Be(
+            Convert.ToHexString(SHA256.HashData(preview.Content.Span)).ToLowerInvariant());
+    }
+
+    [Fact]
+    public async Task ProduceAsync_PreUpgradeCompletedManifestWithoutPreviewPreservesItsDeclarationSet()
+    {
+        var template = Template(reportWriterGrid: false);
+        var certified = await new ReportingRunCertificationService(
+                new StubAuthoritativeSource(Rows()),
+                new StubReconciliationSource())
+            .CertifyAsync(
+                template,
+                Readiness("evaluation-legacy-artifact-set", CapturedAt),
+                Access());
+        var current = BuildManifest("run-pre-preview", template, certified);
+        var preUpgrade = current with
+        {
+            Artifacts = current.Artifacts
+                .Where(static artifact => !artifact.EndsWith(".preview.json", StringComparison.Ordinal))
+                .ToImmutableArray()
+        };
+
+        var production = await new DeterministicReportingCertifiedArtifactProducer()
+            .ProduceAsync(preUpgrade);
+
+        production.Artifacts.Select(static artifact => artifact.ArtifactId)
+            .Should().BeEquivalentTo(preUpgrade.Artifacts);
+        production.Artifacts.Should().NotContain(static artifact =>
+            artifact.FileName.EndsWith(".preview.json", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ArtifactDeclarations_RejectGridFileNameCollisionsAfterNormalization()
+    {
+        var template = Template(reportWriterGrid: false) with
+        {
+            ReportWriterGrids =
+            [
+                new ReportWriterGridDefinitionDto(
+                    "tax/a",
+                    "Tax A",
+                    ReportWriterGridKindDto.Detail,
+                    RowFields: [],
+                    Metrics: []),
+                new ReportWriterGridDefinitionDto(
+                    "tax-a",
+                    "Tax A alternate",
+                    ReportWriterGridKindDto.Detail,
+                    RowFields: [],
+                    Metrics: [])
+            ]
+        };
+
+        var action = () => ReportingArtifactDeclaration.Build(
+            "run-grid-collision",
+            template,
+            Parameters(ReportingOutputFormatDto.Pdf));
+
+        action.Should().Throw<InvalidOperationException>()
+            .WithMessage("*colliding artifact file names*");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_EvidenceVaultBytesAreStableAcrossRowDictionaryInsertionOrder()
+    {
+        var rows = Rows();
+        var reversedRows = rows
+            .Select(static row => (IReadOnlyDictionary<string, string>)row
+                .Reverse()
+                .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal))
+            .ToImmutableArray();
+
+        var first = await ProduceAsync(
+            "run-evidence-vault-order",
+            ReportingOutputFormatDto.EvidenceVault,
+            rows);
+        var second = await ProduceAsync(
+            "run-evidence-vault-order",
+            ReportingOutputFormatDto.EvidenceVault,
+            reversedRows);
+        var firstArtifact = first.Artifacts.Single(item =>
+            item.FileName == "run-evidence-vault-order.evidence-vault.json");
+        var secondArtifact = second.Artifacts.Single(item =>
+            item.FileName == "run-evidence-vault-order.evidence-vault.json");
+
+        firstArtifact.Content.ToArray().Should().Equal(secondArtifact.Content.ToArray());
+    }
+
+    [Fact]
     public async Task ProduceAsync_XlsxUsesInlineTextAndPreservesExactCertifiedValuesWithoutFormulaCells()
     {
         var production = await ProduceAsync("run-xlsx", ReportingOutputFormatDto.Xlsx);
@@ -237,6 +757,38 @@ public sealed class ReportingRunCertificationServiceTests
     }
 
     [Fact]
+    public async Task ProduceAsync_XlsxRemovesXml10ForbiddenControlsAndProducesParseableWorksheetXml()
+    {
+        const string safeCellValue = "Cash & <reserve> \"quoted\" 'apostrophe' 💰";
+        var rows = ImmutableArray.Create<IReadOnlyDictionary<string, string>>(
+            Row(
+                ("account", $"Cash\u0001\u000B & <reserve> \"quoted\" 'apostrophe' 💰"),
+                ("netAmount", "123.45")));
+        var production = await ProduceAsync(
+            "run-xlsx-controls",
+            ReportingOutputFormatDto.Xlsx,
+            rows);
+        var artifact = production.Artifacts.Single(item => item.FileName == "run-xlsx-controls.xlsx");
+        using var stream = new MemoryStream(artifact.Content.ToArray());
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+        await using var worksheet = archive.GetEntry("xl/worksheets/sheet1.xml")!.Open();
+
+        var document = await XDocument.LoadAsync(
+            worksheet,
+            LoadOptions.PreserveWhitespace,
+            CancellationToken.None);
+        var values = document
+            .Descendants(XName.Get("t", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"))
+            .Select(static element => element.Value)
+            .ToArray();
+
+        values.Should().Contain(safeCellValue);
+        values.Should().OnlyContain(static value =>
+            !value.Contains('\u0001')
+            && !value.Contains('\u000B'));
+    }
+
+    [Fact]
     public async Task ProduceAsync_PdfIncludesCertifiedAccountTotalsAndRowHash()
     {
         var production = await ProduceAsync("run-pdf", ReportingOutputFormatDto.Pdf);
@@ -249,6 +801,167 @@ public sealed class ReportingRunCertificationServiceTests
         pdf.Should().Contain("Cash: 123.45 / 0 / 123.45");
         pdf.Should().Contain("Payable: 0 / 23.45 / -23.45");
         pdf.Should().Contain("Certified row hash:");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_PdfPaginatesEveryAccountSummaryWithinVisiblePageBounds()
+    {
+        const int accountCount = 120;
+        const string finalAccountPrefix = "Account-119-FINAL-";
+        var accountNames = Enumerable.Range(0, accountCount)
+            .Select(index => index == accountCount - 1
+                ? finalAccountPrefix + new string('X', 120)
+                : $"Account-{index:D3}")
+            .ToArray();
+        var rows = accountNames
+            .Select((account, index) => Row(
+                ("account", account),
+                ("debit", index.ToString()),
+                ("credit", "0"),
+                ("netAmount", index.ToString())))
+            .Cast<IReadOnlyDictionary<string, string>>()
+            .ToImmutableArray();
+
+        var production = await ProduceAsync(
+            "run-pdf-many-accounts",
+            ReportingOutputFormatDto.Pdf,
+            rows);
+        var pdf = Encoding.ASCII.GetString(production.Artifacts
+            .Single(artifact => artifact.FileName == "run-pdf-many-accounts.pdf")
+            .Content.Span);
+
+        var pagesRoot = Regex.Match(
+            pdf,
+            @"<< /Type /Pages /Kids \[(?<kids>[^\]]+)\] /Count (?<count>\d+) >>");
+        pagesRoot.Success.Should().BeTrue();
+        pagesRoot.Groups["count"].Value.Should().Be("3");
+        Regex.Matches(pagesRoot.Groups["kids"].Value, @"\d+ 0 R").Count.Should().Be(3);
+        Regex.Matches(
+            pdf,
+            @"(?m)^\d+ 0 obj\r?\n<< /Type /Page /Parent 2 0 R ").Count.Should().Be(3);
+
+        var pageStreams = Regex.Matches(
+            pdf,
+            @"stream\r?\n(?<content>.*?)endstream",
+            RegexOptions.Singleline);
+        pageStreams.Count.Should().Be(3);
+        foreach (Match pageStream in pageStreams)
+        {
+            Regex.Matches(pageStream.Groups["content"].Value, @"\) Tj T\*").Count
+                .Should().BeLessThanOrEqualTo(48);
+        }
+
+        foreach (var account in accountNames.Take(accountCount - 1))
+        {
+            pdf.Should().Contain($"{account}:");
+        }
+
+        pdf.Should().Contain(finalAccountPrefix);
+        pdf.Should().Contain("119 / 0 / 119");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_PdfRetainsEveryNonAccountCertifiedRowBeyondLegacyPreviewLimit()
+    {
+        const int rowCount = 65;
+        var rows = Enumerable.Range(0, rowCount)
+            .Select(index => Row(
+                ("positionId", $"position-{index:D3}"),
+                ("quantity", (1000 + index).ToString(CultureInfo.InvariantCulture))))
+            .Cast<IReadOnlyDictionary<string, string>>()
+            .ToImmutableArray();
+
+        var production = await ProduceAsync(
+            "run-pdf-non-account-complete",
+            ReportingOutputFormatDto.Pdf,
+            rows);
+        var pdf = Encoding.ASCII.GetString(production.Artifacts
+            .Single(artifact => artifact.FileName == "run-pdf-non-account-complete.pdf")
+            .Content.Span);
+
+        pdf.Should().Contain("Certified ledger rows: 65");
+        pdf.Should().Contain("positionId=position-040");
+        pdf.Should().Contain("positionId=position-064");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_PdfRejectsInvalidLedgerNumericDataInsteadOfCoercingItToZero()
+    {
+        var rows = ImmutableArray.Create<IReadOnlyDictionary<string, string>>(
+            Row(
+                ("account", "Cash"),
+                ("debit", "not-a-decimal"),
+                ("credit", "0"),
+                ("netAmount", "0")));
+
+        Func<Task> act = async () => await ProduceAsync(
+            "run-pdf-invalid-decimal",
+            ReportingOutputFormatDto.Pdf,
+            rows);
+
+        var exception = (await act.Should().ThrowAsync<ReportingGovernanceException>()).Which;
+        exception.Message.Should().Contain("row 1")
+            .And.Contain("debit")
+            .And.Contain("cannot be coerced to zero")
+            .And.Contain("recertify");
+    }
+
+    [Fact]
+    public void ReconciliationEvidence_RejectsUndefinedTerminalDispositionEvenWithMatchingEvidenceHash()
+    {
+        var invalidBreak = ScopedBreak("invalid-disposition", "fund-a", StubAuthoritativeSource.BookId) with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Disposition = (ReconciliationBreakDispositionDto)byte.MaxValue,
+            DispositionReason = "Unknown disposition must not close a report gate.",
+            ResolvedBy = "controller-a",
+            BlockedOutputs = []
+        };
+        var exactBreak = ReportingReconciliationEvidenceValidation.CreateBreakEvidence(invalidBreak);
+        var completion = new ReportingReconciliationCompletionEvidence(
+            "completion-invalid-disposition",
+            new string('a', 64),
+            CapturedAt,
+            HasOpenBreaks: false,
+            ["reconciliation:invalid-disposition"],
+            [exactBreak]);
+
+        Action act = () => ReportingReconciliationEvidenceValidation.ValidateCompletion(completion);
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*undefined disposition value*255*");
+    }
+
+    [Theory]
+    [InlineData("Trésorerie", "U+00E9")]
+    [InlineData("現金", "U+73FE")]
+    public async Task ProduceAsync_PdfUnicodeAccountNamesFailBeforeLossyBytesAndIdentifyScalar(
+        string accountName,
+        string expectedScalar)
+    {
+        var rows = ImmutableArray.Create<IReadOnlyDictionary<string, string>>(
+            Row(
+                ("account", accountName),
+                ("debit", "10"),
+                ("credit", "0"),
+                ("netAmount", "10")));
+        ReportingGovernedArtifactProduction? production = null;
+        Func<Task> act = async () =>
+        {
+            production = await ProduceAsync(
+                "run-pdf-unicode",
+                ReportingOutputFormatDto.Pdf,
+                rows);
+        };
+
+        var exception = (await act.Should().ThrowAsync<ReportingGovernanceException>()).Which;
+
+        production.Should().BeNull("the producer must fail before returning any lossy artifact bytes");
+        exception.Message.Should().Contain(expectedScalar)
+            .And.Contain("No lossy PDF bytes were emitted or retained")
+            .And.Contain("XLSX, CSV, or Evidence Vault")
+            .And.Contain("embedded Unicode PDF font");
     }
 
     [Fact]
@@ -316,11 +1029,13 @@ public sealed class ReportingRunCertificationServiceTests
 
     private static async Task<ReportingGovernedArtifactProduction> ProduceAsync(
         string runId,
-        ReportingOutputFormatDto outputFormat)
+        ReportingOutputFormatDto outputFormat,
+        ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default)
     {
+        var rows = certifiedRows.IsDefault ? Rows() : certifiedRows;
         var template = Template(reportWriterGrid: false);
         var certified = await new ReportingRunCertificationService(
-                new StubAuthoritativeSource(Rows()),
+                new StubAuthoritativeSource(rows),
                 new StubReconciliationSource())
             .CertifyAsync(
                 template,
@@ -359,6 +1074,31 @@ public sealed class ReportingRunCertificationServiceTests
             AuthoritativeSource: certified.AuthoritativeSource,
             CertifiedDatasetRows: certified.DatasetRows);
     }
+
+    private static ReconciliationBreakQueueItem ScopedBreak(string breakId, string fundId, Guid bookId) => new(
+        BreakId: breakId,
+        RunId: "reconciliation-run",
+        StrategyName: "Fund reconciliation",
+        Category: ReconciliationBreakCategory.AmountMismatch,
+        Status: ReconciliationBreakQueueStatus.Open,
+        Variance: -10m,
+        Reason: "Scoped mismatch",
+        AssignedTo: null,
+        DetectedAt: CapturedAt,
+        LastUpdatedAt: CapturedAt,
+        FundAccountId: fundId,
+        EvidenceLinks: [$"evidence:{breakId}"],
+        SourceFingerprint: new string('c', 64),
+        LedgerBookId: bookId,
+        Measures:
+        [
+            new(ReconciliationBreakMeasureKindDto.Value, 100m, 90m, -10m, 1m, "USD"),
+            new(ReconciliationBreakMeasureKindDto.Quantity, null, null, null, null, "units", "Quantity was not supplied."),
+            new(ReconciliationBreakMeasureKindDto.CostBasis, null, null, null, null, "USD", "Cost basis was not supplied.")
+        ],
+        BlockedOutputs: ["FinalReport", "PeriodClose"],
+        AccountingPeriodId: AccountingPeriodId.ToString("D"),
+        AsOfDate: ReportingAsOfDate);
 
     private static ReportingTemplateMetadata Template(bool reportWriterGrid = true) => new(
         "test-report",
@@ -544,5 +1284,26 @@ public sealed class ReportingRunCertificationServiceTests
             string sourceCheckpointHash,
             CancellationToken cancellationToken = default) =>
             ValueTask.FromResult<ReportingReconciliationEvidenceReceipt?>(null);
+    }
+
+    private sealed class ReturningReconciliationStore(ReportingReconciliationEvidenceReceipt receipt) :
+        IReportingReconciliationEvidenceStore
+    {
+        public ValueTask<ReportingReconciliationEvidenceReceipt?> GetExactAsync(
+            string tenantId,
+            string organizationId,
+            string? companyId,
+            string fundId,
+            string ledgerBookId,
+            string accountingPeriodId,
+            string accountingBasis,
+            DateOnly asOfDate,
+            string sourceCheckpointId,
+            string sourceCheckpointHash,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult<ReportingReconciliationEvidenceReceipt?>(receipt);
+        }
     }
 }

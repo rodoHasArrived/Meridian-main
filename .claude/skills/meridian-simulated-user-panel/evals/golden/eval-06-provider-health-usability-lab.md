@@ -1,16 +1,24 @@
+**Skill Selection**
+- Skill: `meridian-simulated-user-panel`
+- Mode: `usability_lab`
+- Reason: fixture-backed repeated-run comparison
+- Required Opening: inspect comparable provider-health evidence
+
 ## Executive Summary
 - Mode: `usability_lab`
+- Evidence status: `partial`
+- Disclaimer: This is simulated persona feedback, not observed user research.
 - Verdict: `rerun_after_changes`
 - The provider health surface has the right operational ingredients, but the comparison bundle shows repeated complaint clusters around stale warning state, weak owner assignment after failure, and inconsistent severity cues across runs.
 
 ## Panel
-- Data Operations Manager — tests recovery confidence and operator continuity.
-- Risk / Compliance Lead — tests state clarity, ownership, and review defensibility.
-- Trading Operations Lead — tests whether workflow interruptions are actionable.
-- Owner-Operator — tests whether the current trend is strong enough to advance to a release gate.
+- Data Operations Analyst — tests recovery confidence and operator continuity.
+- Compliance Officer — tests state clarity, ownership, and review defensibility.
+- Operations Manager — tests whether workflow interruptions are actionable.
+- System Administrator — tests whether the current trend is strong enough to advance to a release gate.
 
 ## Persona Findings
-### Data Operations Manager
+### Data Operations Analyst
 - Liked: The page surfaces heartbeat, warning, data-gap, and retry actions in one place.
 - Didn't like: A stale warning badge that remains after successful retry undermines operator trust across multiple runs.
 - Missing or risky: Failed retry cases still do not show a clear owner assignment or next action.
@@ -24,7 +32,7 @@
 - Extensibility: 4/5 - The surface can mature into a strong ops console.
 - Learning Curve: 3/5 - The meaning of severity still varies too much.
 
-### Risk / Compliance Lead
+### Compliance Officer
 - Liked: The artifact shows a genuine attempt to record warnings and retries rather than hiding them.
 - Didn't like: Inconsistent severity cues across runs make the review story harder to defend.
 - Missing or risky: A failed retry without owner assignment leaves accountability too vague.
@@ -38,7 +46,7 @@
 - Extensibility: 4/5 - The model can support stronger oversight.
 - Learning Curve: 3/5 - The page is readable, though not yet consistent.
 
-### Trading Operations Lead
+### Operations Manager
 - Liked: Retry and warning signals make the flow operational instead of passive.
 - Didn't like: If stale warning state persists after success, operators will overreact or ignore real signals later.
 - Missing or risky: The workflow does not yet tell the operator who owns the failed retry next step.
@@ -52,7 +60,7 @@
 - Extensibility: 4/5 - A stronger escalation loop would make this powerful.
 - Learning Curve: 3/5 - Operators will learn it, but may learn the wrong habits if the stale warning persists.
 
-### Owner-Operator
+### System Administrator
 - Liked: The comparison bundle proves Meridian can already capture useful operational evidence across runs.
 - Didn't like: The repeated complaint cluster around stale warning state and missing owner assignment would create trust debt if pushed into a release gate too early.
 - Missing or risky: The current trend is not yet stable enough to call production-safe because the same state problems repeat across runs.
@@ -70,7 +78,7 @@
 - Shared complaint: the stale warning badge that remains after successful retry is a repeated complaint cluster across runs.
 - Shared complaint: failed retry cases need explicit owner assignment and next-step guidance.
 - Shared complaint: inconsistent severity language weakens the comparison story.
-- Tension: the Trading Operations Lead wants a faster path to advance_to_release_gate once stale state is fixed, while the Risk / Compliance Lead would still want one clean comparison rerun first.
+- Tension: the Operations Manager wants a faster path to advance_to_release_gate once stale state is fixed, while the Compliance Officer would still want one clean comparison rerun first.
 
 ## Owner Actions
 - Now: Fix stale warning clearing, add owner assignment for failed retry, and normalize severity labels across runs.

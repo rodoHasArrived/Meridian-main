@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Ui/dashboard
@@ -223,6 +223,15 @@ tolerance profile, priority, SLA badge label/tone, age band, root cause, resolut
 comment excerpt, comment/evidence counts, related-case counts, required sign-off role/status,
 source origin/fingerprint, and decision note so browser recovery posture matches the WPF desktop
 Fund Ledger detail panel without reimplementing casework rules.
+Accounting reconciliation casework actions now consume the server-owned verified outcome on every
+assign, resolve, waive,
+supersede, comment, and lifecycle transition. The queue exposes item-level value, quantity, and
+cost-basis measures, exact fund/book/period/as-of scope, continuity blockers, immutable evidence and
+approval lineage, and conflict-safe replay receipts. Browser success UI is driven only by
+`Succeeded` or `CompletedWithWarnings`; `Blocked` and `Failed` retain recovery guidance and do not
+optimistically mutate local state. Material waiver or supersession remains unavailable when the
+server cannot resolve independent approval evidence.
+
 Accounting reconciliation narratives use canonical Accounting review language while retained
 Governance view-model names remain compatibility seams.
 Accounting reconciliation statement runs now use the shared statement-run endpoint/client seam for

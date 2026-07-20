@@ -39,6 +39,39 @@ public sealed class StrategyRunWorkspaceServiceTests
     }
 
     [Fact]
+    public async Task DurableFallbackRepository_ShouldReplayRunsAcrossInstances()
+    {
+        var dataRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-wpf-strategy-fallback-tests",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+
+        try
+        {
+            var started = StrategyRunEntry.Start(
+                "fallback-strategy",
+                "Fallback Strategy",
+                RunType.Backtest,
+                "fallback-run");
+            var first = StrategyRunWorkspaceService.CreateDurableFallbackRepository(dataRoot);
+            await first.RecordRunAsync(started);
+            await first.RecordRunAsync(started.Complete(metrics: null));
+
+            var restarted = StrategyRunWorkspaceService.CreateDurableFallbackRepository(dataRoot);
+            var replayed = await restarted.GetRunByIdAsync(started.RunId);
+
+            replayed.Should().NotBeNull();
+            replayed!.TerminalStatus.Should().Be(StrategyRunStatus.Completed);
+            File.Exists(Path.Combine(dataRoot, "operations", "case-history.jsonl")).Should().BeTrue();
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task RecordBacktestRunAsync_ShouldExposeRecordedRunAcrossBrowserAndDrillIns()
     {
         var store = new StrategyRunStore();

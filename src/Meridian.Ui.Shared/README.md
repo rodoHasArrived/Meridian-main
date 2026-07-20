@@ -84,6 +84,10 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+The canonical reconciliation queue publishes explicit assign, resolve, waive, and supersede
+actions. Waive and supersede routes preserve the authenticated operator, approval and successor
+lineage, typed Value/Quantity/CostBasis measures, blocked outputs, and disposition evidence hashes;
+browser API contracts mirror these fields rather than inferring terminal state from queue status.
 Operations Continuity workflow list, detail, timeline, break-list, ledger-preview, close-readiness,
 approval-policy, and close-calendar reads require the shared operations-continuity read permission
 because those payloads expose Financial Operations evidence, blockers, assignments, and period-close

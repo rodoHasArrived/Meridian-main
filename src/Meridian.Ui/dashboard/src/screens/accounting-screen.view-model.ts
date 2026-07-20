@@ -31,6 +31,12 @@ import {
 } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
+import { markDevelopmentFixtureUsage } from "@/lib/api";
+import { resolveDevSecurityScheduleEvents } from "@/lib/security-schedule-dev-fixtures";
+import {
+  requireSuccessfulReconciliationCasework,
+  type AccountingReconciliationServices
+} from "./reconciliation-casework-outcome";
 import { formatBytes, formatCount, formatCurrency, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import {
   buildSecurityConflictAction, buildSecurityIdentityAliasRow, buildSecurityIdentityIdentifierRow,
@@ -157,7 +163,6 @@ import type {
   ManualJournalEntryLine,
   ManualJournalEntryWorkbench,
   ResolveReconciliationBreakRequest,
-  ReviewReconciliationBreakRequest,
   SaveManualJournalEntryDraftRequest,
   SecurityIdentityDrillIn,
   SecurityAliasEntry,
@@ -217,16 +222,7 @@ export interface SecurityMasterServices {
   resolveConflict: (request: ResolveConflictRequest) => Promise<SecurityMasterConflict>;
 }
 
-export interface AccountingReconciliationServices {
-  getBreakQueue: () => Promise<ReconciliationBreakQueueItem[]>;
-  reviewBreak: (request: ReviewReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
-  resolveBreak: (request: ResolveReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
-  getTrialBalance: (runId: string) => Promise<LedgerTrialBalanceLine[]>;
-  getCalibrationSummary: () => Promise<ReconciliationCalibrationSummary>;
-  getStatementRuns: () => Promise<StatementRunSummary[]>;
-  getStatementRun: (runId: string) => Promise<StatementRunSummary>;
-  previewTransactionLab: (request: InvestmentAccountingTransactionLabRequest) => Promise<InvestmentAccountingTransactionLabPreview>;
-}
+export type { AccountingReconciliationServices } from "./reconciliation-casework-outcome";
 
 export interface AccountingReportingServices {
   runAnalysisExport: (profileId: string) => Promise<ExportAnalysisResult>;
@@ -2960,113 +2956,6 @@ const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
   getTrustSnapshot: (securityId) => getSecurityTrustSnapshot(securityId)
 };
 
-const securityScheduleFixtures: Record<string, SecurityCashFlowScheduleEvent[]> = {
-  "sec-dev-004": [
-    {
-      eventId: "sched-sec-dev-004-cpn-2026-06",
-      securityId: "sec-dev-004",
-      scheduleFamily: "bond",
-      eventType: "Coupon",
-      paymentDate: "2026-06-15",
-      accrualStartDate: "2025-12-15",
-      accrualEndDate: "2026-06-15",
-      couponRatePct: 5.875,
-      expectedAmount: 29375,
-      actualAmount: null,
-      principalAmount: null,
-      interestAmount: 29375,
-      factorStart: 1,
-      factorEnd: 1,
-      currency: "USD",
-      postingStatus: "Forecast",
-      auditReference: "fixture/security-master/cash-flow/sec-dev-004/cpn-2026-06",
-      note: "Semi-annual fixed coupon projected from the reference coupon schedule."
-    },
-    {
-      eventId: "sched-sec-dev-004-paydown-2026-09",
-      securityId: "sec-dev-004",
-      scheduleFamily: "structured",
-      eventType: "Paydown",
-      paymentDate: "2026-09-15",
-      accrualStartDate: "2026-06-15",
-      accrualEndDate: "2026-09-15",
-      couponRatePct: 5.875,
-      expectedAmount: 148750,
-      actualAmount: 147920,
-      principalAmount: 125000,
-      interestAmount: 23750,
-      factorStart: 1,
-      factorEnd: 0.875,
-      currency: "USD",
-      postingStatus: "Variance",
-      auditReference: "fixture/security-master/cash-flow/sec-dev-004/paydown-2026-09",
-      note: "Principal paydown carries a small expected-versus-actual variance for operator review."
-    },
-    {
-      eventId: "sched-sec-dev-004-maturity-2031-12",
-      securityId: "sec-dev-004",
-      scheduleFamily: "bond",
-      eventType: "Maturity",
-      paymentDate: "2031-12-15",
-      accrualStartDate: "2031-06-15",
-      accrualEndDate: "2031-12-15",
-      couponRatePct: 5.875,
-      expectedAmount: 529375,
-      actualAmount: null,
-      principalAmount: 500000,
-      interestAmount: 29375,
-      factorStart: 0.875,
-      factorEnd: 0,
-      currency: "USD",
-      postingStatus: "Pending",
-      auditReference: "fixture/security-master/cash-flow/sec-dev-004/maturity-2031-12",
-      note: "Final coupon and principal repayment remain pending until trustee schedule confirmation."
-    }
-  ],
-  "sec-1": [
-    {
-      eventId: "sched-sec-1-cpn-2026-05",
-      securityId: "sec-1",
-      scheduleFamily: "bond",
-      eventType: "Coupon",
-      paymentDate: "2026-05-15",
-      accrualStartDate: "2025-11-15",
-      accrualEndDate: "2026-05-15",
-      couponRatePct: 5.25,
-      expectedAmount: 26250,
-      actualAmount: 26250,
-      principalAmount: null,
-      interestAmount: 26250,
-      factorStart: 1,
-      factorEnd: 1,
-      currency: "USD",
-      postingStatus: "Posted",
-      auditReference: "fixture/security-master/cash-flow/sec-1/cpn-2026-05",
-      note: "Validation coupon row used by browser workbench checks."
-    },
-    {
-      eventId: "sched-sec-1-principal-2026-11",
-      securityId: "sec-1",
-      scheduleFamily: "bond",
-      eventType: "Principal",
-      paymentDate: "2026-11-15",
-      accrualStartDate: "2026-05-15",
-      accrualEndDate: "2026-11-15",
-      couponRatePct: 5.25,
-      expectedAmount: 126250,
-      actualAmount: null,
-      principalAmount: 100000,
-      interestAmount: 26250,
-      factorStart: 1,
-      factorEnd: 0.9,
-      currency: "USD",
-      postingStatus: "Pending",
-      auditReference: "fixture/security-master/cash-flow/sec-1/principal-2026-11",
-      note: "Validation amortization row keeps schedule selection consistent."
-    }
-  ]
-};
-
 export function useAccountingCashFlowViewModel(
   cashFlow: AccountingCashFlowSummary | null,
   pathname: string,
@@ -4170,7 +4059,8 @@ export function useAccountingReconciliationViewModel(
     setBreakActionError(null);
 
     try {
-      const updated = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      const operation = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
       setBreakActionError(describeApiError(err, "Break assignment failed."));
@@ -4198,13 +4088,14 @@ export function useAccountingReconciliationViewModel(
     setBreakActionError(null);
 
     try {
-      const updated = await services.resolveBreak({
+      const operation = await services.resolveBreak({
         breakId,
         status,
         resolvedBy: "ops.gov",
         resolutionNote: "Reviewed in accounting panel.",
         operatorRationale: trimmedRationale
       });
+      const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
       setBreakActionError(describeApiError(err, "Break resolution failed."));
@@ -6134,11 +6025,19 @@ function buildSecurityStatusAnnouncement({
 }
 
 export function resolveSecurityScheduleEvents(securityId: string | null): SecurityCashFlowScheduleEvent[] {
-  if (!securityId) {
+  // Fixture schedules are a development-only affordance. In production a security without a
+  // live trust snapshot must show an honest empty schedule, never fabricated rows with
+  // posted/variance statuses. The DEV check is read at call time so tests can stub it.
+  if (!securityId || !import.meta.env.DEV) {
     return [];
   }
 
-  return (securityScheduleFixtures[securityId] ?? []).map((event) => ({ ...event }));
+  const events = resolveDevSecurityScheduleEvents(securityId);
+  if (events.length > 0) {
+    // Drives the app-shell "Demo data" notice, matching every other DEV fixture lane.
+    markDevelopmentFixtureUsage();
+  }
+  return events;
 }
 
 export function mapScheduleBookToCashFlowScheduleEvents(

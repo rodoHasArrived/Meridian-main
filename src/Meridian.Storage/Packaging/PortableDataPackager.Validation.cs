@@ -30,24 +30,9 @@ public sealed partial class PortableDataPackager
             return await JsonSerializer.DeserializeAsync<PackageManifest>(entryStream, cancellationToken: ct);
         }
 
-        // For tar.gz, simplified reading
-        await using var fileStream = File.OpenRead(packagePath);
-        await using var gzipStream = new GZipStream(fileStream, CompressionMode.Decompress);
-        using var reader = new StreamReader(gzipStream);
-
-        var line = await reader.ReadLineAsync(ct);
-        if (line?.StartsWith("__MANIFEST__:") != true)
-            return null;
-
-        var jsonBuilder = new StringBuilder();
-        while ((line = await reader.ReadLineAsync(ct)) != null)
-        {
-            if (line == "__END_MANIFEST__")
-                break;
-            jsonBuilder.AppendLine(line);
-        }
-
-        return JsonSerializer.Deserialize<PackageManifest>(jsonBuilder.ToString());
+        // Non-Zip packages have no implemented on-disk format (the removed pseudo-tar.gz writer
+        // corrupted binary content); callers reject them before reaching this point.
+        return null;
     }
 
     private Task<List<string>> VerifyFilesInPackageAsync(

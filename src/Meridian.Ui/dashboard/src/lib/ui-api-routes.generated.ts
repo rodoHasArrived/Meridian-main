@@ -731,6 +731,8 @@ export const UI_API_ROUTES = {
   ReconciliationBreakResolve: "/api/workstation/reconciliation/break-queue/{breakId}/resolve",
   ReconciliationBreakAssign: "/api/workstation/reconciliation/break-queue/{breakId}/assign",
   ReconciliationBreakTransition: "/api/workstation/reconciliation/break-queue/{breakId}/transition",
+  ReconciliationBreakWaive: "/api/workstation/reconciliation/break-queue/{breakId}/waive",
+  ReconciliationBreakSupersede: "/api/workstation/reconciliation/break-queue/{breakId}/supersede",
   ReconciliationBreakComments: "/api/workstation/reconciliation/break-queue/{breakId}/comments",
   ReconciliationBreakComment: "/api/workstation/reconciliation/break-queue/{breakId}/comments/{commentId}",
   ReconciliationBreakRootCause: "/api/workstation/reconciliation/break-queue/{breakId}/root-cause",

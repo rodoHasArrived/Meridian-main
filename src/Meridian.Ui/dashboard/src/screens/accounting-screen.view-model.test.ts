@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError as MeridianApiError, describeApiError } from "@/lib/api-errors";
+import { hasDevelopmentFixtureUsage, resetDevelopmentFixtureUsage } from "@/lib/api";
 import type { ReferenceDataEndpointProbeResult, ReferenceDataEndpointProbeStatus } from "@/lib/api";
 import {
   buildCalibrationSummaryViewState,
@@ -1978,9 +1979,34 @@ describe("accounting-screen view model", () => {
     ]));
   });
 
+  it("resolves DEV-only schedule fixtures and marks demo-data usage for the banner", () => {
+    resetDevelopmentFixtureUsage();
+
+    expect(resolveSecurityScheduleEvents("unknown-security")).toEqual([]);
+    expect(hasDevelopmentFixtureUsage()).toBe(false);
+
+    expect(resolveSecurityScheduleEvents("sec-dev-004")).toHaveLength(3);
+    expect(hasDevelopmentFixtureUsage()).toBe(true);
+
+    resetDevelopmentFixtureUsage();
+  });
+
+  it("returns an empty schedule in production instead of fabricated fixture rows", () => {
+    vi.stubEnv("DEV", false);
+    resetDevelopmentFixtureUsage();
+    try {
+      expect(resolveSecurityScheduleEvents("sec-dev-004")).toEqual([]);
+      expect(hasDevelopmentFixtureUsage()).toBe(false);
+    } finally {
+      vi.unstubAllEnvs();
+      resetDevelopmentFixtureUsage();
+    }
+  });
+
   it("keeps cash-flow schedule empty states and fixture resolution deterministic", () => {
     expect(resolveSecurityScheduleEvents("sec-dev-004")).toHaveLength(3);
     expect(resolveSecurityScheduleEvents("unknown-security")).toEqual([]);
+    resetDevelopmentFixtureUsage();
 
     const state = buildSecuritySchedulesViewState({
       securityId: "unknown-security",

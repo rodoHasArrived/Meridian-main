@@ -1,43 +1,63 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Strategies.Services;
 
-public sealed class FileReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
+public sealed partial class FileReconciliationBreakQueueRepository : IReconciliationBreakQueueRepository
 {
+    private const int MaximumBulkCaseCount = 100;
+    private const int CurrentSnapshotSchemaVersion = 2;
     private readonly string _snapshotPath;
     private readonly string _auditPath;
+    private readonly string _mutationLockPath;
     private readonly ILogger<FileReconciliationBreakQueueRepository> _logger;
     private readonly IReconciliationSlaPolicyProvider? _slaPolicyProvider;
+    private readonly Func<string, string, CancellationToken, Task> _stateWriter;
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
+    private static readonly JsonSerializerOptions AuditValidationJsonOptions = CreateJsonOptions();
+    private readonly JsonSerializerOptions _jsonOptions = CreateJsonOptions();
 
     private Dictionary<string, ReconciliationBreakQueueItem>? _items;
+    private SnapshotStamp? _loadedSnapshotStamp;
     private readonly Dictionary<string, ReconciliationBulkCaseworkResult> _bulkResults = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _bulkResultIdsByIdempotencyKey = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, BulkCaseworkReceipt> _bulkReceipts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, CaseworkCommandReceipt> _commandReceipts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly List<ReconciliationBreakQueueAuditEvent> _auditEvents = [];
     private readonly IReconciliationCaseWorkflowService _workflowService = new ReconciliationCaseWorkflowService();
 
     public FileReconciliationBreakQueueRepository(
         string dataDirectory,
         ILogger<FileReconciliationBreakQueueRepository> logger,
-        IReconciliationSlaPolicyProvider? slaPolicyProvider = null)
+        IReconciliationSlaPolicyProvider? slaPolicyProvider = null,
+        Func<string, string, CancellationToken, Task>? stateWriter = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _slaPolicyProvider = slaPolicyProvider;
+        _stateWriter = stateWriter ?? ((path, content, ct) => AtomicFileWriter.WriteAsync(path, content, ct));
 
         Directory.CreateDirectory(dataDirectory);
         _snapshotPath = Path.Combine(dataDirectory, "reconciliation-break-queue.json");
         _auditPath = Path.Combine(dataDirectory, "reconciliation-break-queue-audit.jsonl");
-        _jsonOptions.Converters.Add(new JsonStringEnumConverter());
+        _mutationLockPath = Path.Combine(dataDirectory, "reconciliation-break-queue.lock");
+    }
+
+    private static JsonSerializerOptions CreateJsonOptions()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        options.Converters.Add(new JsonStringEnumConverter());
+        return options;
     }
 
     public async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default)
@@ -108,16 +128,61 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            if (_items!.ContainsKey(item.BreakId))
+            var state = CaptureState();
+            if (_items!.TryGetValue(item.BreakId, out var existing))
             {
+                // Casework mutates fields such as BlockedOutputs after creation. Compare a replay
+                // with the retained creation/migration payload, not the current projection, so a
+                // resolved case can be safely encountered again by deterministic source seeding.
+                var existingInputHash = ComputeRetainedCreateInputHash(item.BreakId, existing);
+                var incomingInputHash = ComputeCreateInputHash(item);
+                var exactReplay = string.Equals(existingInputHash, incomingInputHash, StringComparison.Ordinal);
+                await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
+                    EventId: Guid.NewGuid().ToString("N"),
+                    BreakId: item.BreakId,
+                    EventType: exactReplay ? "CreateReplayAccepted" : "CreateConflict",
+                    PreviousStatus: existing.Status,
+                    NewStatus: existing.Status,
+                    PreviousLifecycleState: existing.LifecycleState,
+                    NewLifecycleState: existing.LifecycleState,
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    AssignedTo: existing.AssignedTo,
+                    ReviewedBy: existing.ReviewedBy,
+                    ResolvedBy: existing.ResolvedBy,
+                    Note: exactReplay
+                        ? "Exact create retry returned the retained reconciliation case without replacing casework state."
+                        : "Create retry was rejected because the same break id was bound to materially different source or scope input.",
+                    Actor: item.AssignedTo ?? item.ReviewedBy ?? item.ResolvedBy ?? "reconciliation-source",
+                    BeforePayload: JsonSerializer.Serialize(existing, _jsonOptions),
+                    AfterPayload: JsonSerializer.Serialize(existing, _jsonOptions),
+                    CorrelationId: item.RunId,
+                    CommandId: $"create:{item.BreakId}",
+                    Source: item.SourceType,
+                    Reason: exactReplay ? existingInputHash : $"existing:{existingInputHash};incoming:{incomingInputHash}"), ct).ConfigureAwait(false);
+                try
+                {
+                    await PersistSnapshotAsync(ct).ConfigureAwait(false);
+                }
+                catch
+                {
+                    RestoreState(state);
+                    throw;
+                }
+
+                if (!exactReplay)
+                {
+                    throw new InvalidOperationException(
+                        $"Reconciliation break id '{item.BreakId}' is already bound to different source or scope input.");
+                }
                 return false;
             }
 
             var normalized = NormalizeLegacyCaseState(item);
             var created = StampComputedFields(normalized, normalized.DetectedAt);
             _items[item.BreakId] = created;
-            await PersistSnapshotAsync(ct).ConfigureAwait(false);
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                 EventId: Guid.NewGuid().ToString("N"),
                 BreakId: item.BreakId,
@@ -143,6 +208,15 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 AfterPayload: JsonSerializer.Serialize(created, _jsonOptions),
                 Source: created.SourceType,
                 Reason: created.SourceReference), ct).ConfigureAwait(false);
+            try
+            {
+                await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                RestoreState(state);
+                throw;
+            }
 
             return true;
         }
@@ -162,7 +236,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
+                await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+                ResetCachedState();
                 await EnsureLoadedAsync(ct).ConfigureAwait(false);
+                var state = CaptureState();
 
                 // Re-key an existing case only when it still lives under the superseded id, no case
                 // has already been created under the current id (which would win by dedupe), and the
@@ -180,7 +257,6 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                     };
                     _items.Remove(previousBreakId!);
                     _items[item.BreakId] = migrated;
-                    await PersistSnapshotAsync(ct).ConfigureAwait(false);
                     await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                         EventId: Guid.NewGuid().ToString("N"),
                         BreakId: migrated.BreakId,
@@ -206,6 +282,15 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                         AfterPayload: JsonSerializer.Serialize(migrated, _jsonOptions),
                         Source: migrated.SourceType,
                         Reason: migrated.SourceReference), ct).ConfigureAwait(false);
+                    try
+                    {
+                        await PersistSnapshotAsync(ct).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        RestoreState(state);
+                        throw;
+                    }
                     return false;
                 }
             }
@@ -245,9 +330,42 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            _items![item.BreakId] = NormalizeLegacyCaseState(item);
-            await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            var state = CaptureState();
+            _items!.TryGetValue(item.BreakId, out var existing);
+            var normalized = NormalizeLegacyCaseState(item);
+            _items[item.BreakId] = normalized;
+            await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
+                EventId: Guid.NewGuid().ToString("N"),
+                BreakId: item.BreakId,
+                EventType: existing is null ? "CaseCreated" : "CaseSaved",
+                PreviousStatus: existing?.Status,
+                NewStatus: normalized.Status,
+                PreviousLifecycleState: existing?.LifecycleState,
+                NewLifecycleState: normalized.LifecycleState,
+                OccurredAt: DateTimeOffset.UtcNow,
+                AssignedTo: normalized.AssignedTo,
+                ReviewedBy: normalized.ReviewedBy,
+                ResolvedBy: normalized.ResolvedBy,
+                Note: normalized.ResolutionNote,
+                Actor: normalized.AssignedTo ?? normalized.ReviewedBy ?? normalized.ResolvedBy ?? "repository-save",
+                BeforePayload: existing is null ? null : JsonSerializer.Serialize(existing, _jsonOptions),
+                AfterPayload: JsonSerializer.Serialize(normalized, _jsonOptions),
+                CorrelationId: normalized.RunId,
+                CommandId: $"save:{normalized.BreakId}:{normalized.Version}",
+                Source: normalized.SourceType,
+                Reason: normalized.SourceReference), ct).ConfigureAwait(false);
+            try
+            {
+                await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                RestoreState(state);
+                throw;
+            }
         }
         finally
         {
@@ -262,13 +380,45 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            if (!_items!.Remove(breakId))
+            if (!_items!.TryGetValue(breakId, out var existing))
             {
                 return false;
             }
 
-            await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            var state = CaptureState();
+            _items.Remove(breakId);
+            await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
+                EventId: Guid.NewGuid().ToString("N"),
+                BreakId: breakId,
+                EventType: "CaseDeleted",
+                PreviousStatus: existing.Status,
+                NewStatus: existing.Status,
+                PreviousLifecycleState: existing.LifecycleState,
+                NewLifecycleState: existing.LifecycleState,
+                OccurredAt: DateTimeOffset.UtcNow,
+                AssignedTo: existing.AssignedTo,
+                ReviewedBy: existing.ReviewedBy,
+                ResolvedBy: existing.ResolvedBy,
+                Note: "Reconciliation case deleted from the active queue; audit evidence remains retained.",
+                Actor: "repository-delete",
+                BeforePayload: JsonSerializer.Serialize(existing, _jsonOptions),
+                AfterPayload: null,
+                CorrelationId: existing.RunId,
+                CommandId: $"delete:{existing.BreakId}:{existing.Version}",
+                Source: existing.SourceType,
+                Reason: existing.SourceReference), ct).ConfigureAwait(false);
+            try
+            {
+                await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                RestoreState(state);
+                throw;
+            }
             return true;
         }
         finally
@@ -280,12 +430,24 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     public async Task<ReconciliationBreakQueueTransitionResult> StartReviewAsync(ReviewReconciliationBreakRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var startedAt = DateTimeOffset.UtcNow;
+        var inputHash = HashPayload($"meridian.reconciliation-start-review.v1\n{JsonSerializer.Serialize(request, _jsonOptions)}")!;
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            if (!_items!.TryGetValue(request.BreakId, out var item))
+            _items!.TryGetValue(request.BreakId, out var item);
+            var command = CreateLegacyStartReviewCommand(request, inputHash);
+            var replay = await TryReplayRetainedLegacyCommandAsync(command, inputHash, startedAt, ct).ConfigureAwait(false);
+            if (replay is not null)
+            {
+                return replay;
+            }
+
+            if (item is null)
             {
                 return new ReconciliationBreakQueueTransitionResult(
                     ReconciliationBreakQueueTransitionStatus.NotFound,
@@ -322,8 +484,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             };
 
             updated = StampComputedFields(updated, now);
+            var state = CaptureState();
             _items[request.BreakId] = updated;
-            await PersistSnapshotAsync(ct).ConfigureAwait(false);
             if (!string.Equals(item.AssignedTo, updated.AssignedTo, StringComparison.OrdinalIgnoreCase))
             {
                 await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
@@ -349,8 +511,10 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                     Actor: request.ReviewedBy,
                     BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
                     AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions),
-                    Source: updated.SourceType,
-                    Reason: updated.SourceReference), ct).ConfigureAwait(false);
+                    CorrelationId: command.CorrelationId,
+                    CommandId: command.CommandId,
+                    Source: command.Source,
+                    Reason: command.Reason), ct).ConfigureAwait(false);
             }
 
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
@@ -376,10 +540,46 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 Actor: request.ReviewedBy,
                 BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
                 AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions),
-                Source: updated.SourceType,
-                Reason: updated.SourceReference), ct).ConfigureAwait(false);
+                CorrelationId: command.CorrelationId,
+                CommandId: command.CommandId,
+                Source: command.Source,
+                Reason: command.Reason), ct).ConfigureAwait(false);
+            var retainedAudit = _auditEvents[^1];
+            var successOutcome = CreateTransitionOutcome(
+                command,
+                inputHash,
+                OperationTerminalState.Succeeded,
+                startedAt,
+                updated,
+                null,
+                retainedAudit);
+            _commandReceipts[command.CommandId] = new CaseworkCommandReceipt(
+                command.CommandId,
+                command.BreakId,
+                command.Action,
+                inputHash,
+                updated,
+                successOutcome);
+            try
+            {
+                await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                RestoreState(state);
+                return CreateLegacyPersistenceFailure(
+                    "reconciliation.casework.start-review",
+                    request.BreakId,
+                    inputHash,
+                    startedAt,
+                    item,
+                    ex);
+            }
 
-            return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
+            return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated)
+            {
+                Outcome = successOutcome
+            };
         }
         finally
         {
@@ -390,6 +590,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     public async Task<ReconciliationBreakQueueTransitionResult> ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var startedAt = DateTimeOffset.UtcNow;
+        var inputHash = HashPayload($"meridian.reconciliation-resolve.v1\n{JsonSerializer.Serialize(request, _jsonOptions)}")!;
         if (request.Status is not ReconciliationBreakQueueStatus.Resolved and not ReconciliationBreakQueueStatus.Dismissed)
         {
             return new ReconciliationBreakQueueTransitionResult(
@@ -408,8 +610,18 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            if (!_items!.TryGetValue(request.BreakId, out var item))
+            _items!.TryGetValue(request.BreakId, out var item);
+            var command = CreateLegacyResolveCommand(request, inputHash);
+            var replay = await TryReplayRetainedLegacyCommandAsync(command, inputHash, startedAt, ct).ConfigureAwait(false);
+            if (replay is not null)
+            {
+                return replay;
+            }
+
+            if (item is null)
             {
                 return new ReconciliationBreakQueueTransitionResult(
                     ReconciliationBreakQueueTransitionStatus.NotFound,
@@ -433,15 +645,28 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                     ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator,
                     ["actionOrigin"],
                     ReconciliationCaseLifecycleState.Resolved);
-                await AppendMaterialActionDeniedAuditAsync(
-                    item,
-                    request.ResolvedBy,
-                    request.ResolutionNote,
-                    commandId: null,
-                    correlationId: null,
-                    source: "reconciliation-break-resolve",
-                    validation.Error ?? "Material action requires human operator origin.",
-                    ct).ConfigureAwait(false);
+                try
+                {
+                    await AppendMaterialActionDeniedAuditAsync(
+                        item,
+                        request.ResolvedBy,
+                        request.ResolutionNote,
+                        command.CommandId,
+                        command.CorrelationId,
+                        command.Source,
+                        validation.Error ?? "Material action requires human operator origin.",
+                        ct).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    return CreateLegacyPersistenceFailure(
+                        "reconciliation.casework.resolve",
+                        request.BreakId,
+                        inputHash,
+                        startedAt,
+                        item,
+                        ex);
+                }
                 return validation;
             }
 
@@ -451,6 +676,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             {
                 return approval;
             }
+            var dispositionEvidenceHash = HashPayload(
+                $"meridian.reconciliation-legacy-resolve.v1\n{JsonSerializer.Serialize(request, _jsonOptions)}")!;
             var updated = approval.Item with
             {
                 Status = ReconciliationBreakQueueStatus.Resolved,
@@ -461,6 +688,16 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 RootCauseCode = approval.Item.RootCauseCode ?? (request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : null),
                 ResolutionCode = approval.Item.ResolutionCode ?? (request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : "LegacyResolved"),
                 SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "dismissed-false-positive" : "ready-for-signoff",
+                Disposition = ReconciliationBreakDispositionDto.Resolved,
+                DispositionReason = request.OperatorRationale,
+                DispositionApprovedBy = request.ResolvedBy,
+                DispositionEvidenceHash = dispositionEvidenceHash,
+                DisposedAt = now,
+                EvidenceLinks = (approval.Item.EvidenceLinks ?? [])
+                    .Append($"urn:sha256:{dispositionEvidenceHash}")
+                    .Distinct(StringComparer.Ordinal)
+                    .ToArray(),
+                BlockedOutputs = [],
                 SignoffHistory = (item.SignoffHistory ?? []).Concat(
                 [
                     new ReconciliationCaseSignoffRecord(request.ResolvedBy, item.RequiredSignoffRole ?? "operator", request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : request.Status.ToString(), request.OperatorRationale, now)
@@ -468,8 +705,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             };
 
             updated = StampComputedFields(updated, now);
+            var state = CaptureState();
             _items[request.BreakId] = updated;
-            await PersistSnapshotAsync(ct).ConfigureAwait(false);
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                 EventId: Guid.NewGuid().ToString("N"),
                 BreakId: request.BreakId,
@@ -493,10 +730,46 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 Actor: request.ResolvedBy,
                 BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
                 AfterPayload: JsonSerializer.Serialize(updated, _jsonOptions),
-                Source: updated.SourceType,
-                Reason: updated.SourceReference), ct).ConfigureAwait(false);
+                CorrelationId: command.CorrelationId,
+                CommandId: command.CommandId,
+                Source: command.Source,
+                Reason: command.Reason), ct).ConfigureAwait(false);
+            var retainedAudit = _auditEvents[^1];
+            var successOutcome = CreateTransitionOutcome(
+                command,
+                inputHash,
+                OperationTerminalState.Succeeded,
+                startedAt,
+                updated,
+                null,
+                retainedAudit);
+            _commandReceipts[command.CommandId] = new CaseworkCommandReceipt(
+                command.CommandId,
+                command.BreakId,
+                command.Action,
+                inputHash,
+                updated,
+                successOutcome);
+            try
+            {
+                await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                RestoreState(state);
+                return CreateLegacyPersistenceFailure(
+                    "reconciliation.casework.resolve",
+                    request.BreakId,
+                    inputHash,
+                    startedAt,
+                    item,
+                    ex);
+            }
 
-            return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated);
+            return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, updated)
+            {
+                Outcome = successOutcome
+            };
         }
         finally
         {
@@ -507,56 +780,180 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     public async Task<ReconciliationBreakQueueTransitionResult> ApplyCaseworkCommandAsync(ReconciliationCaseworkCommand command, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(command);
+        var startedAt = DateTimeOffset.UtcNow;
+        var inputHash = ComputeCommandInputHash(command);
+        if (string.IsNullOrWhiteSpace(command.CommandId))
+        {
+            return BindTransitionOutcome(
+                Invalid(null, "Command id is required.", ReconciliationBreakQueueTransitionErrorCode.InvalidRequest, ["commandId"]),
+                command,
+                inputHash,
+                startedAt);
+        }
         if (string.IsNullOrWhiteSpace(command.Actor))
         {
-            return Invalid(null, "Actor is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor);
+            return BindTransitionOutcome(
+                Invalid(null, "Actor is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
+                command,
+                inputHash,
+                startedAt);
         }
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
             await EnsureLoadedAsync(ct).ConfigureAwait(false);
-            if (!_items!.TryGetValue(command.BreakId, out var item))
+            if (_commandReceipts.TryGetValue(command.CommandId, out var receipt))
             {
-                return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.NotFound, null, "Break was not found.");
+                if (!receipt.LegacyUnverified &&
+                    string.Equals(receipt.BreakId, command.BreakId, StringComparison.OrdinalIgnoreCase) &&
+                    receipt.Action == command.Action &&
+                    string.Equals(receipt.InputHashSha256, inputHash, StringComparison.Ordinal))
+                {
+                    var replayAuditCount = _auditEvents.Count;
+                    await AppendCaseworkReplayAuditAsync(
+                        command,
+                        _items!.GetValueOrDefault(command.BreakId),
+                        "CaseworkReplayAccepted",
+                        "Exact command replay returned the retained terminal receipt without reapplying the transition.",
+                        ct).ConfigureAwait(false);
+                    try
+                    {
+                        await PersistSnapshotAsync(ct).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _auditEvents.RemoveRange(replayAuditCount, _auditEvents.Count - replayAuditCount);
+                        return CreatePersistenceFailure(command, inputHash, startedAt, receipt.Result, ex);
+                    }
+                    var replay = new ReconciliationBreakQueueTransitionResult(
+                        ReconciliationBreakQueueTransitionStatus.Success,
+                        receipt.Result)
+                    {
+                        Outcome = receipt.Outcome ?? CreateTransitionOutcome(
+                            command,
+                            inputHash,
+                            OperationTerminalState.Succeeded,
+                            startedAt,
+                            receipt.Result,
+                            null,
+                            null)
+                    };
+                    return replay;
+                }
+
+                var conflictAuditCount = _auditEvents.Count;
+                const string conflictReason = "Command id was already used for a different reconciliation casework input.";
+                await AppendCaseworkReplayAuditAsync(
+                    command,
+                    _items!.GetValueOrDefault(command.BreakId),
+                    "CaseworkReplayConflict",
+                    conflictReason,
+                    ct).ConfigureAwait(false);
+                try
+                {
+                    await PersistSnapshotAsync(ct).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _auditEvents.RemoveRange(conflictAuditCount, _auditEvents.Count - conflictAuditCount);
+                    return CreatePersistenceFailure(command, inputHash, startedAt, _items!.GetValueOrDefault(command.BreakId), ex);
+                }
+
+                return BindTransitionOutcome(new ReconciliationBreakQueueTransitionResult(
+                    ReconciliationBreakQueueTransitionStatus.Conflict,
+                    _items!.GetValueOrDefault(command.BreakId),
+                    conflictReason,
+                    ReconciliationBreakQueueTransitionErrorCode.CommandIdConflict),
+                    command,
+                    inputHash,
+                    startedAt);
             }
 
-            var idempotent = await TryGetIdempotentCommandResultAsync(command.CommandId, ct).ConfigureAwait(false);
-            if (idempotent is not null)
+            if (!_items!.TryGetValue(command.BreakId, out var item))
             {
-                return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, idempotent);
+                return BindTransitionOutcome(
+                    new ReconciliationBreakQueueTransitionResult(
+                        ReconciliationBreakQueueTransitionStatus.NotFound,
+                        null,
+                        "Break was not found."),
+                    command,
+                    inputHash,
+                    startedAt);
+            }
+
+            var successorValidation = ValidateSupersessionSuccessor(item, command, _items);
+            if (successorValidation is not null)
+            {
+                return BindTransitionOutcome(
+                    successorValidation,
+                    command,
+                    inputHash,
+                    startedAt);
             }
 
             var validation = ValidateCaseworkCommand(item, command);
             if (validation is not null)
             {
-                if (validation.ErrorCode == ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator)
+                try
                 {
-                    await AppendMaterialActionDeniedAuditAsync(
-                        item,
-                        command.Actor,
-                        command.Note,
-                        command.CommandId,
-                        command.CorrelationId,
-                        command.Source,
-                        validation.Error ?? "Material action requires human operator origin.",
-                        ct).ConfigureAwait(false);
+                    await AppendCaseworkRejectedAuditAsync(item, command, validation, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    return CreatePersistenceFailure(command, inputHash, startedAt, item, ex);
                 }
 
-                return validation;
+                return BindTransitionOutcome(validation, command, inputHash, startedAt);
             }
 
             var now = DateTimeOffset.UtcNow;
             var next = ApplyCaseworkMutation(item, command, now);
             next = StampComputedFields(next, now);
+            var auditCount = _auditEvents.Count;
             _items[command.BreakId] = next;
-            await PersistSnapshotAsync(ct).ConfigureAwait(false);
-            await AppendAuditAsync(CreateAudit(command, item, next, now), ct).ConfigureAwait(false);
+            var primaryAudit = CreateAudit(command, item, next, now);
+            await AppendAuditAsync(primaryAudit, ct).ConfigureAwait(false);
             if (HasSlaChanged(item, next))
             {
                 await AppendAuditAsync(CreateAudit(command, item, next, now) with { EventType = next.SlaState == ReconciliationCaseSlaState.Breached ? "SlaBreached" : "SlaChanged" }, ct).ConfigureAwait(false);
             }
-            return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Success, next);
+            var retainedAudit = _auditEvents[auditCount];
+            var successOutcome = CreateTransitionOutcome(
+                command,
+                inputHash,
+                OperationTerminalState.Succeeded,
+                startedAt,
+                next,
+                null,
+                retainedAudit);
+            _commandReceipts[command.CommandId] = new CaseworkCommandReceipt(
+                command.CommandId,
+                command.BreakId,
+                command.Action,
+                inputHash,
+                next,
+                successOutcome);
+
+            try
+            {
+                await PersistSnapshotAsync(ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _items[command.BreakId] = item;
+                _auditEvents.RemoveRange(auditCount, _auditEvents.Count - auditCount);
+                _commandReceipts.Remove(command.CommandId);
+                return CreatePersistenceFailure(command, inputHash, startedAt, item, ex);
+            }
+            return new ReconciliationBreakQueueTransitionResult(
+                ReconciliationBreakQueueTransitionStatus.Success,
+                next)
+            {
+                Outcome = successOutcome
+            };
         }
         finally
         {
@@ -567,37 +964,77 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     public async Task<ReconciliationBulkCaseworkResult> ApplyBulkCaseworkAsync(ReconciliationBulkCaseworkRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
+        var startedAt = DateTimeOffset.UtcNow;
+        var inputHash = ComputeBulkInputHash(request);
+        var requestProblem = ValidateBulkRequest(request);
+        if (requestProblem is not null)
         {
-            return new ReconciliationBulkCaseworkResult(
-                BulkActionId: string.IsNullOrWhiteSpace(request.CommandId) ? Guid.NewGuid().ToString("N") : request.CommandId,
-                IdempotencyKey: request.IdempotencyKey,
-                DryRun: request.DryRun,
-                RequestedCount: request.BreakIds.Count,
-                SucceededCount: 0,
-                FailedCount: request.BreakIds.Count,
-                Results: request.BreakIds.Select(breakId => new ReconciliationBulkCaseworkCaseResult(
-                    breakId,
-                    Succeeded: false,
-                    WouldSucceed: false,
-                    Error: "Idempotency key is required.",
-                    Item: null)).ToArray());
+            return CreateRejectedBulkResult(request, inputHash, startedAt, requestProblem);
         }
 
-        var distinctIds = request.BreakIds.Distinct(StringComparer.OrdinalIgnoreCase).Take(request.MaxCaseCount).ToArray();
-        var results = new List<ReconciliationBulkCaseworkCaseResult>();
-        var bulkActionId = string.IsNullOrWhiteSpace(request.CommandId) ? Guid.NewGuid().ToString("N") : request.CommandId;
+        var breakIds = request.BreakIds.ToArray();
+        var bulkActionId = request.CommandId;
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (_bulkResultIdsByIdempotencyKey.TryGetValue(request.IdempotencyKey, out var cachedBulkActionId) &&
-                _bulkResults.TryGetValue(cachedBulkActionId, out var cached))
+            await using var mutationLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            ResetCachedState();
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            var hasCommandResult = _bulkResults.ContainsKey(request.CommandId);
+            var hasIdempotencyResult =
+                _bulkResultIdsByIdempotencyKey.TryGetValue(request.IdempotencyKey, out var idempotentBulkActionId) &&
+                _bulkResults.ContainsKey(idempotentBulkActionId);
+            if (hasCommandResult || hasIdempotencyResult)
             {
-                return cached;
+                var retainedBulkActionId = hasCommandResult
+                    ? request.CommandId
+                    : idempotentBulkActionId!;
+                if (hasCommandResult && hasIdempotencyResult &&
+                    !string.Equals(request.CommandId, idempotentBulkActionId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return await RetainBulkReplayConflictAsync(
+                        request,
+                        inputHash,
+                        startedAt,
+                        "The command id and idempotency key are already bound to different bulk actions.",
+                        ct).ConfigureAwait(false);
+                }
+
+                if (_bulkReceipts.TryGetValue(retainedBulkActionId, out var retainedReceipt) &&
+                    !retainedReceipt.LegacyUnverified &&
+                    string.Equals(retainedReceipt.CommandId, request.CommandId, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(retainedReceipt.IdempotencyKey, request.IdempotencyKey, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(retainedReceipt.InputHashSha256, inputHash, StringComparison.Ordinal))
+                {
+                    var replayAuditCount = _auditEvents.Count;
+                    await AppendBulkReplayAuditAsync(
+                        request,
+                        "BulkActionReplayAccepted",
+                        "Exact bulk replay returned the retained terminal receipt without reapplying case mutations.",
+                        ct).ConfigureAwait(false);
+                    try
+                    {
+                        await PersistSnapshotAsync(ct).ConfigureAwait(false);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _auditEvents.RemoveRange(replayAuditCount, _auditEvents.Count - replayAuditCount);
+                        return CreatePersistenceFailedBulkResult(request, inputHash, startedAt, _items!, ex);
+                    }
+                    return retainedReceipt.Result;
+                }
+
+                return await RetainBulkReplayConflictAsync(
+                    request,
+                    inputHash,
+                    startedAt,
+                    "The command id or idempotency key was already used for a different reconciliation bulk request.",
+                    ct).ConfigureAwait(false);
             }
 
-            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            var originalItems = new Dictionary<string, ReconciliationBreakQueueItem>(_items!, StringComparer.OrdinalIgnoreCase);
+            var auditCount = _auditEvents.Count;
             var beforeBulkPayload = JsonSerializer.Serialize(request, _jsonOptions);
             await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
                 EventId: Guid.NewGuid().ToString("N"),
@@ -619,29 +1056,20 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                 Source: request.Source,
                 Reason: request.Reason), ct).ConfigureAwait(false);
 
-            foreach (var breakId in distinctIds)
+            var prepared = new List<PreparedBulkCasework>(breakIds.Length);
+            var pendingSupersessionEdges = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var breakId in breakIds)
             {
                 if (!_items!.TryGetValue(breakId, out var item))
                 {
-                    await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
-                        EventId: Guid.NewGuid().ToString("N"),
-                        BreakId: breakId,
-                        EventType: "BulkActionCaseFailed",
-                        PreviousStatus: null,
-                        NewStatus: ReconciliationBreakQueueStatus.Open,
-                        PreviousLifecycleState: null,
-                        NewLifecycleState: ReconciliationCaseLifecycleState.Open,
-                        OccurredAt: DateTimeOffset.UtcNow,
-                        AssignedTo: request.Assignee,
-                        ReviewedBy: null,
-                        ResolvedBy: null,
-                        Note: request.Note,
-                        Actor: request.Actor,
-                        CorrelationId: request.CorrelationId,
-                        CommandId: $"{bulkActionId}:{breakId}",
-                        Source: request.Source,
-                        Reason: "Break was not found."), ct).ConfigureAwait(false);
-                    results.Add(new ReconciliationBulkCaseworkCaseResult(breakId, false, false, "Break was not found.", null));
+                    prepared.Add(new PreparedBulkCasework(
+                        breakId,
+                        null,
+                        null,
+                        new ReconciliationBreakQueueTransitionResult(
+                            ReconciliationBreakQueueTransitionStatus.NotFound,
+                            null,
+                            "Break was not found.")));
                     continue;
                 }
 
@@ -660,66 +1088,139 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                     Note: request.Note,
                     RootCauseCode: request.RootCauseCode,
                     ResolutionCode: request.ResolutionCode,
-                    ActionOrigin: request.ActionOrigin);
-                var validation = ValidateCaseworkCommand(item, command);
-                if (validation is not null)
+                    EvidenceLinks: request.EvidenceLinks,
+                    ActionOrigin: request.ActionOrigin,
+                    ApprovalActor: request.ApprovalActor,
+                    ApprovalReference: request.ApprovalReference,
+                    SupersedingBreakId: request.SupersedingBreakId);
+                var validation = ValidateSupersessionSuccessor(
+                        item,
+                        command,
+                        _items,
+                        pendingSupersessionEdges)
+                    ?? ValidateCaseworkCommand(item, command);
+                if (validation is null &&
+                    command.Action == ReconciliationCaseworkAction.Supersede &&
+                    !string.IsNullOrWhiteSpace(command.SupersedingBreakId))
                 {
-                    await AppendAuditAsync(CreateAudit(command, item, item, DateTimeOffset.UtcNow) with { EventType = "BulkActionCaseFailed", Reason = validation.Error }, ct).ConfigureAwait(false);
-                    results.Add(new ReconciliationBulkCaseworkCaseResult(breakId, false, false, validation.Error, item));
-                    if (!request.AllowPartialSuccess)
+                    pendingSupersessionEdges[item.BreakId] = command.SupersedingBreakId;
+                }
+                prepared.Add(new PreparedBulkCasework(breakId, item, command, validation));
+            }
+
+            var hasValidationFailures = prepared.Any(static entry => entry.Validation is not null);
+            var atomicBatchBlocked = hasValidationFailures && !request.AllowPartialSuccess;
+            var results = new List<ReconciliationBulkCaseworkCaseResult>(prepared.Count);
+            foreach (var entry in prepared)
+            {
+                if (entry.Validation is not null)
+                {
+                    await AppendBulkFailureAuditAsync(request, entry, bulkActionId, ct).ConfigureAwait(false);
+                    results.Add(new ReconciliationBulkCaseworkCaseResult(
+                        entry.BreakId,
+                        Succeeded: false,
+                        WouldSucceed: false,
+                        Error: entry.Validation.Error,
+                        Item: entry.Item));
+                    continue;
+                }
+
+                if (atomicBatchBlocked)
+                {
+                    var error = "The case was not changed because another case failed validation and partial success was disabled.";
+                    await AppendAuditAsync(CreateAudit(entry.Command!, entry.Item!, entry.Item!, DateTimeOffset.UtcNow) with
                     {
-                        break;
-                    }
+                        EventType = "BulkActionCaseBlocked",
+                        Reason = error
+                    }, ct).ConfigureAwait(false);
+                    results.Add(new ReconciliationBulkCaseworkCaseResult(
+                        entry.BreakId,
+                        Succeeded: false,
+                        WouldSucceed: true,
+                        Error: error,
+                        Item: entry.Item));
                     continue;
                 }
 
                 if (request.DryRun)
                 {
-                    results.Add(new ReconciliationBulkCaseworkCaseResult(breakId, false, true, null, item));
+                    await AppendAuditAsync(CreateAudit(entry.Command!, entry.Item!, entry.Item!, DateTimeOffset.UtcNow) with
+                    {
+                        EventType = "BulkActionCaseValidated",
+                        Reason = "Dry-run validation succeeded; no case state was changed."
+                    }, ct).ConfigureAwait(false);
+                    results.Add(new ReconciliationBulkCaseworkCaseResult(
+                        entry.BreakId,
+                        Succeeded: false,
+                        WouldSucceed: true,
+                        Error: null,
+                        Item: entry.Item));
                     continue;
                 }
 
                 var now = DateTimeOffset.UtcNow;
-                var next = StampComputedFields(ApplyCaseworkMutation(item, command, now), now);
-                _items[breakId] = next;
-                await AppendAuditAsync(CreateAudit(command, item, next, now) with { EventType = "BulkActionCaseSucceeded" }, ct).ConfigureAwait(false);
-                if (HasSlaChanged(item, next))
+                var next = StampComputedFields(ApplyCaseworkMutation(entry.Item!, entry.Command!, now), now);
+                _items![entry.BreakId] = next;
+                await AppendAuditAsync(CreateAudit(entry.Command!, entry.Item!, next, now) with { EventType = "BulkActionCaseSucceeded" }, ct).ConfigureAwait(false);
+                if (HasSlaChanged(entry.Item!, next))
                 {
-                    await AppendAuditAsync(CreateAudit(command, item, next, now) with { EventType = next.SlaState == ReconciliationCaseSlaState.Breached ? "SlaBreached" : "SlaChanged" }, ct).ConfigureAwait(false);
+                    await AppendAuditAsync(CreateAudit(entry.Command!, entry.Item!, next, now) with
+                    {
+                        EventType = next.SlaState == ReconciliationCaseSlaState.Breached ? "SlaBreached" : "SlaChanged"
+                    }, ct).ConfigureAwait(false);
                 }
-                results.Add(new ReconciliationBulkCaseworkCaseResult(breakId, true, true, null, next));
+                results.Add(new ReconciliationBulkCaseworkCaseResult(entry.BreakId, true, true, null, next));
             }
 
-            if (!request.DryRun)
+            var successCount = results.Count(result => request.DryRun ? result.WouldSucceed : result.Succeeded);
+            var failureCount = results.Count - successCount;
+            var outcome = CreateBulkOutcome(
+                request,
+                inputHash,
+                startedAt,
+                results,
+                persistenceFailure: null,
+                receiptRetained: true);
+            var result = new ReconciliationBulkCaseworkResult(
+                bulkActionId,
+                request.IdempotencyKey,
+                request.DryRun,
+                breakIds.Length,
+                successCount,
+                failureCount,
+                results.ToArray())
+            {
+                InputHashSha256 = inputHash,
+                Outcome = outcome
+            };
+            _bulkResults[bulkActionId] = result;
+            _bulkResultIdsByIdempotencyKey[request.IdempotencyKey] = bulkActionId;
+            _bulkReceipts[bulkActionId] = new BulkCaseworkReceipt(
+                bulkActionId,
+                request.CommandId,
+                request.IdempotencyKey,
+                inputHash,
+                result);
+            try
             {
                 await PersistSnapshotAsync(ct).ConfigureAwait(false);
             }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _items = originalItems;
+                _auditEvents.RemoveRange(auditCount, _auditEvents.Count - auditCount);
+                _bulkResults.Remove(bulkActionId);
+                _bulkResultIdsByIdempotencyKey.Remove(request.IdempotencyKey);
+                _bulkReceipts.Remove(bulkActionId);
+                return CreatePersistenceFailedBulkResult(request, inputHash, startedAt, originalItems, ex);
+            }
+
+            return result;
         }
         finally
         {
             _gate.Release();
         }
-
-        var result = new ReconciliationBulkCaseworkResult(
-            bulkActionId,
-            request.IdempotencyKey,
-            request.DryRun,
-            distinctIds.Length,
-            results.Count(r => r.Succeeded || (request.DryRun && r.WouldSucceed)),
-            results.Count(r => !r.WouldSucceed),
-            results.ToArray());
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            _bulkResults[bulkActionId] = result;
-            _bulkResultIdsByIdempotencyKey[request.IdempotencyKey] = bulkActionId;
-        }
-        finally
-        {
-            _gate.Release();
-        }
-
-        return result;
     }
 
     public async Task<ReconciliationBulkCaseworkResult?> GetBulkCaseworkResultAsync(string bulkActionIdOrIdempotencyKey, CancellationToken ct = default)
@@ -729,6 +1230,7 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
             if (_bulkResults.TryGetValue(bulkActionIdOrIdempotencyKey, out var byId))
             {
                 return byId;
@@ -748,37 +1250,16 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
     public async Task<IReadOnlyList<ReconciliationBreakQueueAuditEvent>> GetAuditHistoryAsync(string breakId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
-        if (!File.Exists(_auditPath))
+        ReconciliationBreakQueueAuditEvent[] all;
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            return [];
+            await EnsureLoadedAsync(ct).ConfigureAwait(false);
+            all = _auditEvents.ToArray();
         }
-
-        var all = new List<ReconciliationBreakQueueAuditEvent>();
-
-        await using var stream = File.OpenRead(_auditPath);
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-
-        while (!reader.EndOfStream)
+        finally
         {
-            ct.ThrowIfCancellationRequested();
-            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
-            }
-
-            try
-            {
-                var auditEvent = JsonSerializer.Deserialize<ReconciliationBreakQueueAuditEvent>(line, _jsonOptions);
-                if (auditEvent is not null)
-                {
-                    all.Add(auditEvent);
-                }
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogWarning(ex, "Skipping corrupt reconciliation break queue audit event in {Path}", _auditPath);
-            }
+            _gate.Release();
         }
 
         // Follow "BreakIdMigrated" links so a re-keyed case surfaces its full pre-migration trail,
@@ -836,569 +1317,22 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         ReconciliationBreakQueueItem? rebuilt = null;
         foreach (var auditEvent in history.OrderBy(static entry => entry.Sequence).ThenBy(static entry => entry.OccurredAt))
         {
+            if (string.Equals(auditEvent.EventType, "CaseDeleted", StringComparison.Ordinal))
+            {
+                rebuilt = null;
+                continue;
+            }
             if (string.IsNullOrWhiteSpace(auditEvent.AfterPayload))
             {
                 continue;
             }
 
-            rebuilt = JsonSerializer.Deserialize<ReconciliationBreakQueueItem>(auditEvent.AfterPayload, _jsonOptions);
+            rebuilt = JsonSerializer.Deserialize<ReconciliationBreakQueueItem>(auditEvent.AfterPayload, _jsonOptions)
+                ?? throw new InvalidDataException(
+                    $"Reconciliation audit event '{auditEvent.EventId}' retained a null case snapshot.");
         }
 
         return rebuilt;
     }
 
-    private async Task EnsureLoadedAsync(CancellationToken ct)
-    {
-        if (_items is not null)
-        {
-            return;
-        }
-
-        if (!File.Exists(_snapshotPath))
-        {
-            _items = new Dictionary<string, ReconciliationBreakQueueItem>(StringComparer.OrdinalIgnoreCase);
-            return;
-        }
-
-        await using var stream = File.OpenRead(_snapshotPath);
-        var snapshot = await JsonSerializer.DeserializeAsync<BreakQueueSnapshot>(stream, _jsonOptions, ct).ConfigureAwait(false);
-        var loaded = snapshot?.Items ?? [];
-        _items = loaded
-            .Select(NormalizeLegacyCaseState)
-            .ToDictionary(static item => item.BreakId, StringComparer.OrdinalIgnoreCase);
-    }
-
-    private async Task PersistSnapshotAsync(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        var snapshot = new BreakQueueSnapshot(_items!.Values.OrderByDescending(static item => item.LastUpdatedAt).ToArray());
-        var json = JsonSerializer.Serialize(snapshot, _jsonOptions);
-        await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
-    }
-
-    private async Task AppendAuditAsync(ReconciliationBreakQueueAuditEvent auditEvent, CancellationToken ct)
-    {
-        var sequenced = auditEvent with
-        {
-            Sequence = auditEvent.Sequence > 0 ? auditEvent.Sequence : await NextAuditSequenceAsync(ct).ConfigureAwait(false),
-            BeforePayloadHash = auditEvent.BeforePayloadHash ?? HashPayload(auditEvent.BeforePayload),
-            AfterPayloadHash = auditEvent.AfterPayloadHash ?? HashPayload(auditEvent.AfterPayload)
-        };
-        var line = JsonSerializer.Serialize(sequenced, _jsonOptions);
-        await AtomicFileWriter.AppendLinesAsync(_auditPath, [line], ct).ConfigureAwait(false);
-    }
-
-    private async Task AppendMaterialActionDeniedAuditAsync(
-        ReconciliationBreakQueueItem item,
-        string actor,
-        string? note,
-        string? commandId,
-        string? correlationId,
-        string source,
-        string reason,
-        CancellationToken ct)
-        => await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
-            EventId: Guid.NewGuid().ToString("N"),
-            BreakId: item.BreakId,
-            EventType: "MaterialActionDenied",
-            PreviousStatus: item.Status,
-            NewStatus: item.Status,
-            PreviousLifecycleState: item.LifecycleState,
-            NewLifecycleState: item.LifecycleState,
-            OccurredAt: DateTimeOffset.UtcNow,
-            AssignedTo: item.AssignedTo,
-            ReviewedBy: item.ReviewedBy,
-            ResolvedBy: item.ResolvedBy,
-            Note: note,
-            ExceptionRoute: item.ExceptionRoute,
-            ToleranceBand: item.ToleranceBand,
-            RequiredSignoffRole: item.RequiredSignoffRole,
-            SignoffStatus: item.SignoffStatus,
-            ExternalAccountId: item.ExternalAccountId,
-            CustodianId: item.CustodianId,
-            UpstreamSyncCursor: item.UpstreamSyncCursor,
-            Actor: actor,
-            BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
-            AfterPayload: JsonSerializer.Serialize(item, _jsonOptions),
-            CorrelationId: correlationId,
-            CommandId: commandId,
-            Source: source,
-            Reason: reason), ct).ConfigureAwait(false);
-
-    private async Task<long> NextAuditSequenceAsync(CancellationToken ct)
-    {
-        if (!File.Exists(_auditPath))
-        {
-            return 1;
-        }
-
-        var count = 0L;
-        await using var stream = File.OpenRead(_auditPath);
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        while (await reader.ReadLineAsync(ct).ConfigureAwait(false) is not null)
-        {
-            count++;
-        }
-
-        return count + 1;
-    }
-
-    private async Task<ReconciliationBreakQueueItem?> TryGetIdempotentCommandResultAsync(string commandId, CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(commandId) || !File.Exists(_auditPath))
-        {
-            return null;
-        }
-
-        ReconciliationBreakQueueItem? item = null;
-        await using var stream = File.OpenRead(_auditPath);
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        while (!reader.EndOfStream)
-        {
-            ct.ThrowIfCancellationRequested();
-            var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
-            }
-
-            try
-            {
-                var auditEvent = JsonSerializer.Deserialize<ReconciliationBreakQueueAuditEvent>(line, _jsonOptions);
-                if (auditEvent is null ||
-                    !string.Equals(auditEvent.CommandId, commandId, StringComparison.OrdinalIgnoreCase) ||
-                    string.IsNullOrWhiteSpace(auditEvent.AfterPayload))
-                {
-                    continue;
-                }
-
-                item = JsonSerializer.Deserialize<ReconciliationBreakQueueItem>(auditEvent.AfterPayload, _jsonOptions);
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogWarning(ex, "Skipping corrupt reconciliation break queue audit event in {Path}", _auditPath);
-            }
-        }
-
-        return item;
-    }
-
-    private static string? HashPayload(string? payload)
-    {
-        if (string.IsNullOrEmpty(payload))
-        {
-            return null;
-        }
-
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload))).ToLowerInvariant();
-    }
-
-    private static ReconciliationBreakQueueTransitionResult? ValidateCaseworkCommand(ReconciliationBreakQueueItem item, ReconciliationCaseworkCommand command)
-    {
-        if (command.ExpectedVersion != item.Version)
-        {
-            return new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Conflict, item, "Case version conflict.", ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict);
-        }
-
-        return command.Action switch
-        {
-            _ when RequiresHumanOrigin(command) && command.ActionOrigin != OperationsActionOriginDto.HumanOperator
-                => Invalid(item, "Reviewed automation cannot resolve, sign off, or reopen reconciliation cases; a human operator approval is required.", ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator, ["actionOrigin"], RequestedLifecycle(command)),
-            ReconciliationCaseworkAction.Assign when string.IsNullOrWhiteSpace(command.Assignee)
-                => Invalid(item, "Assignee is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status is null
-                => Invalid(item, "Target lifecycle status is required.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Reopened && (!command.Privileged || string.IsNullOrWhiteSpace(command.Reason))
-                => Invalid(item, "Privileged reopen requires a reason.", ReconciliationBreakQueueTransitionErrorCode.MissingReason, ["reason"], command.Status),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.SignedOff && string.Equals(item.ResolvedBy, command.Actor, StringComparison.OrdinalIgnoreCase) && (!command.Privileged || string.IsNullOrWhiteSpace(command.Reason))
-                => Invalid(item, "Resolver and signer must be different operators unless privileged override and reason are supplied.", ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict, ["reason"], command.Status),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Investigating && string.IsNullOrWhiteSpace(item.AssignedTo) && string.IsNullOrWhiteSpace(command.Assignee)
-                => Invalid(item, "Assignment is required before investigation.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.AwaitingEvidence && string.IsNullOrWhiteSpace(command.Note)
-                => Invalid(item, "Evidence request note is required before awaiting evidence.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence),
-            ReconciliationCaseworkAction.TransitionStatus when !IsLegalLifecycleTransition(item.LifecycleState, command.Status.Value)
-                => Invalid(item, $"Cannot transition case from {item.LifecycleState} to {command.Status}.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.RootCauseCode) && string.IsNullOrWhiteSpace(command.RootCauseCode)
-                => Invalid(item, "Root cause code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingRootCause),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && string.IsNullOrWhiteSpace(item.ResolutionCode) && string.IsNullOrWhiteSpace(command.ResolutionCode)
-                => Invalid(item, "Resolution code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingResolutionCode),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && !IsKnownRootCause(command.RootCauseCode ?? item.RootCauseCode)
-                => Invalid(item, "Root cause code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && !IsKnownResolution(command.ResolutionCode ?? item.ResolutionCode)
-                => Invalid(item, "Resolution code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
-            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Resolved && !HasRequiredResolutionEvidence(command.ResolutionCode ?? item.ResolutionCode, command.EvidenceLinks, item.EvidenceLinks, command.Note)
-                => Invalid(item, "Resolution-specific evidence is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence, ["evidenceLinks"], command.Status),
-            ReconciliationCaseworkAction.SetRootCause when !IsKnownRootCause(command.RootCauseCode)
-                => Invalid(item, "Root cause code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
-            ReconciliationCaseworkAction.SetResolution when !IsKnownResolution(command.ResolutionCode)
-                => Invalid(item, "Resolution code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
-            ReconciliationCaseworkAction.AddComment when command.StatusTransition.HasValue && !IsLegalLifecycleTransition(item.LifecycleState, command.StatusTransition.Value)
-                => Invalid(item, $"Cannot transition case from {item.LifecycleState} to {command.StatusTransition} from comment.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition, requestedState: command.StatusTransition),
-            ReconciliationCaseworkAction.EditComment when string.IsNullOrWhiteSpace(command.CommentId)
-                => Invalid(item, "Comment id is required for comment edit.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence, ["commentId"]),
-            ReconciliationCaseworkAction.DeleteComment when string.IsNullOrWhiteSpace(command.CommentId) || string.IsNullOrWhiteSpace(command.Reason)
-                => Invalid(item, "Comment id and deletion reason are required for comment deletion.", ReconciliationBreakQueueTransitionErrorCode.MissingReason, ["commentId", "reason"]),
-            ReconciliationCaseworkAction.Resolve when item.LifecycleState is not (ReconciliationCaseLifecycleState.Investigating or ReconciliationCaseLifecycleState.AwaitingEvidence or ReconciliationCaseLifecycleState.Reopened)
-                => Invalid(item, $"Cannot resolve case from {item.LifecycleState}.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
-            ReconciliationCaseworkAction.Resolve when string.IsNullOrWhiteSpace(item.RootCauseCode) && string.IsNullOrWhiteSpace(command.RootCauseCode)
-                => Invalid(item, "Root cause code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingRootCause),
-            ReconciliationCaseworkAction.Resolve when string.IsNullOrWhiteSpace(item.ResolutionCode) && string.IsNullOrWhiteSpace(command.ResolutionCode)
-                => Invalid(item, "Resolution code is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingResolutionCode),
-            ReconciliationCaseworkAction.Resolve when !IsKnownRootCause(command.RootCauseCode ?? item.RootCauseCode)
-                => Invalid(item, "Root cause code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
-            ReconciliationCaseworkAction.Resolve when !IsKnownResolution(command.ResolutionCode ?? item.ResolutionCode)
-                => Invalid(item, "Resolution code is not in the reconciliation taxonomy.", ReconciliationBreakQueueTransitionErrorCode.InvalidTaxonomy),
-            ReconciliationCaseworkAction.Resolve when !HasRequiredResolutionEvidence(command.ResolutionCode ?? item.ResolutionCode, command.EvidenceLinks, item.EvidenceLinks, command.Note)
-                => Invalid(item, "Resolution-specific evidence is required before resolution.", ReconciliationBreakQueueTransitionErrorCode.MissingEvidence, ["evidenceLinks"]),
-            ReconciliationCaseworkAction.SignOff when item.LifecycleState != ReconciliationCaseLifecycleState.Resolved
-                => Invalid(item, "Only resolved cases can be signed off.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
-            ReconciliationCaseworkAction.SignOff when string.Equals(item.ResolvedBy, command.Actor, StringComparison.OrdinalIgnoreCase) && (!command.Privileged || string.IsNullOrWhiteSpace(command.Reason))
-                => Invalid(item, "Resolver and signer must be different operators unless privileged override and reason are supplied.", ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict, ["reason"]),
-            ReconciliationCaseworkAction.Reopen when item.LifecycleState != ReconciliationCaseLifecycleState.SignedOff
-                => Invalid(item, "Only signed-off cases can be reopened through privileged reopen.", ReconciliationBreakQueueTransitionErrorCode.ReopenNotAllowed),
-            ReconciliationCaseworkAction.Reopen when !command.Privileged || string.IsNullOrWhiteSpace(command.Reason)
-                => Invalid(item, "Privileged reopen requires a reason.", ReconciliationBreakQueueTransitionErrorCode.MissingReason),
-            _ => null
-        };
-    }
-
-    private static bool RequiresHumanOrigin(ReconciliationCaseworkCommand command)
-        => command.Action is ReconciliationCaseworkAction.Resolve or ReconciliationCaseworkAction.SignOff or ReconciliationCaseworkAction.Reopen ||
-           command is { Action: ReconciliationCaseworkAction.TransitionStatus, Status: ReconciliationCaseLifecycleState.Resolved or ReconciliationCaseLifecycleState.SignedOff or ReconciliationCaseLifecycleState.Reopened };
-
-    private static ReconciliationCaseLifecycleState? RequestedLifecycle(ReconciliationCaseworkCommand command)
-        => command.Action switch
-        {
-            ReconciliationCaseworkAction.Resolve => ReconciliationCaseLifecycleState.Resolved,
-            ReconciliationCaseworkAction.SignOff => ReconciliationCaseLifecycleState.SignedOff,
-            ReconciliationCaseworkAction.Reopen => ReconciliationCaseLifecycleState.Reopened,
-            ReconciliationCaseworkAction.TransitionStatus => command.Status,
-            _ => null
-        };
-
-    private static ReconciliationBreakQueueTransitionResult Invalid(
-        ReconciliationBreakQueueItem? item,
-        string error,
-        ReconciliationBreakQueueTransitionErrorCode code,
-        IReadOnlyList<string>? missingFields = null,
-        ReconciliationCaseLifecycleState? requestedState = null)
-        => new(
-            ReconciliationBreakQueueTransitionStatus.ValidationFailed,
-            item,
-            error,
-            code,
-            new ReconciliationCaseValidationProblem(
-                item?.LifecycleState.ToString() ?? "Unknown",
-                requestedState?.ToString() ?? "Unknown",
-                missingFields ?? [],
-                error));
-
-    private static bool IsKnownRootCause(string? code)
-        => !string.IsNullOrWhiteSpace(code) && RootCauseCodes.Contains(code);
-
-    private static bool IsKnownResolution(string? code)
-        => !string.IsNullOrWhiteSpace(code) && ResolutionCodes.Contains(code);
-
-    private static bool HasRequiredResolutionEvidence(
-        string? resolutionCode,
-        IReadOnlyList<string>? commandEvidence,
-        IReadOnlyList<string>? existingEvidence,
-        string? note)
-    {
-        if (string.IsNullOrWhiteSpace(resolutionCode) || !ResolutionEvidencePrefixes.TryGetValue(resolutionCode, out var prefixes))
-        {
-            return true;
-        }
-
-        var evidence = (commandEvidence ?? [])
-            .Concat(existingEvidence ?? [])
-            .Append(note ?? string.Empty);
-        return evidence.Any(value => prefixes.Any(prefix => value.Contains(prefix, StringComparison.OrdinalIgnoreCase)));
-    }
-
-
-    private static readonly HashSet<string> RootCauseCodes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "BrokerCashTiming",
-        "CustodianPositionLag",
-        "SecurityMasterMapping",
-        "LedgerClassification",
-        "AccrualTiming",
-        "CorporateActionTiming",
-        "DismissedFalsePositive"
-    };
-
-    private static readonly HashSet<string> ResolutionCodes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "LedgerAdjusted",
-        "BrokerStatementCorrected",
-        "SecurityMasterUpdated",
-        "AccrualAdjusted",
-        "EvidenceAccepted",
-        "DismissedFalsePositive",
-        "LegacyResolved"
-    };
-
-    private static readonly Dictionary<string, IReadOnlyList<string>> ResolutionEvidencePrefixes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["LedgerAdjusted"] = ["ledger-event:", "journal:"],
-        ["BrokerStatementCorrected"] = ["provider-record:", "statement:"],
-        ["SecurityMasterUpdated"] = ["security-master:"],
-        ["AccrualAdjusted"] = ["ledger-event:", "journal:"],
-        ["EvidenceAccepted"] = ["report-pack:", "evidence:"]
-    };
-
-    public static ReconciliationTaxonomySnapshot Taxonomy { get; } = new(
-        Version: 1,
-        RootCauses: RootCauseCodes.Select(code => new ReconciliationTaxonomyValue(code, code, 1, true)).ToArray(),
-        ResolutionCodes: ResolutionCodes.Select(code => new ReconciliationTaxonomyValue(
-            code,
-            code,
-            1,
-            true,
-            ResolutionEvidencePrefixes.TryGetValue(code, out var prefixes) ? prefixes : null)).ToArray());
-
-    private static bool IsLegalLifecycleTransition(ReconciliationCaseLifecycleState current, ReconciliationCaseLifecycleState next)
-        => current == next || (current, next) switch
-        {
-            (ReconciliationCaseLifecycleState.Open, ReconciliationCaseLifecycleState.Investigating) => true,
-            (ReconciliationCaseLifecycleState.Reopened, ReconciliationCaseLifecycleState.Investigating) => true,
-            (ReconciliationCaseLifecycleState.Investigating, ReconciliationCaseLifecycleState.AwaitingEvidence) => true,
-            (ReconciliationCaseLifecycleState.AwaitingEvidence, ReconciliationCaseLifecycleState.Investigating) => true,
-            (ReconciliationCaseLifecycleState.Investigating, ReconciliationCaseLifecycleState.Resolved) => true,
-            (ReconciliationCaseLifecycleState.AwaitingEvidence, ReconciliationCaseLifecycleState.Resolved) => true,
-            (ReconciliationCaseLifecycleState.Reopened, ReconciliationCaseLifecycleState.Resolved) => true,
-            (ReconciliationCaseLifecycleState.Resolved, ReconciliationCaseLifecycleState.SignedOff) => true,
-            (ReconciliationCaseLifecycleState.SignedOff, ReconciliationCaseLifecycleState.Reopened) => true,
-            _ => false
-        };
-
-    private static ReconciliationBreakQueueItem NormalizeLegacyCaseState(ReconciliationBreakQueueItem item)
-    {
-        var lifecycle = item.LifecycleState == ReconciliationCaseLifecycleState.InReview
-            ? ReconciliationCaseLifecycleState.Investigating
-            : item.LifecycleState;
-        var status = item.Status;
-        var resolutionCode = item.ResolutionCode;
-        var rootCauseCode = item.RootCauseCode;
-        var signoffStatus = item.SignoffStatus;
-
-        if (item.Status == ReconciliationBreakQueueStatus.Dismissed)
-        {
-            lifecycle = ReconciliationCaseLifecycleState.Resolved;
-            status = ReconciliationBreakQueueStatus.Resolved;
-            resolutionCode ??= "DismissedFalsePositive";
-            rootCauseCode ??= "DismissedFalsePositive";
-            signoffStatus ??= "dismissed-false-positive";
-        }
-
-        return item with
-        {
-            LifecycleState = lifecycle,
-            Status = status,
-            ResolutionCode = resolutionCode,
-            RootCauseCode = rootCauseCode,
-            SignoffStatus = signoffStatus
-        };
-    }
-
-    private static ReconciliationBreakQueueItem ApplyCaseworkMutation(ReconciliationBreakQueueItem item, ReconciliationCaseworkCommand command, DateTimeOffset now)
-    {
-        var comments = (item.Comments ?? []).ToList();
-        var evidence = (item.EvidenceLinks ?? []).ToList();
-        switch (command.Action)
-        {
-            case ReconciliationCaseworkAction.Assign:
-                return item with { AssignedTo = command.Assignee, AssigneeId = command.Assignee, AssigneeDisplayName = command.Assignee, LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.ChangePriority:
-                return item with { Priority = command.Priority ?? item.Priority, LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.TransitionStatus:
-                var lifecycle = command.Status ?? item.LifecycleState;
-                return item with
-                {
-                    LifecycleState = lifecycle,
-                    Status = MapQueueStatus(lifecycle, item.Status),
-                    AssignedTo = command.Assignee ?? item.AssignedTo,
-                    AssigneeId = command.Assignee ?? item.AssigneeId,
-                    AssigneeDisplayName = command.Assignee ?? item.AssigneeDisplayName,
-                    RootCauseCode = command.RootCauseCode ?? item.RootCauseCode,
-                    ResolutionCode = command.ResolutionCode ?? item.ResolutionCode,
-                    EvidenceLinks = lifecycle == ReconciliationCaseLifecycleState.Resolved && command.EvidenceLinks is not null
-                        ? evidence.Concat(command.EvidenceLinks).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
-                        : item.EvidenceLinks,
-                    EvidenceCount = lifecycle == ReconciliationCaseLifecycleState.Resolved && command.EvidenceLinks is not null
-                        ? evidence.Concat(command.EvidenceLinks).Distinct(StringComparer.OrdinalIgnoreCase).Count()
-                        : item.EvidenceCount,
-                    ResolvedBy = lifecycle == ReconciliationCaseLifecycleState.Resolved ? command.Actor : item.ResolvedBy,
-                    ResolvedAt = lifecycle == ReconciliationCaseLifecycleState.Resolved ? now : item.ResolvedAt,
-                    LifecycleRationale = command.Note,
-                    LastUpdatedAt = now
-                };
-            case ReconciliationCaseworkAction.AddComment:
-                comments.Add(new ReconciliationCaseComment(
-                    command.CommentId ?? Guid.NewGuid().ToString("N"),
-                    command.ParentCommentId,
-                    command.Actor,
-                    command.Actor,
-                    command.Visibility,
-                    command.Note ?? string.Empty,
-                    command.EvidenceLinks ?? [],
-                    now,
-                    Mentions: command.Mentions,
-                    LinkedEvidenceIds: command.EvidenceLinks,
-                    StatusTransition: command.StatusTransition));
-                evidence.AddRange(command.EvidenceLinks ?? []);
-                var commentLifecycle = command.StatusTransition ?? item.LifecycleState;
-                return item with { LifecycleState = commentLifecycle, Status = MapQueueStatus(commentLifecycle, item.Status), Comments = comments.ToArray(), EvidenceLinks = evidence.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), CommentCount = comments.Count(c => c.DeletedAt is null), EvidenceCount = evidence.Distinct(StringComparer.OrdinalIgnoreCase).Count(), LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.EditComment:
-                comments = comments.Select(c => c.CommentId == command.CommentId ? c with { Body = command.Note ?? c.Body, EditedAt = now, PreviousTextHash = HashPayload(c.Body), EditReason = command.Reason } : c).ToList();
-                return item with { Comments = comments.ToArray(), LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.DeleteComment:
-                comments = comments.Select(c => c.CommentId == command.CommentId ? c with { DeletedAt = now, DeletedBy = command.Actor, PreviousTextHash = HashPayload(c.Body), DeleteReason = command.Reason } : c).ToList();
-                return item with { Comments = comments.ToArray(), CommentCount = comments.Count(c => c.DeletedAt is null), LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.SetRootCause:
-                return item with { RootCauseCode = command.RootCauseCode, LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.SetResolution:
-                return item with { ResolutionCode = command.ResolutionCode, ResolutionNote = command.Note ?? item.ResolutionNote, LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.LinkEvidence:
-                evidence.AddRange(command.EvidenceLinks ?? []);
-                return item with { EvidenceLinks = evidence.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), EvidenceCount = evidence.Distinct(StringComparer.OrdinalIgnoreCase).Count(), LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.Resolve:
-                evidence.AddRange(command.EvidenceLinks ?? []);
-                var distinctEvidence = evidence.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-                return item with { LifecycleState = ReconciliationCaseLifecycleState.Resolved, Status = ReconciliationBreakQueueStatus.Resolved, RootCauseCode = command.RootCauseCode ?? item.RootCauseCode, ResolutionCode = command.ResolutionCode ?? item.ResolutionCode, ResolvedBy = command.Actor, ResolvedAt = now, ResolutionNote = command.Note ?? item.ResolutionNote, EvidenceLinks = distinctEvidence, EvidenceCount = distinctEvidence.Length, SignoffStatus = "ready-for-signoff", LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.SignOff:
-                return item with { LifecycleState = ReconciliationCaseLifecycleState.SignedOff, Status = ReconciliationBreakQueueStatus.SignedOff, SignedOffBy = command.Actor, SignedOffAt = now, SignOffNote = command.Note, SignoffStatus = "signed-off", LastUpdatedAt = now };
-            case ReconciliationCaseworkAction.Reopen:
-                return item with { LifecycleState = ReconciliationCaseLifecycleState.Reopened, Status = ReconciliationBreakQueueStatus.Open, ReopenedBy = command.Actor, ReopenedAt = now, ReopenReason = command.Reason, LastUpdatedAt = now };
-            default:
-                return item;
-        }
-    }
-
-    private static ReconciliationBreakQueueStatus MapQueueStatus(ReconciliationCaseLifecycleState lifecycle, ReconciliationBreakQueueStatus current)
-    {
-        if (lifecycle is ReconciliationCaseLifecycleState.Open or ReconciliationCaseLifecycleState.Reopened)
-        {
-            return ReconciliationBreakQueueStatus.Open;
-        }
-
-        if (lifecycle == ReconciliationCaseLifecycleState.InReview || lifecycle == ReconciliationCaseLifecycleState.Investigating || lifecycle == ReconciliationCaseLifecycleState.AwaitingEvidence)
-        {
-            return ReconciliationBreakQueueStatus.InReview;
-        }
-
-        if (lifecycle == ReconciliationCaseLifecycleState.Resolved)
-        {
-            return ReconciliationBreakQueueStatus.Resolved;
-        }
-
-        return lifecycle == ReconciliationCaseLifecycleState.SignedOff ? ReconciliationBreakQueueStatus.SignedOff : current;
-    }
-
-    private ReconciliationBreakQueueItem StampComputedFields(ReconciliationBreakQueueItem item, DateTimeOffset now)
-    {
-        var policy = _slaPolicyProvider?.ResolvePolicy(item) ?? ReconciliationSlaCalculator.DefaultPolicyFor(item);
-        var sla = ReconciliationSlaCalculator.Compute(item, policy, now);
-        return item with
-        {
-            Version = item.Version + 1,
-            SlaPolicyId = sla.PolicyId,
-            SlaDueAt = sla.DueAt,
-            SlaWarningAt = sla.WarningAt,
-            SlaBreachedAt = sla.BreachedAt,
-            SlaBreached = sla.State == ReconciliationCaseSlaState.Breached,
-            SlaState = sla.State,
-            AgeBand = sla.AgeBand,
-            BusinessAgeHours = sla.BusinessAgeHours,
-            LastActivityAt = now,
-            Score = ComputeScore(item, now)
-        };
-    }
-
-
-    private static bool HasSlaChanged(ReconciliationBreakQueueItem before, ReconciliationBreakQueueItem after)
-        => before.SlaState != after.SlaState ||
-           before.SlaBreached != after.SlaBreached ||
-           before.SlaDueAt != after.SlaDueAt ||
-           before.SlaWarningAt != after.SlaWarningAt ||
-           before.SlaBreachedAt != after.SlaBreachedAt ||
-           !string.Equals(before.SlaPolicyId, after.SlaPolicyId, StringComparison.OrdinalIgnoreCase);
-
-    private ReconciliationBreakQueueAuditEvent CreateAudit(ReconciliationCaseworkCommand command, ReconciliationBreakQueueItem before, ReconciliationBreakQueueItem after, DateTimeOffset now)
-        => new(
-            EventId: Guid.NewGuid().ToString("N"),
-            BreakId: command.BreakId,
-            EventType: ToAuditEventType(command.Action),
-            PreviousStatus: before.Status,
-            NewStatus: after.Status,
-            PreviousLifecycleState: before.LifecycleState,
-            NewLifecycleState: after.LifecycleState,
-            OccurredAt: now,
-            AssignedTo: after.AssignedTo,
-            ReviewedBy: after.ReviewedBy,
-            ResolvedBy: after.ResolvedBy,
-            Note: command.Note,
-            ExceptionRoute: after.ExceptionRoute,
-            ToleranceBand: after.ToleranceBand,
-            RequiredSignoffRole: after.RequiredSignoffRole,
-            SignoffStatus: after.SignoffStatus,
-            ExternalAccountId: after.ExternalAccountId,
-            CustodianId: after.CustodianId,
-            UpstreamSyncCursor: after.UpstreamSyncCursor,
-            Actor: command.Actor,
-            BeforePayload: JsonSerializer.Serialize(before, _jsonOptions),
-            AfterPayload: JsonSerializer.Serialize(after, _jsonOptions),
-            CorrelationId: command.CorrelationId,
-            CommandId: command.CommandId,
-            Source: command.Source,
-            Reason: command.Reason,
-            CausationId: command.CausationId);
-
-    private static string ToAuditEventType(ReconciliationCaseworkAction action)
-        => action switch
-        {
-            ReconciliationCaseworkAction.Assign => "Assigned",
-            ReconciliationCaseworkAction.ChangePriority => "PriorityChanged",
-            ReconciliationCaseworkAction.TransitionStatus => "StatusChanged",
-            ReconciliationCaseworkAction.AddComment => "CommentAdded",
-            ReconciliationCaseworkAction.EditComment => "CommentEdited",
-            ReconciliationCaseworkAction.DeleteComment => "CommentDeleted",
-            ReconciliationCaseworkAction.SetRootCause => "RootCauseSet",
-            ReconciliationCaseworkAction.SetResolution => "ResolutionSet",
-            ReconciliationCaseworkAction.LinkEvidence => "EvidenceLinked",
-            ReconciliationCaseworkAction.SignOff => "SignedOff",
-            ReconciliationCaseworkAction.Reopen => "Reopen",
-            ReconciliationCaseworkAction.Resolve => "ResolutionSet",
-            _ => action.ToString()
-        };
-
-    private static ReconciliationBreakScore ComputeScore(ReconciliationBreakQueueItem item, DateTimeOffset now)
-    {
-        var materiality = Math.Min(50m, Math.Abs(item.Variance));
-        var ageHours = Math.Max(0d, (now - item.DetectedAt).TotalHours);
-        var ageComponent = Math.Min(25, (int)Math.Round(ageHours / 4d, MidpointRounding.AwayFromZero));
-        var counterparty = string.IsNullOrWhiteSpace(item.Counterparty) ? 0 : 15;
-        var recurring = item.StateTransitions?.Count(t => t.To == ReconciliationCaseLifecycleState.InReview) > 1 ? 10 : 0;
-        var severityScore = (int)Math.Min(100, materiality + ageComponent + counterparty + recurring);
-        var priorityScore = Math.Min(100, severityScore + (item.Severity == ReconciliationBreakSeverity.Critical ? 20 : item.Severity == ReconciliationBreakSeverity.High ? 10 : 0));
-        return new ReconciliationBreakScore(severityScore, priorityScore, materiality, ageHours, counterparty, recurring, priorityScore >= 70, ComputeSlaDueAt(item), now > ComputeSlaDueAt(item) ? now : null);
-    }
-
-    private static DateTimeOffset ComputeSlaDueAt(ReconciliationBreakQueueItem item)
-    {
-        var hours = item.Severity switch
-        {
-            ReconciliationBreakSeverity.Critical => 4,
-            ReconciliationBreakSeverity.High => 8,
-            ReconciliationBreakSeverity.Medium => 24,
-            _ => 48
-        };
-        return item.DetectedAt.AddHours(hours);
-    }
-
-    private static bool IsSlaBreached(ReconciliationBreakQueueItem item)
-        => item.Status is ReconciliationBreakQueueStatus.Open or ReconciliationBreakQueueStatus.InReview && DateTimeOffset.UtcNow > ComputeSlaDueAt(item);
-
-    private sealed record BreakQueueSnapshot(IReadOnlyList<ReconciliationBreakQueueItem> Items);
 }

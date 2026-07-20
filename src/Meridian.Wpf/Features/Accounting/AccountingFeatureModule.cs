@@ -68,6 +68,11 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<CashFinancingReadService>();
         services.AddSingleton<IWorkstationReconciliationApiClient, WorkstationReconciliationApiClient>();
         services.AddSingleton<IWorkstationSecurityMasterApiClient, WorkstationSecurityMasterApiClient>();
+        // Operator accounting-configuration traffic goes through the server's governed HTTP
+        // surface (audit finding P8) so the server stays the single writer and stamps the
+        // session actor; the in-process IAccountingConfigurationService below remains for
+        // background workers that have not yet migrated.
+        services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
         // Passport Workbench governed-write editor (Phase 4 desktop parity).
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityPassportEditorViewModel>();
         services.AddTransient<Meridian.Wpf.Views.SecurityPassportEditorPage>();

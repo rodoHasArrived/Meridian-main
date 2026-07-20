@@ -1,12 +1,12 @@
 {
-  "total_files": 624,
-  "total_lines": 112331,
-  "orphaned_count": 244,
+  "total_files": 625,
+  "total_lines": 112349,
+  "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 206,
-  "average_lines": 180.0,
-  "health_score": 80,
+  "todo_count": 205,
+  "average_lines": 179.8,
+  "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -19,6 +19,19 @@
     ".agents/skills/meridian-repo-navigation/SKILL.md",
     ".agents/skills/meridian-roadmap-strategist/SKILL.md",
     ".agents/skills/meridian-simulated-user-panel/SKILL.md",
+    ".agents/skills/meridian-simulated-user-panel/agents/grader.md",
+    ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md",
+    ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md",
+    ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md",
+    ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-04-analysis-export-power-user-review.md",
+    ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md",
+    ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md",
+    ".agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md",
+    ".agents/skills/meridian-simulated-user-panel/references/personas.md",
+    ".agents/skills/meridian-simulated-user-panel/references/review-contract.md",
+    ".agents/skills/meridian-simulated-user-panel/references/review-modes.md",
+    ".agents/skills/meridian-simulated-user-panel/references/rubric.md",
+    ".agents/skills/meridian-simulated-user-panel/references/sample-prompts.md",
     ".agents/skills/meridian-test-writer/SKILL.md",
     "AGENTS.md",
     "Meridian Design System/BRAND_GUIDELINES.md",
@@ -663,7 +676,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/agents/grader.md",
-      "line_count": 69,
+      "line_count": 71,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -671,7 +684,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-01-welcome-onboarding-design-partner.md",
-      "line_count": 86,
+      "line_count": 94,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -679,7 +692,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-02-provider-onboarding-release-gate.md",
-      "line_count": 86,
+      "line_count": 94,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -687,7 +700,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-03-fund-ledger-controls-review.md",
-      "line_count": 86,
+      "line_count": 94,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -695,7 +708,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-04-analysis-export-power-user-review.md",
-      "line_count": 86,
+      "line_count": 94,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -703,7 +716,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md",
-      "line_count": 86,
+      "line_count": 94,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -711,7 +724,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md",
-      "line_count": 87,
+      "line_count": 95,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -719,7 +732,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md",
-      "line_count": 58,
+      "line_count": 51,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -727,7 +740,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/references/personas.md",
-      "line_count": 125,
+      "line_count": 102,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -735,7 +748,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/references/review-contract.md",
-      "line_count": 73,
+      "line_count": 91,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -743,7 +756,15 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/references/review-modes.md",
-      "line_count": 45,
+      "line_count": 43,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": ".agents/skills/meridian-simulated-user-panel/references/rubric.md",
+      "line_count": 33,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -751,7 +772,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/references/sample-prompts.md",
-      "line_count": 69,
+      "line_count": 86,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -759,7 +780,7 @@
     },
     {
       "path": ".agents/skills/meridian-simulated-user-panel/SKILL.md",
-      "line_count": 150,
+      "line_count": 114,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1039,7 +1060,7 @@
     },
     {
       "path": "docs/ai/agents/README.md",
-      "line_count": 286,
+      "line_count": 288,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1183,7 +1204,7 @@
     },
     {
       "path": "docs/ai/codex/README.md",
-      "line_count": 410,
+      "line_count": 413,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2511,7 +2532,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9162,
+      "line_count": 9197,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

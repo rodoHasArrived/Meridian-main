@@ -24,6 +24,7 @@ public sealed class LifecycleSupervisorConfigurationTests : IDisposable
         first.Manifest.DatabaseTimeoutSeconds.Should().Be(60);
         first.PipeName.Should().Be(second.PipeName);
         first.PipeName.Should().StartWith("Meridian.LifecycleSupervisor.");
+        first.HostLogRoot.Should().Be(Path.Combine(first.DataRoot, "_logs"));
         File.Exists(first.ManifestPath).Should().BeTrue();
     }
 
@@ -102,6 +103,20 @@ public sealed class LifecycleSupervisorConfigurationTests : IDisposable
 
         act.Should().Throw<InvalidDataException>()
             .WithMessage("*database mode*");
+    }
+
+    [Fact]
+    public void Load_MalformedManifestThrowsJsonExceptionForProgramBoundaryClassification()
+    {
+        var serviceRoot = Path.Combine(_root, "service");
+        Directory.CreateDirectory(serviceRoot);
+        File.WriteAllText(
+            Path.Combine(serviceRoot, "lifecycle-supervisor.json"),
+            "{ this is not valid JSON");
+
+        var act = () => LifecycleSupervisorConfiguration.Load(_root);
+
+        act.Should().Throw<JsonException>();
     }
 
     [Fact]

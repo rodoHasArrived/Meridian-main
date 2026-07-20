@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Launcher\Meridian.Launcher.csproj" />
     <ProjectReference Include="..\..\src\Meridian.LifecycleSupervisor\Meridian.LifecycleSupervisor.csproj" />
   </ItemGroup>
 </Project>

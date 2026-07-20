@@ -12,6 +12,12 @@ public sealed record SymbolAttribution(
     decimal MarginInterestAllocated);
 
 /// <summary>Aggregate performance statistics computed by <c>BacktestMetricsEngine</c>.</summary>
+/// <remarks>
+/// <see cref="NetPnl"/> is <c>FinalEquity - InitialCapital</c>: equity already reflects all
+/// frictions (commissions, margin interest, short rebates) because the simulated portfolio
+/// posts them through cash. <see cref="GrossPnl"/> is <see cref="NetPnl"/> with those frictions
+/// added back — the hypothetical friction-free result.
+/// </remarks>
 public sealed record BacktestMetrics(
     decimal InitialCapital,
     decimal FinalEquity,

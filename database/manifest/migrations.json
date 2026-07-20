@@ -721,6 +721,15 @@
       "sha256": "5619fc77cc5d29b5dc3942c1fbeac250cfc8eab54dc65556203c901f58e8201b"
     },
     {
+      "filename": "009_reporting_reconciliation_evidence_v2.sql",
+      "immutable": true,
+      "migration_set_id": "reporting",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Reporting/Migrations/009_reporting_reconciliation_evidence_v2.sql",
+      "schema": "reporting",
+      "sha256": "666426f3e71fd7e9d1807fad5f45d3f1d755dc0d6ddf240920b7a1e82b6f0dba"
+    },
+    {
       "filename": "001_user_access_assignment.sql",
       "immutable": true,
       "migration_set_id": "identity-access",
@@ -731,7 +740,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "dd1cf664675e7129d55253ead1fddc573bbbdb7031bb5c51649764ddf1d68508",
+  "fingerprint": "470a072ae3e0fc3e2714751c829da423b75c6defa2fea5b1ea4783f2f469195b",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -969,7 +978,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 81,
+    "files": 82,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

@@ -1,4 +1,5 @@
 using Meridian.Workflow.Runbooks;
+using Meridian.Contracts.Operations;
 using Meridian.Platform.Results;
 
 namespace Meridian.Application.Commands;
@@ -70,7 +71,15 @@ internal sealed class RunbookCommands(IRunbookStore store, IRunbookExecutor exec
             var result = await executor.ExecuteAsync(runbook, dryRun, ct).ConfigureAwait(false);
             foreach (var message in result.Messages)
                 Console.WriteLine(message);
-            return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.InternalError);
+            Console.WriteLine($"Outcome: {result.Outcome.State} ({result.Outcome.OperationId})");
+            foreach (var action in result.Outcome.Recovery)
+                Console.Error.WriteLine($"Recovery: {action.Guidance}");
+            return result.Outcome.State switch
+            {
+                OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings => CliResult.Ok(),
+                OperationTerminalState.Blocked => CliResult.Fail(ErrorCode.NotSupported),
+                _ => CliResult.Fail(ErrorCode.InternalError)
+            };
         }
 
         return CliResult.Ok();

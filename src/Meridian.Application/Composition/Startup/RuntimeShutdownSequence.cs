@@ -152,6 +152,7 @@ public sealed class LifecycleControlPlaneHostedService : BackgroundService
     private readonly IRuntimeLifecycleControlPlane _lifecycle;
     private readonly IRuntimeShutdownSequence _sequence;
     private readonly ILogger<LifecycleControlPlaneHostedService> _logger;
+    private int _shutdownSequenceStarted;
 
     public LifecycleControlPlaneHostedService(
         IRuntimeLifecycleControlPlane lifecycle,
@@ -165,16 +166,7 @@ public sealed class LifecycleControlPlaneHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var stoppingRegistration = stoppingToken.Register(() =>
-        {
-            _ = _lifecycle.RequestShutdownAsync(
-                new LifecycleShutdownRequestDto
-                {
-                    Reason = LifecycleShutdownReason.ExternalCancellation,
-                    RequestedBy = "generic-host",
-                    Detail = "The generic host requested lifecycle shutdown."
-                });
-        });
+        using var stoppingRegistration = stoppingToken.Register(RequestGenericHostShutdown);
 
         try
         {
@@ -183,6 +175,40 @@ public sealed class LifecycleControlPlaneHostedService : BackgroundService
         catch (OperationCanceledException) when (_lifecycle.StopWorkToken.IsCancellationRequested)
         {
             // Expected: the lifecycle request starts the shutdown sequence.
+        }
+
+        await RunShutdownSequenceOnceAsync().ConfigureAwait(false);
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        // Since .NET 10, BackgroundService.StartAsync schedules ExecuteAsync via
+        // Task.Run(..., stoppingToken). A stop that lands before the delegate is scheduled
+        // cancels the queued work outright, so ExecuteAsync — including the authoritative
+        // shutdown sequence in its tail — never runs a single line. Drive the typed shutdown
+        // request and the sequence from here as well; RunShutdownSequenceOnceAsync guarantees
+        // the sequence still executes exactly once when ExecuteAsync's tail also reaches it.
+        RequestGenericHostShutdown();
+        await base.StopAsync(cancellationToken).ConfigureAwait(false);
+        await RunShutdownSequenceOnceAsync().ConfigureAwait(false);
+    }
+
+    private void RequestGenericHostShutdown()
+    {
+        _ = _lifecycle.RequestShutdownAsync(
+            new LifecycleShutdownRequestDto
+            {
+                Reason = LifecycleShutdownReason.ExternalCancellation,
+                RequestedBy = "generic-host",
+                Detail = "The generic host requested lifecycle shutdown."
+            });
+    }
+
+    private async Task RunShutdownSequenceOnceAsync()
+    {
+        if (Interlocked.Exchange(ref _shutdownSequenceStarted, 1) != 0)
+        {
+            return;
         }
 
         try

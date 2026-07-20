@@ -38,6 +38,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Product operating scope | [Meridian Design Document](../product/meridian-design-document.md) | stakeholder design context for operator posture |
 | Daily operator controls | [Operators](./README.md) | this page |
 | Startup, restart, and shutdown control | [Lifecycle Control Plane](../reference/lifecycle-control-plane.md) | states, supervisor commands, database ownership, and receipts |
+| Failed, blocked, or warning operation | [Verified Outcome Recovery](./verified-outcome-recovery.md) | terminal receipt triage, evidence verification, safe retry, and escalation |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | Troubleshooting and support evidence | [Operator Preflight Checklist](./preflight-checklist.md) | readiness gate and rollback posture |
@@ -57,6 +58,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 - [Provider Onboarding: Alpaca](./provider-onboarding-alpaca.md)
 - [Provider Onboarding: Interactive Brokers](./provider-onboarding-interactive-brokers.md)
 - [Reconciliation Operations](./reconciliation-operations.md)
+- [Verified Outcome Recovery](./verified-outcome-recovery.md)
 
 ## High-Traffic Legacy Path Migration Status
 

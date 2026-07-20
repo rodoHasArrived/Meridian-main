@@ -1,7 +1,10 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -114,7 +117,7 @@ public interface IOperationsContinuityWorkflowService
         CancellationToken ct = default);
 }
 
-public sealed class OperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
+public sealed partial class OperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
 {
 
     private static readonly JsonSerializerOptions WorkflowCloneJsonOptions = new(JsonSerializerDefaults.Web)
@@ -161,6 +164,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private readonly IOperationsContinuityRepository _repository;
     private readonly IOperationsWorkflowAuditStore _auditStore;
     private readonly IOperationsStatusDerivationService _statusDerivation;
+    private readonly IOperationsContinuityWorkflowStartCommitStore? _workflowStartCommitStore;
+    private readonly IOperationsContinuityTransitionCommitStore? _transitionCommitStore;
     private readonly OperationsLedgerPostingService _ledgerPosting;
 
     public OperationsContinuityWorkflowService(
@@ -174,6 +179,14 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _auditStore = auditStore ?? throw new ArgumentNullException(nameof(auditStore));
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
+        _workflowStartCommitStore = transactionalCommitStore as IOperationsContinuityWorkflowStartCommitStore ??
+            repository as IOperationsContinuityWorkflowStartCommitStore ??
+            auditStore as IOperationsContinuityWorkflowStartCommitStore;
+        _transitionCommitStore = transactionalCommitStore ??
+            repository as IOperationsContinuityTransitionCommitStore ??
+            (repository is InMemoryOperationsContinuityRepository inMemoryRepository
+                ? new InMemoryOperationsContinuityTransitionCommitStore(inMemoryRepository, auditStore)
+                : null);
         _ledgerPosting = new OperationsLedgerPostingService(ledgerJournalStore, transactionalCommitStore, securityMasterQueryService);
     }
 
@@ -236,9 +249,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             OperationsContinuityWorkflowText.RedactSensitiveText(request.CorrelationId),
             evidence);
 
-        if (_auditStore is IOperationsContinuityWorkflowStartCommitStore startCommitStore)
+        if (_workflowStartCommitStore is not null)
         {
-            var startCommit = await startCommitStore
+            var startCommit = await _workflowStartCommitStore
                 .CommitWorkflowStartAsync(workflow, auditDraft, ct)
                 .ConfigureAwait(false);
             var committedDto = await ToDtoAsync(startCommit.Workflow, ct).ConfigureAwait(false);
@@ -766,7 +779,11 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             request.Rationale,
             request.CorrelationId,
             request.EvidenceLinks,
-            eventType: "reconciliation-break-resolved",
+            eventType: string.Equals(request.ResolutionStatus, "waived", StringComparison.OrdinalIgnoreCase)
+                ? "reconciliation-break-waived"
+                : string.Equals(request.ResolutionStatus, "superseded", StringComparison.OrdinalIgnoreCase)
+                    ? "reconciliation-break-superseded"
+                    : "reconciliation-break-resolved",
             gate: OperationsGateKeyDto.Reconciliation,
             precondition: null,
             command: (workflow, evidence, now) =>
@@ -884,25 +901,28 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             var readiness = EvaluateCloseReadiness(existing);
             if (!readiness.IsReadyToClose)
             {
-                await _auditStore.AppendAsync(new OperationsWorkflowAuditDraft(
-                    existing.WorkflowId,
-                    existing.FundAccountId,
-                    existing.PeriodId,
-                    "workflow-close-rejected",
-                    _statusDerivation.Derive(existing),
-                    _statusDerivation.Derive(existing),
+                var blockers = readiness.Blockers
+                    .Select(static blocker => new OperationsWorkflowBlockerDto(
+                        blocker.Code,
+                        blocker.Message,
+                        blocker.Gate,
+                        blocker.Severity,
+                        []))
+                    .ToArray();
+                var blockedResult = await PersistBlockedAttemptAsync(
+                    existing,
+                    request.ExpectedVersion,
+                    request.Actor,
+                    request.Rationale,
+                    request.CorrelationId,
+                    "workflow-closed",
                     OperationsGateKeyDto.Approval,
-                    existing.ApprovalGate.Status,
-                    existing.ApprovalGate.Status,
-                    request.Actor?.Trim() ?? string.Empty,
-                    OperationsContinuityWorkflowText.RedactSensitiveText($"{request.Rationale} | close rejected: {string.Join("; ", readiness.Blockers.Select(static b => b.Code))}"),
-                    OperationsContinuityWorkflowText.RedactSensitiveText(request.CorrelationId),
-                    EnsureReportPackEvidence(request.ReportPackId, request.EvidenceLinks)), ct).ConfigureAwait(false);
-
-                return new OperationsTransitionResultDto(false, "CLOSE_READINESS_FAILED", "Close was rejected by fail-closed readiness gating.", null,
-                    readiness.Blockers.Select(static b => new OperationsWorkflowBlockerDto(b.Code, b.Message, b.Gate, b.Severity, [])).ToArray(),
-                    readiness.NextActions,
-                    CloseReadiness: readiness);
+                    "CLOSE_READINESS_FAILED",
+                    "Close was rejected by fail-closed readiness gating.",
+                    blockers,
+                    EnsureReportPackEvidence(request.ReportPackId, request.EvidenceLinks),
+                    ct).ConfigureAwait(false);
+                return blockedResult with { CloseReadiness = readiness };
             }
         }
 
@@ -925,119 +945,6 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             ct: ct).ConfigureAwait(false);
 
         return result with { CloseReadiness = result.Workflow?.CloseReadiness };
-    }
-
-    private async Task<OperationsTransitionResultDto> ApplyCommandAsync(
-        Guid workflowId,
-        long expectedVersion,
-        string actor,
-        string? rationale,
-        string? correlationId,
-        IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks,
-        string eventType,
-        OperationsGateKeyDto? gate,
-        Func<OperationsContinuityWorkflow, OperationsWorkflowBlockerDto?>? precondition = null,
-        Func<OperationsContinuityWorkflow, IReadOnlyList<OperationsEvidenceLinkDto>, DateTimeOffset, OperationsWorkflowBlockerDto?>? command = null,
-        bool allowClosedWorkflow = false,
-        bool requireIntactAuditChain = false,
-        CancellationToken ct = default)
-    {
-        if (workflowId == Guid.Empty)
-        {
-            return Failure("VALIDATION_FAILED", "Workflow id is required.",
-            [
-                new OperationsWorkflowBlockerDto("WORKFLOW_ID_REQUIRED", "Workflow id is required.", null, "Error", [])
-            ]);
-        }
-
-        if (string.IsNullOrWhiteSpace(actor))
-        {
-            return Failure("VALIDATION_FAILED", "Actor is required for workflow transitions.",
-            [
-                new OperationsWorkflowBlockerDto("ACTOR_REQUIRED", "Actor is required for workflow transitions.", gate, "Error", [])
-            ]);
-        }
-
-        var workflow = await _repository.GetAsync(workflowId, ct).ConfigureAwait(false);
-        if (workflow is null)
-        {
-            return Failure("NOT_FOUND", "Workflow was not found.", []);
-        }
-
-        if (workflow.Version != expectedVersion)
-        {
-            return Failure(
-                "VERSION_MISMATCH",
-                $"Workflow version {workflow.Version} does not match expected version {expectedVersion}.",
-                [
-                    new OperationsWorkflowBlockerDto(
-                        "WORKFLOW_VERSION_MISMATCH",
-                        "Refresh the workflow before retrying the command.",
-                        null,
-                        "Error",
-                        [])
-                ]);
-        }
-
-        if (workflow.IsClosed && !allowClosedWorkflow)
-        {
-            var blocker = CreateClosedWorkflowBlocker(gate);
-            return Failure("INVALID_STATE_TRANSITION", blocker.Message, [blocker]);
-        }
-
-        if (precondition?.Invoke(workflow) is { } preconditionBlocker)
-        {
-            return Failure("INVALID_STATE_TRANSITION", preconditionBlocker.Message, [preconditionBlocker]);
-        }
-
-        if (requireIntactAuditChain)
-        {
-            var auditTimeline = await _auditStore.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
-            if (!OperationsWorkflowAuditHashing.TryValidateChain(auditTimeline, out var auditBlockerCode, out var auditMessage))
-            {
-                var blocker = new OperationsWorkflowBlockerDto(
-                    auditBlockerCode,
-                    auditMessage,
-                    gate,
-                    "Critical",
-                    []);
-                return Failure("INVALID_STATE_TRANSITION", blocker.Message, [blocker]);
-            }
-        }
-
-        var fromStatus = _statusDerivation.Derive(workflow);
-        var fromGateStatus = gate.HasValue ? GetGate(workflow, gate.Value).Status : (OperationsGateStatusDto?)null;
-        var evidence = OperationsContinuityWorkflowText.NormalizeEvidence(evidenceLinks);
-        var now = DateTimeOffset.UtcNow;
-        var workflowForCommit = CloneWorkflow(workflow);
-        if (command?.Invoke(workflowForCommit, evidence, now) is { } commandBlocker)
-        {
-            return Failure("INVALID_STATE_TRANSITION", commandBlocker.Message, [commandBlocker]);
-        }
-
-        var toStatus = _statusDerivation.Derive(workflowForCommit);
-        var toGateStatus = gate.HasValue ? GetGate(workflowForCommit, gate.Value).Status : (OperationsGateStatusDto?)null;
-        var audit = await _auditStore.AppendAsync(
-            new OperationsWorkflowAuditDraft(
-                workflowForCommit.WorkflowId,
-                workflowForCommit.FundAccountId,
-                workflowForCommit.PeriodId,
-                eventType,
-                fromStatus,
-                toStatus,
-                gate,
-                fromGateStatus,
-                toGateStatus,
-                actor.Trim(),
-                OperationsContinuityWorkflowText.RedactSensitiveText(rationale),
-                OperationsContinuityWorkflowText.RedactSensitiveText(correlationId),
-                evidence),
-            ct).ConfigureAwait(false);
-
-        workflowForCommit.Touch(audit.OccurredAtUtc);
-        await _repository.SaveAsync(workflowForCommit, ct).ConfigureAwait(false);
-        var dto = await ToDtoAsync(workflowForCommit, ct).ConfigureAwait(false);
-        return Success(dto);
     }
 
     public async Task<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>> ListAsync(
@@ -2503,6 +2410,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private static bool IsClosedBreakStatus(string? status)
         => string.Equals(status, "closed", StringComparison.OrdinalIgnoreCase) ||
            string.Equals(status, "resolved", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(status, "waived", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(status, "superseded", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(status, "dismissed", StringComparison.OrdinalIgnoreCase) ||
            string.Equals(status, "matched", StringComparison.OrdinalIgnoreCase);
 
     private static OperationsAccountingRecordSummaryDto BuildAccountingRecordSummary(
@@ -2840,9 +2750,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         AddComponent(components, blockers, "reconciliation", "Reconciliation", 15,
             workflow.ReconciliationGate.Status == OperationsGateStatusDto.Passed &&
                 workflow.ReconciliationState == OperationsReconciliationStateDto.Complete &&
-                workflow.BreakCases.All(static item =>
-                    string.Equals(item.Status, "closed", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(item.Status, "resolved", StringComparison.OrdinalIgnoreCase)),
+                workflow.BreakCases.All(static item => IsClosedBreakStatus(item.Status)),
             "RECONCILIATION_CRITICAL_BREAKS_OPEN",
             "Unresolved reconciliation breaks still require disposition.",
             OperationsGateKeyDto.Reconciliation,
@@ -2950,7 +2858,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             entry.CorrelationKeys,
             entry.References,
             entry.PreviousHash,
-            entry.CurrentHash);
+            entry.CurrentHash,
+            entry.Outcome);
 
     private static IReadOnlyList<OperationsWorkflowBlockerDto> ValidateStartRequest(OperationsStartWorkflowRequestDto request)
     {
@@ -3083,8 +2992,22 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             _ => throw new ArgumentOutOfRangeException(nameof(gate), gate, "Unsupported operations continuity gate.")
         };
 
-    private static OperationsTransitionResultDto Success(OperationsContinuityWorkflowDto workflow) =>
-        new(true, null, null, workflow, workflow.Blockers, workflow.NextActions);
+    private static OperationsTransitionResultDto Success(OperationsContinuityWorkflowDto workflow)
+    {
+        var outcome = CreateOperationOutcome(
+            workflow.WorkflowId,
+            Math.Max(0, workflow.Version - 1),
+            "operations-continuity-transition",
+            "operations-continuity-service",
+            null,
+            null,
+            OperationTerminalState.Succeeded,
+            [],
+            [],
+            null,
+            DateTimeOffset.UtcNow);
+        return CreateResult(outcome, null, null, workflow, workflow.Blockers, workflow.NextActions);
+    }
 
     private static OperationsWorkflowBlockerDto CreateClosedWorkflowBlocker(OperationsGateKeyDto? gate) =>
         new(
@@ -3117,8 +3040,23 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
     private static OperationsTransitionResultDto Failure(
         string errorCode,
         string errorMessage,
-        IReadOnlyList<OperationsWorkflowBlockerDto> blockers) =>
-        new(false, errorCode, errorMessage, null, blockers, []);
+        IReadOnlyList<OperationsWorkflowBlockerDto> blockers)
+    {
+        var nextActions = BuildRecoveryNextActions(blockers);
+        var outcome = CreateOperationOutcome(
+            Guid.Empty,
+            0,
+            "operations-continuity-transition",
+            "operations-continuity-service",
+            null,
+            null,
+            blockers.Count > 0 ? OperationTerminalState.Blocked : OperationTerminalState.Failed,
+            blockers,
+            nextActions,
+            errorMessage,
+            DateTimeOffset.UtcNow);
+        return CreateResult(outcome, errorCode, errorMessage, null, blockers, nextActions);
+    }
 
     private static string DisplayName(OperationsGateKeyDto gateKey) => gateKey switch
     {

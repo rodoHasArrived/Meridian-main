@@ -7,7 +7,7 @@ record baseline, active W5X productization targets, and no-mobile development po
 
 Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 `docs/roadmap/generated/ROADMAP_SUMMARY.md`, and `docs/ai/assistant-workflow-contract.md`:
-2026-06-19.
+2026-07-19.
 
 ## Current Skills
 
@@ -30,7 +30,7 @@ Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 | `meridian-provider-builder` | [`SKILL.md`](meridian-provider-builder/SKILL.md) | Build and extend provider integrations |
 | `meridian-repo-navigation` | [`SKILL.md`](meridian-repo-navigation/SKILL.md) | Orient large-repo tasks before specialist work |
 | `meridian-roadmap-strategist` | [`SKILL.md`](meridian-roadmap-strategist/SKILL.md) | Refresh roadmap, delivery-plan, and target-state docs |
-| `meridian-simulated-user-panel` | [`SKILL.md`](meridian-simulated-user-panel/SKILL.md) | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
+| `meridian-simulated-user-panel` | [`SKILL.md`](meridian-simulated-user-panel/SKILL.md) | Run evidence-led, explicitly simulated reviews with canonical Persona Matrix panels and fail-closed release gates |
 | `meridian-test-writer` | [`SKILL.md`](meridian-test-writer/SKILL.md) | Write scenario-first Meridian tests |
 | `modular-desktop-mvvm` | [`SKILL.md`](modular-desktop-mvvm/SKILL.md) | Implement modular WPF MVVM workstation changes |
 | `workstation-screen-composition` | [`SKILL.md`](workstation-screen-composition/SKILL.md) | Compose desktop screens from shared workstation primitives |
@@ -68,7 +68,7 @@ different work:
 | Archive | `meridian-archive-organizer` | Classify stale material and preserve useful history. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile plans, delivery waves, and target state. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while improving maintainability. |
-| Simulated user review | `meridian-simulated-user-panel` | Run persona-backed critique from concrete artifacts. |
+| Simulated user review | `meridian-simulated-user-panel` | Run evidence-led multi-persona critique; label simulation and hold release gates when proof is insufficient. |
 | Desktop implementation | `modular-desktop-mvvm` | Implement WPF changes with MVVM, shared seams, tests, and resource guardrails. |
 | Desktop composition | `workstation-screen-composition` | Shape new workspaces, tabs, panels, and command surfaces from shared primitives. |
 | Component extraction | `shared-component-extraction` | Consolidate repeated controls, templates, commands, view models, and services. |
