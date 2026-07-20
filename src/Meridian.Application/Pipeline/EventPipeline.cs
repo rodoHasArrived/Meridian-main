@@ -56,6 +56,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     private int _disposed;
     private int _activeConsumers;
     private int _finalFlushStarted;
+    private long _consumerIterationFailures;
+    private long _lastConsumerFaultTicks;
 
     // Performance metrics
     private long _publishedCount;
@@ -669,6 +671,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
     /// </summary>
     public PipelineStatistics GetStatistics()
     {
+        var lastFaultTicks = Interlocked.Read(ref _lastConsumerFaultTicks);
         return new PipelineStatistics(
             PublishedCount: PublishedCount,
             DroppedCount: DroppedCount,
@@ -687,7 +690,12 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             IsValidationEnabled: IsValidationEnabled,
             IsDeduplicationEnabled: IsDeduplicationEnabled,
             QueueFullMode: _fullMode,
-            HighWaterMarkWarned: _highWaterMarkWarned
+            HighWaterMarkWarned: _highWaterMarkWarned,
+            ConsumerCount: _consumerCount,
+            ActiveConsumers: Volatile.Read(ref _activeConsumers),
+            FaultedConsumers: _consumers.Count(static t => t.IsFaulted),
+            ConsumerIterationFailures: Interlocked.Read(ref _consumerIterationFailures),
+            LastConsumerFaultAtUtc: lastFaultTicks > 0 ? new DateTimeOffset(lastFaultTicks, TimeSpan.Zero) : null
         );
     }
 
@@ -809,6 +817,48 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     }
 
                     Interlocked.Add(ref _consumedCount, batchBuffer.Count);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // A persistence failure must not kill the consumer: before this catch existed,
+                    // any sink/WAL/dedup exception silently faulted the consumer task (observed
+                    // only at disposal) while producers kept publishing into a channel nobody
+                    // drained. The failed batch's WAL records remain uncommitted —
+                    // _lastCommittedWalSequence only advances on the success path — so they
+                    // replay on restart; the dead-letter record covers the no-WAL configuration.
+                    Interlocked.Increment(ref _consumerIterationFailures);
+                    Interlocked.Exchange(ref _lastConsumerFaultTicks, DateTimeOffset.UtcNow.UtcTicks);
+                    _logger.LogError(ex,
+                        "Pipeline consumer iteration failed while persisting a batch of {BatchCount} events; WAL commit withheld and consumer continuing",
+                        batchBuffer.Count);
+
+                    if (_deadLetterSink != null)
+                    {
+                        foreach (var traced in batchBuffer)
+                        {
+                            try
+                            {
+                                await _deadLetterSink.RecordAsync(
+                                    traced.Event,
+                                    new[] { $"pipeline-persist-failure: {ex.GetType().Name}: {ex.Message}" },
+                                    CancellationToken.None).ConfigureAwait(false);
+                            }
+                            catch
+                            {
+                                // DeadLetterSink logs its own failures; recording is best-effort.
+                            }
+                        }
+                    }
+
+                    try
+                    {
+                        // Brief backoff so a persistently failing sink cannot spin the consumer.
+                        await Task.Delay(TimeSpan.FromMilliseconds(250), _cts.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Shutdown requested; the next WaitToReadAsync observes the cancellation.
+                    }
                 }
                 finally
                 {

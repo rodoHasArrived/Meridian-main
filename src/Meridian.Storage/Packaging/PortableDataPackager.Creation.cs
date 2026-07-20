@@ -434,11 +434,12 @@ public sealed partial class PortableDataPackager
             // Add supplementary files
             await AddSupplementaryFilesAsync(archive, manifest, options, compressionLevel, ct);
         }
-        else if (options.Format == PackageFormat.TarGz)
+        else
         {
-            // For tar.gz, we'll create a simple implementation
-            // In production, you'd use SharpZipLib or similar
-            await CreateTarGzPackageAsync(packageStream, sourceFiles, manifest, options, compressionLevel, ct);
+            // Defense in depth behind CreatePackageAsync's format guard: silently writing nothing
+            // (SevenZip) or a corrupting pseudo-tar text stream (TarGz) must never recur.
+            throw new NotSupportedException(
+                $"Package format '{options.Format}' is not implemented; only Zip packages can be created.");
         }
     }
 
@@ -543,41 +544,6 @@ public sealed partial class PortableDataPackager
         }
 
         manifest.SupplementaryFiles = supplementaryFiles.ToArray();
-    }
-
-    private async Task CreateTarGzPackageAsync(
-        Stream outputStream,
-        List<SourceFileInfo> sourceFiles,
-        PackageManifest manifest,
-        PackageOptions options,
-        CompressionLevel level,
-        CancellationToken ct)
-    {
-        // Simplified tar.gz implementation using GZipStream
-        // For a complete implementation, use a proper tar library
-        await using var gzipStream = new GZipStream(outputStream, level, leaveOpen: true);
-        await using var writer = new StreamWriter(gzipStream);
-
-        // Write manifest as first entry marker
-        await writer.WriteLineAsync($"__MANIFEST__:{ManifestFileName}");
-        await writer.WriteLineAsync(JsonSerializer.Serialize(manifest, MarketDataJsonContext.PrettyPrintOptions));
-        await writer.WriteLineAsync("__END_MANIFEST__");
-
-        // Write file entries
-        foreach (var file in sourceFiles)
-        {
-            ct.ThrowIfCancellationRequested();
-
-            var internalPath = GetPackageInternalPath(file, options.InternalLayout);
-            await writer.WriteLineAsync($"__FILE__:{internalPath}:{file.SizeBytes}");
-
-            await using var fileStream = File.OpenRead(file.FullPath);
-            using var reader = new StreamReader(fileStream);
-            var content = await reader.ReadToEndAsync(ct);
-            await writer.WriteAsync(content);
-            await writer.WriteLineAsync();
-            await writer.WriteLineAsync("__END_FILE__");
-        }
     }
 
     private async Task UpdateManifestInPackageAsync(

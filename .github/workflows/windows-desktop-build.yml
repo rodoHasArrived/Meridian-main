@@ -5,6 +5,8 @@ on:
     paths:
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.LifecycleSupervisor/**"
+      - "tests/Meridian.LifecycleSupervisor.Tests/**"
       - "src/Meridian.Application/**"
       - "src/Meridian.Audit/**"
       - "src/Meridian.Backtesting/**"
@@ -43,6 +45,8 @@ on:
     paths:
       - "src/Meridian.Wpf/**"
       - "tests/Meridian.Wpf.Tests/**"
+      - "src/Meridian.LifecycleSupervisor/**"
+      - "tests/Meridian.LifecycleSupervisor.Tests/**"
       - "src/Meridian.Application/**"
       - "src/Meridian.Audit/**"
       - "src/Meridian.Backtesting/**"
@@ -131,7 +135,8 @@ jobs:
           pwsh ./scripts/dev/validate-wpf-dev.ps1 `
             -Restore `
             -Filter "Category!=Integration&FullyQualifiedName!~Integration" `
-            -OutputRoot "artifacts/wpf-validation/windows-desktop-build"
+            -OutputRoot "artifacts/wpf-validation/windows-desktop-build" `
+            -IncludeSupervisorTests
 
       - name: Decide desktop smoke publish
         id: desktop-smoke

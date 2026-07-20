@@ -3355,7 +3355,7 @@
       ]
     }
   ],
-  "fingerprint": "b30383a659bb3e6d75d5b392b5e7437d6aca35451185b7122ea9d65f7b2e45ac",
+  "fingerprint": "c9e18f9ac9e59960e3c79989ef618fe0cbe5ede920beee0aad6fc317b1011a02",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4969,7 +4969,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "7b0f1aad51fb932869a3ec1c6b63b1884677292c2b0dd8b312dcc31a60099cb9",
+      "fingerprint": "86c942e61efa10fcb35724ef2e2498745ebfc74b557fcb510ad02b6b94bdb7f4",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Pipeline",
       "object_ids": [
@@ -178584,12 +178584,27 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "22993e914d5e0b0f757ccd38ed0364c03429b6e45f9de1d3dda9fc873cbb20bd",
+      "fingerprint": "bc0483c27f2e73939eaacc19cc53c79601d9d4156766bc289f4b93375b893a65",
       "full_name": "Meridian.Contracts.Pipeline.PipelineStatistics",
       "id": "Meridian.Contracts.Pipeline.PipelineStatistics",
       "kind": "record_struct",
       "mapped_schemas": [],
       "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActiveConsumers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 28,
+          "type": "int"
+        },
         {
           "collection": false,
           "collection_kind": null,
@@ -178616,6 +178631,36 @@
           "origin": "positional_parameter",
           "raw_type": "long",
           "source_line": 11,
+          "type": "long"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "1",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ConsumerCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 27,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ConsumerIterationFailures",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 30,
           "type": "long"
         },
         {
@@ -178660,6 +178705,21 @@
           "raw_type": "long",
           "source_line": 10,
           "type": "long"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FaultedConsumers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 29,
+          "type": "int"
         },
         {
           "collection": false,
@@ -178720,6 +178780,21 @@
           "raw_type": "bool",
           "source_line": 22,
           "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastConsumerFaultAtUtc",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset?",
+          "source_line": 31,
+          "type": "DateTimeOffset?"
         },
         {
           "collection": false,

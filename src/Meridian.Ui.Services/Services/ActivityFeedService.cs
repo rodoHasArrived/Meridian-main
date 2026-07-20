@@ -284,9 +284,9 @@ public sealed class ActivityFeedService
     {
         try
         {
-            var response = await ApiClientService.Instance.GetAsync<ErrorsResponseDto>(
+            var response = (await ApiClientService.Instance.GetWithResponseAsync<ErrorsResponseDto>(
                 UiApiRoutes.Errors,
-                ct).ConfigureAwait(false);
+                ct).ConfigureAwait(false)).DataOrLoggedNull("Fetch server events");
 
             if (response?.Errors == null)
                 return;

@@ -188,6 +188,11 @@ public partial class App : System.Windows.Application
         Services = _host.Services;
         Services.GetRequiredService<WpfServices.StrategyRunWorkspaceService>();
 
+        // Desktop sign-out must also end the shared workstation API session so no request
+        // can ride the old server cookies (mirrors LifecycleControlClient's subscription).
+        Services.GetRequiredService<WpfServices.DesktopAuthenticationSession>().SignedOut +=
+            static (_, _) => _ = ApiClientService.Instance.SignOutAsync();
+
         // Provide the DI container to NavigationService so it can resolve pages
         WpfServices.NavigationService.Instance.SetServiceProvider(Services);
         Services.GetRequiredService<WpfServices.ViewModelViewResolver>()

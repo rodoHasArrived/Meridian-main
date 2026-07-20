@@ -643,21 +643,53 @@ public class EventPipelineTests : IAsyncLifetime
     [Fact]
     public async Task Consumer_WhenSinkThrows_ContinuesProcessing()
     {
-        // Arrange
+        // The pre-fix consumer loop had no general catch: the first sink exception silently
+        // faulted the consumer task and producers kept publishing into a channel nobody drained.
+        // This test proves the consumer survives the fault, records it in statistics, and
+        // resumes processing once the sink recovers.
         await using var sink = new MockStorageSink { ShouldThrowOnAppend = true, ThrowAfterCount = 5 };
         await using var pipeline = new EventPipeline(sink, capacity: 1000, enablePeriodicFlush: false);
 
-        // Act - Publish events, some will cause exceptions
+        // Act - Publish events; the sixth append throws and aborts that batch
         for (int i = 0; i < 10; i++)
         {
             pipeline.TryPublish(CreateTradeEvent($"SYM{i}"));
         }
 
         await WaitForEventsAsync(sink, expectedCount: 5, timeout: TimeSpan.FromSeconds(2));
+        await WaitForConditionAsync(
+            () => pipeline.GetStatistics().ConsumerIterationFailures >= 1,
+            timeout: TimeSpan.FromSeconds(2),
+            "the sink failure must be recorded as a consumer iteration failure");
 
-        // Assert - Pipeline should still be alive and processing
-        // At least some events should have been processed before the throw
-        sink.ReceivedEvents.Count.Should().BeGreaterThanOrEqualTo(5);
+        // Recover the sink and prove the consumer is still alive (survives the 250ms backoff)
+        sink.ShouldThrowOnAppend = false;
+        for (int i = 0; i < 5; i++)
+        {
+            pipeline.TryPublish(CreateTradeEvent($"RECOVERED{i}"));
+        }
+
+        await WaitForEventsAsync(sink, expectedCount: 10, timeout: TimeSpan.FromSeconds(5));
+
+        var stats = pipeline.GetStatistics();
+        sink.ReceivedEvents.Count.Should().BeGreaterThanOrEqualTo(10,
+            "events published after the sink recovers must still be processed by the surviving consumer");
+        stats.ConsumerIterationFailures.Should().BeGreaterThanOrEqualTo(1);
+        stats.FaultedConsumers.Should().Be(0, "the consumer task must not fault on a sink exception");
+        stats.LastConsumerFaultAtUtc.Should().NotBeNull();
+    }
+
+    private static async Task WaitForConditionAsync(Func<bool> condition, TimeSpan timeout, string because)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            if (condition())
+                return;
+            await Task.Delay(20);
+        }
+
+        condition().Should().BeTrue(because);
     }
 
     #endregion

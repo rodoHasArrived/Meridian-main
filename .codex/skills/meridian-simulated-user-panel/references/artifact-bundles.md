@@ -1,58 +1,51 @@
 # Artifact Bundles
 
-The simulated-user-panel system is artifact-driven. Prefer concrete bundles over freeform
-summaries whenever possible.
+Prefer concrete, current bundles over freeform summaries. Inspect paths before relying on them and
+record inaccessible paths under `Missing evidence`.
 
-## Bundle Types
+## Screen Review
 
-### `screen-review`
+Use for static UI critique. Include screenshots plus the owning browser or WPF source when
+available. A screenshot proves visible state only; it does not prove persistence, permissions,
+loading, recovery, accessibility, or performance.
 
-Use for screenshots, page captures, and static UI critique.
+## Workflow Walkthrough
 
-Recommended evidence:
+Use for repeatable operator flows. Prefer:
 
-- one or more screenshots
-- the owning XAML or view model path
-- a short artifact summary
-
-### `workflow-walkthrough`
-
-Use for repeatable operator flows that can be walked through step by step.
-
-Recommended evidence:
-
-- a workflow `manifest.json`
+- a step manifest
 - per-step screenshots
-- smoke-test notes or result JSON
-- any relevant page, service, or route paths
+- smoke or targeted test results
+- relevant route, component, view, service, or read-model paths
+- explicit success and failure states
 
-For WPF flows, prefer existing automation outputs described in:
+## Roadmap Review
 
-- `docs/development/desktop-workflow-automation.md`
-- `docs/development/desktop-testing-guide.md`
+Use for roadmap items, blueprints, and product bets. Include the proposal, current implementation
+evidence, roadmap registry context, constraints, and success criteria.
 
-### `roadmap-review`
+## Ship Readiness
 
-Use for roadmap items, blueprints, plans, and product bets.
+Use only with current functional evidence. A release-gate UI bundle should include the maintained
+screenshot/workflow manifest and freshness evidence plus smoke or targeted test output. Missing
+critical evidence forces `hold`.
 
-Recommended evidence:
+## Cross-Surface Review
 
-- the roadmap or blueprint path
-- nearby implemented features or docs that show current platform reality
-- constraints and success criteria
+Use when browser and WPF are both in scope. Include at least one artifact from each lane and the
+shared service/read-model seam when product state matters. Compare task coverage and state semantics,
+not pixel identity.
 
-### `ship-readiness`
+## Freshness
 
-Use when the review should end with an explicit release recommendation.
+Set `artifact_freshness` to:
 
-Recommended evidence:
+- `current` when the bundle was captured or verified against the reviewed revision.
+- `stale` when it predates material source or workflow changes.
+- `unknown` when freshness cannot be established.
 
-- screenshots or workflow manifests
-- smoke-test outputs
-- targeted test evidence
-- explicit launch or rollout criteria
+Use `artifact_evidence` to classify each item as `verified`, `supplied`, or `missing`. Eval-only
+narrative artifacts should use `fixture://` paths so they are not mistaken for live repository files.
 
-## External Capture Guidance
-
-Artifact capture stays outside this skill. Use the existing desktop capture and manual-generation
-workflows to produce bundles, then feed the bundle into this skill.
+Artifact capture remains outside this skill. Feed maintained browser/WPF screenshot and workflow
+outputs into the manifest rather than inventing capture behavior here.

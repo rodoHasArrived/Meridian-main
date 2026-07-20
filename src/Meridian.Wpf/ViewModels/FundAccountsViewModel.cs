@@ -25,18 +25,25 @@ public sealed partial class FundAccountsViewModel : BindableBase
     private readonly BrokeragePortfolioSyncService? _brokerageSync;
     private readonly ILogger<FundAccountsViewModel> _logger;
 
+    private readonly DesktopAuthenticationSession? _authenticationSession;
+
+    private string ResolveActor() =>
+        _authenticationSession?.CurrentActor is { Length: > 0 } actor ? actor : "desktop-user";
+
     public FundAccountsViewModel(
         IFundAccountService service,
         IFundProfileCatalog fundProfileCatalog,
         ProviderManagementService providerManagementService,
         ILogger<FundAccountsViewModel> logger,
-        BrokeragePortfolioSyncService? brokerageSync = null)
+        BrokeragePortfolioSyncService? brokerageSync = null,
+        DesktopAuthenticationSession? authenticationSession = null)
     {
         _service = service;
         _fundProfileCatalog = fundProfileCatalog;
         _providerManagementService = providerManagementService;
         _brokerageSync = brokerageSync;
         _logger = logger;
+        _authenticationSession = authenticationSession;
 
         AccountQueueTable = new WorkstationTableModel<AccountSummaryDto>(
             Accounts,
@@ -562,7 +569,7 @@ public sealed partial class FundAccountsViewModel : BindableBase
             var request = new ReconcileAccountRequest(
                 SelectedAccount.AccountId,
                 AsOfDate: DateOnly.FromDateTime(DateTime.Today),
-                RequestedBy: "desktop-user");
+                RequestedBy: ResolveActor());
 
             LastReconciliationRun = await _service.ReconcileAccountAsync(request);
             StatusMessage = $"Reconciliation complete: {LastReconciliationRun.Status} ({LastReconciliationRun.TotalMatched}/{LastReconciliationRun.TotalChecks} checks matched)";

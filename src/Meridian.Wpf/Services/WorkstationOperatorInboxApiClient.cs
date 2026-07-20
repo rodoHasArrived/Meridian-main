@@ -18,12 +18,12 @@ public sealed class WorkstationOperatorInboxApiClient : IWorkstationOperatorInbo
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
-    public Task<OperatorInboxDto?> GetInboxAsync(Guid? fundAccountId = null, CancellationToken ct = default)
+    public async Task<OperatorInboxDto?> GetInboxAsync(Guid? fundAccountId = null, CancellationToken ct = default)
     {
         var route = fundAccountId.HasValue
             ? UiApiRoutes.WithQuery(UiApiRoutes.WorkstationOperatorInbox, $"fundAccountId={fundAccountId.Value:D}")
             : UiApiRoutes.WorkstationOperatorInbox;
 
-        return _apiClient.GetAsync<OperatorInboxDto>(route, ct);
+        return (await _apiClient.GetWithResponseAsync<OperatorInboxDto>(route, ct).ConfigureAwait(false)).DataOrLoggedNull("Get operator inbox");
     }
 }

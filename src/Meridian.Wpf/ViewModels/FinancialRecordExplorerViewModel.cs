@@ -246,7 +246,7 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         try
         {
             var route = BuildExplorerRoute(ExplorerId, ActiveSavedViewId);
-            var dto = await _apiClient.GetAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true);
+            var dto = (await _apiClient.GetWithResponseAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true)).DataOrLoggedNull("Load financial record explorer");
             ApplyExplorer(dto ?? CreateUnavailableExplorer(ExplorerId, Title));
             _hasLoaded = true;
         }
@@ -304,7 +304,7 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         try
         {
             var route = BuildExplorerRoute(ExplorerId, viewId);
-            var dto = await _apiClient.GetAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true);
+            var dto = (await _apiClient.GetWithResponseAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true)).DataOrLoggedNull("Apply financial record explorer saved view");
             ApplyExplorer(dto ?? CreateUnavailableExplorer(ExplorerId, Title));
             _hasLoaded = true;
         }

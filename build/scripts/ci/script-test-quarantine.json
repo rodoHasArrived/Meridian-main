@@ -1,0 +1,14 @@
+{
+  "description": "Repo-script test modules excluded from the tests/scripts CI lane. Every entry is a tracked defect or environment gap discovered when the lane was first wired (audit finding P9); fix the underlying drift and remove the entry. run-script-tests.py prints each exclusion on every run so this list cannot rot silently.",
+  "quarantined_modules": {
+    "test_validate_source_readmes": "3 failures: validator output no longer matches fixture expectations (absolute/symlink path rejection and valid-fixture contract).",
+    "test_desktop_screen_blueprint_checklist": "2 failures: checklist no longer tracks all blueprint screens; summary command exits non-zero.",
+    "test_live_execution_controls_route_consistency": "1 failure: manual-override doc routes have drifted from contracts.",
+    "test_archive_code_tombstones": "1 failure: archive/code contains files that are no longer comment-only tombstones.",
+    "test_screenshot_diff_report": "ImportError: requires Pillow, which the CI lane does not install.",
+    "test_validate_screenshot_captures": "ImportError: requires Pillow, which the CI lane does not install.",
+    "test_python_package_conda_dependencies": "1 error: python-package workflow no longer installs the expected conda environment file.",
+    "test_check_contract_compatibility_gate": "2 errors: security-master instrument-reference checks fail against current contract shapes.",
+    "test_export_project_artifact_workflow": "setUpClass error: expected export workflow file is absent from .github/workflows."
+  }
+}

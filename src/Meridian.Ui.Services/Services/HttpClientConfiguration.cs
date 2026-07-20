@@ -73,21 +73,33 @@ public static class HttpClientConfiguration
             })
             .AddStandardResiliencePolicy();
 
-        // API client for communicating with collector service
+        // API client for communicating with collector service. Shares the process-wide
+        // ApiClientSession cookie container so one login establishes the server session
+        // (mdc-session + mdc-csrf) for every consumer of this named client.
         services.AddHttpClient(HttpClientNames.ApiClient)
             .ConfigureHttpClient(client =>
             {
                 client.Timeout = DefaultTimeout;
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                CookieContainer = ApiClientSession.Cookies,
+                UseCookies = true
+            })
             .AddStandardResiliencePolicy();
 
-        // Backfill client with long timeout
+        // Backfill client with long timeout; same shared session as the API client.
         services.AddHttpClient(HttpClientNames.BackfillClient)
             .ConfigureHttpClient(client =>
             {
                 client.Timeout = LongTimeout;
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                CookieContainer = ApiClientSession.Cookies,
+                UseCookies = true
             })
             .AddStandardResiliencePolicy();
 

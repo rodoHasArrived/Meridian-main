@@ -39,6 +39,14 @@ public sealed class JsonlBatchOptions
     public bool Enabled { get; init; } = true;
 
     /// <summary>
+    /// How appends reach the day file. <see cref="JsonlWriteMode.AppendStream"/> (default)
+    /// keeps a persistent append-only handle per file and fsyncs on the sink's flush barrier;
+    /// <see cref="JsonlWriteMode.CopyOnWrite"/> preserves the previous whole-file
+    /// copy-per-batch behaviour as a rollback path.
+    /// </summary>
+    public JsonlWriteMode WriteMode { get; init; } = JsonlWriteMode.AppendStream;
+
+    /// <summary>
     /// Default options with batching enabled.
     /// </summary>
     public static JsonlBatchOptions Default => new();
@@ -68,6 +76,18 @@ public sealed class JsonlBatchOptions
     {
         Enabled = false
     };
+}
+
+/// <summary>
+/// Append mechanism for JSONL day files.
+/// </summary>
+public enum JsonlWriteMode : byte
+{
+    /// <summary>Persistent append-only file handle; new bytes only, fsync on the flush barrier.</summary>
+    AppendStream,
+
+    /// <summary>Legacy whole-file copy through <c>AtomicFileWriter.AppendAsync</c> per batch.</summary>
+    CopyOnWrite
 }
 
 /// <summary>
@@ -101,6 +121,11 @@ public sealed class JsonlStorageSink : IStorageSink
     // per unique path even under concurrent access, while the cached delegate avoids closure allocation.
     private readonly Func<string, Lazy<WriterState>> _writerFactory;
     private readonly Func<string, MarketEventBuffer> _bufferFactory;
+
+    // Test seam mirroring ParquetStorageSink's injectable atomic-write delegate: when set,
+    // batched flushes route through this instead of the WriterState so tests can simulate
+    // write failures without filesystem tricks.
+    private readonly Func<string, IReadOnlyList<MarketEvent>, CancellationToken, Task>? _writeBatchOverride;
 
     // Metrics
     private long _eventsBuffered;
@@ -145,6 +170,17 @@ public sealed class JsonlStorageSink : IStorageSink
     {
     }
 
+    internal JsonlStorageSink(
+        StorageOptions options,
+        IStoragePolicy policy,
+        JsonlBatchOptions batchOptions,
+        Func<string, IReadOnlyList<MarketEvent>, CancellationToken, Task> writeBatchAsync,
+        ILogger<JsonlStorageSink>? logger = null)
+        : this(options, policy, batchOptions, logger)
+    {
+        _writeBatchOverride = writeBatchAsync ?? throw new ArgumentNullException(nameof(writeBatchAsync));
+    }
+
     /// <summary>
     /// Creates a JsonlStorageSink with configurable batch options.
     /// </summary>
@@ -163,7 +199,8 @@ public sealed class JsonlStorageSink : IStorageSink
         // at most once per unique path, preventing file handle leaks under concurrent access.
         var compress = _options.Compress;
         var batchSize = _batchOptions.BatchSize;
-        _writerFactory = p => new Lazy<WriterState>(() => WriterState.Create(p, compress), LazyThreadSafetyMode.ExecutionAndPublication);
+        var copyOnWrite = _batchOptions.WriteMode == JsonlWriteMode.CopyOnWrite;
+        _writerFactory = p => new Lazy<WriterState>(() => WriterState.Create(p, compress, copyOnWrite), LazyThreadSafetyMode.ExecutionAndPublication);
         _bufferFactory = _ => new MarketEventBuffer(batchSize);
 
         if (_batchOptions.Enabled)
@@ -247,8 +284,26 @@ public sealed class JsonlStorageSink : IStorageSink
         if (events.Count == 0)
             return;
 
-        var writer = _writers.GetOrAdd(path, _writerFactory).Value;
-        await writer.WriteBatchAsync(events, ct).ConfigureAwait(false);
+        try
+        {
+            if (_writeBatchOverride is not null)
+            {
+                await _writeBatchOverride(path, events, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                var writer = _writers.GetOrAdd(path, _writerFactory).Value;
+                await writer.WriteBatchAsync(events, ct).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            // DrainAll hands back the buffer's internal swap list; restore before the next
+            // drain (serialised by _flushGate) so a failed write never discards the batch.
+            buffer.RestoreToFront(events);
+            _logger.LogError(ex, "Failed to flush {Count} buffered events to {Path}; events were restored for retry", events.Count, path);
+            throw;
+        }
 
         Interlocked.Add(ref _eventsWritten, events.Count);
         Interlocked.Add(ref _eventsBuffered, -events.Count);
@@ -294,6 +349,7 @@ public sealed class JsonlStorageSink : IStorageSink
         try
         {
             await FlushAllBuffersAsync(_disposalCts.Token).ConfigureAwait(false);
+            await CloseIdleWritersAsync().ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
         {
@@ -302,6 +358,19 @@ public sealed class JsonlStorageSink : IStorageSink
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Periodic flush failed");
+        }
+    }
+
+    // Rolled-over day files would otherwise hold their append handles forever, blocking
+    // retention deletion on Windows. Handles idle for over two flush intervals are closed
+    // (fsync-then-close); the WriterState transparently reopens on a late write.
+    private async Task CloseIdleWritersAsync()
+    {
+        var idleThreshold = _batchOptions.FlushInterval * 2;
+        foreach (var kv in _writers)
+        {
+            if (kv.Value.IsValueCreated)
+                await kv.Value.Value.CloseIfIdleAsync(idleThreshold).ConfigureAwait(false);
         }
     }
 
@@ -400,6 +469,17 @@ public sealed class JsonlStorageSink : IStorageSink
     /// </summary>
     public JsonlStorageSinkStatistics GetStatistics()
     {
+        long fsyncCount = 0;
+        var openHandles = 0;
+        foreach (var kv in _writers)
+        {
+            if (!kv.Value.IsValueCreated)
+                continue;
+            fsyncCount += kv.Value.Value.FsyncCount;
+            if (kv.Value.Value.HasOpenHandle)
+                openHandles++;
+        }
+
         return new JsonlStorageSinkStatistics(
             IsBatchingEnabled: IsBatchingEnabled,
             BatchSize: BatchSize,
@@ -409,7 +489,9 @@ public sealed class JsonlStorageSink : IStorageSink
             BatchesWritten: BatchesWritten,
             WriterCount: _writers.Count,
             BufferCount: _buffers.Count,
-            Timestamp: DateTimeOffset.UtcNow);
+            Timestamp: DateTimeOffset.UtcNow,
+            FsyncCount: fsyncCount,
+            OpenWriterHandles: openHandles);
     }
 
     private sealed class WriterState : IAsyncDisposable
@@ -423,28 +505,66 @@ public sealed class JsonlStorageSink : IStorageSink
         private readonly string _path;
         private readonly SemaphoreSlim _gate = new(1, 1);
         private readonly bool _compressed;
+        private readonly bool _copyOnWrite;
+        private FileStream? _stream;
+        private bool _dirtySinceFsync;
+        private long _fsyncCount;
+        private DateTimeOffset _lastWriteUtc;
 
-        private WriterState(string path, bool compressed)
+        private WriterState(string path, bool compressed, bool copyOnWrite)
         {
             _path = path;
             _compressed = compressed;
+            _copyOnWrite = copyOnWrite;
         }
 
-        public static WriterState Create(string path, bool compress)
+        public static WriterState Create(string path, bool compress, bool copyOnWrite)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            return new WriterState(path, compress);
+            return new WriterState(path, compress, copyOnWrite);
         }
+
+        public long FsyncCount => Interlocked.Read(ref _fsyncCount);
+
+        public bool HasOpenHandle => _stream is not null;
+
+        // Persistent append stream (audit finding P10): the previous implementation routed
+        // every flush through AtomicFileWriter.AppendAsync, which copies the ENTIRE existing
+        // day file into a temp file per batch — O(day-file) I/O thousands of times per day.
+        // Appending to a long-lived FileStream writes only the new bytes. Durability contract:
+        // batches reach the OS on every write (FlushAsync); physical fsync happens in
+        // FlushToDiskAsync, which the sink invokes from IStorageSink.FlushAsync — the barrier
+        // EventPipeline awaits before committing the WAL. A crash between batch write and
+        // sink flush can tear the file tail; those events are uncommitted in the WAL and
+        // replay on startup, and both JSONL readers tolerate a torn trailing line.
+        private FileStream EnsureStream()
+            => _stream ??= new FileStream(
+                _path,
+                FileMode.Append,
+                FileAccess.Write,
+                FileShare.Read | FileShare.Delete,
+                bufferSize: 64 * 1024,
+                FileOptions.Asynchronous);
 
         public async ValueTask WriteEventAsync(MarketEvent evt, CancellationToken ct)
         {
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
-                await AtomicFileWriter.AppendAsync(
-                    _path,
-                    stream => WriteSingleEventAsync(stream, evt, ct),
-                    ct).ConfigureAwait(false);
+                if (_copyOnWrite)
+                {
+                    await AtomicFileWriter.AppendAsync(
+                        _path,
+                        stream => WriteSingleEventAsync(stream, evt, ct),
+                        ct).ConfigureAwait(false);
+                    return;
+                }
+
+                var stream = EnsureStream();
+                await WriteSingleEventAsync(stream, evt, ct).ConfigureAwait(false);
+                await stream.FlushAsync(ct).ConfigureAwait(false);
+                _dirtySinceFsync = true;
+                _lastWriteUtc = DateTimeOffset.UtcNow;
             }
             finally
             {
@@ -464,15 +584,66 @@ public sealed class JsonlStorageSink : IStorageSink
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
-                await AtomicFileWriter.AppendAsync(
-                    _path,
-                    stream => WriteEventsAsync(stream, events, ct),
-                    ct).ConfigureAwait(false);
+                if (_copyOnWrite)
+                {
+                    await AtomicFileWriter.AppendAsync(
+                        _path,
+                        stream => WriteEventsAsync(stream, events, ct),
+                        ct).ConfigureAwait(false);
+                    return;
+                }
+
+                var stream = EnsureStream();
+                await WriteEventsAsync(stream, events, ct).ConfigureAwait(false);
+                await stream.FlushAsync(ct).ConfigureAwait(false);
+                _dirtySinceFsync = true;
+                _lastWriteUtc = DateTimeOffset.UtcNow;
             }
             finally
             {
                 _gate.Release();
             }
+        }
+
+        /// <summary>
+        /// Closes the file handle when the path has been idle longer than the threshold, so
+        /// rolled-over day files release their handles (retention deletion on Windows) without
+        /// losing append capability — the next write transparently reopens in append mode.
+        /// </summary>
+        public async ValueTask CloseIfIdleAsync(TimeSpan idleThreshold)
+        {
+            if (_stream is null)
+                return;
+
+            await _gate.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                if (_stream is null || DateTimeOffset.UtcNow - _lastWriteUtc < idleThreshold)
+                    return;
+
+                await CloseStreamUnderGateAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                _gate.Release();
+            }
+        }
+
+        // Caller must hold _gate.
+        private async ValueTask CloseStreamUnderGateAsync()
+        {
+            if (_stream is null)
+                return;
+
+            if (_dirtySinceFsync)
+            {
+                _stream.Flush(flushToDisk: true);
+                _dirtySinceFsync = false;
+                Interlocked.Increment(ref _fsyncCount);
+            }
+
+            await _stream.DisposeAsync().ConfigureAwait(false);
+            _stream = null;
         }
 
         private async Task WriteSingleEventAsync(Stream stream, MarketEvent evt, CancellationToken ct)
@@ -523,12 +694,24 @@ public sealed class JsonlStorageSink : IStorageSink
             }
         }
 
+        /// <summary>
+        /// Durability barrier: physically syncs any bytes written since the last fsync. The
+        /// sink calls this from IStorageSink.FlushAsync, which EventPipeline awaits before
+        /// committing the WAL — so committed events are always on physical disk, at one fsync
+        /// per pipeline flush instead of one whole-file copy per batch.
+        /// </summary>
         public async Task FlushAsync(CancellationToken ct)
         {
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             try
             {
                 ct.ThrowIfCancellationRequested();
+                if (_stream is not null && _dirtySinceFsync)
+                {
+                    _stream.Flush(flushToDisk: true);
+                    _dirtySinceFsync = false;
+                    Interlocked.Increment(ref _fsyncCount);
+                }
             }
             finally
             {
@@ -541,7 +724,7 @@ public sealed class JsonlStorageSink : IStorageSink
             await _gate.WaitAsync().ConfigureAwait(false);
             try
             {
-                // No persistent stream state is held between writes.
+                await CloseStreamUnderGateAsync().ConfigureAwait(false);
             }
             finally
             {
@@ -685,4 +868,6 @@ public sealed record JsonlStorageSinkStatistics(
     long BatchesWritten,
     int WriterCount,
     int BufferCount,
-    DateTimeOffset Timestamp);
+    DateTimeOffset Timestamp,
+    long FsyncCount = 0,
+    int OpenWriterHandles = 0);

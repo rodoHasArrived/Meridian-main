@@ -1,10 +1,28 @@
 {
   "skill_name": "meridian-simulated-user-panel",
-  "last_updated": "2026-06-19",
+  "schema_version": "2026-07-19",
+  "last_updated": "2026-07-19",
+  "promotion_threshold": 1.0,
+  "retry_limit": 2,
   "baselines": [
-    {
-      "eval_id": 1,
-      "accepted_status": "pass"
-    }
+    {"eval_id": 1, "accepted_status": "pass"},
+    {"eval_id": 2, "accepted_status": "pass"},
+    {"eval_id": 3, "accepted_status": "pass"},
+    {"eval_id": 4, "accepted_status": "pass"},
+    {"eval_id": 5, "accepted_status": "pass"},
+    {"eval_id": 6, "accepted_status": "pass"},
+    {"eval_id": 7, "accepted_status": "pass"},
+    {"eval_id": 8, "accepted_status": "pass"},
+    {"eval_id": 9, "accepted_status": "pass"},
+    {"eval_id": 10, "accepted_status": "pass"},
+    {"eval_id": 11, "accepted_status": "pass"},
+    {"eval_id": 12, "accepted_status": "pass"},
+    {"eval_id": 13, "accepted_status": "pass"},
+    {"eval_id": 14, "accepted_status": "pass"},
+    {"eval_id": 15, "accepted_status": "pass"},
+    {"eval_id": 16, "accepted_status": "pass"},
+    {"eval_id": 17, "accepted_status": "pass"},
+    {"eval_id": 18, "accepted_status": "pass"},
+    {"eval_id": 19, "accepted_status": "pass"}
   ]
 }

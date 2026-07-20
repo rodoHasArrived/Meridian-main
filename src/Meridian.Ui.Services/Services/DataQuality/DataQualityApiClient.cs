@@ -49,7 +49,7 @@ public sealed class DataQualityApiClient : DataQualityServiceBase, IDataQualityA
         var (success, _) = await PostWithResponseAsync<QualityAnomalyAcknowledgementResponse>(
             UiApiRoutes.WithParam(UiApiRoutes.QualityAnomaliesAcknowledge, "anomalyId", anomalyId),
             null,
-            ct);
+            ct).ConfigureAwait(false);
         return success;
     }
 
@@ -61,20 +61,20 @@ public sealed class DataQualityApiClient : DataQualityServiceBase, IDataQualityA
         var response = await _apiClient.PostWithResponseAsync<QualityGapRemediationResponse>(
             UiApiRoutes.WithParam(UiApiRoutes.QualityGapsBySymbol, "symbol", symbol),
             request,
-            ct);
+            ct).ConfigureAwait(false);
         return response.Success ? response.Data : null;
     }
 
-    protected override Task<T?> GetAsync<T>(string endpoint, CancellationToken ct) where T : class
-        => _apiClient.GetAsync<T>(endpoint, ct);
+    protected override async Task<T?> GetAsync<T>(string endpoint, CancellationToken ct) where T : class
+        => (await _apiClient.GetWithResponseAsync<T>(endpoint, ct).ConfigureAwait(false)).DataOrLoggedNull("Data quality API GET request");
 
-    protected override Task<T?> PostAsync<T>(string endpoint, object? body, CancellationToken ct) where T : class
-        => _apiClient.PostAsync<T>(endpoint, body, ct);
+    protected override async Task<T?> PostAsync<T>(string endpoint, object? body, CancellationToken ct) where T : class
+        => (await _apiClient.PostWithResponseAsync<T>(endpoint, body, ct).ConfigureAwait(false)).DataOrLoggedNull("Data quality API POST request");
 
     protected override async Task<(bool Success, T? Data)> PostWithResponseAsync<T>(string endpoint, object? body, CancellationToken ct)
         where T : class
     {
-        var response = await _apiClient.PostWithResponseAsync<T>(endpoint, body, ct);
+        var response = await _apiClient.PostWithResponseAsync<T>(endpoint, body, ct).ConfigureAwait(false);
         return (response.Success, response.Data);
     }
 }
