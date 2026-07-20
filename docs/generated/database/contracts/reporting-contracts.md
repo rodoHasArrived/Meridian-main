@@ -5,7 +5,7 @@
 This is an explicit module association, not a claim that a DTO is identical to a table.
 
 Mapped physical schemas: `reporting`.
-Catalogued objects: 21.
+Catalogued objects: 22.
 
 ```mermaid
 classDiagram
@@ -151,6 +151,16 @@ classDiagram
     class Meridian_Contracts_Reporting_ReportingGovernanceRestatementRequestDto["ReportingGovernanceRestatementRequestDto"] {
         +long ExpectedVersion
         +string Reason
+    }
+    class Meridian_Contracts_Reporting_ReportingGovernanceRetainedArtifactDto["ReportingGovernanceRetainedArtifactDto"] {
+        +string ArtifactId
+        +long ByteLength
+        +string ContentHashSha256
+        +string ContentType
+        +string DownloadRoute
+        +string FileName
+        +bool IsPreview
+        +string Kind
     }
     class Meridian_Contracts_Reporting_ReportingGovernanceSeriesHistoryDto["ReportingGovernanceSeriesHistoryDto"] {
         +IReadOnlyList~ReportingGovernanceRestatementDto~ RestatementRequests

@@ -443,6 +443,7 @@ classDiagram
     class Meridian_Contracts_Ledger_ClosePeriodLockResultDto["ClosePeriodLockResultDto"] {
         +bool IsLocked
         +IReadOnlyList~AccountingConfigurationValidationIssueDto~ Issues
+        +VerifiedOperationOutcome Outcome
         +ClosePeriodPlanDto? Plan
         +OperationsTransitionResultDto? Transition
     }

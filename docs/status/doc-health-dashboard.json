@@ -1,6 +1,6 @@
 {
   "total_files": 629,
-  "total_lines": 113318,
+  "total_lines": 113363,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2292,7 +2292,7 @@
     },
     {
       "path": "docs/generated/database/contracts/identity-access-contracts.md",
-      "line_count": 316,
+      "line_count": 328,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2308,7 +2308,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-02.md",
-      "line_count": 764,
+      "line_count": 765,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2348,7 +2348,7 @@
     },
     {
       "path": "docs/generated/database/contracts/reporting-contracts.md",
-      "line_count": 186,
+      "line_count": 196,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2460,7 +2460,7 @@
     },
     {
       "path": "docs/generated/database/modules/reporting.md",
-      "line_count": 201,
+      "line_count": 222,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2556,7 +2556,7 @@
     },
     {
       "path": "docs/generated/workflows-overview.md",
-      "line_count": 34,
+      "line_count": 35,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
