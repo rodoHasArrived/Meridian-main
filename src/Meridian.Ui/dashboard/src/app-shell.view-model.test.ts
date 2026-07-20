@@ -1491,6 +1491,23 @@ describe("app shell view model", () => {
     ]);
   });
 
+  it("marks the watchlist demo step active on the market data desk watchlist view", () => {
+    const state = buildDevelopmentFixtureNoticeViewModel({
+      pathname: "/data/quotes",
+      search: "?view=watchlist"
+    });
+
+    expect(state.steps.map((step) => [step.id, step.active])).toEqual([
+      ["watchlist", true],
+      ["quotes", false],
+      ["readiness", false],
+      ["connect", false]
+    ]);
+    expect(state.steps.find((step) => step.id === "watchlist")).toMatchObject({
+      href: "/data/quotes?view=watchlist"
+    });
+  });
+
   it("includes workflow catalog failures in the shell degraded status", () => {
     const state = buildAppShellViewState({
       pathname: "/strategy",
