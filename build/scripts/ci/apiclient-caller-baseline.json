@@ -1,32 +1,5 @@
 {
   "description": "Per-file counts of legacy ApiClientService GetAsync<T>/PostAsync<T> call sites. CI fails when any file exceeds its count or a new file appears; migration batches shrink this to empty.",
-  "files": {
-    "src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs": 1,
-    "src/Meridian.Ui.Services/Services/ActivityFeedService.cs": 1,
-    "src/Meridian.Ui.Services/Services/BackfillApiService.cs": 8,
-    "src/Meridian.Ui.Services/Services/BackfillProviderConfigService.cs": 1,
-    "src/Meridian.Ui.Services/Services/DataQuality/DataQualityApiClient.cs": 2,
-    "src/Meridian.Ui.Services/Services/LiveDataService.cs": 8,
-    "src/Meridian.Ui.Services/Services/ProviderDiagnostics/ProviderDiagnosticsApiClient.cs": 3,
-    "src/Meridian.Ui.Services/Services/ScheduleManagerService.cs": 14,
-    "src/Meridian.Ui.Services/Services/StorageServiceBase.cs": 9,
-    "src/Meridian.Ui.Services/Services/SystemHealthService.cs": 11,
-    "src/Meridian.Wpf/Services/OperationsControlCenterClient.cs": 2,
-    "src/Meridian.Wpf/Services/SecurityAssetProfileWorkflowClient.cs": 2,
-    "src/Meridian.Wpf/Services/SecurityMasterOperatorWorkflowClient.cs": 3,
-    "src/Meridian.Wpf/Services/StorageService.cs": 1,
-    "src/Meridian.Wpf/Services/WatchlistService.cs": 1,
-    "src/Meridian.Wpf/Services/WorkstationOperatorInboxApiClient.cs": 1,
-    "src/Meridian.Wpf/Services/WorkstationReconciliationApiClient.cs": 6,
-    "src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.cs": 3,
-    "src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs": 1,
-    "src/Meridian.Wpf/Services/WpfRemoteWorkstationClient.cs": 2,
-    "src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs": 1,
-    "src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs": 2,
-    "src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs": 7,
-    "src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs": 2,
-    "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs": 2,
-    "src/Meridian.Wpf/ViewModels/TradingHoursViewModel.cs": 2
-  },
-  "total": 96
+  "files": {},
+  "total": 0
 }
