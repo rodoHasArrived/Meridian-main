@@ -19,6 +19,7 @@ using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
@@ -595,7 +596,8 @@ public sealed partial class WorkstationEndpointsTests
         assigned.Workflow.Timeline.Should().Contain(entry =>
             entry.EventType == "reconciliation-break-escalated" &&
             entry.Actor == "ops-user" &&
-            entry.CorrelationId == null);
+            !string.IsNullOrWhiteSpace(entry.CorrelationId) &&
+            entry.CorrelationId == assigned.Outcome.CorrelationId);
     }
 
     [Fact]
@@ -4009,6 +4011,16 @@ public sealed partial class WorkstationEndpointsTests
             item.ExceptionRoute == "accounting-variance-escalation");
         queue.Should().NotContain(item =>
             string.Equals(item.ExceptionRoute, "governance-variance-escalation", StringComparison.OrdinalIgnoreCase));
+        var seededBreaks = queue.Where(item => item.RunId == runId).ToArray();
+        seededBreaks.Should().OnlyContain(item =>
+            item.Measures != null && item.Measures.Count == 3 &&
+            item.BlockedOutputs != null && item.BlockedOutputs.Count > 0);
+        foreach (var measure in seededBreaks
+                     .SelectMany(item => item.Measures!)
+                     .Where(measure => measure.Expected.HasValue && measure.Actual.HasValue))
+        {
+            measure.Variance.Should().Be(measure.Actual!.Value - measure.Expected!.Value);
+        }
     }
 
     [Fact]
@@ -4129,6 +4141,14 @@ public sealed partial class WorkstationEndpointsTests
         second.Count(item => item.SourceType == "statement").Should().Be(1);
 
         var statementBreak = second.Single(item => item.SourceType == "statement");
+        statementBreak.Measures.Should().ContainSingle(measure =>
+            measure.Kind == ReconciliationBreakMeasureKindDto.Value &&
+            measure.Expected == 20m &&
+            measure.Actual == 10m &&
+            measure.Variance == -10m);
+        var retainedEvidence = ReportingReconciliationEvidenceValidation.CreateBreakEvidence(statementBreak);
+        retainedEvidence.Measures.Should().ContainSingle(measure =>
+            measure.Kind == ReconciliationBreakMeasureKindDto.Value && measure.Variance == -10m);
         var audit = await client.GetFromJsonAsync<List<ReconciliationBreakQueueAuditEvent>>(
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakAudit, "breakId", statementBreak.BreakId),
             ServerJsonOptions);
@@ -4283,13 +4303,14 @@ public sealed partial class WorkstationEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var updated = await response.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
-        updated.Should().NotBeNull();
-        updated!.RunId.Should().Be(runId);
-        updated.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
-        updated.AssignedTo.Should().Be("ops-review");
-        updated.SignoffStatus.Should().Be("in-review");
-        updated.RequiredSignoffRole.Should().NotBeNullOrWhiteSpace();
+        var operation = await response.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        operation.Should().NotBeNull();
+        operation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        operation.Item!.RunId.Should().Be(runId);
+        operation.Item.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+        operation.Item.AssignedTo.Should().Be("ops-review");
+        operation.Item.SignoffStatus.Should().Be("in-review");
+        operation.Item.RequiredSignoffRole.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -4322,7 +4343,9 @@ public sealed partial class WorkstationEndpointsTests
                 ResolvedBy: "qa-resolve",
                 ResolutionNote: "Skipping review should fail.",
                 OperatorRationale: "Attempted without review."));
-        invalidResolve.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        invalidResolve.StatusCode.Should().Be(HttpStatusCode.OK);
+        var blockedResolve = await invalidResolve.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        blockedResolve!.Outcome.State.Should().Be(OperationTerminalState.Blocked);
 
         var review = await client.PostAsJsonAsync(
             $"/api/workstation/reconciliation/break-queue/{breakId}/review",
@@ -4343,11 +4366,134 @@ public sealed partial class WorkstationEndpointsTests
                 OperatorRationale: "Evidence reconciled against source records."));
         resolve.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var resolved = await resolve.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
-        resolved.Should().NotBeNull();
-        resolved!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
-        resolved.ResolvedBy.Should().Be("ops-user");
-        resolved.SignoffStatus.Should().Be("ready-for-signoff");
+        var resolvedOperation = await resolve.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        resolvedOperation.Should().NotBeNull();
+        resolvedOperation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        resolvedOperation.Item!.Status.Should().Be(ReconciliationBreakQueueStatus.Resolved);
+        resolvedOperation.Item.ResolvedBy.Should().Be("ops-user");
+        resolvedOperation.Item.SignoffStatus.Should().Be("ready-for-signoff");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueDispositionRoutes_ShouldDeriveExecutorAndRetainIndependentApprovalEvidence()
+    {
+        await using var app = await CreateAppAsync();
+        var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        var measures = new[]
+        {
+            new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.Value, 100m, 90m, -10m, 1m, "USD"),
+            new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.Quantity, null, null, null, null, "units", "Quantity was not supplied."),
+            new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.CostBasis, null, null, null, null, "USD", "Cost basis was not supplied.")
+        };
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-waive-route", null) with
+        {
+            Measures = measures,
+            BlockedOutputs = ["FinalReport", "PeriodClose"]
+        });
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-supersede-route", null) with
+        {
+            Measures = measures,
+            BlockedOutputs = ["FinalReport"]
+        });
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("replacement-break-route", null) with
+        {
+            Severity = ReconciliationBreakSeverity.Low,
+            Measures = measures,
+            BlockedOutputs = ["FinalReport"]
+        });
+        await repository.CreateIfMissingAsync(BuildBreakQueueItem("break-nonmaterial-route", null) with
+        {
+            Severity = ReconciliationBreakSeverity.Low,
+            Variance = 0.1m,
+            ToleranceBand = 1m,
+            Measures = measures,
+            BlockedOutputs = ["FinalReport"]
+        });
+        var waiveCurrent = (await repository.GetByIdAsync("break-waive-route"))!;
+        var supersedeCurrent = (await repository.GetByIdAsync("break-supersede-route"))!;
+        var nonMaterialCurrent = (await repository.GetByIdAsync("break-nonmaterial-route"))!;
+        var client = app.GetTestClient();
+
+        var waiveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakWaive, "breakId", waiveCurrent.BreakId),
+            new ReconciliationCaseworkCommand(
+                waiveCurrent.BreakId,
+                ReconciliationCaseworkAction.Resolve,
+                Actor: "browser-spoof",
+                CommandId: "waive-route-command",
+                CorrelationId: "waive-route-correlation",
+                Source: "browser-workstation",
+                ExpectedVersion: waiveCurrent.Version,
+                Reason: "Approved policy exception.",
+                EvidenceLinks: ["evidence:waive-route"],
+                Privileged: true,
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft,
+                ApprovalActor: "controller-reviewer",
+                ApprovalReference: "approval:waive-route"));
+        waiveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var waiveOperation = await waiveResponse.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        waiveOperation.Should().NotBeNull();
+        waiveOperation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        waiveOperation.ErrorCode.Should().Be(nameof(ReconciliationBreakQueueTransitionErrorCode.None));
+        waiveOperation.Item!.Disposition.Should().Be(ReconciliationBreakDispositionDto.Waived);
+        waiveOperation.Item.ResolvedBy.Should().Be("ops-user");
+        waiveOperation.Item.DispositionApprovedBy.Should().Be("controller-reviewer");
+        waiveOperation.Item.DispositionApprovalReference.Should().Be("approval:waive-route");
+
+        var supersedeResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakSupersede, "breakId", supersedeCurrent.BreakId),
+            new ReconciliationCaseworkCommand(
+                supersedeCurrent.BreakId,
+                ReconciliationCaseworkAction.Resolve,
+                Actor: "browser-spoof",
+                CommandId: "supersede-route-command",
+                CorrelationId: "supersede-route-correlation",
+                Source: "browser-workstation",
+                ExpectedVersion: supersedeCurrent.Version,
+                Reason: "Corrected source created a replacement break.",
+                EvidenceLinks: ["evidence:supersede-route"],
+                ApprovalActor: "controller-reviewer",
+                ApprovalReference: "approval:supersede-route",
+                SupersedingBreakId: "replacement-break-route"));
+        supersedeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var supersedeOperation = await supersedeResponse.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        supersedeOperation.Should().NotBeNull();
+        supersedeOperation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        supersedeOperation.ErrorCode.Should().Be(nameof(ReconciliationBreakQueueTransitionErrorCode.None));
+        supersedeOperation.Item!.Disposition.Should().Be(ReconciliationBreakDispositionDto.Superseded);
+        supersedeOperation.Item.SupersedingBreakId.Should().Be("replacement-break-route");
+        supersedeOperation.Item.DispositionApprovedBy.Should().Be("controller-reviewer");
+
+        var nonMaterialResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakWaive, "breakId", nonMaterialCurrent.BreakId),
+            new ReconciliationCaseworkCommand(
+                nonMaterialCurrent.BreakId,
+                ReconciliationCaseworkAction.Resolve,
+                Actor: "browser-spoof",
+                CommandId: "waive-nonmaterial-route-command",
+                CorrelationId: "waive-nonmaterial-route-correlation",
+                Source: "browser-workstation",
+                ExpectedVersion: nonMaterialCurrent.Version,
+                Reason: "Documented immaterial exception.",
+                EvidenceLinks: ["evidence:waive-nonmaterial-route"],
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft,
+                ApprovalActor: "controller-reviewer",
+                ApprovalReference: "approval:waive-nonmaterial-route"));
+        nonMaterialResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var waivedOperation = await nonMaterialResponse.Content.ReadFromJsonAsync<ReconciliationCaseworkOperationResult>(ServerJsonOptions);
+        waivedOperation.Should().NotBeNull();
+        waivedOperation!.Outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        waivedOperation.ErrorCode.Should().Be(nameof(ReconciliationBreakQueueTransitionErrorCode.None));
+        waivedOperation.Item!.Disposition.Should().Be(ReconciliationBreakDispositionDto.Waived);
+        waivedOperation.Item.ResolvedBy.Should().Be("ops-user");
+        waivedOperation.Item.DispositionApprovedBy.Should().Be("controller-reviewer");
+        waivedOperation.Item.DispositionApprovalReference.Should().Be("approval:waive-nonmaterial-route");
+        var retainedAudit = await repository.GetAuditHistoryAsync(nonMaterialCurrent.BreakId);
+        var waiverAudit = retainedAudit.Last(item => item.EventType == "Waived");
+        waiverAudit.Actor.Should().Be("ops-user");
+        waiverAudit.Source.Should().Be("workstation-reconciliation-casework");
+        retainedAudit.Should().Contain(item => item.EventType == "SlaChanged");
+        retainedAudit.Should().NotContain(static item => item.Source == "browser-workstation");
     }
 
     [Fact]
@@ -7024,11 +7170,15 @@ public sealed partial class WorkstationEndpointsTests
         string? feedReference = null,
         string? fundProfileId = null)
     {
+        var completedAt = startedAt.AddMinutes(30);
         return StrategyRunEntry.Start(strategyId, strategyName, runType) with
         {
             RunId = runId,
             StartedAt = startedAt,
-            EndedAt = startedAt.AddMinutes(30),
+            EndedAt = completedAt,
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
+            LifecycleEventAtUtc = completedAt,
+            Reason = "Strategy run completed.",
             DatasetReference = datasetReference,
             FeedReference = feedReference,
             PortfolioId = $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
@@ -8664,7 +8814,7 @@ public sealed partial class WorkstationEndpointsTests
                 StatementReference: "row-42",
                 Description: "Cash delta",
                 StatementAmount: 10m,
-                BookAmount: 0m,
+                BookAmount: 20m,
                 Delta: 10m,
                 Tolerance: 1m,
                 Currency: "USD",

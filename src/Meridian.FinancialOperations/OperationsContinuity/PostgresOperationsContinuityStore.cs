@@ -181,6 +181,19 @@ public sealed class PostgresOperationsContinuityStore :
             results.Add(DeserializeAudit(reader.GetString(0), workflowId));
         }
 
+        if (results.Any(entry => entry.WorkflowId != workflowId))
+        {
+            throw new InvalidDataException(
+                $"Operations continuity audit history for workflow '{workflowId}' contains an event for a different workflow.");
+        }
+
+        if (results.Count > 0 &&
+            !OperationsWorkflowAuditHashing.TryValidateChain(results, out var blockerCode, out var message))
+        {
+            throw new InvalidDataException(
+                $"Operations continuity audit history for workflow '{workflowId}' is invalid ({blockerCode}): {message}");
+        }
+
         return results;
     }
 
@@ -199,6 +212,33 @@ public sealed class PostgresOperationsContinuityStore :
         var audit = await AppendAuditAsync(connection, transaction, auditDraft, ct).ConfigureAwait(false);
         workflow.Touch(audit.OccurredAtUtc);
         await UpsertWorkflowAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return new OperationsContinuityTransactionalCommitResult(workflow, audit);
+    }
+
+    public async Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowTransitionAsync(
+        OperationsContinuityWorkflow workflow,
+        OperationsWorkflowAuditDraft auditDraft,
+        bool persistWorkflowState,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(workflow);
+        ArgumentNullException.ThrowIfNull(auditDraft);
+        if (workflow.WorkflowId != auditDraft.WorkflowId)
+        {
+            throw new ArgumentException("Workflow and audit draft identities must match.", nameof(auditDraft));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+
+        var audit = await AppendAuditAsync(connection, transaction, auditDraft, ct).ConfigureAwait(false);
+        if (persistWorkflowState)
+        {
+            workflow.Touch(audit.OccurredAtUtc);
+            await UpsertWorkflowAsync(connection, transaction, workflow, ct).ConfigureAwait(false);
+        }
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return new OperationsContinuityTransactionalCommitResult(workflow, audit);

@@ -1,6 +1,9 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Ledger;
@@ -416,6 +419,146 @@ public sealed record ClosePeriodLockResultDto(
 {
     public IReadOnlyList<AccountingConfigurationValidationIssueDto> Issues { get; init; } =
         Issues ?? [];
+
+    /// <summary>
+    /// Honest terminal receipt for the combined close operation. A hard-closed ledger with a
+    /// pending evidence handoff is Failed, never a successful boolean with a warning hidden beside
+    /// it; an already-locked idempotent replay is CompletedWithWarnings.
+    /// </summary>
+    public VerifiedOperationOutcome Outcome { get; init; } = CreateOutcome(IsLocked, Plan, Transition, Issues);
+
+    private static VerifiedOperationOutcome CreateOutcome(
+        bool isLocked,
+        ClosePeriodPlanDto? plan,
+        OperationsTransitionResultDto? transition,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto>? issues)
+    {
+        var retainedIssues = issues ?? [];
+        var hasCriticalIssue = retainedIssues.Any(static issue =>
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        var state = isLocked
+            ? retainedIssues.Count == 0
+                ? OperationTerminalState.Succeeded
+                : hasCriticalIssue
+                    ? OperationTerminalState.Failed
+                    : OperationTerminalState.CompletedWithWarnings
+            : hasCriticalIssue || transition?.Outcome.State == OperationTerminalState.Failed
+                ? OperationTerminalState.Failed
+                : OperationTerminalState.Blocked;
+        var now = DateTimeOffset.UtcNow;
+        var correlationId = transition?.Outcome.CorrelationId
+            ?? plan?.ClosePlanId
+            ?? "accounting-close-period-lock";
+        var canonicalInput = string.Join('\n',
+            plan?.ClosePlanId ?? string.Empty,
+            plan?.FundProfileId ?? string.Empty,
+            plan?.LedgerBookId?.ToString("D") ?? string.Empty,
+            plan?.PeriodId ?? string.Empty,
+            plan?.WorkflowVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            isLocked.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            string.Join('|', retainedIssues
+                .OrderBy(static issue => issue.Code, StringComparer.Ordinal)
+                .Select(static issue => $"{issue.Code}:{issue.Severity}:{issue.TargetId}")));
+        var inputHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalInput)))
+            .ToLowerInvariant();
+        const string evidenceId = "accounting-close-period-lock-result";
+        var postconditionSatisfied = state is
+            OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings;
+        var outcomeIssues = retainedIssues
+            .GroupBy(static issue => issue.Code, StringComparer.Ordinal)
+            .OrderBy(static group => group.Key, StringComparer.Ordinal)
+            .Select(group => new OperationIssue(
+                group.Key,
+                string.Join(" | ", group
+                    .Select(static issue => issue.Message)
+                    .Where(static message => !string.IsNullOrWhiteSpace(message))
+                    .Distinct(StringComparer.Ordinal)
+                    .Order(StringComparer.Ordinal)),
+                postconditionSatisfied
+                    ? OperationIssueSeverity.Warning
+                    : OperationIssueSeverity.Error,
+                EvidenceId: evidenceId)
+            {
+                IsBlocking = state == OperationTerminalState.Blocked
+            })
+            .ToList();
+        if (!postconditionSatisfied && outcomeIssues.Count == 0)
+        {
+            outcomeIssues.Add(new OperationIssue(
+                state == OperationTerminalState.Failed ? "close-operation-failed" : "close-operation-blocked",
+                state == OperationTerminalState.Failed
+                    ? "The close operation failed before all required postconditions were verified."
+                    : "The close operation is blocked by unsatisfied prerequisites.",
+                OperationIssueSeverity.Error,
+                EvidenceId: evidenceId)
+            {
+                IsBlocking = state == OperationTerminalState.Blocked
+            });
+        }
+
+        var recovery = state == OperationTerminalState.Succeeded
+            ? Array.Empty<OperationRecoveryAction>()
+            : state == OperationTerminalState.CompletedWithWarnings
+                ?
+                [
+                    new OperationRecoveryAction(
+                        "review-close-warning",
+                        "Review close warning",
+                        "Review the retained close warning and its evidence before relying on downstream close outputs.",
+                        Retryable: false,
+                        RequiresHumanAction: true,
+                        Route: "/accounting/close")
+                    {
+                        EvidenceIds = [evidenceId]
+                    }
+                ]
+                :
+            [
+                new OperationRecoveryAction(
+                    "repair-and-retry-close",
+                    "Repair and retry close",
+                    "Inspect the retained close, reconciliation, and reporting evidence; satisfy the reported prerequisite or repair the failed store, then retry the same governed close command.",
+                    Retryable: true,
+                    RequiresHumanAction: true,
+                    Route: "/accounting/close")
+                {
+                    EvidenceIds = [evidenceId]
+                }
+            ];
+
+        return VerifiedOperationOutcomeValidator.ValidateAndThrow(new VerifiedOperationOutcome(
+            OperationId: $"accounting-close:{inputHash[..16]}",
+            OperationKind: "accounting.close.period-lock",
+            State: state,
+            StartedAtUtc: now,
+            CompletedAtUtc: now,
+            AttemptNumber: 1,
+            CorrelationId: correlationId,
+            InputHashSha256: inputHash,
+            Postconditions:
+            [
+                new OperationPostcondition(
+                    "close-postconditions-verified",
+                    "The ledger period, close workflow, reconciliation continuity, and reporting evidence handoff are verified for the requested close.",
+                    postconditionSatisfied
+                        ? OperationPostconditionState.Satisfied
+                        : OperationPostconditionState.NotSatisfied,
+                    Required: true,
+                    EvidenceIds: [evidenceId])
+            ],
+            Evidence:
+            [
+                new OperationEvidenceReference(
+                    evidenceId,
+                    "close-operation-result",
+                    "Accounting close result, validation issues, and workflow transition receipt.",
+                    ContentHashSha256: inputHash,
+                    CapturedAtUtc: now)
+            ],
+            Artifacts: [],
+            Issues: outcomeIssues,
+            Recovery: recovery));
+    }
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<ClosePostingGateStateDto>))]

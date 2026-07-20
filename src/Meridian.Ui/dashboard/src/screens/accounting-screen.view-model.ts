@@ -33,6 +33,10 @@ import { EXPORT_API_ENDPOINTS, type ReferenceDataWorkbenchEndpointSeed } from "@
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
 import { markDevelopmentFixtureUsage } from "@/lib/api";
 import { resolveDevSecurityScheduleEvents } from "@/lib/security-schedule-dev-fixtures";
+import {
+  requireSuccessfulReconciliationCasework,
+  type AccountingReconciliationServices
+} from "./reconciliation-casework-outcome";
 import { formatBytes, formatCount, formatCurrency, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import {
   buildSecurityConflictAction, buildSecurityIdentityAliasRow, buildSecurityIdentityIdentifierRow,
@@ -159,7 +163,6 @@ import type {
   ManualJournalEntryLine,
   ManualJournalEntryWorkbench,
   ResolveReconciliationBreakRequest,
-  ReviewReconciliationBreakRequest,
   SaveManualJournalEntryDraftRequest,
   SecurityIdentityDrillIn,
   SecurityAliasEntry,
@@ -219,16 +222,7 @@ export interface SecurityMasterServices {
   resolveConflict: (request: ResolveConflictRequest) => Promise<SecurityMasterConflict>;
 }
 
-export interface AccountingReconciliationServices {
-  getBreakQueue: () => Promise<ReconciliationBreakQueueItem[]>;
-  reviewBreak: (request: ReviewReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
-  resolveBreak: (request: ResolveReconciliationBreakRequest) => Promise<ReconciliationBreakQueueItem>;
-  getTrialBalance: (runId: string) => Promise<LedgerTrialBalanceLine[]>;
-  getCalibrationSummary: () => Promise<ReconciliationCalibrationSummary>;
-  getStatementRuns: () => Promise<StatementRunSummary[]>;
-  getStatementRun: (runId: string) => Promise<StatementRunSummary>;
-  previewTransactionLab: (request: InvestmentAccountingTransactionLabRequest) => Promise<InvestmentAccountingTransactionLabPreview>;
-}
+export type { AccountingReconciliationServices } from "./reconciliation-casework-outcome";
 
 export interface AccountingReportingServices {
   runAnalysisExport: (profileId: string) => Promise<ExportAnalysisResult>;
@@ -4065,7 +4059,8 @@ export function useAccountingReconciliationViewModel(
     setBreakActionError(null);
 
     try {
-      const updated = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      const operation = await services.reviewBreak({ breakId, assignedTo: "ops.gov", reviewedBy: "ops.gov" });
+      const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
       setBreakActionError(describeApiError(err, "Break assignment failed."));
@@ -4093,13 +4088,14 @@ export function useAccountingReconciliationViewModel(
     setBreakActionError(null);
 
     try {
-      const updated = await services.resolveBreak({
+      const operation = await services.resolveBreak({
         breakId,
         status,
         resolvedBy: "ops.gov",
         resolutionNote: "Reviewed in accounting panel.",
         operatorRationale: trimmedRationale
       });
+      const updated = requireSuccessfulReconciliationCasework(operation);
       setBreakQueue((current) => replaceBreakQueueItem(current, updated));
     } catch (err) {
       setBreakActionError(describeApiError(err, "Break resolution failed."));

@@ -478,6 +478,11 @@ public class ReportingGovernanceException : InvalidOperationException
     public ReportingGovernanceException(string message) : base(message)
     {
     }
+
+    public ReportingGovernanceException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
 }
 
 public sealed class ReportingGovernanceAuthorizationException : ReportingGovernanceException

@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Wpf
@@ -262,8 +262,17 @@ Fund Ledger trial-balance and journal grids project the canonical ledger dimensi
 shared DTOs, including fund, entity, sleeve, strategy, investor, capital-account, instrument,
 tax-lot, cost-center, counterparty, organization, portfolio, book, account, customer, vendor, and
 project scope, while detail inspectors continue to show external-GL dimensions for selected rows.
-Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
-queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
+Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints and inspect
+the returned verified outcome before displaying
+success. Assign, resolve, waive, and supersede commands therefore surface blocked prerequisites,
+failed persistence, retained evidence, and recovery guidance instead of inferring completion from an
+HTTP response or compatibility message. Strategy workspace composition resolves the durable
+strategy-run store and operational case-history store; lifecycle state, attempts, input hashes,
+artifacts, exceptions, and recovery events survive desktop restart rather than falling back to an
+in-memory production history.
+
+After mutation, the desktop refreshes the queue from the shared break read model after
+review/resolve/dismiss and keeps the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
 visible in the retained detail panel. The WPF queue projection carries the same source systems,
 probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting

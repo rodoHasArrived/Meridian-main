@@ -117,6 +117,18 @@ publishes period state, period-lock/reopen posture, NAV/report dependencies, unr
 approvals, and retained evidence gaps as one server-owned readiness posture so browser and WPF
 surfaces cannot show synthetic completion while required evidence, approvals, lock state, or NAV
 support remain blocked.
+Operations Continuity transition commands compose the shared four-state
+`VerifiedOperationOutcome`; the compatibility `Success` property is derived from that receipt and
+cannot contradict it. Accepted aggregate changes and their outcome-bearing audit event use one
+authoritative transition commit: PostgreSQL uses a serializable database transaction, the local
+file store atomically replaces a workflow-plus-timeline commit envelope, and the in-memory store
+coordinates both structures under one admitted commit. Precondition and policy blocks retain an
+unchanged-state `workflow-transition-blocked` audit event with structured issues, source references,
+and recovery actions. A commit exception returns `Failed`, retains no succeeded workflow snapshot
+or succeeded audit receipt, and attempts a separate truthful failure receipt without upgrading the
+result when that secondary retention is unavailable. Workflow snapshots remain rebuildable current
+state; the append-only, hash-chained audit and embedded terminal receipts are the durable decision
+evidence.
 It also derives the reviewed-automation summary from aggregate state and enforces the action-origin
 guard for material commands. Automation-origin and assistant-origin requests may carry suggestions,
 summaries, drafts, flags, and retained review evidence, but Security Master override approval,
@@ -128,7 +140,11 @@ exception and advance approval posture. When report-pack evidence is ready but n
 approval, the same summary surfaces report-commentary and audit-request-list drafts as review-only
 work so publication remains behind human approval. Already closed reconciliation breaks reject
 duplicate resolution or reassignment commands so retained case evidence and audit history cannot be
-mutated after closure. Break assignment, escalation, and resolution commands also refresh the
+mutated after closure. Terminal casework distinguishes resolved, waived, and
+superseded dispositions; material waivers and supersessions require independent approval evidence,
+and supersessions retain the successor break identifier. Value, quantity, and cost-basis measures
+remain attached to the case and its terminal evidence hash rather than collapsing into one amount.
+Break assignment, escalation, and resolution commands also refresh the
 derived reconciliation lane summaries so active-work queues, dashboards, and evidence tables do not
 show stale break counts, required actions, or retained assignment/resolution evidence after
 exception work. Lane required actions are derived from retained open break casework, including
@@ -543,7 +559,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 
 ### API and contract notes
 
-`IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and transactional audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService`, `IAccountingBasisProjectionService`, and `IAccountingBasisProjectionSetService` publish accounting-basis policy lookup, ledger write metadata projection, and one-source-event-to-many-book projection candidates for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval records, direct payment lookup, explicit bank-evidence recording, and bank-transaction evidence workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
+`IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityTransitionCommitStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and atomic transition/audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService`, `IAccountingBasisProjectionService`, and `IAccountingBasisProjectionSetService` publish accounting-basis policy lookup, ledger write metadata projection, and one-source-event-to-many-book projection candidates for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval records, direct payment lookup, explicit bank-evidence recording, and bank-transaction evidence workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
 `IAccountingPostingCandidateService` consumes `PostingRuleJournalCandidateRequestDto` and returns
 `PostingRuleJournalCandidateResultDto` from the shared ledger contract surface so browser and WPF
 can call the same source-event-to-draft candidate path without owning posting-rule execution or

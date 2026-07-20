@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Contracts.Operations;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 
@@ -7,7 +8,10 @@ namespace Meridian.Wpf.Services;
 public sealed record WorkstationReconciliationActionResult(
     bool Success,
     string? ErrorMessage,
-    ReconciliationBreakQueueItem? Item);
+    ReconciliationBreakQueueItem? Item)
+{
+    public VerifiedOperationOutcome? Outcome { get; init; }
+}
 
 public interface IWorkstationReconciliationApiClient
 {
@@ -97,12 +101,27 @@ public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliat
         => ToActionResultAsync(_apiClient.UiApi.ResolveReconciliationBreakAsync(breakId, request, ct));
 
     private static async Task<WorkstationReconciliationActionResult> ToActionResultAsync(
-        Task<Meridian.Contracts.Api.ApiResponse<ReconciliationBreakQueueItem>> responseTask)
+        Task<Meridian.Contracts.Api.ApiResponse<ReconciliationCaseworkOperationResult>> responseTask)
     {
         var response = await responseTask.ConfigureAwait(false);
+        if (!response.Success || response.Data is null)
+        {
+            return new WorkstationReconciliationActionResult(false, response.ErrorMessage, null);
+        }
 
-        return response.Success
-            ? new WorkstationReconciliationActionResult(true, null, response.Data)
-            : new WorkstationReconciliationActionResult(false, response.ErrorMessage, null);
+        var operation = response.Data;
+        var succeeded = operation.Outcome.State is
+            OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings;
+        return new WorkstationReconciliationActionResult(
+            succeeded,
+            succeeded
+                ? null
+                : operation.Error
+                    ?? operation.Outcome.Issues.FirstOrDefault()?.Message
+                    ?? $"Reconciliation operation ended in {operation.Outcome.State}.",
+            operation.Item)
+        {
+            Outcome = operation.Outcome
+        };
     }
 }

@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Application
@@ -46,6 +46,12 @@ and UI presentation concerns in their owning layers.
   schema-aware CSV sampling for `bank.statement.csv.v1` and `bank.transactions.csv.v1`, explicit
   source post-processing options, and runtime SFTP capability checks so operators can validate
   connectivity, host-key pinning, and file shape before committing an import.
+  ETL command execution now consumes the Data Integration-owned `VerifiedOperationOutcome` receipt:
+  every admitted run returns `Succeeded`, `CompletedWithWarnings`, `Failed`, or `Blocked` with
+  postconditions, evidence, artifacts, and recovery guidance. Required normalization, pipeline, and
+  export stages cannot be collapsed into a successful CLI exit when a terminal write or export
+  fails; blocked and failed receipts map to non-zero command results. Runbook commands use the same
+  receipt contract and no longer treat a message-only handler response as execution evidence.
 - `Integrations/` - provider integration template catalog, setup persistence, dry-run
   orchestration, and activation readiness. The catalog seeds the first no-code template pack for
   manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.

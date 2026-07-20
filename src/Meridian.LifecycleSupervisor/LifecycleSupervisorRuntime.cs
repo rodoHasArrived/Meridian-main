@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.Lifecycle;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.LifecycleSupervisor;
 
@@ -14,6 +15,10 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     private readonly LifecycleDatabaseController _database;
     private readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(2) };
     private readonly object _gate = new();
+    private readonly object _logGate = new();
+    private readonly LifecycleOpenOutcomeGate _openOutcomeGate = new();
+    private readonly Dictionary<string, LifecycleStartupOperationRequest> _pendingOpenRequests =
+        new(StringComparer.Ordinal);
     private TaskCompletionSource<SupervisorAction> _requestedAction = NewActionSource();
     private Process? _hostProcess;
     private LifecycleOwnedProcessDto? _hostIdentity;
@@ -26,9 +31,14 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     private int? _httpPort;
     private string? _bootstrapToken;
     private string? _shutdownToken;
-    private bool _openRequested;
+    private LifecycleStartupOperationRequest? _sessionStartupRequest;
+    private string? _restartStartupRequestId;
     private bool _restartRequested;
     private bool _stopRequested;
+    private bool _preflightSucceeded;
+    private bool _startupFailed;
+    private bool _readinessGatePersisted;
+    private LifecycleStartupOutcomeReceipt? _latestStartupOutcomeReceipt;
     private string? _message;
 
     public LifecycleSupervisorRuntime(LifecycleSupervisorConfiguration configuration)
@@ -42,9 +52,12 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
             HandleHostStatus);
     }
 
-    public async Task<int> RunAsync(bool openBrowser, CancellationToken ct)
+    public async Task<int> RunAsync(bool openBrowser, string? requestId, CancellationToken ct)
     {
-        _openRequested = openBrowser;
+        _sessionStartupRequest = LifecycleStartupOutcome.CreateRequest(
+            _configuration,
+            requestId,
+            openBrowser);
         _pipeServer.Start();
         using var cancellationRegistration = ct.Register(() => RequestAction(SupervisorAction.Stop));
 
@@ -68,6 +81,7 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
                 if (startupCompletion == actionSource.Task)
                 {
                     var startupAction = await actionSource.Task.ConfigureAwait(false);
+                    var startupWasBlocked = !_readinessGatePersisted;
                     startupCts.Cancel();
                     try
                     {
@@ -77,11 +91,26 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
                     {
                     }
 
+                    if (startupWasBlocked)
+                    {
+                        _message = $"Startup was blocked by a requested {startupAction.ToString().ToLowerInvariant()} " +
+                                   "before exact Ready status was established.";
+                        AppendSupervisorLog(_message);
+                        PersistOutstandingStartupOutcomes(
+                            OperationTerminalState.Blocked,
+                            readinessSatisfied: false,
+                            terminalMessage: _message);
+                    }
                     await StopSessionAsync(startupAction, CancellationToken.None).ConfigureAwait(false);
                     if (!ShouldRestartAfterStop(startupAction) || ct.IsCancellationRequested)
-                        return 0;
+                        return startupWasBlocked
+                            ? LifecycleSupervisorExitCode.Blocked
+                            : LifecycleSupervisorExitCode.Succeeded;
 
-                    _openRequested = true;
+                    _sessionStartupRequest = LifecycleStartupOutcome.CreateRequest(
+                        _configuration,
+                        TakeRestartStartupRequestId(),
+                        browserRequested: true);
                     continue;
                 }
 
@@ -89,14 +118,47 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
+                var startupWasBlocked = !_readinessGatePersisted;
+                if (startupWasBlocked)
+                {
+                    _message = "Startup was blocked by cancellation before exact Ready status was established.";
+                    AppendSupervisorLog(_message);
+                    PersistOutstandingStartupOutcomes(
+                        OperationTerminalState.Blocked,
+                        readinessSatisfied: false,
+                        terminalMessage: _message);
+                }
                 await StopSessionAsync(SupervisorAction.Stop, CancellationToken.None).ConfigureAwait(false);
-                return 0;
+                return startupWasBlocked
+                    ? LifecycleSupervisorExitCode.Blocked
+                    : LifecycleSupervisorExitCode.Succeeded;
+            }
+            catch (LifecycleStartupBlockedException ex)
+            {
+                _message = ex.Message;
+                AppendSupervisorLog(_message);
+                PersistOutstandingStartupOutcomes(
+                    OperationTerminalState.Blocked,
+                    readinessSatisfied: false,
+                    terminalMessage: _message,
+                    exceptionType: ex.GetType().Name);
+                WriteTerminalDiagnostics(OperationTerminalState.Blocked);
+                ResetSessionState();
+                return LifecycleSupervisorExitCode.Blocked;
             }
             catch (Exception ex)
             {
                 _message = $"Startup failed ({ex.GetType().Name}): {ex.Message}";
-                await StopSessionAsync(SupervisorAction.Stop, CancellationToken.None).ConfigureAwait(false);
-                return 1;
+                _startupFailed = true;
+                AppendSupervisorLog(_message);
+                PersistOutstandingStartupOutcomes(
+                    OperationTerminalState.Failed,
+                    readinessSatisfied: false,
+                    terminalMessage: _message,
+                    exceptionType: ex.GetType().Name);
+                WriteTerminalDiagnostics(OperationTerminalState.Failed);
+                await StopSessionAsync(SupervisorAction.HostExited, CancellationToken.None).ConfigureAwait(false);
+                return LifecycleSupervisorExitCode.Failed;
             }
 
             var actionTask = actionSource.Task;
@@ -112,7 +174,10 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
                 return action == SupervisorAction.HostExited ? 1 : 0;
             }
 
-            _openRequested = true;
+            _sessionStartupRequest = LifecycleStartupOutcome.CreateRequest(
+                _configuration,
+                TakeRestartStartupRequestId(),
+                browserRequested: true);
         }
     }
 
@@ -125,12 +190,19 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
 
     private async Task StartSessionAsync(CancellationToken ct)
     {
-        var preflight = LifecycleSupervisorPreflight.Evaluate(_configuration);
-        if (!preflight.Success)
-            throw new InvalidOperationException(preflight.Message);
-
         _sessionId = Guid.NewGuid().ToString("N");
         _startedAtUtc = DateTimeOffset.UtcNow;
+        _preflightSucceeded = false;
+        _startupFailed = false;
+        _readinessGatePersisted = false;
+        _latestStartupOutcomeReceipt = null;
+        AppendSupervisorLog($"Startup session {_sessionId} began.");
+        var preflight = LifecycleSupervisorPreflight.Evaluate(_configuration);
+        if (!preflight.Success)
+            throw new LifecycleStartupBlockedException(preflight.Message);
+
+        _preflightSucceeded = true;
+        AppendSupervisorLog(preflight.Message);
         _httpPort = _configuration.Manifest.HttpPort ?? ReserveLoopbackPort();
         _bootstrapToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         _shutdownToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
@@ -144,12 +216,33 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
 
         await WaitForReadinessAsync(ct).ConfigureAwait(false);
         _message = "Meridian is ready.";
+        AppendSupervisorLog(_message);
         PersistStatus();
-        if (_openRequested)
+        var startupRequest = _sessionStartupRequest
+            ?? throw new InvalidOperationException("The startup operation request is unavailable.");
+        var readyReceipt = TryPersistStartupOutcome(
+            startupRequest,
+            OperationTerminalState.Succeeded,
+            readinessSatisfied: true,
+            terminalMessage: _message,
+            browserRequested: startupRequest.BrowserRequested,
+            readinessGateReceipt: startupRequest.BrowserRequested);
+        if (readyReceipt is null)
         {
-            _openRequested = false;
-            OpenBrowser();
+            throw new IOException(
+                "The verified startup receipt could not be retained; the workstation will not open.");
         }
+        LifecycleStartupOperationRequest[] pendingOpenRequests;
+        lock (_gate)
+        {
+            _readinessGatePersisted = true;
+            pendingOpenRequests = _pendingOpenRequests.Values.ToArray();
+            _pendingOpenRequests.Clear();
+        }
+        if (startupRequest.BrowserRequested)
+            OpenBrowserWithOutcome(startupRequest);
+        foreach (var pendingRequest in pendingOpenRequests)
+            CompleteReadyOpenRequest(pendingRequest);
     }
 
     private async Task StartOwnedHostAsync()
@@ -219,15 +312,19 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
     private async Task WaitForReadinessAsync(CancellationToken ct)
     {
         var deadline = DateTimeOffset.UtcNow.AddSeconds(_configuration.Manifest.StartupTimeoutSeconds);
+        AppendSupervisorLog(
+            $"Waiting for exact Ready status at /readyz until {deadline:O} " +
+            $"({_configuration.Manifest.StartupTimeoutSeconds} seconds).");
         while (DateTimeOffset.UtcNow < deadline)
         {
             ct.ThrowIfCancellationRequested();
             if (_hostProcess?.HasExited == true)
-                throw new InvalidOperationException($"Meridian host exited during startup with code {_hostProcess.ExitCode}.");
+                throw new InvalidOperationException(
+                    $"Meridian host exited during startup with exit code {_hostProcess.ExitCode} before the readiness deadline {deadline:O}.");
             try
             {
                 using var response = await _http.GetAsync(
-                    $"http://127.0.0.1:{_httpPort}/startupz",
+                    $"http://127.0.0.1:{_httpPort}/readyz",
                     ct).ConfigureAwait(false);
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
                 var snapshot = JsonSerializer.Deserialize(
@@ -241,14 +338,17 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
                         _hostSessionId = snapshot.SessionId;
                     }
                     PersistStatus();
-                    if (snapshot.AcceptingWork &&
-                        snapshot.Readiness is RuntimeReadinessStatus.Ready or RuntimeReadinessStatus.Degraded)
+                    if (response.IsSuccessStatusCode && IsReadyForBrowser(snapshot))
                         return;
                     if (snapshot.Readiness == RuntimeReadinessStatus.Failed)
-                        throw new InvalidOperationException("Meridian host reported failed startup readiness.");
+                        throw new InvalidOperationException(
+                            $"Meridian host reported failed startup readiness before the deadline {deadline:O}.");
                 }
             }
             catch (HttpRequestException)
+            {
+            }
+            catch (JsonException)
             {
             }
             catch (TaskCanceledException) when (!ct.IsCancellationRequested)
@@ -258,8 +358,18 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
         }
 
         throw new TimeoutException(
-            $"Meridian did not become ready within {_configuration.Manifest.StartupTimeoutSeconds} seconds.");
+            $"Meridian did not reach exact Ready status by {deadline:O} " +
+            $"({_configuration.Manifest.StartupTimeoutSeconds} second startup deadline). " +
+            $"Last reported readiness was {_hostLifecycle?.Readiness.ToString() ?? "unavailable"}.");
     }
+
+    internal static bool IsReadyForBrowser(RuntimeLifecycleSnapshotDto? lifecycle)
+        => lifecycle is
+        {
+            AcceptingWork: true,
+            Readiness: RuntimeReadinessStatus.Ready,
+            State: RuntimeLifecycleState.Ready
+        };
 
     private async Task StopSessionAsync(SupervisorAction action, CancellationToken ct)
     {
@@ -331,6 +441,8 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
             hostOutcome = LifecycleShutdownOutcome.Failed;
         else if (!hostForced && action is SupervisorAction.Stop or SupervisorAction.Restart)
             hostOutcome = LifecycleShutdownOutcome.SucceededWithWarnings;
+        if (_startupFailed)
+            hostOutcome = LifecycleShutdownOutcome.Failed;
         var outcome = CombineOutcome(hostOutcome, databaseOutcome);
         var receipt = new LifecycleSessionReceiptDto
         {
@@ -351,20 +463,7 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
         }
         finally
         {
-            LifecycleProtectedSecretStore.Delete(_configuration.SecretPath);
-            DeleteRuntimeStatus();
-
-            _hostProcess?.Dispose();
-            _hostProcess = null;
-            _hostIdentity = null;
-            _databaseIdentity = null;
-            _hostLifecycle = null;
-            _hostSessionId = null;
-            _sessionId = null;
-            _startedAtUtc = null;
-            _httpPort = null;
-            _bootstrapToken = null;
-            _shutdownToken = null;
+            ResetSessionState();
         }
     }
 
@@ -401,17 +500,17 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
             : SupervisorAction.HostExited;
     }
 
-    private Task<LifecycleSupervisorMessageDto> HandleCommandAsync(LifecycleSupervisorMessageDto request)
+    private async Task<LifecycleSupervisorMessageDto> HandleCommandAsync(LifecycleSupervisorMessageDto request)
     {
         var command = request.Command.ToLowerInvariant();
         return command switch
         {
-            "status" => Task.FromResult(Response(request, true, status: CreateStatus())),
-            "preflight" => Task.FromResult(PreflightResponse(request)),
-            "stop" => Task.FromResult(ActionResponse(request, SupervisorAction.Stop)),
-            "restart" => Task.FromResult(ActionResponse(request, SupervisorAction.Restart)),
-            "open" or "start" => Task.FromResult(OpenResponse(request)),
-            _ => Task.FromResult(Response(request, false, $"Unknown supervisor command '{request.Command}'."))
+            "status" => Response(request, true, status: CreateStatus()),
+            "preflight" => PreflightResponse(request),
+            "stop" => ActionResponse(request, SupervisorAction.Stop),
+            "restart" => ActionResponse(request, SupervisorAction.Restart),
+            "open" or "start" => await OpenResponseAsync(request).ConfigureAwait(false),
+            _ => Response(request, false, $"Unknown supervisor command '{request.Command}'.")
         };
     }
 
@@ -425,46 +524,153 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
         LifecycleSupervisorMessageDto request,
         SupervisorAction action)
     {
-        var accepted = RequestAction(action);
+        var accepted = RequestAction(action, request.RequestId);
         var message = accepted
             ? $"Meridian {action.ToString().ToLowerInvariant()} requested."
             : "Meridian is already stopping; a restart cannot be queued.";
         return Response(request, accepted, message, CreateStatus());
     }
 
-    private LifecycleSupervisorMessageDto OpenResponse(LifecycleSupervisorMessageDto request)
+    private async Task<LifecycleSupervisorMessageDto> OpenResponseAsync(
+        LifecycleSupervisorMessageDto request)
     {
-        _openRequested = true;
-        if (_hostLifecycle?.AcceptingWork == true)
+        var operationRequest = LifecycleStartupOutcome.CreateRequest(
+            _configuration,
+            request.RequestId,
+            browserRequested: true);
+        var launchImmediately = false;
+        Task<LifecycleStartupOutcomeReceipt>? pendingOutcome = null;
+        lock (_gate)
         {
-            _openRequested = false;
-            OpenBrowser();
+            launchImmediately = _readinessGatePersisted && IsReadyForBrowser(_hostLifecycle);
+            if (!launchImmediately)
+            {
+                if (_pendingOpenRequests.TryGetValue(operationRequest.RequestId, out var existing))
+                    operationRequest = existing;
+                else
+                    _pendingOpenRequests.Add(operationRequest.RequestId, operationRequest);
+                pendingOutcome = _openOutcomeGate.WaitAsync(
+                    operationRequest.RequestId,
+                    TimeSpan.FromSeconds(_configuration.Manifest.StartupTimeoutSeconds + 15));
+            }
         }
-        return Response(request, true, "Meridian will open when readiness is established.", CreateStatus());
+
+        if (launchImmediately)
+        {
+            var launch = CompleteReadyOpenRequest(operationRequest);
+            return Response(
+                request,
+                launch.Receipt is not null && LifecycleOpenOutcomeGate.IsSuccessful(launch.Receipt),
+                launch.Opened
+                    ? $"Meridian opened after exact Ready status was verified. Verified outcome: {launch.ReceiptPath}"
+                    : $"Meridian is ready, but the browser did not open. Open {launch.Destination} manually. " +
+                      $"Verified outcome: {launch.ReceiptPath}",
+                CreateStatus(),
+                launch.Receipt?.Outcome.State.ToString(),
+                launch.ReceiptPath);
+        }
+
+        try
+        {
+            var receipt = await pendingOutcome!.ConfigureAwait(false);
+            return Response(
+                request,
+                LifecycleOpenOutcomeGate.IsSuccessful(receipt),
+                $"Meridian open request reached terminal state {receipt.Outcome.State}. " +
+                $"Verified outcome: {receipt.ReceiptPath}",
+                CreateStatus(),
+                receipt.Outcome.State.ToString(),
+                receipt.ReceiptPath);
+        }
+        catch (TimeoutException)
+        {
+            bool removedWhilePending;
+            lock (_gate)
+                removedWhilePending = _pendingOpenRequests.Remove(operationRequest.RequestId);
+            if (!removedWhilePending)
+            {
+                try
+                {
+                    var completedReceipt = await _openOutcomeGate.WaitAsync(
+                        operationRequest.RequestId,
+                        TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                    return Response(
+                        request,
+                        LifecycleOpenOutcomeGate.IsSuccessful(completedReceipt),
+                        $"Meridian open request reached terminal state {completedReceipt.Outcome.State}. " +
+                        $"Verified outcome: {completedReceipt.ReceiptPath}",
+                        CreateStatus(),
+                        completedReceipt.Outcome.State.ToString(),
+                        completedReceipt.ReceiptPath);
+                }
+                catch (TimeoutException)
+                {
+                    operationRequest = operationRequest with
+                    {
+                        AttemptNumber = checked(operationRequest.AttemptNumber + 1)
+                    };
+                }
+            }
+            _openOutcomeGate.Remove(operationRequest.RequestId);
+            var terminalMessage =
+                $"Meridian open request {operationRequest.RequestId} did not reach exact Ready status " +
+                $"within {_configuration.Manifest.StartupTimeoutSeconds + 15} seconds.";
+            AppendSupervisorLog(terminalMessage);
+            var receipt = TryPersistStartupOutcome(
+                operationRequest,
+                OperationTerminalState.Failed,
+                readinessSatisfied: false,
+                terminalMessage: terminalMessage,
+                browserRequested: true,
+                browserOpened: false,
+                exceptionType: nameof(TimeoutException));
+            return Response(
+                request,
+                false,
+                $"{terminalMessage} Inspect {_configuration.SupervisorLogPath} and retry the open command. " +
+                $"Verified outcome: {receipt?.ReceiptPath ?? "unavailable"}",
+                CreateStatus(),
+                OperationTerminalState.Failed.ToString(),
+                receipt?.ReceiptPath);
+        }
     }
 
     private static LifecycleSupervisorMessageDto Response(
         LifecycleSupervisorMessageDto request,
         bool success,
         string? message = null,
-        LifecycleSupervisorStatusDto? status = null)
+        LifecycleSupervisorStatusDto? status = null,
+        string? reason = null,
+        string? detail = null)
         => new()
         {
             Command = $"{request.Command}-result",
             RequestId = request.RequestId,
             Success = success,
             Message = message,
-            Status = status
+            Status = status,
+            Reason = reason,
+            Detail = detail
         };
 
     private void HandleHostStatus(LifecycleSupervisorMessageDto message)
     {
+        LifecycleStartupOperationRequest[] readyRequests = [];
         lock (_gate)
         {
             _hostLifecycle = message.Lifecycle;
             _hostSessionId = message.SessionId ?? message.Lifecycle?.SessionId;
+            if (_readinessGatePersisted &&
+                IsReadyForBrowser(_hostLifecycle) &&
+                _pendingOpenRequests.Count > 0)
+            {
+                readyRequests = _pendingOpenRequests.Values.ToArray();
+                _pendingOpenRequests.Clear();
+            }
         }
         PersistStatus();
+        foreach (var request in readyRequests)
+            CompleteReadyOpenRequest(request);
     }
 
     private LifecycleSupervisorStatusDto CreateStatus()
@@ -558,18 +764,272 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
         }
     }
 
-    private void OpenBrowser()
+    private BrowserLaunchResult CompleteReadyOpenRequest(LifecycleStartupOperationRequest request)
     {
-        if (_httpPort is null)
-            return;
-        var accountStore = Path.Combine(_configuration.DataRoot, "governance", "user-accounts.json");
-        var destination = File.Exists(accountStore)
-            ? $"http://127.0.0.1:{_httpPort}/login?returnUrl=%2Fworkstation%2F"
-            : $"http://127.0.0.1:{_httpPort}/setup/account#token={Uri.EscapeDataString(_bootstrapToken ?? string.Empty)}";
-        Process.Start(new ProcessStartInfo(destination) { UseShellExecute = true });
+        const string readinessMessage =
+            "Exact Ready status was verified and retained before the browser launch attempt.";
+        var readinessReceipt = TryPersistStartupOutcome(
+            request,
+            OperationTerminalState.Succeeded,
+            readinessSatisfied: true,
+            terminalMessage: readinessMessage,
+            browserRequested: true,
+            browserOpened: false,
+            readinessGateReceipt: true);
+        if (readinessReceipt is not null)
+            return OpenBrowserWithOutcome(request);
+
+        const string failureMessage =
+            "The request-specific readiness receipt could not be retained; the workstation was not opened.";
+        var failureReceipt = TryPersistStartupOutcome(
+            request,
+            OperationTerminalState.Failed,
+            readinessSatisfied: false,
+            terminalMessage: failureMessage,
+            browserRequested: true,
+            browserOpened: false,
+            exceptionType: nameof(IOException));
+        return new BrowserLaunchResult(
+            false,
+            string.Empty,
+            failureReceipt?.ReceiptPath,
+            failureMessage,
+            failureReceipt);
     }
 
-    private bool RequestAction(SupervisorAction action)
+    private BrowserLaunchResult OpenBrowserWithOutcome(LifecycleStartupOperationRequest request)
+    {
+        if (_httpPort is null)
+        {
+            const string message = "The workstation URL is unavailable because no HTTP port was assigned.";
+            AppendSupervisorLog(message);
+            var missingUrlReceipt = TryPersistStartupOutcome(
+                request,
+                OperationTerminalState.CompletedWithWarnings,
+                readinessSatisfied: true,
+                terminalMessage: message,
+                browserRequested: true,
+                browserOpened: false);
+            return new BrowserLaunchResult(
+                false,
+                string.Empty,
+                missingUrlReceipt?.ReceiptPath,
+                message,
+                missingUrlReceipt);
+        }
+        var accountStore = Path.Combine(_configuration.DataRoot, "governance", "user-accounts.json");
+        var hasAccount = File.Exists(accountStore);
+        var safeDestination = hasAccount
+            ? $"http://127.0.0.1:{_httpPort}/login?returnUrl=%2Fworkstation%2F"
+            : $"http://127.0.0.1:{_httpPort}/setup/account";
+        var launchDestination = hasAccount
+            ? safeDestination
+            : $"{safeDestination}#token={Uri.EscapeDataString(_bootstrapToken ?? string.Empty)}";
+        try
+        {
+            using var browserProcess = Process.Start(
+                new ProcessStartInfo(launchDestination) { UseShellExecute = true });
+            if (browserProcess is null)
+                throw new InvalidOperationException("The operating system did not accept the browser launch request.");
+
+            var message = "The workstation URL was handed to the operating system after exact Ready status was verified.";
+            AppendSupervisorLog(message);
+            var receipt = TryPersistStartupOutcome(
+                request,
+                OperationTerminalState.Succeeded,
+                readinessSatisfied: true,
+                terminalMessage: message,
+                browserRequested: true,
+                browserOpened: true,
+                browserUri: safeDestination);
+            return new BrowserLaunchResult(
+                true,
+                safeDestination,
+                receipt?.ReceiptPath,
+                message,
+                receipt);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Browser launch failed ({ex.GetType().Name}): {ex.Message} " +
+                          $"Retry the open command or open {safeDestination} manually.";
+            AppendSupervisorLog(message);
+            var receipt = TryPersistStartupOutcome(
+                request,
+                OperationTerminalState.CompletedWithWarnings,
+                readinessSatisfied: true,
+                terminalMessage: message,
+                browserRequested: true,
+                browserOpened: false,
+                browserUri: safeDestination,
+                exceptionType: ex.GetType().Name);
+            Console.Error.WriteLine(message);
+            if (receipt is not null)
+                Console.Error.WriteLine($"Verified outcome: {receipt.ReceiptPath}");
+            return new BrowserLaunchResult(
+                false,
+                safeDestination,
+                receipt?.ReceiptPath,
+                message,
+                receipt);
+        }
+    }
+
+    private void PersistOutstandingStartupOutcomes(
+        OperationTerminalState state,
+        bool readinessSatisfied,
+        string terminalMessage,
+        string? exceptionType = null)
+    {
+        LifecycleStartupOperationRequest[] requests;
+        lock (_gate)
+        {
+            requests = (_sessionStartupRequest is null
+                    ? _pendingOpenRequests.Values
+                    : _pendingOpenRequests.Values.Prepend(_sessionStartupRequest))
+                .DistinctBy(static item => item.RequestId, StringComparer.Ordinal)
+                .ToArray();
+            _pendingOpenRequests.Clear();
+        }
+
+        foreach (var request in requests)
+        {
+            TryPersistStartupOutcome(
+                request,
+                state,
+                readinessSatisfied,
+                terminalMessage,
+                browserRequested: request.BrowserRequested,
+                browserOpened: false,
+                exceptionType: exceptionType);
+        }
+    }
+
+    private LifecycleStartupOutcomeReceipt? TryPersistStartupOutcome(
+        LifecycleStartupOperationRequest request,
+        OperationTerminalState state,
+        bool readinessSatisfied,
+        string terminalMessage,
+        bool browserRequested = false,
+        bool browserOpened = false,
+        string? browserUri = null,
+        string? exceptionType = null,
+        bool readinessGateReceipt = false)
+    {
+        if (_sessionId is null || _startedAtUtc is null)
+            return null;
+        try
+        {
+            var receipt = LifecycleStartupOutcome.Persist(
+                _configuration,
+                request,
+                _sessionId,
+                _startedAtUtc.Value,
+                state,
+                _preflightSucceeded,
+                readinessSatisfied,
+                terminalMessage,
+                _httpPort,
+                browserRequested,
+                browserOpened,
+                browserUri,
+                exceptionType,
+                readinessGateReceipt);
+            _latestStartupOutcomeReceipt = receipt;
+            if (!readinessGateReceipt)
+                _openOutcomeGate.Complete(request.RequestId, receipt);
+            AppendSupervisorLog(
+                $"Verified startup outcome {state} retained at {receipt.ReceiptPath}.");
+            return receipt;
+        }
+        catch (Exception ex)
+        {
+            var message =
+                $"Verified startup outcome persistence failed ({ex.GetType().Name}): {ex.Message}";
+            AppendSupervisorLog(message);
+            Console.Error.WriteLine(message);
+            return null;
+        }
+    }
+
+    private void WriteTerminalDiagnostics(OperationTerminalState state)
+    {
+        Console.Error.WriteLine($"Meridian startup terminal state: {state}.");
+        Console.Error.WriteLine(_message);
+        if (_latestStartupOutcomeReceipt is not null)
+            Console.Error.WriteLine($"Verified outcome: {_latestStartupOutcomeReceipt.ReceiptPath}");
+        Console.Error.WriteLine($"Supervisor log: {_configuration.SupervisorLogPath}");
+        Console.Error.WriteLine($"Host logs: {_configuration.HostLogRoot}");
+        Console.Error.WriteLine($"PostgreSQL log: {_configuration.DatabaseLogPath}");
+        Console.Error.WriteLine(
+            "Recovery: repair the reported condition, run Meridian.LifecycleSupervisor preflight, " +
+            "then retry Meridian.LifecycleSupervisor start.");
+    }
+
+    private void AppendSupervisorLog(string message)
+    {
+        try
+        {
+            lock (_logGate)
+            {
+                var directory = Path.GetDirectoryName(_configuration.SupervisorLogPath)
+                    ?? throw new InvalidOperationException("The supervisor log requires a parent directory.");
+                Directory.CreateDirectory(directory);
+                using var stream = new FileStream(
+                    _configuration.SupervisorLogPath,
+                    FileMode.Append,
+                    FileAccess.Write,
+                    FileShare.Read,
+                    4096,
+                    FileOptions.WriteThrough);
+                using var writer = new StreamWriter(stream);
+                writer.WriteLine($"{DateTimeOffset.UtcNow:O} {SanitizeDiagnostic(message)}");
+                writer.Flush();
+                stream.Flush(flushToDisk: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(
+                $"Lifecycle supervisor could not append its diagnostic log ({ex.GetType().Name}).");
+        }
+    }
+
+    private void ResetSessionState()
+    {
+        LifecycleProtectedSecretStore.Delete(_configuration.SecretPath);
+        DeleteRuntimeStatus();
+        _hostProcess?.Dispose();
+        _hostProcess = null;
+        _hostIdentity = null;
+        _databaseIdentity = null;
+        _hostLifecycle = null;
+        _hostSessionId = null;
+        _sessionId = null;
+        _startedAtUtc = null;
+        _httpPort = null;
+        _bootstrapToken = null;
+        _shutdownToken = null;
+        _preflightSucceeded = false;
+        _startupFailed = false;
+        _readinessGatePersisted = false;
+        lock (_gate)
+        {
+            _sessionStartupRequest = null;
+            _pendingOpenRequests.Clear();
+        }
+    }
+
+    private static string SanitizeDiagnostic(string message)
+    {
+        var sanitized = message
+            .Replace('\r', ' ')
+            .Replace('\n', ' ')
+            .Trim();
+        return sanitized.Length <= 2000 ? sanitized : sanitized[..2000];
+    }
+
+    private bool RequestAction(SupervisorAction action, string? requestId = null)
     {
         lock (_gate)
         {
@@ -584,9 +1044,22 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
             if (_stopRequested)
                 return false;
             if (action == SupervisorAction.Restart)
+            {
                 _restartRequested = true;
+                _restartStartupRequestId = LifecycleStartupOutcome.NormalizeRequestId(requestId);
+            }
             _requestedAction.TrySetResult(action);
             return true;
+        }
+    }
+
+    private string? TakeRestartStartupRequestId()
+    {
+        lock (_gate)
+        {
+            var requestId = _restartStartupRequestId;
+            _restartStartupRequestId = null;
+            return requestId;
         }
     }
 
@@ -676,6 +1149,13 @@ internal enum SupervisorAction
     Restart,
     HostExited
 }
+
+internal sealed record BrowserLaunchResult(
+    bool Opened,
+    string Destination,
+    string? ReceiptPath,
+    string Message,
+    LifecycleStartupOutcomeReceipt? Receipt);
 
 internal static class LifecycleProtectedSecretStore
 {

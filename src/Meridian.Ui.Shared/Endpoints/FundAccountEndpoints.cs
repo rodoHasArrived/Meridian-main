@@ -377,12 +377,30 @@ public static class FundAccountEndpoints
 
             var request = await ReadProviderLedgerReconciliationRequestAsync(context, jsonOptions).ConfigureAwait(false)
                 ?? new ProviderLedgerReconciliationRequestDto();
-            var detail = await reconciliation.RunAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+            if (request.SignedOffBreakKeys is { Count: > 0 } || !string.IsNullOrWhiteSpace(request.SignedOffBy))
+            {
+                return Results.Problem(
+                    "Reconciliation sign-off cannot be asserted by this request. Use the governed reconciliation casework action with retained approval evidence.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var serverBoundRequest = request with
+            {
+                RequestedBy = actor.Trim(),
+                SignedOffBreakKeys = [],
+                SignedOffBy = null
+            };
+            var detail = await reconciliation.RunAsync(accountId, serverBoundRequest, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(detail, jsonOptions);
         })
         .WithName("RunProviderLedgerReconciliation")
         .Accepts<ProviderLedgerReconciliationRequestDto>("application/json")
         .Produces<ProviderLedgerReconciliationDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -1033,7 +1051,10 @@ public static class FundAccountEndpoints
         HttpContext context,
         JsonSerializerOptions jsonOptions)
     {
-        if (context.Request.ContentLength is null or 0)
+        // A null Content-Length means the transport did not declare a length (for example,
+        // chunked HTTP or TestServer), not that the request has no body. Only an explicit zero
+        // is empty; otherwise deserialize so the operation's server-side guards see every field.
+        if (context.Request.ContentLength == 0)
         {
             return null;
         }
@@ -1049,7 +1070,7 @@ public static class FundAccountEndpoints
         HttpContext context,
         JsonSerializerOptions jsonOptions)
     {
-        if (context.Request.ContentLength is null or 0)
+        if (context.Request.ContentLength == 0)
         {
             return null;
         }
@@ -1065,7 +1086,7 @@ public static class FundAccountEndpoints
         HttpContext context,
         JsonSerializerOptions jsonOptions)
     {
-        if (context.Request.ContentLength is null or 0)
+        if (context.Request.ContentLength == 0)
         {
             return null;
         }

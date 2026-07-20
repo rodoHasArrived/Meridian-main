@@ -1,4 +1,5 @@
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Pipeline;
 using Meridian.Domain.Events;
 using Meridian.Storage.Packaging;
@@ -60,13 +61,15 @@ public sealed class NormalizationOutcome
 
 public sealed class EtlRunResult
 {
-    public bool Success { get; init; }
+    public required VerifiedOperationOutcome Outcome { get; init; }
+    public bool Success => Outcome.IsSuccessful;
     public int FilesProcessed { get; init; }
     public long RecordsProcessed { get; init; }
     public long RecordsAccepted { get; init; }
     public long RecordsRejected { get; init; }
     public long RecordsDeduplicated { get; init; }
     public string[] Errors { get; init; } = [];
+    public string[] Warnings { get; init; } = [];
     public EtlExportResult? ExportResult { get; init; }
 }
 

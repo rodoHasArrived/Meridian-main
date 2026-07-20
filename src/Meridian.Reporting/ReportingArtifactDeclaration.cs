@@ -7,6 +7,7 @@ public enum ReportingDeclaredArtifactKind
 {
     Manifest,
     PrimaryOutput,
+    Preview,
     CertifiedSourceSchedule,
     SupportingSchedules,
     EvidenceAppendix,
@@ -39,7 +40,12 @@ public static class ReportingArtifactDeclaration
             .GroupBy(static grid => grid.GridId.Trim(), StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.Key)
             .OrderBy(static gridId => gridId, StringComparer.OrdinalIgnoreCase);
-        return BuildCore(runId, parameters, gridIds, includeCertifiedSourceSchedule);
+        return BuildCore(
+            runId,
+            parameters,
+            gridIds,
+            includeCertifiedSourceSchedule,
+            includePreview: true);
     }
 
     /// <summary>
@@ -49,6 +55,8 @@ public static class ReportingArtifactDeclaration
     public static ImmutableArray<ReportingDeclaredArtifact> Build(ReportingOutputManifest manifest)
     {
         ArgumentNullException.ThrowIfNull(manifest);
+        ArgumentException.ThrowIfNullOrWhiteSpace(manifest.RunId);
+        var normalizedRunId = manifest.RunId.Trim();
         var grids = manifest.ReportWriterGrids.IsDefault
             ? []
             : manifest.ReportWriterGrids
@@ -61,14 +69,19 @@ public static class ReportingArtifactDeclaration
             manifest.RunId,
             manifest.ResolvedParameters,
             grids,
-            includeCertifiedSourceSchedule: manifest.AuthoritativeSource is not null);
+            includeCertifiedSourceSchedule: manifest.AuthoritativeSource is not null,
+            includePreview: !manifest.Artifacts.IsDefault
+                && manifest.Artifacts.Contains(
+                    $"{normalizedRunId}.preview.json",
+                    StringComparer.Ordinal));
     }
 
     private static ImmutableArray<ReportingDeclaredArtifact> BuildCore(
         string runId,
         ReportingRunParametersDto? parameters,
         IEnumerable<string> gridIds,
-        bool includeCertifiedSourceSchedule)
+        bool includeCertifiedSourceSchedule,
+        bool includePreview)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         var normalizedRunId = runId.Trim();
@@ -103,6 +116,15 @@ public static class ReportingArtifactDeclaration
                 "application/pdf",
                 ReportingDeclaredArtifactKind.PrimaryOutput)
         });
+
+        if (includePreview)
+        {
+            artifacts.Add(new ReportingDeclaredArtifact(
+                $"{normalizedRunId}.preview.json",
+                $"{normalizedRunId}.preview.json",
+                "application/vnd.meridian.reporting-preview+json",
+                ReportingDeclaredArtifactKind.Preview));
+        }
 
         if (includeCertifiedSourceSchedule)
         {
@@ -149,6 +171,13 @@ public static class ReportingArtifactDeclaration
         {
             throw new InvalidOperationException(
                 $"Reporting run '{normalizedRunId}' produced duplicate artifact declarations.");
+        }
+        if (built.Select(static artifact => artifact.FileName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count() != built.Length)
+        {
+            throw new InvalidOperationException(
+                $"Reporting run '{normalizedRunId}' produced colliding artifact file names after normalization.");
         }
 
         return built;

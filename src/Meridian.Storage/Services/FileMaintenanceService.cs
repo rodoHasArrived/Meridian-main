@@ -216,6 +216,10 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
         var startTime = DateTime.UtcNow;
         var filesProcessed = 0;
         var filesCreated = 0;
+        var filesDeleted = 0;
+        var mergeGroupsAttempted = 0;
+        var mergeGroupsSucceeded = 0;
+        var errors = new List<string>();
         long bytesBefore = 0;
         long bytesAfter = 0;
 
@@ -256,11 +260,13 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             // merged_* files that duplicated events on replay.
             long plannedBytes = 0;
             var plannedFiles = 0;
+            var plannedGroups = 0;
             foreach (var group in groups)
             {
                 var candidates = group.Take(options.MaxFilesPerMerge).ToList();
                 plannedFiles += candidates.Count;
                 plannedBytes += candidates.Sum(f => f.Length);
+                plannedGroups++;
             }
 
             _log.Information(
@@ -273,7 +279,11 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                 BytesBefore: plannedBytes,
                 BytesAfter: plannedBytes,
                 CompressionImprovement: 0,
-                Duration: DateTime.UtcNow - startTime
+                Duration: DateTime.UtcNow - startTime,
+                MergeGroupsAttempted: plannedGroups,
+                MergeGroupsSucceeded: 0,
+                FilesDeleted: 0,
+                Errors: []
             );
         }
 
@@ -284,6 +294,8 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             var filesToMerge = group.Take(options.MaxFilesPerMerge).ToList();
             bytesBefore += filesToMerge.Sum(f => f.Length);
             filesProcessed += filesToMerge.Count;
+            mergeGroupsAttempted++;
+            var groupErrorCount = errors.Count;
 
             try
             {
@@ -298,13 +310,19 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                     {
                         foreach (var file in filesToMerge)
                         {
+                            var sourceLength = file.Length;
                             try
-                            { file.Delete(); }
-                            catch (IOException ex)
+                            {
+                                file.Delete();
+                                filesDeleted++;
+                            }
+                            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                             {
                                 // A source file survived the merge. It must be surfaced: on replay the
                                 // merged file and the undeleted original both contribute the same
                                 // events, producing duplicates. Log it rather than swallowing it.
+                                errors.Add($"Failed to delete merged-source file '{file.FullName}': {ex.Message}");
+                                bytesAfter += sourceLength;
                                 _log.Warning(
                                     ex,
                                     "Failed to delete merged-source file {FilePath} after defragmentation; duplicate events may appear on replay",
@@ -312,11 +330,28 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
                             }
                         }
                     }
+                    else
+                    {
+                        bytesAfter += filesToMerge.Sum(file => file.Length);
+                    }
+
+                    if (errors.Count == groupErrorCount)
+                        mergeGroupsSucceeded++;
                 }
+                else
+                {
+                    errors.Add($"Defragmentation produced no merged file for a group of {filesToMerge.Count} files.");
+                    bytesAfter += filesToMerge.Sum(file => file.Length);
+                }
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 // Skip this group on error, but record why rather than dropping it silently.
+                errors.Add($"Defragmentation failed for a group of {filesToMerge.Count} files: {ex.Message}");
                 _log.Warning(ex, "Defragmentation failed for a file group of {FileCount} files; skipping the group", filesToMerge.Count);
                 bytesAfter += filesToMerge.Sum(f => f.Length);
             }
@@ -328,7 +363,11 @@ public sealed class FileMaintenanceService : IFileMaintenanceService
             BytesBefore: bytesBefore,
             BytesAfter: bytesAfter,
             CompressionImprovement: bytesBefore > 0 ? (double)(bytesBefore - bytesAfter) / bytesBefore * 100 : 0,
-            Duration: DateTime.UtcNow - startTime
+            Duration: DateTime.UtcNow - startTime,
+            MergeGroupsAttempted: mergeGroupsAttempted,
+            MergeGroupsSucceeded: mergeGroupsSucceeded,
+            FilesDeleted: filesDeleted,
+            Errors: errors
         );
     }
 
@@ -840,7 +879,11 @@ public sealed record DefragResult(
     long BytesBefore,
     long BytesAfter,
     double CompressionImprovement,
-    TimeSpan Duration
+    TimeSpan Duration,
+    int MergeGroupsAttempted = 0,
+    int MergeGroupsSucceeded = 0,
+    int FilesDeleted = 0,
+    IReadOnlyList<string>? Errors = null
 );
 
 // Orphan types

@@ -94,6 +94,42 @@ public static partial class FundStructureEndpoints
                 UserPermission.DeliverReporting,
                 UserPermission.AdminMaintenance);
 
+        group.MapGet("/{runId}/artifacts", (string runId, HttpContext context) =>
+                ListGovernedReportingArtifactsAsync(runId, context, jsonOptions))
+            .WithName("ListGovernedReportingArtifacts")
+            .Produces<IReadOnlyList<ReportingGovernanceRetainedArtifactDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .RequireAnyPermission(
+                UserPermission.ViewReporting,
+                UserPermission.ManageReporting,
+                UserPermission.ApproveReporting,
+                UserPermission.DeliverReporting,
+                UserPermission.AdminMaintenance);
+
+        group.MapGet("/{runId}/artifacts/{artifactId}", (
+                string runId,
+                string artifactId,
+                HttpContext context) => DownloadGovernedReportingArtifactAsync(runId, artifactId, context))
+            .WithName("DownloadGovernedReportingArtifact")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+            .RequireAnyPermission(
+                UserPermission.ViewReporting,
+                UserPermission.ManageReporting,
+                UserPermission.ApproveReporting,
+                UserPermission.DeliverReporting,
+                UserPermission.AdminMaintenance);
+
         group.MapPost("/{runId}/govern", (
                 string runId,
                 HttpContext context) => GovernCompletedReportingRunAsync(runId, context, jsonOptions))
@@ -215,6 +251,118 @@ public static partial class FundStructureEndpoints
             ReportingGovernanceApiProjector.ProjectRun,
             StatusCodes.Status200OK,
             jsonOptions);
+
+    private static Task<IResult> ListGovernedReportingArtifactsAsync(
+        string runId,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions) =>
+        ExecuteGovernanceAsync(
+            context,
+            runId,
+            static (coordinator, caller, id, ct) => coordinator.ListRetainedArtifactsAsync(id, caller, ct),
+            static (artifacts, _) => artifacts.Select(static artifact =>
+                new ReportingGovernanceRetainedArtifactDto(
+                    artifact.ArtifactId,
+                    artifact.FileName,
+                    artifact.ContentType,
+                    artifact.ByteLength,
+                    artifact.ContentHashSha256,
+                    artifact.Kind.ToString(),
+                    artifact.IsPreview,
+                    artifact.DownloadRoute)).ToArray(),
+            StatusCodes.Status200OK,
+            jsonOptions);
+
+    private static async Task<IResult> DownloadGovernedReportingArtifactAsync(
+        string runId,
+        string artifactId,
+        HttpContext context)
+    {
+        if (!TryResolveReportingGovernanceCaller(context, out var caller, out var callerError))
+        {
+            return callerError!;
+        }
+        var runValidation = ValidateRequiredText(runId, "runId", 256);
+        if (runValidation is not null)
+        {
+            return runValidation;
+        }
+        var artifactTokenValidation = ValidateRequiredText(artifactId, "artifactId", 512);
+        if (artifactTokenValidation is not null)
+        {
+            return artifactTokenValidation;
+        }
+        if (!ReportingArtifactRouteToken.TryDecode(artifactId, out var decodedArtifactId))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["artifactId"] = ["The artifact route token is invalid."]
+            });
+        }
+        var artifactValidation = ValidateRequiredText(decodedArtifactId, "artifactId", 512);
+        if (artifactValidation is not null)
+        {
+            return artifactValidation;
+        }
+        var coordinator = context.RequestServices.GetService<IReportingGovernanceEndpointCoordinator>();
+        if (coordinator is null)
+        {
+            return Results.Problem(
+                "Governed reporting lifecycle service is unavailable.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        try
+        {
+            var download = await coordinator.DownloadRetainedArtifactAsync(
+                    runId.Trim(),
+                    decodedArtifactId,
+                    caller!,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.File(
+                download.Content,
+                download.Descriptor.ContentType,
+                download.Descriptor.FileName,
+                enableRangeProcessing: false);
+        }
+        catch (ReportingGovernancePersistenceException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+        catch (ReportingGovernanceAuthorizationException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+        }
+        catch (ReportingGovernanceNotFoundException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+        }
+        catch (ReportingGovernanceException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (IOException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+        catch (NotSupportedException ex)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+    }
 
     private static Task<IResult> GetGovernedReportingSeriesAsync(
         string seriesId,

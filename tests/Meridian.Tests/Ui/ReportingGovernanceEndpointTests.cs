@@ -259,6 +259,66 @@ public sealed class ReportingGovernanceEndpointTests
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
     }
 
+    [Fact]
+    public async Task Artifacts_ListAndDownload_ReturnExactHashMetadataAndBytesForAuthenticatedScope()
+    {
+        var coordinator = new RecordingCoordinator();
+        await using var app = await CreateAppAsync(coordinator, UserPermission.ViewReporting);
+        var client = app.GetTestClient();
+
+        var artifacts = await client.GetFromJsonAsync<ReportingGovernanceRetainedArtifactDto[]>(
+            "/api/fund-structure/reporting/runs/run-001/artifacts",
+            JsonOptions);
+
+        artifacts.Should().ContainSingle();
+        var artifact = artifacts![0];
+        var expectedBytes = SeedArtifactBytes();
+        artifact.ArtifactId.Should().Be("run-001-primary-pdf");
+        artifact.ContentHashSha256.Should().Be(Sha256(expectedBytes));
+        artifact.ByteLength.Should().Be(expectedBytes.LongLength);
+        artifact.DownloadRoute.Should().Be(
+            $"/api/fund-structure/reporting/runs/run-001/artifacts/{ReportingArtifactRouteToken.Encode("run-001-primary-pdf")}");
+        coordinator.LastOperation.Should().Be("list-artifacts");
+        coordinator.LastCaller!.TenantId.Should().Be("tenant-a");
+        coordinator.LastCaller.CompanyId.Should().Be("company-a");
+
+        var response = await client.GetAsync(artifact.DownloadRoute);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/pdf");
+        response.Content.Headers.ContentDisposition!.FileNameStar.Should().Be("run-001.pdf");
+        (await response.Content.ReadAsByteArrayAsync()).Should().Equal(expectedBytes);
+        coordinator.LastOperation.Should().Be("download-artifact");
+        coordinator.LastArtifactId.Should().Be("run-001-primary-pdf");
+        coordinator.LastCaller!.CorrelationId.Should().Be("server-correlation-001");
+    }
+
+    [Fact]
+    public void ArtifactRouteToken_RoundTripsGridUriWithoutPathSeparators()
+    {
+        const string artifactId = "report-writer://run-001/grids/sector-pivot";
+
+        var token = ReportingArtifactRouteToken.Encode(artifactId);
+
+        token.Should().NotContain("/");
+        ReportingArtifactRouteToken.TryDecode(token, out var decoded).Should().BeTrue();
+        decoded.Should().Be(artifactId);
+    }
+
+    [Theory]
+    [InlineData("/api/fund-structure/reporting/runs/run-001/artifacts")]
+    [InlineData("/api/fund-structure/reporting/runs/run-001/artifacts/run-001-primary-pdf")]
+    public async Task ArtifactRoutes_RejectCallerWithoutReportingPermission(string path)
+    {
+        var coordinator = new RecordingCoordinator();
+        await using var app = await CreateAppAsync(coordinator, UserPermission.ViewStrategies);
+
+        var response = await app.GetTestClient().GetAsync(path);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        coordinator.LastOperation.Should().BeNull();
+    }
+
     private static void AssertOnlyProperties<T>(params string[] expected)
     {
         typeof(T).GetProperties()
@@ -398,6 +458,26 @@ public sealed class ReportingGovernanceEndpointTests
     private static string Sha256(string value) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
 
+    private static string Sha256(ReadOnlySpan<byte> value) =>
+        Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
+
+    private static byte[] SeedArtifactBytes() =>
+        Encoding.ASCII.GetBytes("%PDF-1.7\nverified governed report\n%%EOF");
+
+    private static ReportingGovernedArtifactDescriptor SeedArtifactDescriptor()
+    {
+        var bytes = SeedArtifactBytes();
+        return new ReportingGovernedArtifactDescriptor(
+            "run-001-primary-pdf",
+            "run-001.pdf",
+            "application/pdf",
+            bytes.LongLength,
+            Sha256(bytes),
+            ReportingDeclaredArtifactKind.PrimaryOutput,
+            IsPreview: false,
+            $"/api/fund-structure/reporting/runs/run-001/artifacts/{ReportingArtifactRouteToken.Encode("run-001-primary-pdf")}");
+    }
+
     private static string SeedParametersJson() =>
         """
         {"scope":{"fundProfileId":"fund-a","entityScopeKind":"AllEntities","dimensions":null},"periodId":"2026-06","asOfDate":"2026-06-30","ledgerBookId":"11111111-1111-1111-1111-111111111111","accountingBasis":"Gaap","presentationCurrency":"USD","consolidationLevel":"Fund","outputFormat":"Pdf","finality":"Final","includeSupportingSchedules":true,"includeEvidenceAppendix":true,"templateParameters":{}}
@@ -408,6 +488,7 @@ public sealed class ReportingGovernanceEndpointTests
         public string? LastOperation { get; private set; }
         public long? LastExpectedVersion { get; private set; }
         public ReportingGovernanceCallerContext? LastCaller { get; private set; }
+        public string? LastArtifactId { get; private set; }
         public Exception? ExceptionToThrow { get; init; }
 
         public Task<GovernedReportingRun> GetAsync(
@@ -421,6 +502,33 @@ public sealed class ReportingGovernanceEndpointTests
             ReportingGovernanceCallerContext caller,
             CancellationToken cancellationToken = default) =>
             Run<IReadOnlyList<GovernedReportingRun>>("list", null, caller, [SeedRun()]);
+
+        public Task<IReadOnlyList<ReportingGovernedArtifactDescriptor>> ListRetainedArtifactsAsync(
+            string runId,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default) =>
+            Run<IReadOnlyList<ReportingGovernedArtifactDescriptor>>(
+                "list-artifacts",
+                null,
+                caller,
+                [SeedArtifactDescriptor()]);
+
+        public Task<ReportingGovernedArtifactDownload> DownloadRetainedArtifactAsync(
+            string runId,
+            string artifactId,
+            ReportingGovernanceCallerContext caller,
+            CancellationToken cancellationToken = default)
+        {
+            LastArtifactId = artifactId;
+            return Run(
+                "download-artifact",
+                null,
+                caller,
+                new ReportingGovernedArtifactDownload(
+                    SeedArtifactDescriptor(),
+                    SeedArtifactBytes(),
+                    "artifact-access-audit-001"));
+        }
 
         public Task<ReportingGovernanceSeriesHistory> GetSeriesHistoryAsync(
             string seriesId,

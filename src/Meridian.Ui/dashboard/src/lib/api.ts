@@ -179,6 +179,7 @@ import type {
   StatementRunException,
   StatementRunSummary,
   ReconciliationCaseworkCommand,
+  ReconciliationCaseworkOperationResult,
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
@@ -422,9 +423,11 @@ import {
   reconciliationBreakResolutionEndpoint,
   reconciliationBreakResolveEndpoint,
   reconciliationBreakReviewEndpoint,
+  reconciliationBreakSupersedeEndpoint,
   reconciliationBreakRootCauseEndpoint,
   reconciliationBreakSignOffEndpoint,
   reconciliationBreakTransitionEndpoint,
+  reconciliationBreakWaiveEndpoint,
   reconciliationRunEndpoint,
   reconciliationStatementExceptionsEndpoint,
   reconciliationStatementFetchScheduleEndpoint,
@@ -3179,53 +3182,51 @@ function appendOptionalStatementFormField(formData: FormData, name: string, valu
   }
 }
 
-export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) {
-  return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }));
-}
+export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) { return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId })); }
 
-export function getReconciliationBreakDetail(breakId: string) {
-  return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId));
-}
+export function getReconciliationBreakDetail(breakId: string) { return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId)); }
 
-export function getReconciliationBreakAudit(breakId: string) {
-  return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId));
-}
+export function getReconciliationBreakAudit(breakId: string) { return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId)); }
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakReviewEndpoint(request.breakId),
     request
   );
 }
 
 export function resolveReconciliationBreak(request: ResolveReconciliationBreakRequest) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakResolveEndpoint(request.breakId),
     request
   );
 }
 
+export function waiveReconciliationBreak(request: ReconciliationCaseworkCommand) { return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakWaiveEndpoint(request.breakId), request); }
+
+export function supersedeReconciliationBreak(request: ReconciliationCaseworkCommand) { return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakSupersedeEndpoint(request.breakId), request); }
+
 export function assignReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakAssignEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakAssignEndpoint(request.breakId), request);
 }
 
 export function transitionReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakTransitionEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakTransitionEndpoint(request.breakId), request);
 }
 
 export function addReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakCommentsEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakCommentsEndpoint(request.breakId), request);
 }
 
 export function editReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(
+  return postJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
     request
   );
 }
 
 export function deleteReconciliationBreakComment(request: ReconciliationCaseworkCommand) {
-  return deleteJson<ReconciliationBreakQueueItem>(
+  return deleteJson<ReconciliationCaseworkOperationResult>(
     reconciliationBreakCommentEndpoint(request.breakId, request.commentId ?? ""),
     {},
     request
@@ -3233,19 +3234,19 @@ export function deleteReconciliationBreakComment(request: ReconciliationCasework
 }
 
 export function setReconciliationBreakRootCause(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakRootCauseEndpoint(request.breakId), request);
 }
 
 export function setReconciliationBreakResolution(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakResolutionEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakResolutionEndpoint(request.breakId), request);
 }
 
 export function signOffReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakSignOffEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakSignOffEndpoint(request.breakId), request);
 }
 
 export function reopenReconciliationBreak(request: ReconciliationCaseworkCommand) {
-  return postJson<ReconciliationBreakQueueItem>(reconciliationBreakReopenEndpoint(request.breakId), request);
+  return postJson<ReconciliationCaseworkOperationResult>(reconciliationBreakReopenEndpoint(request.breakId), request);
 }
 
 export function dryRunReconciliationBreakBulkAction(request: ReconciliationBulkCaseworkRequest) {
@@ -3261,8 +3262,7 @@ export function getReconciliationBreakBulkActionStatus(bulkActionId: string) {
 }
 
 export function getReconciliationCalibrationSummary() {
-  return getJson<ReconciliationCalibrationSummary>(RECONCILIATION_API_ENDPOINTS.calibrationSummary);
-}
+  return getJson<ReconciliationCalibrationSummary>(RECONCILIATION_API_ENDPOINTS.calibrationSummary); }
 
 // --- Backfill mutations ---
 

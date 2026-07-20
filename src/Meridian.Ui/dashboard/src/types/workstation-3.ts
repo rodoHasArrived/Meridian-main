@@ -31,6 +31,7 @@ import type {
   TradingPromotionReadiness,
   TradingReplayReadiness,
   TradingTrustGateReadiness,
+  VerifiedOperationOutcome,
   WorkstationBrokerageSyncStatus,
   WorkstationSecurityReference,
 } from "../types";
@@ -353,6 +354,7 @@ export interface ClosePeriodLockResult {
   plan?: ClosePeriodPlan | null;
   transition?: OperationsTransitionResult | null;
   issues: AccountingConfigurationValidationIssue[];
+  outcome: VerifiedOperationOutcome;
 }
 
 export interface CloseOperatingCoverageItem {
