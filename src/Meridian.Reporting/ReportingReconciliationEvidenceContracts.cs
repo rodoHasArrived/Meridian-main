@@ -566,20 +566,34 @@ public static class ReportingReconciliationEvidenceValidation
         {
             writer.WriteStartObject();
             writer.WriteString("kind", measure.Kind.ToString());
-            if (measure.Expected.HasValue) writer.WriteNumber("expected", measure.Expected.Value); else writer.WriteNull("expected");
-            if (measure.Actual.HasValue) writer.WriteNumber("actual", measure.Actual.Value); else writer.WriteNull("actual");
-            if (measure.Variance.HasValue) writer.WriteNumber("variance", measure.Variance.Value); else writer.WriteNull("variance");
-            if (measure.Tolerance.HasValue) writer.WriteNumber("tolerance", measure.Tolerance.Value); else writer.WriteNull("tolerance");
+            if (measure.Expected.HasValue)
+                writer.WriteNumber("expected", measure.Expected.Value);
+            else
+                writer.WriteNull("expected");
+            if (measure.Actual.HasValue)
+                writer.WriteNumber("actual", measure.Actual.Value);
+            else
+                writer.WriteNull("actual");
+            if (measure.Variance.HasValue)
+                writer.WriteNumber("variance", measure.Variance.Value);
+            else
+                writer.WriteNull("variance");
+            if (measure.Tolerance.HasValue)
+                writer.WriteNumber("tolerance", measure.Tolerance.Value);
+            else
+                writer.WriteNull("tolerance");
             writer.WriteString("unit", measure.Unit);
             writer.WriteString("unavailableReason", measure.UnavailableReason);
             writer.WriteEndObject();
         }
         writer.WriteEndArray();
         writer.WriteStartArray("blockedOutputs");
-        foreach (var output in item.BlockedOutputs.OrderBy(static value => value, StringComparer.Ordinal)) writer.WriteStringValue(output);
+        foreach (var output in item.BlockedOutputs.OrderBy(static value => value, StringComparer.Ordinal))
+            writer.WriteStringValue(output);
         writer.WriteEndArray();
         writer.WriteStartArray("evidenceIds");
-        foreach (var evidenceId in item.EvidenceIds.OrderBy(static value => value, StringComparer.Ordinal)) writer.WriteStringValue(evidenceId);
+        foreach (var evidenceId in item.EvidenceIds.OrderBy(static value => value, StringComparer.Ordinal))
+            writer.WriteStringValue(evidenceId);
         writer.WriteEndArray();
         writer.WriteEndObject();
     }

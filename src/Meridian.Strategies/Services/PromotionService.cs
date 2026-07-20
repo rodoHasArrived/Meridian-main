@@ -23,6 +23,7 @@ public sealed class PromotionService
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
+    private readonly IPromotedRunLauncher? _runLauncher;
 
     public PromotionService(
         IStrategyRepository repository,
@@ -31,7 +32,8 @@ public sealed class PromotionService
         ILogger<PromotionService> logger,
         ExecutionOperatorControlService? operatorControls = null,
         ExecutionAuditTrailService? auditTrail = null,
-        BrokerageConfiguration? brokerageConfiguration = null)
+        BrokerageConfiguration? brokerageConfiguration = null,
+        IPromotedRunLauncher? runLauncher = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _promoter = promoter ?? throw new ArgumentNullException(nameof(promoter));
@@ -40,6 +42,7 @@ public sealed class PromotionService
         _operatorControls = operatorControls;
         _auditTrail = auditTrail;
         _brokerageConfiguration = brokerageConfiguration;
+        _runLauncher = runLauncher;
     }
 
     /// <summary>
@@ -467,6 +470,8 @@ public sealed class PromotionService
                 ct).ConfigureAwait(false);
         }
 
+        await ActivatePromotedRunAsync(newRun, ct).ConfigureAwait(false);
+
         return new PromotionDecisionResult(
             Success: true,
             PromotionId: promotionRecord.PromotionId,
@@ -474,6 +479,39 @@ public sealed class PromotionService
             Reason: $"Strategy promoted from {run.RunType} to {targetRunType}.",
             AuditReference: auditReference,
             ApprovedBy: request.ApprovedBy);
+    }
+
+    /// <summary>
+    /// Hands the newly recorded target run to the live trading engine. Activation failures are
+    /// deliberately non-fatal: the promotion decision is already durable, the run entry stays
+    /// retained, and the engine's startup resume sweep (or a manual restart) can activate it later.
+    /// </summary>
+    private async Task ActivatePromotedRunAsync(StrategyRunEntry newRun, CancellationToken ct)
+    {
+        if (_runLauncher is null)
+        {
+            _logger.LogWarning(
+                "Promoted run {RunId} ({RunType}) was recorded but no run launcher is configured; the run will not execute until an engine activates it.",
+                newRun.RunId, newRun.RunType);
+            return;
+        }
+
+        try
+        {
+            var launch = await _runLauncher.TryLaunchAsync(newRun, ct).ConfigureAwait(false);
+            if (!launch.Launched)
+            {
+                _logger.LogWarning(
+                    "Promoted run {RunId} ({RunType}) was recorded but not activated: {Reason}",
+                    newRun.RunId, newRun.RunType, launch.Reason);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(ex,
+                "Promoted run {RunId} ({RunType}) was recorded but its activation failed.",
+                newRun.RunId, newRun.RunType);
+        }
     }
 
     private async Task RecordPromotionAuditAsync(

@@ -627,7 +627,11 @@ public sealed class PilotAcceptanceHarnessTests
             AuditReference = $"audit-{runId}",
             ParentRunId = parentRunId,
             FundProfileId = fundProfileId,
-            FundDisplayName = fundDisplayName
+            FundDisplayName = fundDisplayName,
+            // The overrides above change canonical hash inputs (run id, references, lineage),
+            // so the hash captured by Start() is stale. Clearing it lets the run store stamp
+            // the canonical hash instead of rejecting the seeded entry as tampered.
+            InputHashSha256 = null
         };
     }
 
