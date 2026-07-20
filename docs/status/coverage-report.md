@@ -5,25 +5,25 @@
 
 ## Overall Coverage
 
-**3595 / 8048** items documented (**44.7%**) &mdash; Grade: **D**
+**3610 / 8106** items documented (**44.5%**) &mdash; Grade: **D**
 
 ```text
-[=========-----------] 44.7%
+[=========-----------] 44.5%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 3469 | 7583 | 45.7% | D |
-| API Endpoints | 112 | 312 | 35.9% | F |
+| Public Classes / Interfaces | 3484 | 7638 | 45.6% | D |
+| API Endpoints | 112 | 315 | 35.6% | F |
 | Configuration Options | 3 | 142 | 2.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (4114 undocumented)
+### Public Classes / Interfaces (4154 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -59,7 +59,7 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| `EtlInspectionMode` | `src/Meridian.Application/Commands/EtlCommands.cs:220` |
+| `EtlInspectionMode` | `src/Meridian.Application/Commands/EtlCommands.cs:243` |
 | `MeridianDeploymentPostureDeclaration` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:24` |
 | `MeridianDeploymentPostureServiceCollectionExtensions` | `src/Meridian.Application/Composition/MeridianDeploymentPosture.cs:25` |
 | `ProductionRegistrationGuardServiceCollectionExtensions` | `src/Meridian.Application/Composition/ProductionRegistrationGuardService.cs:85` |
@@ -77,9 +77,9 @@
 | `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:523` |
 | `SystemExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543` |
 | `ScheduledBackfillType` | `src/Meridian.Application/Scheduling/BackfillSchedule.cs:187` |
-| ... and 4064 more | |
+| ... and 4104 more | |
 
-### API Endpoints (200 undocumented)
+### API Endpoints (203 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -133,7 +133,7 @@
 | `/{loanId:guid}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:720` |
 | `/{loanId:guid}/restructures` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:750` |
 | `/{loanId:guid}/amortization/discount-premium` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:780` |
-| ... and 150 more | |
+| ... and 153 more | |
 
 ### Configuration Options (139 undocumented)
 
@@ -193,8 +193,8 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4114 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
-2. **API Endpoints**: 200 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+1. **Public Classes / Interfaces**: 4154 undocumented types. Consider generating API docs with DocFX (`docfx docfx.json`) to cover the long tail of public types automatically.
+2. **API Endpoints**: 203 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 139 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 
 ---

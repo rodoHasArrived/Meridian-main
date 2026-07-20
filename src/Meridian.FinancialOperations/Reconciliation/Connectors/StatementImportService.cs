@@ -19,6 +19,13 @@ public sealed record StatementImportCommitRequest(
     string? ToleranceProfileId,
     string ImportedBy);
 
+public interface IStatementImportCommitService
+{
+    Task<StatementImportCommitResultDto> CommitAsync(
+        StatementImportCommitRequest request,
+        CancellationToken ct = default);
+}
+
 /// <summary>
 /// Orchestrates the statement connector pipeline: preview (per-column mapping confidence,
 /// per-kind record breakdown, drift and parse diagnostics, profile suggestions) and commit
@@ -29,7 +36,7 @@ public sealed class StatementImportService(
     StatementConnectorRegistry connectors,
     StatementMappingProfileCatalog catalog,
     IStatementRunWorkflowService workflow,
-    string dataRoot)
+    string dataRoot) : IStatementImportCommitService
 {
     private const int SamplesPerKind = 5;
     private const int MaxProfileSuggestions = 3;

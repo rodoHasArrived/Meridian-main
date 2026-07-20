@@ -21,14 +21,14 @@ public interface ISecurityMasterOperatorWorkflowClient
 public sealed class SecurityMasterOperatorWorkflowClient : ISecurityMasterOperatorWorkflowClient
 {
     public async Task<SecurityMasterIngestStatusResponse?> GetIngestStatusAsync(CancellationToken ct = default)
-        => await ApiClientService.Instance
-            .GetAsync<SecurityMasterIngestStatusResponse>("/api/security-master/ingest/status", ct)
-            .ConfigureAwait(false);
+        => (await ApiClientService.Instance
+            .GetWithResponseAsync<SecurityMasterIngestStatusResponse>("/api/security-master/ingest/status", ct)
+            .ConfigureAwait(false)).DataOrLoggedNull("Get security master ingest status");
 
     public async Task<IReadOnlyList<SecurityMasterConflict>> GetOpenConflictsAsync(CancellationToken ct = default)
-        => await ApiClientService.Instance
-            .GetAsync<SecurityMasterConflict[]>("/api/security-master/conflicts", ct)
-            .ConfigureAwait(false)
+        => (await ApiClientService.Instance
+            .GetWithResponseAsync<SecurityMasterConflict[]>("/api/security-master/conflicts", ct)
+            .ConfigureAwait(false)).DataOrLoggedNull("Get open security master conflicts")
             ?? [];
 
     public async Task<SecurityMasterConflict?> ResolveConflictAsync(
@@ -44,11 +44,11 @@ public sealed class SecurityMasterOperatorWorkflowClient : ISecurityMasterOperat
             ResolvedBy: resolvedBy,
             Reason: reason);
 
-        return await ApiClientService.Instance
-            .PostAsync<SecurityMasterConflict>(
+        return (await ApiClientService.Instance
+            .PostWithResponseAsync<SecurityMasterConflict>(
                 $"/api/security-master/conflicts/{conflictId}/resolve",
                 request,
                 ct)
-            .ConfigureAwait(false);
+            .ConfigureAwait(false)).DataOrLoggedNull("Resolve security master conflict");
     }
 }

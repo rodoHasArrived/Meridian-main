@@ -13,6 +13,10 @@ internal sealed record LifecycleSupervisorConfiguration
     public required string DataRoot { get; init; }
     public required string RuntimeRoot { get; init; }
     public required string ReceiptRoot { get; init; }
+    public required string StartupOutcomeReceiptRoot { get; init; }
+    public required string SupervisorLogPath { get; init; }
+    public required string HostLogRoot { get; init; }
+    public required string DatabaseLogPath { get; init; }
     public required string SecretPath { get; init; }
     public required string DatabaseSecretPath { get; init; }
     public required string HostPath { get; init; }
@@ -55,6 +59,11 @@ internal sealed record LifecycleSupervisorConfiguration
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Meridian",
             "service");
+        var startupOutcomeReceiptRoot = Path.Combine(secretRoot, "receipts");
+        var hostPath = ResolvePath(
+            manifest.HostRelativePath,
+            canonicalInstallRoot,
+            Path.Combine(canonicalInstallRoot, "host", "Meridian.exe"));
 
         return new LifecycleSupervisorConfiguration
         {
@@ -64,9 +73,13 @@ internal sealed record LifecycleSupervisorConfiguration
             DataRoot = dataRoot,
             RuntimeRoot = runtimeRoot,
             ReceiptRoot = Path.Combine(runtimeRoot, "receipts"),
+            StartupOutcomeReceiptRoot = startupOutcomeReceiptRoot,
+            SupervisorLogPath = Path.Combine(secretRoot, "logs", "lifecycle-supervisor.log"),
+            HostLogRoot = Path.Combine(dataRoot, "_logs"),
+            DatabaseLogPath = Path.Combine(dataRoot, "postgresql", "postgresql.log"),
             SecretPath = Path.Combine(secretRoot, "lifecycle-shutdown-token.dpapi"),
             DatabaseSecretPath = Path.Combine(secretRoot, "lifecycle-postgresql-password.dpapi"),
-            HostPath = ResolvePath(manifest.HostRelativePath, canonicalInstallRoot, Path.Combine(canonicalInstallRoot, "host", "Meridian.exe")),
+            HostPath = hostPath,
             PipeName = CreatePipeName(canonicalInstallRoot),
             Manifest = manifest
         };

@@ -7,6 +7,8 @@ import type {
   OperationsActionOrigin,
   ProjectionLineage,
   ReconciliationBreakExplanation,
+  ReconciliationBreakDisposition,
+  ReconciliationBreakMeasure,
   ReconciliationBreakQueueStatus,
   ReconciliationCaseCommentVisibility,
   ReconciliationCaseLifecycleState,
@@ -76,6 +78,17 @@ export interface ReconciliationBreakQueueItem {
   slaBadgeLabel?: string | null;
   slaBadgeTone?: "info" | "warning" | "danger" | "neutral" | "success" | string | null;
   breakExplanation?: ReconciliationBreakExplanation | null;
+  measures?: ReconciliationBreakMeasure[] | null;
+  disposition?: ReconciliationBreakDisposition | null;
+  dispositionReason?: string | null;
+  supersedingBreakId?: string | null;
+  dispositionApprovedBy?: string | null;
+  dispositionApprovalReference?: string | null;
+  dispositionEvidenceHash?: string | null;
+  disposedAt?: string | null;
+  blockedOutputs?: string[] | null;
+  accountingPeriodId?: string | null;
+  asOfDate?: string | null;
 }
 
 export interface ReconciliationCaseComment {
@@ -121,6 +134,19 @@ export interface ReconciliationCaseworkCommand {
   privileged?: boolean;
   statusTransition?: ReconciliationCaseLifecycleState | null;
   mentions?: string[] | null;
+  actionOrigin?: OperationsActionOrigin;
+  approvalActor?: string | null;
+  approvalReference?: string | null;
+  supersedingBreakId?: string | null;
+}
+
+export interface ReconciliationCaseworkOperationResult {
+  transitionStatus: string;
+  item?: ReconciliationBreakQueueItem | null;
+  outcome: VerifiedOperationOutcome;
+  error?: string | null;
+  errorCode?: string | null;
+  validationIssues?: string[] | null;
 }
 
 export interface ReconciliationBulkCaseworkRequest {
@@ -141,6 +167,11 @@ export interface ReconciliationBulkCaseworkRequest {
   rootCauseCode?: string | null;
   resolutionCode?: string | null;
   maxCaseCount?: number;
+  actionOrigin?: OperationsActionOrigin;
+  evidenceLinks?: string[] | null;
+  approvalActor?: string | null;
+  approvalReference?: string | null;
+  supersedingBreakId?: string | null;
 }
 
 export interface ReconciliationBulkCaseworkResult {
@@ -151,6 +182,68 @@ export interface ReconciliationBulkCaseworkResult {
   succeededCount: number;
   failedCount: number;
   results: Array<{ breakId: string; succeeded: boolean; wouldSucceed: boolean; error?: string | null; item?: ReconciliationBreakQueueItem | null }>;
+  inputHashSha256: string;
+  outcome: VerifiedOperationOutcome;
+}
+
+export type OperationTerminalState = "Succeeded" | "CompletedWithWarnings" | "Failed" | "Blocked";
+export type OperationPostconditionState = "Satisfied" | "NotSatisfied" | "NotEvaluated";
+
+export interface VerifiedOperationOutcome {
+  operationId: string;
+  operationKind: string;
+  state: OperationTerminalState;
+  startedAtUtc: string;
+  completedAtUtc: string;
+  attemptNumber: number;
+  correlationId: string;
+  inputHashSha256: string;
+  postconditions: Array<{
+    code: string;
+    description: string;
+    state: OperationPostconditionState;
+    required: boolean;
+    evidenceIds: string[];
+    artifactIds: string[];
+  }>;
+  evidence: Array<{
+    evidenceId: string;
+    kind: string;
+    description: string;
+    uri?: string | null;
+    contentHashSha256?: string | null;
+    capturedAtUtc?: string | null;
+  }>;
+  artifacts: Array<{
+    artifactId: string;
+    fileName: string;
+    contentType: string;
+    byteLength: number;
+    contentHashSha256: string;
+    uri?: string | null;
+    previewUri?: string | null;
+  }>;
+  issues: Array<{
+    code: string;
+    message: string;
+    severity: "Warning" | "Error";
+    exceptionType?: string | null;
+    evidenceId?: string | null;
+    artifactId?: string | null;
+    isBlocking: boolean;
+  }>;
+  recovery: Array<{
+    actionId: string;
+    label: string;
+    guidance: string;
+    retryable: boolean;
+    requiresHumanAction: boolean;
+    route?: string | null;
+    evidenceIds: string[];
+    artifactIds: string[];
+  }>;
+  schemaVersion: string;
+  isSuccessful: boolean;
 }
 
 export interface ReviewReconciliationBreakRequest {

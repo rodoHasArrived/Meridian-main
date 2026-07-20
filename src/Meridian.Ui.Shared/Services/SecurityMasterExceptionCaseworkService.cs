@@ -169,14 +169,18 @@ public sealed class SecurityMasterExceptionCaseworkService
         }
 
         var desired = BuildOverrideCase(overrides, actor);
-        await _breakQueueRepository.CreateIfMissingAsync(desired, ct).ConfigureAwait(false);
+        var existing = await _breakQueueRepository.GetByIdAsync(desired.BreakId, ct).ConfigureAwait(false);
+        if (existing is null)
+        {
+            await _breakQueueRepository.CreateIfMissingAsync(desired, ct).ConfigureAwait(false);
+            existing = await _breakQueueRepository.GetByIdAsync(desired.BreakId, ct).ConfigureAwait(false);
+        }
 
         if (overrides.ApprovalStatus != SecurityOverrideApprovalStatusDto.Approved)
         {
             return;
         }
 
-        var existing = await _breakQueueRepository.GetByIdAsync(desired.BreakId, ct).ConfigureAwait(false);
         if (existing is null ||
             existing.Status is ReconciliationBreakQueueStatus.Resolved or ReconciliationBreakQueueStatus.Dismissed)
         {

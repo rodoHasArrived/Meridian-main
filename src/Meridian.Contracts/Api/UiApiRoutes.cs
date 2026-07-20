@@ -745,6 +745,10 @@ public static class UiApiRoutes
     public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";
     public const string ReconciliationStatementImportPreview = "/api/workstation/reconciliation/statement-imports/preview";
     public const string ReconciliationStatementImportCommit = "/api/workstation/reconciliation/statement-imports/commit";
+    public const string ReconciliationStatementToReport = "/api/workstation/reconciliation/statement-to-report";
+    public const string ReconciliationStatementToReportById = "/api/workstation/reconciliation/statement-to-report/{workflowId}";
+    public const string ReconciliationStatementToReportResume = "/api/workstation/reconciliation/statement-to-report/{workflowId}/resume";
+    public const string ReconciliationStatementToReportArtifact = "/api/workstation/reconciliation/statement-to-report/{workflowId}/artifacts/{artifactId}";
     public const string ReconciliationStatementFetchPreview = "/api/workstation/reconciliation/statement-imports/fetch-preview";
     public const string ReconciliationStatementFetchSchedules = "/api/workstation/reconciliation/statement-fetch-schedules";
     public const string ReconciliationStatementFetchScheduleById = "/api/workstation/reconciliation/statement-fetch-schedules/{scheduleId}";
@@ -862,6 +866,8 @@ public static class UiApiRoutes
     public const string ReconciliationBreakResolve = "/api/workstation/reconciliation/break-queue/{breakId}/resolve";
     public const string ReconciliationBreakAssign = "/api/workstation/reconciliation/break-queue/{breakId}/assign";
     public const string ReconciliationBreakTransition = "/api/workstation/reconciliation/break-queue/{breakId}/transition";
+    public const string ReconciliationBreakWaive = "/api/workstation/reconciliation/break-queue/{breakId}/waive";
+    public const string ReconciliationBreakSupersede = "/api/workstation/reconciliation/break-queue/{breakId}/supersede";
     public const string ReconciliationBreakComments = "/api/workstation/reconciliation/break-queue/{breakId}/comments";
     public const string ReconciliationBreakComment = "/api/workstation/reconciliation/break-queue/{breakId}/comments/{commentId}";
     public const string ReconciliationBreakRootCause = "/api/workstation/reconciliation/break-queue/{breakId}/root-cause";

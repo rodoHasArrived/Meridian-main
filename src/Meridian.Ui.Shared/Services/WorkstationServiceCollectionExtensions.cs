@@ -16,6 +16,7 @@ using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
@@ -43,6 +44,7 @@ using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.Operations;
 using Meridian.Storage.Reporting;
 using Meridian.Storage.Services;
 using Meridian.Strategies.Interfaces;
@@ -170,10 +172,10 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
         services.TryAddSingleton<FundStructureSetupWorkflowService>();
 
-        services.TryAddSingleton<StrategyRunStoreOptions>(sp =>
-            new StrategyRunStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "runs")));
+        services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
+            new FileOperationalCaseHistoryStore(ResolveConfigDataRoot(sp)));
         services.TryAddSingleton<IStrategyRepository>(sp =>
-            new StrategyRunStore(sp.GetRequiredService<StrategyRunStoreOptions>()));
+            new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>()));
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
             new PromotionRecordStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "promotions")));
         services.TryAddSingleton<IPromotionRecordStore>(sp =>

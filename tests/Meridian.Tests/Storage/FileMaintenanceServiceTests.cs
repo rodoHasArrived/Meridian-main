@@ -215,6 +215,35 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
             "a dry run must not write any merged files");
     }
 
+    [Fact]
+    public async Task DefragmentAsync_WhenMergedSourceCannotBeDeleted_ReportsFailedGroupAndSurvivingBytes()
+    {
+        if (!OperatingSystem.IsWindows())
+            return; // Windows file-share semantics provide the deterministic undeletable source used here.
+
+        var dir = Path.Combine(TestDataRoot, "locked-source");
+        Directory.CreateDirectory(dir);
+        var lockedPath = Path.Combine(dir, "a_20260101.jsonl");
+        var deletablePath = Path.Combine(dir, "b_20260102.jsonl");
+        await File.WriteAllTextAsync(lockedPath, "{\"seq\":1}\n");
+        await File.WriteAllTextAsync(deletablePath, "{\"seq\":2}\n");
+        File.SetLastWriteTimeUtc(lockedPath, DateTime.UtcNow.AddDays(-2));
+        File.SetLastWriteTimeUtc(deletablePath, DateTime.UtcNow.AddDays(-2));
+        var lockedLength = new FileInfo(lockedPath).Length;
+        await using var lockHandle = new FileStream(lockedPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.DefragmentAsync(new DefragOptions(MaxFileAge: TimeSpan.FromDays(1)));
+
+        result.MergeGroupsAttempted.Should().Be(1);
+        result.MergeGroupsSucceeded.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains(lockedPath, StringComparison.Ordinal));
+        File.Exists(lockedPath).Should().BeTrue();
+        result.FilesDeleted.Should().Be(1);
+        result.BytesAfter.Should().BeGreaterThan(lockedLength,
+            "the actual footprint includes both the merged file and the source that survived deletion");
+    }
+
     private static async Task<string> ReadGzipTextAsync(string path)
     {
         await using var fileStream = File.OpenRead(path);

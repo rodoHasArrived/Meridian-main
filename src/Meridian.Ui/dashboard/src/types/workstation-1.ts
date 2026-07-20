@@ -4,6 +4,8 @@ import type {
   OperationsCloseChecklistTask,
   OperationsClosePackagePublication,
   OperationsCloseReadiness,
+  ReconciliationBreakDisposition,
+  ReconciliationBreakMeasure,
 } from "../types";
 
 export type WorkspaceKey =
@@ -1243,6 +1245,14 @@ export interface OperationsBreakCase {
   rootCauseCode?: string | null;
   approvalState?: string | null;
   blockedOutputs?: string[] | null;
+  measures?: ReconciliationBreakMeasure[] | null;
+  disposition?: ReconciliationBreakDisposition | null;
+  dispositionReason?: string | null;
+  supersedingBreakId?: string | null;
+  dispositionApprovedBy?: string | null;
+  dispositionApprovalReference?: string | null;
+  dispositionEvidenceHash?: string | null;
+  disposedAtUtc?: string | null;
 }
 
 export interface OperationsReconciliationLaneSummary {

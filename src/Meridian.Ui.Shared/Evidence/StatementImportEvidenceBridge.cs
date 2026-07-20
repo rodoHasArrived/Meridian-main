@@ -11,13 +11,21 @@ public sealed record StatementImportEvidenceBridgeRequest(
     DateOnly PeriodEnd,
     string ImportedBy);
 
+public interface IStatementImportEvidenceRetainer
+{
+    Task<StatementImportCommitResultDto> RetainAsync(
+        StatementImportCommitResultDto result,
+        StatementImportEvidenceBridgeRequest request,
+        CancellationToken ct = default);
+}
+
 /// <summary>
 /// Retains statement-connector imports in Evidence Vault without moving reconciliation
 /// ownership out of Financial Operations.
 /// </summary>
 public sealed class StatementImportEvidenceBridge(
     IEvidenceArtifactStore store,
-    string dataRoot)
+    string dataRoot) : IStatementImportEvidenceRetainer
 {
     private const string StatementRunSubjectKind = "statement-run";
 

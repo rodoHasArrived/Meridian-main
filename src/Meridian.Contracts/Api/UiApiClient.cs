@@ -278,30 +278,30 @@ public sealed class UiApiClient
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationRunById, "reconciliationRunId", reconciliationRunId),
             ct).ConfigureAwait(false);
 
-    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ReviewReconciliationBreakAsync(
+    public async Task<ApiResponse<ReconciliationCaseworkOperationResult>> ReviewReconciliationBreakAsync(
         string breakId,
         ReviewReconciliationBreakRequest request,
         CancellationToken ct = default)
-        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+        => await PostWithResponseAsync<ReconciliationCaseworkOperationResult>(
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakReview, "breakId", breakId),
             request,
             ct).ConfigureAwait(false);
 
-    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ResolveReconciliationBreakAsync(
+    public async Task<ApiResponse<ReconciliationCaseworkOperationResult>> ResolveReconciliationBreakAsync(
         string breakId,
         ResolveReconciliationBreakRequest request,
         CancellationToken ct = default)
-        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+        => await PostWithResponseAsync<ReconciliationCaseworkOperationResult>(
             UiApiRoutes.WithParam(UiApiRoutes.ReconciliationBreakResolve, "breakId", breakId),
             request,
             ct).ConfigureAwait(false);
 
-    public async Task<ApiResponse<ReconciliationBreakQueueItem>> ApplyReconciliationCaseworkAsync(
+    public async Task<ApiResponse<ReconciliationCaseworkOperationResult>> ApplyReconciliationCaseworkAsync(
         string breakId,
         string routeTemplate,
         ReconciliationCaseworkCommand request,
         CancellationToken ct = default)
-        => await PostWithResponseAsync<ReconciliationBreakQueueItem>(
+        => await PostWithResponseAsync<ReconciliationCaseworkOperationResult>(
             UiApiRoutes.WithParam(routeTemplate, "breakId", breakId),
             request,
             ct).ConfigureAwait(false);

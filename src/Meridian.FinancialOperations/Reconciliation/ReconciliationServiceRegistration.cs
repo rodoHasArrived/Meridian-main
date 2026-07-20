@@ -96,6 +96,8 @@ public static class ReconciliationServiceRegistration
             sp.GetRequiredService<StatementMappingProfileCatalog>(),
             sp.GetRequiredService<IStatementRunWorkflowService>(),
             resolveDataRoot(sp)));
+        services.TryAddSingleton<IStatementImportCommitService>(sp =>
+            sp.GetRequiredService<StatementImportService>());
 
         services.TryAddSingleton<IStatementFetchScheduleStore>(sp =>
             new FileStatementFetchScheduleStore(

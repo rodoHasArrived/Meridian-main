@@ -1,3 +1,5 @@
+using Meridian.Contracts.Operations;
+
 namespace Meridian.Workflow.Runbooks;
 
 public sealed record RunbookDefinition(
@@ -14,5 +16,8 @@ public sealed record RunbookExecutionResult(
     string RunbookId,
     DateTimeOffset StartedAtUtc,
     DateTimeOffset CompletedAtUtc,
-    bool Success,
-    IReadOnlyList<string> Messages);
+    VerifiedOperationOutcome Outcome,
+    IReadOnlyList<string> Messages)
+{
+    public bool Success => Outcome.IsSuccessful;
+}

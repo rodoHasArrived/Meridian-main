@@ -52,7 +52,88 @@ public static partial class WorkstationEndpoints
             SourceFingerprint: fingerprint,
             EvidenceLinks: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? null : [statementBreak.EvidenceLink],
             EvidenceCount: string.IsNullOrWhiteSpace(statementBreak.EvidenceLink) ? 0 : 1,
-            LedgerBookId: null);
+            LedgerBookId: null,
+            Measures: statementBreak.Measures ?? BuildStatementBreakMeasures(statementBreak, variance),
+            BlockedOutputs: ["reconciliation-scope-resolution"]);
+    }
+
+    private static IReadOnlyList<ReconciliationBreakMeasureDto> BuildStatementBreakMeasures(
+        StatementBreakDto statementBreak,
+        decimal variance)
+    {
+        var unit = NormalizeMetadata(statementBreak.Currency) ?? "currency";
+        var valueAvailable = statementBreak.StatementAmount.HasValue && statementBreak.BookAmount.HasValue;
+        var quantityBreak = statementBreak.BreakType == StatementBreakType.PositionQuantityMismatch;
+        var signedVariance = statementBreak.BookAmount.HasValue && statementBreak.StatementAmount.HasValue
+            ? statementBreak.StatementAmount.Value - statementBreak.BookAmount.Value
+            : statementBreak.Delta ?? variance;
+        return
+        [
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.Value,
+                valueAvailable && !quantityBreak ? statementBreak.BookAmount : null,
+                valueAvailable && !quantityBreak ? statementBreak.StatementAmount : null,
+                valueAvailable && !quantityBreak ? signedVariance : null,
+                statementBreak.Tolerance,
+                unit,
+                valueAvailable && !quantityBreak ? null : "The source break does not provide a complete expected and actual market-value pair."),
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.Quantity,
+                quantityBreak && valueAvailable ? statementBreak.BookAmount : null,
+                quantityBreak && valueAvailable ? statementBreak.StatementAmount : null,
+                quantityBreak && valueAvailable ? signedVariance : null,
+                quantityBreak ? statementBreak.Tolerance : null,
+                "units",
+                quantityBreak && valueAvailable ? null : "The source break does not provide a complete expected and actual position-quantity pair."),
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.CostBasis,
+                null,
+                null,
+                null,
+                null,
+                unit,
+                "The source break does not provide comparable cost-basis values.")
+        ];
+    }
+
+    private static IReadOnlyList<ReconciliationBreakMeasureDto> BuildDefaultBreakMeasures(
+        decimal? expected,
+        decimal? actual,
+        decimal variance,
+        decimal? tolerance,
+        string unit)
+    {
+        var hasCompleteComparison = expected.HasValue && actual.HasValue;
+        var signedVariance = hasCompleteComparison
+            ? actual.GetValueOrDefault() - expected.GetValueOrDefault()
+            : (decimal?)null;
+        return
+        [
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.Value,
+                hasCompleteComparison ? expected : null,
+                hasCompleteComparison ? actual : null,
+                signedVariance,
+                tolerance,
+                unit,
+                hasCompleteComparison ? null : "The source break does not provide a complete expected and actual value pair."),
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.Quantity,
+                null,
+                null,
+                null,
+                null,
+                "units",
+                "The source break does not provide comparable position quantities."),
+            new ReconciliationBreakMeasureDto(
+                ReconciliationBreakMeasureKindDto.CostBasis,
+                null,
+                null,
+                null,
+                null,
+                unit,
+                "The source break does not provide comparable cost-basis values.")
+        ];
     }
 
     private static bool IsOpenStatementBreak(string? status)

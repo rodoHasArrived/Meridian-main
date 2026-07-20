@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.Ui.Shared
@@ -37,6 +37,9 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
   provider adapters that expose configurable workflow registrations through
   `Meridian.Contracts.Extensibility`.
 - Shared read models - DTOs and compatibility shims consumed by browser and desktop clients.
+- `Evidence/StatementToReportWorkflowService.cs` - tenant/company-scoped persisted coordinator for
+  statement retention, import, Evidence Vault linkage, reconciliation gating, restart recovery, and
+  hash-verified JSON/CSV report artifacts.
 - Project metadata - UI shared dependencies and build settings.
 
 ## Important workflows
@@ -72,7 +75,11 @@ Preserve cross-surface compatibility when evolving shared read models. Keep ledg
 source-of-truth services authoritative. Statement connector endpoints expose file and remote
 preview plus persisted fetch-schedule CRUD/run operations over shared DTOs; schedule upserts default
 an omitted source kind to `broker`, while explicit `custodian` values pass unchanged into Financial
-Operations. `SecurityMasterWorkbenchQueryService` is published under
+Operations. The golden-path `POST /api/workstation/reconciliation/statement-to-report` route
+persists the source before import, checkpoints every completed stage, pauses while reconciliation
+cases remain open, and resumes without repeating a committed import. Status, resume, and
+artifact-download routes enforce the authenticated tenant/company scope and re-hash retained
+artifacts before serving them. `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
 workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
@@ -84,6 +91,10 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+The canonical reconciliation queue publishes explicit assign, resolve, waive, and supersede
+actions. Waive and supersede routes preserve the authenticated operator, approval and successor
+lineage, typed Value/Quantity/CostBasis measures, blocked outputs, and disposition evidence hashes;
+browser API contracts mirror these fields rather than inferring terminal state from queue status.
 Operations Continuity workflow list, detail, timeline, break-list, ledger-preview, close-readiness,
 approval-policy, and close-calendar reads require the shared operations-continuity read permission
 because those payloads expose Financial Operations evidence, blockers, assignments, and period-close

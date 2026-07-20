@@ -1567,6 +1567,14 @@ export function reconciliationBreakResolveEndpoint(breakId: string): string {
   return routeWithParam(UI_API_ROUTES.ReconciliationBreakResolve, "breakId", breakId);
 }
 
+export function reconciliationBreakWaiveEndpoint(breakId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakWaive, "breakId", breakId);
+}
+
+export function reconciliationBreakSupersedeEndpoint(breakId: string): string {
+  return routeWithParam(UI_API_ROUTES.ReconciliationBreakSupersede, "breakId", breakId);
+}
+
 export function reconciliationBreakAssignEndpoint(breakId: string): string {
   return routeWithParam(UI_API_ROUTES.ReconciliationBreakAssign, "breakId", breakId);
 }

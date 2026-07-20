@@ -6,7 +6,9 @@ using Meridian.Application.Services;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
 using Meridian.Domain.Reconciliation;
+using Meridian.Contracts.Operations;
 using Meridian.Storage;
+using Meridian.Storage.Operations;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -49,7 +51,12 @@ internal static class CommandServiceRegistration
         services.TryAddSingleton(sp => new HistoricalDataQueryService(sp.GetRequiredService<CommandServicePaths>().DataRoot));
         services.TryAddSingleton<AutoConfigurationService>();
         services.TryAddSingleton(sp => new Meridian.Workflow.Runbooks.JsonRunbookStore(sp.GetRequiredService<CommandServicePaths>().DataRoot));
-        services.TryAddSingleton<Meridian.Workflow.Runbooks.RunbookExecutor>();
+        services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
+            new FileOperationalCaseHistoryStore(sp.GetRequiredService<CommandServicePaths>().DataRoot));
+        services.TryAddSingleton<Meridian.Workflow.Workflows.FundWorkflowCommandHandler>();
+        services.TryAddSingleton(sp => new Meridian.Workflow.Runbooks.RunbookExecutor(
+            sp.GetRequiredService<IOperationalCaseHistoryStore>(),
+            sp.GetServices<Meridian.Workflow.Runbooks.IRunbookStepHandler>()));
         services.AddStatementReconciliationServices(dataRoot);
 
         services.AddSingleton<ICliCommand, HelpCommand>();

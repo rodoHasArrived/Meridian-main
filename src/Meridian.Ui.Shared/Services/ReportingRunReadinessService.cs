@@ -168,6 +168,7 @@ public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunRead
         }
         catch (ReportingReconciliationReadinessException exception)
         {
+            var invalid = exception as ReportingReconciliationEvidenceInvalidException;
             return
             [
                 sourceCheck,
@@ -176,11 +177,15 @@ public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunRead
                     "Exact close and reconciliation evidence",
                     ReportingRunReadinessStatusDto.Blocked,
                     exception.Message,
-                    1,
+                    invalid?.BlockingCount ?? 1,
                     BlocksDraft: true,
                     BlocksFinal: true,
                     "/workstation/accounting/close",
-                    capture.Checkpoint.EvidenceIds)
+                    (invalid?.EvidenceReferences ?? capture.Checkpoint.EvidenceIds)
+                        .Concat(capture.Checkpoint.EvidenceIds)
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(static evidence => evidence, StringComparer.Ordinal)
+                        .ToArray())
             ];
         }
         catch (ReportingArtifactCatalogIntegrityException exception)

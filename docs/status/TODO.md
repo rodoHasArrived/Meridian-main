@@ -1,6 +1,6 @@
 # TODO / FIXME / HACK / NOTE Scan
 
-Total items: **217**
+Total items: **223**
 
 | File | Line | Tag | Linked Issue | Text |
 | --- | ---: | --- | :---: | --- |
@@ -29,16 +29,23 @@ Total items: **217**
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 100 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildInitialRunAuditNote(run), |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 584 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildRestatementDraftAuditNote(draftRun), |
 | `src/Meridian.Reporting/ReportingGovernanceService.cs` | 613 | `NOTE` | ❌ | note: ReportingGovernanceCanonicalValidation.BuildRestatementApprovalAuditNote(approvedRequest), |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 133 | `NOTE` | ❌ | Note: created.ResolutionNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 196 | `NOTE` | ❌ | Note: $"Re-keyed reconciliation case from superseded break id '{previousBreakId}' to '{migrated.BreakId}' after a statement fingerprint-input change.", |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 341 | `NOTE` | ❌ | Note: request.ReviewNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 368 | `NOTE` | ❌ | Note: request.ReviewNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 485 | `NOTE` | ❌ | Note: request.ResolutionNote, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 614 | `NOTE` | ❌ | Note: request.Note, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 638 | `NOTE` | ❌ | Note: request.Note, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 660 | `NOTE` | ❌ | Note: request.Note, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 912 | `NOTE` | ❌ | Note: note, |
-| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1341 | `NOTE` | ❌ | Note: command.Note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 38 | `NOTE` | ❌ | Note: note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 118 | `NOTE` | ❌ | Note: request.ReviewNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 134 | `NOTE` | ❌ | Note: request.ResolutionNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 737 | `NOTE` | ❌ | Note: request.Note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 789 | `NOTE` | ❌ | Note: request.Note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 815 | `NOTE` | ❌ | Note: command.Note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs` | 1412 | `NOTE` | ❌ | Note: command.Note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 155 | `NOTE` | ❌ | Note: exactReplay |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 198 | `NOTE` | ❌ | Note: created.ResolutionNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 272 | `NOTE` | ❌ | Note: $"Re-keyed reconciliation case from superseded break id '{previousBreakId}' to '{migrated.BreakId}' after a statement fingerprint-input change.", |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 352 | `NOTE` | ❌ | Note: normalized.ResolutionNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 405 | `NOTE` | ❌ | Note: "Reconciliation case deleted from the active queue; audit evidence remains retained.", |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 503 | `NOTE` | ❌ | Note: request.ReviewNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 532 | `NOTE` | ❌ | Note: request.ReviewNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 722 | `NOTE` | ❌ | Note: request.ResolutionNote, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1051 | `NOTE` | ❌ | Note: request.Note, |
+| `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1088 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 735 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
 | `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 746 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
 | `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 757 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
@@ -50,7 +57,6 @@ Total items: **217**
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 32 | `NOTE` | ❌ | // NOTE: GET /schedules, GET /schedules/{id}, POST /schedules, POST /schedules/{id}/enable, |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 106 | `NOTE` | ❌ | // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs` | 136 | `NOTE` | ❌ | Note: note, |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | 1974 | `NOTE` | ❌ | Note: "Provider-ledger reconciliation break signed off.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs` | 232 | `NOTE` | ❌ | Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.", |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2030 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
 | `src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs` | 2084 | `NOTE` | ❌ | Note: NormalizeOptional(target.Note), |
@@ -75,8 +81,8 @@ Total items: **217**
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.ts` | 518 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/components/meridian/security-details-tracker.view-model.ts` | 726 | `NOTE` | ❌ | note: buildDraftField({ |
 | `src/Meridian.Ui/dashboard/src/components/ui/skeleton.tsx` | 3 | `NOTE` | ❌ | // NOTE: a second, CSS-in-JS Skeleton family lives in `components/data/skeleton.tsx` as |
-| `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 896 | `NOTE` | ❌ | note: "Promote ready rows", |
-| `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 906 | `NOTE` | ❌ | note: "Reviewed" |
+| `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 933 | `NOTE` | ❌ | note: "Promote ready rows", |
+| `src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts` | 943 | `NOTE` | ❌ | note: "Reviewed" |
 | `src/Meridian.Ui/dashboard/src/lib/daily-control-tower.test.ts` | 75 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
 | `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 682 | `NOTE` | ❌ | note: "Realtime subscriptions are stable.", |
 | `src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts` | 696 | `NOTE` | ❌ | note: "One options-chain backfill is waiting on operator review.", |
@@ -104,8 +110,8 @@ Total items: **217**
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 517 | `NOTE` | ❌ | note: "Coupon posted." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 537 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2049 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 919 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6074 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 913 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6070 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.test.tsx` | 76 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
@@ -188,7 +194,7 @@ Total items: **217**
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 429 | `NOTE` | ❌ | note: "Close evidence reviewed." |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 437 | `NOTE` | ❌ | note: "Published to investor portal." |
 | `src/Meridian.Ui/dashboard/src/types/reporting-governance.ts` | 124 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/types/workstation-3.ts` | 1055 | `NOTE` | ❌ | note: string; |
+| `src/Meridian.Ui/dashboard/src/types/workstation-3.ts` | 1057 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 652 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1008 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1059 | `NOTE` | ❌ | note: string \| null; |
@@ -209,14 +215,14 @@ Total items: **217**
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 307 | `NOTE` | ❌ | Note: "Submit.", |
 | `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 331 | `NOTE` | ❌ | Note: "Submit through gate.", |
 | `tests/Meridian.Tests/Storage/StorageChecksumServiceTests.cs` | 99 | `NOTE` | ❌ | // NOTE: File.WriteAllTextAsync uses UTF-8 with BOM by default on some platforms, |
-| `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 483 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
+| `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 686 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
 | `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 4236 | `NOTE` | ❌ | Note: "Delivered after approval.", |
 | `tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs` | 418 | `NOTE` | ❌ | // Note: Status derives as ApprovalPending once all four gates are clean, which is expected |
 | `tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs` | 2054 | `NOTE` | ❌ | Note: "Delivered after restatement.", |
 | `tests/Meridian.Tests/Ui/SecurityMasterWorkbenchEndpointsTests.cs` | 274 | `NOTE` | ❌ | Note: "ready", |
 | `tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs` | 186 | `NOTE` | ❌ | Note: "Board pack delivered with retained evidence graph.", |
 | `tests/Meridian.Ui.Tests/Services/DiagnosticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: The service methods require a running backend (ApiClientService), |
-| `tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs` | 85 | `NOTE` | ❌ | // NOTE: since this is a singleton shared across tests, if StartScheduler was |
+| `tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs` | 110 | `NOTE` | ❌ | // NOTE: since this is a singleton shared across tests, if StartScheduler was |
 | `tests/Meridian.Ui.Tests/Services/StorageAnalyticsServiceTests.cs` | 9 | `NOTE` | ❌ | /// Note: Full analytics calculation requires file I/O, so these tests |
 | `tests/Meridian.Wpf.Tests/Services/OfflineTrackingPersistenceServiceTests.cs` | 27 | `NOTE` | ❌ | // NOTE: Singleton state may persist across tests. |
 | `tests/Meridian.Wpf.Tests/Services/PendingOperationsQueueServiceTests.cs` | 30 | `NOTE` | ❌ | // NOTE: This may not be false if other tests have run InitializeAsync. |
