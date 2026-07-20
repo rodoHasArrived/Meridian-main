@@ -214,10 +214,12 @@ public static partial class WorkstationEndpoints
                 static item => item.Key,
                 static item => item.Value,
                 StringComparer.OrdinalIgnoreCase);
+            var biasDisclosure = StrategyRunReadService.MapBiasDisclosure(
+                result.CapturedBacktests.FirstOrDefault()?.BiasDisclosure);
             if (!result.Success)
             {
                 return Results.Json(
-                    CreateBacktestResponse(document, preview, null, metrics, result.RuntimeError),
+                    CreateBacktestResponse(document, preview, null, metrics, result.RuntimeError, biasDisclosure),
                     jsonOptions,
                     statusCode: StatusCodes.Status400BadRequest);
             }
@@ -245,7 +247,7 @@ public static partial class WorkstationEndpoints
                 await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
             }
 
-            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null), jsonOptions);
+            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure), jsonOptions);
         })
         .WithName("RunStrategyDesignerBacktest")
         .Produces<StrategyDesignRunBacktestResponse>(200)
@@ -259,7 +261,8 @@ public static partial class WorkstationEndpoints
         StrategyDesignPreviewResult preview,
         string? runId,
         IReadOnlyDictionary<string, string> metrics,
-        string? runtimeError)
+        string? runtimeError,
+        BiasDisclosureDto? biasDisclosure = null)
     {
         var success = runId is not null && runtimeError is null;
         var trace = preview.Trace
@@ -287,7 +290,8 @@ public static partial class WorkstationEndpoints
             metrics,
             runtimeError,
             success ? $"/api/promotion/evaluate/{runId}" : null,
-            success ? $"/api/workstation/runs/{runId}/review-packet" : null);
+            success ? $"/api/workstation/runs/{runId}/review-packet" : null,
+            biasDisclosure);
     }
 
     private static IResult StrategyDesignerUnavailable(JsonSerializerOptions jsonOptions)

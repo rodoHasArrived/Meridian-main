@@ -20,6 +20,9 @@ namespace Meridian.Backtesting.FillModels;
 /// capped at that fraction of the bar's traded volume. Orders that exceed the cap
 /// and have <see cref="Order.AllowPartialFills"/> set to <c>true</c> receive a
 /// partial fill; orders with partial fills disabled are left unfilled for the bar.
+/// <paramref name="conservatism"/> selects between conservative limit/stop semantics
+/// (trade-through limits, gap-aware stop pricing — the default) and the legacy optimistic
+/// touch-fill behaviour; see <see cref="FillConservatism"/> for the exact rules.
 /// </summary>
 internal sealed class BarMidpointFillModel(
     ICommissionModel commissionModel,
@@ -27,7 +30,8 @@ internal sealed class BarMidpointFillModel(
     bool spreadAware = false,
     decimal volatilityMultiplier = 50m,
     IReadOnlyDictionary<string, decimal>? tickSizes = null,
-    decimal maxParticipationRate = 0m) : IFillModel
+    decimal maxParticipationRate = 0m,
+    FillConservatism conservatism = FillConservatism.Conservative) : IFillModel
 {
     public OrderFillResult TryFill(Order order, MarketEvent evt)
     {
@@ -40,6 +44,7 @@ internal sealed class BarMidpointFillModel(
 
         var isBuy = order.Quantity > 0;
         var triggered = order.IsTriggered || IsTriggered(order, bar, isBuy);
+        var newlyTriggered = triggered && !order.IsTriggered;
         var executableType = GetExecutableType(order.Type, triggered);
 
         if (executableType is null)
@@ -51,7 +56,7 @@ internal sealed class BarMidpointFillModel(
                 WasTriggered: triggered && !order.IsTriggered);
         }
 
-        if (!TryResolveFillPrice(bar, order, executableType.Value, isBuy, out var fillPrice))
+        if (!TryResolveFillPrice(bar, order, executableType.Value, isBuy, newlyTriggered, out var fillPrice))
         {
             return new OrderFillResult(
                 order with { IsTriggered = triggered },
@@ -136,35 +141,47 @@ internal sealed class BarMidpointFillModel(
         return Math.Round(price / tickSize, MidpointRounding.ToEven) * tickSize;
     }
 
-    private bool TryResolveFillPrice(HistoricalBar bar, Order order, OrderType executableType, bool isBuy, out decimal fillPrice)
+    private bool TryResolveFillPrice(HistoricalBar bar, Order order, OrderType executableType, bool isBuy, bool newlyTriggered, out decimal fillPrice)
     {
         fillPrice = 0m;
 
         switch (executableType)
         {
             case OrderType.Market:
+                // A stop-market order that triggers inside this bar must not execute at the bar
+                // midpoint — that can beat the stop price, which is impossible live. Anchor the
+                // fill to the worse of the stop and the open (gaps fill at the open) and apply
+                // slippage on top. Plain market orders (and stops triggered on an earlier bar)
+                // keep midpoint semantics.
+                if (conservatism == FillConservatism.Conservative
+                    && order.Type is OrderType.StopMarket
+                    && newlyTriggered
+                    && order.StopPrice is { } stop)
+                {
+                    var stopBase = isBuy ? Math.Max(stop, bar.Open) : Math.Min(stop, bar.Open);
+                    var stopSlip = stopBase * (ComputeEffectiveSlippage(bar, stopBase) / 10_000m);
+                    fillPrice = isBuy ? stopBase + stopSlip : stopBase - stopSlip;
+                    return true;
+                }
+
                 // Midpoint is defined as (Open + Close) / 2 — the bar's open-to-close centre —
                 // rather than the OHLC midpoint ((High + Low) / 2). This models fills executing
                 // somewhere in the middle of the bar's price path, not at its intrabar extreme.
                 var mid = (bar.Open + bar.Close) / 2m;
-                var effectiveSlippage = slippageBasisPoints;
-
-                // When spread-aware mode is enabled, scale slippage by intrabar volatility.
-                // Higher bar range relative to midpoint implies wider real-world spreads.
-                if (spreadAware && mid > 0m)
-                {
-                    var range = bar.High - bar.Low;
-                    var volatilityFactor = range / mid; // e.g., 0.02 for a 2% bar range
-                    // volatilityMultiplier is a calibration factor (default 50×); see constructor doc.
-                    effectiveSlippage = slippageBasisPoints * (1m + volatilityFactor * volatilityMultiplier);
-                }
-
-                var slip = mid * (effectiveSlippage / 10_000m);
+                var slip = mid * (ComputeEffectiveSlippage(bar, mid) / 10_000m);
                 fillPrice = isBuy ? mid + slip : mid - slip;
                 return true;
 
             case OrderType.Limit:
                 var limitPrice = order.LimitPrice!.Value;
+
+                if (conservatism == FillConservatism.Conservative)
+                {
+                    if (order.Type == OrderType.StopLimit && newlyTriggered)
+                        return TryResolveConservativeTriggerBarStopLimit(bar, order.StopPrice!.Value, limitPrice, isBuy, out fillPrice);
+                    return TryResolveConservativeLimit(bar, limitPrice, isBuy, out fillPrice);
+                }
+
                 if (isBuy && bar.Low > limitPrice)
                     return false;
                 if (!isBuy && bar.High < limitPrice)
@@ -175,6 +192,82 @@ internal sealed class BarMidpointFillModel(
             default:
                 return false;
         }
+    }
+
+    private decimal ComputeEffectiveSlippage(HistoricalBar bar, decimal referencePrice)
+    {
+        // When spread-aware mode is enabled, scale slippage by intrabar volatility.
+        // Higher bar range relative to the reference price implies wider real-world spreads.
+        if (!spreadAware || referencePrice <= 0m)
+            return slippageBasisPoints;
+
+        var volatilityFactor = (bar.High - bar.Low) / referencePrice; // e.g., 0.02 for a 2% bar range
+        // volatilityMultiplier is a calibration factor (default 50×); see constructor doc.
+        return slippageBasisPoints * (1m + volatilityFactor * volatilityMultiplier);
+    }
+
+    /// <summary>
+    /// Conservative resting-limit semantics: a bar that opens through the limit fills at the open;
+    /// otherwise the bar must trade strictly through the limit — a bare touch leaves the order
+    /// working (queue-position risk).
+    /// </summary>
+    private static bool TryResolveConservativeLimit(HistoricalBar bar, decimal limitPrice, bool isBuy, out decimal fillPrice)
+    {
+        fillPrice = 0m;
+
+        if (isBuy)
+        {
+            if (bar.Open <= limitPrice)
+            {
+                fillPrice = bar.Open;
+                return true;
+            }
+            if (bar.Low < limitPrice)
+            {
+                fillPrice = limitPrice;
+                return true;
+            }
+            return false;
+        }
+
+        if (bar.Open >= limitPrice)
+        {
+            fillPrice = bar.Open;
+            return true;
+        }
+        if (bar.High > limitPrice)
+        {
+            fillPrice = limitPrice;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Conservative stop-limit semantics for the bar in which the stop first triggers.
+    /// The trigger price is the worse of the stop and the open (gaps trigger at the open). When the
+    /// limit is marketable at that trigger the fill is priced at the worst in-range price the limit
+    /// permits; when the bar opened beyond the limit the order stays working (already triggered) and
+    /// is handled as a resting limit on later bars.
+    /// </summary>
+    private static bool TryResolveConservativeTriggerBarStopLimit(HistoricalBar bar, decimal stopPrice, decimal limitPrice, bool isBuy, out decimal fillPrice)
+    {
+        fillPrice = 0m;
+
+        if (isBuy)
+        {
+            var triggerPrice = Math.Max(stopPrice, bar.Open);
+            if (limitPrice < triggerPrice)
+                return false;
+            fillPrice = Math.Min(limitPrice, bar.High);
+            return true;
+        }
+
+        var sellTriggerPrice = Math.Min(stopPrice, bar.Open);
+        if (limitPrice > sellTriggerPrice)
+            return false;
+        fillPrice = Math.Max(limitPrice, bar.Low);
+        return true;
     }
 
     private static bool IsTriggered(Order order, HistoricalBar bar, bool isBuy)

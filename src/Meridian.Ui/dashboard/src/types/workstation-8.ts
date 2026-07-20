@@ -1,3 +1,4 @@
+import type { BiasDisclosure } from "./workstation-6";
 import type {
   CorporateAction,
   InstrumentPassportEconomicDefinition,
@@ -412,6 +413,7 @@ export interface StrategyDesignRunBacktestResponse {
   runtimeError: string | null;
   promotionCandidatePath: string | null;
   reviewPacketPath: string | null;
+  biasDisclosure?: BiasDisclosure | null;
 }
 
 // --- Quant Notebook ---
