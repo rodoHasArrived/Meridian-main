@@ -27,6 +27,7 @@ Use the source-module registry and source README workflow before changing code:
 - [Source ownership and validation](../source/README.md) *(canonical ownership workflow)*
 - [Module map](../architecture/module-map.md) *(legacy source material; verify against `source/data/source-modules.yml`)*
 - [Project structure](../architecture/project-structure.md) *(legacy source material)*
+- [Live trading engine](live-trading-engine.md) *(promotion → execution loop: feed tap, strategy sessions, OMS routing)*
 
 Canonical ownership rule:
 
