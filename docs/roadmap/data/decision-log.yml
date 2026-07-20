@@ -31,3 +31,12 @@ decisions:
       - W5X-FINOPS-001
       - W5X-FREX-001
       - W7-LIVE-001
+  - id: DEC-UI-CONSOLIDATION-001
+    title: Consolidate browser screens by deepening host screens behind charter roots
+    status: accepted
+    decided_on: 2026-07-19
+    owner_lane: Workstation Shell and UX
+    summary: Closely related browser-workstation tools fold into deeper host screens instead of holding standalone routes. Folds stay within the seven charter root workspaces, compose as tabs, master panes, or context rails rather than stacked content, retire each old route as a redirect that preserves query and hash scope, keep sidebar sub-items, the route catalog, mounted routes, and command palette commands as one taxonomy, and refresh the WPF parity matrix in the same change. Consolidation is presentation-only; shared contracts, read models, and endpoints do not change.
+    related_roadmap_items:
+      - W8-UX-CONSOL-001
+      - W8-WPF-PARITY-001

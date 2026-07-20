@@ -51,7 +51,7 @@ describe("WorkspaceNav", () => {
       "href",
       "/trading?symbol=AAPL&provider=alpaca"
     );
-    expect(screen.getByLabelText("Live quotes, current page, preserving Subject: AAPL / Provider: alpaca")).toHaveAttribute(
+    expect(screen.getByLabelText("Market data, current page, preserving Subject: AAPL / Provider: alpaca")).toHaveAttribute(
       "href",
       "/data/quotes?symbol=AAPL&provider=alpaca"
     );

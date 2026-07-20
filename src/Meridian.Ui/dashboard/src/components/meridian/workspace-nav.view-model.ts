@@ -90,7 +90,6 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Close", route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity },
     { label: "Entity setup", route: WORKSTATION_ROUTE_CATALOG.accountingEntitySetup },
     { label: "Ledger", route: WORKSTATION_ROUTE_CATALOG.accountingLedger },
-    { label: "Trial Balance", route: WORKSTATION_ROUTE_CATALOG.accountingTrialBalance },
     { label: "Adjustments", route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries },
     { label: "Reconciliation", route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, match: "exact" },
     { label: "External GL", route: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation },
@@ -98,7 +97,6 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Exceptions", route: WORKSTATION_ROUTE_CATALOG.accountingExceptions },
     { label: "Security Master", route: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster },
     { label: "Approvals", route: WORKSTATION_ROUTE_CATALOG.accountingApprovals },
-    { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.accountingEvidence },
     { label: "Configure", route: WORKSTATION_ROUTE_CATALOG.accountingConfigure }
   ],
   reporting: [
@@ -114,7 +112,6 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
   strategy: [
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.strategy, match: "exact" },
     { label: "Designer", route: WORKSTATION_ROUTE_CATALOG.strategyDesigner },
-    { label: "Formula Workbench", route: WORKSTATION_ROUTE_CATALOG.strategyFormulaWorkbench },
     { label: "Covered call", route: WORKSTATION_ROUTE_CATALOG.strategyCoveredCall },
     { label: "Promotions", route: WORKSTATION_ROUTE_CATALOG.strategyPromotions },
     { label: "Strategy Lab", route: WORKSTATION_ROUTE_CATALOG.strategyLab },
@@ -124,10 +121,7 @@ const WORKSPACE_SUBROUTES: Partial<Record<WorkspaceKey, WorkspaceSubrouteDefinit
     { label: "Overview", route: WORKSTATION_ROUTE_CATALOG.data, match: "exact" },
     { label: "Import data", route: WORKSTATION_ROUTE_CATALOG.dataImport },
     { label: "Providers", route: WORKSTATION_ROUTE_CATALOG.dataProviders },
-    { label: "Watchlist", route: WORKSTATION_ROUTE_CATALOG.dataWatchlist },
-    { label: "Live quotes", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
-    { label: "Price alerts", route: WORKSTATION_ROUTE_CATALOG.dataAlerts },
-    { label: "Evidence", route: WORKSTATION_ROUTE_CATALOG.dataEvidence },
+    { label: "Market data", route: WORKSTATION_ROUTE_CATALOG.dataQuotes },
     { label: "Ingestion operations", route: WORKSTATION_ROUTE_CATALOG.dataOperations },
     { label: "Storage assurance", route: WORKSTATION_ROUTE_CATALOG.dataAssurance },
     { label: "Exports", route: WORKSTATION_ROUTE_CATALOG.dataExports },

@@ -740,7 +740,7 @@ function CommitResultActions({ result }: { result: StatementImportPanelViewModel
     return null;
   }
 
-  const evidenceRoute = result.evidenceWorkbenchRoute ?? WORKSTATION_ROUTE_CATALOG.accountingEvidence;
+  const evidenceRoute = result.evidenceWorkbenchRoute ?? WORKSTATION_ROUTE_CATALOG.reportingEvidence;
   const reconciliationRoute = result.reconciliationRoute ?? WORKSTATION_ROUTE_CATALOG.accountingReconciliationMatch;
 
   return (

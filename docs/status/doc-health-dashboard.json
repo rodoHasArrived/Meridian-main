@@ -1,11 +1,11 @@
 {
   "total_files": 629,
-  "total_lines": 113271,
+  "total_lines": 113318,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 207,
-  "average_lines": 180.1,
+  "average_lines": 180.2,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1988,7 +1988,7 @@
     },
     {
       "path": "docs/development/web-ui-structural-improvement-proposal.md",
-      "line_count": 393,
+      "line_count": 408,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2004,7 +2004,7 @@
     },
     {
       "path": "docs/development/wpf-web-ui-alignment-plan.md",
-      "line_count": 166,
+      "line_count": 165,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2540,7 +2540,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9252,
+      "line_count": 9254,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3228,7 +3228,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 493,
+      "line_count": 520,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3236,7 +3236,7 @@
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 40,
+      "line_count": 41,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5196,7 +5196,7 @@
     },
     {
       "path": "src/Meridian.Ui.Services/README.md",
-      "line_count": 104,
+      "line_count": 107,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

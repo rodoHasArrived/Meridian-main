@@ -32,7 +32,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingEntitySetup: "/accounting/entity-setup",
   accountingLedger: "/accounting/ledger",
-  accountingTrialBalance: "/accounting/trial-balance",
+  accountingTrialBalanceLegacy: "/accounting/trial-balance",
   accountingAccountDetail: "/accounting/accounts/detail",
   accountingJournalEntries: "/accounting/journal-entries",
   accountingJournalEntryDetail: "/accounting/journal-entries/detail",
@@ -47,8 +47,8 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingAssetDetail: "/accounting/security-master/detail",
   accountingApprovals: "/accounting/approvals",
   accountingApprovalInbox: "/accounting/approvals/inbox",
-  accountingEvidence: "/accounting/evidence",
-  accountingEvidenceDetail: "/accounting/evidence/detail",
+  accountingEvidenceLegacy: "/accounting/evidence",
+  accountingEvidenceDetailLegacy: "/accounting/evidence/detail",
   reporting: "/reporting",
   reportingReportBuilder: "/reporting/report-builder",
   reportingLibrary: "/reporting/library",
@@ -64,7 +64,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   reportingGovernance: "/reporting/governance",
   strategy: "/strategy",
   strategyDesigner: "/strategy/designer",
-  strategyFormulaWorkbench: "/strategy/formula-workbench",
+  strategyFormulaWorkbenchLegacy: "/strategy/formula-workbench",
   strategyCoveredCall: "/strategy/covered-call",
   strategyPromotions: "/strategy/promotions",
   strategyLab: "/strategy/lab",
@@ -72,10 +72,10 @@ export const WORKSTATION_ROUTE_CATALOG = {
   data: "/data",
   dataImport: "/data/import",
   dataProviders: "/data/providers",
-  dataWatchlist: "/data/watchlist",
+  dataWatchlistLegacy: "/data/watchlist",
   dataQuotes: "/data/quotes",
-  dataAlerts: "/data/alerts",
-  dataEvidence: "/data/evidence",
+  dataAlertsLegacy: "/data/alerts",
+  dataEvidenceLegacy: "/data/evidence",
   dataBackfills: "/data/backfills",
   dataOperations: "/data/operations",
   dataAssurance: "/data/assurance",
@@ -134,7 +134,7 @@ export const WORKSTATION_PAGE_TAG_ROUTES: Record<string, WorkstationRoutePath> =
   BrokerageSync: WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   DataShell: WORKSTATION_ROUTE_CATALOG.data,
   DataOperationsShell: WORKSTATION_ROUTE_CATALOG.data,
-  EvidenceWorkbench: WORKSTATION_ROUTE_CATALOG.accountingEvidence,
+  EvidenceWorkbench: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
   FundExceptionWorkbench: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
   FundAuditTrail: WORKSTATION_ROUTE_CATALOG.accounting,
   FundReconciliation: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
@@ -343,7 +343,6 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   evidence: "Evidence",
   exceptions: "Exceptions",
   "family-office": "Family Office",
-  "formula-workbench": "Formula Workbench",
   "journal-entries": "Journal Entries",
   ledger: "Ledger Explorer",
   "operations-continuity": "Operations Continuity",
@@ -352,7 +351,7 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   providers: "Providers",
   preferences: "Preferences",
   "quant-lab": "Quant Lab",
-  quotes: "Quotes",
+  quotes: "Market Data",
   readiness: "Readiness",
   reconciliation: "Reconciliation",
   "report-packs": "Report Packs",
@@ -422,6 +421,43 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
     return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
   }
 
+  if (firstSegment === "accounting" && pathSegments(pathname)[1] === "trial-balance") {
+    return `${WORKSTATION_ROUTE_CATALOG.accountingLedger}${withSearchParam(search, "view", "trial-balance")}${hash}`;
+  }
+
+  if (firstSegment === "accounting" && pathSegments(pathname)[1] === "evidence") {
+    if (pathSegments(pathname)[2] === "detail") {
+      const params = new URLSearchParams(search);
+      const evidenceId = params.get("evidenceId");
+      if (evidenceId) {
+        params.delete("evidenceId");
+        params.set("subjectKind", "evidence");
+        params.set("subjectId", evidenceId);
+      }
+      const nextSearch = params.toString();
+      return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${nextSearch ? `?${nextSearch}` : ""}${hash}`;
+    }
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.accountingEvidenceLegacy.length);
+    return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "evidence") {
+    const suffix = pathname.slice(WORKSTATION_ROUTE_CATALOG.dataEvidenceLegacy.length);
+    return `${WORKSTATION_ROUTE_CATALOG.reportingEvidence}${suffix}${search}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "watchlist") {
+    return `${WORKSTATION_ROUTE_CATALOG.dataQuotes}${withSearchParam(search, "view", "watchlist")}${hash}`;
+  }
+
+  if (firstSegment === "data" && pathSegments(pathname)[1] === "alerts") {
+    return `${WORKSTATION_ROUTE_CATALOG.dataQuotes}${withSearchParam(search, "view", "alerts")}${hash}`;
+  }
+
+  if (firstSegment === "strategy" && pathSegments(pathname)[1] === "formula-workbench") {
+    return `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}${withSearchParam(search, "view", "formulas")}${hash}`;
+  }
+
   if (firstSegment === "data-operations" && pathSegments(pathname)[1] === "backfills") {
     const suffix = pathname.slice("/data-operations/backfills".length);
     return `${WORKSTATION_ROUTE_CATALOG.dataOperations}${suffix}${search}${hash}`;
@@ -440,6 +476,13 @@ export function legacyWorkspaceRedirect(pathname: string, search = "", hash = ""
 
   const suffix = pathname.slice(`/${firstSegment}`.length);
   return `${workspacePath(LEGACY_WORKSPACE_ALIASES[firstSegment])}${suffix}${search}${hash}`;
+}
+
+/** Merge one extra query parameter into an existing `?…` search string. */
+function withSearchParam(search: string, key: string, value: string): string {
+  const params = new URLSearchParams(search);
+  params.set(key, value);
+  return `?${params.toString()}`;
 }
 
 function firstPathSegment(pathname: string): string | null {
