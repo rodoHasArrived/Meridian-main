@@ -8,8 +8,14 @@ public sealed class StatementRunWorkflowService(
     IReconciliationCaseStore caseStore,
     IReconciliationBreakStore breakStore,
     IBrokerStatementService brokerStatementService,
-    IStatementReconciliationValidationService validationService) : IStatementRunWorkflowService
+    IStatementReconciliationValidationService validationService,
+    IInternalReconciliationBookSource? internalBookSource = null,
+    IStatementToleranceProfileProvider? toleranceProfileProvider = null) : IStatementRunWorkflowService
 {
+    private readonly IInternalReconciliationBookSource _internalBookSource =
+        internalBookSource ?? EmptyInternalReconciliationBookSource.Instance;
+    private readonly IStatementToleranceProfileProvider? _toleranceProfileProvider = toleranceProfileProvider;
+
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default)
         => importStore.ListImportsAsync(cancellationToken);
 
@@ -19,10 +25,14 @@ public sealed class StatementRunWorkflowService(
 
         var normalizedRequest = await NormalizeAndValidateAsync(request, cancellationToken).ConfigureAwait(false);
         var imported = await brokerStatementService.ImportAsync(ToImportRequest(normalizedRequest), cancellationToken).ConfigureAwait(false);
-        var matcher = new StatementMatchingService();
-        var outcomes = matcher.MatchRows(imported.Rows);
-        var breaks = matcher
-            .BuildBreakRecords(imported.Import.ImportId, imported.Import.ImportId, imported.Rows, outcomes)
+
+        // Two-sided reconciliation against Meridian's internal book: statement rows are matched
+        // through the shared staged engine, not self-checked. Rows with no internal counterpart
+        // (and internal records missing from the statement) surface as genuine breaks.
+        var internalBook = await _internalBookSource.GetBookAsync(normalizedRequest, cancellationToken).ConfigureAwait(false);
+        var toleranceProfile = await ResolveToleranceProfileAsync(normalizedRequest.ToleranceProfileId, cancellationToken).ConfigureAwait(false);
+        var matchResult = StatementRunMatchingService.Match(imported.Import, imported.Rows, internalBook, toleranceProfile);
+        var breaks = matchResult.Breaks
             .Select(static item => item with
             {
                 EvidenceLink = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(item.ImportId)}#row-{Uri.EscapeDataString(item.SourceReference)}"
@@ -30,7 +40,7 @@ public sealed class StatementRunWorkflowService(
             .ToArray();
         await breakStore.WriteAsync(breaks, cancellationToken).ConfigureAwait(false);
 
-        var cases = BuildStatementCases(imported.Import, imported.Rows, outcomes, breaks, normalizedRequest.ImportedBy);
+        var cases = BuildStatementCases(imported.Import, imported.Rows, matchResult.Outcomes, breaks, normalizedRequest.ImportedBy);
         foreach (var reconciliationCase in cases)
         {
             await caseStore.SaveAsync(reconciliationCase, cancellationToken).ConfigureAwait(false);
@@ -91,6 +101,24 @@ public sealed class StatementRunWorkflowService(
             ImportedBy = request.ImportedBy.Trim(),
             SourceFileHash = sourceFileHash
         };
+    }
+
+    private async Task<StatementToleranceProfile> ResolveToleranceProfileAsync(string profileId, CancellationToken cancellationToken)
+    {
+        if (_toleranceProfileProvider is null || string.IsNullOrWhiteSpace(profileId))
+        {
+            return StatementToleranceProfile.Default;
+        }
+
+        try
+        {
+            return await _toleranceProfileProvider.GetProfileAsync(profileId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (KeyNotFoundException)
+        {
+            // Unknown profile ids fall back to the conservative default rather than failing the run.
+            return StatementToleranceProfile.Default;
+        }
     }
 
     private static BrokerStatementImportRequest ToImportRequest(StatementRunRequest request)

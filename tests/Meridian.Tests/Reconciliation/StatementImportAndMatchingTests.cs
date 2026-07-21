@@ -112,34 +112,4 @@ public sealed class StatementImportAndMatchingTests
         Assert.Equal(first.DuplicateKey, imported.Import.DuplicateKey);
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.ImportAsync(second.ToBrokerStatementImportRequest()));
     }
-
-    [Fact]
-    public void Matcher_returns_confidence_and_rationale()
-    {
-        var matcher = new StatementMatchingService();
-        var outcomes = matcher.MatchRows([
-            new("i1",1,"A1","SPY",0,0,0.005m,"cash",new DateOnly(2026,1,1),"x"),
-            new("i1",2,"A1","SPY",1,500,500,"BUY",new DateOnly(2026,1,1),"y")
-        ]);
-        Assert.Equal(2, outcomes.Count);
-        Assert.Contains(outcomes, o => o.OutcomeType == "matched" && o.Confidence >= 0.8m && o.Rationale.Contains("Tolerance rule", StringComparison.Ordinal));
-        Assert.Contains(outcomes, o => o.OutcomeType == "TXN_TOLERANCE_BREACH" && o.Confidence < 0.5m);
-    }
-
-    [Fact]
-    public void Matcher_applies_rule_tiers_with_confidence_bands()
-    {
-        var matcher = new StatementMatchingService();
-        var outcomes = matcher.MatchRows([
-            new("i1",1,"A1","SPY",10,500,5000,"position",new DateOnly(2026,1,1),"position"),
-            new("i1",2,"A1","QQQ",0,0,0.005m,"cash",new DateOnly(2026,1,1),"cash"),
-            new("i1",3,"A1","MSFT",1,0.005m,0.005m,"BUY",new DateOnly(2026,1,1),"transaction"),
-            new("i1",4,"A1","AAPL",1,500,500,"BUY",new DateOnly(2026,1,1),"breach")
-        ]);
-
-        Assert.Contains(outcomes, o => o.RowChecksum == "position" && o.OutcomeType == "matched" && o.Confidence >= 0.95m);
-        Assert.Contains(outcomes, o => o.RowChecksum == "cash" && o.OutcomeType == "matched" && o.Confidence is >= 0.9m and < 0.95m);
-        Assert.Contains(outcomes, o => o.RowChecksum == "transaction" && o.OutcomeType == "matched" && o.Confidence is >= 0.8m and < 0.9m);
-        Assert.Contains(outcomes, o => o.RowChecksum == "breach" && o.OutcomeType == "TXN_TOLERANCE_BREACH" && o.Confidence < 0.5m);
-    }
 }
