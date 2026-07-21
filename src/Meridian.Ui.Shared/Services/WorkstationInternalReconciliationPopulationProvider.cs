@@ -78,12 +78,11 @@ public sealed class WorkstationInternalReconciliationPopulationProvider(
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Fail closed: a resolution error must surface statement rows as breaks for operator
-            // review rather than throw out of the import workflow. Log the parsed account GUID rather
-            // than the raw request string so untrusted input never reaches the log sink.
+            // review rather than throw out of the import workflow.
             logger?.LogWarning(
                 ex,
                 "Failed to resolve internal reconciliation populations for fund account {FundAccountId}; reconciling against an empty book.",
-                accountId);
+                context.FundAccountId);
             return InternalReconciliationPopulations.Empty;
         }
     }
@@ -121,7 +120,7 @@ public sealed class WorkstationInternalReconciliationPopulationProvider(
                     .ThenByDescending(snapshot => snapshot.RecordedAt)
                     .First();
                 return new InternalCashBalance(
-                    $"internal-cash:{accountId:D}:{group.Key}",
+                    $"internal-cash:{accountKey}:{group.Key}",
                     accountKey,
                     latest.Currency,
                     latest.CashBalance,
@@ -170,7 +169,7 @@ public sealed class WorkstationInternalReconciliationPopulationProvider(
             }
 
             positions.Add(new InternalPortfolioPosition(
-                $"internal-pos:{account.AccountId:D}:{position.Symbol}",
+                $"internal-pos:{accountKey}:{position.Symbol}",
                 accountKey,
                 position.Symbol,
                 asOfDate,
