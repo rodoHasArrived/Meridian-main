@@ -246,6 +246,37 @@ public sealed class MiddleOfficeOperationsServiceTests
         act.Should().Throw<InvalidOperationException>();
     }
 
+    [Fact]
+    public void RaiseTrueBreak_DuplicateActiveBreak_ReturnsExistingCaseWithoutDuplicating()
+    {
+        var service = NewService(out var log);
+        var request = new TrueBreakEscalationRequest(
+            "brk-1", BreakClassification.TrueBreak, ReconciliationBreakSeverity.High, "Position variance", "ops", RaisedAtUtc: At);
+
+        var first = service.RaiseTrueBreak(request);
+        var retry = service.RaiseTrueBreak(request);
+
+        retry.EscalationId.Should().Be(first.EscalationId, "an already-open break is not escalated twice");
+        service.OpenEscalations.Should().ContainSingle("a single break carries one active operator case");
+        log.EventsOfKind(FundAdministrationEventKind.ReconciliationBreakEscalated)
+            .Should().ContainSingle("the duplicate raise records no second escalation event");
+    }
+
+    [Fact]
+    public void RaiseTrueBreak_ResolvedBreak_CanBeRaisedAgain()
+    {
+        var service = NewService(out _);
+        var first = service.RaiseTrueBreak(new TrueBreakEscalationRequest(
+            "brk-1", BreakClassification.TrueBreak, ReconciliationBreakSeverity.High, "variance", "ops", RaisedAtUtc: At));
+        service.ResolveBreak(first.EscalationId, "supervisor", "custodian error corrected", At.AddHours(1));
+
+        var second = service.RaiseTrueBreak(new TrueBreakEscalationRequest(
+            "brk-1", BreakClassification.TrueBreak, ReconciliationBreakSeverity.High, "recurred", "ops", RaisedAtUtc: At.AddHours(2)));
+
+        second.EscalationId.Should().NotBe(first.EscalationId, "a resolved break may recur as a fresh escalation");
+        service.OpenEscalations.Should().ContainSingle();
+    }
+
     private sealed class FailingTransport : IFileDistributionTransport
     {
         public FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request)

@@ -119,7 +119,11 @@ public sealed class LockedAccountingPeriodBook
     /// posted again, and records the reopen — with its supporting <paramref name="evidence"/> — in
     /// <see cref="ReopenHistory"/>. The period may be re-locked afterwards via <see cref="LockPeriod"/>.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the period is not currently locked.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the period is not currently locked, or when the reopen predates the approval that
+    /// authorizes it (<see cref="PeriodReopenEvidence.ApprovedAtUtc"/> later than
+    /// <paramref name="reopenedAtUtc"/>).
+    /// </exception>
     public ReopenedAccountingPeriod ReopenPeriod(
         LedgerBookKey ledgerKey,
         string periodId,
@@ -133,6 +137,17 @@ public sealed class LockedAccountingPeriodBook
 
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
         var normalizedPeriodId = periodId.Trim();
+        var reopenedAt = reopenedAtUtc.ToUniversalTime();
+
+        // A reopen must not predate the approval that authorizes it; otherwise corrections could be
+        // posted into the period before the approving evidence exists.
+        if (evidence.ApprovedAtUtc > reopenedAt)
+        {
+            throw new InvalidOperationException(
+                $"Accounting period '{normalizedPeriodId}' cannot be reopened at '{reopenedAt:O}' because its " +
+                $"approval '{evidence.ReopenId}' is dated '{evidence.ApprovedAtUtc:O}'; the authorizing approval " +
+                "must be no later than the reopen.");
+        }
 
         lock (_gate)
         {
@@ -150,7 +165,7 @@ public sealed class LockedAccountingPeriodBook
 
             var reopened = new ReopenedAccountingPeriod(
                 lockedPeriod,
-                reopenedAtUtc.ToUniversalTime(),
+                reopenedAt,
                 reopenedBy.Trim(),
                 evidence);
             _reopenHistory.Add(reopened);

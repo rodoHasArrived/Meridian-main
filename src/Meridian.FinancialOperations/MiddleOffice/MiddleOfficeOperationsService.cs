@@ -126,7 +126,9 @@ public sealed class MiddleOfficeOperationsService
     /// <summary>
     /// Raises an escalation for a reconciliation break. Only genuine
     /// (<see cref="BreakClassification.TrueBreak"/>) or potential breaks may be escalated; matched
-    /// rows are not exceptions and are rejected.
+    /// rows are not exceptions and are rejected. Raising a break that already has an active escalation
+    /// is idempotent — the existing open case is returned rather than opening a duplicate case and a
+    /// second SLA timer — while a break whose prior escalation was resolved may be raised afresh.
     /// </summary>
     public TrueBreakEscalation RaiseTrueBreak(TrueBreakEscalationRequest request)
     {
@@ -168,6 +170,15 @@ public sealed class MiddleOfficeOperationsService
 
         lock (_gate)
         {
+            // A break can carry at most one active operator case. If an upstream retry re-raises a break
+            // that is still open, return the existing escalation idempotently rather than opening a
+            // duplicate case (with a second SLA timer and breach lane). A break whose prior escalation
+            // was resolved is free to escalate again.
+            var active = _escalations.Values.FirstOrDefault(existing =>
+                existing.IsOpen && string.Equals(existing.BreakId, breakId, StringComparison.OrdinalIgnoreCase));
+            if (active is not null)
+                return active;
+
             _escalations[escalationId] = escalation;
             _eventSink.Append(
                 FundAdministrationEventKind.ReconciliationBreakEscalated,
