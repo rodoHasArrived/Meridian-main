@@ -288,12 +288,19 @@ public sealed record DistributionRecipient
     public string Address { get; }
 }
 
-/// <summary>Request to distribute one normalized file to a set of recipients.</summary>
+/// <summary>
+/// Request to distribute one normalized file to a set of recipients. <see cref="ContentLocation"/> is
+/// the durable, retrievable location of the deliverable — a storage handle or URI into the platform's
+/// secure-distribution artifact store. A production transport fetches the bytes from there and verifies
+/// them against <see cref="ContentSha256"/> before dispatch, so the archived delivery evidence reflects
+/// a real transfer of an identified artifact rather than metadata alone.
+/// </summary>
 public sealed record FileDistributionRequest(
     string FileName,
     string ContentType,
     string ContentSha256,
     long ContentLength,
+    string ContentLocation,
     IReadOnlyList<DistributionRecipient> Recipients,
     string DistributedBy,
     string? SubjectId = null,
@@ -326,9 +333,11 @@ public sealed record FileDeliveryRecord(
 public sealed record FileDeliveryOutcome(bool Delivered, string? FailureReason = null);
 
 /// <summary>
-/// Transport seam that actually dispatches a distributed file to one recipient. The middle-office
-/// service records <c>Delivered</c> only when the transport reports success, so a real
-/// (SFTP/email/portal) transport injected in production yields honest delivery evidence.
+/// Transport seam that actually dispatches a distributed file to one recipient. A production transport
+/// retrieves the deliverable from <see cref="FileDistributionRequest.ContentLocation"/>, verifies it
+/// against <see cref="FileDistributionRequest.ContentSha256"/>, and dispatches it over the recipient's
+/// channel. The middle-office service records <c>Delivered</c> only when the transport reports success,
+/// so a real (SFTP/email/portal) transport injected in production yields honest delivery evidence.
 /// </summary>
 public interface IFileDistributionTransport
 {

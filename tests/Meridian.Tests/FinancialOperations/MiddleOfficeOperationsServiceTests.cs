@@ -132,6 +132,7 @@ public sealed class MiddleOfficeOperationsServiceTests
             "application/zip",
             ContentSha256: "abc123",
             ContentLength: 2048,
+            ContentLocation: "vault://reports/nav-pack.zip",
             Recipients:
             [
                 new DistributionRecipient(DistributionRecipientKind.Administrator, "Acme Admin", "SecurePortal", "portal://acme"),
@@ -147,7 +148,10 @@ public sealed class MiddleOfficeOperationsServiceTests
         records.Select(r => r.DistributionId).Distinct().Should().ContainSingle("all deliveries share one distribution id");
 
         service.DeliveryLog.Should().HaveCount(3);
-        log.EventsOfKind(FundAdministrationEventKind.FileDelivered).Should().HaveCount(3);
+        var delivered = log.EventsOfKind(FundAdministrationEventKind.FileDelivered);
+        delivered.Should().HaveCount(3);
+        delivered.Should().OnlyContain(e => e.Attributes["contentLocation"] == "vault://reports/nav-pack.zip",
+            "the retrievable artifact location is carried into the delivery evidence");
         log.VerifyIntegrity().Should().BeTrue();
     }
 
@@ -215,6 +219,7 @@ public sealed class MiddleOfficeOperationsServiceTests
             "application/zip",
             ContentSha256: "abc123",
             ContentLength: 2048,
+            ContentLocation: "vault://reports/nav-pack.zip",
             Recipients: [new DistributionRecipient(DistributionRecipientKind.Custodian, "BigBank Custody", "SFTP", "sftp://bigbank")],
             DistributedBy: "fund-ops",
             DistributedAtUtc: At));
@@ -275,6 +280,25 @@ public sealed class MiddleOfficeOperationsServiceTests
 
         second.EscalationId.Should().NotBe(first.EscalationId, "a resolved break may recur as a fresh escalation");
         service.OpenEscalations.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Distribute_MissingContentLocation_Throws()
+    {
+        var service = NewService(out _);
+        // Without a retrievable artifact location a transport has nothing to send, so the distribution
+        // is rejected rather than archiving delivery evidence for a file that cannot be fetched.
+        var act = () => service.Distribute(new FileDistributionRequest(
+            "nav-pack.zip",
+            "application/zip",
+            ContentSha256: "abc123",
+            ContentLength: 2048,
+            ContentLocation: "  ",
+            Recipients: [new DistributionRecipient(DistributionRecipientKind.Custodian, "BigBank Custody", "SFTP", "sftp://bigbank")],
+            DistributedBy: "fund-ops",
+            DistributedAtUtc: At));
+
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]

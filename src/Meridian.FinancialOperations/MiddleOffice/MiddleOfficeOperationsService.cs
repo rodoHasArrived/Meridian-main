@@ -184,7 +184,9 @@ public sealed class MiddleOfficeOperationsService
             if (active is not null)
                 return active;
 
-            _escalations[escalationId] = escalation;
+            // Record the immutable escalation event before exposing the open case. If a durable sink
+            // throws, no orphaned open case is left behind — otherwise a retry would find that case and
+            // return it, leaving the break open forever with no governance record of the escalation.
             _eventSink.Append(
                 FundAdministrationEventKind.ReconciliationBreakEscalated,
                 escalation.AssignedTo,
@@ -200,6 +202,7 @@ public sealed class MiddleOfficeOperationsService
                     ["dueAtUtc"] = timer.DueAtUtc.ToString("O"),
                 },
                 occurredAtUtc: raisedAt);
+            _escalations[escalationId] = escalation;
         }
 
         return escalation;
@@ -220,21 +223,10 @@ public sealed class MiddleOfficeOperationsService
             foreach (var escalation in _escalations.Values.Where(e => e.IsOpen && e.Timer is not null && e.Timer.IsBreachedAt(asOf)).ToArray())
             {
                 var newLevel = escalation.Level + 1;
-                var restartedTimer = new WorkflowSlaTimer(
-                    $"sla-{escalation.EscalationId}-L{newLevel}",
-                    escalation.BreakId,
-                    escalation.Timer!.Policy,
-                    asOf);
 
-                var updated = escalation with
-                {
-                    Level = newLevel,
-                    Status = TrueBreakEscalationStatus.Escalated,
-                    Timer = restartedTimer,
-                };
-                _escalations[escalation.EscalationId] = updated;
-                advanced.Add(updated);
-
+                // Record the breach before advancing the case. If a durable sink throws, the escalation
+                // keeps its breached timer, so the next EscalateOverdue re-attempts the breach record
+                // rather than silently losing it behind a freshly-restarted (unbreached) timer.
                 _eventSink.Append(
                     FundAdministrationEventKind.SlaBreached,
                     escalation.AssignedTo,
@@ -249,6 +241,21 @@ public sealed class MiddleOfficeOperationsService
                         ["breachedDueAtUtc"] = escalation.Timer!.DueAtUtc.ToString("O"),
                     },
                     occurredAtUtc: asOf);
+
+                var restartedTimer = new WorkflowSlaTimer(
+                    $"sla-{escalation.EscalationId}-L{newLevel}",
+                    escalation.BreakId,
+                    escalation.Timer!.Policy,
+                    asOf);
+
+                var updated = escalation with
+                {
+                    Level = newLevel,
+                    Status = TrueBreakEscalationStatus.Escalated,
+                    Timer = restartedTimer,
+                };
+                _escalations[escalation.EscalationId] = updated;
+                advanced.Add(updated);
             }
         }
 
@@ -333,6 +340,8 @@ public sealed class MiddleOfficeOperationsService
             throw new ArgumentException("Distribution must reference a content type.", nameof(request));
         if (string.IsNullOrWhiteSpace(request.ContentSha256))
             throw new ArgumentException("Distribution must carry a content checksum.", nameof(request));
+        if (string.IsNullOrWhiteSpace(request.ContentLocation))
+            throw new ArgumentException("Distribution must reference a retrievable artifact location.", nameof(request));
         if (string.IsNullOrWhiteSpace(request.DistributedBy))
             throw new ArgumentException("Distribution must record who distributed it.", nameof(request));
         ArgumentNullException.ThrowIfNull(request.Recipients);
@@ -345,6 +354,7 @@ public sealed class MiddleOfficeOperationsService
         var distributedAt = (request.DistributedAtUtc ?? DateTimeOffset.UtcNow).ToUniversalTime();
         var fileName = request.FileName.Trim();
         var checksum = request.ContentSha256.Trim();
+        var contentLocation = request.ContentLocation.Trim();
         var distributedBy = request.DistributedBy.Trim();
         var subject = string.IsNullOrWhiteSpace(request.SubjectId) ? fileName : request.SubjectId.Trim();
         var records = new List<FileDeliveryRecord>(request.Recipients.Count);
@@ -402,6 +412,7 @@ public sealed class MiddleOfficeOperationsService
                             ["recipientName"] = recipient.Name,
                             ["channel"] = recipient.Channel,
                             ["contentSha256"] = checksum,
+                            ["contentLocation"] = contentLocation,
                         },
                         occurredAtUtc: distributedAt);
                 }
