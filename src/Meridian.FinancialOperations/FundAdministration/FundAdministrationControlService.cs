@@ -119,6 +119,17 @@ public sealed class FundAdministrationControlService
     /// simply be retried — the occurrence only leaves this list once
     /// <see cref="RecordRecurringJournalPosted"/> confirms it reached the ledger.
     /// </summary>
+    /// <remarks>
+    /// This is a single-writer planning view: it assumes the caller serializes the plan → post → record
+    /// sequence for a given schedule. It does not by itself prevent a duplicate <b>ledger</b> post under
+    /// concurrent scheduling — two racing callers could each read the same occurrence and post before
+    /// either records it, and <c>Ledger.Post</c> deduplicates on journal-entry id, not idempotency key.
+    /// To make the post itself idempotent, post through a target keyed by each occurrence's deterministic
+    /// <c>Journal.Metadata.IdempotencyKey</c> (<c>recurring|{scheduleId}|{effectiveDate}</c>): the
+    /// planner sets it on every occurrence and the ledger already exposes it on <c>LedgerQuery</c> for a
+    /// check-then-post or an idempotent posting path. The <see cref="RecordRecurringJournalPosted"/>
+    /// guard is the governance-audit dedup only; it collapses at-least-once posting to a single run event.
+    /// </remarks>
     public IReadOnlyList<RecurringJournalOccurrence> DueRecurringJournals(string scheduleId, DateOnly throughDate)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
@@ -141,7 +152,9 @@ public sealed class FundAdministrationControlService
     /// Records that a recurring journal occurrence has actually posted to the ledger, appending the run
     /// event and removing the occurrence from <see cref="DueRecurringJournals"/>. Recording the same
     /// occurrence again is a no-op (returns <see langword="null"/>), so at-least-once posting collapses
-    /// to a single governance record and a fee cannot be double-posted.
+    /// to a single governance record. This dedups the audit event, not the ledger post itself: under
+    /// concurrent scheduling, guard the post with the occurrence's deterministic
+    /// <c>Metadata.IdempotencyKey</c> as described on <see cref="DueRecurringJournals"/>.
     /// </summary>
     public FundAdministrationEvent? RecordRecurringJournalPosted(string scheduleId, DateOnly effectiveDate, string actor)
     {
