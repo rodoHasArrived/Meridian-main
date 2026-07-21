@@ -132,34 +132,52 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateAsync_HonorsSelectedToleranceProfile()
+    public async Task CreateAsync_WithDefaultToleranceProfile_BreaksOnDeltaBeyondDefault()
     {
-        // The statement cash is 0.50 off the internal book: a break under the default 0.01 cash
-        // tolerance, but a tolerance-tier match under a loose profile. This proves the run's selected
-        // ToleranceProfileId threads into the matcher instead of always using the default thresholds.
+        // The statement cash is 0.50 off the internal book — beyond the default 0.01 cash tolerance —
+        // so it surfaces as a break. Paired with the loose-profile test below to show the run's selected
+        // profile, not a hard-coded default, drives the thresholds.
         var path = await WriteStatementAsync(
-            "tolerance.csv",
+            "tolerance-default.csv",
             "FUND-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
-        var populations = Populations(new InternalReconciliationPopulations(
+        var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
             [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash")],
-            []));
+            [])));
+
+        var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        result.Breaks.Should().ContainSingle("the 0.50 delta exceeds the default 0.01 cash tolerance");
+    }
+
+    [Fact]
+    public async Task CreateAsync_HonorsSelectedToleranceProfile()
+    {
+        // Same 0.50 delta as the default-profile test, but this run selects a loose profile whose 1.00
+        // cash tolerance absorbs it, so it matches instead of breaking. Proves the run's selected
+        // ToleranceProfileId threads into the matcher instead of always using the default thresholds.
+        var path = await WriteStatementAsync(
+            "tolerance-loose.csv",
+            "FUND-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
         var looseProfile = new StatementToleranceProfile(
             "statement-loose",
             1,
             [new CashToleranceRule("cash-loose-v1", 1.00m, null, TimeSpan.FromDays(5))],
             [new PositionToleranceRule("position-loose-v1", 0.0001m, 0m, 0m)],
             [new TransactionToleranceRule("transaction-loose-v1", 1.00m, TimeSpan.FromDays(5), 0m)]);
-        var toleranceProvider = new InMemoryStatementToleranceProfileProvider(
-            [StatementToleranceProfile.Default, looseProfile]);
+        var workflow = CreateWorkflow(
+            Populations(new InternalReconciliationPopulations(
+                [],
+                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash")],
+                [])),
+            toleranceProfileProvider: new InMemoryStatementToleranceProfileProvider(
+                [StatementToleranceProfile.Default, looseProfile]));
 
-        var defaultRun = await CreateWorkflow(populations)
-            .CreateAsync(Request(path), CancellationToken.None);
-        defaultRun.Breaks.Should().ContainSingle("the 0.50 delta exceeds the default 0.01 cash tolerance");
+        var result = await workflow.CreateAsync(
+            Request(path, toleranceProfileId: "statement-loose"),
+            CancellationToken.None);
 
-        var looseRun = await CreateWorkflow(populations, toleranceProfileProvider: toleranceProvider)
-            .CreateAsync(Request(path, toleranceProfileId: "statement-loose"), CancellationToken.None);
-        looseRun.Breaks.Should().BeEmpty("the 0.50 delta is within the selected loose profile's 1.00 cash tolerance");
+        result.Breaks.Should().BeEmpty("the 0.50 delta is within the selected loose profile's 1.00 cash tolerance");
     }
 
     private StatementRunWorkflowService CreateWorkflow(
