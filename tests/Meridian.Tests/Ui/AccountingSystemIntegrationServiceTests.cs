@@ -51,7 +51,7 @@ public sealed class AccountingSystemIntegrationServiceTests
             ReviewedAtUtc: DateTimeOffset.Parse("2026-01-31T00:30:00Z"),
             EffectiveDate: new DateOnly(2026, 1, 31),
             EvidenceVersion: 1,
-            RetainedAtUtc: DateTimeOffset.Parse("2026-01-31T00:15:00Z"),
+            RetainedAtUtc: DateTimeOffset.Parse("2026-01-31T00:45:00Z"),
             RetainedBy: "evidence-vault",
             SubjectType: subjectType,
             SubjectId: certificationId);

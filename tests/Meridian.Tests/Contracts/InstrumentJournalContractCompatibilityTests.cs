@@ -410,7 +410,7 @@ public sealed class InstrumentJournalContractCompatibilityTests
         ReviewedAtUtc: DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
         EffectiveDate: new DateOnly(2026, 6, 30),
         EvidenceVersion: 1,
-        RetainedAtUtc: DateTimeOffset.Parse("2026-07-01T11:30:00Z"),
+        RetainedAtUtc: DateTimeOffset.Parse("2026-07-01T12:30:00Z"),
         RetainedBy: "evidence-retention@meridian.local",
         SubjectType: "security-master",
         SubjectId: SecurityId.ToString("D"));
