@@ -107,4 +107,47 @@ public sealed class JournalTemplateTests
         var act = () => book.Get("nope");
         act.Should().Throw<KeyNotFoundException>();
     }
+
+    [Fact]
+    public void Instantiate_ConflictingLedgerBook_Throws()
+    {
+        var template = new JournalTemplate(
+            "mgmt-fee-accrual",
+            "Management Fee Accrual",
+            "Accrue the monthly management fee.",
+            [
+                new JournalTemplateLine(LedgerAccounts.ManagementFeeExpenseFor("FUND-A"), JournalTemplateSide.Debit, "fee"),
+                new JournalTemplateLine(LedgerAccounts.ManagementFeePayableFor("FUND-A"), JournalTemplateSide.Credit, "fee"),
+            ],
+            ledgerBook: "Book-A");
+
+        // A template scoped to Book-A must not be materialized for Book-B.
+        var act = () => template.Instantiate(new JournalTemplateInstantiation(
+            At,
+            new Dictionary<string, decimal> { ["fee"] = 100m },
+            Metadata: new JournalEntryMetadata(LedgerBook: "Book-B")));
+
+        act.Should().Throw<LedgerValidationException>();
+    }
+
+    [Fact]
+    public void Instantiate_MatchingLedgerBook_PostsToThatBook()
+    {
+        var template = new JournalTemplate(
+            "mgmt-fee-accrual",
+            "Management Fee Accrual",
+            "Accrue the monthly management fee.",
+            [
+                new JournalTemplateLine(LedgerAccounts.ManagementFeeExpenseFor("FUND-A"), JournalTemplateSide.Debit, "fee"),
+                new JournalTemplateLine(LedgerAccounts.ManagementFeePayableFor("FUND-A"), JournalTemplateSide.Credit, "fee"),
+            ],
+            ledgerBook: "Book-A");
+
+        var instance = template.Instantiate(new JournalTemplateInstantiation(
+            At,
+            new Dictionary<string, decimal> { ["fee"] = 100m },
+            Metadata: new JournalEntryMetadata(LedgerBook: "Book-A")));
+
+        instance.Metadata.LedgerBook.Should().Be("Book-A");
+    }
 }

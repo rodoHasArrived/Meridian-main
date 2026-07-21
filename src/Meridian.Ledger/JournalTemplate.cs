@@ -181,7 +181,22 @@ public sealed record JournalTemplate
                 $"Journal template '{TemplateId}' resolved to an unbalanced journal (debits {totalDebits}, credits {totalCredits}).");
         }
 
-        var metadata = (instantiation.Metadata ?? new JournalEntryMetadata()) with { LedgerBook = instantiation.Metadata?.LedgerBook ?? LedgerBook };
+        // A template scoped to a specific ledger book must not be materialized for a different book, or
+        // a Book-A template could be posted as Book-B (for example via a recurring schedule that targets
+        // Book-B). Reject a conflicting non-empty instantiation book; an unscoped template accepts any.
+        var instantiationBook = instantiation.Metadata?.LedgerBook;
+        var scopedBook = string.IsNullOrWhiteSpace(instantiationBook) ? LedgerBook : instantiationBook.Trim();
+        if (!string.IsNullOrWhiteSpace(LedgerBook)
+            && !string.IsNullOrWhiteSpace(scopedBook)
+            && !string.Equals(LedgerBook, scopedBook, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new LedgerValidationException(
+                $"Journal template '{TemplateId}' is scoped to ledger book '{LedgerBook}' but was instantiated for " +
+                $"book '{scopedBook}'; a scoped template cannot post to a different book (use an unscoped template " +
+                "or a matching book).");
+        }
+
+        var metadata = (instantiation.Metadata ?? new JournalEntryMetadata()) with { LedgerBook = scopedBook };
 
         return new JournalTemplateInstance(
             TemplateId,

@@ -161,6 +161,16 @@ public sealed class LockedAccountingPeriodBook
                     $"Accounting period '{normalizedPeriodId}' is not locked for ledger book '{normalizedKey.LedgerBook}'; nothing to reopen.");
             }
 
+            // A reopen must not predate the lock it unwinds, or the history would record the period as
+            // reopened before it was ever locked. This complements the approval-time gate above (the
+            // approval can itself be earlier than the lock).
+            if (reopenedAt < lockedPeriod.LockedAtUtc)
+            {
+                throw new InvalidOperationException(
+                    $"Accounting period '{normalizedPeriodId}' cannot be reopened at '{reopenedAt:O}' because that " +
+                    $"precedes when it was locked ('{lockedPeriod.LockedAtUtc:O}'); a period cannot be reopened before it was locked.");
+            }
+
             _lockedPeriods.Remove(lockedPeriod);
 
             var reopened = new ReopenedAccountingPeriod(
