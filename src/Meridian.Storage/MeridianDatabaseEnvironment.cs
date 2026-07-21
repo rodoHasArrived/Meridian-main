@@ -87,22 +87,34 @@ public static class MeridianDatabaseEnvironment
             return value;
         }
 
-        var uri = new Uri(value);
+        Uri uri;
+        try
+        {
+            uri = new Uri(value);
+        }
+        catch (UriFormatException ex)
+        {
+            throw new InvalidOperationException(
+                $"{UnifiedVariable} is not a valid connection URL. " +
+                "Use 'postgres://user:password@host:port/database' or Npgsql keyword form ('Host=...;Database=...').",
+                ex);
+        }
+
         var builder = new StringBuilder();
         builder.Append("Host=").Append(uri.Host);
         builder.Append(";Port=").Append(uri.IsDefaultPort || uri.Port <= 0 ? 5432 : uri.Port);
 
         var database = uri.AbsolutePath.Trim('/');
         if (database.Length > 0)
-            builder.Append(";Database=").Append(Uri.UnescapeDataString(database));
+            builder.Append(";Database=").Append(QuoteConnectionStringValue(Uri.UnescapeDataString(database)));
 
         if (uri.UserInfo.Length > 0)
         {
             var separatorIndex = uri.UserInfo.IndexOf(':');
             var username = separatorIndex >= 0 ? uri.UserInfo[..separatorIndex] : uri.UserInfo;
-            builder.Append(";Username=").Append(Uri.UnescapeDataString(username));
+            builder.Append(";Username=").Append(QuoteConnectionStringValue(Uri.UnescapeDataString(username)));
             if (separatorIndex >= 0)
-                builder.Append(";Password=").Append(Uri.UnescapeDataString(uri.UserInfo[(separatorIndex + 1)..]));
+                builder.Append(";Password=").Append(QuoteConnectionStringValue(Uri.UnescapeDataString(uri.UserInfo[(separatorIndex + 1)..])));
         }
 
         foreach (var pair in uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
@@ -115,9 +127,24 @@ public static class MeridianDatabaseEnvironment
             var parameterValue = Uri.UnescapeDataString(pair[(eq + 1)..]);
             if (key.Equals("sslmode", StringComparison.OrdinalIgnoreCase))
                 key = "SSL Mode";
-            builder.Append(';').Append(key).Append('=').Append(parameterValue);
+            builder.Append(';').Append(key).Append('=').Append(QuoteConnectionStringValue(parameterValue));
         }
 
         return builder.ToString();
+    }
+
+    /// <summary>
+    /// Quotes a connection-string value when it contains characters Npgsql would otherwise
+    /// misparse (separators, quotes, whitespace); embedded single quotes are doubled.
+    /// </summary>
+    private static string QuoteConnectionStringValue(string value)
+    {
+        if (value.Length == 0)
+            return value;
+
+        if (value.IndexOfAny([';', '=', '\'', '"', ' ']) < 0)
+            return value;
+
+        return "'" + value.Replace("'", "''") + "'";
     }
 }

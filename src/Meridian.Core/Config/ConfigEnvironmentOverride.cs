@@ -384,7 +384,9 @@ public sealed class ConfigEnvironmentOverride
 
     private static DataSourceKind ParseDataSource(string value)
     {
-        if (Enum.TryParse<DataSourceKind>(value, ignoreCase: true, out var result))
+        // Enum.TryParse accepts numeric strings for undefined values ("99"), so IsDefined
+        // is required to keep the fail-closed contract.
+        if (Enum.TryParse<DataSourceKind>(value, ignoreCase: true, out var result) && Enum.IsDefined(result))
             return result;
 
         throw new Meridian.Core.Exceptions.ConfigurationException(

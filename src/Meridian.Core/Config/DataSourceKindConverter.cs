@@ -15,8 +15,14 @@ public sealed class DataSourceKindConverter : JsonConverter<DataSourceKind>
         if (reader.TokenType == JsonTokenType.String)
         {
             var value = reader.GetString();
-            if (!string.IsNullOrWhiteSpace(value) && Enum.TryParse<DataSourceKind>(value, ignoreCase: true, out var parsed))
+            // Enum.TryParse accepts numeric strings for undefined values ("99"), so IsDefined
+            // is required to keep the fail-closed contract.
+            if (!string.IsNullOrWhiteSpace(value) &&
+                Enum.TryParse<DataSourceKind>(value, ignoreCase: true, out var parsed) &&
+                Enum.IsDefined(parsed))
+            {
                 return parsed;
+            }
 
             throw new JsonException(
                 $"Unknown DataSource '{value}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");

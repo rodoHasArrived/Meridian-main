@@ -4,33 +4,33 @@
   "description": "Tracks whether DK1 pilot evidence, packet-bound operator sign-off, the trading readiness handoff, and local golden-path acceptance artifact remain present and synchronized.",
   "generated_at": "1970-01-01T00:00:00+00:00",
   "root": "Meridian-main",
-  "score_percent": 58.8,
-  "passed_weight": 10,
+  "score_percent": 35.3,
+  "passed_weight": 6,
   "total_weight": 17,
   "summary": {
     "check_count": 7,
-    "passed_checks": 4,
-    "gap_checks": 3,
-    "missing_source_count": 0,
-    "missing_term_count": 9
+    "passed_checks": 3,
+    "gap_checks": 4,
+    "missing_source_count": 1,
+    "missing_term_count": 14
   },
   "checks": [
     {
       "id": "pilot-acceptance-artifact",
       "category": "Golden Path Evidence",
       "label": "Pilot acceptance artifact proves all eight golden-path stage gates",
-      "status": "pass",
+      "status": "gap",
       "weight": 4,
-      "score": 4,
+      "score": 0,
       "path_mode": "all",
       "term_mode": "all",
       "patterns": [
         "artifacts/pilot-acceptance/latest/pilot-readiness.json"
       ],
-      "matched_paths": [
+      "matched_paths": [],
+      "missing_patterns": [
         "artifacts/pilot-acceptance/latest/pilot-readiness.json"
       ],
-      "missing_patterns": [],
       "terms": [
         "\"allStagesReady\": true",
         "\"readyStageCount\": 8",
@@ -38,14 +38,14 @@
         "\"evidenceGraph\"",
         "\"GovernedReportPack\""
       ],
-      "found_terms": [
+      "found_terms": [],
+      "missing_terms": [
         "\"allStagesReady\": true",
         "\"readyStageCount\": 8",
         "\"stageGates\"",
         "\"evidenceGraph\"",
         "\"GovernedReportPack\""
       ],
-      "missing_terms": [],
       "detail": "",
       "remediation": "Run PilotAcceptanceHarnessTests to regenerate the pilot readiness artifact before claiming golden-path readiness."
     },
@@ -226,255 +226,10 @@
     }
   ],
   "pilot_acceptance_artifact": {
-    "status": "loaded",
+    "status": "not_generated",
     "path": "artifacts/pilot-acceptance/latest/pilot-readiness.json",
-    "generated_at_utc": "2026-07-21T07:53:49.4420229+00:00",
-    "all_stages_ready": true,
-    "ready_stage_count": 8,
-    "total_stage_count": 8,
-    "reported_ready_stage_count": 8,
-    "reported_total_stage_count": 8,
-    "missing_stages": [],
-    "blocked_stage_count": 0,
-    "consistency_issues": [],
-    "stage_gates": [
-      {
-        "stage": "TrustedData",
-        "label": "Trusted provider and dataset evidence",
-        "status": "Ready",
-        "evidence_ids": [
-          "provider-evidence/dk1/unit-ready",
-          "dataset/pilot/golden-aapl-2026-04-11"
-        ],
-        "blockers": [],
-        "wave_claims": [
-          "W2",
-          "W3",
-          "W4"
-        ],
-        "validation": "DK1 packet fixture and dataset references seeded by PilotAcceptanceHarnessTests."
-      },
-      {
-        "stage": "ResearchRun",
-        "label": "Strategy run evidence retained",
-        "status": "Ready",
-        "evidence_ids": [
-          "pilot-backtest-abd2fa657aae4d02b2bd6fefc81c2981",
-          "dataset/pilot/golden-aapl-2026-04-11"
-        ],
-        "blockers": [],
-        "wave_claims": [
-          "W3"
-        ],
-        "validation": "Strategy briefing returned the retained backtest run and dataset evidence."
-      },
-      {
-        "stage": "RunComparison",
-        "label": "Baseline and candidate run comparison",
-        "status": "Ready",
-        "evidence_ids": [
-          "pilot-backtest-abd2fa657aae4d02b2bd6fefc81c2981",
-          "pilot-paper-0381f0ff84904dea9657bf6f033e62b1"
-        ],
-        "blockers": [],
-        "wave_claims": [
-          "W3"
-        ],
-        "validation": "Shared run comparison endpoint accepted the baseline and paper run IDs."
-      },
-      {
-        "stage": "PaperPromotion",
-        "label": "Paper promotion approval audit",
-        "status": "Ready",
-        "evidence_ids": [
-          "pilot-backtest-abd2fa657aae4d02b2bd6fefc81c2981",
-          "1b99aa4d9c1f43f28a09d6e9e37f473f"
-        ],
-        "blockers": [],
-        "wave_claims": [
-          "W2",
-          "W3"
-        ],
-        "validation": "PromotionService approved the backtest run with the required checklist."
-      },
-      {
-        "stage": "PaperSession",
-        "label": "Paper session replay verification",
-        "status": "Ready",
-        "evidence_ids": [
-          "PAPER-20260721-a5b42bcc",
-          "audit-90397766f0c346cd839ba31d607defd2"
-        ],
-        "blockers": [],
-        "wave_claims": [
-          "W2"
-        ],
-        "validation": "PaperSessionPersistenceService replay verification returned consistent counts."
-      },
-      {
-        "stage": "PortfolioLedgerReview",
-        "label": "Portfolio and ledger continuity",
-        "status": "Ready",
-        "evidence_ids": [
-          "pilot-paper-0381f0ff84904dea9657bf6f033e62b1",
-          "pilot-strategy-840d62f-paper-portfolio",
-          "pilot-strategy-840d62f-paper-ledger"
-        ],
-        "blockers": [],
-        "wave_claims": [
-          "W3",
-          "W4"
-        ],
-        "validation": "Run continuity detail confirmed portfolio, ledger, and reconciliation coverage."
-      },
-      {
-        "stage": "Reconciliation",
-        "label": "Reconciliation run casework",
-        "status": "Ready",
-        "evidence_ids": [
-          "a220457db0764d5c92eb74f81257a458",
-          "pilot-paper-0381f0ff84904dea9657bf6f033e62b1"
-        ],
-        "blockers": [],
-        "wave_claims": [
-          "W3",
-          "W4"
-        ],
-        "validation": "Reconciliation run endpoint retained run-scoped reconciliation detail."
-      },
-      {
-        "stage": "GovernedReportPack",
-        "label": "Governed report pack lineage",
-        "status": "Ready",
-        "evidence_ids": [
-          "casework/a220457db0764d5c92eb74f81257a458",
-          "close-checklist/df2a0855-2531-45e5-9248-47f4beedba65/2026-04-11",
-          "reporting-approval/adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411/pilot-reporting-RunApproved-6",
-          "reporting-release/adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411/reporting-run://adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411/manifest",
-          "restatement-ready/adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411"
-        ],
-        "blockers": [],
-        "wave_claims": [
-          "W4"
-        ],
-        "validation": "W4 acceptance passed with reconciliation casework, close checklist, report approval, publication, restatement readiness, and linked evidence-vault support."
-      }
-    ],
-    "evidence_graph": [
-      {
-        "from_evidence_id": "provider-evidence/dk1/unit-ready",
-        "to_evidence_id": "dataset/pilot/golden-aapl-2026-04-11",
-        "relationship": "supports-dataset"
-      },
-      {
-        "from_evidence_id": "dataset/pilot/golden-aapl-2026-04-11",
-        "to_evidence_id": "pilot-backtest-abd2fa657aae4d02b2bd6fefc81c2981",
-        "relationship": "feeds-run"
-      },
-      {
-        "from_evidence_id": "pilot-backtest-abd2fa657aae4d02b2bd6fefc81c2981",
-        "to_evidence_id": "pilot-paper-0381f0ff84904dea9657bf6f033e62b1",
-        "relationship": "compared-to"
-      },
-      {
-        "from_evidence_id": "pilot-backtest-abd2fa657aae4d02b2bd6fefc81c2981",
-        "to_evidence_id": "1b99aa4d9c1f43f28a09d6e9e37f473f",
-        "relationship": "approved-by"
-      },
-      {
-        "from_evidence_id": "1b99aa4d9c1f43f28a09d6e9e37f473f",
-        "to_evidence_id": "PAPER-20260721-a5b42bcc",
-        "relationship": "promotes-to-session"
-      },
-      {
-        "from_evidence_id": "PAPER-20260721-a5b42bcc",
-        "to_evidence_id": "audit-90397766f0c346cd839ba31d607defd2",
-        "relationship": "verified-by"
-      },
-      {
-        "from_evidence_id": "pilot-paper-0381f0ff84904dea9657bf6f033e62b1",
-        "to_evidence_id": "pilot-strategy-840d62f-paper-portfolio",
-        "relationship": "produces-portfolio"
-      },
-      {
-        "from_evidence_id": "pilot-paper-0381f0ff84904dea9657bf6f033e62b1",
-        "to_evidence_id": "pilot-strategy-840d62f-paper-ledger",
-        "relationship": "books-ledger"
-      },
-      {
-        "from_evidence_id": "pilot-strategy-840d62f-paper-portfolio",
-        "to_evidence_id": "pilot-strategy-840d62f-paper-ledger",
-        "relationship": "checked-against"
-      },
-      {
-        "from_evidence_id": "pilot-strategy-840d62f-paper-ledger",
-        "to_evidence_id": "a220457db0764d5c92eb74f81257a458",
-        "relationship": "reconciled-by"
-      },
-      {
-        "from_evidence_id": "pilot-backtest-abd2fa657aae4d02b2bd6fefc81c2981",
-        "to_evidence_id": "adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411",
-        "relationship": "summarized-by"
-      },
-      {
-        "from_evidence_id": "pilot-paper-0381f0ff84904dea9657bf6f033e62b1",
-        "to_evidence_id": "adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411",
-        "relationship": "summarized-by"
-      },
-      {
-        "from_evidence_id": "a220457db0764d5c92eb74f81257a458",
-        "to_evidence_id": "adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411",
-        "relationship": "summarized-by"
-      },
-      {
-        "from_evidence_id": "casework/a220457db0764d5c92eb74f81257a458",
-        "to_evidence_id": "close-checklist/df2a0855-2531-45e5-9248-47f4beedba65/2026-04-11",
-        "relationship": "closes-into"
-      },
-      {
-        "from_evidence_id": "close-checklist/df2a0855-2531-45e5-9248-47f4beedba65/2026-04-11",
-        "to_evidence_id": "reporting-approval/adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411",
-        "relationship": "approved-by"
-      },
-      {
-        "from_evidence_id": "reporting-approval/adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411",
-        "to_evidence_id": "reporting-release/adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411",
-        "relationship": "published-by"
-      }
-    ],
-    "evidence_edge_count": 16,
-    "evidence_self_edge_count": 0,
-    "ledger_artifact_refs": [
-      {
-        "artifact_id": "strategy-run:pilot-paper-0381f0ff84904dea9657bf6f033e62b1:ledger:journal",
-        "kind": "ledger-journal",
-        "path": null,
-        "route": "/api/workstation/runs/pilot-paper-0381f0ff84904dea9657bf6f033e62b1/ledger/journal",
-        "generated_at": "2026-04-11T14:30:00+00:00",
-        "hash": null,
-        "retained": false
-      },
-      {
-        "artifact_id": "strategy-run:pilot-paper-0381f0ff84904dea9657bf6f033e62b1:ledger:trial-balance",
-        "kind": "ledger-trial-balance",
-        "path": null,
-        "route": "/api/workstation/runs/pilot-paper-0381f0ff84904dea9657bf6f033e62b1/ledger/trial-balance",
-        "generated_at": "2026-04-11T14:30:00+00:00",
-        "hash": null,
-        "retained": false
-      }
-    ],
-    "ledger_artifact_count": 2,
-    "key_evidence": {
-      "provider_evidence_id": "provider-evidence/dk1/unit-ready",
-      "dataset_evidence_id": "dataset/pilot/golden-aapl-2026-04-11",
-      "research_run_id": "pilot-backtest-abd2fa657aae4d02b2bd6fefc81c2981",
-      "paper_session_id": "PAPER-20260721-a5b42bcc",
-      "replay_verification_audit_id": "audit-90397766f0c346cd839ba31d607defd2",
-      "portfolio_evidence_id": "pilot-strategy-840d62f-paper-portfolio",
-      "ledger_evidence_id": "pilot-strategy-840d62f-paper-ledger",
-      "reconciliation_run_id": "a220457db0764d5c92eb74f81257a458",
-      "report_pack_id": "adhoc-pilot-acceptance-tenant-audit-evidence-package-20260721075349109-20260411"
-    }
+    "detail": "Run PilotAcceptanceHarnessTests to generate the golden-path pilot readiness artifact.",
+    "stage_gates": [],
+    "evidence_edge_count": 0
   }
 }

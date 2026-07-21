@@ -42,6 +42,15 @@ public sealed class DataSourceKindConverterTests
     }
 
     [Fact]
+    public void Read_UndefinedNumericString_FailsClosed()
+    {
+        // Enum.TryParse accepts numeric strings for undefined values; the converter must not.
+        var act = () => JsonSerializer.Deserialize<DataSourceKind>("\"99\"", Options);
+
+        act.Should().Throw<JsonException>().WithMessage("*99*");
+    }
+
+    [Fact]
     public void Read_DefinedNumber_Parses()
     {
         var expected = Enum.GetValues<DataSourceKind>()[0];

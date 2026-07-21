@@ -99,7 +99,7 @@ public sealed class UiServer : IAsyncDisposable
                 "Journal entries, reconciliations, and approvals in these domains are held in memory and will be " +
                 "lost on restart. Set MERIDIAN_DATABASE_URL (or the per-domain MERIDIAN_*_CONNECTION_STRING variables) to persist them.",
                 persistenceStatus.Mode.ToUpperInvariant(),
-                persistenceStatus.MissingDomains);
+                string.Join(", ", persistenceStatus.MissingDomains));
         }
 
         var contentRootPath = Directory.GetCurrentDirectory();
@@ -900,23 +900,26 @@ public sealed class UiServer : IAsyncDisposable
             var configStore = sp.GetService<Meridian.Application.UI.ConfigStore>();
             if (configStore is not null)
             {
-                var dataSource = configStore.Load().DataSource;
-                switch (dataSource)
+                var config = configStore.Load();
+
+                var simulatedSources = ResolveCandidateStreamingSources(config.DataSources, config.DataSource)
+                    .Where(IsSimulatedSource)
+                    .Select(s => s.ToString().ToLowerInvariant())
+                    .Distinct()
+                    .ToList();
+
+                if (simulatedSources.Count > 0)
                 {
-                    case DataSourceKind.Synthetic:
-                        marketDataMode = "simulated";
-                        marketDataDetail = "Streaming source 'synthetic' generates deterministic synthetic data.";
-                        break;
-                    case DataSourceKind.IB when Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulationBuild:
-                        marketDataMode = "simulated";
-                        marketDataDetail =
-                            "Streaming source 'ib' runs as a random-walk simulator in this build (no IBAPI reference). " +
-                            "Prices are synthetic and historical requests return no bars.";
-                        break;
-                    default:
-                        marketDataMode = "live";
-                        marketDataDetail = $"Streaming source '{dataSource.ToString().ToLowerInvariant()}'.";
-                        break;
+                    marketDataMode = "simulated";
+                    marketDataDetail =
+                        $"Simulated streaming source(s) configured: {string.Join(", ", simulatedSources)}. " +
+                        "'synthetic' generates deterministic synthetic data; 'ib' runs as a random-walk simulator " +
+                        "in builds without the IBAPI reference and returns no historical bars.";
+                }
+                else
+                {
+                    marketDataMode = "live";
+                    marketDataDetail = $"Streaming source '{config.DataSource.ToString().ToLowerInvariant()}'.";
                 }
             }
         }
@@ -933,6 +936,51 @@ public sealed class UiServer : IAsyncDisposable
             MissingPersistenceDomains = persistence.MissingDomains.ToArray()
         };
     }
+
+    /// <summary>
+    /// Resolves every <see cref="DataSourceKind"/> that <c>CollectorModeRunner</c> could feed the
+    /// streaming pipeline with for the given configuration, so the degraded-mode probe can flag
+    /// simulation fail-closed without constructing any provider.
+    ///
+    /// The top-level <paramref name="topLevelDataSource"/> is always included: without failover it
+    /// is the sole streaming client, and with failover it is the emergency fallback taken when every
+    /// rule provider fails to construct (CollectorModeRunner falls back to
+    /// <c>CreateStreamingClient(ctx.Config.DataSource)</c> once <c>providerMap.Count == 0</c>). A
+    /// provider named in a rule that has no registered streaming factory — e.g. a Yahoo failover
+    /// source — always fails to construct, so a Synthetic top-level default would silently feed the
+    /// pipeline even though the rule provider itself is not simulated.
+    ///
+    /// With failover enabled the first rule's primary + backup ids are added too (each mapped to its
+    /// source's provider, or the top-level source when an id has no matching source entry).
+    /// CollectorModeRunner does NOT consult Enabled/Type, so a disabled or historical synthetic
+    /// backup named in a rule still counts.
+    /// </summary>
+    internal static IReadOnlyList<DataSourceKind> ResolveCandidateStreamingSources(
+        DataSourcesConfig? failoverCfg, DataSourceKind topLevelDataSource)
+    {
+        var candidates = new List<DataSourceKind> { topLevelDataSource };
+        var failoverRules = failoverCfg?.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
+        if (failoverCfg?.EnableFailover == true && failoverRules.Length > 0)
+        {
+            var rule = failoverRules[0];
+            var sources = failoverCfg.Sources ?? Array.Empty<DataSourceConfig>();
+            foreach (var providerId in new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds))
+            {
+                var source = sources.FirstOrDefault(
+                    s => string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
+                candidates.Add(source?.Provider ?? topLevelDataSource);
+            }
+        }
+
+        return candidates;
+    }
+
+    internal static bool IsSimulatedSource(DataSourceKind source) => source switch
+    {
+        DataSourceKind.Synthetic => true,
+        DataSourceKind.IB => Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulationBuild,
+        _ => false
+    };
 
     public async Task StartAsync(CancellationToken ct = default)
     {

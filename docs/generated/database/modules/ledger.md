@@ -175,6 +175,11 @@ erDiagram
         text posting_kind
         jsonb adjustment_approval_metadata
         jsonb dimensions
+        text transaction_currency
+        text functional_currency
+        numeric_38_10_ transaction_debit
+        numeric_38_10_ transaction_credit
+        numeric_38_10_ fx_rate_to_functional
     }
     ledger_ledger_books {
         uuid ledger_book_id PK
@@ -300,7 +305,7 @@ erDiagram
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
-| `journal_legs` | table | 25 | `entry_id` | 1 | 7 | - |
+| `journal_legs` | table | 30 | `entry_id` | 1 | 8 | - |
 | `ledger_books` | table | 13 | `ledger_book_id` | 0 | 6 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
