@@ -7,6 +7,25 @@ using Meridian.Contracts.Workstation;
 namespace Meridian.Strategies.Models;
 
 /// <summary>
+/// Out-of-sample robustness evidence recorded for a run from a walk-forward analysis.
+/// Consumed by the promotion policy so eligibility is not judged on a single
+/// full-period backtest alone.
+/// </summary>
+/// <param name="OutOfSampleSharpeRatio">Sharpe ratio of the stitched out-of-sample equity curve.</param>
+/// <param name="OutOfSampleMaxDrawdownPercent">Max drawdown of the stitched out-of-sample curve.</param>
+/// <param name="DegradationRatio">Mean out-of-sample / in-sample objective ratio (1.0 = no degradation).</param>
+/// <param name="WindowCount">Number of walk-forward windows evaluated.</param>
+/// <param name="RecordedAt">When the evidence was recorded.</param>
+/// <param name="SourceReference">Optional pointer to the retained walk-forward report.</param>
+public sealed record StrategyRunWalkForwardEvidence(
+    double OutOfSampleSharpeRatio,
+    decimal OutOfSampleMaxDrawdownPercent,
+    double DegradationRatio,
+    int WindowCount,
+    DateTimeOffset RecordedAt,
+    string? SourceReference = null);
+
+/// <summary>
 /// An immutable record of a single strategy run (backtest, paper, or live).
 /// Stored by <see cref="Storage.StrategyRunStore"/> and used by the promotion workflow.
 /// </summary>
@@ -51,7 +70,8 @@ public sealed record StrategyRunEntry(
     string? ExceptionMessage = null,
     string? ExceptionStackTrace = null,
     IReadOnlyList<string>? ArtifactReferences = null,
-    IReadOnlyList<OperationArtifactReference>? RetainedArtifacts = null)
+    IReadOnlyList<OperationArtifactReference>? RetainedArtifacts = null,
+    StrategyRunWalkForwardEvidence? WalkForwardEvidence = null)
 {
     public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
         OperatorAcceptanceCriteria ?? [];

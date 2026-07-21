@@ -19,7 +19,13 @@ type PromotionPolicyInput =
       IsCircuitBreakerOpen: bool
       HasConflictingOverride: bool
       HasActiveLivePromotionOverride: bool
-      RequiredManualOverrideKind: string }
+      RequiredManualOverrideKind: string
+      RequireWalkForwardEvidence: bool
+      HasWalkForwardEvidence: bool
+      OutOfSampleSharpeRatio: double
+      WalkForwardDegradationRatio: double
+      MinOutOfSampleSharpe: double
+      MinWalkForwardDegradationRatio: double }
 
 let private passRule ruleId owner evidence isOverride precedence =
     { RuleId = ruleId
@@ -66,6 +72,26 @@ let evaluatePolicy (input: PromotionPolicyInput) : PromotionDecision =
                 passRule TotalReturnThreshold StrategyResearch [ BacktestMetricsEvidence ] false 50
             else
                 failRule TotalReturnThreshold StrategyResearch [ BacktestMetricsEvidence ] $"Total return {input.TotalReturn:P2} is below required {input.MinTotalReturn:P2}." false 50
+
+            // Overfitting protection: a single full-period backtest cannot prove robustness.
+            // When required (paper -> live), the run must carry walk-forward/out-of-sample
+            // evidence, and recorded evidence must clear the out-of-sample gates.
+            if input.RequireWalkForwardEvidence && not input.HasWalkForwardEvidence then
+                failRule WalkForwardEvidencePresent StrategyResearch [ WalkForwardReportEvidence ] "No walk-forward/out-of-sample evidence is recorded for this run." false 52
+            else
+                passRule WalkForwardEvidencePresent StrategyResearch [ WalkForwardReportEvidence ] false 52
+
+            if input.HasWalkForwardEvidence then
+                if input.OutOfSampleSharpeRatio >= input.MinOutOfSampleSharpe then
+                    passRule OutOfSampleSharpeThreshold StrategyResearch [ WalkForwardReportEvidence ] false 54
+                else
+                    failRule OutOfSampleSharpeThreshold StrategyResearch [ WalkForwardReportEvidence ] $"Out-of-sample Sharpe {input.OutOfSampleSharpeRatio:F2} is below required {input.MinOutOfSampleSharpe:F2}." false 54
+
+            if input.HasWalkForwardEvidence then
+                if input.WalkForwardDegradationRatio >= input.MinWalkForwardDegradationRatio then
+                    passRule WalkForwardDegradationThreshold StrategyResearch [ WalkForwardReportEvidence ] false 56
+                else
+                    failRule WalkForwardDegradationThreshold StrategyResearch [ WalkForwardReportEvidence ] $"Walk-forward degradation ratio {input.WalkForwardDegradationRatio:F2} is below required {input.MinWalkForwardDegradationRatio:F2} (out-of-sample performance fell too far below in-sample)." false 56
         ]
 
     let liveRules =
@@ -111,7 +137,12 @@ let evaluatePolicy (input: PromotionPolicyInput) : PromotionDecision =
         |> List.exists (fun rule ->
             not rule.Passed
             && not rule.IsOverrideRule
-            && (rule.RuleId = SharpeThreshold || rule.RuleId = DrawdownThreshold || rule.RuleId = TotalReturnThreshold))
+            && (rule.RuleId = SharpeThreshold
+                || rule.RuleId = DrawdownThreshold
+                || rule.RuleId = TotalReturnThreshold
+                || rule.RuleId = WalkForwardEvidencePresent
+                || rule.RuleId = OutOfSampleSharpeThreshold
+                || rule.RuleId = WalkForwardDegradationThreshold))
     let hasReadinessFailures =
         rules |> List.exists (fun rule -> not rule.Passed && (rule.RuleId = RunCompleted || rule.RuleId = MetricsPresent))
     let hasOverrideFailures = rules |> List.exists (fun rule -> not rule.Passed && rule.IsOverrideRule)

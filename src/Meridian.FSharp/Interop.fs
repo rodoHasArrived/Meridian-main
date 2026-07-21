@@ -349,6 +349,12 @@ type PromotionInterop private () =
                 HasConflictingOverride = false
                 HasActiveLivePromotionOverride = true
                 RequiredManualOverrideKind = String.Empty
+                RequireWalkForwardEvidence = false
+                HasWalkForwardEvidence = false
+                OutOfSampleSharpeRatio = 0.0
+                WalkForwardDegradationRatio = 0.0
+                MinOutOfSampleSharpe = 0.0
+                MinWalkForwardDegradationRatio = 0.0
             }
 
         PromotionPolicy.evaluatePolicy policyInput

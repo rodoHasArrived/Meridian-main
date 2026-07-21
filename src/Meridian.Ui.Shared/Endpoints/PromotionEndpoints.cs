@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Identity.Auth;
+using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Microsoft.AspNetCore.Builder;
@@ -111,6 +112,43 @@ public static class PromotionEndpoints
         .Produces(401)
         .Produces(403)
         .Produces(501);
+
+        group.MapPost("/runs/{runId}/walk-forward-evidence", async (
+            string runId,
+            RecordWalkForwardEvidenceRequest request,
+            HttpContext context) =>
+        {
+            if (TryAuthorizePromotionMutation(context, jsonOptions) is { } authorizationFailure)
+                return authorizationFailure;
+
+            var service = context.RequestServices.GetService<PromotionService>();
+            if (service is null)
+                return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+            if (request is null || request.WindowCount <= 0)
+                return Results.BadRequest(new { error = "Walk-forward evidence requires at least one evaluated window." });
+
+            var evidence = new StrategyRunWalkForwardEvidence(
+                OutOfSampleSharpeRatio: request.OutOfSampleSharpeRatio,
+                OutOfSampleMaxDrawdownPercent: request.OutOfSampleMaxDrawdownPercent,
+                DegradationRatio: request.DegradationRatio,
+                WindowCount: request.WindowCount,
+                RecordedAt: DateTimeOffset.UtcNow,
+                SourceReference: string.IsNullOrWhiteSpace(request.SourceReference) ? null : request.SourceReference.Trim());
+
+            var updated = await service.RecordWalkForwardEvidenceAsync(runId, evidence, context.RequestAborted).ConfigureAwait(false);
+            return updated is null
+                ? Results.NotFound(new { error = $"Run '{runId}' was not found." })
+                : Results.Json(updated.WalkForwardEvidence, jsonOptions, statusCode: StatusCodes.Status201Created);
+        })
+        .WithName("RecordWalkForwardEvidence")
+        .Produces<StrategyRunWalkForwardEvidence>(201)
+        .Produces(400)
+        .Produces(401)
+        .Produces(403)
+        .Produces(404)
+        .Produces(501)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
     private static IResult? TryAuthorizePromotionRead(HttpContext context)

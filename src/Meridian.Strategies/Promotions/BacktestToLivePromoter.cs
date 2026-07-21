@@ -92,10 +92,22 @@ public static class PromotionDecisionKinds
 }
 
 /// <summary>Minimum thresholds that a strategy must meet to be eligible for promotion.</summary>
+/// <param name="MinSharpeRatio">Minimum full-period backtest Sharpe ratio.</param>
+/// <param name="MaxAllowedDrawdownPercent">Maximum tolerated full-period drawdown.</param>
+/// <param name="MinTotalReturn">Minimum full-period total return.</param>
+/// <param name="MinOutOfSampleSharpe">Minimum stitched out-of-sample Sharpe when walk-forward
+/// evidence is recorded for the run.</param>
+/// <param name="MinWalkForwardDegradationRatio">Minimum out-of-sample / in-sample objective
+/// ratio; values below this floor indicate the in-sample edge did not survive out of sample.</param>
+/// <param name="RequireWalkForwardEvidenceForLive">When true, paper runs cannot be promoted to
+/// live on a single full-period backtest alone — recorded walk-forward evidence is required.</param>
 public sealed record PromotionCriteria(
     double MinSharpeRatio,
     decimal MaxAllowedDrawdownPercent,
-    decimal MinTotalReturn)
+    decimal MinTotalReturn,
+    double MinOutOfSampleSharpe = 0.0,
+    double MinWalkForwardDegradationRatio = 0.5,
+    bool RequireWalkForwardEvidenceForLive = true)
 {
     /// <summary>Conservative default criteria suitable for first-time promotion to paper trading.</summary>
     public static readonly PromotionCriteria Default = new(
