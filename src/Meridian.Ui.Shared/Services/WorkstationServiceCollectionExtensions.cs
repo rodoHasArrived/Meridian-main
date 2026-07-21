@@ -34,6 +34,7 @@ using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
@@ -285,6 +286,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
+        // Reconcile statement runs against Meridian's own retained account records (positions + cash)
+        // instead of the fail-closed empty book. Replace (not TryAdd) so this wins over the
+        // EmptyInternalReconciliationPopulationProvider that AddStatementReconciliationServices
+        // registers via TryAddSingleton, regardless of composition order.
+        services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, WorkstationInternalReconciliationPopulationProvider>());
         services.TryAddSingleton<FundAccountCloseReadinessService>();
 
         services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();

@@ -6872,6 +6872,7 @@ Meridian-main
 │   │   │   ├── StrategyRunReviewPacketService.cs
 │   │   │   ├── TradingOperatorLiveOrderReadinessGate.cs
 │   │   │   ├── TradingOperatorReadinessService.cs
+│   │   │   ├── WorkstationInternalReconciliationPopulationProvider.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── Streaming
@@ -8843,6 +8844,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
+│   │   │   ├── WorkstationInternalReconciliationPopulationProviderTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationServiceCollectionExtensionsTests.cs
 │   │   │   ├── WorkstationStatementReconciliationEndpointTests.cs
