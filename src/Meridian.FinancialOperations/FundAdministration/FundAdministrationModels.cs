@@ -95,7 +95,7 @@ public sealed record OnboardingTemplate
 
         TemplateId = templateId.Trim();
         Name = name.Trim();
-        Description = description?.Trim() ?? string.Empty;
+        Description = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
         Nodes = nodes.ToArray();
         CreatedBy = createdBy.Trim();
         CreatedAtUtc = createdAtUtc.ToUniversalTime();

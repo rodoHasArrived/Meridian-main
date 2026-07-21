@@ -3,25 +3,50 @@ namespace Meridian.Ledger;
 /// <summary>
 /// Book-scoped accounting period lock registry with guarded posting helpers.
 /// </summary>
+/// <remarks>
+/// Access to the internal lock and reopen collections is synchronized so the book is safe to share
+/// across threads — consistent with <see cref="JournalTemplateBook"/> and
+/// <see cref="PortfolioPricingRuleBook"/>. Check-then-act operations (lock, reopen) hold the lock for
+/// their whole body so they stay atomic; the posting helpers rely on the synchronized
+/// <see cref="TryFindLock"/> and never hold the lock while posting into the ledger book.
+/// </remarks>
 public sealed class LockedAccountingPeriodBook
 {
+    private readonly object _gate = new();
     private readonly List<LockedAccountingPeriod> _lockedPeriods = [];
     private readonly List<ReopenedAccountingPeriod> _reopenHistory = [];
 
     public IReadOnlyList<LockedAccountingPeriod> LockedPeriods
-        => _lockedPeriods
-            .OrderBy(period => period.LedgerKey.ProjectId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(period => period.LedgerKey.LedgerBook, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(period => period.LedgerKey.LedgerView)
-            .ThenBy(period => period.LedgerKey.ScenarioId, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(period => period.StartsAtInclusive)
-            .ToList();
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _lockedPeriods
+                    .OrderBy(period => period.LedgerKey.ProjectId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(period => period.LedgerKey.LedgerBook, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(period => period.LedgerKey.LedgerView)
+                    .ThenBy(period => period.LedgerKey.ScenarioId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(period => period.StartsAtInclusive)
+                    .ToList();
+            }
+        }
+    }
 
     /// <summary>
     /// Chronological audit trail of every period reopen, newest actions appended last. A reopen never
     /// erases history; the original lock and its reopen evidence both remain queryable here.
     /// </summary>
-    public IReadOnlyList<ReopenedAccountingPeriod> ReopenHistory => _reopenHistory.ToList();
+    public IReadOnlyList<ReopenedAccountingPeriod> ReopenHistory
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _reopenHistory.ToList();
+            }
+        }
+    }
 
     public LockedAccountingPeriod LockPeriod(
         LedgerBookKey ledgerKey,
@@ -41,27 +66,35 @@ public sealed class LockedAccountingPeriodBook
             lockedBy,
             reason);
 
-        if (_lockedPeriods.Any(period => SameLedgerKey(period.LedgerKey, candidate.LedgerKey)
-                                         && string.Equals(period.PeriodId, candidate.PeriodId, StringComparison.OrdinalIgnoreCase)))
+        lock (_gate)
         {
-            throw new InvalidOperationException(
-                $"Accounting period '{candidate.PeriodId}' is already locked for ledger book '{candidate.LedgerKey.LedgerBook}'.");
+            if (_lockedPeriods.Any(period => SameLedgerKey(period.LedgerKey, candidate.LedgerKey)
+                                             && string.Equals(period.PeriodId, candidate.PeriodId, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(
+                    $"Accounting period '{candidate.PeriodId}' is already locked for ledger book '{candidate.LedgerKey.LedgerBook}'.");
+            }
+
+            if (_lockedPeriods.Any(period => SameLedgerKey(period.LedgerKey, candidate.LedgerKey) && Overlaps(period, candidate)))
+            {
+                throw new InvalidOperationException(
+                    $"Accounting period '{candidate.PeriodId}' overlaps an existing locked period for ledger book '{candidate.LedgerKey.LedgerBook}'.");
+            }
+
+            _lockedPeriods.Add(candidate);
         }
 
-        if (_lockedPeriods.Any(period => SameLedgerKey(period.LedgerKey, candidate.LedgerKey) && Overlaps(period, candidate)))
-        {
-            throw new InvalidOperationException(
-                $"Accounting period '{candidate.PeriodId}' overlaps an existing locked period for ledger book '{candidate.LedgerKey.LedgerBook}'.");
-        }
-
-        _lockedPeriods.Add(candidate);
         return candidate;
     }
 
     public bool TryFindLock(LedgerBookKey ledgerKey, DateTimeOffset timestamp, out LockedAccountingPeriod? lockedPeriod)
     {
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
-        lockedPeriod = _lockedPeriods.FirstOrDefault(period => SameLedgerKey(period.LedgerKey, normalizedKey) && period.Contains(timestamp));
+        lock (_gate)
+        {
+            lockedPeriod = _lockedPeriods.FirstOrDefault(period => SameLedgerKey(period.LedgerKey, normalizedKey) && period.Contains(timestamp));
+        }
+
         return lockedPeriod is not null;
     }
 
@@ -71,8 +104,11 @@ public sealed class LockedAccountingPeriodBook
         ArgumentException.ThrowIfNullOrWhiteSpace(periodId);
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
         var normalizedPeriodId = periodId.Trim();
-        return _lockedPeriods.Any(period => SameLedgerKey(period.LedgerKey, normalizedKey)
-                                            && string.Equals(period.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase));
+        lock (_gate)
+        {
+            return _lockedPeriods.Any(period => SameLedgerKey(period.LedgerKey, normalizedKey)
+                                                && string.Equals(period.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase));
+        }
     }
 
     /// <summary>
@@ -95,25 +131,28 @@ public sealed class LockedAccountingPeriodBook
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
         var normalizedPeriodId = periodId.Trim();
 
-        var lockedPeriod = _lockedPeriods.FirstOrDefault(period =>
-            SameLedgerKey(period.LedgerKey, normalizedKey)
-            && string.Equals(period.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase));
-
-        if (lockedPeriod is null)
+        lock (_gate)
         {
-            throw new InvalidOperationException(
-                $"Accounting period '{normalizedPeriodId}' is not locked for ledger book '{normalizedKey.LedgerBook}'; nothing to reopen.");
+            var lockedPeriod = _lockedPeriods.FirstOrDefault(period =>
+                SameLedgerKey(period.LedgerKey, normalizedKey)
+                && string.Equals(period.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase));
+
+            if (lockedPeriod is null)
+            {
+                throw new InvalidOperationException(
+                    $"Accounting period '{normalizedPeriodId}' is not locked for ledger book '{normalizedKey.LedgerBook}'; nothing to reopen.");
+            }
+
+            _lockedPeriods.Remove(lockedPeriod);
+
+            var reopened = new ReopenedAccountingPeriod(
+                lockedPeriod,
+                reopenedAtUtc.ToUniversalTime(),
+                reopenedBy.Trim(),
+                evidence);
+            _reopenHistory.Add(reopened);
+            return reopened;
         }
-
-        _lockedPeriods.Remove(lockedPeriod);
-
-        var reopened = new ReopenedAccountingPeriod(
-            lockedPeriod,
-            reopenedAtUtc.ToUniversalTime(),
-            reopenedBy.Trim(),
-            evidence);
-        _reopenHistory.Add(reopened);
-        return reopened;
     }
 
     public void EnsureCanPost(LedgerBookKey ledgerKey, JournalEntry journalEntry)

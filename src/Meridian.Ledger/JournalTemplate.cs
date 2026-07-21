@@ -97,7 +97,7 @@ public sealed record JournalTemplate
 
         TemplateId = templateId.Trim();
         Name = name.Trim();
-        Description = description?.Trim() ?? string.Empty;
+        Description = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
         Lines = lines.ToArray();
         RequiredParameters = (requiredParameters ?? InferParameters(lines))
             .Where(static parameter => !string.IsNullOrWhiteSpace(parameter))
@@ -132,7 +132,15 @@ public sealed record JournalTemplate
     {
         ArgumentNullException.ThrowIfNull(instantiation);
 
-        var parameters = instantiation.Parameters;
+        // Normalize the supplied parameters once (trimmed keys, case-insensitive) so lookups are
+        // robust regardless of the comparer or key spacing the caller's dictionary used.
+        var parameters = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (key, value) in instantiation.Parameters)
+        {
+            if (!string.IsNullOrWhiteSpace(key))
+                parameters[key.Trim()] = value;
+        }
+
         var missing = RequiredParameters
             .Where(parameter => !parameters.ContainsKey(parameter))
             .ToArray();

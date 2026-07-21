@@ -79,7 +79,9 @@ public sealed record PortfolioPricingRule
     /// <summary>
     /// Returns <see langword="true"/> when this rule applies to the given instrument type on the given
     /// valuation date. A null <see cref="InstrumentType"/> matches any instrument; a null
-    /// <paramref name="instrumentType"/> matches only instrument-agnostic rules.
+    /// <paramref name="instrumentType"/> matches only instrument-agnostic rules. The caller is expected
+    /// to pass an already-normalized value (see <see cref="PortfolioPricingRuleBook.Resolve"/>);
+    /// comparison is case-insensitive.
     /// </summary>
     public bool Matches(string? instrumentType, DateOnly asOf)
     {
@@ -92,7 +94,7 @@ public sealed record PortfolioPricingRule
             return true;
 
         return instrumentType is not null
-               && string.Equals(InstrumentType, instrumentType.Trim(), StringComparison.OrdinalIgnoreCase);
+               && string.Equals(InstrumentType, instrumentType, StringComparison.OrdinalIgnoreCase);
     }
 }
 
@@ -148,7 +150,11 @@ public sealed class PortfolioPricingRuleBook
     /// <see langword="null"/> when no rule matches (the caller then falls back to the fund policy).
     /// </summary>
     public PortfolioPricingRule? Resolve(string portfolioId, string? instrumentType, DateOnly asOf)
-        => RulesFor(portfolioId).FirstOrDefault(rule => rule.Matches(instrumentType, asOf));
+    {
+        // Normalize once here rather than per-rule inside the match loop.
+        var normalizedInstrumentType = instrumentType?.Trim();
+        return RulesFor(portfolioId).FirstOrDefault(rule => rule.Matches(normalizedInstrumentType, asOf));
+    }
 
     /// <summary>All registered rules across all portfolios, ordered by portfolio then precedence.</summary>
     public IReadOnlyList<PortfolioPricingRule> Rules
