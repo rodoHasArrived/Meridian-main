@@ -3342,7 +3342,8 @@ Meridian-main
 │   │   │   ├── ConfigValidatorCli.cs
 │   │   │   └── IBGatewayProbe.cs
 │   │   ├── DataQuality
-│   │   │   └── CompositeDataQualityReadService.cs
+│   │   │   ├── CompositeDataQualityReadService.cs
+│   │   │   └── QualityMonitoringPublisher.cs
 │   │   ├── DirectLending
 │   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
@@ -7834,7 +7835,8 @@ Meridian-main
 │   │   │   ├── Credentials
 │   │   │   │   └── CredentialTestingServiceTests.cs
 │   │   │   ├── DataQuality
-│   │   │   │   └── CompositeDataQualityReadServiceTests.cs
+│   │   │   │   ├── CompositeDataQualityReadServiceTests.cs
+│   │   │   │   └── QualityMonitoringPublisherTests.cs
 │   │   │   ├── DirectLending
 │   │   │   │   ├── AccrualLedgerServiceTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs

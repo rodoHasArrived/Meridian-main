@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**3629 / 8141** items documented (**44.6%**) &mdash; Grade: **D**
+**3630 / 8142** items documented (**44.6%**) &mdash; Grade: **D**
 
 ```text
 [=========-----------] 44.6%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 3503 | 7673 | 45.7% | D |
+| Public Classes / Interfaces | 3504 | 7674 | 45.7% | D |
 | API Endpoints | 112 | 315 | 35.6% | F |
 | Configuration Options | 3 | 142 | 2.1% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -71,7 +71,7 @@
 | `LifecycleControlPlaneHostedService` | `src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:150` |
 | `ICompositeDataQualityReadService` | `src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:19` |
 | `CompositeDataQualityGap` | `src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:29` |
-| `IProviderIntegrationHostResolver` | `src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:242` |
+| `IProviderIntegrationHostResolver` | `src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:249` |
 | `ProviderIntegrationSetupValidationIssue` | `src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs:10` |
 | `ProviderIntegrationSetupValidationException` | `src/Meridian.Application/Integrations/ProviderIntegrationSetupValidation.cs:21` |
 | `ScheduleExecutionSummary` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:523` |
