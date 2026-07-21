@@ -275,10 +275,19 @@ class Doctor:
                 if parts.port:
                     port = parts.port
             except ValueError:
-                # Malformed or out-of-range port in the URL; keep the default so the
-                # connection attempt below surfaces the unreachable diagnostic instead
-                # of crashing here.
-                pass
+                # A malformed/out-of-range port is a configuration error, not an
+                # unreachable server: the runtime rejects the same URL in
+                # MeridianDatabaseEnvironment.NormalizeToConnectionString, so report it
+                # loudly instead of probing a default port and masking the problem.
+                self.results.append(
+                    DoctorResult(
+                        name="PostgreSQL (MERIDIAN_DATABASE_URL)",
+                        status="fail",
+                        details="Invalid port in MERIDIAN_DATABASE_URL; the host would reject this URL at startup",
+                        expected="postgres://user:password@host:port/database with a numeric port in 1-65535",
+                    )
+                )
+                return
         elif conn_str:
             host_m = re.search(r"[Hh]ost=([^;, ]+)", conn_str)
             port_m = re.search(r"[Pp]ort=(\d+)", conn_str)

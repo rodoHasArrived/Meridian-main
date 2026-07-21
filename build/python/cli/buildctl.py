@@ -701,10 +701,17 @@ def _check_postgres() -> tuple[bool, bool, str, str | None]:
             if parts.port:
                 port = parts.port
         except ValueError:
-            # Malformed or out-of-range port in the URL; keep the default so the
-            # connection attempt below surfaces the unreachable diagnostic instead
-            # of crashing here.
-            pass
+            # A malformed/out-of-range port is a configuration error, not an
+            # unreachable server: the runtime rejects the same URL in
+            # MeridianDatabaseEnvironment.NormalizeToConnectionString, so report it
+            # loudly instead of probing a default port and masking the problem.
+            return (
+                False,
+                True,
+                "MERIDIAN_DATABASE_URL has an invalid port and would fail at startup",
+                "Fix MERIDIAN_DATABASE_URL to postgres://user:password@host:port/database"
+                " with a numeric port in 1-65535",
+            )
     elif conn_str:
         host_m = re.search(r"[Hh]ost=([^;, ]+)", conn_str)
         port_m = re.search(r"[Pp]ort=(\d+)", conn_str)
