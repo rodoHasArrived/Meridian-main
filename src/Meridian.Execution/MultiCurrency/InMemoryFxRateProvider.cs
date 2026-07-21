@@ -10,9 +10,11 @@ namespace Meridian.Execution.MultiCurrency;
 ///   <item>triangulation — legs through a configured pivot currency (e.g. USD).</item>
 /// </list>
 /// Quotes are selected as-of a point in time: the most recent quote whose timestamp is at or
-/// before the requested instant, falling back to the earliest available quote for the pair when
-/// none precedes it. The provider performs no network I/O and no wall-clock reads, so results are
-/// fully reproducible for a given seed — a property the reconciliation and ledger layers rely on.
+/// before the requested instant. When every quote for a pair post-dates the requested instant, no
+/// rate was known as of that time and the provider reports none rather than a future quote, so
+/// callers fail closed instead of leaking look-ahead information. The provider performs no network
+/// I/O and no wall-clock reads, so results are fully reproducible for a given seed — a property the
+/// reconciliation and ledger layers rely on.
 /// </summary>
 public sealed class InMemoryFxRateProvider : IFxRateProvider
 {
@@ -115,8 +117,11 @@ public sealed class InMemoryFxRateProvider : IFxRateProvider
             return null;
         }
 
-        // Quotes are pre-sorted ascending by AsOf. Prefer the most recent quote effective at or
-        // before the requested instant; if the whole series is in the future, use the earliest.
+        // Quotes are pre-sorted ascending by AsOf. Return the most recent quote effective at or
+        // before the requested instant. When the whole series is in the future, no rate was known as
+        // of the requested instant, so report none rather than a future quote: honoring an as-of
+        // request with a later rate would leak information unavailable at that time into backtests,
+        // ledger translations, and reconciliations.
         FxRate? best = null;
         foreach (var quote in quotes)
         {
@@ -130,7 +135,7 @@ public sealed class InMemoryFxRateProvider : IFxRateProvider
             }
         }
 
-        return best ?? quotes[0];
+        return best;
     }
 
     private static string Normalize(string currency) => currency.Trim().ToUpperInvariant();

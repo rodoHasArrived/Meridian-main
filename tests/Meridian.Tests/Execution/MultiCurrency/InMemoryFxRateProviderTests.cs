@@ -97,7 +97,7 @@ public sealed class InMemoryFxRateProviderTests
     }
 
     [Fact]
-    public async Task GetRateAsync_WhenAllQuotesAreFuture_UsesEarliest()
+    public async Task GetRateAsync_WhenAllQuotesAreFuture_ReturnsNull()
     {
         var provider = new InMemoryFxRateProvider(
             [
@@ -105,10 +105,14 @@ public sealed class InMemoryFxRateProviderTests
                 new FxRate("EUR", "USD", 1.20m, new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero)),
             ]);
 
+        // AsOf (2026-05-28) precedes every seeded quote, so no rate was known as of that instant.
+        // Returning the earliest (future) quote would leak look-ahead information into a historical
+        // valuation, so the provider reports no rate and GetRequiredRateAsync fails closed.
         var rate = await provider.GetRateAsync("EUR", "USD", AsOf);
+        rate.Should().BeNull();
 
-        rate.Should().NotBeNull();
-        rate!.Rate.Should().Be(1.15m);
+        var act = async () => await provider.GetRequiredRateAsync("EUR", "USD", AsOf);
+        await act.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
