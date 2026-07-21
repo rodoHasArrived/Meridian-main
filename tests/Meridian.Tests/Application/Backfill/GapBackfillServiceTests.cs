@@ -1,9 +1,10 @@
-using System.Reflection;
 using FluentAssertions;
 using Meridian.Application.Backfill;
-using Meridian.Infrastructure.Shared;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Resilience;
 using Xunit;
 using Meridian.Contracts.Backfill;
+using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 
 namespace Meridian.Tests.Application.Backfill;
 
@@ -11,14 +12,10 @@ namespace Meridian.Tests.Application.Backfill;
 /// Unit tests for <see cref="GapBackfillService"/>.
 ///
 /// <para>
-/// <b>Event injection strategy:</b> <see cref="WebSocketReconnectionHelper"/> is a sealed class
-/// and its <c>Reconnected</c> event can only be raised internally (inside
-/// <see cref="WebSocketReconnectionHelper.TryReconnectAsync"/>), which carries a multi-second
-/// built-in backoff delay unsuitable for unit tests.  The backing multicast delegate is therefore
-/// retrieved via reflection and invoked directly.  This is an intentional, pragmatic trade-off:
-/// the C# compiler guarantees that an auto-implemented event named <c>Reconnected</c> backs
-/// itself with a private field of the same name.  If the event is ever refactored the assertion
-/// inside <see cref="RaiseReconnected"/> will surface the problem immediately.
+/// <b>Event injection strategy:</b> the service subscribes to
+/// <see cref="IReconnectionGapSource.ReconnectionGapDetected"/> — the same contract the
+/// streaming providers surface from <see cref="WebSocketConnectionManager.GapDetected"/> in
+/// production. Tests raise the event through a fake source, exactly as a provider would.
 /// </para>
 ///
 /// <para>
@@ -37,24 +34,19 @@ public sealed class GapBackfillServiceTests
     // ── infrastructure ────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Fires <see cref="WebSocketReconnectionHelper.Reconnected"/> from outside the class via
-    /// reflection.  The C# compiler generates a private backing field whose name matches the
-    /// event name for auto-implemented events; this is stable across .NET versions.
+    /// Minimal stand-in for a streaming provider surfacing reconnection gaps.
     /// </summary>
-    private static void RaiseReconnected(WebSocketReconnectionHelper helper, ReconnectionEvent evt)
+    private sealed class FakeGapSource : IReconnectionGapSource
     {
-        var field = typeof(WebSocketReconnectionHelper)
-            .GetField("Reconnected", BindingFlags.NonPublic | BindingFlags.Instance);
-        field.Should().NotBeNull(
-            "WebSocketReconnectionHelper must have an auto-implemented 'Reconnected' backing field");
-        var handler = (Action<ReconnectionEvent>?)field!.GetValue(helper);
-        handler?.Invoke(evt);
+        public event Action<ReconnectionGap>? ReconnectionGapDetected;
+
+        public void Raise(ReconnectionGap gap) => ReconnectionGapDetected?.Invoke(gap);
     }
 
-    private static ReconnectionEvent MakeEvent(TimeSpan gap, string provider = "test-provider")
+    private static ReconnectionGap MakeGap(TimeSpan gap, string provider = "test-provider")
     {
         var reconnectedAt = DateTimeOffset.UtcNow;
-        return new ReconnectionEvent(provider, reconnectedAt - gap, reconnectedAt, AttemptsUsed: 1);
+        return new ReconnectionGap(provider, reconnectedAt - gap, reconnectedAt, ReconnectAttempts: 1);
     }
 
     private static BackfillResult SuccessResult(BackfillRequest req) =>
@@ -80,20 +72,20 @@ public sealed class GapBackfillServiceTests
     // ── gap threshold ─────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task OnReconnected_GapBelowMinimum_DoesNotTriggerBackfill()
+    public async Task OnReconnectionGap_GapBelowMinimum_DoesNotTriggerBackfill()
     {
         // Use TCS so the test fails immediately if the executor is unexpectedly called.
         var executorCalled = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
             (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
-            subscribedSymbols: ["AAPL"],
+            subscribedSymbols: () => ["AAPL"],
             minimumGap: TimeSpan.FromSeconds(30));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
         // 5 s gap is below the 30 s minimum — the early-return path fires; no async work is spawned.
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(5)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(5)));
 
         var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
         completedTask.Should().NotBeSameAs(executorCalled.Task,
@@ -103,18 +95,18 @@ public sealed class GapBackfillServiceTests
     }
 
     [Fact]
-    public async Task OnReconnected_GapExceedsMinimum_IncrementsTriggeredCounter()
+    public async Task OnReconnectionGap_GapExceedsMinimum_IncrementsTriggeredCounter()
     {
         var tcs = new TaskCompletionSource<BackfillRequest>();
         var svc = new GapBackfillService(
             async (req, ct) => { tcs.TrySetResult(req); await Task.Yield(); return SuccessResult(req); },
-            subscribedSymbols: ["AAPL", "MSFT"],
+            subscribedSymbols: () => ["AAPL", "MSFT"],
             minimumGap: TimeSpan.FromSeconds(10));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(60)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(60)));
 
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -122,28 +114,51 @@ public sealed class GapBackfillServiceTests
     }
 
     [Fact]
-    public async Task OnReconnected_GapExceedsMinimum_PassesCorrectSymbolsToExecutor()
+    public async Task OnReconnectionGap_GapExceedsMinimum_PassesCorrectSymbolsToExecutor()
     {
         var tcs = new TaskCompletionSource<BackfillRequest>();
         var svc = new GapBackfillService(
             async (req, ct) => { tcs.TrySetResult(req); await Task.Yield(); return SuccessResult(req); },
-            subscribedSymbols: ["AAPL", "MSFT"],
+            subscribedSymbols: () => ["AAPL", "MSFT"],
             minimumGap: TimeSpan.FromSeconds(10));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(60)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(60)));
 
         var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         request.Symbols.Should().BeEquivalentTo(["AAPL", "MSFT"]);
     }
 
+    [Fact]
+    public async Task OnReconnectionGap_SymbolsChangeAfterConstruction_UsesSymbolsAtGapTime()
+    {
+        // Hot-reloaded subscriptions must be honored: the provider delegate is
+        // evaluated when the gap fires, not when the service is constructed.
+        var symbols = new[] { "AAPL" };
+        var tcs = new TaskCompletionSource<BackfillRequest>();
+        var svc = new GapBackfillService(
+            async (req, ct) => { tcs.TrySetResult(req); await Task.Yield(); return SuccessResult(req); },
+            subscribedSymbols: () => symbols,
+            minimumGap: TimeSpan.FromSeconds(10));
+
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
+
+        symbols = ["SPY", "QQQ"];
+        source.Raise(MakeGap(TimeSpan.FromSeconds(60)));
+
+        var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        request.Symbols.Should().BeEquivalentTo(["SPY", "QQQ"]);
+    }
+
     // ── success / failure counters ────────────────────────────────────────────
 
     [Fact]
-    public async Task OnReconnected_SuccessfulExecutor_IncrementsSucceededCounter()
+    public async Task OnReconnectionGap_SuccessfulExecutor_IncrementsSucceededCounter()
     {
         var tcs = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
@@ -153,13 +168,13 @@ public sealed class GapBackfillServiceTests
                 tcs.TrySetResult(true); // signal after executor body completes
                 return SuccessResult(req);
             },
-            subscribedSymbols: ["SPY"],
+            subscribedSymbols: () => ["SPY"],
             minimumGap: TimeSpan.FromSeconds(5));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(30)));
 
         // Wait for executor body to complete, then poll until the post-return counter
         // increment (GapBackfillsSucceeded++) has propagated.
@@ -170,7 +185,7 @@ public sealed class GapBackfillServiceTests
     }
 
     [Fact]
-    public async Task OnReconnected_FailedExecutorResult_DoesNotIncrementSucceededCounter()
+    public async Task OnReconnectionGap_FailedExecutorResult_DoesNotIncrementSucceededCounter()
     {
         var tcs = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
@@ -180,13 +195,13 @@ public sealed class GapBackfillServiceTests
                 tcs.TrySetResult(true);
                 return FailureResult(req);
             },
-            subscribedSymbols: ["SPY"],
+            subscribedSymbols: () => ["SPY"],
             minimumGap: TimeSpan.FromSeconds(5));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(30)));
 
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
         // Give the post-return path a moment to finish; succeeded must remain 0.
@@ -197,7 +212,7 @@ public sealed class GapBackfillServiceTests
     }
 
     [Fact]
-    public async Task OnReconnected_ExecutorThrows_ServiceRemainsHealthyAndDoesNotPropagate()
+    public async Task OnReconnectionGap_ExecutorThrows_ServiceRemainsHealthyAndDoesNotPropagate()
     {
         var tcs = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
@@ -207,14 +222,14 @@ public sealed class GapBackfillServiceTests
                 await Task.Yield();
                 throw new InvalidOperationException("network error");
             },
-            subscribedSymbols: ["TSLA"],
+            subscribedSymbols: () => ["TSLA"],
             minimumGap: TimeSpan.FromSeconds(5));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
         // The fire-and-forget path must not propagate the exception to the caller.
-        var act = () => RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
+        var act = () => source.Raise(MakeGap(TimeSpan.FromSeconds(30)));
         act.Should().NotThrow();
 
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -232,14 +247,14 @@ public sealed class GapBackfillServiceTests
         var executorCalled = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
             (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
-            subscribedSymbols: ["AAPL"],
+            subscribedSymbols: () => ["AAPL"],
             enabled: false,
             minimumGap: TimeSpan.FromSeconds(5));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper); // must be a no-op when disabled
+        var source = new FakeGapSource();
+        svc.Subscribe(source); // must be a no-op when disabled
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(120)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(120)));
 
         var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
         completedTask.Should().NotBeSameAs(executorCalled.Task,
@@ -251,18 +266,18 @@ public sealed class GapBackfillServiceTests
     // ── no subscribed symbols ─────────────────────────────────────────────────
 
     [Fact]
-    public async Task OnReconnected_NoSubscribedSymbols_DoesNotCallExecutor()
+    public async Task OnReconnectionGap_NoSubscribedSymbols_DoesNotCallExecutor()
     {
         var executorCalled = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
             (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
-            subscribedSymbols: [],
+            subscribedSymbols: () => [],
             minimumGap: TimeSpan.FromSeconds(5));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(30)));
 
         var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
         completedTask.Should().NotBeSameAs(executorCalled.Task,
@@ -274,19 +289,19 @@ public sealed class GapBackfillServiceTests
     // ── unsubscribe ───────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task AfterUnsubscribe_ReconnectionEvent_DoesNotCallExecutor()
+    public async Task AfterUnsubscribe_ReconnectionGap_DoesNotCallExecutor()
     {
         var executorCalled = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
             (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
-            subscribedSymbols: ["AAPL"],
+            subscribedSymbols: () => ["AAPL"],
             minimumGap: TimeSpan.FromSeconds(5));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
-        svc.Unsubscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
+        svc.Unsubscribe(source);
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(30)));
 
         var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
         completedTask.Should().NotBeSameAs(executorCalled.Task,
@@ -298,18 +313,18 @@ public sealed class GapBackfillServiceTests
     // ── request shape ─────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task OnReconnected_RequestUsesCompositeProvider()
+    public async Task OnReconnectionGap_RequestUsesCompositeProvider()
     {
         var tcs = new TaskCompletionSource<BackfillRequest>();
         var svc = new GapBackfillService(
             async (req, ct) => { tcs.TrySetResult(req); await Task.Yield(); return SuccessResult(req); },
-            subscribedSymbols: ["QQQ"],
+            subscribedSymbols: () => ["QQQ"],
             minimumGap: TimeSpan.FromSeconds(10));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(45)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(45)));
 
         var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -317,21 +332,21 @@ public sealed class GapBackfillServiceTests
     }
 
     [Fact]
-    public async Task OnReconnected_RequestDateRange_MatchesReconnectionEventWindow()
+    public async Task OnReconnectionGap_RequestDateRange_MatchesReconnectionGapWindow()
     {
         var tcs = new TaskCompletionSource<BackfillRequest>();
         var svc = new GapBackfillService(
             async (req, ct) => { tcs.TrySetResult(req); await Task.Yield(); return SuccessResult(req); },
-            subscribedSymbols: ["QQQ"],
+            subscribedSymbols: () => ["QQQ"],
             minimumGap: TimeSpan.FromSeconds(10));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
         var reconnectedAt = DateTimeOffset.UtcNow;
         var disconnectedAt = reconnectedAt.AddSeconds(-45);
-        var evt = new ReconnectionEvent("test-provider", disconnectedAt, reconnectedAt, AttemptsUsed: 2);
-        RaiseReconnected(helper, evt);
+        var gap = new ReconnectionGap("test-provider", disconnectedAt, reconnectedAt, ReconnectAttempts: 2);
+        source.Raise(gap);
 
         var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
@@ -342,7 +357,7 @@ public sealed class GapBackfillServiceTests
     // ── multiple reconnections ────────────────────────────────────────────────
 
     [Fact]
-    public async Task OnReconnected_CalledTwice_CountersAccumulateCorrectly()
+    public async Task OnReconnectionGap_CalledTwice_CountersAccumulateCorrectly()
     {
         int callCount = 0;
         var tcs1 = new TaskCompletionSource<bool>();
@@ -359,14 +374,14 @@ public sealed class GapBackfillServiceTests
                     tcs2.TrySetResult(true);
                 return SuccessResult(req);
             },
-            subscribedSymbols: ["AAPL"],
+            subscribedSymbols: () => ["AAPL"],
             minimumGap: TimeSpan.FromSeconds(5));
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(30)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(30)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(30)));
 
         await Task.WhenAll(
             tcs1.Task.WaitAsync(TimeSpan.FromSeconds(5)),
@@ -388,13 +403,13 @@ public sealed class GapBackfillServiceTests
         // No minimumGap specified — defaults to 10 s inside GapBackfillService.
         var svc = new GapBackfillService(
             (req, ct) => { executorCalled.TrySetResult(true); return Task.FromResult(SuccessResult(req)); },
-            subscribedSymbols: ["AAPL"]);
+            subscribedSymbols: () => ["AAPL"]);
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
         // 9 s gap — just below the 10 s default minimum.
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(9)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(9)));
 
         var completedTask = await Task.WhenAny(executorCalled.Task, Task.Delay(100));
         completedTask.Should().NotBeSameAs(executorCalled.Task,
@@ -409,13 +424,13 @@ public sealed class GapBackfillServiceTests
         var tcs = new TaskCompletionSource<bool>();
         var svc = new GapBackfillService(
             async (req, ct) => { tcs.TrySetResult(true); await Task.Yield(); return SuccessResult(req); },
-            subscribedSymbols: ["AAPL"]);
+            subscribedSymbols: () => ["AAPL"]);
 
-        var helper = new WebSocketReconnectionHelper("test");
-        svc.Subscribe(helper);
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
 
         // 60 s gap — well above the 10 s default minimum.
-        RaiseReconnected(helper, MakeEvent(TimeSpan.FromSeconds(60)));
+        source.Raise(MakeGap(TimeSpan.FromSeconds(60)));
 
         await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
