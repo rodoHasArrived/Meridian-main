@@ -130,6 +130,29 @@ public sealed class PluginBacktestStrategyLiveSourceTests
     }
 
     [Fact]
+    public void TryCreate_WithUnconvertibleParameter_FailsClosed()
+    {
+        // A live strategy must never launch with a default value silently substituted for an
+        // unconvertible operator-supplied parameter.
+        var assemblyPath = typeof(PluginBacktestStrategyLiveSourceTests).Assembly.Location;
+        var source = new PluginBacktestStrategyLiveSource(Path.GetDirectoryName(assemblyPath));
+
+        var handled = source.TryCreate(
+            Context(parameters:
+            [
+                ("pluginAssembly", Path.GetFileName(assemblyPath)),
+                ("pluginType", typeof(SamplePluginStrategy).FullName!),
+                ("FastPeriod", "not-a-number")
+            ]),
+            out var strategy,
+            out var failureReason);
+
+        handled.Should().BeFalse();
+        strategy.Should().BeNull();
+        failureReason.Should().Contain("FastPeriod");
+    }
+
+    [Fact]
     public void TryCreate_WithUnknownPluginType_ListsAvailableStrategies()
     {
         var assemblyPath = typeof(PluginBacktestStrategyLiveSourceTests).Assembly.Location;

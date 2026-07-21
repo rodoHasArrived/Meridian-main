@@ -49,10 +49,12 @@ public sealed class PositionLimitRule : IRiskRule
             return Task.FromResult(RiskValidationResult.Approved());
         }
 
+        // The tracker contract returns an empty position for unknown symbols, but guard
+        // against nullable-oblivious implementations so the pre-trade gate cannot crash.
         var currentPosition = _positionTracker.GetPosition(request.Symbol);
         var context = Interop.RiskInterop.CreateContext(
             request,
-            currentPosition.Quantity,
+            currentPosition?.Quantity ?? 0m,
             maxPositionSize.Value,
             portfolioValue: default,
             initialCapital: default,

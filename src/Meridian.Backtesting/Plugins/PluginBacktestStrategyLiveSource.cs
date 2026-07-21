@@ -71,6 +71,7 @@ public sealed class PluginBacktestStrategyLiveSource : IBacktestStrategyLiveSour
         assemblyName = assemblyName.Trim();
         if (assemblyName.Contains("..", StringComparison.Ordinal)
             || assemblyName.IndexOfAny([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar]) >= 0
+            || assemblyName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
             || !assemblyName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
         {
             failureReason =
@@ -188,6 +189,8 @@ public sealed class PluginBacktestStrategyLiveSource : IBacktestStrategyLiveSour
                 continue;
             }
 
+            // Fail closed: silently running a live strategy with a default value in place of an
+            // unconvertible operator-supplied parameter is worse than refusing to launch.
             try
             {
                 var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
@@ -198,12 +201,10 @@ public sealed class PluginBacktestStrategyLiveSource : IBacktestStrategyLiveSour
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(
-                    ex,
-                    "Ignoring unconvertible run parameter {Parameter}='{Value}' for plugin strategy {StrategyType}",
-                    parameter.PropertyName,
-                    raw,
-                    strategyType.FullName);
+                throw new InvalidOperationException(
+                    $"Run parameter '{parameter.PropertyName}'='{raw}' could not be converted to " +
+                    $"{property.PropertyType.Name} for plugin strategy '{strategyType.FullName}'.",
+                    ex);
             }
         }
     }

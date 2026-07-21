@@ -96,7 +96,9 @@ public sealed class GapBackfillService
             return;
         }
 
-        var symbols = _subscribedSymbols().Where(static s => !string.IsNullOrWhiteSpace(s)).ToArray();
+        var symbols = (_subscribedSymbols() ?? Array.Empty<string>())
+            .Where(static s => !string.IsNullOrWhiteSpace(s))
+            .ToArray();
         if (symbols.Length == 0)
         {
             _log.Warning("Auto gap backfill triggered for {Provider} but no symbols are subscribed", gap.ProviderName);

@@ -835,9 +835,14 @@ public sealed class PromotionService
         var updated = run with { WalkForwardEvidence = evidence };
         await _repository.RecordRunAsync(updated, ct).ConfigureAwait(false);
 
+        // The run id arrives from the API route; strip line endings so a crafted value
+        // cannot forge additional log entries.
         _logger.LogInformation(
             "Recorded walk-forward evidence for run {RunId}: oosSharpe={OosSharpe:F3}, degradation={Degradation:F3}, windows={Windows}",
-            runId, evidence.OutOfSampleSharpeRatio, evidence.DegradationRatio, evidence.WindowCount);
+            runId.ReplaceLineEndings(string.Empty),
+            evidence.OutOfSampleSharpeRatio,
+            evidence.DegradationRatio,
+            evidence.WindowCount);
 
         return updated;
     }
