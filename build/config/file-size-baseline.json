@@ -25,7 +25,7 @@
     "src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs": 2026,
     "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs": 4740,
     "src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs": 2507,
-    "src/Meridian.Ui/dashboard/src/lib/api.ts": 4155,
+    "src/Meridian.Ui/dashboard/src/lib/api.ts": 4175,
     "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts": 6663,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.close-cockpit.view-model.ts": 2588,
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.governance.view-model.ts": 5028,
