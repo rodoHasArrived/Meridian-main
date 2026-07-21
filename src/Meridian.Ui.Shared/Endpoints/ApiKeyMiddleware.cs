@@ -11,6 +11,9 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// The API key is read from the MDC_API_KEY environment variable and supports
 /// key rotation (re-reads the variable on each request).
 /// When no key is configured, requests pass through so other auth layers can decide access.
+/// Requests already authenticated by a login session (the browser workstation) are exempt —
+/// the API key protects out-of-band API clients, so this middleware must run after
+/// <see cref="LoginSessionMiddleware"/>.
 /// Health check endpoints (/healthz, /readyz, /livez) are always exempt.
 /// </summary>
 public sealed class ApiKeyMiddleware
@@ -60,6 +63,14 @@ public sealed class ApiKeyMiddleware
             return;
         }
 
+        // Requests authenticated via a login session (the browser workstation) are governed
+        // by the session + CSRF layers; the API key protects out-of-band API clients.
+        if (context.Items.ContainsKey(LoginSessionMiddleware.CurrentUserKey))
+        {
+            await _next(context);
+            return;
+        }
+
         // Check for API key in the header only to avoid leakage via URLs, logs, and browser history.
         var providedKey = context.Request.Headers[ApiKeyHeaderName].FirstOrDefault();
 
@@ -78,6 +89,16 @@ public sealed class ApiKeyMiddleware
 
         await _next(context);
     }
+
+    /// <summary>
+    /// True when API-key authentication is configured and the request presents an
+    /// <c>X-Api-Key</c> header. <see cref="LoginSessionMiddleware"/> uses this to defer
+    /// judgment on such requests to this middleware instead of rejecting them for
+    /// lacking a session.
+    /// </summary>
+    internal static bool IsApiKeyCandidate(HttpContext context) =>
+        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ApiKeyEnvVar)) &&
+        context.Request.Headers.ContainsKey(ApiKeyHeaderName);
 
     /// <summary>
     /// Constant-time string comparison to prevent timing attacks on API key validation.
