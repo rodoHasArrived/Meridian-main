@@ -1821,6 +1821,7 @@ Meridian-main
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
 │   │   └── security-master-passport-workbench.md
 │   ├── product
+│   │   ├── adversarial-program-review-2026-07.md
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── excel-onboarding-workbook-brainstorm-2026-07.md
@@ -1983,6 +1984,7 @@ Meridian-main
 │   │   │   ├── wpf-keyboard-shortcuts.png
 │   │   │   ├── wpf-lean-integration.png
 │   │   │   ├── wpf-ledger-explorer.png
+│   │   │   ├── wpf-lifecycle-control.png
 │   │   │   ├── wpf-live-data.png
 │   │   │   ├── wpf-messaging-hub.png
 │   │   │   ├── wpf-notification-center.png
