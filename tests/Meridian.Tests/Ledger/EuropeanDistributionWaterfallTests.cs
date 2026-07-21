@@ -115,6 +115,30 @@ public sealed class EuropeanDistributionWaterfallTests
     }
 
     [Fact]
+    public void ExplicitPriorCatchUpPool_AvoidsRoundingDriftFromDerivedPool()
+    {
+        // Return of capital and preferred are already fully paid, so this distribution is pure
+        // catch-up. A tiny prior GP catch-up of 0.02 at a 75% rate reconstructs to a 0.03 pool by
+        // reverse division, understating the remaining catch-up; threading the real 0.02 pool
+        // restores the correct (slightly larger) allocation.
+        EuropeanWaterfallInput Build(decimal priorCatchUpPool) => new(
+            contributedCapital: 100m,
+            preferredReturnAccrued: 0m,
+            amountToDistribute: 100m,
+            carryRate: 0.20m,
+            catchUpRate: 0.75m,
+            priorReturnOfCapital: 100m,
+            priorPreferredPaid: 100m,
+            priorGpCatchUp: 0.02m,
+            priorCatchUpPool: priorCatchUpPool);
+
+        var derived = EuropeanDistributionWaterfall.Distribute(Build(0m));
+        var threaded = EuropeanDistributionWaterfall.Distribute(Build(0.02m));
+
+        threaded.GpCatchUp.Should().BeGreaterThan(derived.GpCatchUp);
+    }
+
+    [Fact]
     public void DistributedAmount_NeverExceedsInput()
     {
         var result = EuropeanDistributionWaterfall.Distribute(new EuropeanWaterfallInput(

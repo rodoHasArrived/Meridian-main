@@ -17,7 +17,8 @@ public sealed record EuropeanWaterfallInput
         decimal catchUpRate = 1m,
         decimal priorReturnOfCapital = 0m,
         decimal priorPreferredPaid = 0m,
-        decimal priorGpCatchUp = 0m)
+        decimal priorGpCatchUp = 0m,
+        decimal priorCatchUpPool = 0m)
     {
         if (contributedCapital < 0m)
             throw new ArgumentOutOfRangeException(nameof(contributedCapital), contributedCapital, "Contributed capital cannot be negative.");
@@ -31,6 +32,8 @@ public sealed record EuropeanWaterfallInput
             throw new ArgumentOutOfRangeException(nameof(catchUpRate), catchUpRate, "Catch-up rate must be in (0, 1].");
         if (priorReturnOfCapital < 0m || priorPreferredPaid < 0m || priorGpCatchUp < 0m)
             throw new ArgumentOutOfRangeException(nameof(priorReturnOfCapital), "Prior cumulative amounts cannot be negative.");
+        if (priorCatchUpPool < 0m)
+            throw new ArgumentOutOfRangeException(nameof(priorCatchUpPool), priorCatchUpPool, "Prior catch-up pool cannot be negative.");
 
         ContributedCapital = contributedCapital;
         PreferredReturnAccrued = preferredReturnAccrued;
@@ -40,6 +43,7 @@ public sealed record EuropeanWaterfallInput
         PriorReturnOfCapital = priorReturnOfCapital;
         PriorPreferredPaid = priorPreferredPaid;
         PriorGpCatchUp = priorGpCatchUp;
+        PriorCatchUpPool = priorCatchUpPool;
     }
 
     public decimal ContributedCapital { get; }
@@ -57,6 +61,13 @@ public sealed record EuropeanWaterfallInput
     public decimal PriorPreferredPaid { get; }
 
     public decimal PriorGpCatchUp { get; }
+
+    /// <summary>
+    /// Cumulative catch-up pool (LP + GP) already distributed. When threaded across multiple
+    /// distributions this preserves the exact prior pool; if left zero it is estimated from
+    /// <see cref="PriorGpCatchUp"/>, which can drift by a cent under a sub-100% catch-up rate.
+    /// </summary>
+    public decimal PriorCatchUpPool { get; }
 }
 
 /// <summary>One tier's split of a distribution between LP and GP.</summary>
@@ -125,7 +136,11 @@ public static class EuropeanDistributionWaterfall
         {
             var targetPoolTotal = RoundCurrency(
                 input.CarryRate * totalPreferredPaid / (input.CatchUpRate - input.CarryRate));
-            var priorPool = RoundCurrency(input.PriorGpCatchUp / input.CatchUpRate);
+            // Prefer the exact prior pool when the caller threads it; otherwise estimate it from the
+            // rounded prior GP catch-up, which can drift by a cent at sub-100% catch-up rates.
+            var priorPool = input.PriorCatchUpPool > 0m
+                ? input.PriorCatchUpPool
+                : RoundCurrency(input.PriorGpCatchUp / input.CatchUpRate);
             var remainingPoolTarget = Math.Max(0m, targetPoolTotal - priorPool);
             var catchUpPool = Math.Min(remaining, remainingPoolTarget);
             if (catchUpPool > 0m)
