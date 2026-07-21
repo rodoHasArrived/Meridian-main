@@ -73,10 +73,25 @@ public sealed class FundAdministrationControlService
                 {
                     ["templateId"] = template.TemplateId,
                     ["lineCount"] = template.Lines.Count.ToString(),
+                    ["ledgerBook"] = template.LedgerBook ?? "*",
+                    // Capture the full template definition so a same-id replacement that changes accounts,
+                    // sides, amounts, factors, dimensions, required parameters, or book scope produces a
+                    // distinct (hashed) registration event — recurring schedules resolve the current
+                    // template at materialization, so the chain must preserve which version was approved.
+                    ["definition"] = DescribeJournalTemplate(template),
                 });
         }
 
         return template;
+    }
+
+    private static string DescribeJournalTemplate(JournalTemplate template)
+    {
+        var lines = string.Join(";", template.Lines.Select(line =>
+            $"{line.Account.Name}:{line.Account.AccountType}:{line.Account.FinancialAccountId}" +
+            $"|{line.Side}|p={line.AmountParameter}|f={line.FixedAmount}|x={line.Factor}|d={line.Dimensions}|m={line.Memo}"));
+        var requiredParameters = string.Join(",", template.RequiredParameters);
+        return $"book={template.LedgerBook};params={requiredParameters};lines={lines}";
     }
 
     /// <summary>Schedules a recurring journal, verifying its template is registered first.</summary>
@@ -334,6 +349,14 @@ public sealed class FundAdministrationControlService
                     ["priceSource"] = rule.PriceSource,
                     ["valuationMethod"] = rule.ValuationMethod,
                     ["instrumentType"] = rule.InstrumentType ?? "*",
+                    // Fields that drive resolution (RulesFor orders by priority then approval time; Matches
+                    // applies the effective window and fair-value level), so a replacement that changes only
+                    // these is still a distinct, reconstructable audit event.
+                    ["priority"] = rule.Priority.ToString(),
+                    ["approvedAtUtc"] = rule.ApprovedAtUtc.ToString("O"),
+                    ["effectiveFrom"] = rule.EffectiveFrom?.ToString("yyyy-MM-dd") ?? "*",
+                    ["effectiveTo"] = rule.EffectiveTo?.ToString("yyyy-MM-dd") ?? "*",
+                    ["fairValueLevel"] = rule.FairValueLevel.ToString(),
                 });
             return rule;
         }
@@ -381,7 +404,13 @@ public sealed class FundAdministrationControlService
     // parents were approved is recorded tamper-evidently, not just the template id and node count.
     private static string DescribeOnboardingNodes(OnboardingTemplate template)
         => string.Join(";", template.Nodes.Select(node =>
-            $"{node.Key}|{node.NodeType}|{node.CodeTemplate}|{node.NameTemplate}|{node.ParentKey ?? string.Empty}"));
+            $"{node.Key}|{node.NodeType}|{node.CodeTemplate}|{node.NameTemplate}|{node.ParentKey ?? string.Empty}" +
+            $"|ccy={node.BaseCurrency ?? string.Empty}|attrs={DescribeAttributes(node.Attributes)}"));
+
+    private static string DescribeAttributes(IReadOnlyDictionary<string, string> attributes)
+        => string.Join(",", attributes
+            .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+            .Select(static pair => $"{pair.Key}={pair.Value}"));
 
     /// <summary>
     /// Applies a registered onboarding template, producing a concrete structure plan and recording the

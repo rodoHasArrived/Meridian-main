@@ -138,7 +138,25 @@ public sealed class FundAdministrationControlServiceTests
             "cfo");
 
         service.ResolvePortfolioPricing("PORT-1", "Bond", new DateOnly(2026, 6, 30))!.PriceSource.Should().Be("MatrixPricing");
-        service.EventLog.EventsOfKind(FundAdministrationEventKind.PricingRuleChanged).Should().ContainSingle();
+        // The change event captures the fields that drive resolution (priority/effective window/level),
+        // so a replacement that changes only those is still a reconstructable audit event.
+        var pricingEvent = service.EventLog.EventsOfKind(FundAdministrationEventKind.PricingRuleChanged)
+            .Should().ContainSingle().Which;
+        pricingEvent.Attributes["priority"].Should().Be("10");
+        pricingEvent.Attributes["fairValueLevel"].Should().Be("Unclassified");
+    }
+
+    [Fact]
+    public void RegisterJournalTemplate_RecordsFullDefinition()
+    {
+        var service = new FundAdministrationControlService();
+        service.RegisterJournalTemplate(FeeTemplate(), "controller");
+
+        // The full template definition (accounts and sides) is captured so a same-id replacement with
+        // different lines produces a distinct, tamper-evident registration event.
+        var registered = service.EventLog.EventsOfKind(FundAdministrationEventKind.JournalTemplateRegistered)
+            .Should().ContainSingle().Which;
+        registered.Attributes["definition"].Should().Contain("Debit").And.Contain("Credit");
     }
 
     [Fact]
@@ -185,17 +203,19 @@ public sealed class FundAdministrationControlServiceTests
             "Standard fund skeleton.",
             [
                 new OnboardingTemplateNode(OnboardingTemplateNode.Types.Organization, "org", "{orgCode}", "{orgName}"),
-                new OnboardingTemplateNode(OnboardingTemplateNode.Types.Portfolio, "port", "{fundCode}-MAIN", "{fundName} Main", ParentKey: "org"),
+                new OnboardingTemplateNode(OnboardingTemplateNode.Types.Portfolio, "port", "{fundCode}-MAIN", "{fundName} Main", ParentKey: "org", BaseCurrency: "USD"),
             ],
             "admin",
             At), "admin");
 
         // Registration is audited with a content-identifying event (not just id + count), so the exact
-        // approved hierarchy/codes/parents are recorded tamper-evidently.
+        // approved hierarchy/codes/parents — including base currency and node attributes — are recorded
+        // tamper-evidently.
         var registered = service.EventLog.EventsOfKind(FundAdministrationEventKind.OnboardingTemplateRegistered)
             .Should().ContainSingle().Which;
         registered.Attributes["nodeCount"].Should().Be("2");
         registered.Attributes["nodes"].Should().Contain("port|Portfolio|{fundCode}-MAIN|{fundName} Main|org");
+        registered.Attributes["nodes"].Should().Contain("ccy=USD", "the base currency is part of the approved definition");
         service.EventLog.VerifyIntegrity().Should().BeTrue();
     }
 
