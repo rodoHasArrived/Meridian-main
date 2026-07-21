@@ -39,6 +39,33 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Bai2_WithMultipleAccounts_IsRejected()
+    {
+        // Two 03 account-identifier records for two different accounts. The statement-run matcher would
+        // normalize every row to the run's single external account, so committing this file would compare
+        // one account's balances against another account's Meridian records. The connector must reject it.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260531,,USD,2/
+            03,0975312468,USD,015,1234567,,/
+            16,115,250000,,BANKREF01,CUSTREF01,Incoming wire/
+            03,1122334455,USD,015,7654321,,/
+            16,475,15433,,BANKREF02,CUSTREF02,Service fee/
+            49,1234567,3/
+            98,1234567,1,3/
+            99,1234567,1,5/
+            """;
+        var document = new StatementSourceDocument("multi-account.bai", Encoding.UTF8.GetBytes(bai2));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a multi-account BAI2 file must not commit into a single-account run");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_MULTIPLE_ACCOUNTS");
+    }
+
+    [Fact]
     public void CanHandle_CsvText_ReturnsFalse()
     {
         var document = new StatementSourceDocument(

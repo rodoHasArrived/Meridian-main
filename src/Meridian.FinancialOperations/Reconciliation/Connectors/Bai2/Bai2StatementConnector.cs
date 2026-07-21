@@ -120,16 +120,40 @@ public sealed class Bai2StatementConnector : IStatementConnector
             }
         }
 
-        if (records.Count == 0)
-        {
-            issues.Add(StatementParseIssue.Warning("BAI2_NO_RECORDS", "The BAI2 file produced no closing balances or transaction details."));
-        }
-
         var detectedColumns = new[] { "03/015", "16/TypeCode", "16/Amount", "16/CustomerRef" };
         var fingerprint = new StatementFormatFingerprint(
             Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
             detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
             "bai2");
+
+        // A BAI2 file can carry several 03 account-identifier records, but a statement run reconciles a
+        // single account and the matcher normalizes every imported row to the run's one external account.
+        // Committing a multi-account file would compare (and coincidentally match) one account's balances
+        // and entries against another account's Meridian records, so reject it: the operator must split
+        // the file into one document per account before importing.
+        var distinctAccounts = records
+            .Select(static record => record.Account)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinctAccounts.Length > 1)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "BAI2_MULTIPLE_ACCOUNTS",
+                $"The BAI2 file contains records for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the file into one document per account before importing."));
+            return Task.FromResult(new StatementParseResult(
+                ConnectorId,
+                ProfileId: null,
+                detectedColumns,
+                ColumnMappings: [],
+                [],
+                issues,
+                fingerprint));
+        }
+
+        if (records.Count == 0)
+        {
+            issues.Add(StatementParseIssue.Warning("BAI2_NO_RECORDS", "The BAI2 file produced no closing balances or transaction details."));
+        }
 
         return Task.FromResult(new StatementParseResult(
             ConnectorId,
