@@ -149,11 +149,36 @@ function appendLog(logs, prefix, chunk) {
   logs.push(...text.split(/\r?\n/).filter(Boolean).map((line) => `${prefix}${line}`));
 }
 
-async function waitForServer(url, timeoutMs) {
+async function waitForServer(url, timeoutMs, child, logs) {
   const started = Date.now();
   let lastError = "";
+  let serverExit = null;
+
+  // Fail fast if the dev server process dies before it ever answers (port
+  // conflict, Vite config error, OOM) instead of polling for the full timeout
+  // and then reporting a generic "timed out" message that hides the real cause.
+  const noteExit = (code, signal) => {
+    serverExit = `exit code ${code ?? "null"}${signal ? `, signal ${signal}` : ""}`;
+  };
+  if (child) {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      noteExit(child.exitCode, child.signalCode);
+    } else {
+      child.once("exit", noteExit);
+    }
+  }
+
+  const describeServerExit = () => {
+    const recentLogs = Array.isArray(logs) ? logs.slice(-20).join("\n") : "";
+    const detail = recentLogs ? `\n${recentLogs}` : "";
+    return `Dev server exited before becoming ready (${serverExit}).${detail}`;
+  };
 
   while (Date.now() - started < timeoutMs) {
+    if (serverExit) {
+      throw new Error(describeServerExit());
+    }
+
     try {
       const response = await fetch(url, { redirect: "manual" });
       if (response.status >= 200 && response.status < 500) {
@@ -168,6 +193,9 @@ async function waitForServer(url, timeoutMs) {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
 
+  if (serverExit) {
+    throw new Error(describeServerExit());
+  }
   throw new Error(`Timed out waiting for ${url}: ${lastError}`);
 }
 
@@ -661,6 +689,66 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   };
 }
 
+async function captureRouteWithRetries(
+  browser,
+  capture,
+  fixtureRoutes,
+  outputDir,
+  baseUrl,
+  defaults,
+  minBytes,
+  minTextLength,
+  timeoutMs,
+  readinessTimeoutMs,
+  maxAttempts,
+  onTrackerChange
+) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    // Each attempt renders in a fresh browser context so a retry starts from the
+    // route's default first-load state instead of inheriting a half-rendered
+    // page from the attempt that just failed.
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await setupApiMocking(page, fixtureRoutes);
+    const tracker = createPageErrorTracker(page);
+    onTrackerChange(tracker);
+
+    try {
+      const result = await captureRoute(
+        page,
+        tracker,
+        capture,
+        outputDir,
+        baseUrl,
+        defaults,
+        minBytes,
+        minTextLength,
+        timeoutMs,
+        readinessTimeoutMs
+      );
+      result.attempts = attempt;
+      return result;
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxAttempts) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `::warning::Capture ${capture.name} (${capture.path}) attempt ${attempt}/${maxAttempts} failed: `
+          + `${message.split(/\r?\n/)[0]}; retrying.`
+        );
+      }
+    } finally {
+      tracker.dispose();
+      onTrackerChange(null);
+      await context.close();
+    }
+  }
+
+  throw lastError ?? new Error(`Capture ${capture.name} failed after ${maxAttempts} attempt(s).`);
+}
+
 async function main() {
   const { values, valueLists, flags } = parseArgs(process.argv.slice(2));
   const repoRoot = values.has("repo-root")
@@ -713,6 +801,12 @@ async function main() {
   const readinessTimeoutMs = Number(values.get("readiness-timeout-ms") ?? "30000");
   const minBytes = Number(values.get("min-bytes") ?? "12000");
   const minTextLength = Number(values.get("min-text-length") ?? "80");
+  // A transient render or network-idle hiccup on a single route should not fail
+  // the whole catalog. Retry each capture a bounded number of times (fresh
+  // context each attempt) before recording it as failed.
+  const parsedCaptureRetries = Number(values.get("capture-retries") ?? "1");
+  const captureRetries = Number.isFinite(parsedCaptureRetries) ? Math.max(0, parsedCaptureRetries) : 1;
+  const captureAttempts = captureRetries + 1;
   const basePath = routeConfig.basePath ?? "/workstation";
   const baseUrl = values.get("base-url") ?? `http://${host}:${port}${basePath}`;
   const logs = [];
@@ -733,6 +827,7 @@ async function main() {
     outputDir,
     selectedCaptureCount: captures.length,
     totalCaptureCount: allCaptures.length,
+    maxAttemptsPerCapture: captureAttempts,
     captures: results,
     logs: []
   };
@@ -746,7 +841,7 @@ async function main() {
 
     if (!flags.has("skip-server")) {
       server = startViteServer(dashboardDir, host, port, logs);
-      await waitForServer(`${normalizeBaseUrl(baseUrl)}/`, timeoutMs);
+      await waitForServer(`${normalizeBaseUrl(baseUrl)}/`, timeoutMs, server, logs);
     }
 
     // Load fixture API responses and mock all /api/** requests so screenshots
@@ -772,37 +867,44 @@ async function main() {
     // Sandboxes and CI images often provide a system Chromium instead of the exact
     // browser build the pinned Playwright version would download.
     const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
-    browser = await chromium.launch(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {});
+    // --disable-dev-shm-usage avoids Chromium crashing when the CI container's
+    // /dev/shm is too small for full-page screenshots of large workstation routes.
+    const launchOptions = { args: ["--disable-dev-shm-usage"] };
+    if (chromiumExecutablePath) {
+      launchOptions.executablePath = chromiumExecutablePath;
+    }
+    browser = await chromium.launch(launchOptions);
 
     for (const capture of captures) {
       // Each capture renders in a fresh browser context so it shows the
       // route's default first-load state. The app shell persists
       // workflow-continuity, activity, and focus state across navigations,
       // so a shared context makes capture results depend on visit order.
-      const context = await browser.newContext();
-      const page = await context.newPage();
-      await setupApiMocking(page, fixtureRoutes);
-      pageErrors = createPageErrorTracker(page);
       try {
-        const result = await captureRoute(
-          page,
-          pageErrors,
+        const result = await captureRouteWithRetries(
+          browser,
           capture,
+          fixtureRoutes,
           outputDir,
           baseUrl,
           routeConfig.defaultViewport ?? {},
           minBytes,
           minTextLength,
           timeoutMs,
-          readinessTimeoutMs
+          readinessTimeoutMs,
+          captureAttempts,
+          (tracker) => {
+            pageErrors = tracker;
+          }
         );
         results.push(result);
         console.log(`Captured ${capture.name} -> ${result.path}`);
       } catch (error) {
-        // Fault isolation: a screen that fails to render correctly is recorded
-        // with its error and skipped so the run continues through the remaining
-        // screens. The failure is surfaced in the end-of-run summary and turns
-        // the overall run non-zero, but never blocks the rest of the catalog.
+        // Fault isolation: a screen that still fails after its retries is
+        // recorded with its error and skipped so the run continues through the
+        // remaining screens. The failure is surfaced in the end-of-run summary
+        // and turns the overall run non-zero, but never blocks the rest of the
+        // catalog.
         const message = error instanceof Error ? error.message : String(error);
         const failed = {
           id: capture.id,
@@ -811,14 +913,11 @@ async function main() {
           route: capture.path,
           url: toRouteUrl(baseUrl, capture.path),
           status: "failed",
+          attempts: captureAttempts,
           error: message
         };
         results.push(failed);
         console.error(`::warning::Skipped ${capture.name} (${capture.path}): ${message.split(/\r?\n/)[0]}`);
-      } finally {
-        pageErrors.dispose();
-        pageErrors = null;
-        await context.close();
       }
     }
 
