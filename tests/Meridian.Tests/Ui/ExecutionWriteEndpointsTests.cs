@@ -196,6 +196,13 @@ public sealed class ExecutionWriteEndpointsTests
             RegisterMinimalOms(
                 services,
                 new ExecutionPosition("AAPL", 5, 180m, 10m, 0m));
+            // The paper gateway fails closed on priceless market orders when no live feed is
+            // wired; this test asserts the paper close is submitted, not fill-price realism, so
+            // opt into scaffold pricing to exercise the submission path.
+            services.AddSingleton(new Meridian.Execution.Adapters.PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true
+            });
             services.AddSingleton(new BrokerageConfiguration
             {
                 ProductionRoutingPhaseEnabled = false,
@@ -233,9 +240,18 @@ public sealed class ExecutionWriteEndpointsTests
     public async Task ClosePositionByKey_WithPaperPosition_SubmitsOrder()
     {
         await using var app = await CreateAppAsync(services =>
+        {
             RegisterMinimalOms(
                 services,
-                new ExecutionPosition("AAPL", 5, 180m, 10m, 0m)));
+                new ExecutionPosition("AAPL", 5, 180m, 10m, 0m));
+            // The paper gateway fails closed on priceless market orders when no live feed is
+            // wired; this test asserts the close order is submitted, not fill-price realism, so
+            // opt into scaffold pricing to exercise the submission path.
+            services.AddSingleton(new Meridian.Execution.Adapters.PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true
+            });
+        });
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(
@@ -1079,12 +1095,7 @@ public sealed class ExecutionWriteEndpointsTests
 
     private static void RegisterMinimalOms(IServiceCollection services, params ExecutionPosition[] positions)
     {
-        // The paper gateway rejects priceless market orders unless scaffold pricing is opted
-        // in; these endpoint tests submit feed-less paper closes and assert acceptance, so the
-        // opt-in stands in for a live price source.
-        services.AddSingleton<IExecutionGateway>(_ => new PaperTradingGateway(
-            NullLogger<PaperTradingGateway>.Instance,
-            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }));
+        services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
         services.AddSingleton<IOrderManager>(sp =>
             new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(),

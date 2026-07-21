@@ -21,3 +21,12 @@ risks:
     mitigation: AI guidance requires nearest source README and registry sync for meaningful source changes.
     related_roadmap_items:
       - W2-TRD-001
+  - id: RISK-SIM-REAL-001
+    title: Simulated or in-memory data can present as real operational records
+    status: open
+    severity: high
+    owner_lane: Data Confidence and Validation
+    mitigation: W9-TRUTH-001 makes simulation labeling mandatory across both workstations and requires supported production profiles to fail closed when in-memory or placeholder persistence is selected for a durable role; W9-DEMO-002 keeps seeded demo data durable, labeled, and isolated from non-demo data roots.
+    related_roadmap_items:
+      - W9-TRUTH-001
+      - W9-DEMO-002
