@@ -14,16 +14,19 @@ namespace Meridian.Ui.Shared.Services;
 /// <remarks>
 /// Sources and assumptions (documented for operator/domain review):
 /// <list type="bullet">
-///   <item>Cash is read from the fund account's latest retained balance snapshot
-///     (<see cref="IAccountQueryService.GetLatestBalanceSnapshotAsync"/>) — the same "internal" side
-///     the provider-ledger reconciliation compares against, distinct from the custodian activity feed.</item>
+///   <item>Cash is read from the account's retained balance timeline as of the statement period end
+///     (<see cref="IAccountQueryService.GetBalanceTimelineAsync"/>) — the most recent internal balance
+///     at or before the period close, not the account's newest balance, so a closed statement is never
+///     reconciled against a balance recorded after the period.</item>
 ///   <item>Positions are read best-effort from the retained position snapshot for the account's
 ///     strategy run (<see cref="IPositionSnapshotStore.GetLatestSnapshotAsync(string,string,System.Threading.CancellationToken)"/>).
-///     Market value is left unspecified so the engine matches on quantity and account/security identity.</item>
+///     A snapshot captured after the statement period end fails closed to no positions; market value is
+///     left unspecified so the engine matches on quantity and account/security identity.</item>
 ///   <item>The statement run's <c>FundAccountId</c> must be a Meridian fund-account GUID; an operator
 ///     label that is not a GUID resolves no internal book, and every row fails closed to a break.</item>
-///   <item>Internal records are labeled with the account's <c>AccountCode</c>, so a statement row
-///     reconciles when its account column carries that same code.</item>
+///   <item>Internal records are labeled with the run's external (custodian) account key — the same key
+///     the statement side normalizes to — so a statement row reconciles against Meridian's book for the
+///     account under reconciliation regardless of the per-row account string the custodian emits.</item>
 ///   <item>Ledger-transaction population is not sourced here yet; statement transaction rows therefore
 ///     continue to fail closed to breaks until a ledger-journal mapping is added.</item>
 /// </list>
@@ -54,23 +57,33 @@ public sealed class WorkstationInternalReconciliationPopulationProvider(
                 return InternalReconciliationPopulations.Empty;
             }
 
-            var accountKey = string.IsNullOrWhiteSpace(account.AccountCode)
+            // Both sides of the match are keyed by the run's external (custodian) account so the
+            // per-row account string a statement carries (an IBAN, a bank id, a broker account number)
+            // does not have to equal Meridian's internal account code for the books to reconcile.
+            var accountKey = string.IsNullOrWhiteSpace(context.ExternalAccountId)
                 ? context.FundAccountId
-                : account.AccountCode.Trim();
+                : context.ExternalAccountId.Trim();
 
-            var cash = await ReadCashAsync(accounts, accountId, accountKey, ct).ConfigureAwait(false);
-            var positions = await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountKey, ct).ConfigureAwait(false);
+            // A default (unset) period end means "no ceiling" — fall back to the newest retained
+            // records rather than filtering everything out against DateOnly.MinValue.
+            var asOfCeiling = context.StatementPeriodEnd == default
+                ? (DateOnly?)null
+                : context.StatementPeriodEnd;
+
+            var cash = await ReadCashAsync(accounts, accountId, accountKey, asOfCeiling, ct).ConfigureAwait(false);
+            var positions = await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountKey, asOfCeiling, ct).ConfigureAwait(false);
 
             return new InternalReconciliationPopulations(positions, cash, []);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // Fail closed: a resolution error must surface statement rows as breaks for operator
-            // review rather than throw out of the import workflow.
+            // review rather than throw out of the import workflow. Log the parsed account GUID rather
+            // than the raw request string so untrusted input never reaches the log sink.
             logger?.LogWarning(
                 ex,
                 "Failed to resolve internal reconciliation populations for fund account {FundAccountId}; reconciling against an empty book.",
-                context.FundAccountId);
+                accountId);
             return InternalReconciliationPopulations.Empty;
         }
     }
@@ -79,10 +92,26 @@ public sealed class WorkstationInternalReconciliationPopulationProvider(
         IAccountQueryService accounts,
         Guid accountId,
         string accountKey,
+        DateOnly? asOfCeiling,
         CancellationToken ct)
     {
-        var balance = await accounts.GetLatestBalanceSnapshotAsync(accountId, ct).ConfigureAwait(false);
-        if (balance is null || string.IsNullOrWhiteSpace(balance.Currency))
+        // Resolve the balance the statement period closes on, not the account's newest balance:
+        // reconciling a closed statement period against a balance recorded after the period end would
+        // compare across time and manufacture spurious breaks. Bound the timeline by the period end and
+        // take the most recent retained balance at or before it.
+        var timeline = await accounts
+            .GetBalanceTimelineAsync(accountId, null, asOfCeiling, ct)
+            .ConfigureAwait(false);
+
+        var balance = (timeline ?? [])
+            .Where(snapshot => snapshot is not null
+                && !string.IsNullOrWhiteSpace(snapshot.Currency)
+                && (asOfCeiling is null || snapshot.AsOfDate <= asOfCeiling.Value))
+            .OrderByDescending(snapshot => snapshot.AsOfDate)
+            .ThenByDescending(snapshot => snapshot.RecordedAt)
+            .FirstOrDefault();
+
+        if (balance is null)
         {
             return [];
         }
@@ -103,6 +132,7 @@ public sealed class WorkstationInternalReconciliationPopulationProvider(
         AccountSummaryDto account,
         string accountIdText,
         string accountKey,
+        DateOnly? asOfCeiling,
         CancellationToken ct)
     {
         if (positionSnapshots is null || string.IsNullOrWhiteSpace(account.RunId))
@@ -119,6 +149,15 @@ public sealed class WorkstationInternalReconciliationPopulationProvider(
         }
 
         var asOfDate = DateOnly.FromDateTime(snapshot.AsOf.UtcDateTime);
+
+        // Fail closed when the only retained snapshot post-dates the statement period: a position set
+        // captured after the period end cannot be reconciled against a closed statement, so surface the
+        // statement's position rows as breaks rather than matching them to a later book state.
+        if (asOfCeiling is not null && asOfDate > asOfCeiling.Value)
+        {
+            return [];
+        }
+
         var positions = new List<InternalPortfolioPosition>(snapshot.Positions.Count);
         foreach (var position in snapshot.Positions)
         {

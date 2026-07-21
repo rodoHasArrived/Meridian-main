@@ -10,8 +10,9 @@ namespace Meridian.Tests.Ui;
 
 /// <summary>
 /// Verifies the workstation internal-book provider that replaces the empty default: it resolves
-/// Meridian's retained cash balance and position snapshot for a fund account, and fails closed to an
-/// empty book on any resolution gap so the matcher never fabricates a match.
+/// Meridian's retained cash balance and position snapshot for a fund account as of the statement
+/// period end, labels them with the run's external account key, and fails closed to an empty book on
+/// any resolution gap so the matcher never fabricates a match.
 /// </summary>
 public sealed class WorkstationInternalReconciliationPopulationProviderTests
 {
@@ -22,10 +23,8 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
     {
         var accounts = Substitute.For<IAccountQueryService>();
         accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
-        accounts.GetLatestBalanceSnapshotAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
-            .Returns(new AccountBalanceSnapshotDto(
-                Guid.NewGuid(), AccountId, null, new DateOnly(2026, 5, 31), "USD", 2500.25m,
-                null, null, null, "internal", DateTimeOffset.UnixEpoch, null));
+        accounts.GetBalanceTimelineAsync(Arg.Any<Guid>(), Arg.Any<DateOnly?>(), Arg.Any<DateOnly?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<AccountBalanceSnapshotDto> { Balance(new DateOnly(2026, 5, 31), 2500.25m) });
 
         var positions = Substitute.For<IPositionSnapshotStore>();
         positions.GetLatestSnapshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -39,18 +38,61 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
         var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
 
         var cash = result.CashBalances.Should().ContainSingle().Subject;
-        cash.Account.Should().Be("FUND-1", "internal records are labeled with the account code that statement rows carry");
+        cash.Account.Should().Be("EXT-1", "internal records are keyed by the run's external account");
         cash.Currency.Should().Be("USD");
         cash.Balance.Should().Be(2500.25m);
 
         var position = result.Positions.Should().ContainSingle().Subject;
-        position.Account.Should().Be("FUND-1");
+        position.Account.Should().Be("EXT-1");
         position.SecurityId.Should().Be("SPY");
         position.Quantity.Should().Be(10m);
         position.AsOfDate.Should().Be(new DateOnly(2026, 5, 28));
         position.MarketValue.Should().BeNull("market value is left unspecified so the engine matches on quantity");
 
         result.LedgerTransactions.Should().BeEmpty("ledger-transaction population is not sourced yet");
+    }
+
+    [Fact]
+    public async Task GetPopulationsAsync_ResolvesCashAsOfPeriodEnd()
+    {
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+        accounts.GetBalanceTimelineAsync(Arg.Any<Guid>(), Arg.Any<DateOnly?>(), Arg.Any<DateOnly?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<AccountBalanceSnapshotDto>
+            {
+                Balance(new DateOnly(2026, 5, 31), 2500.25m),
+                Balance(new DateOnly(2026, 6, 30), 9999.99m),
+            });
+
+        var provider = new WorkstationInternalReconciliationPopulationProvider(accounts);
+
+        var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
+
+        var cash = result.CashBalances.Should().ContainSingle().Subject;
+        cash.Balance.Should().Be(
+            2500.25m,
+            "the balance at or before the statement period end is used, never one recorded after the period closes");
+    }
+
+    [Fact]
+    public async Task GetPopulationsAsync_SnapshotAfterPeriodEnd_ExcludesPositions()
+    {
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+
+        var positions = Substitute.For<IPositionSnapshotStore>();
+        positions.GetLatestSnapshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new AccountSnapshotRecord(
+                "run-1", AccountId.ToString("D"), "Fund One", "Brokerage", 2500.25m, 0m, 0m, 0m,
+                [new PositionRecord("SPY", 10m, 500m, 0m, 0m)],
+                new DateTimeOffset(2026, 6, 15, 0, 0, 0, TimeSpan.Zero)));
+
+        var provider = new WorkstationInternalReconciliationPopulationProvider(accounts, positions);
+
+        var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
+
+        result.Positions.Should().BeEmpty(
+            "a snapshot captured after the statement period end fails closed rather than reconciling against a later book state");
     }
 
     [Fact]
@@ -89,6 +131,10 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
 
     private static InternalReconciliationPopulationContext Context(string fundAccountId) =>
         new(fundAccountId, "EXT-1", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31), "USD");
+
+    private static AccountBalanceSnapshotDto Balance(DateOnly asOf, decimal cash) => new(
+        Guid.NewGuid(), AccountId, null, asOf, "USD", cash,
+        null, null, null, "internal", DateTimeOffset.UnixEpoch, null);
 
     private static AccountSummaryDto Account(string code, string runId) => new(
         AccountId,

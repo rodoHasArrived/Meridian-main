@@ -61,9 +61,9 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             "FUND-1,,0,0,2500.25,cash,2026-05-28,,USD,,",
             "FUND-1,MSFT,5,20,-100,trade,2026-05-28,2026-05-30,USD,,EXT-9");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
-            [new InternalPortfolioPosition("i-spy", "FUND-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
-            [new InternalCashBalance("i-cash", "FUND-1", "USD", 2500.25m, "internal:cash")],
-            [new InternalLedgerTransaction("i-tx", "EXT-9", "FUND-1", "MSFT", "USD", new DateOnly(2026, 5, 28), new DateOnly(2026, 5, 30), "trade", 5m, -100m, "internal:tx")])));
+            [new InternalPortfolioPosition("i-spy", "EXT-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash")],
+            [new InternalLedgerTransaction("i-tx", "EXT-9", "EXT-1", "MSFT", "USD", new DateOnly(2026, 5, 28), new DateOnly(2026, 5, 30), "trade", 5m, -100m, "internal:tx")])));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
 
@@ -81,7 +81,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         var workflow = CreateWorkflow(
             Populations(new InternalReconciliationPopulations(
                 [],
-                [new InternalCashBalance("i-cash", "FUND-1", "USD", 1085m, "internal:cash")],
+                [new InternalCashBalance("i-cash", "EXT-1", "USD", 1085m, "internal:cash")],
                 [])),
             new TableReconciliationFxRateProvider([new ReconciliationFxQuote("EUR", "USD", 1.085m)]));
 
@@ -116,8 +116,8 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             "FUND-1,SPY,10,500,5000,position,2026-05-28,,USD,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [
-                new InternalPortfolioPosition("i-spy", "FUND-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy"),
-                new InternalPortfolioPosition("i-qqq", "FUND-1", "QQQ", new DateOnly(2026, 5, 28), 3m, 900m, "internal:pos:qqq"),
+                new InternalPortfolioPosition("i-spy", "EXT-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy"),
+                new InternalPortfolioPosition("i-qqq", "EXT-1", "QQQ", new DateOnly(2026, 5, 28), 3m, 900m, "internal:pos:qqq"),
             ],
             [],
             [])));

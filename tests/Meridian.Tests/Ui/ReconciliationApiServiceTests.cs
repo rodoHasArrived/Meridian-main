@@ -42,7 +42,7 @@ public sealed class ReconciliationApiServiceTests
         // engine now compares statements to Meridian's records instead of to themselves.
         services.AddSingleton<IInternalReconciliationPopulationProvider>(
             new StubInternalPopulationProvider(new InternalReconciliationPopulations(
-                [new InternalPortfolioPosition("internal-spy", "FUND-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
+                [new InternalPortfolioPosition("internal-spy", "external-account-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
                 [],
                 [])));
         services.AddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);

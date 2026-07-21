@@ -38,6 +38,15 @@ internal static class StatementRunMatcher
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
 
+        // A statement run reconciles a single custodian account, so the account dimension is a
+        // run-level constant. Normalize the statement side to the run's external (custodian) account
+        // key — the same key the internal populations use — so institutional statements whose per-row
+        // account column carries an IBAN or bank id (camt.053, BAI2) still reconcile instead of
+        // breaking on an account-string mismatch.
+        var canonicalAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
+            ? import.FundAccountId
+            : import.ExternalAccountId.Trim();
+
         foreach (var row in rows)
         {
             var evidence = $"{import.ImportId}:{row.SourceRowNumber}";
@@ -45,13 +54,13 @@ internal static class StatementRunMatcher
             switch (Classify(row.ActivityType))
             {
                 case StatementRowKind.Position:
-                    statementPositions.Add(MapPosition(row, evidence, fxRateProvider, normalizedBase));
+                    statementPositions.Add(MapPosition(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
                     break;
                 case StatementRowKind.CashBalance:
-                    statementCash.Add(MapCash(row, evidence, fxRateProvider, normalizedBase));
+                    statementCash.Add(MapCash(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
                     break;
                 default:
-                    statementTransactions.Add(MapTransaction(row, evidence, fxRateProvider, normalizedBase));
+                    statementTransactions.Add(MapTransaction(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
                     break;
             }
         }
@@ -115,6 +124,7 @@ internal static class StatementRunMatcher
 
     private static NormalizedStatementPosition MapPosition(
         CanonicalStatementRow row,
+        string account,
         string evidence,
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
@@ -134,7 +144,7 @@ internal static class StatementRunMatcher
 
         return new NormalizedStatementPosition(
             evidence,
-            row.Account,
+            account,
             row.Symbol,
             row.TradeDate,
             row.Quantity,
@@ -144,16 +154,18 @@ internal static class StatementRunMatcher
 
     private static NormalizedStatementCashBalance MapCash(
         CanonicalStatementRow row,
+        string account,
         string evidence,
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
     {
         var (currency, amount) = ToBaseCurrency(row.CashAmount, row.Currency, baseCurrency, row.TradeDate, fxRateProvider);
-        return new NormalizedStatementCashBalance(evidence, row.Account, currency, amount, evidence);
+        return new NormalizedStatementCashBalance(evidence, account, currency, amount, evidence);
     }
 
     private static NormalizedStatementTransaction MapTransaction(
         CanonicalStatementRow row,
+        string account,
         string evidence,
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
@@ -163,7 +175,7 @@ internal static class StatementRunMatcher
         return new NormalizedStatementTransaction(
             evidence,
             string.IsNullOrWhiteSpace(row.ExternalTransactionId) ? null : row.ExternalTransactionId,
-            row.Account,
+            account,
             string.IsNullOrWhiteSpace(row.Symbol) ? null : row.Symbol,
             currency,
             row.TradeDate,
