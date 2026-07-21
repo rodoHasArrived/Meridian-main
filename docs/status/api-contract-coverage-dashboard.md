@@ -12,9 +12,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Metric | Value |
 |---|---:|
 | Weighted score | 29.5% |
-| Endpoint coverage | 41.3% |
+| Endpoint coverage | 41.4% |
 | Workstation contract coverage | 11.7% |
-| Endpoints documented | 253 / 613 |
+| Endpoints documented | 254 / 613 |
 | Workstation contracts documented | 103 / 884 |
 
 ## Endpoint Coverage
@@ -167,7 +167,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/demo/market-data/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:102` |
 | `GET` | `/api/demo/mode` | Gap | `src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:71` |
 | `GET` | `/api/demo/symbols` | Gap | `src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:88` |
-| `POST` | `/api/dev/seed/bank-transactions` | Gap | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:254` |
+| `POST` | `/api/dev/seed/bank-transactions` | Documented | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:254` |
 | `GET` | `/api/diagnostics/bundle` | Gap | `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs:148` |
 | `GET` | `/api/diagnostics/config` | Gap | `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs:122` |
 | `GET` | `/api/diagnostics/coordination` | Gap | `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs:494` |
@@ -1526,7 +1526,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 360 mapped endpoint gap(s).
+- Document or intentionally suppress 359 mapped endpoint gap(s).
 - Document or intentionally suppress 781 workstation contract gap(s).
 
 ---
