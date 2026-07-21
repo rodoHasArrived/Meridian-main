@@ -79,6 +79,9 @@ public sealed class IBSimulationClient : IMarketDataClient
     public bool IsEnabled => true;
     public bool IsSimulation => true;
 
+    /// <inheritdoc/>
+    public bool IsSimulated => true;
+
 
     public string ProviderId => "ib-sim";
     public string ProviderDisplayName => "Interactive Brokers (Simulation)";

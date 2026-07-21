@@ -180,10 +180,30 @@ pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 Use `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` for a Release
 host/desktop build that does not require database connectivity. Use `-LaunchMode Production`
 without `-BuildOnly` only when the production governance persistence variables are configured:
-`MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`.
+`MERIDIAN_DATABASE_URL`, or `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
+`MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`.
 Development launch mode sets `DOTNET_ENVIRONMENT=Development`,
 `ASPNETCORE_ENVIRONMENT=Development`, and `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` for the
 launched processes, then restores the caller's environment.
+
+### Persistence
+
+**Without database configuration, every money-path store (ledger, fund accounts, banking,
+money market, reporting, and more) runs in-memory: journal entries, reconciliations, and
+approvals are lost on restart.** Hosts surface this loudly — a `PERSISTENCE: NONE`/`PARTIAL`
+warning at startup, in the `postgresql` readiness check, and as a red banner in the browser
+workstation.
+
+Set the single unified variable to persist every store domain to one PostgreSQL database:
+
+```bash
+export MERIDIAN_DATABASE_URL="postgres://user:password@localhost:5432/meridian"
+# or Npgsql keyword form:
+export MERIDIAN_DATABASE_URL="Host=localhost;Port=5432;Database=meridian;Username=user;Password=password"
+```
+
+Per-domain `MERIDIAN_*_CONNECTION_STRING` variables remain supported and always take
+precedence over `MERIDIAN_DATABASE_URL`, so split-database deployments keep working.
 
 ## Workstation Architecture Rules
 

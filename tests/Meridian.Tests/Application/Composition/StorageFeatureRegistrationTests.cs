@@ -50,6 +50,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
     private readonly string? _originalBankingSchema;
     private readonly string? _originalMoneyMarketConnectionString;
     private readonly string? _originalMoneyMarketSchema;
+    private readonly string? _originalUnifiedDatabaseUrl;
     private readonly string? _originalScopedAccessConnectionString;
     private readonly string? _originalScopedAccessSchema;
     private readonly string? _originalUseInMemoryGovernance;
@@ -74,6 +75,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         _originalBankingSchema = Environment.GetEnvironmentVariable(BankingStartup.SchemaVariable);
         _originalMoneyMarketConnectionString = Environment.GetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable);
         _originalMoneyMarketSchema = Environment.GetEnvironmentVariable(MoneyMarketStartup.SchemaVariable);
+        _originalUnifiedDatabaseUrl = Environment.GetEnvironmentVariable(Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable);
         _originalScopedAccessConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING");
         _originalScopedAccessSchema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA");
         _originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
@@ -364,6 +366,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
 
     private static void ClearPostgresBackedStorageEnvironment()
     {
+        Environment.SetEnvironmentVariable(Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable, null);
         Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable, null);
         Environment.SetEnvironmentVariable(SecurityMasterStartup.SchemaVariable, null);
         Environment.SetEnvironmentVariable(DirectLendingStartup.ConnectionStringVariable, null);
@@ -407,6 +410,7 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         Environment.SetEnvironmentVariable(BankingStartup.SchemaVariable, _originalBankingSchema);
         Environment.SetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable, _originalMoneyMarketConnectionString);
         Environment.SetEnvironmentVariable(MoneyMarketStartup.SchemaVariable, _originalMoneyMarketSchema);
+        Environment.SetEnvironmentVariable(Meridian.Storage.MeridianDatabaseEnvironment.UnifiedVariable, _originalUnifiedDatabaseUrl);
         Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING", _originalScopedAccessConnectionString);
         Environment.SetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA", _originalScopedAccessSchema);
         Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", _originalUseInMemoryGovernance);

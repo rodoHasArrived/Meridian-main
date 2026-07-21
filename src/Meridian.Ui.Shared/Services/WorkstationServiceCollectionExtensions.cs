@@ -74,6 +74,10 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
     {
+        // Unified persistence config must resolve before the reporting/scoped-access
+        // registrations below read the per-domain connection-string variables.
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
 
         services.TryAddSingleton<ConfigStore>(sp =>

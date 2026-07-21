@@ -56,6 +56,8 @@ public sealed class HostStartup : IAsyncDisposable
 
     private static HostStartup Create(CompositionOptions options)
     {
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         var log = LoggingSetup.ForContext<HostStartup>();
         var services = new ServiceCollection();
         services.AddLogging(builder => builder.AddSerilog());

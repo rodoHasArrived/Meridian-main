@@ -72,7 +72,9 @@ public sealed class RiskEndpointsTests
             services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
             services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
             services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
-            services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(NullLogger<Meridian.Execution.PaperTradingGateway>.Instance));
+            services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(
+                NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }));
             services.AddSingleton<RiskRuleRuntimeService>();
             services.AddSingleton<IRiskValidator>(sp =>
             {

@@ -207,6 +207,7 @@ import type {
   SecurityMasterEntry,
   SecurityMasterTrustSnapshot,
   SessionInfo,
+  DegradedModeStatus,
   SystemEventRecord,
   SystemOverviewResponse,
   ReplayFileRecord,
@@ -3559,11 +3560,29 @@ function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewRespon
       storageHealth: readStorageHealth(payload.storageHealth),
       lastHeartbeatUtc: heartbeat,
       metrics: Array.isArray(payload.metrics) ? payload.metrics as MetricSnapshot[] : [],
-      recentEvents: Array.isArray(payload.recentEvents) ? payload.recentEvents as SystemEventRecord[] : []
+      recentEvents: Array.isArray(payload.recentEvents) ? payload.recentEvents as SystemEventRecord[] : [],
+      degradedMode: readDegradedMode(payload.degradedMode)
     };
   }
 
   return normalizeLegacyStatusResponse(payload);
+}
+
+function readDegradedMode(value: unknown): DegradedModeStatus | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const marketDataMode = readString(value.marketDataMode);
+  const persistenceMode = readString(value.persistenceMode);
+  return {
+    marketDataMode: marketDataMode === "live" || marketDataMode === "simulated" ? marketDataMode : "unknown",
+    marketDataDetail: readString(value.marketDataDetail),
+    persistenceMode: persistenceMode === "configured" || persistenceMode === "partial" ? persistenceMode : "none",
+    missingPersistenceDomains: Array.isArray(value.missingPersistenceDomains)
+      ? value.missingPersistenceDomains.filter((domain): domain is string => typeof domain === "string")
+      : []
+  };
 }
 
 function normalizeLegacyStatusResponse(payload: Record<string, unknown>): SystemOverviewResponse {
@@ -3633,7 +3652,8 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
         source: "Meridian host",
         timestamp: timestampUtc
       }
-    ]
+    ],
+    degradedMode: readDegradedMode(payload.degradedMode)
   };
 }
 

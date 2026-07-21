@@ -64,6 +64,22 @@ public sealed class ProviderIntegrationHttpClientTransportTests
     }
 
     [Fact]
+    public async Task SendAsync_RejectsNetworkPathOutsideApprovedOriginBeforeSending()
+    {
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        using var httpClient = new HttpClient(handler);
+        var transport = new ProviderIntegrationHttpClientTransport(
+            httpClient,
+            hostResolver: new StaticHostResolver(IPAddress.Parse("203.0.113.10")));
+
+        var act = () => transport.SendAsync(CreateRequest("//attacker.example/metadata"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*outside the approved HTTPS origin*");
+        handler.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task SendAsync_RejectsApprovedHostResolvingToPrivateAddress()
     {
         var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK));

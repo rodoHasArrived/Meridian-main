@@ -25,7 +25,11 @@ public sealed class OrderManagementSystemTests : IDisposable
 
     public OrderManagementSystemTests()
     {
-        _gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance);
+        // These tests exercise OMS behavior over a gateway that fills feed-less market
+        // orders, so scaffold pricing is explicitly opted in.
+        _gateway = new ExecutionGateway(
+            NullLogger<ExecutionGateway>.Instance,
+            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true });
         _oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
     }
 
@@ -1099,7 +1103,9 @@ public sealed class OrderManagementSystemGateTests : IDisposable
 
     public OrderManagementSystemGateTests()
     {
-        _gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance);
+        _gateway = new ExecutionGateway(
+            NullLogger<ExecutionGateway>.Instance,
+            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true });
     }
 
     public void Dispose() { }
