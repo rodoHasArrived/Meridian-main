@@ -595,6 +595,15 @@
       "sha256": "0ce4b1bd9d4221dbc89c6bea57c44247a6722872ab542936dea9bf653136e381"
     },
     {
+      "filename": "V_ledger_026__journal_leg_currency.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_026__journal_leg_currency.sql",
+      "schema": "ledger",
+      "sha256": "029b10b7501f8906cdd633ed73adae80e0a7177571a4e922b3ffdf8ec2eaf025"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",

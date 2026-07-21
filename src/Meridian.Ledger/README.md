@@ -31,7 +31,32 @@ Use this module for books, ledger behavior, reconciliation evidence, and account
 `Assets:Cash:Brokerage` and can roll flat trial-balance output up to parent accounts for
 fund/accounting reports.
 `LedgerFinancialStatementBuilder` projects current or point-in-time trial balances into
-income-statement and balance-sheet rows with net-income and accounting-equation checks.
+income-statement and balance-sheet rows with net-income and accounting-equation checks;
+`BuildForPeriod` additionally derives a direct-method `LedgerCashFlowStatement` (operating /
+investing / financing, reconciled to beginning and ending cash) and a
+`LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,
+allocated result, ending capital per equity account) from the period's journal activity.
+`LedgerReportPackBuilder` emits those statements as CSV/JSON pack artifacts, and
+`LedgerScheduledReportExportPackageBuilder` now honors every declared `LedgerReportExportFormat`:
+Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
+`ILedgerReportBinaryRenderer` seam (the dependency-free `BuiltInLedgerReportBinaryRenderer` by
+default; `Meridian.Documents.FinancialReportDocumentRenderer` supplies branded, deterministic
+QuestPDF/ClosedXML output for client delivery).
+Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, transaction amounts,
+and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
+account symbols; the currency-aware `Ledger.PostLines` overload and
+`MultiCurrencyJournalProjection.ToCurrencyAwareLedgerLines` post that detail durably.
+
+Fund-ops economics are modeled as pure calculators: `PreferredReturnCalculator` (compounding or
+simple preferred return on a contribution timeline), `EuropeanDistributionWaterfall` (return of
+capital → preferred return → automatic GP catch-up → carried-interest split),
+`CarriedInterestClawbackCalculator` (end-of-life GP giveback), and the share-class/unit register
+(`ShareClass`, `ShareClassUnitRegisterProjector`, `NavPerUnitCalculator`, `EqualizationCalculator`)
+for unitized NAV-per-unit with single-NAV equalisation. `PrivateCapitalCommitments` plus
+`CapitalCallDraftFactory` and `CapitalCallPlanBuilder` add the LP commitment register,
+uncalled-commitment roll-forward invariant, and governed capital-call drafting; the
+`CommitmentRollForwardCalculator` and `DefaultInterestCalculator` live in
+`Meridian.FinancialOperations/PrivateCapital`.
 `Ledger.CalculateNetBalance` exposes the ledger-owned normal-balance calculation over the shared
 F# posting kernel so storage and reporting projections do not duplicate account-type math.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares

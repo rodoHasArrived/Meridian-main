@@ -1102,7 +1102,12 @@ public sealed partial class PostgresLedgerJournalStore :
                     debit,
                     credit,
                     description,
-                    dimensions)
+                    dimensions,
+                    transaction_currency,
+                    functional_currency,
+                    transaction_debit,
+                    transaction_credit,
+                    fx_rate_to_functional)
                 values (
                     @entry_id,
                     @journal_entry_id,
@@ -1128,7 +1133,12 @@ public sealed partial class PostgresLedgerJournalStore :
                     @debit,
                     @credit,
                     @description,
-                    cast(@dimensions as jsonb));
+                    cast(@dimensions as jsonb),
+                    @transaction_currency,
+                    @functional_currency,
+                    @transaction_debit,
+                    @transaction_credit,
+                    @fx_rate_to_functional);
                 """;
             command.Parameters.AddWithValue("entry_id", leg.EntryId);
             command.Parameters.AddWithValue("journal_entry_id", leg.JournalEntryId);
@@ -1155,6 +1165,11 @@ public sealed partial class PostgresLedgerJournalStore :
             command.Parameters.AddWithValue("credit", leg.Credit);
             command.Parameters.AddWithValue("description", leg.Description);
             command.Parameters.AddWithValue("dimensions", SerializeLineDimensions(leg.Dimensions));
+            command.Parameters.AddWithValue("transaction_currency", (object?)leg.Currency?.TransactionCurrency ?? DBNull.Value);
+            command.Parameters.AddWithValue("functional_currency", (object?)leg.Currency?.FunctionalCurrency ?? DBNull.Value);
+            command.Parameters.AddWithValue("transaction_debit", (object?)leg.Currency?.TransactionDebit ?? DBNull.Value);
+            command.Parameters.AddWithValue("transaction_credit", (object?)leg.Currency?.TransactionCredit ?? DBNull.Value);
+            command.Parameters.AddWithValue("fx_rate_to_functional", (object?)leg.Currency?.FxRateToFunctional ?? DBNull.Value);
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1192,7 +1207,12 @@ public sealed partial class PostgresLedgerJournalStore :
                    jl.credit,
                    jl.description,
                    jl.occurred_at,
-                   jl.dimensions::text
+                   jl.dimensions::text,
+                   jl.transaction_currency,
+                   jl.functional_currency,
+                   jl.transaction_debit,
+                   jl.transaction_credit,
+                   jl.fx_rate_to_functional
             from {Qualified("journal_entries")} je
             join {Qualified("journal_legs")} jl on jl.journal_entry_id = je.journal_entry_id
             """ + "\n";
@@ -1253,7 +1273,8 @@ public sealed partial class PostgresLedgerJournalStore :
                 reader.GetDecimal(24),
                 reader.GetDecimal(25),
                 reader.GetString(26),
-                reader.IsDBNull(28) ? null : DeserializeLineDimensions(reader.GetString(28))));
+                reader.IsDBNull(28) ? null : DeserializeLineDimensions(reader.GetString(28)),
+                ReadLegCurrency(reader, 29, 30, 31, 32, 33)));
         }
 
         if (current is not null)

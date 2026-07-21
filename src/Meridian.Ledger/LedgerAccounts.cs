@@ -107,6 +107,21 @@ public static class LedgerAccounts
     public static LedgerAccount InvestorCapitalFor(string investorId) =>
         CreateScoped("Investor Capital", LedgerAccountType.Equity, investorId);
 
+    public static LedgerAccount CapitalCallReceivableFor(string investorId) =>
+        CreateScoped("Capital Call Receivable", LedgerAccountType.Asset, investorId);
+
+    public static LedgerAccount CapitalCallDefaultInterestReceivableFor(string investorId) =>
+        CreateScoped("Capital Call Default Interest Receivable", LedgerAccountType.Asset, investorId);
+
+    public static LedgerAccount CapitalCallDefaultInterestIncomeFor(string fundId) =>
+        CreateScoped("Capital Call Default Interest Income", LedgerAccountType.Revenue, fundId);
+
+    public static LedgerAccount CarriedInterestAllocationFor(string investorId) =>
+        CreateScoped("Carried Interest Allocation", LedgerAccountType.Equity, investorId);
+
+    public static LedgerAccount GpClawbackReceivableFor(string fundId) =>
+        CreateScoped("GP Clawback Receivable", LedgerAccountType.Asset, fundId);
+
     public static LedgerAccount ManagementFeeExpenseFor(string fundId) =>
         CreateScoped("Management Fee Expense", LedgerAccountType.Expense, fundId);
 

@@ -43,6 +43,7 @@
     <ProjectReference Include="..\..\src\Meridian.Backtesting\Meridian.Backtesting.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
     <ProjectReference Include="..\..\src\Meridian.DataIntegration\Meridian.DataIntegration.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Documents\Meridian.Documents.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Entities\Meridian.Entities.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Execution\Meridian.Execution.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
