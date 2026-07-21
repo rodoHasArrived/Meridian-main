@@ -103,7 +103,15 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 }
 
                 rowNumber++;
-                var (amount, currency) = SignedAmount(balance, accountCurrency);
+                if (!TrySignedAmount(balance, accountCurrency, out var amount, out var currency))
+                {
+                    issues.Add(StatementParseIssue.Error(
+                        "CAMT_BALANCE_BAD_AMOUNT",
+                        "Closing balance has a missing or non-numeric Amt; the statement cannot be reconciled.",
+                        rowNumber));
+                    continue;
+                }
+
                 records.Add(new StatementCanonicalRecord(
                     StatementRecordKind.CashBalance,
                     account,
@@ -131,7 +139,15 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 }
 
                 rowNumber++;
-                var (amount, currency) = SignedAmount(entry, accountCurrency);
+                if (!TrySignedAmount(entry, accountCurrency, out var amount, out var currency))
+                {
+                    issues.Add(StatementParseIssue.Error(
+                        "CAMT_ENTRY_BAD_AMOUNT",
+                        "Entry has a missing or non-numeric Amt; the statement cannot be reconciled.",
+                        rowNumber));
+                    continue;
+                }
+
                 records.Add(new StatementCanonicalRecord(
                     StatementRecordKind.Transaction,
                     account,
@@ -169,18 +185,24 @@ public sealed class Camt053StatementConnector : IStatementConnector
             fingerprint));
     }
 
-    private static (decimal Amount, string Currency) SignedAmount(XElement element, string fallbackCurrency)
+    // Resolves the signed monetary amount and currency. Returns false when the Amt element is missing
+    // or non-numeric: a manufactured 0 amount could exact-match an internal zero balance and leave a
+    // malformed statement apparently reconciled, so the caller must reject the record instead.
+    private static bool TrySignedAmount(XElement element, string fallbackCurrency, out decimal signed, out string currency)
     {
+        signed = 0m;
         var amountElement = Element(element, "Amt");
-        var currency = amountElement?.Attribute("Ccy")?.Value?.Trim().ToUpperInvariant();
-        var magnitude = amountElement is null
-            ? 0m
-            : decimal.TryParse(amountElement.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var value)
-                ? value
-                : 0m;
+        var rawCurrency = amountElement?.Attribute("Ccy")?.Value?.Trim().ToUpperInvariant();
+        currency = string.IsNullOrWhiteSpace(rawCurrency) ? fallbackCurrency.Trim().ToUpperInvariant() : rawCurrency;
+        if (amountElement is null
+            || !decimal.TryParse(amountElement.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var magnitude))
+        {
+            return false;
+        }
+
         var indicator = Value(element, "CdtDbtInd");
-        var signed = string.Equals(indicator, "DBIT", StringComparison.OrdinalIgnoreCase) ? -magnitude : magnitude;
-        return (signed, string.IsNullOrWhiteSpace(currency) ? fallbackCurrency.Trim().ToUpperInvariant() : currency);
+        signed = string.Equals(indicator, "DBIT", StringComparison.OrdinalIgnoreCase) ? -magnitude : magnitude;
+        return true;
     }
 
     private static string ResolveAccount(XElement? accountElement)

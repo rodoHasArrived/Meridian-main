@@ -81,4 +81,31 @@ public sealed class Camt053StatementConnectorTests
         result.Records.Should().BeEmpty("a multi-account camt.053 file must not commit into a single-account run");
         result.Issues.Should().Contain(issue => issue.Code == "CAMT_MULTIPLE_ACCOUNTS");
     }
+
+    [Fact]
+    public async Task Parse_Camt053_WithNonNumericClosingBalanceAmount_IsRejected()
+    {
+        // The closing-balance Amt is non-numeric. Emitting it as 0 could exact-match an internal zero
+        // cash balance and leave the malformed statement apparently reconciled, so the connector must
+        // reject it with a parse error and not manufacture a zero-valued canonical row.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">not-a-number</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("malformed-amount.xml", Encoding.UTF8.GetBytes(xml));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a malformed monetary amount must not become a zero-valued canonical row");
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_BALANCE_BAD_AMOUNT");
+    }
 }
