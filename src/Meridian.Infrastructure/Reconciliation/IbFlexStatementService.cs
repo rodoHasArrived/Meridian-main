@@ -221,7 +221,11 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                     ParseFirstDecimal(trade, "netCash", "proceeds"),
                     "trade",
                     RequireDate(trade, "tradeDate", statementToDate, rowNumber),
-                    HashElement(trade));
+                    HashElement(trade))
+                {
+                    Currency = FlexCurrency(trade),
+                    ExternalTransactionId = FlexIdentifier(trade, "tradeID", "transactionID", "ibOrderID")
+                };
             }
 
             foreach (var position in statement.Descendants("OpenPosition"))
@@ -237,7 +241,10 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                     0m,
                     "position",
                     RequireDate(position, "reportDate", statementToDate, rowNumber),
-                    HashElement(position));
+                    HashElement(position))
+                {
+                    Currency = FlexCurrency(position)
+                };
             }
 
             foreach (var cash in statement.Descendants("CashTransaction"))
@@ -253,9 +260,31 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                     ParseDecimal(cash, "amount"),
                     MapCashTransactionActivity((string?)cash.Attribute("type")),
                     RequireFirstDate(cash, ["dateTime", "reportDate", "settleDate"], statementToDate, rowNumber),
-                    HashElement(cash));
+                    HashElement(cash))
+                {
+                    Currency = FlexCurrency(cash),
+                    ExternalTransactionId = FlexIdentifier(cash, "transactionID", "tradeID")
+                };
             }
         }
+    }
+
+    private static string FlexCurrency(XElement element) =>
+        (string?)element.Attribute("currency") is { Length: > 0 } currency
+            ? currency.Trim().ToUpperInvariant()
+            : "USD";
+
+    private static string? FlexIdentifier(XElement element, params string[] attributeNames)
+    {
+        foreach (var attributeName in attributeNames)
+        {
+            if ((string?)element.Attribute(attributeName) is { Length: > 0 } value)
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
     }
 
     private static string Account(XElement element, string statementAccount) =>

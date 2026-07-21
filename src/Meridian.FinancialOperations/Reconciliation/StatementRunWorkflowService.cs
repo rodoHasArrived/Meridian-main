@@ -8,8 +8,19 @@ public sealed class StatementRunWorkflowService(
     IReconciliationCaseStore caseStore,
     IReconciliationBreakStore breakStore,
     IBrokerStatementService brokerStatementService,
-    IStatementReconciliationValidationService validationService) : IStatementRunWorkflowService
+    IStatementReconciliationValidationService validationService,
+    IInternalReconciliationPopulationProvider? populationProvider = null,
+    IReconciliationFxRateProvider? fxRateProvider = null) : IStatementRunWorkflowService
 {
+    // The internal book to reconcile against and the FX seam used to normalize foreign-currency
+    // lines. Both default to safe, fail-closed implementations: an empty book (every row becomes a
+    // break) and identity-only FX (same-currency reconciles exactly, cross-currency breaks) until a
+    // deployment wires real populations and rates.
+    private readonly IInternalReconciliationPopulationProvider _populationProvider =
+        populationProvider ?? EmptyInternalReconciliationPopulationProvider.Instance;
+    private readonly IReconciliationFxRateProvider _fxRateProvider =
+        fxRateProvider ?? IdentityReconciliationFxRateProvider.Instance;
+
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default)
         => importStore.ListImportsAsync(cancellationToken);
 
@@ -19,18 +30,40 @@ public sealed class StatementRunWorkflowService(
 
         var normalizedRequest = await NormalizeAndValidateAsync(request, cancellationToken).ConfigureAwait(false);
         var imported = await brokerStatementService.ImportAsync(ToImportRequest(normalizedRequest), cancellationToken).ConfigureAwait(false);
-        var matcher = new StatementMatchingService();
-        var outcomes = matcher.MatchRows(imported.Rows);
-        var breaks = matcher
-            .BuildBreakRecords(imported.Import.ImportId, imported.Import.ImportId, imported.Rows, outcomes)
-            .Select(static item => item with
-            {
-                EvidenceLink = $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(item.ImportId)}#row-{Uri.EscapeDataString(item.SourceReference)}"
-            })
+
+        // Reconcile the imported statement against Meridian's own book. The population provider
+        // supplies the internal positions, cash, and ledger for this fund account and period; the
+        // matching engine then compares statement rows to those records (not to themselves) across
+        // exact, tolerance, candidate, and unmatched tiers.
+        var baseCurrency = StatementRunMatcher.DefaultBaseCurrency;
+        var populations = await _populationProvider
+            .GetPopulationsAsync(
+                new InternalReconciliationPopulationContext(
+                    imported.Import.FundAccountId,
+                    imported.Import.ExternalAccountId,
+                    imported.Import.StatementPeriodStart,
+                    imported.Import.StatementPeriodEnd,
+                    baseCurrency),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        var createdAtUtc = DateTimeOffset.UtcNow;
+        var matchResult = StatementRunMatcher.Match(
+            imported.Import,
+            imported.Rows,
+            populations,
+            StatementToleranceProfile.Default,
+            _fxRateProvider,
+            baseCurrency,
+            createdAtUtc);
+
+        var linkedBreaks = matchResult.Breaks
+            .Select(static item => item with { Record = item.Record with { EvidenceLink = BuildEvidenceLink(item.Record) } })
             .ToArray();
+        var breaks = linkedBreaks.Select(static item => item.Record).ToArray();
         await breakStore.WriteAsync(breaks, cancellationToken).ConfigureAwait(false);
 
-        var cases = BuildStatementCases(imported.Import, imported.Rows, outcomes, breaks, normalizedRequest.ImportedBy);
+        var cases = BuildStatementCases(imported.Import, linkedBreaks, normalizedRequest.ImportedBy);
         foreach (var reconciliationCase in cases)
         {
             await caseStore.SaveAsync(reconciliationCase, cancellationToken).ConfigureAwait(false);
@@ -108,29 +141,25 @@ public sealed class StatementRunWorkflowService(
             request.ImportedBy,
             request.SourceFileHash);
 
+    private static string BuildEvidenceLink(ReconciliationBreakRecord record)
+        => $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(record.ImportId)}#row-{Uri.EscapeDataString(record.SourceReference)}";
+
     private static IReadOnlyList<ReconciliationCase> BuildStatementCases(
         CanonicalStatementImport import,
-        IReadOnlyList<CanonicalStatementRow> rows,
-        IReadOnlyList<MatchOutcome> outcomes,
-        IReadOnlyList<ReconciliationBreakRecord> breaks,
+        IReadOnlyList<StatementRunBreak> breaks,
         string actor)
     {
         var now = DateTimeOffset.UtcNow;
-        var rowByReference = rows.ToDictionary(
-            row => $"{import.ImportId}:{row.SourceRowNumber}",
-            StringComparer.OrdinalIgnoreCase);
-        var outcomeByChecksum = outcomes.ToDictionary(
-            outcome => outcome.RowChecksum,
-            StringComparer.OrdinalIgnoreCase);
 
-        return breaks.Select(breakRecord =>
+        return breaks.Select(item =>
         {
-            rowByReference.TryGetValue(breakRecord.SourceReference, out var row);
+            var breakRecord = item.Record;
+            var engineResult = item.EngineResult;
+            var row = item.StatementRow;
             var sourceRowHash = row?.RawChecksum ?? breakRecord.SourceReference;
-            outcomeByChecksum.TryGetValue(sourceRowHash, out var outcome);
-            var evidenceLink = breakRecord.EvidenceLink ?? $"/api/workstation/reconciliation/statement-runs/{Uri.EscapeDataString(import.ImportId)}#row-{Uri.EscapeDataString(breakRecord.SourceReference)}";
+            var evidenceLink = breakRecord.EvidenceLink ?? BuildEvidenceLink(breakRecord);
             var evidenceReferences = new[] { evidenceLink, $"statement-row:{breakRecord.SourceReference}", $"statement-hash:{sourceRowHash}" };
-            var explanation = BuildBreakExplanation(import, row, breakRecord, outcome, evidenceReferences);
+            var explanation = BuildBreakExplanation(import, row, breakRecord, engineResult, evidenceReferences);
             var attachment = new ReconciliationCaseAttachment(
                 AttachmentId: $"statement-row:{breakRecord.ImportId}:{breakRecord.SourceReference}",
                 EvidenceKind: "ExternalStatementRow",
@@ -145,8 +174,8 @@ public sealed class StatementRunWorkflowService(
                 ImportId: import.ImportId,
                 Status: "Open",
                 Reason: explanation.Summary,
-                Confidence: outcome?.Confidence ?? 0.25m,
-                Rationale: outcome?.Rationale ?? breakRecord.Category,
+                Confidence: engineResult.Confidence,
+                Rationale: string.IsNullOrWhiteSpace(engineResult.Explanation) ? breakRecord.Category : engineResult.Explanation,
                 CreatedAtUtc: now,
                 History:
                 [
@@ -197,19 +226,23 @@ public sealed class StatementRunWorkflowService(
         CanonicalStatementImport import,
         CanonicalStatementRow? row,
         ReconciliationBreakRecord breakRecord,
-        MatchOutcome? outcome,
+        StatementMatchResult engineResult,
         IReadOnlyList<string> evidenceReferences)
     {
         var sourceSystem = string.IsNullOrWhiteSpace(import.SourceInstitution) ? import.Broker : import.SourceInstitution;
         var rowLabel = row is null ? breakRecord.SourceReference : $"row {row.SourceRowNumber}";
         var activityType = row?.ActivityType ?? breakRecord.Category;
+        var side = engineResult.BrokerEvidenceReference is null ? "internal-record" : "statement";
         var amount = row is null ? breakRecord.Delta : Math.Abs(row.CashAmount) + Math.Abs(row.Quantity * row.Price);
+        var descriptor = engineResult.MatchTier == StatementMatchTier.Candidate ? "candidate review" : "break";
 
         return new ReconciliationBreakExplanation(
-            Summary: $"{activityType} break from {sourceSystem} statement {rowLabel}.",
+            Summary: $"{activityType} {descriptor} from {sourceSystem} {rowLabel}.",
             SourceSystems: [sourceSystem, "Meridian ledger", "Meridian positions"],
-            ProbableCause: outcome?.Rationale ?? "External statement row did not match retained Meridian ledger, position, or cash evidence.",
-            LedgerImpact: $"Ledger, cash, or position balances may require review for {import.FundAccountId}; unmatched statement exposure is {amount:G29}.",
+            ProbableCause: string.IsNullOrWhiteSpace(engineResult.Explanation)
+                ? "External statement row did not match retained Meridian ledger, position, or cash evidence."
+                : engineResult.Explanation,
+            LedgerImpact: $"Ledger, cash, or position balances may require review for {import.FundAccountId}; unmatched {side} exposure is {amount:G29}.",
             SuggestedNextAction: "Assign the case, compare the external statement row to retained ledger and position evidence, then attach support before disposition.",
             RequiredSignoffRole: breakRecord.ToleranceBreached ? "Fund accounting" : "Fund operations",
             EvidenceLinks: evidenceReferences);

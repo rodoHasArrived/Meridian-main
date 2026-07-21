@@ -193,16 +193,19 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Import_RowsFlowThroughStatementMatching()
+    public async Task Import_ProducesCanonicalRowsWithCurrencyAndExternalIds()
     {
         var path = WriteFlexFile(SampleFlexXml);
         var imported = await _service.ImportAsync(MakeRequest(path));
 
-        var outcomes = new StatementMatchingService().MatchRows(imported.Rows);
-
-        outcomes.Should().HaveCount(5);
-        // Position row has non-trivial quantity and a symbol → matches.
-        outcomes[2].OutcomeType.Should().Be("matched");
+        imported.Rows.Should().HaveCount(5);
+        // Rows are emitted trades first, then open positions, then cash transactions.
+        imported.Rows[2].ActivityType.Should().Be("position");
+        imported.Rows[2].Symbol.Should().Be("AAPL");
+        // Currency and the broker transaction identifier now flow through to the canonical row so
+        // the reconciliation engine can normalize FX and match on external id.
+        imported.Rows.Should().OnlyContain(row => row.Currency == "USD");
+        imported.Rows[0].ExternalTransactionId.Should().Be("1000001");
     }
 
     [Theory]

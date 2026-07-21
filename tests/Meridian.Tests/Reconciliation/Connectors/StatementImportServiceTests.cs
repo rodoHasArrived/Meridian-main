@@ -128,18 +128,19 @@ public sealed class StatementImportServiceTests : IDisposable
         result.RunId.Should().NotBeNullOrWhiteSpace();
         result.RecordCount.Should().Be(6);
         result.KindSummaries.Should().HaveCount(5);
-        // Legacy matcher semantics: two trades and one cash balance breach tolerance; the
-        // position, fee, and dividend rows match. Each break becomes a queue case.
-        result.BreakCount.Should().Be(3);
-        result.CaseCount.Should().Be(3);
-        result.BreakIds.Should().HaveCount(3);
-        result.CaseIds.Should().HaveCount(3);
+        // The matcher now reconciles against Meridian's own book. This test wires no internal
+        // populations, so every one of the 6 statement rows is correctly unmatched — each becomes a
+        // break and a queue case, instead of the old self-matcher fabricating position/near-zero matches.
+        result.BreakCount.Should().Be(6);
+        result.CaseCount.Should().Be(6);
+        result.BreakIds.Should().HaveCount(6);
+        result.CaseIds.Should().HaveCount(6);
         result.CaseIds.Should().OnlyContain(caseId => caseId.StartsWith("case:", StringComparison.OrdinalIgnoreCase));
-        result.ReconciliationCaseRoutes.Should().HaveCount(3);
+        result.ReconciliationCaseRoutes.Should().HaveCount(6);
         result.ReconciliationCaseRoutes.Should().OnlyContain(route =>
             route.StartsWith($"/accounting/reconciliation/match?runId={Uri.EscapeDataString(result.RunId)}&caseId=", StringComparison.OrdinalIgnoreCase) &&
             route.Contains("&breakId=", StringComparison.OrdinalIgnoreCase));
-        result.ReconciliationCaseLinks.Should().HaveCount(3);
+        result.ReconciliationCaseLinks.Should().HaveCount(6);
         result.CaseIds.Should().Equal(result.ReconciliationCaseLinks.Select(link => link.CaseId));
         result.ReconciliationCaseRoutes.Should().Equal(result.ReconciliationCaseLinks.Select(link => link.Route));
         result.ReconciliationCaseLinks.Should().OnlyContain(link =>
@@ -156,7 +157,7 @@ public sealed class StatementImportServiceTests : IDisposable
         var run = await _workflow.GetAsync(result.RunId);
         run.Should().NotBeNull();
         run!.Import.NormalizedRowCount.Should().Be(6);
-        run.Cases.Should().HaveCount(3);
+        run.Cases.Should().HaveCount(6);
         run.Cases.Should().OnlyContain(reconciliationCase => reconciliationCase.Status == "Open");
 
         File.Exists(Path.Combine(_root, result.RetainedSourcePath)).Should().BeTrue();

@@ -61,6 +61,11 @@ public static class ReconciliationServiceRegistration
 
     private static void AddSharedServices(IServiceCollection services)
     {
+        // Safe, fail-closed defaults for the statement-run matcher. A deployment wires a real
+        // internal-population provider (live positions/cash/ledger) and FX rate table by registering
+        // its own implementations before calling AddStatementReconciliationServices, or via Replace.
+        services.TryAddSingleton<IInternalReconciliationPopulationProvider>(EmptyInternalReconciliationPopulationProvider.Instance);
+        services.TryAddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);
         services.TryAddSingleton<StatementReconciliationService>();
         services.TryAddSingleton<StatementReconciliationContextAdapter>();
         services.TryAddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());

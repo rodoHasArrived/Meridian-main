@@ -266,6 +266,34 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 throw new InvalidDataException($"Statement CSV row {sourceRowNumber} contains an invalid numeric or date value.");
             }
 
+            // Capture the optional canonical columns (settlementDate, currency, feesCommission,
+            // externalTransactionId) that the header validation already guaranteed are present in
+            // order. These flow into currency-aware, external-id-based matching downstream instead
+            // of being discarded at the canonical-row boundary.
+            DateOnly? settlementDate = null;
+            var currency = "USD";
+            decimal? feesCommission = null;
+            string? externalTransactionId = null;
+            if (fields.Count > 7 && DateOnly.TryParse(fields[7], CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedSettlement))
+            {
+                settlementDate = parsedSettlement;
+            }
+
+            if (fields.Count > 8 && !string.IsNullOrWhiteSpace(fields[8]))
+            {
+                currency = fields[8].Trim().ToUpperInvariant();
+            }
+
+            if (fields.Count > 9 && decimal.TryParse(fields[9], NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedFees))
+            {
+                feesCommission = parsedFees;
+            }
+
+            if (fields.Count > 10 && !string.IsNullOrWhiteSpace(fields[10]))
+            {
+                externalTransactionId = fields[10].Trim();
+            }
+
             rows.Add(new CanonicalStatementRow(
                 importId,
                 sourceRowNumber,
@@ -276,7 +304,13 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 cashAmount,
                 fields[5],
                 tradeDate,
-                Hash(line)));
+                Hash(line))
+            {
+                Currency = currency,
+                SettlementDate = settlementDate,
+                FeesCommission = feesCommission,
+                ExternalTransactionId = externalTransactionId
+            });
         }
 
         return rows;
@@ -360,21 +394,6 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         string.Equals(source, "custodian", StringComparison.OrdinalIgnoreCase);
 }
 
-public sealed record StatementMatchingTolerance(decimal PositionQuantityTolerance, decimal CashAmountTolerance, decimal TransactionAmountTolerance)
-{
-    public static StatementMatchingTolerance Default => new(0.0001m, 0.01m, 0.01m);
-
-    public string ToleranceProfileId { get; init; } = "statement-default";
-    public int ToleranceProfileVersion { get; init; } = 1;
-    public string PositionToleranceRuleId { get; init; } = "position-default-v1";
-    public string CashToleranceRuleId { get; init; } = "cash-default-absolute-v1";
-    public string TransactionToleranceRuleId { get; init; } = "transaction-default-v1";
-    public decimal? BasisPointCashTolerance { get; init; }
-    public decimal MarketValueTolerance { get; init; }
-    public TimeSpan SettlementDateTolerance { get; init; }
-    public decimal PriceTolerance { get; init; }
-}
-
 public interface IReconciliationBreakStore
 {
     Task WriteAsync(IReadOnlyList<ReconciliationBreakRecord> records, CancellationToken ct = default);
@@ -405,110 +424,5 @@ public sealed class JsonReconciliationBreakStore(string dataRoot) : IReconciliat
             .OrderByDescending(x => x.CreatedAtUtc)
             .ToList();
         return Task.FromResult<IReadOnlyList<ReconciliationBreakRecord>>(items);
-    }
-}
-
-public sealed class StatementMatchingService
-{
-    public IReadOnlyList<MatchOutcome> MatchRows(IReadOnlyList<CanonicalStatementRow> rows, StatementMatchingTolerance? tolerance = null)
-    {
-        var t = tolerance ?? StatementMatchingTolerance.Default;
-        return rows.Select(r =>
-        {
-            var (ok, code, rationale, conf) = r.ActivityType.ToLowerInvariant() switch
-            {
-                "position" => MatchPosition(r, t),
-                "cash" => MatchCash(r, t),
-                _ => MatchTransaction(r, t)
-            };
-
-            var ruleId = ResolveRuleId(r, t);
-            var explanation = ok && !string.IsNullOrWhiteSpace(ruleId)
-                ? $"{rationale} Tolerance rule {ruleId} allowed this match."
-                : rationale;
-
-            return new MatchOutcome(r.RawChecksum, ok ? "matched" : code, ok ? $"SRC-{r.SourceRowNumber}" : string.Empty, conf, explanation)
-            {
-                ToleranceProfileId = t.ToleranceProfileId,
-                ToleranceProfileVersion = t.ToleranceProfileVersion,
-                ToleranceRuleId = ok ? ruleId : null
-            };
-        }).ToList();
-    }
-
-    public IReadOnlyList<ReconciliationBreakRecord> BuildBreakRecords(string runId, string importId, IReadOnlyList<CanonicalStatementRow> rows, IReadOnlyList<MatchOutcome> outcomes, StatementMatchingTolerance? tolerance = null)
-    {
-        var t = tolerance ?? StatementMatchingTolerance.Default;
-        return rows.Zip(outcomes, (row, outcome) => (row, outcome))
-            .Where(x => x.outcome.OutcomeType != "matched")
-            .Select(x => new ReconciliationBreakRecord(
-                BreakId: Guid.NewGuid().ToString("N"),
-                RunId: runId,
-                ImportId: importId,
-                SourceReference: $"{importId}:{x.row.SourceRowNumber}",
-                BreakCode: x.outcome.OutcomeType,
-                Category: x.row.ActivityType,
-                Delta: Math.Abs(x.row.Quantity) + Math.Abs(x.row.CashAmount),
-                Tolerance: ResolveToleranceAmount(x.row, t),
-                ToleranceBreached: true,
-                CreatedAtUtc: DateTimeOffset.UtcNow,
-                Status: "Open")).ToList();
-    }
-
-    private static string ResolveRuleId(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
-    {
-        if (row.ActivityType.Equals("position", StringComparison.OrdinalIgnoreCase))
-        {
-            return tolerance.PositionToleranceRuleId;
-        }
-
-        return row.ActivityType.Equals("cash", StringComparison.OrdinalIgnoreCase)
-            ? tolerance.CashToleranceRuleId
-            : tolerance.TransactionToleranceRuleId;
-    }
-
-    private static decimal ResolveToleranceAmount(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
-    {
-        if (row.ActivityType.Equals("cash", StringComparison.OrdinalIgnoreCase))
-        {
-            var basisPointTolerance = tolerance.BasisPointCashTolerance is { } basisPoints
-                ? Math.Abs(row.CashAmount) * Math.Abs(basisPoints) / 10_000m
-                : 0m;
-            return Math.Max(tolerance.CashAmountTolerance, basisPointTolerance);
-        }
-
-        if (row.ActivityType.Equals("position", StringComparison.OrdinalIgnoreCase))
-        {
-            return Math.Max(tolerance.PositionQuantityTolerance, Math.Max(tolerance.MarketValueTolerance, tolerance.PriceTolerance));
-        }
-
-        return Math.Max(tolerance.TransactionAmountTolerance, tolerance.PriceTolerance);
-    }
-
-    private static (bool, string, string, decimal) MatchPosition(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
-    {
-        if (string.IsNullOrWhiteSpace(row.Symbol))
-            return (false, "POS_SYMBOL_MISSING", "Position row missing symbol.", 0.1m);
-        if (Math.Abs(row.Quantity) <= tolerance.PositionQuantityTolerance)
-            return (false, "POS_QTY_TOLERANCE_BREACH", "Position quantity within tolerance floor and treated as unresolved.", 0.3m);
-        return (true, "", $"Position matched within configured tolerance rule {tolerance.PositionToleranceRuleId}.", 0.95m);
-    }
-
-    private static (bool, string, string, decimal) MatchCash(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
-    {
-        var basisPointTolerance = tolerance.BasisPointCashTolerance is { } basisPoints
-            ? Math.Abs(row.CashAmount) * Math.Abs(basisPoints) / 10_000m
-            : 0m;
-        var allowedTolerance = Math.Max(tolerance.CashAmountTolerance, basisPointTolerance);
-        if (Math.Abs(row.CashAmount) <= allowedTolerance)
-            return (true, "", $"Cash movement within tolerance rule {tolerance.CashToleranceRuleId}.", 0.9m);
-        return (false, "CASH_TOLERANCE_BREACH", "Cash movement exceeds configured tolerance.", 0.25m);
-    }
-
-    private static (bool, string, string, decimal) MatchTransaction(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
-    {
-        if (Math.Abs(row.Price * row.Quantity) <= tolerance.TransactionAmountTolerance)
-            return (true, "", $"Transaction amount within tolerance rule {tolerance.TransactionToleranceRuleId}.", 0.85m);
-        return (false, "TXN_TOLERANCE_BREACH", "Transaction amount exceeds configured tolerance.", 0.25m);
     }
 }
