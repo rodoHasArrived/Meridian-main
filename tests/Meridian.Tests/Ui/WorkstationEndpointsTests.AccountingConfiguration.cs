@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
@@ -17,6 +18,112 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class WorkstationEndpointsTests
 {
+    [Fact]
+    public async Task AssetAccountingProjectionEndpoint_ForwardsTrustedActorAndTenantScope()
+    {
+        var service = new CapturingAssetAccountingEventSpineService();
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IAssetAccountingEventSpineService>(service),
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+        var eventId = Guid.NewGuid();
+        var securityId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
+        var bookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var occurredAt = DateTimeOffset.Parse("2026-06-30T20:00:00Z");
+        var evidence = BuildAssetAccountingEvidence(eventId, occurredAt);
+        var economicEvent = new EconomicEventReferenceDto(
+            eventId,
+            AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.Valuation),
+            1,
+            new DateOnly(2026, 6, 30),
+            occurredAt,
+            "AssetOperations",
+            "valuation-1",
+            SourceContentHash: evidence.ContentHashSha256)
+        {
+            SecurityId = securityId,
+            BookPositionId = positionId
+        };
+        var lineage = new ProjectionLineageDto(
+            Guid.NewGuid(), null, "valuation", "v1", "engine-v1", "base",
+            new DateOnly(2026, 6, 30), occurredAt.AddMinutes(1), "AssetOperations", "valuation-1", economicEvent)
+        {
+            BookPositionId = positionId
+        };
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAssetAccountingEventProjections,
+            new ProjectAssetAccountingEventRequestDto(
+                AssetAccountingEventKindDto.Valuation,
+                new AssetAccountingEventScopeDto(securityId, 2, positionId, 3, bookId, periodId,
+                    AccountingBasisKindDto.Gaap, "fund-alpha", "client-tenant", "client-company"),
+                economicEvent,
+                lineage,
+                new ProjectedAccountingEffectDto(lineage.ProjectionRunId, "valuation", "v1",
+                    lineage.ProjectionAsOfDate, 100m, 100m, "USD",
+                    [
+                        new ProjectedAccountingEffectLineDto("Assets:Investment", 100m, 0m, "USD"),
+                        new ProjectedAccountingEffectLineDto("Income:Unrealized", 0m, 100m, "USD")
+                    ]),
+                100m, "USD", 4, "client-actor", occurredAt.AddMinutes(2), [evidence]),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        service.ProjectRequests.Should().ContainSingle();
+        var forwarded = service.ProjectRequests.Single();
+        forwarded.Actor.Should().Be("ops-user");
+        forwarded.Scope.TenantId.Should().Be("company-alpha");
+        forwarded.Scope.CompanyId.Should().Be("company-alpha");
+    }
+
+    [Fact]
+    public async Task AssetAccountingLifecycleEndpoint_ForwardsTrustedCertificationActorAndTenantScope()
+    {
+        var service = new CapturingAssetAccountingEventSpineService();
+        await using var app = await CreateAppAsync(
+            services => services.AddSingleton<IAssetAccountingEventSpineService>(service),
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: "company-alpha");
+        var client = app.GetTestClient();
+        var eventId = Guid.NewGuid();
+        var evidence = BuildAssetAccountingEvidence(eventId, DateTimeOffset.Parse("2026-07-01T12:00:00Z"));
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAssetAccountingEventLifecycle,
+            new AppendAssetAccountingLifecycleStageRequestDto(
+                eventId, 1, AssetAccountingLifecycleStageDto.Reconciled, 3, 2,
+                "fund-alpha", "client-actor", DateTimeOffset.Parse("2026-07-01T13:00:00Z"),
+                "reconciliation://case/123", [evidence], TenantId: "client-tenant", CompanyId: "client-company"),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        service.LifecycleRequests.Should().ContainSingle();
+        var forwarded = service.LifecycleRequests.Single();
+        forwarded.Actor.Should().Be("ops-user");
+        forwarded.TenantId.Should().Be("company-alpha");
+        forwarded.CompanyId.Should().Be("company-alpha");
+    }
+
+    private static RetainedEvidenceIdentityDto BuildAssetAccountingEvidence(Guid eventId, DateTimeOffset retainedAt)
+        => new(
+            $"evidence-{eventId:N}",
+            $"evidence://asset-accounting/{eventId:D}",
+            new string('a', 64),
+            "AssetOperations",
+            "valuation-1",
+            RetainedEvidenceIdentityValidator.AcceptedReviewStatus,
+            "reviewer",
+            retainedAt.AddMinutes(-1),
+            new DateOnly(2026, 6, 30),
+            1,
+            retainedAt,
+            "retention-service",
+            AssetAccountingEvidenceSubjects.Event,
+            eventId.ToString("D"));
+
     [Fact]
     public async Task AccountingConfigurationEndpoints_WhenServiceMissing_ReturnsNotImplemented()
     {
@@ -2292,6 +2399,38 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.AddSingleton<IManualJournalEntryDraftStore, InMemoryManualJournalEntryDraftStore>();
         services.AddSingleton<IManualJournalEntryWorkbenchService, ManualJournalEntryWorkbenchService>();
+    }
+
+    private sealed class CapturingAssetAccountingEventSpineService : IAssetAccountingEventSpineService
+    {
+        public List<ProjectAssetAccountingEventRequestDto> ProjectRequests { get; } = [];
+        public List<AppendAssetAccountingLifecycleStageRequestDto> LifecycleRequests { get; } = [];
+
+        public Task<AssetAccountingEventSpineDto?> GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default)
+            => Task.FromResult<AssetAccountingEventSpineDto?>(null);
+
+        public Task<AssetAccountingPostingCandidateDto> BuildPostingCandidateAsync(
+            AssetAccountingPostingCandidateRequestDto request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<AssetAccountingEventSpineAppendResultDto> ProjectAsync(
+            ProjectAssetAccountingEventRequestDto request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            ProjectRequests.Add(request);
+            return Task.FromResult(new AssetAccountingEventSpineAppendResultDto(null!, WasReplay: false));
+        }
+
+        public Task<AssetAccountingEventSpineAppendResultDto> AppendLifecycleStageAsync(
+            AppendAssetAccountingLifecycleStageRequestDto request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            LifecycleRequests.Add(request);
+            return Task.FromResult(new AssetAccountingEventSpineAppendResultDto(null!, WasReplay: false));
+        }
     }
 
     private sealed class CapturingAccountingBasisProjectionSetService : IAccountingBasisProjectionSetService

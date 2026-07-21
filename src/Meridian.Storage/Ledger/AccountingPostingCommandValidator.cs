@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -95,7 +96,11 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Accounting posting command idempotency key is required.");
         }
 
-        if (command.Evidence.Count == 0 && string.IsNullOrWhiteSpace(command.OperatorRationale))
+        if (AssetAccountingEventTypeNames.TryParse(command.SourceEventType, out _))
+        {
+            ValidateAssetAccountingEvidence(command);
+        }
+        else if (command.Evidence.Count == 0 && string.IsNullOrWhiteSpace(command.OperatorRationale))
         {
             throw new LedgerValidationException("Accounting posting command requires retained evidence or an operator rationale.");
         }
@@ -133,6 +138,79 @@ public static class AccountingPostingCommandValidator
 
     private static bool RequiresApproval(AccountingPostingIntentDto intent)
         => intent is not AccountingPostingIntentDto.AutomatedDraft;
+
+    private static void ValidateAssetAccountingEvidence(AccountingPostingCommandDto command)
+    {
+        if (command.EconomicEvent is null ||
+            command.ProjectionLineage is null ||
+            command.BookPositionId is null ||
+            command.BookContext is null ||
+            command.RulePackReference is null)
+        {
+            throw new LedgerValidationException(
+                "Asset accounting postings require authoritative book, position, economic-event, projection-lineage, and rule-pack context.");
+        }
+
+        if (command.Evidence.Count == 0)
+        {
+            throw new LedgerValidationException(
+                "Asset accounting postings require verified retained evidence; operator rationale cannot substitute for evidence.");
+        }
+
+        var invalidEvidence = new List<string>();
+        foreach (var item in command.Evidence)
+        {
+            var evidence = new RetainedEvidenceIdentityDto(
+                item.EvidenceId,
+                item.Uri,
+                item.ContentHash ?? string.Empty,
+                item.SourceSystem,
+                item.SourceReference ?? string.Empty,
+                item.ReviewStatus ?? string.Empty,
+                item.Reviewer ?? string.Empty,
+                item.ReviewedAtUtc ?? default,
+                item.EffectiveDate ?? default,
+                item.EvidenceVersion ?? 0,
+                item.RetainedAtUtc,
+                item.RetainedBy,
+                item.SubjectType ?? string.Empty,
+                item.SubjectId ?? string.Empty);
+            invalidEvidence.AddRange(RetainedEvidenceIdentityValidator.Validate(evidence));
+        }
+
+        if (invalidEvidence.Count > 0)
+        {
+            throw new LedgerValidationException(
+                $"Asset accounting posting evidence is incomplete: {string.Join(" ", invalidEvidence.Distinct(StringComparer.Ordinal))}");
+        }
+
+        var eventHash = command.EconomicEvent.SourceContentHash?.Trim();
+        if (string.IsNullOrWhiteSpace(eventHash) ||
+            !command.Evidence.Any(item => HashesMatch(item.ContentHash, eventHash)))
+        {
+            throw new LedgerValidationException(
+                "Asset accounting posting evidence must include the economic event source content hash.");
+        }
+
+        if (command.Evidence.Any(item => item.EffectiveDate != command.EffectiveDate))
+        {
+            throw new LedgerValidationException(
+                "Asset accounting posting evidence effective date must match the economic event effective date.");
+        }
+    }
+
+    private static bool HashesMatch(string? left, string? right)
+        => !string.IsNullOrWhiteSpace(left) &&
+           !string.IsNullOrWhiteSpace(right) &&
+           string.Equals(
+               NormalizeSha256(left),
+               NormalizeSha256(right),
+               StringComparison.OrdinalIgnoreCase);
+
+    private static string NormalizeSha256(string value)
+        => value.Trim().StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)
+            ? value.Trim()["sha256:".Length..]
+            : value.Trim();
 
     private static void ValidateBookContext(
         LedgerJournalEntryWrite write,
@@ -235,7 +313,14 @@ public static class AccountingPostingCommandValidator
                 item.RetainedBy,
                 item.SubjectId,
                 item.ContentHash,
-                item.Description))
+                item.Description,
+                item.SourceReference,
+                item.ReviewStatus,
+                item.Reviewer,
+                item.ReviewedAtUtc,
+                item.EffectiveDate,
+                item.EvidenceVersion,
+                item.SubjectType))
             .ToArray();
         var typedSecurityId = command.EconomicEvent?.SecurityId;
         if (metadata.SecurityId.HasValue && typedSecurityId.HasValue && metadata.SecurityId != typedSecurityId)

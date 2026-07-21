@@ -7,7 +7,7 @@ namespace Meridian.Tests.Ui;
 public sealed class InvestmentAccountingTransactionLabServiceTests
 {
     [Fact]
-    public void Preview_BuyTradeBuildsBalancedBooksBeforeBrokerJournal()
+    public void Preview_BuyTradeBuildsBalancedExpectedAccountingProjection()
     {
         var service = new InvestmentAccountingTransactionLabService();
 
@@ -29,6 +29,8 @@ public sealed class InvestmentAccountingTransactionLabServiceTests
         preview.PreviewId.Should().Be("txn-lab:fund-acct-1:20260528:Trade:MSFT");
         preview.JournalPreview.IsBalanced.Should().BeTrue();
         preview.JournalPreview.RequiresOperatorApproval.Should().BeTrue();
+        preview.JournalPreview.Description.Should().Contain("Expected Trade accounting projection");
+        preview.JournalPreview.Description.Should().Contain("unposted");
         preview.JournalPreview.Lines.Should().Contain(line =>
             line.AccountName == "Investments" &&
             line.Symbol == "MSFT" &&
@@ -40,14 +42,16 @@ public sealed class InvestmentAccountingTransactionLabServiceTests
         preview.LedgerImpact.HasValidationWarnings.Should().BeFalse();
         preview.TrialBalanceImpact.Should().Contain(line =>
             line.AccountName == "Cash" &&
-            line.BalanceDelta == -252m);
+            line.BalanceDelta == -252m &&
+            line.Explanation.Contains("projected accounting effect", StringComparison.Ordinal) &&
+            line.Explanation.Contains("no journal has been posted", StringComparison.Ordinal));
         preview.ReconciliationExpectation.ExpectedBreakType.Should().Be("trade-to-ledger-match");
         preview.SourceRunId.Should().Be("run-1");
         preview.SourceSessionId.Should().Be("paper-session-1");
     }
 
     [Fact]
-    public void Preview_BrokerReconciliationBuildsReconciliationReadySuspenseJournal()
+    public void Preview_BrokerReconciliationBuildsProjectedReconciliationEffect()
     {
         var service = new InvestmentAccountingTransactionLabService();
 
@@ -64,10 +68,12 @@ public sealed class InvestmentAccountingTransactionLabServiceTests
 
         preview.JournalPreview.IsBalanced.Should().BeTrue();
         preview.JournalPreview.Lines.Should().Contain(line => line.AccountName == "Reconciliation Suspense" && line.Debit == 17.25m);
-        preview.ReconciliationExpectation.ExpectedState.Should().Be("ReadyForReconciliation");
+        preview.ReconciliationExpectation.ExpectedState.Should().Be("ProjectedForReconciliation");
         preview.ReconciliationExpectation.ExpectedBreakType.Should().Be("broker-statement-break");
         preview.ReconciliationExpectation.BrokerStatementId.Should().Be("statement-2026-05");
         preview.ReconciliationExpectation.ReconciliationCaseId.Should().Be("case-1");
+        preview.ReconciliationExpectation.Detail.Should().Contain("Expected accounting projection remains unposted");
+        preview.ReconciliationExpectation.Detail.Should().Contain("before any posting candidate is created");
         preview.EvidenceIds.Should().ContainSingle("statement-row-1");
     }
 
@@ -100,6 +106,7 @@ public sealed class InvestmentAccountingTransactionLabServiceTests
         preview.BooksBeforeBroker.Blockers.Should().BeEmpty();
         preview.BooksBeforeBroker.EvidenceIds.Should().Equal("order-ticket-1", "strategy-approval-1");
         preview.BooksBeforeBroker.BrokerInstructionSummary.Should().Contain("can be staged only after");
+        preview.BooksBeforeBroker.BrokerInstructionSummary.Should().Contain("expected accounting projection");
         preview.TrialBalanceImpact.Should().Contain(line => line.AccountName == "Cash" && line.BalanceDelta == -501m);
     }
 

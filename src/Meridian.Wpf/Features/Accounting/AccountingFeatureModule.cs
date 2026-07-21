@@ -28,6 +28,7 @@ using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
+using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -226,10 +227,28 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
+            sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder
+            ?? throw new InvalidOperationException(
+                "The configured accounting posting candidate write builder must also implement " +
+                $"{nameof(IAccountingPostingCandidateAuthorityBuilder)}."));
+        services.TryAddSingleton<IAssetAccountingEventSpineService>(sp =>
+            AssetAccountingEventSpineService.TryCreate(
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetService<IInstrumentPositionProjectionStore>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IAccountingPolicyService>(),
+                sp.GetService<IAccountingConfigurationService>(),
+                sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
+                sp.GetService<ILedgerJournalStore>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
-                sp.GetService<ILedgerJournalStore>()));
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IAtomicTaxLotJournalStore>(),
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IAccountingMigrationRunArtifactStore>(sp =>
             new FileAccountingMigrationRunArtifactStore(

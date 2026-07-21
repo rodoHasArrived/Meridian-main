@@ -181,6 +181,10 @@ be reconstructed from durable journal evidence. Postgres journal storage also ke
 indexes for aggregate-scoped command id, source event id, and normalized metadata idempotency key so
 retry attempts fail closed at the durable ledger boundary instead of relying only on caller-side
 checks. When LedgerJournalEntryWrite carries an AccountingPostingCommandDto, storage normalizes the write metadata from that command and rejects missing command identity, mismatched aggregate/period/ledger-book scope, pending reviewer state, non-human material origin, missing evidence/rationale, or correction intents without source journal lineage before append.
+Canonical `AssetAccounting.*` commands use the stricter evidence contract: operator rationale and
+string links are navigation only, and storage requires complete typed retained identity, SHA-256,
+source reference, accepted reviewer, UTC review/retention timestamps, effective date, positive
+version, retained-by actor, and subject scope before append.
 The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
@@ -310,6 +314,15 @@ migrated. Economic-state payloads retain their matching typed lineage, allowing 
 factor event to survive a later current-position update. Role and position identities cannot move
 across Security Master, owner, role, or ledger-book boundaries, state versions cannot be replaced,
 and idempotent replay preserves the original approval actor, reference, rationale, and timestamp.
+`004_asset_accounting_event_spine.sql` adds append-only, fingerprinted versions of the canonical
+Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment,
+Depreciation/Amortization, and Disposal spine. Store writes require exact prior spine and current
+book-position versions, preserve lifecycle/evidence history, and reject payload drift on replay.
+`V_ledger_027__atomic_tax_lot_posting.sql` adds immutable mutation-batch and tax-lot mutation
+evidence beside versioned lots. `PostgresLedgerJournalStore.AppendAssetPostingAsync` takes
+serializable scope locks, rechecks period and selected-lot CAS, appends the governed journal, creates
+or consumes lots, and retains before/after snapshots in one transaction; stale state or any failed
+append rolls the entire batch back, while an exact canonical fingerprint returns the retained result.
 Asset Operations migrations run under a schema-scoped advisory lock and a checksummed migration
 ledger, preventing concurrent first-start races and repeated DDL/history rewrites after restart.
 
@@ -413,6 +426,14 @@ flowchart TB
     books --> reports
 ```
 
+Asset Accounting Event Spine persistence is append-only. A Posted append is accepted only after
+the store resolves one exact immutable journal with matching event, book, period, basis, timestamp,
+balanced lines, currencies, and dimensions. Atomic acquisition/disposal persistence uses one
+serializable transaction for the journal, scoped tax lots, immutable mutation snapshots, evidence,
+and correction lineage. Every atomic lot carries Security Master plus book-position identity;
+disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
+selected-lot cost basis.
+
 ## Roadmap traceability
 
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE -->
@@ -423,6 +444,7 @@ flowchart TB
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

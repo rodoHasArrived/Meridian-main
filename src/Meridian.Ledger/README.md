@@ -160,6 +160,11 @@ scope, and statement totals without claiming full XBRL/iXBRL coverage.
 child `LedgerEntry` lines. Broader business `Transaction` and operational-event records can explain
 or initiate posting intent, but they are not aliases for the journal and do not become accounting
 truth without the governed append path.
+Asset Accounting lifecycle terminology follows the same boundary: Expected, Projected, Drafted,
+and Approved do not imply journal impact. Posted requires the immutable journal id, ledger book,
+period, basis, currency, balanced line amounts, and Posted status. Reconciled and Reported are later
+evidence-bearing states over that journal fact, not replacements for it; reporting publication
+remains a separate governed outcome.
 `JournalEntryMetadata`, `JournalEvidenceReference`, and `LedgerQuery` now carry treasury-ledger audit context for private-capital
 and payment-linked postings: effective date, idempotency key, fund event, capital account, investor,
 payment intent, settlement references, and typed retained evidence references. Keep those fields additive and metadata-owned so ledger
@@ -218,6 +223,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

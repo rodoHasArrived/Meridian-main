@@ -1,21 +1,27 @@
 using System.Text.Json;
 using System.Data;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Storage.Ledger;
 using Npgsql;
 
 namespace Meridian.Storage.AssetOperations;
 
 public sealed partial class PostgresAssetOperationsProjectionStore :
     IAssetOperationsProjectionStore,
-    IInstrumentPositionProjectionStore
+    IInstrumentPositionProjectionStore,
+    IAssetAccountingEventProjectionStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly AssetOperationsOptions _options;
+    private readonly ILedgerJournalStore? _assetAccountingJournalStore;
 
-    public PostgresAssetOperationsProjectionStore(AssetOperationsOptions options)
+    public PostgresAssetOperationsProjectionStore(
+        AssetOperationsOptions options,
+        ILedgerJournalStore? assetAccountingJournalStore = null)
     {
         _options = options;
+        _assetAccountingJournalStore = assetAccountingJournalStore;
         ValidateIdentifier(_options.Schema, nameof(options.Schema));
     }
 

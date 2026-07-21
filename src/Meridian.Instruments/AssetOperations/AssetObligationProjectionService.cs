@@ -30,7 +30,7 @@ public sealed class AssetObligationProjectionService
                 generatedAt,
                 SecurityMasterSourceDomain,
                 security.SecurityId.ToString("D"),
-                $"{security.DisplayName} retained Security Master terms",
+                $"{security.DisplayName} Security Master terms projected for Asset Operations review",
                 BuildSecurityMasterTermsPayload(security))
         };
         var lifecycle = new[]
@@ -77,7 +77,12 @@ public sealed class AssetObligationProjectionService
             subject,
             readyCapabilities,
             SecurityMasterSourceDomain,
-            security.SecurityId.ToString("D"));
+            security.SecurityId.ToString("D"),
+            additionalWarnings:
+            [
+                "Only Expected/Projected support was synthesized from Security Master. Publish a reviewed Asset Operations projection and attach accepted retained evidence before downstream use."
+            ],
+            allowReady: false);
 
         var detail = new AssetOperationsDetailDto(
             subject,
@@ -190,7 +195,10 @@ public sealed class AssetObligationProjectionService
                 result.SourceDomain,
                 result.SourceEntityId,
                 BuildVarianceSummary(result),
-                result.EvidenceLink));
+                result.EvidenceLink)
+            {
+                RetainedEvidence = result.RetainedEvidence
+            });
         }
 
         foreach (var flow in projectedCashFlows.Where(flow => flow.DueDate < projectionAsOf))
@@ -224,7 +232,10 @@ public sealed class AssetObligationProjectionService
                 "MissingEvidence",
                 flow.SourceDomain ?? "AssetOperations",
                 flow.SourceEntityId,
-                $"{flow.FlowType} expected on {flow.DueDate:yyyy-MM-dd} has no retained actual activity or reconciliation evidence."));
+                $"{flow.FlowType} expected on {flow.DueDate:yyyy-MM-dd} has no retained actual activity or reconciliation evidence.")
+            {
+                RetainedEvidence = flow.RetainedEvidence
+            });
         }
 
         return variances
@@ -680,7 +691,8 @@ public sealed class AssetObligationProjectionService
         {
             FormulaTrace = formulaTrace,
             LedgerReference = ledgerReference,
-            NextAction = status == "MissingEvidence" ? $"Past due: {nextAction}" : nextAction
+            NextAction = status == "MissingEvidence" ? $"Past due: {nextAction}" : nextAction,
+            RetainedEvidence = term.RetainedEvidence
         };
     }
 

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 
@@ -499,6 +500,58 @@ public sealed record AccountingTenantAdminCertificationArtifactDto(
         Issues ?? [];
 }
 
+/// <summary>
+/// Stable subject types used to bind retained evidence identities to the typed accounting
+/// certification artifact whose scope and passed lanes the evidence supports.
+/// </summary>
+public static class AccountingProductionCertificationEvidenceSubjectTypes
+{
+    public const string WorkflowArtifact = "AccountingWorkflowCertificationArtifact";
+    public const string DimensionalArtifact = "AccountingDimensionalCertificationArtifact";
+    public const string TenantAdministrationArtifact = "AccountingTenantAdminCertificationArtifact";
+}
+
+/// <summary>
+/// Fail-closed retained-evidence checks for accounting production certification. Evidence URI
+/// text is a locator only; authority comes from an exact subject-type and certification-id bind.
+/// </summary>
+public static class AccountingProductionCertificationEvidenceValidator
+{
+    public static bool IsEligible(RetainedEvidenceIdentityDto? evidence)
+        => RetainedEvidenceIdentityValidator.IsComplete(evidence) &&
+           !IsSynthesized(evidence!) &&
+           !IsLegacyFullToken(evidence!.EvidenceUri);
+
+    public static bool IsSynthesized(RetainedEvidenceIdentityDto evidence)
+        => evidence.EvidenceUri.Contains("retained-production-profile", StringComparison.OrdinalIgnoreCase) ||
+           evidence.SourceReference.Contains("retained-production-profile", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(
+               evidence.SourceSystem.Trim(),
+               nameof(AccountingProductionReadinessRequestDto),
+               StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(
+               evidence.SourceSystem.Trim(),
+               "AccountingProductionReadinessService",
+               StringComparison.OrdinalIgnoreCase);
+
+    public static bool IsLegacyFullToken(string? evidenceUri)
+        => !string.IsNullOrWhiteSpace(evidenceUri) &&
+           (evidenceUri.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase) ||
+            evidenceUri.Contains("workflow-certification/full", StringComparison.OrdinalIgnoreCase) ||
+            evidenceUri.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
+            evidenceUri.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase) ||
+            evidenceUri.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
+            evidenceUri.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase));
+
+    public static bool BindsTo(
+        RetainedEvidenceIdentityDto? evidence,
+        string subjectType,
+        string certificationId)
+        => IsEligible(evidence) &&
+           string.Equals(evidence!.SubjectType.Trim(), subjectType, StringComparison.Ordinal) &&
+           string.Equals(evidence.SubjectId.Trim(), certificationId.Trim(), StringComparison.Ordinal);
+}
+
 public sealed record AccountingProductionCertificationProfileDto(
     string FundProfileId,
     Guid? LedgerBookId,
@@ -525,7 +578,8 @@ public sealed record AccountingProductionCertificationProfileDto(
     bool ClosePlanConfigurationLedgerBookNativeCertified = false,
     IReadOnlyList<AccountingWorkflowCertificationArtifactDto>? WorkflowCertificationArtifacts = null,
     IReadOnlyList<AccountingDimensionalCertificationArtifactDto>? DimensionalCertificationArtifacts = null,
-    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? TenantAdminCertificationArtifacts = null)
+    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? TenantAdminCertificationArtifacts = null,
+    IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
@@ -538,6 +592,9 @@ public sealed record AccountingProductionCertificationProfileDto(
 
     public IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> TenantAdminCertificationArtifacts { get; init; } =
         TenantAdminCertificationArtifacts ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
+        RetainedEvidence ?? [];
 }
 
 public sealed record AccountingProductionCertificationProfileUpsertRequestDto(
@@ -545,10 +602,14 @@ public sealed record AccountingProductionCertificationProfileUpsertRequestDto(
     string Actor,
     string? CorrelationId = null,
     IReadOnlyList<string>? EvidenceLinks = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
+        RetainedEvidence ?? [];
 }
 
 public sealed record AccountingProductionReadinessRequestDto(
@@ -607,7 +668,8 @@ public sealed record AccountingProductionReadinessRequestDto(
     IReadOnlyList<AccountingMigrationRunArtifactDto>? MigrationRunArtifacts = null,
     IReadOnlyList<AccountingWorkflowCertificationArtifactDto>? WorkflowCertificationArtifacts = null,
     IReadOnlyList<AccountingDimensionalCertificationArtifactDto>? DimensionalCertificationArtifacts = null,
-    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? TenantAdminCertificationArtifacts = null)
+    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? TenantAdminCertificationArtifacts = null,
+    IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null)
 {
     public IReadOnlyList<LedgerBookRequiredScopeDto> RequiredLedgerBookScopes { get; init; } =
         RequiredLedgerBookScopes ?? [];
@@ -635,6 +697,9 @@ public sealed record AccountingProductionReadinessRequestDto(
 
     public IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> TenantAdminCertificationArtifacts { get; init; } =
         TenantAdminCertificationArtifacts ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
+        RetainedEvidence ?? [];
 }
 
 public sealed record AccountingLedgerBookWorkflowReadinessDto(
@@ -647,10 +712,21 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
     bool ReconciliationLedgerBookNativeCertified = false,
     bool DirectLendingLedgerBookNativeCertified = false,
     bool StrategyLedgerReadLedgerBookNativeCertified = false,
-    IReadOnlyList<string>? EvidenceReferences = null)
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    string? FundProfileId = null,
+    IReadOnlyList<AccountingWorkflowCertificationArtifactDto>? CertificationArtifacts = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
+        RetainedEvidence ?? [];
+
+    public IReadOnlyList<AccountingWorkflowCertificationArtifactDto> CertificationArtifacts { get; init; } =
+        CertificationArtifacts ?? [];
 
     public int CompletedControlCount =>
         new[]
@@ -671,49 +747,73 @@ public sealed record AccountingLedgerBookWorkflowReadinessDto(
 
     public bool HasLedgerBookScope => LedgerBookId.HasValue;
 
-    public bool HasRetainedEvidence => EvidenceReferences.Count > 0;
+    public bool HasRetainedEvidence =>
+        RetainedEvidence.Any(AccountingProductionCertificationEvidenceValidator.IsEligible);
 
     public bool HasLedgerBookScopedEvidence =>
-        LedgerBookId.HasValue &&
-        EvidenceReferences.Any(reference => IsLedgerBookEvidence(reference, LedgerBookId.Value));
+        HasRequiredScope &&
+        CertificationArtifacts.Any(artifact =>
+            IsScopedCertifiedArtifact(artifact) &&
+            RetainedEvidence.Any(evidence =>
+                AccountingProductionCertificationEvidenceValidator.BindsTo(
+                    evidence,
+                    AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                    artifact.CertificationId)));
 
     public bool HasPostingRulesLedgerBookNativeEvidence =>
-        HasWorkflowEvidence("posting-rules", "posting-rule", "rules-studio", "posting-candidate");
+        HasWorkflowEvidence(AccountingWorkflowCertificationLaneKindDto.PostingRules);
 
     public bool HasJournalLifecycleLedgerBookNativeEvidence =>
-        HasWorkflowEvidence("journal-lifecycle", "journal-entry", "je-lifecycle", "manual-journal");
+        HasWorkflowEvidence(AccountingWorkflowCertificationLaneKindDto.JournalLifecycle);
 
     public bool HasCloseReportingLedgerBookNativeEvidence =>
-        HasWorkflowEvidence("close-reporting", "close-management", "report-package", "restatement");
+        HasWorkflowEvidence(AccountingWorkflowCertificationLaneKindDto.CloseReporting);
 
     public bool HasClosePlanConfigurationLedgerBookNativeEvidence =>
-        HasWorkflowEvidence("close-plan-configuration", "close-plan", "close-setup", "close-checklist", "materiality-policy");
+        HasWorkflowEvidence(AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration);
 
     public bool HasExternalGlLedgerBookNativeEvidence =>
-        HasWorkflowEvidence("external-gl", "external-ledger", "gl-export", "gl-import");
+        HasWorkflowEvidence(AccountingWorkflowCertificationLaneKindDto.ExternalGl);
 
     public bool HasReconciliationLedgerBookNativeEvidence =>
-        HasWorkflowEvidence("reconciliation", "break-queue", "statement-reconciliation", "reconciliation-case");
+        HasWorkflowEvidence(AccountingWorkflowCertificationLaneKindDto.Reconciliation);
 
     public bool HasDirectLendingLedgerBookNativeEvidence =>
-        HasWorkflowEvidence("direct-lending", "loan-account", "borrower", "direct-lending-projection");
+        HasWorkflowEvidence(AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection);
 
     public bool HasStrategyLedgerReadLedgerBookNativeEvidence =>
-        HasWorkflowEvidence("strategy-ledger", "strategy-run", "run-ledger", "strategy-ledger-read");
+        HasWorkflowEvidence(AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads);
 
-    private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
-        => AccountingProductionReadinessEvidenceScope.ReferencesLedgerBook(reference, ledgerBookId);
+    private bool HasWorkflowEvidence(params AccountingWorkflowCertificationLaneKindDto[] lanes)
+        => HasRequiredScope &&
+           CertificationArtifacts.Any(artifact =>
+               IsScopedCertifiedArtifact(artifact) &&
+               artifact.Lanes.Any(lane =>
+                   lanes.Contains(lane.Kind) &&
+                   lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed) &&
+               RetainedEvidence.Any(evidence =>
+                   AccountingProductionCertificationEvidenceValidator.BindsTo(
+                       evidence,
+                       AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                       artifact.CertificationId)));
 
-    private bool HasWorkflowEvidence(params string[] aliases)
-        => LedgerBookId.HasValue &&
-           EvidenceReferences.Any(reference =>
-               IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
-               (IsLegacyFullWorkflowEvidence(reference) ||
-                aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+    private bool HasRequiredScope =>
+        LedgerBookId.HasValue &&
+        !string.IsNullOrWhiteSpace(TenantId) &&
+        !string.IsNullOrWhiteSpace(CompanyId) &&
+        !string.IsNullOrWhiteSpace(FundProfileId);
 
-    private static bool IsLegacyFullWorkflowEvidence(string reference)
-        => reference.Contains("workflow-certification/full", StringComparison.OrdinalIgnoreCase) ||
-           reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase);
+    private bool IsScopedCertifiedArtifact(AccountingWorkflowCertificationArtifactDto artifact)
+        => artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+           !string.IsNullOrWhiteSpace(artifact.CertificationId) &&
+           !string.IsNullOrWhiteSpace(artifact.CertifiedBy) &&
+           artifact.CertifiedAtUtc != default &&
+           artifact.CertifiedAtUtc.Offset == TimeSpan.Zero &&
+           !string.IsNullOrWhiteSpace(artifact.SourceService) &&
+           artifact.LedgerBookId == LedgerBookId &&
+           string.Equals(artifact.TenantId?.Trim(), TenantId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(artifact.CompanyId?.Trim(), CompanyId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(artifact.FundProfileId.Trim(), FundProfileId?.Trim(), StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record AccountingDimensionalReportingReadinessDto(
@@ -725,10 +825,21 @@ public sealed record AccountingDimensionalReportingReadinessDto(
     bool LedgerLineDimensionsPersistedCertified = false,
     bool TrialBalanceDimensionFiltersCertified = false,
     bool ReportPackageDimensionProvenanceCertified = false,
-    IReadOnlyList<string>? EvidenceReferences = null)
+    IReadOnlyList<string>? EvidenceReferences = null,
+    IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null,
+    string? TenantId = null,
+    string? CompanyId = null,
+    string? FundProfileId = null,
+    IReadOnlyList<AccountingDimensionalCertificationArtifactDto>? CertificationArtifacts = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
+        RetainedEvidence ?? [];
+
+    public IReadOnlyList<AccountingDimensionalCertificationArtifactDto> CertificationArtifacts { get; init; } =
+        CertificationArtifacts ?? [];
 
     public int CompletedControlCount =>
         new[]
@@ -749,61 +860,83 @@ public sealed record AccountingDimensionalReportingReadinessDto(
 
     public bool HasLedgerBookScope => LedgerBookId.HasValue;
 
-    public bool HasRetainedEvidence => EvidenceReferences.Count > 0;
+    public bool HasRetainedEvidence =>
+        RetainedEvidence.Any(AccountingProductionCertificationEvidenceValidator.IsEligible);
 
     public bool HasLedgerBookScopedEvidence =>
-        LedgerBookId.HasValue &&
-        EvidenceReferences.Any(reference => IsLedgerBookEvidence(reference, LedgerBookId.Value));
+        HasRequiredScope &&
+        CertificationArtifacts.Any(artifact =>
+            IsScopedCertifiedArtifact(artifact) &&
+            RetainedEvidence.Any(evidence =>
+                AccountingProductionCertificationEvidenceValidator.BindsTo(
+                    evidence,
+                    AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                    artifact.CertificationId)));
 
     public bool HasExplicitDimensionScopeEvidence =>
-        LedgerBookId.HasValue &&
-        EvidenceReferences.Any(reference =>
-            IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
-            ReferencesDimensionScope(reference));
+        HasLedgerBookScopedEvidence &&
+        CertificationArtifacts.Any(artifact =>
+            IsScopedCertifiedArtifact(artifact) &&
+            !string.IsNullOrWhiteSpace(artifact.DimensionScopeEvidenceKey) &&
+            RetainedEvidence.Any(evidence =>
+                AccountingProductionCertificationEvidenceValidator.BindsTo(
+                    evidence,
+                    AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                    artifact.CertificationId)));
 
     public bool HasPeriodReportDimensionQueryEvidence =>
-        HasDimensionEvidence("period-report", "period-reports", "trial-balance", "financial-statement", "nav", "investor-package");
+        HasDimensionEvidence(AccountingDimensionalCertificationLaneKindDto.PeriodReports);
 
     public bool HasCrossPeriodReportDimensionQueryEvidence =>
-        HasDimensionEvidence("cross-period", "comparative", "roll-forward");
+        HasDimensionEvidence(AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports);
 
     public bool HasJournalQueryDimensionFilterEvidence =>
-        HasDimensionEvidence("journal-query", "journal-filter", "journal-dimension", "ledger-journal");
+        HasDimensionEvidence(AccountingDimensionalCertificationLaneKindDto.JournalFilters);
 
     public bool HasExternalExportDimensionMappingEvidence =>
-        HasDimensionEvidence("external-export", "export-dimension", "external-gl-mapping", "gl-export");
+        HasDimensionEvidence(AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings);
 
     public bool HasLedgerLineDimensionPersistenceEvidence =>
-        HasDimensionEvidence("ledger-line", "line-dimension", "posted-ledger-line", "journal-line-dimension");
+        HasDimensionEvidence(AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence);
 
     public bool HasTrialBalanceDimensionFilterEvidence =>
-        HasDimensionEvidence("trial-balance-filter", "trial-balance-dimension", "ledger-report-filter");
+        HasDimensionEvidence(AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters);
 
     public bool HasReportPackageDimensionProvenanceEvidence =>
-        HasDimensionEvidence("report-package-provenance", "report-line-provenance", "package-dimension", "nav-package");
+        HasDimensionEvidence(AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance);
 
-    private static bool IsLedgerBookEvidence(string? reference, Guid ledgerBookId)
-        => AccountingProductionReadinessEvidenceScope.ReferencesLedgerBook(reference, ledgerBookId);
+    private bool HasDimensionEvidence(params AccountingDimensionalCertificationLaneKindDto[] lanes)
+        => HasRequiredScope &&
+           CertificationArtifacts.Any(artifact =>
+               IsScopedCertifiedArtifact(artifact) &&
+               !string.IsNullOrWhiteSpace(artifact.DimensionScopeEvidenceKey) &&
+               artifact.Lanes.Any(lane =>
+                   lanes.Contains(lane.Kind) &&
+                   lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed) &&
+               RetainedEvidence.Any(evidence =>
+                   AccountingProductionCertificationEvidenceValidator.BindsTo(
+                       evidence,
+                       AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                       artifact.CertificationId)));
 
-    private static bool ReferencesDimensionScope(string? reference)
-        => !string.IsNullOrWhiteSpace(reference) &&
-           (reference.Contains("dimension-scope:", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("dimension-scope/", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("ledger-dimension-set:", StringComparison.OrdinalIgnoreCase) ||
-            reference.Contains("ledger-dimension-set/", StringComparison.OrdinalIgnoreCase));
+    private bool HasRequiredScope =>
+        LedgerBookId.HasValue &&
+        !string.IsNullOrWhiteSpace(TenantId) &&
+        !string.IsNullOrWhiteSpace(CompanyId) &&
+        !string.IsNullOrWhiteSpace(FundProfileId);
 
-    private bool HasDimensionEvidence(params string[] aliases)
-        => LedgerBookId.HasValue &&
-           EvidenceReferences.Any(reference =>
-               IsLedgerBookEvidence(reference, LedgerBookId.Value) &&
-               ReferencesDimensionScope(reference) &&
-               (IsLegacyFullDimensionEvidence(reference) ||
-                aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
-
-    private static bool IsLegacyFullDimensionEvidence(string reference)
-        => reference.Contains("dimensions/report-query-certification/full", StringComparison.OrdinalIgnoreCase) ||
-           reference.Contains("dimensions/full", StringComparison.OrdinalIgnoreCase) ||
-           reference.Contains("production-certification/full", StringComparison.OrdinalIgnoreCase);
+    private bool IsScopedCertifiedArtifact(AccountingDimensionalCertificationArtifactDto artifact)
+        => artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+           !string.IsNullOrWhiteSpace(artifact.CertificationId) &&
+           !string.IsNullOrWhiteSpace(artifact.CertifiedBy) &&
+           artifact.CertifiedAtUtc != default &&
+           artifact.CertifiedAtUtc.Offset == TimeSpan.Zero &&
+           !string.IsNullOrWhiteSpace(artifact.SourceService) &&
+           !string.IsNullOrWhiteSpace(artifact.DimensionScopeEvidenceKey) &&
+           artifact.LedgerBookId == LedgerBookId &&
+           string.Equals(artifact.TenantId?.Trim(), TenantId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(artifact.CompanyId?.Trim(), CompanyId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(artifact.FundProfileId.Trim(), FundProfileId?.Trim(), StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record AccountingTenantAdministrationReadinessDto(
@@ -830,10 +963,20 @@ public sealed record AccountingTenantAdministrationReadinessDto(
     bool PostingRuleAuthoringStudioConfigured = false,
     bool ApprovalQueueStudioConfigured = false,
     bool DimensionMappingStudioConfigured = false,
-    bool ImplementationSandboxConfigured = false)
+    bool ImplementationSandboxConfigured = false,
+    IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null,
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    IReadOnlyList<AccountingTenantAdminCertificationArtifactDto>? CertificationArtifacts = null)
 {
     public IReadOnlyList<string> EvidenceReferences { get; init; } =
         EvidenceReferences ?? [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
+        RetainedEvidence ?? [];
+
+    public IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> CertificationArtifacts { get; init; } =
+        CertificationArtifacts ?? [];
 
     public int CompletedControlCount =>
         new[]
@@ -869,140 +1012,112 @@ public sealed record AccountingTenantAdministrationReadinessDto(
 
     public bool HasCompanyScope => !string.IsNullOrWhiteSpace(CompanyId);
 
-    public bool HasRetainedEvidence => EvidenceReferences.Count > 0;
+    public bool HasRetainedEvidence =>
+        RetainedEvidence.Any(AccountingProductionCertificationEvidenceValidator.IsEligible);
 
     public bool HasTenantCompanyScopedEvidence =>
-        HasTenantScope &&
-        HasCompanyScope &&
-        EvidenceReferences.Any(IsTenantCompanyScopedEvidence);
+        HasRequiredScope &&
+        CertificationArtifacts.Any(artifact =>
+            IsScopedCertifiedArtifact(artifact) &&
+            RetainedEvidence.Any(evidence =>
+                AccountingProductionCertificationEvidenceValidator.BindsTo(
+                    evidence,
+                    AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                    artifact.CertificationId)));
 
     public bool HasTenantScopeEvidence =>
-        HasTenantAdministrationEvidence("tenant-scope", "tenant-storage", "tenant-ledger", "tenant-provider");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.TenantScope);
 
     public bool HasAdminRoleProfileEvidence =>
-        HasTenantAdministrationEvidence("admin-role", "role-profile", "accounting-admin-role");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile);
 
     public bool HasScopedAccessPolicyEvidence =>
-        HasTenantAdministrationEvidence("scoped-access", "access-policy", "entitlement");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies);
 
     public bool HasReportingGroupEvidence =>
-        HasTenantAdministrationEvidence("reporting-group", "report-group", "delivery-group");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.ReportingGroups);
 
     public bool HasAccountingAdminSurfaceEvidence =>
-        HasTenantAdministrationEvidence("accounting-admin-surface", "operator-surface", "admin-studio", "setup-surface");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface);
 
     public bool HasBrowserAccountingAdminSurfaceEvidence =>
-        HasTenantAdministrationEvidence("browser-admin-studio", "browser-accounting-admin", "browser-setup");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.BrowserAccountingAdminSurface);
 
     public bool HasWpfAccountingAdminSurfaceEvidence =>
-        HasTenantAdministrationEvidence("wpf-admin-studio", "desktop-accounting-admin", "wpf-setup");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface);
 
     public bool HasChartAdministrationStudioEvidence =>
-        HasTenantAdministrationEvidence("chart-admin", "chart-administration", "chart-of-accounts", "ledger-book-chart");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio);
 
     public bool HasRuleTestPromotionStudioEvidence =>
-        HasTenantAdministrationEvidence("rule-test-promotion", "rules-studio", "rule-tests", "promotion-queue");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio);
 
     public bool HasCloseSetupStudioEvidence =>
-        HasTenantAdministrationEvidence("close-setup", "close-checklist", "close-calendar", "materiality-policy");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio);
 
     public bool HasProviderMappingStudioEvidence =>
-        HasTenantAdministrationEvidence("provider-mapping", "external-gl-mapping", "gl-mapping", "mapping-profile");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio);
 
     public bool HasTenantCompanyReportGroupSetupStudioEvidence =>
-        HasTenantAdministrationEvidence("tenant-company-report-group", "tenant-company-setup", "report-group-setup", "company-report-group");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio);
 
     public bool HasAuditReviewToolingEvidence =>
-        HasTenantAdministrationEvidence("audit-review", "audit-tooling", "audit-workbench", "evidence-review");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.AuditReviewTooling);
 
     public bool HasBulkImportExportSafeguardsEvidence =>
-        HasTenantAdministrationEvidence("bulk-import-export", "bulk-import", "bulk-export", "import-export-safeguard");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.BulkImportExportSafeguards);
 
     public bool HasPerformanceValidationEvidence =>
-        HasTenantAdministrationEvidence("performance-validation", "performance-test", "load-test", "capacity-validation");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.PerformanceValidation);
 
     public bool HasDisasterRecoveryRunbookEvidence =>
-        HasTenantAdministrationEvidence("disaster-recovery", "dr-runbook", "operating-runbook", "recovery-validation");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.DisasterRecoveryRunbook);
 
     public bool HasLedgerBookAdministrationStudioEvidence =>
-        HasTenantAdministrationEvidence("ledger-book-admin", "ledger-book-administration", "book-administration", "ledger-book-setup");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio);
 
     public bool HasPostingRuleAuthoringStudioEvidence =>
-        HasTenantAdministrationEvidence("posting-rule-authoring", "posting-rule-studio", "rule-authoring", "posting-rule-setup");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio);
 
     public bool HasApprovalQueueStudioEvidence =>
-        HasTenantAdministrationEvidence("approval-queue", "promotion-approval", "je-approval", "configuration-approval");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio);
 
     public bool HasDimensionMappingStudioEvidence =>
-        HasTenantAdministrationEvidence("dimension-mapping", "dimension-map", "external-dimension-mapping", "gl-dimension-mapping");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio);
 
     public bool HasImplementationSandboxEvidence =>
-        HasTenantAdministrationEvidence("implementation-sandbox", "sandbox-validation", "fixture-validation", "implementation-fixture");
+        HasTenantAdministrationEvidence(AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox);
 
-    private bool HasTenantAdministrationEvidence(params string[] aliases)
-        => EvidenceReferences.Any(reference =>
-            IsTenantCompanyScopedEvidence(reference) &&
-            IsTenantAdministrationEvidence(reference) &&
-            (IsLegacyFullTenantAdministrationEvidence(reference) ||
-             aliases.Any(alias => reference.Contains(alias, StringComparison.OrdinalIgnoreCase))));
+    private bool HasTenantAdministrationEvidence(params AccountingTenantAdminCertificationLaneKindDto[] lanes)
+        => HasRequiredScope &&
+           CertificationArtifacts.Any(artifact =>
+               IsScopedCertifiedArtifact(artifact) &&
+               artifact.Lanes.Any(lane =>
+                   lanes.Contains(lane.Kind) &&
+                   lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed) &&
+               RetainedEvidence.Any(evidence =>
+                   AccountingProductionCertificationEvidenceValidator.BindsTo(
+                       evidence,
+                       AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                       artifact.CertificationId)));
 
-    private static bool IsTenantAdministrationEvidence(string reference)
-        => reference.Contains("tenant-admin", StringComparison.OrdinalIgnoreCase) ||
-           reference.Contains("tenant-administration", StringComparison.OrdinalIgnoreCase);
+    private bool HasRequiredScope =>
+        HasTenantScope &&
+        HasCompanyScope &&
+        !string.IsNullOrWhiteSpace(FundProfileId) &&
+        LedgerBookId.HasValue;
 
-    private static bool IsLegacyFullTenantAdministrationEvidence(string reference)
-        => reference.Contains("tenant-admin/full", StringComparison.OrdinalIgnoreCase) ||
-           reference.Contains("tenant-administration/full", StringComparison.OrdinalIgnoreCase);
-
-    private bool IsTenantCompanyScopedEvidence(string? reference)
-    {
-        if (string.IsNullOrWhiteSpace(reference) ||
-            string.IsNullOrWhiteSpace(TenantId) ||
-            string.IsNullOrWhiteSpace(CompanyId))
-        {
-            return false;
-        }
-
-        return ReferencesEvidenceToken(reference, TenantId) &&
-               ReferencesEvidenceToken(reference, CompanyId);
-    }
-
-    private static bool ReferencesEvidenceToken(string reference, string token)
-    {
-        if (string.IsNullOrWhiteSpace(reference) || string.IsNullOrWhiteSpace(token))
-        {
-            return false;
-        }
-
-        var comparison = StringComparison.OrdinalIgnoreCase;
-        var searchIndex = 0;
-        while (searchIndex < reference.Length)
-        {
-            var tokenIndex = reference.IndexOf(token, searchIndex, comparison);
-            if (tokenIndex < 0)
-            {
-                return false;
-            }
-
-            var before = tokenIndex == 0 ? '\0' : reference[tokenIndex - 1];
-            var afterIndex = tokenIndex + token.Length;
-            var after = afterIndex >= reference.Length ? '\0' : reference[afterIndex];
-
-            if (IsEvidenceTokenBoundary(before) && IsEvidenceTokenBoundary(after))
-            {
-                return true;
-            }
-
-            searchIndex = tokenIndex + token.Length;
-        }
-
-        return false;
-    }
-
-    private static bool IsEvidenceTokenBoundary(char value)
-        => value == '\0' ||
-           char.IsWhiteSpace(value) ||
-           value is '/' or ':' or '=' or '?' or '&' or '#' or ';' or ',' or ')' or ']' or '}';
+    private bool IsScopedCertifiedArtifact(AccountingTenantAdminCertificationArtifactDto artifact)
+        => artifact.Status == AccountingCertificationArtifactStatusDto.Certified &&
+           !string.IsNullOrWhiteSpace(artifact.CertificationId) &&
+           !string.IsNullOrWhiteSpace(artifact.CertifiedBy) &&
+           artifact.CertifiedAtUtc != default &&
+           artifact.CertifiedAtUtc.Offset == TimeSpan.Zero &&
+           !string.IsNullOrWhiteSpace(artifact.SourceService) &&
+           artifact.LedgerBookId == LedgerBookId &&
+           string.Equals(artifact.TenantId.Trim(), TenantId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(artifact.CompanyId.Trim(), CompanyId?.Trim(), StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(artifact.FundProfileId.Trim(), FundProfileId?.Trim(), StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record AccountingProductionReadinessIssueDto(

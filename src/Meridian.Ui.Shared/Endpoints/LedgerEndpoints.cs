@@ -1813,6 +1813,9 @@ public static partial class LedgerEndpoints
     private static IAccountingPostingCandidateService? ResolveAccountingPostingCandidateService(HttpContext context)
         => context.RequestServices.GetService<IAccountingPostingCandidateService>();
 
+    private static IAssetAccountingEventSpineService? ResolveAssetAccountingEventSpineService(HttpContext context)
+        => context.RequestServices.GetService<IAssetAccountingEventSpineService>();
+
     private static IAccountingPostingCandidatePostService? ResolveAccountingPostingCandidatePostService(HttpContext context)
         => context.RequestServices.GetService<IAccountingPostingCandidatePostService>();
 
