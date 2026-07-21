@@ -694,24 +694,27 @@ def _check_postgres() -> tuple[bool, bool, str, str | None]:
         # MERIDIAN_DATABASE_URL URL form: postgres://user:pass@host:port/db
         from urllib.parse import urlsplit
 
-        parts = urlsplit(conn_str)
-        if parts.hostname:
-            host = parts.hostname
         try:
-            if parts.port:
-                port = parts.port
+            parts = urlsplit(conn_str)
+            resolved_host = parts.hostname
+            resolved_port = parts.port
         except ValueError:
-            # A malformed/out-of-range port is a configuration error, not an
-            # unreachable server: the runtime rejects the same URL in
+            # A structurally malformed URL (bad host, or a non-numeric/out-of-range
+            # port that urlsplit or the port property rejects) is a configuration
+            # error, not an unreachable server: the runtime rejects the same URL in
             # MeridianDatabaseEnvironment.NormalizeToConnectionString, so report it
             # loudly instead of probing a default port and masking the problem.
             return (
                 False,
                 True,
-                "MERIDIAN_DATABASE_URL has an invalid port and would fail at startup",
+                "MERIDIAN_DATABASE_URL is not a valid connection URL and would fail at startup",
                 "Fix MERIDIAN_DATABASE_URL to postgres://user:password@host:port/database"
                 " with a numeric port in 1-65535",
             )
+        if resolved_host:
+            host = resolved_host
+        if resolved_port:
+            port = resolved_port
     elif conn_str:
         host_m = re.search(r"[Hh]ost=([^;, ]+)", conn_str)
         port_m = re.search(r"[Pp]ort=(\d+)", conn_str)
