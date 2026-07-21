@@ -902,33 +902,7 @@ public sealed class UiServer : IAsyncDisposable
             {
                 var config = configStore.Load();
 
-                // Mirror exactly which providers CollectorModeRunner instantiates, because those
-                // are what actually feed the pipeline. With failover enabled it builds clients
-                // from the first rule's primary + backup ids (each mapped to its source's provider,
-                // or the top-level DataSource when an id has no matching source entry) and does NOT
-                // consult Enabled/Type — so a disabled or historical synthetic backup named in a
-                // rule still publishes fabricated prices and must be flagged here. Without failover
-                // it is the single top-level DataSource.
-                var failoverCfg = config.DataSources;
-                var failoverRules = failoverCfg?.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
-                var candidateSources = new List<DataSourceKind>();
-                if (failoverCfg?.EnableFailover == true && failoverRules.Length > 0)
-                {
-                    var rule = failoverRules[0];
-                    var sources = failoverCfg.Sources ?? Array.Empty<DataSourceConfig>();
-                    foreach (var providerId in new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds))
-                    {
-                        var source = sources.FirstOrDefault(
-                            s => string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
-                        candidateSources.Add(source?.Provider ?? config.DataSource);
-                    }
-                }
-                else
-                {
-                    candidateSources.Add(config.DataSource);
-                }
-
-                var simulatedSources = candidateSources
+                var simulatedSources = ResolveCandidateStreamingSources(config.DataSources, config.DataSource)
                     .Where(IsSimulatedSource)
                     .Select(s => s.ToString().ToLowerInvariant())
                     .Distinct()
@@ -963,7 +937,45 @@ public sealed class UiServer : IAsyncDisposable
         };
     }
 
-    private static bool IsSimulatedSource(DataSourceKind source) => source switch
+    /// <summary>
+    /// Resolves every <see cref="DataSourceKind"/> that <c>CollectorModeRunner</c> could feed the
+    /// streaming pipeline with for the given configuration, so the degraded-mode probe can flag
+    /// simulation fail-closed without constructing any provider.
+    ///
+    /// The top-level <paramref name="topLevelDataSource"/> is always included: without failover it
+    /// is the sole streaming client, and with failover it is the emergency fallback taken when every
+    /// rule provider fails to construct (CollectorModeRunner falls back to
+    /// <c>CreateStreamingClient(ctx.Config.DataSource)</c> once <c>providerMap.Count == 0</c>). A
+    /// provider named in a rule that has no registered streaming factory — e.g. a Yahoo failover
+    /// source — always fails to construct, so a Synthetic top-level default would silently feed the
+    /// pipeline even though the rule provider itself is not simulated.
+    ///
+    /// With failover enabled the first rule's primary + backup ids are added too (each mapped to its
+    /// source's provider, or the top-level source when an id has no matching source entry).
+    /// CollectorModeRunner does NOT consult Enabled/Type, so a disabled or historical synthetic
+    /// backup named in a rule still counts.
+    /// </summary>
+    internal static IReadOnlyList<DataSourceKind> ResolveCandidateStreamingSources(
+        DataSourcesConfig? failoverCfg, DataSourceKind topLevelDataSource)
+    {
+        var candidates = new List<DataSourceKind> { topLevelDataSource };
+        var failoverRules = failoverCfg?.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
+        if (failoverCfg?.EnableFailover == true && failoverRules.Length > 0)
+        {
+            var rule = failoverRules[0];
+            var sources = failoverCfg.Sources ?? Array.Empty<DataSourceConfig>();
+            foreach (var providerId in new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds))
+            {
+                var source = sources.FirstOrDefault(
+                    s => string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
+                candidates.Add(source?.Provider ?? topLevelDataSource);
+            }
+        }
+
+        return candidates;
+    }
+
+    internal static bool IsSimulatedSource(DataSourceKind source) => source switch
     {
         DataSourceKind.Synthetic => true,
         DataSourceKind.IB => Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulationBuild,
