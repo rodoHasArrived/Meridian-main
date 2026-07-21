@@ -252,9 +252,18 @@ public static class LedgerFinancialStatementBuilder
         // opening balance holds prior-period undistributed P&L and only the current period's activity
         // is the allocated movement — otherwise an interim period that opens with unclosed prior P&L
         // would double-count it and fail to reconcile.
+        //
+        // Derive the allocated result from period revenue/expense ACTIVITY rather than the net-income
+        // balance delta. When the period contains a normal closing entry that moves prior P&L into
+        // Retained Earnings, the revenue/expense balances fall without any current-period loss; using
+        // the delta would report that reclassification as a spurious period loss with an offsetting
+        // "other" movement. The amount closed to equity during the period is routed to other movements
+        // instead, so the roll-forward still ties to ending undistributed income.
         var netIncomeAtStart = NetIncomeOf(beginningBalances);
-        var periodNetIncome = netIncome - netIncomeAtStart;
-        if (netIncome != 0m || netIncomeAtStart != 0m)
+        var periodNetIncome = PeriodNetIncomeFromActivity(
+            ledger, periodStart, asOf, financialAccountId, lineDimensions);
+        var closedToEquity = (netIncome - netIncomeAtStart) - periodNetIncome;
+        if (netIncome != 0m || netIncomeAtStart != 0m || periodNetIncome != 0m || closedToEquity != 0m)
         {
             rollForwards.Add(new LedgerPartnersCapitalRollForward(
                 new LedgerAccount("Undistributed Net Income", LedgerAccountType.Equity),
@@ -264,7 +273,7 @@ public static class LedgerFinancialStatementBuilder
                 Contributions: 0m,
                 Distributions: 0m,
                 AllocatedResult: periodNetIncome,
-                OtherMovements: 0m,
+                OtherMovements: closedToEquity,
                 EndingCapital: netIncome));
         }
 
@@ -299,6 +308,43 @@ public static class LedgerFinancialStatementBuilder
     private static decimal NetIncomeOf(IReadOnlyDictionary<LedgerAccount, decimal> trialBalance)
         => SumTrialBalance(trialBalance, LedgerAccountType.Revenue)
            - SumTrialBalance(trialBalance, LedgerAccountType.Expense);
+
+    /// <summary>
+    /// Sums current-period net income from revenue/expense journal activity in
+    /// (<paramref name="periodStart"/>, <paramref name="asOf"/>], excluding closing entries that move
+    /// accumulated P&amp;L into Retained Earnings. For both revenue and expense accounts the net-income
+    /// contribution of a leg is (credit − debit), so a single term covers both. Closing transfers are a
+    /// reclassification within equity, not a current-period result, so they are not allocated here.
+    /// </summary>
+    private static decimal PeriodNetIncomeFromActivity(
+        IReadOnlyLedger ledger,
+        DateTimeOffset periodStart,
+        DateTimeOffset asOf,
+        string? financialAccountId,
+        LedgerLineDimensionSet? lineDimensions)
+    {
+        var total = 0m;
+        foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
+        {
+            var closesToRetainedEarnings = entry.Lines.Any(line =>
+                MatchesScope(line, financialAccountId, lineDimensions)
+                && line.Account.AccountType == LedgerAccountType.Equity
+                && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal));
+            if (closesToRetainedEarnings)
+                continue;
+
+            foreach (var line in entry.Lines)
+            {
+                if (MatchesScope(line, financialAccountId, lineDimensions)
+                    && line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense)
+                {
+                    total += line.Credit - line.Debit;
+                }
+            }
+        }
+
+        return total;
+    }
 
     private static bool IsCashAccount(LedgerAccount account)
         => account.AccountType == LedgerAccountType.Asset

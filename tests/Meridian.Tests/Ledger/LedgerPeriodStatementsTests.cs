@@ -115,6 +115,47 @@ public sealed class LedgerPeriodStatementsTests
     }
 
     [Fact]
+    public void PartnersCapital_ClosingTransferToRetainedEarningsIsNotPeriodResult()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var capital = LedgerAccounts.InvestorCapitalFor("lp-1");
+
+        // Before the period: a contribution plus 300k of prior, unclosed income sitting in revenue.
+        ledger.PostLines(new DateTimeOffset(2025, 6, 15, 0, 0, 0, TimeSpan.Zero), "opening contribution",
+            [(LedgerAccounts.Cash, 5_000_000m, 0m), (capital, 0m, 5_000_000m)]);
+        ledger.PostLines(new DateTimeOffset(2025, 8, 1, 0, 0, 0, TimeSpan.Zero), "prior-year income",
+            [(LedgerAccounts.Cash, 300_000m, 0m), (LedgerAccounts.CashInterestIncome, 0m, 300_000m)]);
+
+        // In the period: only a book close moving the prior 300k of P&L into Retained Earnings. This is
+        // a reclassification within equity, not a current-period loss — no revenue or expense is earned.
+        ledger.PostLines(new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero), "close prior income",
+            [(LedgerAccounts.CashInterestIncome, 300_000m, 0m), (LedgerAccounts.RetainedEarnings, 0m, 300_000m)]);
+
+        var statements = LedgerFinancialStatementBuilder.BuildForPeriod(
+            ledger,
+            new DateTimeOffset(2025, 12, 31, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.Zero));
+        var partnersCapital = statements.PartnersCapital!;
+
+        // The undistributed line opens with the prior 300k, closes to zero, and shows NO period result —
+        // the close rides as an other (reclassification) movement, not a spurious allocated loss.
+        var undistributed = partnersCapital.Accounts.Single(account => account.AccountName == "Undistributed Net Income");
+        undistributed.BeginningCapital.Should().Be(300_000m);
+        undistributed.AllocatedResult.Should().Be(0m);
+        undistributed.OtherMovements.Should().Be(-300_000m);
+        undistributed.EndingCapital.Should().Be(0m);
+
+        // Retained Earnings receives the offsetting 300k, so aggregate allocated result is zero.
+        var retained = partnersCapital.Accounts.Single(account => account.AccountName == "Retained Earnings");
+        retained.BeginningCapital.Should().Be(0m);
+        retained.EndingCapital.Should().Be(300_000m);
+        partnersCapital.AllocatedResult.Should().Be(0m);
+
+        partnersCapital.EndingCapital.Should().Be(statements.EndingEquity);
+        partnersCapital.IsReconciled.Should().BeTrue();
+    }
+
+    [Fact]
     public void PeriodStatements_ScopeBalancesToLineDimensions()
     {
         var ledger = new Meridian.Ledger.Ledger();
