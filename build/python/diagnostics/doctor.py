@@ -261,11 +261,15 @@ class Doctor:
         # Strip each variable before the `or`: a whitespace-only scoped value is truthy in Python,
         # so selecting before trimming would pick it over a real MERIDIAN_DATABASE_URL and probe the
         # localhost default. Runtime propagation treats the scoped value as unset via
-        # IsNullOrWhiteSpace and falls back to the unified URL — mirror that here.
-        conn_str = (
-            os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "").strip()
-            or os.getenv("MERIDIAN_DATABASE_URL", "").strip()
-        )
+        # IsNullOrWhiteSpace and falls back to the unified URL — mirror that here. Keep the name of
+        # the selected variable so diagnostics point the operator at the setting that actually
+        # supplied the value rather than always naming MERIDIAN_DATABASE_URL.
+        security_master = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "").strip()
+        database_url = os.getenv("MERIDIAN_DATABASE_URL", "").strip()
+        if security_master:
+            conn_str, conn_var = security_master, "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
+        else:
+            conn_str, conn_var = database_url, "MERIDIAN_DATABASE_URL"
         host = _POSTGRES_DEFAULT_HOST
         port = _POSTGRES_DEFAULT_PORT
 
@@ -273,7 +277,7 @@ class Doctor:
         # MeridianDatabaseEnvironment.NormalizeToConnectionString; mirror that here so an
         # uppercase or whitespace-padded URL is parsed rather than skipped.
         if conn_str.lower().startswith(("postgres://", "postgresql://")):
-            # MERIDIAN_DATABASE_URL URL form: postgres://user:pass@host:port/db
+            # URL form: postgres://user:pass@host:port/db
             from urllib.parse import urlsplit
 
             try:
@@ -288,9 +292,9 @@ class Doctor:
                 # loudly instead of probing a default port and masking the problem.
                 self.results.append(
                     DoctorResult(
-                        name="PostgreSQL (MERIDIAN_DATABASE_URL)",
+                        name=f"PostgreSQL ({conn_var})",
                         status="fail",
-                        details="MERIDIAN_DATABASE_URL is not a valid connection URL; the host would reject it at startup",
+                        details=f"{conn_var} is not a valid connection URL; the host would reject it at startup",
                         expected="postgres://user:password@host:port/database with a numeric port in 1-65535",
                     )
                 )
@@ -319,11 +323,7 @@ class Doctor:
                 )
             )
         except (socket.timeout, ConnectionRefusedError, OSError):
-            fix = (
-                f"Check MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
-                if conn_str
-                else _POSTGRES_DOCKER_FIX
-            )
+            fix = f"Check {conn_var}" if conn_str else _POSTGRES_DOCKER_FIX
             self.results.append(
                 DoctorResult(
                     name=f"PostgreSQL {host}:{port}",

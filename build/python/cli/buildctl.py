@@ -687,11 +687,15 @@ def _check_postgres() -> tuple[bool, bool, str, str | None]:
     # Strip each variable before the `or`: a whitespace-only scoped value is truthy in Python,
     # so selecting before trimming would pick it over a real MERIDIAN_DATABASE_URL and probe the
     # localhost default. Runtime propagation treats the scoped value as unset via
-    # IsNullOrWhiteSpace and falls back to the unified URL — mirror that here.
-    conn_str = (
-        os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "").strip()
-        or os.getenv("MERIDIAN_DATABASE_URL", "").strip()
-    )
+    # IsNullOrWhiteSpace and falls back to the unified URL — mirror that here. Keep the name of the
+    # selected variable so diagnostics point the operator at the setting that actually supplied the
+    # value rather than always naming MERIDIAN_DATABASE_URL.
+    security_master = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "").strip()
+    database_url = os.getenv("MERIDIAN_DATABASE_URL", "").strip()
+    if security_master:
+        conn_str, conn_var = security_master, "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING"
+    else:
+        conn_str, conn_var = database_url, "MERIDIAN_DATABASE_URL"
     host = _POSTGRES_DEFAULT_HOST
     port = _POSTGRES_DEFAULT_PORT
 
@@ -699,7 +703,7 @@ def _check_postgres() -> tuple[bool, bool, str, str | None]:
     # MeridianDatabaseEnvironment.NormalizeToConnectionString; mirror that here so an
     # uppercase or whitespace-padded URL is parsed rather than skipped.
     if conn_str.lower().startswith(("postgres://", "postgresql://")):
-        # MERIDIAN_DATABASE_URL URL form: postgres://user:pass@host:port/db
+        # URL form: postgres://user:pass@host:port/db
         from urllib.parse import urlsplit
 
         try:
@@ -715,8 +719,8 @@ def _check_postgres() -> tuple[bool, bool, str, str | None]:
             return (
                 False,
                 True,
-                "MERIDIAN_DATABASE_URL is not a valid connection URL and would fail at startup",
-                "Fix MERIDIAN_DATABASE_URL to postgres://user:password@host:port/database"
+                f"{conn_var} is not a valid connection URL and would fail at startup",
+                f"Fix {conn_var} to postgres://user:password@host:port/database"
                 " with a numeric port in 1-65535",
             )
         if resolved_host:
@@ -739,7 +743,7 @@ def _check_postgres() -> tuple[bool, bool, str, str | None]:
     except (socket.timeout, ConnectionRefusedError, OSError):
         label = f"PostgreSQL on {host}:{port}"
         if conn_str:
-            fix = "Check MERIDIAN_SECURITY_MASTER_CONNECTION_STRING or start your PostgreSQL server"
+            fix = f"Check {conn_var} or start your PostgreSQL server"
         else:
             fix = _POSTGRES_DOCKER_FIX
         return (
