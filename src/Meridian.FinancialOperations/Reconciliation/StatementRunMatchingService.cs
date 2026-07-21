@@ -33,12 +33,10 @@ public static class StatementRunMatchingService
         var statementPositions = new List<NormalizedStatementPosition>();
         var statementCash = new List<NormalizedStatementCashBalance>();
         var statementTransactions = new List<NormalizedStatementTransaction>();
-        var rowByReference = new Dictionary<string, CanonicalStatementRow>(StringComparer.Ordinal);
 
         foreach (var row in rows)
         {
             var reference = BuildRowReference(importId, row.SourceRowNumber);
-            rowByReference[reference] = row;
             switch (ClassifyRow(row.ActivityType))
             {
                 case StatementItemKind.Position:

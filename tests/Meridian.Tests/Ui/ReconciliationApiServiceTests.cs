@@ -60,10 +60,13 @@ public sealed class ReconciliationApiServiceTests
 
         created.Should().NotBeNull();
         created!.Status.Should().Be(StatementRunStatus.ReviewRequired);
+        // Sided reconciliation against an unprovisioned (empty) internal book: the position, cash,
+        // and fee rows each lack an internal counterpart, so all three are honest unmatched breaks
+        // (the retired shim fabricated a position self-match, leaving only two breaks).
         created.MatchSummary!.StatementItemCount.Should().Be(3);
-        created.MatchSummary.BreakCount.Should().Be(2);
-        created.Breaks.Should().HaveCount(2);
-        created.Cases.Should().HaveCount(2);
+        created.MatchSummary.BreakCount.Should().Be(3);
+        created.Breaks.Should().HaveCount(3);
+        created.Cases.Should().HaveCount(3);
         created.Cases.Should().OnlyContain(item =>
             item.Owner == "fund-ops" &&
             item.Priority == "High" &&
@@ -91,28 +94,30 @@ public sealed class ReconciliationApiServiceTests
         }
 
         var openCases = await service.ListOpenCasesAsync(CancellationToken.None);
-        openCases.Should().HaveCount(2);
+        openCases.Should().HaveCount(3);
         openCases.Should().OnlyContain(item =>
             item.Assignee == "fund-ops" &&
             item.SlaState == "OnTrack" &&
             item.Version > 0);
 
         var exceptions = await service.ListOpenExceptionsAsync(CancellationToken.None);
-        exceptions.Should().HaveCount(2);
+        exceptions.Should().HaveCount(3);
         exceptions.Should().OnlyContain(item => item.ImportId == created.ImportId);
 
         var summaries = await service.ListStatementRunsAsync(CancellationToken.None);
         var summary = summaries.Should().ContainSingle(item => item.RunId == created.RunId).Subject;
         summary.Status.Should().Be(StatementRunStatus.ReviewRequired);
-        summary.OpenExceptionCount.Should().Be(2);
-        summary.PositionMatches.Should().Be(1);
+        summary.OpenExceptionCount.Should().Be(3);
+        // PositionMatches carries matched-item count (rows minus open exceptions); with all three
+        // rows unmatched against the empty internal book, none are matched.
+        summary.PositionMatches.Should().Be(0);
         summary.CompletedAtUtc.Should().BeNull();
 
         var queueStatuses = await service.ListQueueStatusAsync(CancellationToken.None);
         var queueStatus = queueStatuses.Should().ContainSingle(item => item.AccountId == fundAccountId).Subject;
         queueStatus.AccountCode.Should().Be(fundAccountId.ToString("D"));
         queueStatus.QueueState.Should().Be("Blocked");
-        queueStatus.UnresolvedBreakCount.Should().Be(2);
+        queueStatus.UnresolvedBreakCount.Should().Be(3);
         queueStatus.SignOffReady.Should().BeFalse();
         queueStatus.BlockerReason.Should().Be("Tolerance-breached breaks remain unresolved.");
         queueStatus.EvidenceLinks.Should().OnlyContain(link =>

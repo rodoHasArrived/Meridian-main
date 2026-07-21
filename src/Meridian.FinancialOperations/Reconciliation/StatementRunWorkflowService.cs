@@ -147,9 +147,12 @@ public sealed class StatementRunWorkflowService(
         var rowByReference = rows.ToDictionary(
             row => $"{import.ImportId}:{row.SourceRowNumber}",
             StringComparer.OrdinalIgnoreCase);
-        var outcomeByChecksum = outcomes.ToDictionary(
-            outcome => outcome.RowChecksum,
-            StringComparer.OrdinalIgnoreCase);
+        // Duplicate statement rows (e.g. two identical fees) share a RawChecksum, so group before
+        // building the lookup rather than ToDictionary — identical rows carry an identical outcome,
+        // so the first is representative and a duplicate key must not crash the run.
+        var outcomeByChecksum = outcomes
+            .GroupBy(outcome => outcome.RowChecksum, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         return breaks.Select(breakRecord =>
         {
