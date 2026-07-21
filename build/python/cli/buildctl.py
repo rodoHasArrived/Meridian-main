@@ -684,10 +684,14 @@ def _check_docker_daemon() -> tuple[bool, bool, str, str | None]:
 
 def _check_postgres() -> tuple[bool, bool, str, str | None]:
     """Attempt a TCP connection to the PostgreSQL port and report fix hints."""
+    # Strip each variable before the `or`: a whitespace-only scoped value is truthy in Python,
+    # so selecting before trimming would pick it over a real MERIDIAN_DATABASE_URL and probe the
+    # localhost default. Runtime propagation treats the scoped value as unset via
+    # IsNullOrWhiteSpace and falls back to the unified URL — mirror that here.
     conn_str = (
-        os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "")
-        or os.getenv("MERIDIAN_DATABASE_URL", "")
-    ).strip()
+        os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "").strip()
+        or os.getenv("MERIDIAN_DATABASE_URL", "").strip()
+    )
     host = _POSTGRES_DEFAULT_HOST
     port = _POSTGRES_DEFAULT_PORT
 
