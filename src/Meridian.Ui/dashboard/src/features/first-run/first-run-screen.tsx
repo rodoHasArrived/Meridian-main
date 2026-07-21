@@ -148,9 +148,9 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
       <p className="text-sm text-slate-300">{workspace.summary}</p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <Stat label={`${workspace.portfolioName} value`} value={formatUsd(workspace.portfolioValue)} />
-        <Stat label="Cash" value={formatUsd(workspace.cash)} />
-        <Stat label="Unrealized P&L" value={formatSignedUsd(workspace.unrealizedPnl)} tone={pnlToneClass(workspace.unrealizedPnl)} />
+        <Stat label="Sample portfolio value" value={formatUsd(workspace.portfolioValue)} />
+        <Stat label="Sample cash" value={formatUsd(workspace.cash)} />
+        <Stat label="Sample unrealized P&L" value={formatSignedUsd(workspace.unrealizedPnl)} tone={pnlToneClass(workspace.unrealizedPnl)} />
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -171,8 +171,8 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div>
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-200">Holdings</h3>
-            <button type="button" className="text-xs text-cyan-300 hover:text-cyan-200" onClick={() => onOpen("/portfolio")}>Open portfolio →</button>
+            <h3 className="text-sm font-semibold text-slate-200">Sample portfolio <span className="font-normal text-slate-500">(illustrative)</span></h3>
+            <button type="button" className="text-xs text-cyan-300 hover:text-cyan-200" onClick={() => onOpen("/portfolio")}>Explore the Portfolio desk →</button>
           </div>
           <div className="mt-2 overflow-x-auto rounded-xl border border-slate-800">
             <table className="w-full min-w-[26rem] text-left text-sm">
@@ -192,7 +192,8 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-xs text-slate-500">Watchlist: {workspace.watchlist.join(", ")} · {workspace.marketHistory.sessions} sessions of history for {workspace.marketHistory.symbols.join(", ")}</p>
+          <p className="mt-2 text-xs text-slate-500">Illustrative sample holdings — your live Portfolio desk starts from a clean paper account until you connect data or run a strategy.</p>
+          <p className="mt-1 text-xs text-slate-500">Watchlist: {workspace.watchlist.join(", ")} · {workspace.marketHistory.sessions} sessions of sample history for {workspace.marketHistory.symbols.join(", ")}</p>
         </div>
 
         <div>

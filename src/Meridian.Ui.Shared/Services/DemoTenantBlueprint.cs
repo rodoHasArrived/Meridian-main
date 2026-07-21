@@ -24,7 +24,7 @@ public static class DemoTenantBlueprint
 
     public const string PortfolioRoute = "/portfolio";
     public const string ReconciliationRoute = "/accounting/reconciliation/match";
-    public const string ReportingRoute = "/reporting/library";
+    public const string ReportingRunRoute = "/reporting/run";
     public const string StrategyRoute = "/strategy";
     public const string DataRoute = "/data";
 
@@ -85,45 +85,40 @@ public static class DemoTenantBlueprint
 
         var report = new SampleArtifactDto(
             "Sample portfolio review",
-            "Ready to run",
-            "A governed report template pre-filled with the sample portfolio, ready to run.",
-            ReportingRoute);
+            "Template ready to run",
+            "A governed report template you can run against the sample data.",
+            ReportingRunRoute);
 
         var strategy = new SampleArtifactDto(
             StrategyName,
             "Paper · Completed",
-            "A completed paper covered-call run — no live orders, safe to inspect.",
+            "A completed paper covered-call run loaded into the Strategy desk — no live orders, safe to inspect.",
             StrategyRoute);
 
         var marketHistory = new SampleMarketHistoryDto(MarketHistorySymbols, MarketHistorySessions, DataRoute);
 
+        // Highlights advertise only surfaces that are genuinely written into their desk stores, so
+        // a click-through never contradicts what onboarding claimed. The sample portfolio, watchlist,
+        // report, and market history are shown as an illustrative preview (see the DTO fields below),
+        // not as loaded live-desk state — the live Portfolio desk reads in-memory execution state that
+        // this offline sample flow cannot durably seed.
         var highlights = new[]
         {
             new SampleHighlightDto(
-                "Portfolio",
-                $"{HoldingDefinitions.Length} holdings",
-                "Open positions with marks and unrealized P&L.",
-                PortfolioRoute),
-            new SampleHighlightDto(
                 "Reconciliation",
                 $"{breaks.Length} breaks",
-                "Open casework waiting in the reconciliation control tower.",
+                "Real open casework loaded into the reconciliation control tower.",
                 ReconciliationRoute),
             new SampleHighlightDto(
                 "Strategy",
                 "1 paper run",
-                "A completed paper covered-call strategy run.",
-                StrategyRoute),
-            new SampleHighlightDto(
-                "Reporting",
-                "1 report",
-                "A governed report ready to run against the sample data.",
-                ReportingRoute)
+                "A completed paper covered-call run loaded into the Strategy desk.",
+                StrategyRoute)
         };
 
         return new SampleWorkspaceDto(
-            Headline: "Your sample workspace is loaded",
-            Summary: "Meridian populated a believable paper workspace so you can explore every desk immediately.",
+            Headline: "Your sample workspace is ready",
+            Summary: "Sample reconciliation casework and a completed paper strategy run are loaded into your desks now. The sample portfolio below is illustrative — your live Portfolio desk starts from a clean paper account until you connect data or run a strategy.",
             PortfolioName: PortfolioName,
             PortfolioValue: PortfolioValue,
             Cash: Cash,

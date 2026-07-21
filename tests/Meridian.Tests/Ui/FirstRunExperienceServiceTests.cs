@@ -50,6 +50,11 @@ public sealed class FirstRunExperienceServiceTests
         status.SampleWorkspace.ReconciliationBreaks.Should().HaveCount(DemoTenantBlueprint.BreakDefinitions.Count);
         status.SampleWorkspace.PortfolioValue.Should().BeGreaterThan(DemoTenantBlueprint.Cash);
         status.SampleWorkspace.Highlights.Should().NotBeEmpty();
+        // Highlights may advertise only desks that are genuinely seeded, so a click-through never
+        // contradicts onboarding. The illustrative sample portfolio is not advertised as a loaded desk.
+        status.SampleWorkspace.Highlights.Select(highlight => highlight.Route).Should()
+            .OnlyContain(route => route == DemoTenantBlueprint.ReconciliationRoute
+                || route == DemoTenantBlueprint.StrategyRoute);
     }
 
     [Fact]
