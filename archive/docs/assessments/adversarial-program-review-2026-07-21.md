@@ -94,9 +94,16 @@ it is where nearly all the user-facing value now sits.
   `BacktestStudioRunOrchestrator`) is **orphaned** — wired to no endpoint/screen. Ship a first-class
   `/api/backtest/run` + config screen; the charts (`EquityCurve.tsx`, `DrawdownChart.tsx`,
   `bias-disclosure-panel.tsx`) already exist.
-- **Strategy template library.** Concrete strategies exist (MA-crossover, buy-and-hold,
-  covered-call, carry) but the Designer's base is an empty stub. One-click starters with a parameter
-  UI would remove the "write C# from scratch" barrier.
+- **Connect the strategy templates to executable strategies.** The browser Strategy Designer
+  *already* ships a one-click starter gallery — 7 `STRATEGY_BUILDER_TEMPLATES`
+  (`strategy-designer-screen.view-model.ts:711`: equity-momentum-breakout, investment-grade-income,
+  options-payoff, state-machine, concurrent-branch, structured-universe, trade-intent) rendered with
+  a "Load" action wired to `loadStrategyBuilderTemplate` — so the "no starters" barrier is largely
+  solved for the *visual builder*. The narrower real gap is that the concrete *executable/backtestable*
+  strategies (MA-crossover, buy-and-hold in `Strategies/Live`; covered-call, carry in
+  `Backtesting.Sdk`) aren't surfaced as one-click *runnable* starters, and the C#
+  `BacktestStrategyBase` base is an empty stub — so authored templates don't yet map to real
+  executable strategies a non-coder can run.
 - **Ship a real sample statement CSV + in-app "Load sample" button.** The most credible first-value
   path (statement → break) currently makes the user *source their own file* — the only statement CSVs
   live under `tests/`. The CLI even advertises a `./statements/sample.csv` that doesn't exist
