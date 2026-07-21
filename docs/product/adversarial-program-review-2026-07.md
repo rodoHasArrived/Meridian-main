@@ -1,3 +1,5 @@
+<!-- phase:PR7 -->
+
 # Adversarial Program Review — Meridian (2026-07)
 
 **Status:** independent review input; not a governance or roadmap-status document
