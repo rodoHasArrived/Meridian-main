@@ -177,11 +177,19 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                 var interest = GetRequiredDecimal(payload.RootElement, "interestAmount", "InterestAmount");
                 var commitmentFee = GetRequiredDecimal(payload.RootElement, "commitmentFeeAmount", "CommitmentFeeAmount");
                 var penalty = GetDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
+                var pikInterest = GetDecimal(payload.RootElement, "pikInterestAmount", "PikInterestAmount");
                 description = "Daily accrual";
                 if (interest > 0m)
                 {
                     lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "AccruedInterestReceivable", interest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                     lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, interest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                }
+
+                // PIK interest capitalizes into loan principal instead of a cash receivable.
+                if (pikInterest > 0m)
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "LoanPrincipal", pikInterest, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "InterestIncome", 0m, pikInterest, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
 
                 if (commitmentFee > 0m)
