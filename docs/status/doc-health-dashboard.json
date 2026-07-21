@@ -1,6 +1,6 @@
 {
   "total_files": 631,
-  "total_lines": 114044,
+  "total_lines": 114049,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -2444,7 +2444,7 @@
     },
     {
       "path": "docs/generated/database/modules/ledger.md",
-      "line_count": 310,
+      "line_count": 315,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
