@@ -530,7 +530,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             entry.InterestAmount,
             entry.CommitmentFeeAmount,
             entry.PenaltyAmount,
-            entry.AnnualRateApplied
+            entry.AnnualRateApplied,
+            entry.PikInterestAmount
         });
 
         await SaveAsync(

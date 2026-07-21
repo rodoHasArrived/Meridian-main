@@ -255,6 +255,16 @@ public sealed class NYSEDataSource : DataSourceBase, IRealtimeDataSource, IHisto
     }
 
     /// <summary>
+    /// Raised after a reconnection completes, carrying the window during which
+    /// streaming data may have been missed.
+    /// </summary>
+    public event Action<ReconnectionGap>? ReconnectionGapDetected
+    {
+        add => _wsManager.GapDetected += value;
+        remove => _wsManager.GapDetected -= value;
+    }
+
+    /// <summary>
     /// Returns the live connection diagnostics snapshot from the shared connection manager.
     /// </summary>
     public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()

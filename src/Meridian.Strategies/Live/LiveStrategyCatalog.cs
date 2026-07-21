@@ -51,6 +51,15 @@ public interface ILiveStrategyCatalog
 }
 
 /// <summary>
+/// Resolves a strategy for a run that no registered factory id covered. Implementations return
+/// <c>false</c> (optionally with a reason) to let the next fallback try.
+/// </summary>
+public delegate bool LiveStrategyFallbackResolver(
+    LiveStrategyCreationContext context,
+    out ILiveStrategy? strategy,
+    out string? failureReason);
+
+/// <summary>
 /// Default in-memory <see cref="ILiveStrategyCatalog"/>. Hosts register additional factories
 /// at composition time; <see cref="CreateDefault"/> ships the built-in reference strategies.
 /// </summary>
@@ -62,6 +71,8 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
     private readonly Dictionary<string, Func<LiveStrategyCreationContext, ILiveStrategy>> _factories =
         new(StringComparer.OrdinalIgnoreCase);
 
+    private readonly List<LiveStrategyFallbackResolver> _fallbacks = [];
+
     /// <inheritdoc/>
     public IReadOnlyCollection<string> StrategyIds => _factories.Keys.ToArray();
 
@@ -71,6 +82,17 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
         ArgumentException.ThrowIfNullOrWhiteSpace(catalogId);
         ArgumentNullException.ThrowIfNull(factory);
         _factories[catalogId.Trim()] = factory;
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a fallback consulted (in registration order) when no factory id matches a run.
+    /// This is how user-authored strategies reach live execution without a hand-written live twin.
+    /// </summary>
+    public LiveStrategyCatalog RegisterFallback(LiveStrategyFallbackResolver fallback)
+    {
+        ArgumentNullException.ThrowIfNull(fallback);
+        _fallbacks.Add(fallback);
         return this;
     }
 
@@ -105,11 +127,28 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
 
         if (!_factories.TryGetValue(factoryId, out var factory))
         {
+            var context = new LiveStrategyCreationContext(strategyId, effectiveParameters);
+            var fallbackReasons = new List<string>();
+            foreach (var fallback in _fallbacks)
+            {
+                if (fallback(context, out strategy, out var fallbackReason) && strategy is not null)
+                {
+                    failureReason = null;
+                    return true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(fallbackReason))
+                {
+                    fallbackReasons.Add(fallbackReason);
+                }
+            }
+
             strategy = null;
             failureReason =
                 $"No live strategy implementation is registered for '{strategyId}'. " +
                 $"Register a factory in the live strategy catalog or set the run parameter " +
-                $"'{LiveStrategyIdParameterKey}' to one of: {string.Join(", ", StrategyIds.Order(StringComparer.OrdinalIgnoreCase))}.";
+                $"'{LiveStrategyIdParameterKey}' to one of: {string.Join(", ", StrategyIds.Order(StringComparer.OrdinalIgnoreCase))}." +
+                (fallbackReasons.Count > 0 ? $" Fallback sources: {string.Join(" | ", fallbackReasons)}" : string.Empty);
             return false;
         }
 

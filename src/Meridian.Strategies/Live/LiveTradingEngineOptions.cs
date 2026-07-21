@@ -26,4 +26,11 @@ public sealed class LiveTradingEngineOptions
 
     /// <summary>Capacity of each session's pending fill-report queue.</summary>
     public int FillReportQueueCapacity { get; set; } = 1024;
+
+    /// <summary>
+    /// Directory holding user-authored strategy plugin assemblies. When set, promoted runs whose
+    /// parameter set names a <c>pluginAssembly</c> are resolved from this directory and adapted
+    /// into live execution; when null (the default) plugin-backed strategies stay disabled.
+    /// </summary>
+    public string? StrategyPluginDirectory { get; set; }
 }

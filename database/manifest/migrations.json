@@ -325,6 +325,15 @@
       "sha256": "4e2b96e2c56f60291acc2a8b739afa5034b873232022ec0e8171159c9c1f4283"
     },
     {
+      "filename": "008_direct_lending_pik_accrual.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/008_direct_lending_pik_accrual.sql",
+      "schema": "security_master",
+      "sha256": "379a1f18e73605d31c910a6de81b9a6be4d6f929ba8ddfba2ec3916d0d57bc3c"
+    },
+    {
       "filename": "001_asset_operations.sql",
       "immutable": true,
       "migration_set_id": "asset-operations",
@@ -740,7 +749,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "8f4dddad51c3b5ce6f47da8d934a0ac34b8ec50b9d7247ea062e8cc7945fca11",
+  "fingerprint": "99500ee07b38e49eadf2831691507997d6218a1a95bf8ae60f69749ad98f04d4",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -978,7 +987,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 82,
+    "files": 83,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

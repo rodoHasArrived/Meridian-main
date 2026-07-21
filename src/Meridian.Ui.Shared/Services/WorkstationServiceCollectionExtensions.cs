@@ -293,13 +293,39 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
-        // Consolidated risk path: the same service that powers the read-only risk dashboard is the
-        // IRiskValidator the OMS invokes before routing an order. Without this registration
-        // sp.GetService<IRiskValidator>() resolved to null at every composition root and the OMS
-        // pre-trade risk block was dead code — the drawdown circuit breaker and order-rate throttle
-        // never gated an order even while the dashboard reported them.
+        // Enforced pre-trade risk path: Meridian.Risk's CompositeRiskValidator is the
+        // IRiskValidator the OMS invokes before routing an order, composed of the operator-tuned
+        // guardrails (thresholds sourced live from RiskRuleRuntimeService and the operator
+        // controls, so the dashboard and the enforcement can never disagree) plus any additional
+        // IRiskRule registrations a host contributes. Rules run in registration order: drawdown
+        // circuit breaker, order-rate throttle, then the position-limit back-stop (position
+        // limits are also enforced upstream by the operator-controls gate with its
+        // manual-override semantics).
         services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
-            sp.GetRequiredService<RiskRuleRuntimeService>());
+        {
+            var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
+            var rules = new List<Meridian.Risk.IRiskRule>
+            {
+                new DrawdownGuardrailRule(runtime),
+                new Meridian.Risk.Rules.OrderRateThrottle(
+                    () => runtime.MaxOrdersPerMinute,
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.OrderRateThrottle>>()),
+            };
+
+            if (sp.GetService<Meridian.Execution.Sdk.IPositionTracker>() is { } positionTracker)
+            {
+                var operatorControls = sp.GetService<Meridian.Execution.Services.ExecutionOperatorControlService>();
+                rules.Add(new Meridian.Risk.Rules.PositionLimitRule(
+                    positionTracker,
+                    () => operatorControls?.GetSnapshot().DefaultMaxPositionSize,
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>()));
+            }
+
+            rules.AddRange(sp.GetServices<Meridian.Risk.IRiskRule>());
+            return new Meridian.Risk.CompositeRiskValidator(
+                rules,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.CompositeRiskValidator>>());
+        });
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();

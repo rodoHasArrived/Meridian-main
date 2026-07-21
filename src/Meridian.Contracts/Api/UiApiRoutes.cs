@@ -611,6 +611,7 @@ public static class UiApiRoutes
     public const string PromotionApprove = "/api/promotion/approve";
     public const string PromotionReject = "/api/promotion/reject";
     public const string PromotionHistory = "/api/promotion/history";
+    public const string PromotionWalkForwardEvidence = "/api/promotion/runs/{runId}/walk-forward-evidence";
 
     // Workstation root and compatibility workspace endpoints
     public const string WorkstationSession = "/api/workstation/session";

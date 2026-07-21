@@ -493,6 +493,7 @@ export const UI_API_ROUTES = {
   PromotionApprove: "/api/promotion/approve",
   PromotionReject: "/api/promotion/reject",
   PromotionHistory: "/api/promotion/history",
+  PromotionWalkForwardEvidence: "/api/promotion/runs/{runId}/walk-forward-evidence",
   WorkstationSession: "/api/workstation/session",
   WorkstationStream: "/api/workstation/stream",
   WorkstationResearch: "/api/workstation/research",

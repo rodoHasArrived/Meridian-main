@@ -451,6 +451,10 @@ public sealed class UiServer : IAsyncDisposable
 
         // Enable session-based authentication middleware (optional in Development/Test, required elsewhere by default)
         _app.UseLoginSessionAuthentication();
+        // Enforce X-Api-Key on /api/* for out-of-band clients when MDC_API_KEY is set.
+        // Runs after session auth so browser-workstation requests authenticated by a login
+        // session pass without a key; a no-op when MDC_API_KEY is unset.
+        _app.UseApiKeyAuthentication();
         _app.UseCookieCsrfProtection();
         _app.UseRateLimiter();
         if (_apiHostOptions.AllowedOrigins.Length > 0)
