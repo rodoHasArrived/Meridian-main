@@ -75,6 +75,25 @@ public sealed class EuropeanDistributionWaterfallTests
     }
 
     [Fact]
+    public void PartialCatchUpRate_StillBringsGpToCarryShare()
+    {
+        // 20% carry with an 80% catch-up: the catch-up must account for the 20% LP leakage so the GP
+        // still reaches 20% of profit above return of capital (not the 19.05% the full-catch-up
+        // formula would give).
+        var result = EuropeanDistributionWaterfall.Distribute(new EuropeanWaterfallInput(
+            contributedCapital: 10_000_000m,
+            preferredReturnAccrued: 100_000m,
+            amountToDistribute: 10_133_333.33m,
+            carryRate: 0.20m,
+            catchUpRate: 0.80m));
+
+        result.ReturnOfCapital.Should().Be(10_000_000m);
+        result.PreferredReturn.Should().Be(100_000m);
+        var profitAboveReturnOfCapital = result.Distributed - result.ReturnOfCapital;
+        (result.GpTotal / profitAboveReturnOfCapital).Should().BeApproximately(0.20m, 0.001m);
+    }
+
+    [Fact]
     public void PriorState_PreventsDoublePayingEarlierTiers()
     {
         // Capital and pref already fully paid in a prior distribution: this one is all carry.

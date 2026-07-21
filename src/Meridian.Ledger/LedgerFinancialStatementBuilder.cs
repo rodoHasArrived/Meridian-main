@@ -246,19 +246,24 @@ public static class LedgerFinancialStatementBuilder
                 || rollForward.OtherMovements != 0m)
             .ToList();
 
-        // Current-period net income that has not yet been closed to equity still belongs to the
-        // partners; carry it as an undistributed line so ending capital ties to balance-sheet
-        // ending equity (TotalEquity + NetIncome) on interim reports.
-        if (netIncome != 0m)
+        // Net income not yet closed to equity still belongs to the partners; carry it as an
+        // undistributed line so ending capital ties to balance-sheet ending equity
+        // (TotalEquity + NetIncome). The passed net income is cumulative as of the report date, so the
+        // opening balance holds prior-period undistributed P&L and only the current period's activity
+        // is the allocated movement — otherwise an interim period that opens with unclosed prior P&L
+        // would double-count it and fail to reconcile.
+        var netIncomeAtStart = NetIncomeOf(beginningBalances);
+        var periodNetIncome = netIncome - netIncomeAtStart;
+        if (netIncome != 0m || netIncomeAtStart != 0m)
         {
             rollForwards.Add(new LedgerPartnersCapitalRollForward(
                 new LedgerAccount("Undistributed Net Income", LedgerAccountType.Equity),
                 "Undistributed Net Income",
                 InvestorId: null,
-                BeginningCapital: 0m,
+                BeginningCapital: netIncomeAtStart,
                 Contributions: 0m,
                 Distributions: 0m,
-                AllocatedResult: netIncome,
+                AllocatedResult: periodNetIncome,
                 OtherMovements: 0m,
                 EndingCapital: netIncome));
         }
@@ -290,6 +295,21 @@ public static class LedgerFinancialStatementBuilder
         => scopedTrialBalance
             .Where(pair => IsCashAccount(pair.Key))
             .Sum(static pair => pair.Value);
+
+    private static decimal NetIncomeOf(IReadOnlyDictionary<LedgerAccount, decimal> trialBalance)
+    {
+        var revenue = 0m;
+        var expense = 0m;
+        foreach (var (account, balance) in trialBalance)
+        {
+            if (account.AccountType == LedgerAccountType.Revenue)
+                revenue += balance;
+            else if (account.AccountType == LedgerAccountType.Expense)
+                expense += balance;
+        }
+
+        return revenue - expense;
+    }
 
     private static bool IsCashAccount(LedgerAccount account)
         => account.AccountType == LedgerAccountType.Asset

@@ -67,12 +67,13 @@ public sealed record EuropeanWaterfallResult(
     decimal ReturnOfCapital,
     decimal PreferredReturn,
     decimal GpCatchUp,
+    decimal LpCatchUp,
     decimal LpCarry,
     decimal GpCarry,
     IReadOnlyList<EuropeanWaterfallTierAllocation> Tiers)
 {
     /// <summary>Total paid to limited partners this distribution.</summary>
-    public decimal LpTotal => ReturnOfCapital + PreferredReturn + LpCarry;
+    public decimal LpTotal => ReturnOfCapital + PreferredReturn + LpCatchUp + LpCarry;
 
     /// <summary>Total paid to the general partner this distribution (catch-up plus carry).</summary>
     public decimal GpTotal => GpCatchUp + GpCarry;
@@ -110,26 +111,30 @@ public static class EuropeanDistributionWaterfall
             "PreferredReturn",
             tiers);
 
-        // Tier 3 — GP catch-up. Target so the GP holds CarryRate of profit distributed above the
-        // return of capital (preferred + catch-up): catchUpTarget = carry/(1-carry) x preferredPaid.
+        // Tier 3 — GP catch-up. Solve for the catch-up POOL (LP + GP) that brings the GP to CarryRate
+        // of the profit distributed above return of capital (preferred + catch-up), accounting for the
+        // LP leakage of (1 - CatchUpRate) per catch-up dollar when catch-up is not 100% to the GP:
+        //   CatchUpRate * pool = CarryRate * (preferred + pool)
+        //   => pool = CarryRate * preferred / (CatchUpRate - CarryRate)
+        // With CatchUpRate == 1 this reduces to carry/(1-carry) * preferred. When CatchUpRate does not
+        // exceed CarryRate the GP can never reach its share, so no catch-up is attempted.
         var totalPreferredPaid = input.PriorPreferredPaid + preferredReturn;
-        var catchUpTarget = input.CarryRate <= 0m
-            ? 0m
-            : RoundCurrency(input.CarryRate / (1m - input.CarryRate) * totalPreferredPaid);
         var gpCatchUp = 0m;
-        var catchUpRemainingTarget = Math.Max(0m, catchUpTarget - input.PriorGpCatchUp);
-        if (catchUpRemainingTarget > 0m && remaining > 0m)
+        var lpCatchUp = 0m;
+        if (input.CarryRate > 0m && input.CatchUpRate > input.CarryRate && remaining > 0m)
         {
-            // During catch-up the GP takes CatchUpRate of each dollar; any remainder goes to LPs.
-            var catchUpPoolNeeded = input.CatchUpRate <= 0m
-                ? 0m
-                : RoundCurrency(catchUpRemainingTarget / input.CatchUpRate);
-            var catchUpPool = Math.Min(remaining, catchUpPoolNeeded);
-            gpCatchUp = RoundCurrency(catchUpPool * input.CatchUpRate);
-            var catchUpToLp = catchUpPool - gpCatchUp;
-            remaining -= catchUpPool;
-            if (gpCatchUp != 0m || catchUpToLp != 0m)
-                tiers.Add(new EuropeanWaterfallTierAllocation("GpCatchUp", catchUpToLp, gpCatchUp));
+            var targetPoolTotal = RoundCurrency(
+                input.CarryRate * totalPreferredPaid / (input.CatchUpRate - input.CarryRate));
+            var priorPool = RoundCurrency(input.PriorGpCatchUp / input.CatchUpRate);
+            var remainingPoolTarget = Math.Max(0m, targetPoolTotal - priorPool);
+            var catchUpPool = Math.Min(remaining, remainingPoolTarget);
+            if (catchUpPool > 0m)
+            {
+                gpCatchUp = RoundCurrency(catchUpPool * input.CatchUpRate);
+                lpCatchUp = catchUpPool - gpCatchUp;
+                remaining -= catchUpPool;
+                tiers.Add(new EuropeanWaterfallTierAllocation("GpCatchUp", lpCatchUp, gpCatchUp));
+            }
         }
 
         // Tier 4 — residual carried-interest split.
@@ -143,7 +148,7 @@ public static class EuropeanDistributionWaterfall
             tiers.Add(new EuropeanWaterfallTierAllocation("CarriedInterest", lpCarry, gpCarry));
         }
 
-        return new EuropeanWaterfallResult(returnOfCapital, preferredReturn, gpCatchUp, lpCarry, gpCarry, tiers);
+        return new EuropeanWaterfallResult(returnOfCapital, preferredReturn, gpCatchUp, lpCatchUp, lpCarry, gpCarry, tiers);
     }
 
     private static decimal TakeToLp(
