@@ -124,7 +124,7 @@ public sealed partial class FinancialRecordExplorerReadService
         fields.Add(new(
             "Accounting Projection",
             proof.Lineage.ModelKey,
-            $"Projection run {proof.Lineage.ProjectionRunId:D}; projection event {proof.Lineage.ProjectionEventId?.ToString("D") ?? "none"}; trigger {proof.Lineage.TriggerEvent.EventId:D}; factors {proof.State?.PriorFactor?.ToString(CultureInfo.InvariantCulture) ?? "?"} to {proof.State?.CurrentFactor?.ToString(CultureInfo.InvariantCulture) ?? "?"}.",
+            BuildAccountingProjectionDetail(proof),
             FinancialRecordExplorerTone.Info));
 
         if (TryGetAuthoritativeStage(proof, AssetAccountingLifecycleStageDto.Drafted, out var drafted))
@@ -376,6 +376,24 @@ public sealed partial class FinancialRecordExplorerReadService
         => fieldLabel.Length <= 1
             ? fieldLabel
             : string.Concat(fieldLabel[..1], fieldLabel[1..].ToLowerInvariant());
+
+    /// <summary>
+    /// Builds the accounting-projection field detail. The factor-delta clause is factor-paydown
+    /// specific, so it is included only when the position economic state carries prior/current
+    /// factors; other asset accounting event kinds (valuation, income, corporate action, ...) leave
+    /// them null, and rendering "factors ? to ?" would misdescribe the projection.
+    /// </summary>
+    private static string BuildAccountingProjectionDetail(InstrumentJournalProof proof)
+    {
+        var detail =
+            $"Projection run {proof.Lineage.ProjectionRunId:D}; projection event {proof.Lineage.ProjectionEventId?.ToString("D") ?? "none"}; trigger {proof.Lineage.TriggerEvent.EventId:D}.";
+        if (proof.State?.PriorFactor is { } priorFactor && proof.State?.CurrentFactor is { } currentFactor)
+        {
+            detail += $" Factors {priorFactor.ToString(CultureInfo.InvariantCulture)} to {currentFactor.ToString(CultureInfo.InvariantCulture)}.";
+        }
+
+        return detail;
+    }
 
     private sealed record InstrumentJournalProof(
         BookPositionDto Position,
