@@ -49,6 +49,9 @@ public enum FundAdministrationEventKind
 
     /// <summary>A reconciliation true-break escalation was resolved.</summary>
     ReconciliationBreakResolved,
+
+    /// <summary>An onboarding template was registered or replaced in the template library.</summary>
+    OnboardingTemplateRegistered,
 }
 
 /// <summary>

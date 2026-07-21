@@ -49,7 +49,7 @@ public sealed class FundAdministrationControlServiceTests
         var reopen = service.EventLog.EventsOfKind(FundAdministrationEventKind.PeriodReopened).Should().ContainSingle().Which;
         reopen.Evidence.Should().ContainSingle("the reopen evidence reference is carried into the log");
         service.EventLog.VerifyIntegrity().Should().BeTrue();
-        service.Periods.IsLocked(Book, "2026-Q2").Should().BeFalse();
+        service.IsPeriodLocked(Book, "2026-Q2").Should().BeFalse();
     }
 
     [Fact]
@@ -156,7 +156,7 @@ public sealed class FundAdministrationControlServiceTests
                 new OnboardingTemplateNode(OnboardingTemplateNode.Types.Book, "book", "{fundCode}-GL", "{fundName} GL", ParentKey: "port"),
             ],
             "admin",
-            At));
+            At), "admin");
 
         var plan = service.ApplyOnboardingTemplate(
             "std-fund",
@@ -173,6 +173,30 @@ public sealed class FundAdministrationControlServiceTests
         plan.Nodes.Single(node => node.Key == "port").Code.Should().Be("GRO-MAIN");
         plan.Nodes.Single(node => node.Key == "book").Name.Should().Be("Growth Fund GL");
         service.EventLog.EventsOfKind(FundAdministrationEventKind.OnboardingApplied).Should().ContainSingle();
+    }
+
+    [Fact]
+    public void RegisterOnboardingTemplate_RecordsContentIdentifyingEvent()
+    {
+        var service = new FundAdministrationControlService();
+        service.RegisterOnboardingTemplate(new OnboardingTemplate(
+            "std-fund",
+            "Standard Fund",
+            "Standard fund skeleton.",
+            [
+                new OnboardingTemplateNode(OnboardingTemplateNode.Types.Organization, "org", "{orgCode}", "{orgName}"),
+                new OnboardingTemplateNode(OnboardingTemplateNode.Types.Portfolio, "port", "{fundCode}-MAIN", "{fundName} Main", ParentKey: "org"),
+            ],
+            "admin",
+            At), "admin");
+
+        // Registration is audited with a content-identifying event (not just id + count), so the exact
+        // approved hierarchy/codes/parents are recorded tamper-evidently.
+        var registered = service.EventLog.EventsOfKind(FundAdministrationEventKind.OnboardingTemplateRegistered)
+            .Should().ContainSingle().Which;
+        registered.Attributes["nodeCount"].Should().Be("2");
+        registered.Attributes["nodes"].Should().Contain("port|Portfolio|{fundCode}-MAIN|{fundName} Main|org");
+        service.EventLog.VerifyIntegrity().Should().BeTrue();
     }
 
     [Fact]
@@ -203,7 +227,7 @@ public sealed class FundAdministrationControlServiceTests
                 new OnboardingTemplateNode(OnboardingTemplateNode.Types.Organization, "org", "ORG", "Org"),
             ],
             "admin",
-            At));
+            At), "admin");
 
         var plan = service.ApplyOnboardingTemplate("std-fund", new Dictionary<string, string>(), "admin");
 

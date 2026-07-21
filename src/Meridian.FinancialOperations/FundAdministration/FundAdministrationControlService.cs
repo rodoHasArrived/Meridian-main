@@ -33,14 +33,25 @@ public sealed class FundAdministrationControlService
     /// <summary>The append-only, hash-chained governance event log this surface writes to.</summary>
     public FundAdministrationEventLog EventLog => _eventLog;
 
-    /// <summary>The locked-period registry; use it to guard postings via <c>EnsureCanPost</c>.</summary>
-    public LockedAccountingPeriodBook Periods => _periods;
+    // The locked-period, template, and pricing registries are held privately: every mutation must go
+    // through this surface's audited methods (which append a governance event), so a caller cannot
+    // reopen a period, replace a template, or change a pricing rule without immutable evidence. Read and
+    // guard access is exposed here as read-only projections that cannot mutate the registries.
 
-    /// <summary>The registered journal templates.</summary>
-    public JournalTemplateBook TemplateBook => _templates;
+    /// <summary>Returns whether the given accounting period is currently locked for the book.</summary>
+    public bool IsPeriodLocked(LedgerBookKey ledgerKey, string periodId) => _periods.IsLocked(ledgerKey, periodId);
 
-    /// <summary>The portfolio pricing rule registry.</summary>
-    public PortfolioPricingRuleBook PricingRuleBook => _pricingRules;
+    /// <summary>Throws if <paramref name="journalEntry"/> would post into a locked period (read-only guard).</summary>
+    public void EnsureCanPost(LedgerBookKey ledgerKey, JournalEntry journalEntry) => _periods.EnsureCanPost(ledgerKey, journalEntry);
+
+    /// <summary>Read-only snapshot of the currently-locked accounting periods.</summary>
+    public IReadOnlyList<LockedAccountingPeriod> LockedPeriods => _periods.LockedPeriods;
+
+    /// <summary>Read-only audit trail of every period reopen.</summary>
+    public IReadOnlyList<ReopenedAccountingPeriod> PeriodReopenHistory => _periods.ReopenHistory;
+
+    /// <summary>Read-only snapshot of the registered journal templates.</summary>
+    public IReadOnlyList<JournalTemplate> RegisteredJournalTemplates => _templates.Templates;
 
     // ── Journal templates & recurring journals ─────────────────────────────────
 
@@ -334,17 +345,43 @@ public sealed class FundAdministrationControlService
 
     // ── Onboarding templates ───────────────────────────────────────────────────
 
-    /// <summary>Registers (or replaces) a reusable onboarding template.</summary>
-    public OnboardingTemplate RegisterOnboardingTemplate(OnboardingTemplate template)
+    /// <summary>
+    /// Registers (or replaces) a reusable onboarding template, recording the change with a
+    /// content-identifying governance event so the exact hierarchy/codes/parents approved at
+    /// registration are auditable (a later <see cref="FundAdministrationEventKind.OnboardingApplied"/>
+    /// event only carries the template id and node count).
+    /// </summary>
+    public OnboardingTemplate RegisterOnboardingTemplate(OnboardingTemplate template, string actor)
     {
         ArgumentNullException.ThrowIfNull(template);
+        RequireActor(actor);
+
         lock (_gate)
         {
             _onboardingTemplates[template.TemplateId] = template;
+            _eventLog.Append(
+                FundAdministrationEventKind.OnboardingTemplateRegistered,
+                actor,
+                template.TemplateId,
+                $"Registered onboarding template '{template.Name}' with {template.Nodes.Count} node(s).",
+                new Dictionary<string, string>
+                {
+                    ["templateId"] = template.TemplateId,
+                    ["name"] = template.Name,
+                    ["nodeCount"] = template.Nodes.Count.ToString(),
+                    ["nodes"] = DescribeOnboardingNodes(template),
+                });
         }
 
         return template;
     }
+
+    // Captures the approved template shape (per node: key, type, code template, name template, parent)
+    // into the governance event's attributes, which the event log hashes — so which hierarchy/codes/
+    // parents were approved is recorded tamper-evidently, not just the template id and node count.
+    private static string DescribeOnboardingNodes(OnboardingTemplate template)
+        => string.Join(";", template.Nodes.Select(node =>
+            $"{node.Key}|{node.NodeType}|{node.CodeTemplate}|{node.NameTemplate}|{node.ParentKey ?? string.Empty}"));
 
     /// <summary>
     /// Applies a registered onboarding template, producing a concrete structure plan and recording the
