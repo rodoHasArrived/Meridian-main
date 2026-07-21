@@ -758,7 +758,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "99500ee07b38e49eadf2831691507997d6218a1a95bf8ae60f69749ad98f04d4",
+  "fingerprint": "c401d7a37c32c4ea714283aaba032f807185b457c9000851417203a59104d9a8",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -996,7 +996,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 83,
+    "files": 84,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

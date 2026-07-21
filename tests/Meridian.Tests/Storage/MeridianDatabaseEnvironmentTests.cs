@@ -121,4 +121,24 @@ public sealed class MeridianDatabaseEnvironmentTests : IDisposable
 
         normalized.Should().Be("Host=db.example.com;Port=5432;Database=meridian");
     }
+
+    [Fact]
+    public void NormalizeToConnectionString_QuotesValuesWithSpecialCharacters()
+    {
+        // A password containing separators must not corrupt the keyword string.
+        var normalized = MeridianDatabaseEnvironment.NormalizeToConnectionString(
+            "postgres://app:p%3Bss%3Dw%27d@db.example.com/meridian");
+
+        normalized.Should().Be(
+            "Host=db.example.com;Port=5432;Database=meridian;Username=app;Password='p;ss=w''d'");
+    }
+
+    [Fact]
+    public void NormalizeToConnectionString_InvalidUrl_FailsWithActionableMessage()
+    {
+        var act = () => MeridianDatabaseEnvironment.NormalizeToConnectionString("postgres://[not-a-valid-uri");
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage($"*{MeridianDatabaseEnvironment.UnifiedVariable}*");
+    }
 }

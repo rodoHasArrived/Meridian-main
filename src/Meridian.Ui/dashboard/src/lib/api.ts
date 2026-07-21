@@ -207,7 +207,6 @@ import type {
   SecurityMasterEntry,
   SecurityMasterTrustSnapshot,
   SessionInfo,
-  DegradedModeStatus,
   SystemEventRecord,
   SystemOverviewResponse,
   ReplayFileRecord,
@@ -545,6 +544,7 @@ import {
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
 import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
+import { deriveStorageHealth, deriveSystemStatus, fallbackSystemOverview, readDegradedMode } from "@/lib/system-status";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export const developmentFixtureHeader = "x-meridian-dev-fixture";
@@ -3568,23 +3568,6 @@ function normalizeSystemOverviewResponse(payload: unknown): SystemOverviewRespon
   return normalizeLegacyStatusResponse(payload);
 }
 
-function readDegradedMode(value: unknown): DegradedModeStatus | null {
-  if (!isRecord(value)) {
-    return null;
-  }
-
-  const marketDataMode = readString(value.marketDataMode);
-  const persistenceMode = readString(value.persistenceMode);
-  return {
-    marketDataMode: marketDataMode === "live" || marketDataMode === "simulated" ? marketDataMode : "unknown",
-    marketDataDetail: readString(value.marketDataDetail),
-    persistenceMode: persistenceMode === "configured" || persistenceMode === "partial" ? persistenceMode : "none",
-    missingPersistenceDomains: Array.isArray(value.missingPersistenceDomains)
-      ? value.missingPersistenceDomains.filter((domain): domain is string => typeof domain === "string")
-      : []
-  };
-}
-
 function normalizeLegacyStatusResponse(payload: Record<string, unknown>): SystemOverviewResponse {
   const metrics = isRecord(payload.metrics) ? payload.metrics : {};
   const pipeline = isRecord(payload.pipeline) ? payload.pipeline : {};
@@ -3657,56 +3640,8 @@ function normalizeLegacyStatusResponse(payload: Record<string, unknown>): System
   };
 }
 
-function fallbackSystemOverview(): SystemOverviewResponse {
-  const timestampUtc = new Date().toISOString();
-  return {
-    systemStatus: "Degraded",
-    providersOnline: 0,
-    providersTotal: 0,
-    activeRuns: 0,
-    openPositions: 0,
-    activeBackfills: 0,
-    symbolsMonitored: 0,
-    storageHealth: "Warning",
-    lastHeartbeatUtc: timestampUtc,
-    metrics: [],
-    recentEvents: [
-      {
-        id: "status-unavailable",
-        type: "warning",
-        message: "The host returned an unrecognized status payload.",
-        source: "Meridian host",
-        timestamp: timestampUtc
-      }
-    ]
-  };
-}
 
-function deriveSystemStatus(
-  isConnected: boolean,
-  isStale: boolean,
-  dropped: number,
-  dropRate: number,
-  queueUtilization: number
-): SystemOverviewResponse["systemStatus"] {
-  if (!isConnected) {
-    return "Offline";
-  }
 
-  return isStale || dropped > 0 || dropRate > 0 || queueUtilization >= 0.8 ? "Degraded" : "Healthy";
-}
-
-function deriveStorageHealth(
-  systemStatus: SystemOverviewResponse["systemStatus"],
-  dropped: number,
-  queueUtilization: number
-): SystemOverviewResponse["storageHealth"] {
-  if (systemStatus === "Offline") {
-    return "Critical";
-  }
-
-  return dropped > 0 || queueUtilization >= 0.8 ? "Warning" : "Healthy";
-}
 
 function buildLegacyStatusMessage(
   systemStatus: SystemOverviewResponse["systemStatus"],

@@ -102,6 +102,28 @@ public sealed class DefaultInterestCalculatorTests
     }
 
     [Fact]
+    public void Thirty360_NormalizesEndOfFebruary()
+    {
+        // US 30/360 counts 2026-02-28 (last day of Feb) to 2026-03-31 as 30 days, not 33.
+        var interest = DefaultInterestCalculator.ComputeSimpleInterest(
+            1_000_000m, 0.12m, new DateOnly(2026, 2, 28), new DateOnly(2026, 3, 31),
+            DefaultInterestConvention.Thirty360);
+
+        interest.Should().Be(Math.Round(1_000_000m * 0.12m * 30m / 360m, 2, MidpointRounding.ToEven));
+    }
+
+    [Fact]
+    public void Thirty360_NormalizesLeapDayEndOfFebruary()
+    {
+        // 2024 is a leap year: 2024-02-29 is the last day of February, normalized to day 30.
+        var interest = DefaultInterestCalculator.ComputeSimpleInterest(
+            1_000_000m, 0.12m, new DateOnly(2024, 2, 29), new DateOnly(2024, 3, 30),
+            DefaultInterestConvention.Thirty360);
+
+        interest.Should().Be(Math.Round(1_000_000m * 0.12m * 30m / 360m, 2, MidpointRounding.ToEven));
+    }
+
+    [Fact]
     public void PostGracePartialPayment_AmortizesInterestBearingPrincipal()
     {
         var commitment = Commitment(graceDays: 10);

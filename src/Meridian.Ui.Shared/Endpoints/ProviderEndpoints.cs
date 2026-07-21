@@ -85,7 +85,8 @@ public static class ProviderEndpoints
 
             // Fail closed on unknown provider names: silently coercing a typo to IB would
             // persist a data source pointed at a provider the operator never chose.
-            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider))
+            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider) ||
+                !Enum.IsDefined(provider))
             {
                 return Results.BadRequest(
                     $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
@@ -662,7 +663,8 @@ public static class ProviderEndpoints
 
             // Fail closed on unknown provider names: silently coercing a typo to IB would
             // persist a data source pointed at a provider the operator never chose.
-            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider))
+            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider) ||
+                !Enum.IsDefined(provider))
             {
                 return Results.BadRequest(
                     $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");

@@ -1821,6 +1821,7 @@ Meridian-main
 │   │   ├── research-backtest-trust-and-velocity-blueprint.md
 │   │   └── security-master-passport-workbench.md
 │   ├── product
+│   │   ├── adversarial-program-review-2026-07.md
 │   │   ├── data-provider-accounting-brainstorm-2026-07.md
 │   │   ├── deferred-expansion-boundaries.md
 │   │   ├── excel-onboarding-workbook-brainstorm-2026-07.md
@@ -6064,6 +6065,7 @@ Meridian-main
 │   │   │   │   │   ├── shared-tone-mappings.ts
 │   │   │   │   │   ├── sql-workbench-storage.test.ts
 │   │   │   │   │   ├── sql-workbench-storage.ts
+│   │   │   │   │   ├── system-status.ts
 │   │   │   │   │   ├── theme.test.ts
 │   │   │   │   │   ├── theme.ts
 │   │   │   │   │   ├── time.test.ts
@@ -8735,6 +8737,7 @@ Meridian-main
 │   │   │   ├── DailyValuationPositionServiceTests.cs
 │   │   │   ├── DailyValuationScheduleIdentityTests.cs
 │   │   │   ├── DataOperationsAssuranceServiceTests.cs
+│   │   │   ├── DegradedModeEvaluationTests.cs
 │   │   │   ├── DesktopLaunchTicketServiceTests.cs
 │   │   │   ├── DiagnosticsEndpointsTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs
