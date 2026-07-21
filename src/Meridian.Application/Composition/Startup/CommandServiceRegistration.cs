@@ -75,6 +75,11 @@ internal static class CommandServiceRegistration
         services.TryAddSingleton<IAccountQueryService>(_ => new InMemoryFundAccountService(
             Path.Combine(dataRoot, "governance", "fund-accounts.json")));
         services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, RetainedInternalReconciliationPopulationProvider>());
+        // Normalize cross-currency statement lines using the operator-maintained FX rate table under the
+        // data root (reconciliation/fx-rates.json), matching the workstation graph, instead of the
+        // identity-only default. A missing or empty table keeps cross-currency lines failing closed.
+        services.Replace(ServiceDescriptor.Singleton<IReconciliationFxRateProvider>(_ =>
+            FileReconciliationFxRateProvider.Load(dataRoot)));
 
         services.AddSingleton<ICliCommand, HelpCommand>();
         services.AddSingleton<ICliCommand>(sp => new ConfigCommands(
