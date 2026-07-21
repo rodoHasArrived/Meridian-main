@@ -129,6 +129,20 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
             foreach (var entry in Elements(statement, "Ntry"))
             {
+                // Only booked (BOOK) entries contribute to the closing booked balance the run
+                // reconciles against. Pending (PDNG) and informational entries are not yet booked, so
+                // importing them as ledger transactions would open false cases and double-count the
+                // movement once it posts. Entries with no explicit status are treated as booked.
+                var status = EntryStatus(entry);
+                if (status is not null && !string.Equals(status, "BOOK", StringComparison.OrdinalIgnoreCase))
+                {
+                    issues.Add(StatementParseIssue.Warning(
+                        "CAMT_ENTRY_NOT_BOOKED",
+                        $"Entry status '{status}' is not booked; skipped so only booked movements reconcile against the closing balance.",
+                        rowNumber + 1));
+                    continue;
+                }
+
                 var bookingDate = EntryDate(entry, "BookgDt");
                 var valueDate = EntryDate(entry, "ValDt");
                 var tradeDate = bookingDate ?? valueDate;
@@ -220,6 +234,20 @@ public sealed class Camt053StatementConnector : IStatementConnector
 
     private static string? BalanceCode(XElement balance)
         => Value(Element(Element(balance, "Tp"), "CdOrPrtry"), "Cd");
+
+    // camt.053.001.02 carries the entry status as a simple <Sts> code (BOOK/PDNG/INFO); later
+    // versions nest it under <Sts><Cd>. Resolve either shape and normalize to an upper-case code.
+    private static string? EntryStatus(XElement entry)
+    {
+        var status = Element(entry, "Sts");
+        if (status is null)
+        {
+            return null;
+        }
+
+        var code = Value(status, "Cd") ?? status.Value?.Trim();
+        return string.IsNullOrWhiteSpace(code) ? null : code.ToUpperInvariant();
+    }
 
     private static DateOnly? BalanceDate(XElement balance) => ResolveDate(Element(balance, "Dt"));
 

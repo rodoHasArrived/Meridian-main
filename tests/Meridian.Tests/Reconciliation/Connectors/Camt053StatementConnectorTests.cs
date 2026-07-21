@@ -108,4 +108,34 @@ public sealed class Camt053StatementConnectorTests
         result.Records.Should().BeEmpty("a malformed monetary amount must not become a zero-valued canonical row");
         result.Issues.Should().Contain(issue => issue.Code == "CAMT_BALANCE_BAD_AMOUNT");
     }
+
+    [Fact]
+    public async Task Parse_Camt053_ExcludesPendingEntriesFromReconciliation()
+    {
+        // One booked (BOOK) entry and one pending (PDNG) entry. Only booked movements contribute to the
+        // closing booked balance, so the pending entry must be skipped rather than opening a false
+        // transaction case that would double-count the movement once it books.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                  <Ntry><Amt Ccy="EUR">50.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts>BOOK</Sts><BookgDt><Dt>2026-05-30</Dt></BookgDt></Ntry>
+                  <Ntry><Amt Ccy="EUR">75.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Sts>PDNG</Sts><BookgDt><Dt>2026-05-31</Dt></BookgDt></Ntry>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("pending-entry.xml", Encoding.UTF8.GetBytes(xml));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeFalse();
+        var transactions = result.Records.Where(record => record.Kind == StatementRecordKind.Transaction).ToArray();
+        transactions.Should().ContainSingle("only the booked entry reconciles");
+        transactions[0].CashAmount.Should().Be(50.00m);
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_ENTRY_NOT_BOOKED");
+    }
 }
