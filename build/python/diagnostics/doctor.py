@@ -258,13 +258,17 @@ class Doctor:
 
     def _check_postgres(self) -> None:
         """Try a TCP connection to PostgreSQL and report fix hints."""
-        conn_str = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "") or os.getenv(
-            "MERIDIAN_DATABASE_URL", ""
-        )
+        conn_str = (
+            os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "")
+            or os.getenv("MERIDIAN_DATABASE_URL", "")
+        ).strip()
         host = _POSTGRES_DEFAULT_HOST
         port = _POSTGRES_DEFAULT_PORT
 
-        if conn_str and conn_str.startswith(("postgres://", "postgresql://")):
+        # The runtime trims the unified URL and matches the scheme case-insensitively in
+        # MeridianDatabaseEnvironment.NormalizeToConnectionString; mirror that here so an
+        # uppercase or whitespace-padded URL is parsed rather than skipped.
+        if conn_str.lower().startswith(("postgres://", "postgresql://")):
             # MERIDIAN_DATABASE_URL URL form: postgres://user:pass@host:port/db
             from urllib.parse import urlsplit
 

@@ -1079,7 +1079,12 @@ public sealed class ExecutionWriteEndpointsTests
 
     private static void RegisterMinimalOms(IServiceCollection services, params ExecutionPosition[] positions)
     {
-        services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
+        // The paper gateway rejects priceless market orders unless scaffold pricing is opted
+        // in; these endpoint tests submit feed-less paper closes and assert acceptance, so the
+        // opt-in stands in for a live price source.
+        services.AddSingleton<IExecutionGateway>(_ => new PaperTradingGateway(
+            NullLogger<PaperTradingGateway>.Instance,
+            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }));
         services.AddSingleton<IOrderManager>(sp =>
             new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(),
