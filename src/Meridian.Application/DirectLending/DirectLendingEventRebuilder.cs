@@ -285,6 +285,33 @@ public sealed class DirectLendingEventRebuilder
                         break;
                     }
 
+                case "loan.pik-toggled":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var enablePik = root.GetProperty("enablePik").GetBoolean();
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var reason =
+                            root.TryGetProperty("reason", out var reasonElement) &&
+                            reasonElement.ValueKind == JsonValueKind.String &&
+                            reasonElement.GetString() is { Length: > 0 } reasonText
+                                ? reasonText
+                                : enablePik ? "PIK enabled" : "PIK disabled";
+
+                        servicing = servicing! with
+                        {
+                            IsPikToggled = enablePik,
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "PikToggle",
+                                effectiveDate,
+                                reason,
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
                 default:
                     throw new InvalidOperationException($"Unsupported direct-lending event type '{entry.EventType}' during rebuild.");
             }
