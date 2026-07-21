@@ -690,7 +690,16 @@ def _check_postgres() -> tuple[bool, bool, str, str | None]:
     host = _POSTGRES_DEFAULT_HOST
     port = _POSTGRES_DEFAULT_PORT
 
-    if conn_str:
+    if conn_str.startswith(("postgres://", "postgresql://")):
+        # MERIDIAN_DATABASE_URL URL form: postgres://user:pass@host:port/db
+        from urllib.parse import urlsplit
+
+        parts = urlsplit(conn_str)
+        if parts.hostname:
+            host = parts.hostname
+        if parts.port:
+            port = parts.port
+    elif conn_str:
         host_m = re.search(r"[Hh]ost=([^;, ]+)", conn_str)
         port_m = re.search(r"[Pp]ort=(\d+)", conn_str)
         if host_m:

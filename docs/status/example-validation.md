@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 995 |
-| Valid | 541 |
+| Total code blocks | 996 |
+| Valid | 542 |
 | Invalid | 0 |
 | Skipped | 454 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 101 | 0 | 0 | 101 |
-| `bash` | 152 | 152 | 0 | 0 |
+| `bash` | 153 | 153 | 0 | 0 |
 | `cmd` | 1 | 0 | 0 | 1 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 297 | 297 | 0 | 0 |
@@ -111,6 +111,7 @@ No invalid code examples found.
 | `docs/diagrams/uml/README.md` | 2 |
 | `docs/docfx/README.md` | 2 |
 | `docs/docfx/api/index.md` | 1 |
+| `docs/engineering/README.md` | 1 |
 | `docs/engineering/blueprints/financing-liabilities-depreciation-blueprint.md` | 9 |
 | `docs/engineering/live-trading-engine.md` | 1 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |

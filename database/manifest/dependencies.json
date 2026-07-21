@@ -616,6 +616,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.DegradedModeStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.DemoHistoricalBar"
     },
     {
@@ -20608,6 +20614,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Api.StatusResponse",
+      "target": "contract:Meridian.Contracts.Api.DegradedModeStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.StatusResponse",
       "target": "contract:Meridian.Contracts.Api.MetricsData"
     },
     {
@@ -39808,7 +39820,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e38f2cfd271665c5341da45e2d32d028a0dd296d218f571dcd29b154ff20d9a4",
+  "fingerprint": "f9d32f9850dbf39426402d284bfb03887a3dbc742d6b67f762e30e8dd8c6edf2",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -40472,6 +40484,12 @@
       "id": "contract:Meridian.Contracts.Api.DefaultSourcesRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.DefaultSourcesRequest"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Api.DegradedModeStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.DegradedModeStatus"
     },
     {
       "classification": "record",
@@ -57667,11 +57685,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2800,
-    "contract_set_memberships": 3229,
-    "edges": 6619,
+    "contract_references": 2801,
+    "contract_set_memberships": 3230,
+    "edges": 6621,
     "foreign_keys": 77,
     "logical_references": 6,
-    "nodes": 3048
+    "nodes": 3049
   }
 }

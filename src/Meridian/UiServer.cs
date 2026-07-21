@@ -99,7 +99,7 @@ public sealed class UiServer : IAsyncDisposable
                 "Journal entries, reconciliations, and approvals in these domains are held in memory and will be " +
                 "lost on restart. Set MERIDIAN_DATABASE_URL (or the per-domain MERIDIAN_*_CONNECTION_STRING variables) to persist them.",
                 persistenceStatus.Mode.ToUpperInvariant(),
-                persistenceStatus.MissingDomains);
+                string.Join(", ", persistenceStatus.MissingDomains));
         }
 
         var contentRootPath = Directory.GetCurrentDirectory();
@@ -900,23 +900,38 @@ public sealed class UiServer : IAsyncDisposable
             var configStore = sp.GetService<Meridian.Application.UI.ConfigStore>();
             if (configStore is not null)
             {
-                var dataSource = configStore.Load().DataSource;
-                switch (dataSource)
+                var config = configStore.Load();
+
+                // Every source that can feed the pipeline counts: the top-level DataSource plus,
+                // when failover is enabled, each enabled real-time failover source — otherwise a
+                // synthetic failover source could publish fabricated prices while the banner
+                // reports the top-level source as live.
+                var candidateSources = new List<DataSourceKind> { config.DataSource };
+                if (config.DataSources is { EnableFailover: true, Sources.Length: > 0 })
                 {
-                    case DataSourceKind.Synthetic:
-                        marketDataMode = "simulated";
-                        marketDataDetail = "Streaming source 'synthetic' generates deterministic synthetic data.";
-                        break;
-                    case DataSourceKind.IB when Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulationBuild:
-                        marketDataMode = "simulated";
-                        marketDataDetail =
-                            "Streaming source 'ib' runs as a random-walk simulator in this build (no IBAPI reference). " +
-                            "Prices are synthetic and historical requests return no bars.";
-                        break;
-                    default:
-                        marketDataMode = "live";
-                        marketDataDetail = $"Streaming source '{dataSource.ToString().ToLowerInvariant()}'.";
-                        break;
+                    candidateSources.AddRange(config.DataSources.Sources
+                        .Where(s => s.Enabled && s.Type is DataSourceType.RealTime or DataSourceType.Both)
+                        .Select(s => s.Provider));
+                }
+
+                var simulatedSources = candidateSources
+                    .Where(IsSimulatedSource)
+                    .Select(s => s.ToString().ToLowerInvariant())
+                    .Distinct()
+                    .ToList();
+
+                if (simulatedSources.Count > 0)
+                {
+                    marketDataMode = "simulated";
+                    marketDataDetail =
+                        $"Simulated streaming source(s) configured: {string.Join(", ", simulatedSources)}. " +
+                        "'synthetic' generates deterministic synthetic data; 'ib' runs as a random-walk simulator " +
+                        "in builds without the IBAPI reference and returns no historical bars.";
+                }
+                else
+                {
+                    marketDataMode = "live";
+                    marketDataDetail = $"Streaming source '{config.DataSource.ToString().ToLowerInvariant()}'.";
                 }
             }
         }
@@ -933,6 +948,13 @@ public sealed class UiServer : IAsyncDisposable
             MissingPersistenceDomains = persistence.MissingDomains.ToArray()
         };
     }
+
+    private static bool IsSimulatedSource(DataSourceKind source) => source switch
+    {
+        DataSourceKind.Synthetic => true,
+        DataSourceKind.IB => Meridian.Infrastructure.Adapters.InteractiveBrokers.IBMarketDataClient.IsSimulationBuild,
+        _ => false
+    };
 
     public async Task StartAsync(CancellationToken ct = default)
     {
