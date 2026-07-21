@@ -139,6 +139,26 @@ public sealed class PendingOperationsQueuePersistenceTests : IDisposable
     }
 
     [Fact]
+    public async Task ProcessAllAsync_CancelledHandler_RetainsOperationWithoutBurningRetries()
+    {
+        // A handler cancelled mid-replay (for example during shutdown) must not lose the
+        // operation or consume its retry budget — the next session replays it.
+        var service = new PendingOperationsQueueService();
+        service.RegisterHandler("test.cancelled", _ => throw new OperationCanceledException());
+        service.Enqueue("test.cancelled", null);
+
+        var act = () => service.ProcessAllAsync();
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        service.PendingCount.Should().Be(1);
+        service.Peek()!.RetryCount.Should().Be(0);
+
+        var reader = new PendingOperationsQueueService();
+        await reader.InitializeAsync();
+        reader.PendingCount.Should().Be(1, "the rescued operation must be durable for the next session");
+    }
+
+    [Fact]
     public async Task PersistAsync_AfterShutdown_DoesNotOverwriteFinalSnapshot()
     {
         // An enqueue-scheduled background persist that loses the race with shutdown must not

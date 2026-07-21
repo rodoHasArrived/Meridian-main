@@ -271,7 +271,16 @@ public sealed class PendingOperationsQueueService
             {
                 await handler(op.Payload).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+            catch (OperationCanceledException)
+            {
+                // Cancellation (for example shutdown mid-replay) is not a failure of the
+                // operation: put it back untouched and persist so the next reconnect or
+                // session replays it, then let the cancellation propagate.
+                _queue.Enqueue(op);
+                await PersistAsync(CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 if (op.RetryCount < op.MaxRetries)
                 {
