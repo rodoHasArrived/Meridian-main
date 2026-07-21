@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Xunit;
@@ -18,7 +19,9 @@ public sealed class SecurityAssetSpecificTermsUpcasterPipelineTests
     [Fact]
     public void Upcast_UnstampedLegacyPayload_ResolvesToLegacyVersion()
     {
-        var result = _pipeline.Upcast("""{"shareClass":"Common"}""");
+        var json = JsonSerializer.Serialize(new { shareClass = "Common" });
+
+        var result = _pipeline.Upcast(json);
 
         result.Should().NotBeNull();
         result!.SchemaVersion.Should().Be(AssetSpecificTermsSchema.Legacy);
@@ -29,10 +32,14 @@ public sealed class SecurityAssetSpecificTermsUpcasterPipelineTests
     {
         // A cross-family v2 economic-terms document reaching the asset-specific-terms slot: the pipeline
         // flattens it to the accepted legacy shape so the promoted version matches what the guard accepts.
-        var result = _pipeline.Upcast(
-            $$"""
-            {"schemaVersion":{{EconomicTermsSchema.Current}},"maturity":{"maturityDate":"2030-06-30"},"coupon":{"couponType":"Fixed","couponRate":5.25}}
-            """);
+        var json = JsonSerializer.Serialize(new
+        {
+            schemaVersion = EconomicTermsSchema.Current,
+            maturity = new { maturityDate = "2030-06-30" },
+            coupon = new { couponType = "Fixed", couponRate = 5.25m }
+        });
+
+        var result = _pipeline.Upcast(json);
 
         result.Should().NotBeNull();
         result!.SchemaVersion.Should().Be(AssetSpecificTermsSchema.Legacy);
@@ -43,10 +50,14 @@ public sealed class SecurityAssetSpecificTermsUpcasterPipelineTests
     [Fact]
     public void Upcast_CustomAssetProfilePayload_PreservesItsVersion()
     {
-        var result = _pipeline.Upcast(
-            $$"""
-            {"schemaVersion":{{AssetSpecificTermsSchema.CustomAssetProfile}},"customProfileId":"co-invest-spv","profileVersion":1}
-            """);
+        var json = JsonSerializer.Serialize(new
+        {
+            schemaVersion = AssetSpecificTermsSchema.CustomAssetProfile,
+            customProfileId = "co-invest-spv",
+            profileVersion = 1
+        });
+
+        var result = _pipeline.Upcast(json);
 
         result.Should().NotBeNull();
         result!.SchemaVersion.Should().Be(AssetSpecificTermsSchema.CustomAssetProfile);
