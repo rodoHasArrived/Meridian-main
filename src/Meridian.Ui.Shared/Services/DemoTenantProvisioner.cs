@@ -26,20 +26,21 @@ public sealed class DemoTenantProvisioner(
     public async Task<DemoTenantProvisioningReport> ProvisionAsync(CancellationToken ct = default)
     {
         var warnings = new List<string>();
-        var breaksSeeded = await SeedReconciliationBreaksAsync(warnings, ct).ConfigureAwait(false);
-        var strategyRunSeeded = await SeedStrategyRunAsync(warnings, ct).ConfigureAwait(false);
-        return new DemoTenantProvisioningReport(breaksSeeded, strategyRunSeeded, warnings);
+        var (breaksSeeded, reconciliationLoaded) = await SeedReconciliationBreaksAsync(warnings, ct).ConfigureAwait(false);
+        var strategyRunLoaded = await SeedStrategyRunAsync(warnings, ct).ConfigureAwait(false);
+        return new DemoTenantProvisioningReport(breaksSeeded, reconciliationLoaded, strategyRunLoaded, warnings);
     }
 
-    private async Task<int> SeedReconciliationBreaksAsync(List<string> warnings, CancellationToken ct)
+    private async Task<(int Seeded, bool Loaded)> SeedReconciliationBreaksAsync(List<string> warnings, CancellationToken ct)
     {
         if (reconciliationBreaks is null)
         {
-            return 0;
+            return (0, false);
         }
 
         var now = DateTimeOffset.UtcNow;
         var seeded = 0;
+        var loaded = true;
         foreach (var definition in DemoTenantBlueprint.BreakDefinitions)
         {
             ct.ThrowIfCancellationRequested();
@@ -68,12 +69,13 @@ public sealed class DemoTenantProvisioner(
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                loaded = false;
                 logger?.LogWarning(ex, "Failed to seed sample reconciliation break {BreakId}.", definition.Id);
                 warnings.Add($"Reconciliation break {definition.Id} could not be seeded: {ex.Message}");
             }
         }
 
-        return seeded;
+        return (seeded, loaded);
     }
 
     private async Task<bool> SeedStrategyRunAsync(List<string> warnings, CancellationToken ct)
@@ -90,14 +92,14 @@ public sealed class DemoTenantProvisioner(
             {
                 // A prior run that recorded the Started event but was interrupted before Completed
                 // would otherwise be left permanently incomplete. Finish it so re-provisioning
-                // converges on a completed run instead of silently skipping.
+                // converges on a completed run instead of silently skipping. Either way the run is
+                // present, so the Strategy desk is loaded.
                 if (existing.EndedAt is null)
                 {
                     await strategyRuns.RecordRunAsync(existing.Complete(metrics: null), ct).ConfigureAwait(false);
-                    return true;
                 }
 
-                return false;
+                return true;
             }
 
             // Record the run through its real lifecycle (Started → Completed) so the durable,
@@ -125,8 +127,14 @@ public sealed class DemoTenantProvisioner(
     }
 }
 
-/// <summary>Summary of what the demo-tenant provisioning step actually wrote.</summary>
+/// <summary>
+/// Summary of what the demo-tenant provisioning step wrote. The <c>Loaded</c> flags report whether
+/// each surface is present in its desk store after provisioning (freshly seeded or already there),
+/// which is what onboarding advertises — distinct from <see cref="ReconciliationBreaksSeeded"/>,
+/// which counts only the breaks created on this run.
+/// </summary>
 public sealed record DemoTenantProvisioningReport(
     int ReconciliationBreaksSeeded,
-    bool StrategyRunSeeded,
+    bool ReconciliationLoaded,
+    bool StrategyRunLoaded,
     IReadOnlyList<string> Warnings);

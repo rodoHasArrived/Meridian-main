@@ -22,7 +22,8 @@ public sealed class DemoTenantProvisionerTests
         var report = await provisioner.ProvisionAsync();
 
         report.ReconciliationBreaksSeeded.Should().Be(DemoTenantBlueprint.BreakDefinitions.Count);
-        report.StrategyRunSeeded.Should().BeTrue();
+        report.ReconciliationLoaded.Should().BeTrue();
+        report.StrategyRunLoaded.Should().BeTrue();
         report.Warnings.Should().BeEmpty();
 
         var seededBreaks = await breaks.GetAllAsync();
@@ -47,8 +48,10 @@ public sealed class DemoTenantProvisionerTests
         await provisioner.ProvisionAsync();
         var second = await provisioner.ProvisionAsync();
 
+        // Nothing new is seeded, but both surfaces remain loaded (present in their stores).
         second.ReconciliationBreaksSeeded.Should().Be(0);
-        second.StrategyRunSeeded.Should().BeFalse();
+        second.ReconciliationLoaded.Should().BeTrue();
+        second.StrategyRunLoaded.Should().BeTrue();
         (await breaks.GetAllAsync()).Should().HaveCount(DemoTenantBlueprint.BreakDefinitions.Count);
     }
 
@@ -60,7 +63,8 @@ public sealed class DemoTenantProvisionerTests
         var report = await provisioner.ProvisionAsync();
 
         report.ReconciliationBreaksSeeded.Should().Be(0);
-        report.StrategyRunSeeded.Should().BeFalse();
+        report.ReconciliationLoaded.Should().BeFalse();
+        report.StrategyRunLoaded.Should().BeFalse();
         report.Warnings.Should().BeEmpty();
     }
 

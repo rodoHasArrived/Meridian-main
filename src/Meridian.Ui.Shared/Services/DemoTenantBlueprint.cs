@@ -69,8 +69,12 @@ public static class DemoTenantBlueprint
 
     public static decimal UnrealizedPnl => HoldingDefinitions.Sum(static holding => holding.UnrealizedPnl);
 
-    /// <summary>Builds the populated snapshot surfaced to onboarding clients.</summary>
-    public static SampleWorkspaceDto BuildSampleWorkspace()
+    /// <summary>
+    /// Builds the populated snapshot surfaced to onboarding clients. Desk highlights (with links) are
+    /// included only for surfaces that actually loaded, so a click-through never contradicts what
+    /// onboarding claimed; the illustrative sample portfolio is always shown as a preview.
+    /// </summary>
+    public static SampleWorkspaceDto BuildSampleWorkspace(bool reconciliationLoaded = true, bool strategyLoaded = true)
     {
         var breaks = BreakDefinitions
             .Select(static definition => new SampleBreakDto(
@@ -102,23 +106,35 @@ public static class DemoTenantBlueprint
         // report, and market history are shown as an illustrative preview (see the DTO fields below),
         // not as loaded live-desk state — the live Portfolio desk reads in-memory execution state that
         // this offline sample flow cannot durably seed.
-        var highlights = new[]
+        var highlights = new List<SampleHighlightDto>();
+        var loadedParts = new List<string>();
+        if (reconciliationLoaded)
         {
-            new SampleHighlightDto(
+            highlights.Add(new SampleHighlightDto(
                 "Reconciliation",
                 $"{breaks.Length} breaks",
                 "Real open casework loaded into the reconciliation control tower.",
-                ReconciliationRoute),
-            new SampleHighlightDto(
+                ReconciliationRoute));
+            loadedParts.Add("sample reconciliation casework");
+        }
+
+        if (strategyLoaded)
+        {
+            highlights.Add(new SampleHighlightDto(
                 "Strategy",
                 "1 paper run",
                 "A completed paper covered-call run loaded into the Strategy desk.",
-                StrategyRoute)
-        };
+                StrategyRoute));
+            loadedParts.Add("a completed paper strategy run");
+        }
+
+        var loadedClause = loadedParts.Count == 0
+            ? string.Empty
+            : $"{Capitalize(string.Join(" and ", loadedParts))} {(loadedParts.Count == 1 ? "is" : "are")} loaded into your desks now. ";
 
         return new SampleWorkspaceDto(
             Headline: "Your sample workspace is ready",
-            Summary: "Sample reconciliation casework and a completed paper strategy run are loaded into your desks now. The sample portfolio below is illustrative — your live Portfolio desk starts from a clean paper account until you connect data or run a strategy.",
+            Summary: loadedClause + "The sample portfolio below is illustrative — your live Portfolio desk starts from a clean paper account until you connect data or run a strategy.",
             PortfolioName: PortfolioName,
             PortfolioValue: PortfolioValue,
             Cash: Cash,
@@ -131,6 +147,9 @@ public static class DemoTenantBlueprint
             MarketHistory: marketHistory,
             Highlights: highlights);
     }
+
+    private static string Capitalize(string value) =>
+        string.IsNullOrEmpty(value) ? value : char.ToUpperInvariant(value[0]) + value[1..];
 
     private static SampleHoldingDto BuildHolding(string symbol, decimal quantity, decimal averagePrice, decimal lastPrice)
     {

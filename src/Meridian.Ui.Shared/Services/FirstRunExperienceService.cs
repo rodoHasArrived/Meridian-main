@@ -52,6 +52,16 @@ public sealed class FirstRunExperienceService(
         var dataChoice = NormalizeDataChoice(request.DataChoice);
         var useSample = request.UseSampleData || dataChoice == "sample";
         var now = DateTimeOffset.UtcNow;
+
+        // Load the demo tenant into the real, desk-read stores before persisting state so the status
+        // reflects what actually loaded. Provisioning is best-effort and must never block the user
+        // from completing onboarding.
+        DemoTenantProvisioningReport? provisioning = null;
+        if (useSample && demoTenantProvisioner is not null)
+        {
+            provisioning = await demoTenantProvisioner.ProvisionAsync(ct).ConfigureAwait(false);
+        }
+
         var state = new FirstRunState(
             true,
             string.IsNullOrWhiteSpace(request.Goal) ? kit.Goal : request.Goal.Trim(),
@@ -64,17 +74,13 @@ public sealed class FirstRunExperienceService(
                 ["workspace-opened"] = now,
                 ["data-imported"] = useSample ? now : default
             }.Where(pair => pair.Value != default).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase),
-            now);
+            now,
+            ReconciliationLoaded: provisioning?.ReconciliationLoaded ?? true,
+            StrategyLoaded: provisioning?.StrategyRunLoaded ?? true);
 
         await WriteAsync(username, state, ct).ConfigureAwait(false);
         if (useSample)
         {
-            // Load the demo tenant into the real, desk-read stores so the workspace is genuinely
-            // populated, then retain a manifest of what was provisioned. Provisioning is best-effort
-            // and must never block the user from completing onboarding.
-            var provisioning = demoTenantProvisioner is null
-                ? null
-                : await demoTenantProvisioner.ProvisionAsync(ct).ConfigureAwait(false);
             await ProvisionSamplePackAsync(username, provisioning, ct).ConfigureAwait(false);
         }
 
@@ -120,7 +126,9 @@ public sealed class FirstRunExperienceService(
             new RecommendedActionDto(sample ? "Review the sample statement" : "Add starting data", "/accounting/statement-import", "Import and validate a statement or holdings file."),
             new RecommendedActionDto("Run a report", "/reporting/run", "Produce a useful result and keep the evidence.")
         };
-        var sampleWorkspace = sample ? DemoTenantBlueprint.BuildSampleWorkspace() : null;
+        var sampleWorkspace = sample
+            ? DemoTenantBlueprint.BuildSampleWorkspace(state.ReconciliationLoaded ?? true, state.StrategyLoaded ?? true)
+            : null;
         return new FirstRunStatusDto(state.IsComplete, state.Goal, state.StarterKitId, state.DataChoice, workspace, StarterKits, outcomes, recommendations, sampleWorkspace);
     }
 
@@ -187,7 +195,10 @@ public sealed class FirstRunExperienceService(
         bool IsSample,
         string WorkspaceId,
         IReadOnlyDictionary<string, DateTimeOffset> CompletedOutcomes,
-        DateTimeOffset? CompletedAtUtc)
+        DateTimeOffset? CompletedAtUtc,
+        // Null on state written before provisioning-outcome tracking existed; treated as loaded.
+        bool? ReconciliationLoaded = null,
+        bool? StrategyLoaded = null)
     {
         public static FirstRunState Empty { get; } = new(false, null, null, null, false, "primary", new Dictionary<string, DateTimeOffset>(), null);
     }

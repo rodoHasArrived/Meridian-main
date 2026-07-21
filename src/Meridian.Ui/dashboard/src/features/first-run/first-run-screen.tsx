@@ -143,6 +143,10 @@ const formatSignedUsd = (value: number) => `${value >= 0 ? "+" : ""}${formatUsd(
 const pnlToneClass = (value: number) => (value > 0 ? "text-emerald-300" : value < 0 ? "text-red-300" : "text-slate-200");
 
 function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspace; onOpen: (route: string) => void }) {
+  // Desk sections render only when the highlight for that desk is present, i.e. the surface actually
+  // loaded, so the panel never links the user to an empty desk it claimed was populated.
+  const reconciliationLoaded = workspace.highlights.some((highlight) => highlight.label === "Reconciliation");
+  const strategyLoaded = workspace.highlights.some((highlight) => highlight.label === "Strategy");
   return (
     <section className="mt-6 rounded-2xl border border-slate-700 bg-slate-950/40 p-6" aria-label="Sample workspace contents">
       <p className="text-sm text-slate-300">{workspace.summary}</p>
@@ -197,27 +201,29 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
         </div>
 
         <div>
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-200">Reconciliation breaks</h3>
-            <button type="button" className="text-xs text-cyan-300 hover:text-cyan-200" onClick={() => onOpen("/accounting/reconciliation/match")}>Review breaks →</button>
-          </div>
-          <ul className="mt-2 space-y-2">
-            {workspace.reconciliationBreaks.map((item) => (
-              <li key={item.id}>
-                <button type="button" onClick={() => onOpen(item.route)} className="w-full rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left transition hover:border-amber-400">
-                  <span className="flex items-center justify-between gap-2">
-                    <strong className="text-slate-100">{item.title}</strong>
-                    <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-xs font-semibold text-amber-200">{item.severity}</span>
-                  </span>
-                  <span className="mt-1 block text-xs text-slate-400">{item.summary}</span>
-                  <span className="mt-1 block text-xs text-slate-500">Variance {formatUsd(item.variance)} · {item.category}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {reconciliationLoaded ? <>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-200">Reconciliation breaks</h3>
+              <button type="button" className="text-xs text-cyan-300 hover:text-cyan-200" onClick={() => onOpen("/accounting/reconciliation/match")}>Review breaks →</button>
+            </div>
+            <ul className="mt-2 space-y-2">
+              {workspace.reconciliationBreaks.map((item) => (
+                <li key={item.id}>
+                  <button type="button" onClick={() => onOpen(item.route)} className="w-full rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left transition hover:border-amber-400">
+                    <span className="flex items-center justify-between gap-2">
+                      <strong className="text-slate-100">{item.title}</strong>
+                      <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-xs font-semibold text-amber-200">{item.severity}</span>
+                    </span>
+                    <span className="mt-1 block text-xs text-slate-400">{item.summary}</span>
+                    <span className="mt-1 block text-xs text-slate-500">Variance {formatUsd(item.variance)} · {item.category}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </> : null}
+          <div className={`grid gap-2 sm:grid-cols-2 ${reconciliationLoaded ? "mt-3" : ""}`}>
             <ArtifactCard title="Report" artifact={workspace.report} onOpen={onOpen} />
-            <ArtifactCard title="Strategy" artifact={workspace.strategy} onOpen={onOpen} />
+            {strategyLoaded ? <ArtifactCard title="Strategy" artifact={workspace.strategy} onOpen={onOpen} /> : null}
           </div>
         </div>
       </div>

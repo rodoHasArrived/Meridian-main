@@ -58,6 +58,26 @@ public sealed class FirstRunExperienceServiceTests
     }
 
     [Fact]
+    public async Task GetAsync_SampleMode_WhenProvisioningLoadsNothing_OmitsDeskHighlights()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(GetAsync_SampleMode_WhenProvisioningLoadsNothing_OmitsDeskHighlights));
+        var config = new ConfigStore(Path.Combine(artifacts.RootPath, "appsettings.json"));
+        await config.SaveAsync(new AppConfig(DataRoot: artifacts.RootPath));
+        // A provisioner with no stores loads nothing into the desks, so the Ready screen must not
+        // advertise loaded desks the user would then find empty.
+        var service = new FirstRunExperienceService(config, new DemoTenantProvisioner());
+
+        await service.CompleteAsync("local-admin", new CompleteFirstRunRequestDto(
+            "monitor-investments", "personal-portfolio", "sample", true));
+        var status = await service.GetAsync("local-admin");
+
+        status.SampleWorkspace.Should().NotBeNull();
+        status.SampleWorkspace!.Highlights.Should().BeEmpty();
+        // The illustrative sample portfolio preview is still shown.
+        status.SampleWorkspace.Holdings.Should().NotBeEmpty();
+    }
+
+    [Fact]
     public async Task GetAsync_NonSampleMode_OmitsSampleWorkspace()
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(GetAsync_NonSampleMode_OmitsSampleWorkspace));
