@@ -164,7 +164,17 @@ public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDi
         if (await Task.WhenAny(_consumer, drainTimeout).ConfigureAwait(false) == drainTimeout)
         {
             await _cts.CancelAsync().ConfigureAwait(false);
+        }
+
+        try
+        {
             await _consumer.ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // Observe consumer faults here so they surface in logs instead of dying as
+            // unobserved task exceptions; disposal itself must not throw.
+            _logger.LogError(ex, "Quality-monitoring consumer terminated with an unhandled error during disposal");
         }
 
         _cts.Dispose();
