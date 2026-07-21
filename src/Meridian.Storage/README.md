@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-19
+last_reviewed: 2026-07-21
 ---
 
 # src/Meridian.Storage
@@ -188,6 +188,13 @@ version, retained-by actor, and subject scope before append.
 The durable aggregate remains `JournalEntry` with balanced child `LedgerEntry` rows. Candidate
 journals, Asset Operations economic state, projection events, and balance snapshots are not accepted
 as alternate accounting facts.
+Asset Accounting Event Spine persistence enforces the same separation before the journal boundary:
+the initial version contains Expected only, Projected is the next durable version, and every later
+append adds exactly one canonical stage. Drafted, Approved, and Posted therefore cannot be combined
+into one retained version; earlier attestations, Drafted candidate authority, and posted impact
+cannot be removed or rewritten. Approved and Posted evidence must carry the fully scoped approval
+subject that binds event id/version, fund, book, period, basis, approval id, Drafted-candidate
+fingerprint, and tenant/company scope when present; legacy or split subject evidence is rejected.
 
 Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
 rejects assistant or automation-origin close requests before saving the period status, period-close
@@ -202,9 +209,14 @@ artifact that identifies the period, ledger book, reversal/restatement intent, a
 reopen event retains the prior status and clears the hard-close timestamp so subsequent writes still
 flow through the existing soft-close adjustment approval guard.
 
-Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
-schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
-relief projection, approval workflow, and tax-reporting exports remain outside this project.
+Ledger tax-lot state is stored as effective-dated account-scoped policy records plus versioned
+open-lot records in the ledger schema. For atomic Asset Accounting Event Spine disposal, Storage
+loads the effective persisted policy and locks the exact open-lot set for the retained book, account,
+Security Master id, book position, currency, and effective date. It reprojects and verifies the
+caller selections against the authoritative FIFO, LIFO, HIFO, or SpecificId plan before journal/lot
+commit. `AverageCost` can be persisted for other ledger workflows, but this lot-discrete atomic path
+does not support it and fails closed. Approval workflow and tax-reporting exports remain outside
+this project.
 Closed-period trial-balance financials now preserve the dimension envelope available on retained
 journal metadata when building report rows. The ledger book service groups balances by account and
 dimension key, then fills the book fund profile as the default fund dimension, so entity,
@@ -318,6 +330,11 @@ and idempotent replay preserves the original approval actor, reference, rational
 Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment,
 Depreciation/Amortization, and Disposal spine. Store writes require exact prior spine and current
 book-position versions, preserve lifecycle/evidence history, and reject payload drift on replay.
+The store admits Expected and Projected as separate durable versions and then only one next stage per
+version through Drafted, Approved, Posted, Reconciled, and Reported. Financial Operations resolves
+pre-ledger event and evidence authority from the exact current retained book-position snapshot;
+Storage preserves that rebuildable snapshot and its append-only economic-state history, but neither
+is journal truth or a physical Evidence Vault object resolver.
 `V_ledger_027__atomic_tax_lot_posting.sql` adds immutable mutation-batch and tax-lot mutation
 evidence beside versioned lots. `PostgresLedgerJournalStore.AppendAssetPostingAsync` takes
 serializable scope locks, rechecks period and selected-lot CAS, appends the governed journal, creates
@@ -432,7 +449,9 @@ balanced lines, currencies, and dimensions. Atomic acquisition/disposal persiste
 serializable transaction for the journal, scoped tax lots, immutable mutation snapshots, evidence,
 and correction lineage. Every atomic lot carries Security Master plus book-position identity;
 disposal compare-and-swap also rechecks unit cost and journal asset relief against the retained
-selected-lot cost basis.
+selected-lot cost basis. Corrections use a different event id and their own open target period while
+retaining typed lineage to the original immutable journal, original accounting period, accounting basis,
+and prior mutation batch when applicable.
 
 ## Roadmap traceability
 

@@ -2,14 +2,19 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class LedgerEndpoints
 {
+    private static IAssetAccountingEventSpineService? ResolveAssetAccountingEventSpineService(HttpContext context)
+        => context.RequestServices.GetService<IAssetAccountingEventSpineService>();
+
     private static void MapAccountingConfigurationEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
     {
         app.MapGet(UiApiRoutes.LedgerAccountingConfiguration, async (

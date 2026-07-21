@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-21
 ---
 
 # src/Meridian.FinancialOperations
@@ -481,6 +481,22 @@ book, period version, accounting policy, and promoted rule pack, rejects any cli
 and appends Drafted only after Rules Studio returns a balanced approval-gated candidate. Generic
 `AssetAccounting.*` candidate requests are rejected so callers cannot bypass this server-owned
 authority path.
+The service persists Expected and Projected as consecutive but separate append-only spine versions;
+candidate construction appends Drafted as its own version. `AccountingPostingCandidatePostService`
+then retains Approved before journal append and Posted only after the immutable journal can be
+reloaded, with each transition advancing exactly one durable stage. The append-only store rejects a
+combined Drafted/Approved/Posted transition or any rewrite of earlier stage evidence and candidate
+fingerprints.
+Before projection or drafting, the service resolves the exact current retained `BookPositionDto`.
+That snapshot must retain the asserted economic-event identity/version, source, content hash,
+effective dates, Security Master and position scope, and every exact typed retained-evidence
+identity. The position and economic-state history remains a rebuildable pre-ledger view rather than
+accounting truth. This service validates the retained evidence identities embedded in that snapshot;
+it does not resolve physical Evidence Vault documents or artifact bytes.
+Correction events use a new event id and their own open current period. Their typed correction
+reference must resolve the original Posted event/version and match its immutable journal, ledger
+book, original accounting period, accounting basis, and mutation batch when applicable; the correction
+does not replace the original event or journal.
 For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
 position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
 the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
@@ -497,12 +513,20 @@ matches that ledger book, and a period owned by that book before calling the jou
 for the same `(ledger book aggregate, source event)` return the existing journal, while the same
 economic event may still produce separate GAAP, cash, tax, statutory, or primary postings because
 each basis uses its own ledger-book aggregate.
+Canonical asset-posting approval evidence is one exact typed subject binding over event id/version,
+fund, ledger book, period, accounting basis, approval id, canonical Drafted-candidate fingerprint,
+and optional tenant/company scope. Generic links, split evidence, or the legacy event/fund/book-only
+subject cannot approve a different durable candidate by association.
 Canonical asset acquisition and disposal candidates additionally require the Postgres atomic
 tax-lot journal store. Acquisition creates the new lot in the journal transaction; disposal consumes
 explicit selected lot ids under exact expected-version/open-quantity CAS. Both paths retain the
 mutation fingerprint, evidence, relief policy, before/after snapshots, correction lineage, and
 idempotent replay result. The event spine records Approved and Posted only from the durable journal
 identity and balanced posted amounts returned by that boundary.
+For disposal, Storage resolves the effective persisted account policy plus the exact current open
+lots in the posting scope and requires the request to reproduce its authoritative FIFO, LIFO, HIFO,
+or SpecificId plan. The atomic Asset Accounting Event Spine path rejects AverageCost even though
+the general ledger engine can model and persist that method for other workflows.
 For this spine, a same-source journal is a replay only when its deterministic journal identity,
 complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
 lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;

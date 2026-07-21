@@ -938,97 +938,97 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public bool PostingRulesLedgerBookNativeCertified
     {
         get => _postingRulesLedgerBookNativeCertified;
-        set => SetProperty(ref _postingRulesLedgerBookNativeCertified, value);
+        set => SetProductionCertificationFlag(ref _postingRulesLedgerBookNativeCertified, value);
     }
 
     public bool JournalLifecycleLedgerBookNativeCertified
     {
         get => _journalLifecycleLedgerBookNativeCertified;
-        set => SetProperty(ref _journalLifecycleLedgerBookNativeCertified, value);
+        set => SetProductionCertificationFlag(ref _journalLifecycleLedgerBookNativeCertified, value);
     }
 
     public bool CloseReportingLedgerBookNativeCertified
     {
         get => _closeReportingLedgerBookNativeCertified;
-        set => SetProperty(ref _closeReportingLedgerBookNativeCertified, value);
+        set => SetProductionCertificationFlag(ref _closeReportingLedgerBookNativeCertified, value);
     }
 
     public bool ClosePlanConfigurationLedgerBookNativeCertified
     {
         get => _closePlanConfigurationLedgerBookNativeCertified;
-        set => SetProperty(ref _closePlanConfigurationLedgerBookNativeCertified, value);
+        set => SetProductionCertificationFlag(ref _closePlanConfigurationLedgerBookNativeCertified, value);
     }
 
     public bool ExternalGlLedgerBookNativeCertified
     {
         get => _externalGlLedgerBookNativeCertified;
-        set => SetProperty(ref _externalGlLedgerBookNativeCertified, value);
+        set => SetProductionCertificationFlag(ref _externalGlLedgerBookNativeCertified, value);
     }
 
     public bool ReconciliationLedgerBookNativeCertified
     {
         get => _reconciliationLedgerBookNativeCertified;
-        set => SetProperty(ref _reconciliationLedgerBookNativeCertified, value);
+        set => SetProductionCertificationFlag(ref _reconciliationLedgerBookNativeCertified, value);
     }
 
     public bool DirectLendingLedgerBookNativeCertified
     {
         get => _directLendingLedgerBookNativeCertified;
-        set => SetProperty(ref _directLendingLedgerBookNativeCertified, value);
+        set => SetProductionCertificationFlag(ref _directLendingLedgerBookNativeCertified, value);
     }
 
     public bool StrategyLedgerReadLedgerBookNativeCertified
     {
         get => _strategyLedgerReadLedgerBookNativeCertified;
-        set => SetProperty(ref _strategyLedgerReadLedgerBookNativeCertified, value);
+        set => SetProductionCertificationFlag(ref _strategyLedgerReadLedgerBookNativeCertified, value);
     }
 
     public bool PeriodReportDimensionQueriesCertified
     {
         get => _periodReportDimensionQueriesCertified;
-        set => SetProperty(ref _periodReportDimensionQueriesCertified, value);
+        set => SetProductionCertificationFlag(ref _periodReportDimensionQueriesCertified, value);
     }
 
     public bool CrossPeriodReportDimensionQueriesCertified
     {
         get => _crossPeriodReportDimensionQueriesCertified;
-        set => SetProperty(ref _crossPeriodReportDimensionQueriesCertified, value);
+        set => SetProductionCertificationFlag(ref _crossPeriodReportDimensionQueriesCertified, value);
     }
 
     public bool JournalQueryDimensionFiltersCertified
     {
         get => _journalQueryDimensionFiltersCertified;
-        set => SetProperty(ref _journalQueryDimensionFiltersCertified, value);
+        set => SetProductionCertificationFlag(ref _journalQueryDimensionFiltersCertified, value);
     }
 
     public bool ExternalExportDimensionMappingCertified
     {
         get => _externalExportDimensionMappingCertified;
-        set => SetProperty(ref _externalExportDimensionMappingCertified, value);
+        set => SetProductionCertificationFlag(ref _externalExportDimensionMappingCertified, value);
     }
 
     public bool LedgerLineDimensionsPersistedCertified
     {
         get => _ledgerLineDimensionsPersistedCertified;
-        set => SetProperty(ref _ledgerLineDimensionsPersistedCertified, value);
+        set => SetProductionCertificationFlag(ref _ledgerLineDimensionsPersistedCertified, value);
     }
 
     public bool TrialBalanceDimensionFiltersCertified
     {
         get => _trialBalanceDimensionFiltersCertified;
-        set => SetProperty(ref _trialBalanceDimensionFiltersCertified, value);
+        set => SetProductionCertificationFlag(ref _trialBalanceDimensionFiltersCertified, value);
     }
 
     public bool ReportPackageDimensionProvenanceCertified
     {
         get => _reportPackageDimensionProvenanceCertified;
-        set => SetProperty(ref _reportPackageDimensionProvenanceCertified, value);
+        set => SetProductionCertificationFlag(ref _reportPackageDimensionProvenanceCertified, value);
     }
 
-    public bool CanSaveProductionCertificationProfile =>
-        _activeFundProfile is not null
-        && _productionCertificationProfileStore is not null
-        && NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText).Count > 0;
+    public bool CanSaveProductionCertificationProfile => false;
+
+    public string ProductionCertificationSaveGuidanceText
+        => "This editor cannot create, change, or revoke production certification. URI and reference text is diagnostic only; an authorized server-side operation with complete typed retained evidence is required.";
 
     public string TenantAdministrationProfileStatusText
     {
@@ -1942,82 +1942,26 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         }
     }
 
-    public async Task SaveProductionCertificationProfileAsync(CancellationToken ct = default)
+    public Task SaveProductionCertificationProfileAsync(CancellationToken ct = default)
     {
         if (_activeFundProfile is null)
         {
             ProductionCertificationProfileStatusText = "Select a fund-linked context before saving production certification controls.";
             StatusText = ProductionCertificationProfileStatusText;
-            return;
+            return Task.CompletedTask;
         }
 
         if (_productionCertificationProfileStore is null)
         {
             ProductionCertificationProfileStatusText = "Production certification profile store is not registered for this desktop session.";
             StatusText = ProductionCertificationProfileStatusText;
-            return;
+            return Task.CompletedTask;
         }
 
-        var retainedEvidence = NormalizeTenantAdministrationEvidence(ProductionCertificationEvidenceText);
-        if (retainedEvidence.Count == 0)
-        {
-            ProductionCertificationProfileStatusText = "Retained evidence is required before saving production certification controls.";
-            StatusText = ProductionCertificationProfileStatusText;
-            NotifyProductionCertificationSaveStateChanged();
-            return;
-        }
-
-        try
-        {
-            var correlationId = $"wpf-accounting-production-certification-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
-            var workflowCertificationArtifacts = BuildWorkflowCertificationArtifacts(retainedEvidence, correlationId);
-            var dimensionalCertificationArtifacts = BuildDimensionalCertificationArtifacts(retainedEvidence, correlationId);
-            var tenantAdminCertificationArtifacts = BuildTenantAdminCertificationArtifacts(retainedEvidence, correlationId);
-            var profile = new AccountingProductionCertificationProfileDto(
-                _activeFundProfile.FundProfileId,
-                _configuration?.LedgerBookId,
-                PostingRulesLedgerBookNativeCertified,
-                JournalLifecycleLedgerBookNativeCertified,
-                CloseReportingLedgerBookNativeCertified,
-                ExternalGlLedgerBookNativeCertified,
-                PeriodReportDimensionQueriesCertified,
-                CrossPeriodReportDimensionQueriesCertified,
-                JournalQueryDimensionFiltersCertified,
-                ExternalExportDimensionMappingCertified,
-                DateTimeOffset.UtcNow,
-                DefaultLifecycleActor,
-                retainedEvidence,
-                correlationId,
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
-                ReconciliationLedgerBookNativeCertified,
-                DirectLendingLedgerBookNativeCertified,
-                StrategyLedgerReadLedgerBookNativeCertified,
-                LedgerLineDimensionsPersistedCertified,
-                TrialBalanceDimensionFiltersCertified,
-                ReportPackageDimensionProvenanceCertified,
-                ClosePlanConfigurationLedgerBookNativeCertified,
-                WorkflowCertificationArtifacts: workflowCertificationArtifacts,
-                DimensionalCertificationArtifacts: dimensionalCertificationArtifacts,
-                TenantAdminCertificationArtifacts: tenantAdminCertificationArtifacts);
-
-            var saved = await _productionCertificationProfileStore.UpsertAsync(
-                new AccountingProductionCertificationProfileUpsertRequestDto(
-                    profile,
-                    DefaultLifecycleActor,
-                    correlationId,
-                    retainedEvidence),
-                ct).ConfigureAwait(false);
-
-            ApplyProductionCertificationProfile(saved, "Production certification profile saved; readiness refreshed from retained book and dimension controls.");
-            await RefreshProductionReadinessAsync(ct).ConfigureAwait(false);
-            StatusText = ProductionCertificationProfileStatusText;
-        }
-        catch (Exception ex)
-        {
-            ProductionCertificationProfileStatusText = $"Production certification profile save failed: {ex.Message}";
-            StatusText = ProductionCertificationProfileStatusText;
-        }
+        ProductionCertificationProfileStatusText = ProductionCertificationSaveGuidanceText;
+        StatusText = ProductionCertificationProfileStatusText;
+        NotifyProductionCertificationSaveStateChanged();
+        return Task.CompletedTask;
     }
 
     public async Task SaveManualJournalDraftAsync(CancellationToken ct = default)
@@ -2998,11 +2942,14 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private async Task LoadProductionCertificationProfileAsync(CancellationToken ct)
     {
+        ProductionCertificationEvidenceText = string.Empty;
+        ClearProductionCertificationSelections();
         if (_activeFundProfile is null)
         {
             ProductionCertificationProfileStatusText = "Locked until a fund context is selected.";
             ProductionCertificationProfileScopeText = "Fund and ledger-book scope require a fund context.";
             ProductionCertificationProfileUpdatedText = "No retained production certification profile loaded.";
+            NotifyProductionCertificationSaveStateChanged();
             return;
         }
 
@@ -3027,10 +2974,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             if (profile is null)
             {
                 ProductionCertificationProfileStatusText = "No retained production certification profile exists for the active accounting scope.";
-                ProductionCertificationProfileUpdatedText = "Save book-native and dimensional controls with retained evidence before production certification.";
-                ProductionCertificationEvidenceText = ledgerBookId.HasValue
-                    ? $"evidence://ledger-book/{ledgerBookId:D}/production-certification"
-                    : $"evidence://fund/{_activeFundProfile.FundProfileId}/production-certification";
+                ProductionCertificationProfileUpdatedText = "Production certification changes require an authorized server-side operation with complete typed retained evidence.";
+                ProductionCertificationEvidenceText = string.Empty;
                 NotifyProductionCertificationSaveStateChanged();
                 return;
             }
@@ -3202,7 +3147,35 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private void NotifyProductionCertificationSaveStateChanged()
     {
         RaisePropertyChanged(nameof(CanSaveProductionCertificationProfile));
+        RaisePropertyChanged(nameof(ProductionCertificationSaveGuidanceText));
         SaveProductionCertificationProfileCommand.NotifyCanExecuteChanged();
+    }
+
+    private void SetProductionCertificationFlag(ref bool field, bool value)
+    {
+        if (SetProperty(ref field, value))
+        {
+            NotifyProductionCertificationSaveStateChanged();
+        }
+    }
+
+    private void ClearProductionCertificationSelections()
+    {
+        PostingRulesLedgerBookNativeCertified = false;
+        JournalLifecycleLedgerBookNativeCertified = false;
+        CloseReportingLedgerBookNativeCertified = false;
+        ClosePlanConfigurationLedgerBookNativeCertified = false;
+        ExternalGlLedgerBookNativeCertified = false;
+        ReconciliationLedgerBookNativeCertified = false;
+        DirectLendingLedgerBookNativeCertified = false;
+        StrategyLedgerReadLedgerBookNativeCertified = false;
+        PeriodReportDimensionQueriesCertified = false;
+        CrossPeriodReportDimensionQueriesCertified = false;
+        JournalQueryDimensionFiltersCertified = false;
+        ExternalExportDimensionMappingCertified = false;
+        LedgerLineDimensionsPersistedCertified = false;
+        TrialBalanceDimensionFiltersCertified = false;
+        ReportPackageDimensionProvenanceCertified = false;
     }
 
     private IReadOnlyList<AccountingApprovalQueueConfigurationDto> BuildApprovalQueueConfigurations()
@@ -4986,204 +4959,6 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 .Where(static item => !string.IsNullOrWhiteSpace(item))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-
-    private IReadOnlyList<AccountingWorkflowCertificationArtifactDto> BuildWorkflowCertificationArtifacts(
-        IReadOnlyList<string> evidence,
-        string correlationId)
-    {
-        if (_activeFundProfile is null || _configuration?.LedgerBookId is not { } ledgerBookId)
-        {
-            return [];
-        }
-
-        var lanes = new[]
-            {
-                BuildWorkflowCertificationLane(PostingRulesLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.PostingRules, evidence, "posting-candidate"),
-                BuildWorkflowCertificationLane(JournalLifecycleLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.JournalLifecycle, evidence, "journal-lifecycle"),
-                BuildWorkflowCertificationLane(CloseReportingLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.CloseReporting, evidence, "close-reporting"),
-                BuildWorkflowCertificationLane(ClosePlanConfigurationLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.ClosePlanConfiguration, evidence, "close-plan-configuration"),
-                BuildWorkflowCertificationLane(ExternalGlLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.ExternalGl, evidence, "external-gl"),
-                BuildWorkflowCertificationLane(ReconciliationLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.Reconciliation, evidence, "reconciliation"),
-                BuildWorkflowCertificationLane(DirectLendingLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection, evidence, "direct-lending"),
-                BuildWorkflowCertificationLane(StrategyLedgerReadLedgerBookNativeCertified, AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads, evidence, "strategy-ledger")
-            }
-            .OfType<AccountingWorkflowCertificationLaneDto>()
-            .ToArray();
-
-        if (lanes.Length == 0)
-        {
-            return [];
-        }
-
-        return
-        [
-            new AccountingWorkflowCertificationArtifactDto(
-                $"{correlationId}-workflow",
-                AccountingCertificationArtifactStatusDto.Certified,
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
-                _activeFundProfile.FundProfileId,
-                ledgerBookId,
-                DefaultLifecycleActor,
-                DateTimeOffset.UtcNow,
-                "wpf-accounting-configure",
-                lanes,
-                evidence,
-                CorrelationId: correlationId)
-        ];
-    }
-
-    private IReadOnlyList<AccountingDimensionalCertificationArtifactDto> BuildDimensionalCertificationArtifacts(
-        IReadOnlyList<string> evidence,
-        string correlationId)
-    {
-        if (_activeFundProfile is null || _configuration?.LedgerBookId is not { } ledgerBookId)
-        {
-            return [];
-        }
-
-        var lanes = new[]
-            {
-                BuildDimensionalCertificationLane(LedgerLineDimensionsPersistedCertified, AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence, evidence, "ledger-line"),
-                BuildDimensionalCertificationLane(TrialBalanceDimensionFiltersCertified, AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters, evidence, "trial-balance-filter"),
-                BuildDimensionalCertificationLane(PeriodReportDimensionQueriesCertified, AccountingDimensionalCertificationLaneKindDto.PeriodReports, evidence, "period-report"),
-                BuildDimensionalCertificationLane(CrossPeriodReportDimensionQueriesCertified, AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports, evidence, "cross-period"),
-                BuildDimensionalCertificationLane(JournalQueryDimensionFiltersCertified, AccountingDimensionalCertificationLaneKindDto.JournalFilters, evidence, "journal-query"),
-                BuildDimensionalCertificationLane(ReportPackageDimensionProvenanceCertified, AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance, evidence, "report-package-provenance"),
-                BuildDimensionalCertificationLane(ExternalExportDimensionMappingCertified, AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings, evidence, "external-export")
-            }
-            .OfType<AccountingDimensionalCertificationLaneDto>()
-            .ToArray();
-
-        if (lanes.Length == 0)
-        {
-            return [];
-        }
-
-        return
-        [
-            new AccountingDimensionalCertificationArtifactDto(
-                $"{correlationId}-dimensions",
-                AccountingCertificationArtifactStatusDto.Certified,
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
-                _activeFundProfile.FundProfileId,
-                ledgerBookId,
-                "canonical-production",
-                DefaultLifecycleActor,
-                DateTimeOffset.UtcNow,
-                "wpf-accounting-configure",
-                lanes,
-                evidence,
-                CorrelationId: correlationId)
-        ];
-    }
-
-    private static AccountingWorkflowCertificationLaneDto? BuildWorkflowCertificationLane(
-        bool certified,
-        AccountingWorkflowCertificationLaneKindDto kind,
-        IReadOnlyList<string> evidence,
-        string marker)
-        => certified
-            ? new AccountingWorkflowCertificationLaneDto(
-                kind,
-                AccountingCertificationArtifactLaneStatusDto.Passed,
-                FilterCertificationLaneEvidence(evidence, marker))
-            : null;
-
-    private static AccountingDimensionalCertificationLaneDto? BuildDimensionalCertificationLane(
-        bool certified,
-        AccountingDimensionalCertificationLaneKindDto kind,
-        IReadOnlyList<string> evidence,
-        string marker)
-        => certified
-            ? new AccountingDimensionalCertificationLaneDto(
-                kind,
-                AccountingCertificationArtifactLaneStatusDto.Passed,
-                FilterCertificationLaneEvidence(evidence, marker))
-            : null;
-
-    private IReadOnlyList<AccountingTenantAdminCertificationArtifactDto> BuildTenantAdminCertificationArtifacts(
-        IReadOnlyList<string> evidence,
-        string correlationId)
-    {
-        if (_activeFundProfile is null)
-        {
-            return [];
-        }
-
-        var lanes = new[]
-            {
-                BuildTenantAdminCertificationLane(TenantScopeConfigured, AccountingTenantAdminCertificationLaneKindDto.TenantScope, evidence, "tenant-scope"),
-                BuildTenantAdminCertificationLane(AdminRoleProfileConfigured, AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile, evidence, "admin-role"),
-                BuildTenantAdminCertificationLane(ScopedAccessPoliciesConfigured, AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies, evidence, "scoped-access"),
-                BuildTenantAdminCertificationLane(ReportingGroupsConfigured, AccountingTenantAdminCertificationLaneKindDto.ReportingGroups, evidence, "reporting-group"),
-                BuildTenantAdminCertificationLane(AccountingAdminSurfaceConfigured, AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface, evidence, "accounting-admin-surface"),
-                BuildTenantAdminCertificationLane(false, AccountingTenantAdminCertificationLaneKindDto.BrowserAccountingAdminSurface, evidence, "browser-accounting-admin"),
-                BuildTenantAdminCertificationLane(WpfAccountingAdminSurfaceConfigured, AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface, evidence, "wpf-admin-studio"),
-                BuildTenantAdminCertificationLane(ChartAdministrationStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio, evidence, "chart-administration"),
-                BuildTenantAdminCertificationLane(RuleTestPromotionStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio, evidence, "rule-test-promotion"),
-                BuildTenantAdminCertificationLane(CloseSetupStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio, evidence, "close-setup"),
-                BuildTenantAdminCertificationLane(ProviderMappingStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio, evidence, "provider-mapping"),
-                BuildTenantAdminCertificationLane(TenantCompanyReportGroupSetupStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio, evidence, "tenant-company-report-group"),
-                BuildTenantAdminCertificationLane(AuditReviewToolingConfigured, AccountingTenantAdminCertificationLaneKindDto.AuditReviewTooling, evidence, "audit-review"),
-                BuildTenantAdminCertificationLane(BulkImportExportSafeguardsConfigured, AccountingTenantAdminCertificationLaneKindDto.BulkImportExportSafeguards, evidence, "bulk-import-export"),
-                BuildTenantAdminCertificationLane(PerformanceValidationConfigured, AccountingTenantAdminCertificationLaneKindDto.PerformanceValidation, evidence, "performance-validation"),
-                BuildTenantAdminCertificationLane(DisasterRecoveryRunbookConfigured, AccountingTenantAdminCertificationLaneKindDto.DisasterRecoveryRunbook, evidence, "disaster-recovery"),
-                BuildTenantAdminCertificationLane(LedgerBookAdministrationStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio, evidence, "ledger-book-administration"),
-                BuildTenantAdminCertificationLane(PostingRuleAuthoringStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio, evidence, "posting-rule-authoring"),
-                BuildTenantAdminCertificationLane(ApprovalQueueStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio, evidence, "approval-queue"),
-                BuildTenantAdminCertificationLane(DimensionMappingStudioConfigured, AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio, evidence, "dimension-mapping"),
-                BuildTenantAdminCertificationLane(ImplementationSandboxConfigured, AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox, evidence, "implementation-sandbox")
-            }
-            .OfType<AccountingTenantAdminCertificationLaneDto>()
-            .ToArray();
-
-        if (lanes.Length == 0)
-        {
-            return [];
-        }
-
-        return
-        [
-            new AccountingTenantAdminCertificationArtifactDto(
-                $"{correlationId}-tenant-admin",
-                AccountingCertificationArtifactStatusDto.Certified,
-                ResolveTenantAdministrationTenantId(),
-                ResolveTenantAdministrationCompanyId(),
-                _activeFundProfile.FundProfileId,
-                _configuration?.LedgerBookId,
-                DefaultLifecycleActor,
-                DateTimeOffset.UtcNow,
-                "wpf-accounting-configure",
-                lanes,
-                evidence,
-                CorrelationId: correlationId)
-        ];
-    }
-
-    private static AccountingTenantAdminCertificationLaneDto? BuildTenantAdminCertificationLane(
-        bool certified,
-        AccountingTenantAdminCertificationLaneKindDto kind,
-        IReadOnlyList<string> evidence,
-        string marker)
-        => certified
-            ? new AccountingTenantAdminCertificationLaneDto(
-                kind,
-                AccountingCertificationArtifactLaneStatusDto.Passed,
-                FilterCertificationLaneEvidence(evidence, marker))
-            : null;
-
-    private static IReadOnlyList<string> FilterCertificationLaneEvidence(
-        IReadOnlyList<string> evidence,
-        string marker)
-    {
-        var scoped = evidence
-            .Where(reference => reference.Contains(marker, StringComparison.OrdinalIgnoreCase))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        return scoped.Length > 0 ? scoped : evidence;
-    }
 
     private void ApplyExternalGlMappingProfileDraft(ExternalGlMappingProfileDto profile)
     {

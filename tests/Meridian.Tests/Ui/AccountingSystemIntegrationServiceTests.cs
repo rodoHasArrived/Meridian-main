@@ -549,11 +549,20 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ClosePlanConfigurationLedgerBookNativeCertified: true,
                 LedgerBookWorkflowEvidenceLinks: [$"evidence://ledger-book/{otherLedgerBookId:D}/workflow-certification/full"]));
 
+        mismatchedEvidence.LedgerBookWorkflows.Should().NotBeNull();
+        mismatchedEvidence.LedgerBookWorkflows!.HasRetainedEvidence.Should().BeFalse();
+        mismatchedEvidence.LedgerBookWorkflows.CompletedControlCount.Should().Be(1);
         mismatchedEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "ledger-books.workflow-evidence-scope-mismatch" &&
+            issue.Code == "ledger-books.workflow-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        mismatchedEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
             issue.EvidenceReferences.Contains($"evidence://ledger-book/{otherLedgerBookId:D}/workflow-certification/full"));
+        mismatchedEvidence.Issues.Should().NotContain(issue =>
+            issue.Code == "ledger-books.workflow-evidence-scope-mismatch");
 
         var extendedTokenEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
@@ -570,12 +579,17 @@ public sealed class AccountingSystemIntegrationServiceTests
                 LedgerBookWorkflowEvidenceLinks: [$"evidence://ledger-book/{ledgerBookId:D}ffff/workflow-certification/full"]));
 
         extendedTokenEvidence.LedgerBookWorkflows.Should().NotBeNull();
+        extendedTokenEvidence.LedgerBookWorkflows!.HasRetainedEvidence.Should().BeFalse();
         extendedTokenEvidence.LedgerBookWorkflows!.HasLedgerBookScopedEvidence.Should().BeFalse();
         extendedTokenEvidence.LedgerBookWorkflows.CompletedControlCount.Should().Be(1);
         extendedTokenEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "ledger-books.workflow-evidence-scope-mismatch" &&
+            issue.Code == "ledger-books.workflow-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        extendedTokenEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
             issue.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}ffff/workflow-certification/full"));
 
         var incidentalGuidEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
@@ -593,12 +607,17 @@ public sealed class AccountingSystemIntegrationServiceTests
                 LedgerBookWorkflowEvidenceLinks: [$"evidence://workflow-certification/full?selected={ledgerBookId:D}"]));
 
         incidentalGuidEvidence.LedgerBookWorkflows.Should().NotBeNull();
+        incidentalGuidEvidence.LedgerBookWorkflows!.HasRetainedEvidence.Should().BeFalse();
         incidentalGuidEvidence.LedgerBookWorkflows!.HasLedgerBookScopedEvidence.Should().BeFalse();
         incidentalGuidEvidence.LedgerBookWorkflows.CompletedControlCount.Should().Be(1);
         incidentalGuidEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "ledger-books.workflow-evidence-scope-mismatch" &&
+            issue.Code == "ledger-books.workflow-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        incidentalGuidEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
             issue.EvidenceReferences.Contains($"evidence://workflow-certification/full?selected={ledgerBookId:D}"));
         incidentalGuidEvidence.Issues.Should().Contain(issue =>
             issue.Code == "ledger-books.posting-rules-evidence-missing" &&
@@ -619,8 +638,14 @@ public sealed class AccountingSystemIntegrationServiceTests
                 LedgerBookWorkflowEvidenceLinks: [$"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification"]));
 
         partialEvidence.LedgerBookWorkflows.Should().NotBeNull();
-        partialEvidence.LedgerBookWorkflows!.CompletedControlCount.Should().Be(3);
-        partialEvidence.Issues.Should().NotContain(issue => issue.Code == "ledger-books.posting-rules-evidence-missing");
+        partialEvidence.LedgerBookWorkflows!.HasRetainedEvidence.Should().BeFalse();
+        partialEvidence.LedgerBookWorkflows.CompletedControlCount.Should().Be(1);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.workflow-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "ledger-books.posting-rules-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "ledger-books.journal-lifecycle-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks);
@@ -645,8 +670,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         partialEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.PostingRules &&
             component.EvidenceReferences.Contains($"evidence://ledger-book/{ledgerBookId:D}/posting-rules/candidate-certification") &&
-            component.Issues.All(issue => issue.Code != "posting-rules.ledger-book-native-not-certified" &&
-                                          issue.Code != "posting-rules.ledger-book-native-evidence-missing"));
+            component.Issues.Any(issue => issue.Code == "posting-rules.ledger-book-native-evidence-missing"));
         partialEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.JournalLifecycle &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked &&
@@ -736,12 +760,15 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         blocked.DimensionalReporting.Should().NotBeNull();
         blocked.DimensionalReporting!.LedgerBookId.Should().Be(ledgerBookId);
+        blocked.DimensionalReporting.HasRetainedEvidence.Should().BeFalse();
         blocked.DimensionalReporting.CompletedControlCount.Should().Be(1);
         blocked.DimensionalReporting.RequiredControlCount.Should().Be(10);
         blocked.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.reporting-evidence-scope-mismatch" &&
+            issue.Code == "dimensions.reporting-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        blocked.Issues.Should().NotContain(issue =>
+            issue.Code == "dimensions.reporting-evidence-scope-mismatch");
         blocked.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
@@ -784,12 +811,17 @@ public sealed class AccountingSystemIntegrationServiceTests
                 DimensionalReportingEvidenceLinks: [$"evidence://dimensions/report-query-certification/full?selected={ledgerBookId:D}"]));
 
         incidentalGuidEvidence.DimensionalReporting.Should().NotBeNull();
+        incidentalGuidEvidence.DimensionalReporting!.HasRetainedEvidence.Should().BeFalse();
         incidentalGuidEvidence.DimensionalReporting!.HasLedgerBookScopedEvidence.Should().BeFalse();
         incidentalGuidEvidence.DimensionalReporting.CompletedControlCount.Should().Be(1);
         incidentalGuidEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.reporting-evidence-scope-mismatch" &&
+            issue.Code == "dimensions.reporting-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        incidentalGuidEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.reporting-legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
             issue.EvidenceReferences.Contains($"evidence://dimensions/report-query-certification/full?selected={ledgerBookId:D}"));
         incidentalGuidEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.period-reports-evidence-missing" &&
@@ -809,13 +841,16 @@ public sealed class AccountingSystemIntegrationServiceTests
                 DimensionalReportingEvidenceLinks: [$"evidence://ledger-book/{ledgerBookId:D}/dimensions/period-reports/trial-balance"]));
 
         partialEvidence.DimensionalReporting.Should().NotBeNull();
-        partialEvidence.DimensionalReporting!.CompletedControlCount.Should().Be(2);
+        partialEvidence.DimensionalReporting!.HasRetainedEvidence.Should().BeFalse();
+        partialEvidence.DimensionalReporting.CompletedControlCount.Should().Be(1);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "dimensions.reporting-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
-        partialEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.reporting-dimension-scope-evidence-missing" &&
-            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
+        partialEvidence.Issues.Should().NotContain(issue =>
+            issue.Code == "dimensions.reporting-dimension-scope-evidence-missing");
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.cross-period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting);
@@ -859,19 +894,23 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         splitRolloutEvidence.DimensionalReporting.Should().NotBeNull();
+        splitRolloutEvidence.DimensionalReporting!.HasRetainedEvidence.Should().BeFalse();
+        splitRolloutEvidence.DimensionalReporting.CompletedControlCount.Should().Be(1);
         splitRolloutEvidence.DimensionalReporting!.RequiredControlCount.Should().Be(10);
         splitRolloutEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.reporting-legacy-full-token-evidence" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
         splitRolloutEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.period-reports-evidence-rollout-scope-mismatch" &&
+            issue.Code == "dimensions.period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         splitRolloutEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.report-package-provenance-evidence-rollout-scope-mismatch" &&
+            issue.Code == "dimensions.report-package-provenance-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        splitRolloutEvidence.Issues.Should().NotContain(issue =>
+            issue.Code.EndsWith("evidence-rollout-scope-mismatch", StringComparison.OrdinalIgnoreCase));
         splitRolloutEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
@@ -895,19 +934,23 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         extendedRolloutTokenEvidence.DimensionalReporting.Should().NotBeNull();
+        extendedRolloutTokenEvidence.DimensionalReporting!.HasRetainedEvidence.Should().BeFalse();
+        extendedRolloutTokenEvidence.DimensionalReporting.CompletedControlCount.Should().Be(1);
         extendedRolloutTokenEvidence.DimensionalReporting!.RequiredControlCount.Should().Be(10);
         extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
             issue.Code == "dimensions.reporting-legacy-full-token-evidence" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
         extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.period-reports-evidence-rollout-scope-mismatch" &&
+            issue.Code == "dimensions.period-reports-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
         extendedRolloutTokenEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "dimensions.report-package-provenance-evidence-rollout-scope-mismatch" &&
+            issue.Code == "dimensions.report-package-provenance-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        extendedRolloutTokenEvidence.Issues.Should().NotContain(issue =>
+            issue.Code.EndsWith("evidence-rollout-scope-mismatch", StringComparison.OrdinalIgnoreCase));
         extendedRolloutTokenEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
@@ -954,7 +997,7 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
-    public async Task ProductionReadinessService_UsesCertifiedReportPackageDimensionScopeAsProvenanceEvidence()
+    public async Task ProductionReadinessService_RequiresTypedDimensionalArtifactInsteadOfInferringReportPackageProvenance()
     {
         var services = new ServiceCollection();
         var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
@@ -986,18 +1029,17 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         readiness.DimensionalReporting.Should().NotBeNull();
-        reportPackageService.ListCalls.Should().Be(1);
-        readiness.DimensionalReporting!.ReportPackageDimensionProvenanceCertified.Should().BeTrue();
-        readiness.DimensionalReporting.HasReportPackageDimensionProvenanceEvidence.Should().BeTrue();
-        readiness.DimensionalReporting.CompletedControlCount.Should().Be(10);
-        readiness.DimensionalReporting.EvidenceReferences.Should().Contain(reference =>
-            reference.Contains($"ledger-book/{ledgerBookId:D}", StringComparison.OrdinalIgnoreCase) &&
-            reference.Contains("report-package-provenance", StringComparison.OrdinalIgnoreCase) &&
-            reference.Contains("dimension-scope/dimension-scope-alpha", StringComparison.OrdinalIgnoreCase));
-        readiness.Issues.Should().NotContain(issue =>
+        reportPackageService.ListCalls.Should().Be(0);
+        readiness.DimensionalReporting!.HasRetainedEvidence.Should().BeFalse();
+        readiness.DimensionalReporting.ReportPackageDimensionProvenanceCertified.Should().BeFalse();
+        readiness.DimensionalReporting.HasReportPackageDimensionProvenanceEvidence.Should().BeFalse();
+        readiness.DimensionalReporting.CompletedControlCount.Should().Be(1);
+        readiness.Issues.Should().Contain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
-            (issue.Code == "dimensions.report-package-provenance-not-certified" ||
-             issue.Code == "dimensions.report-package-provenance-evidence-missing"));
+            issue.Code == "dimensions.reporting-evidence-missing");
+        readiness.Issues.Should().Contain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            issue.Code == "dimensions.report-package-provenance-not-certified");
 
         var draftPackageServices = new ServiceCollection();
         var draftReportPackageService = new StubAccountingReportPackageService(
@@ -1025,11 +1067,45 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         draftReadiness.DimensionalReporting.Should().NotBeNull();
-        draftReportPackageService.ListCalls.Should().Be(1);
+        draftReportPackageService.ListCalls.Should().Be(0);
+        draftReadiness.DimensionalReporting!.HasRetainedEvidence.Should().BeFalse();
         draftReadiness.DimensionalReporting!.ReportPackageDimensionProvenanceCertified.Should().BeFalse();
         draftReadiness.Issues.Should().Contain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
             issue.Code == "dimensions.report-package-provenance-not-certified");
+
+        var dimensionalEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/dimensional-certification/dimension-scope/dimension-scope-alpha";
+        var dimensionalArtifact = BuildDimensionalCertificationArtifact(
+            ledgerBookId,
+            dimensionalEvidence,
+            dimensionScope: "dimension-scope-alpha");
+        var typedReadiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
+            .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
+                FundProfileId: "default-fund",
+                LedgerBookId: ledgerBookId,
+                DimensionalCertificationArtifacts: [dimensionalArtifact],
+                RetainedEvidence:
+                [
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                        dimensionalArtifact.CertificationId,
+                        "report-package-dimensional")
+                ]));
+
+        reportPackageService.ListCalls.Should().Be(0);
+        typedReadiness.DimensionalReporting.Should().NotBeNull();
+        typedReadiness.DimensionalReporting!.HasRetainedEvidence.Should().BeTrue();
+        typedReadiness.DimensionalReporting.ReportPackageDimensionProvenanceCertified.Should().BeTrue();
+        typedReadiness.DimensionalReporting.HasReportPackageDimensionProvenanceEvidence.Should().BeTrue();
+        typedReadiness.DimensionalReporting.CompletedControlCount.Should().Be(10);
+        typedReadiness.DimensionalReporting.EvidenceReferences.Should().Contain(dimensionalEvidence);
+        typedReadiness.Issues.Should().NotContain(issue =>
+            issue.Area == AccountingProductionReadinessAreaDto.DimensionalAccounting &&
+            (issue.Code == "dimensions.report-package-provenance-not-certified" ||
+             issue.Code == "dimensions.report-package-provenance-evidence-missing"));
     }
 
     [Fact]
@@ -1083,9 +1159,15 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         partialEvidence.TenantAdministration.Should().NotBeNull();
-        partialEvidence.TenantAdministration!.CompletedControlCount.Should().Be(3);
-        partialEvidence.TenantAdministration.HasTenantCompanyScopedEvidence.Should().BeTrue();
-        partialEvidence.Issues.Should().NotContain(issue => issue.Code == "tenant-admin.role-profile-evidence-missing");
+        partialEvidence.TenantAdministration!.CompletedControlCount.Should().Be(2);
+        partialEvidence.TenantAdministration.HasRetainedEvidence.Should().BeFalse();
+        partialEvidence.TenantAdministration.HasTenantCompanyScopedEvidence.Should().BeFalse();
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
+        partialEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.role-profile-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
         partialEvidence.Issues.Should().NotContain(issue => issue.Code == "tenant-admin.evidence-scope-mismatch");
         partialEvidence.Issues.Should().Contain(issue =>
             issue.Code == "tenant-admin.tenant-scope-evidence-missing" &&
@@ -1217,13 +1299,20 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         readiness.TenantAdministration.Should().NotBeNull();
+        readiness.TenantAdministration!.HasRetainedEvidence.Should().BeFalse();
         readiness.TenantAdministration!.HasTenantCompanyScopedEvidence.Should().BeFalse();
         readiness.TenantAdministration.CompletedControlCount.Should().Be(2);
         readiness.Issues.Should().Contain(issue =>
-            issue.Code == "tenant-admin.evidence-scope-mismatch" &&
+            issue.Code == "tenant-admin.evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        readiness.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
             issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-beta/tenant-admin/full"));
+        readiness.Issues.Should().NotContain(issue =>
+            issue.Code == "tenant-admin.evidence-scope-mismatch");
         readiness.Issues.Should().Contain(issue =>
             issue.Code == "tenant-admin.role-profile-evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
@@ -1264,13 +1353,20 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         extendedTokenEvidence.TenantAdministration.Should().NotBeNull();
+        extendedTokenEvidence.TenantAdministration!.HasRetainedEvidence.Should().BeFalse();
         extendedTokenEvidence.TenantAdministration!.HasTenantCompanyScopedEvidence.Should().BeFalse();
         extendedTokenEvidence.TenantAdministration.CompletedControlCount.Should().Be(2);
         extendedTokenEvidence.Issues.Should().Contain(issue =>
-            issue.Code == "tenant-admin.evidence-scope-mismatch" &&
+            issue.Code == "tenant-admin.evidence-missing" &&
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
-            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        extendedTokenEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
             issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha-extra/company-alpha-extra/tenant-admin/full"));
+        extendedTokenEvidence.Issues.Should().NotContain(issue =>
+            issue.Code == "tenant-admin.evidence-scope-mismatch");
         extendedTokenEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
@@ -1318,7 +1414,8 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ]));
 
         genericEvidence.TenantAdministration.Should().NotBeNull();
-        genericEvidence.TenantAdministration!.CompletedControlCount.Should().Be(23);
+        genericEvidence.TenantAdministration!.CompletedControlCount.Should().Be(2);
+        genericEvidence.TenantAdministration.HasRetainedEvidence.Should().BeFalse();
         var bookScopedIssueCodes = new[]
         {
             "tenant-admin.chart-administration-studio-book-evidence-missing",
@@ -1334,50 +1431,45 @@ public sealed class AccountingSystemIntegrationServiceTests
         genericEvidence.Issues
             .Where(issue => bookScopedIssueCodes.Contains(issue.Code, StringComparer.OrdinalIgnoreCase))
             .Should()
-            .HaveCount(bookScopedIssueCodes.Length)
-            .And.OnlyContain(issue =>
-                issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
-                issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
-                issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"));
+            .BeEmpty();
+        genericEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        genericEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.legacy-full-token-evidence" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
+            issue.EvidenceReferences.Contains("evidence://tenant-admin/tenant-alpha/company-alpha/tenant-admin/full"));
+        genericEvidence.Issues.Should().Contain(issue =>
+            issue.Code == "tenant-admin.chart-administration-studio-evidence-missing" &&
+            issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
         genericEvidence.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
 
+        var tenantAdminEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ledgerBookId:D}/tenant-admin-certification";
+        var tenantAdminArtifact = BuildTenantAdminCertificationArtifact(ledgerBookId, tenantAdminEvidence);
         var scopedEvidence = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
                 TenantId: "tenant-alpha",
                 CompanyId: "company-alpha",
-                TenantScopeConfigured: true,
-                AdminRoleProfileConfigured: true,
-                ScopedAccessPoliciesConfigured: true,
-                ReportingGroupsConfigured: true,
-                AccountingAdminSurfaceConfigured: true,
-                BrowserAccountingAdminSurfaceConfigured: true,
-                WpfAccountingAdminSurfaceConfigured: true,
-                ChartAdministrationStudioConfigured: true,
-                RuleTestPromotionStudioConfigured: true,
-                CloseSetupStudioConfigured: true,
-                ProviderMappingStudioConfigured: true,
-                TenantCompanyReportGroupSetupStudioConfigured: true,
-                AuditReviewToolingConfigured: true,
-                BulkImportExportSafeguardsConfigured: true,
-                PerformanceValidationConfigured: true,
-                DisasterRecoveryRunbookConfigured: true,
-                LedgerBookAdministrationStudioConfigured: true,
-                PostingRuleAuthoringStudioConfigured: true,
-                ApprovalQueueStudioConfigured: true,
-                DimensionMappingStudioConfigured: true,
-                ImplementationSandboxConfigured: true,
-                TenantAdministrationEvidenceLinks:
+                TenantAdminCertificationArtifacts: [tenantAdminArtifact],
+                RetainedEvidence:
                 [
-                    $"evidence://tenant-admin/tenant-alpha/company-alpha/ledger-book-administration/ledgerBookId={ledgerBookId:D}/tenant-admin/full",
-                    "approval:tenant-admin:tenant-alpha:company-alpha"
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                        tenantAdminArtifact.CertificationId,
+                        "ledger-book-tenant-admin")
                 ]));
 
         scopedEvidence.TenantAdministration.Should().NotBeNull();
         scopedEvidence.TenantAdministration!.CompletedControlCount.Should().Be(23);
+        scopedEvidence.TenantAdministration.HasRetainedEvidence.Should().BeTrue();
+        scopedEvidence.TenantAdministration.EvidenceReferences.Should().Contain(tenantAdminEvidence);
         scopedEvidence.Issues.Should().NotContain(issue =>
             bookScopedIssueCodes.Contains(issue.Code, StringComparer.OrdinalIgnoreCase));
     }
@@ -1526,16 +1618,32 @@ public sealed class AccountingSystemIntegrationServiceTests
             CorrelationId: "tenant-admin-tenant-alpha",
             EvidenceLinks: ["approval:tenant-admin:tenant-alpha:company-alpha"]));
 
+        var tenantAdminArtifactEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/tenant-admin-certification";
+        var tenantAdminArtifact = BuildTenantAdminCertificationArtifact(
+            ExternalGlLedgerBookId,
+            tenantAdminArtifactEvidence);
         var readiness = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId,
                 TenantId: "tenant-alpha",
-                CompanyId: "company-alpha"));
+                CompanyId: "company-alpha",
+                TenantAdminCertificationArtifacts: [tenantAdminArtifact],
+                RetainedEvidence:
+                [
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                        tenantAdminArtifact.CertificationId,
+                        "stored-tenant-admin")
+                ]));
 
         readiness.TenantAdministration.Should().NotBeNull();
         readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
+        readiness.TenantAdministration.HasRetainedEvidence.Should().BeTrue();
         readiness.TenantAdministration.HasTenantCompanyScopedEvidence.Should().BeTrue();
         readiness.TenantAdministration.EvidenceReferences.Should().Contain(tenantAdminEvidence);
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain(tenantAdminArtifactEvidence);
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("approval:tenant-admin:tenant-alpha:company-alpha");
         readiness.TenantAdministration.EvidenceReferences.Should().Contain("correlation:tenant-admin-tenant-alpha");
         var retainedProfile = await store.GetAsync("tenant-alpha", "company-alpha");
@@ -1569,6 +1677,30 @@ public sealed class AccountingSystemIntegrationServiceTests
             $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/production-certification/full/dimension-scope/canonical-production?ledgerBookId={ExternalGlLedgerBookId:D}";
         var approvalEvidence =
             $"approval:tenant:tenant-alpha:company:company-alpha:fund:default-fund:ledgerBookId={ExternalGlLedgerBookId:D}:production-certification";
+        var workflowEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification";
+        var dimensionalEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/dimensional-certification/dimension-scope/canonical-production";
+        var tenantAdminEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/tenant-admin-certification";
+        var workflowArtifact = BuildWorkflowCertificationArtifact(ExternalGlLedgerBookId, workflowEvidence);
+        var dimensionalArtifact = BuildDimensionalCertificationArtifact(ExternalGlLedgerBookId, dimensionalEvidence);
+        var tenantAdminArtifact = BuildTenantAdminCertificationArtifact(ExternalGlLedgerBookId, tenantAdminEvidence);
+        var retainedEvidence = new[]
+        {
+            BuildCertificationRetainedEvidence(
+                AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                workflowArtifact.CertificationId,
+                "stored-production-workflow"),
+            BuildCertificationRetainedEvidence(
+                AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                dimensionalArtifact.CertificationId,
+                "stored-production-dimensional"),
+            BuildCertificationRetainedEvidence(
+                AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                tenantAdminArtifact.CertificationId,
+                "stored-production-tenant-admin")
+        };
 
         await store.UpsertAsync(new AccountingProductionCertificationProfileUpsertRequestDto(
             new AccountingProductionCertificationProfileDto(
@@ -1593,7 +1725,11 @@ public sealed class AccountingSystemIntegrationServiceTests
                 LedgerLineDimensionsPersistedCertified: true,
                 TrialBalanceDimensionFiltersCertified: true,
                 ReportPackageDimensionProvenanceCertified: true,
-                ClosePlanConfigurationLedgerBookNativeCertified: true),
+                ClosePlanConfigurationLedgerBookNativeCertified: true,
+                WorkflowCertificationArtifacts: [workflowArtifact],
+                DimensionalCertificationArtifacts: [dimensionalArtifact],
+                TenantAdminCertificationArtifacts: [tenantAdminArtifact],
+                RetainedEvidence: retainedEvidence),
             "controller",
             CorrelationId: "production-certification-default-fund",
             EvidenceLinks: [approvalEvidence]));
@@ -1609,6 +1745,17 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(10);
         readiness.DimensionalReporting.Should().NotBeNull();
         readiness.DimensionalReporting!.CompletedControlCount.Should().Be(10);
+        readiness.TenantAdministration.Should().NotBeNull();
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
+        readiness.LedgerBookWorkflows.RetainedEvidence.Should().ContainSingle(evidence =>
+            evidence.SubjectType == AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact &&
+            evidence.SubjectId == workflowArtifact.CertificationId);
+        readiness.DimensionalReporting.RetainedEvidence.Should().ContainSingle(evidence =>
+            evidence.SubjectType == AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact &&
+            evidence.SubjectId == dimensionalArtifact.CertificationId);
+        readiness.TenantAdministration.RetainedEvidence.Should().ContainSingle(evidence =>
+            evidence.SubjectType == AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact &&
+            evidence.SubjectId == tenantAdminArtifact.CertificationId);
         readiness.Issues.Should().NotContain(issue =>
             issue.Area == AccountingProductionReadinessAreaDto.LedgerBooks &&
             (issue.Code.Contains("workflow", StringComparison.OrdinalIgnoreCase) ||
@@ -1686,6 +1833,15 @@ public sealed class AccountingSystemIntegrationServiceTests
         services.AddSingleton<AccountingProductionReadinessService>();
         await using var provider = services.BuildServiceProvider();
         var store = provider.GetRequiredService<IAccountingProductionCertificationProfileStore>();
+        var workflowEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification";
+        var dimensionalEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/dimensional-certification/dimension-scope/canonical-production";
+        var tenantAdminEvidence =
+            $"evidence://tenant/tenant-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/tenant-admin-certification";
+        var workflowArtifact = BuildWorkflowCertificationArtifact(ExternalGlLedgerBookId, workflowEvidence);
+        var dimensionalArtifact = BuildDimensionalCertificationArtifact(ExternalGlLedgerBookId, dimensionalEvidence);
+        var tenantAdminArtifact = BuildTenantAdminCertificationArtifact(ExternalGlLedgerBookId, tenantAdminEvidence);
 
         await store.UpsertAsync(new AccountingProductionCertificationProfileUpsertRequestDto(
             new AccountingProductionCertificationProfileDto(
@@ -1710,7 +1866,25 @@ public sealed class AccountingSystemIntegrationServiceTests
                 LedgerLineDimensionsPersistedCertified: true,
                 TrialBalanceDimensionFiltersCertified: true,
                 ReportPackageDimensionProvenanceCertified: true,
-                ClosePlanConfigurationLedgerBookNativeCertified: true),
+                ClosePlanConfigurationLedgerBookNativeCertified: true,
+                WorkflowCertificationArtifacts: [workflowArtifact],
+                DimensionalCertificationArtifacts: [dimensionalArtifact],
+                TenantAdminCertificationArtifacts: [tenantAdminArtifact],
+                RetainedEvidence:
+                [
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                        workflowArtifact.CertificationId,
+                        "out-of-scope-workflow"),
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                        dimensionalArtifact.CertificationId,
+                        "out-of-scope-dimensional"),
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                        tenantAdminArtifact.CertificationId,
+                        "out-of-scope-tenant-admin")
+                ]),
             "controller",
             CorrelationId: "production-certification-tenant-alpha",
             EvidenceLinks: [$"approval:tenant:tenant-alpha:company:company-alpha:fund:default-fund:ledger-book:{ExternalGlLedgerBookId:D}:production-certification"]));
@@ -5242,14 +5416,33 @@ public sealed class AccountingSystemIntegrationServiceTests
         var retained = await ReadAsync<AccountingTenantAdministrationProfileDto>(getResponse);
         retained.EvidenceReferences.Should().Contain("correlation:tenant-admin-company-alpha");
 
+        var tenantAdminEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/tenant-admin-certification";
+        var tenantAdminArtifact = BuildTenantAdminCertificationArtifact(
+            ExternalGlLedgerBookId,
+            tenantAdminEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha");
         var readinessResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionReadiness,
-            JsonContent(new AccountingProductionReadinessRequestDto(FundProfileId: "default-fund")));
+            JsonContent(new AccountingProductionReadinessRequestDto(
+                FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId,
+                TenantAdminCertificationArtifacts: [tenantAdminArtifact],
+                RetainedEvidence:
+                [
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                        tenantAdminArtifact.CertificationId,
+                        "endpoint-tenant-admin")
+                ])));
 
         readinessResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var readiness = await ReadAsync<AccountingProductionReadinessDto>(readinessResponse);
         readiness.TenantAdministration.Should().NotBeNull();
         readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
+        readiness.TenantAdministration.HasRetainedEvidence.Should().BeTrue();
+        readiness.TenantAdministration.EvidenceReferences.Should().Contain(tenantAdminEvidence);
         readiness.Issues.Should().NotContain(issue => issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
         readiness.Components.Should().Contain(component =>
             component.Area == AccountingProductionReadinessAreaDto.TenantAdministration &&
@@ -5474,6 +5667,42 @@ public sealed class AccountingSystemIntegrationServiceTests
             $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/full/dimension-scope/canonical-production";
         var approvalEvidence =
             $"approval:tenant:company-alpha:company:company-alpha:fund:default-fund:ledgerBookId={ExternalGlLedgerBookId:D}:production-certification";
+        var workflowEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification";
+        var dimensionalEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/dimensional-certification/dimension-scope/canonical-production";
+        var tenantAdminEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/tenant-admin-certification";
+        var workflowArtifact = BuildWorkflowCertificationArtifact(
+            ExternalGlLedgerBookId,
+            workflowEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha");
+        var dimensionalArtifact = BuildDimensionalCertificationArtifact(
+            ExternalGlLedgerBookId,
+            dimensionalEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha");
+        var tenantAdminArtifact = BuildTenantAdminCertificationArtifact(
+            ExternalGlLedgerBookId,
+            tenantAdminEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha");
+        var retainedEvidence = new[]
+        {
+            BuildCertificationRetainedEvidence(
+                AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                workflowArtifact.CertificationId,
+                "endpoint-production-workflow"),
+            BuildCertificationRetainedEvidence(
+                AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                dimensionalArtifact.CertificationId,
+                "endpoint-production-dimensional"),
+            BuildCertificationRetainedEvidence(
+                AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                tenantAdminArtifact.CertificationId,
+                "endpoint-production-tenant-admin")
+        };
 
         var upsertResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionCertificationProfile,
@@ -5495,10 +5724,14 @@ public sealed class AccountingSystemIntegrationServiceTests
                     ReconciliationLedgerBookNativeCertified: true,
                     DirectLendingLedgerBookNativeCertified: true,
                     StrategyLedgerReadLedgerBookNativeCertified: true,
-                LedgerLineDimensionsPersistedCertified: true,
-                TrialBalanceDimensionFiltersCertified: true,
-                ReportPackageDimensionProvenanceCertified: true,
-                ClosePlanConfigurationLedgerBookNativeCertified: true),
+                    LedgerLineDimensionsPersistedCertified: true,
+                    TrialBalanceDimensionFiltersCertified: true,
+                    ReportPackageDimensionProvenanceCertified: true,
+                    ClosePlanConfigurationLedgerBookNativeCertified: true,
+                    WorkflowCertificationArtifacts: [workflowArtifact],
+                    DimensionalCertificationArtifacts: [dimensionalArtifact],
+                    TenantAdminCertificationArtifacts: [tenantAdminArtifact],
+                    RetainedEvidence: retainedEvidence),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-default-fund",
                 EvidenceLinks:
@@ -5514,6 +5747,13 @@ public sealed class AccountingSystemIntegrationServiceTests
         upserted.CompanyId.Should().Be("company-alpha");
         upserted.UpdatedBy.Should().Be("controller.admin");
         upserted.EvidenceReferences.Should().Contain(approvalEvidence);
+        upserted.WorkflowCertificationArtifacts.Should().ContainSingle(artifact =>
+            artifact.CertificationId == workflowArtifact.CertificationId);
+        upserted.DimensionalCertificationArtifacts.Should().ContainSingle(artifact =>
+            artifact.CertificationId == dimensionalArtifact.CertificationId);
+        upserted.TenantAdminCertificationArtifacts.Should().ContainSingle(artifact =>
+            artifact.CertificationId == tenantAdminArtifact.CertificationId);
+        upserted.RetainedEvidence.Should().HaveCount(3);
 
         var getResponse = await client.GetAsync(
             $"{UiApiRoutes.AccountingSystemProductionCertificationProfile}?fundProfileId=default-fund&ledgerBookId={ExternalGlLedgerBookId:D}");
@@ -5535,6 +5775,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         readiness.LedgerBookWorkflows!.CompletedControlCount.Should().Be(10);
         readiness.DimensionalReporting.Should().NotBeNull();
         readiness.DimensionalReporting!.CompletedControlCount.Should().Be(10);
+        readiness.TenantAdministration.Should().NotBeNull();
+        readiness.TenantAdministration!.CompletedControlCount.Should().Be(23);
         readiness.Issues.Should().NotContain(issue =>
             issue.Code == "ledger-books.workflow-evidence-missing" ||
             issue.Code == "dimensions.reporting-evidence-missing");
@@ -5545,6 +5787,13 @@ public sealed class AccountingSystemIntegrationServiceTests
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
+        var mismatchedWorkflowEvidence =
+            $"evidence://tenant/company-beta/company/company-beta/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification";
+        var mismatchedWorkflowArtifact = BuildWorkflowCertificationArtifact(
+            ExternalGlLedgerBookId,
+            mismatchedWorkflowEvidence,
+            tenantId: "company-beta",
+            companyId: "company-beta");
 
         var upsertResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionCertificationProfile,
@@ -5571,7 +5820,15 @@ public sealed class AccountingSystemIntegrationServiceTests
                     StrategyLedgerReadLedgerBookNativeCertified: true,
                     LedgerLineDimensionsPersistedCertified: true,
                     TrialBalanceDimensionFiltersCertified: true,
-                    ReportPackageDimensionProvenanceCertified: true),
+                    ReportPackageDimensionProvenanceCertified: true,
+                    WorkflowCertificationArtifacts: [mismatchedWorkflowArtifact],
+                    RetainedEvidence:
+                    [
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                            mismatchedWorkflowArtifact.CertificationId,
+                            "mismatched-rollout-workflow")
+                    ]),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-mismatched-rollout")));
 
@@ -5607,7 +5864,14 @@ public sealed class AccountingSystemIntegrationServiceTests
                     EvidenceReferences: ["evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/production-certification/full"],
                     ReconciliationLedgerBookNativeCertified: true,
                     DirectLendingLedgerBookNativeCertified: true,
-                    StrategyLedgerReadLedgerBookNativeCertified: true),
+                    StrategyLedgerReadLedgerBookNativeCertified: true,
+                    RetainedEvidence:
+                    [
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                            "workflow-certification-missing-ledger-book",
+                            "missing-ledger-book")
+                    ]),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-missing-ledger-book")));
 
@@ -5623,6 +5887,14 @@ public sealed class AccountingSystemIntegrationServiceTests
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
+        var otherLedgerBookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var typedWorkflowEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{otherLedgerBookId:D}/workflow-certification";
+        var mismatchedWorkflowArtifact = BuildWorkflowCertificationArtifact(
+            otherLedgerBookId,
+            typedWorkflowEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha");
 
         var upsertResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionCertificationProfile,
@@ -5643,6 +5915,14 @@ public sealed class AccountingSystemIntegrationServiceTests
                     EvidenceReferences:
                     [
                         $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}ffff/posting-candidate/certification"
+                    ],
+                    WorkflowCertificationArtifacts: [mismatchedWorkflowArtifact],
+                    RetainedEvidence:
+                    [
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                            mismatchedWorkflowArtifact.CertificationId,
+                            "extended-ledger-workflow")
                     ]),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-extended-ledger-book-token")));
@@ -5659,6 +5939,22 @@ public sealed class AccountingSystemIntegrationServiceTests
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
+        var controlEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification/posting-rules";
+        var postingRulesArtifact = BuildWorkflowCertificationArtifact(
+            ExternalGlLedgerBookId,
+            controlEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha") with
+        {
+            Lanes =
+            [
+                new AccountingWorkflowCertificationLaneDto(
+                    AccountingWorkflowCertificationLaneKindDto.PostingRules,
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    [$"{controlEvidence}/posting-rules"])
+            ]
+        };
 
         var upsertResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionCertificationProfile,
@@ -5679,6 +5975,14 @@ public sealed class AccountingSystemIntegrationServiceTests
                     EvidenceReferences:
                     [
                         $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/posting-candidate/certification"
+                    ],
+                    WorkflowCertificationArtifacts: [postingRulesArtifact],
+                    RetainedEvidence:
+                    [
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                            postingRulesArtifact.CertificationId,
+                            "mismatched-control-workflow")
                     ]),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-mismatched-control-evidence")));
@@ -5687,7 +5991,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("journal-entry lifecycle workflow evidence", StringComparison.OrdinalIgnoreCase));
+            error.Contains("journal-entry lifecycle workflow artifact", StringComparison.OrdinalIgnoreCase) &&
+            error.Contains("same certification id", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -5695,6 +6000,22 @@ public sealed class AccountingSystemIntegrationServiceTests
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
+        var unrelatedWorkflowEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification/posting-rules";
+        var unrelatedWorkflowArtifact = BuildWorkflowCertificationArtifact(
+            ExternalGlLedgerBookId,
+            unrelatedWorkflowEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha") with
+        {
+            Lanes =
+            [
+                new AccountingWorkflowCertificationLaneDto(
+                    AccountingWorkflowCertificationLaneKindDto.PostingRules,
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    [$"{unrelatedWorkflowEvidence}/posting-rules"])
+            ]
+        };
 
         var upsertResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionCertificationProfile,
@@ -5716,6 +6037,14 @@ public sealed class AccountingSystemIntegrationServiceTests
                     [
                         $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/production-certification/rollout",
                         "evidence://external-gl/workflow-certification/unscoped"
+                    ],
+                    WorkflowCertificationArtifacts: [unrelatedWorkflowArtifact],
+                    RetainedEvidence:
+                    [
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                            unrelatedWorkflowArtifact.CertificationId,
+                            "split-workflow")
                     ]),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-split-workflow-evidence")));
@@ -5724,8 +6053,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("external-GL workflow evidence", StringComparison.OrdinalIgnoreCase) &&
-            error.Contains("same tenant, company, fund, and ledger-book artifact", StringComparison.OrdinalIgnoreCase));
+            error.Contains("external-GL workflow artifact", StringComparison.OrdinalIgnoreCase) &&
+            error.Contains("same certification id", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -5733,6 +6062,21 @@ public sealed class AccountingSystemIntegrationServiceTests
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
+        var workflowEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification";
+        var dimensionalEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/dimensional-certification";
+        var workflowArtifact = BuildWorkflowCertificationArtifact(
+            ExternalGlLedgerBookId,
+            workflowEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha");
+        var dimensionalArtifact = BuildDimensionalCertificationArtifact(
+            ExternalGlLedgerBookId,
+            dimensionalEvidence,
+            dimensionScope: string.Empty,
+            tenantId: "company-alpha",
+            companyId: "company-alpha");
 
         var upsertResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionCertificationProfile,
@@ -5759,7 +6103,20 @@ public sealed class AccountingSystemIntegrationServiceTests
                     StrategyLedgerReadLedgerBookNativeCertified: true,
                     LedgerLineDimensionsPersistedCertified: true,
                     TrialBalanceDimensionFiltersCertified: true,
-                    ReportPackageDimensionProvenanceCertified: true),
+                    ReportPackageDimensionProvenanceCertified: true,
+                    WorkflowCertificationArtifacts: [workflowArtifact],
+                    DimensionalCertificationArtifacts: [dimensionalArtifact],
+                    RetainedEvidence:
+                    [
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                            workflowArtifact.CertificationId,
+                            "missing-dimension-scope-workflow"),
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                            dimensionalArtifact.CertificationId,
+                            "missing-dimension-scope-dimensional")
+                    ]),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-missing-dimension-scope")));
 
@@ -5767,7 +6124,7 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("certified dimension scope", StringComparison.OrdinalIgnoreCase));
+            error.Contains("dimensional scope evidence key is required", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -5775,6 +6132,29 @@ public sealed class AccountingSystemIntegrationServiceTests
     {
         await using var app = await CreateAppAsync(UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
+        var workflowEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/workflow-certification";
+        var dimensionalEvidence =
+            $"evidence://tenant/company-alpha/company/company-alpha/fund/default-fund/ledger-book/{ExternalGlLedgerBookId:D}/dimensional-certification/dimension-scope/canonical-production/period-report";
+        var workflowArtifact = BuildWorkflowCertificationArtifact(
+            ExternalGlLedgerBookId,
+            workflowEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha");
+        var periodReportArtifact = BuildDimensionalCertificationArtifact(
+            ExternalGlLedgerBookId,
+            dimensionalEvidence,
+            tenantId: "company-alpha",
+            companyId: "company-alpha") with
+        {
+            Lanes =
+            [
+                new AccountingDimensionalCertificationLaneDto(
+                    AccountingDimensionalCertificationLaneKindDto.PeriodReports,
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    [$"{dimensionalEvidence}/period-report"])
+            ]
+        };
 
         var upsertResponse = await client.PostAsync(
             UiApiRoutes.AccountingSystemProductionCertificationProfile,
@@ -5802,7 +6182,20 @@ public sealed class AccountingSystemIntegrationServiceTests
                     StrategyLedgerReadLedgerBookNativeCertified: true,
                     LedgerLineDimensionsPersistedCertified: true,
                     TrialBalanceDimensionFiltersCertified: true,
-                    ReportPackageDimensionProvenanceCertified: true),
+                    ReportPackageDimensionProvenanceCertified: true,
+                    WorkflowCertificationArtifacts: [workflowArtifact],
+                    DimensionalCertificationArtifacts: [periodReportArtifact],
+                    RetainedEvidence:
+                    [
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                            workflowArtifact.CertificationId,
+                            "split-dimension-workflow"),
+                        BuildCertificationRetainedEvidence(
+                            AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                            periodReportArtifact.CertificationId,
+                            "split-dimension-period-report")
+                    ]),
                 "spoofed-browser-user",
                 CorrelationId: "production-certification-split-dimension-scope")));
 
@@ -5810,7 +6203,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         var problem = await ReadAsync<HttpValidationProblemDetails>(upsertResponse);
         problem.Errors.Should().ContainKey("request");
         problem.Errors["request"].Should().Contain(error =>
-            error.Contains("same retained artifact", StringComparison.OrdinalIgnoreCase));
+            error.Contains("cross-period dimension query artifact", StringComparison.OrdinalIgnoreCase) &&
+            error.Contains("same certification id", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

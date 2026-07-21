@@ -187,6 +187,7 @@ public sealed record StrategyRunEntry(
         {
             EndedAt = now,
             Metrics = metrics,
+            TerminalStatus = StrategyRunStatus.Completed,
             LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             LifecycleEventAtUtc = now,
             Reason = "Strategy run completed.",

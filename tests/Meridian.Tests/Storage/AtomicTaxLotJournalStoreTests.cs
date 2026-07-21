@@ -348,6 +348,248 @@ public sealed class AtomicTaxLotJournalStoreTests
     }
 
     [LedgerDatabaseFact]
+    public async Task AppendAssetPostingAsync_PersistedFifoRejectsNewerLotAndPolicyMismatchWithoutMutatingOpenLots()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var ownerNodeId = Guid.NewGuid();
+        var openedAt = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
+        await database.JournalStore.SaveLedgerBookAsync(new LedgerBookRecord(
+            ledgerBookId,
+            "fund-authoritative-fifo",
+            ownerNodeId,
+            FundStructureNodeKindDto.Fund,
+            "Authoritative FIFO Book",
+            "USD",
+            openedAt,
+            openedAt));
+        var period = await database.JournalStore.SavePeriodAsync(
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                5,
+                "2026-05",
+                new DateOnly(2026, 5, 1),
+                new DateOnly(2026, 5, 31),
+                "Open",
+                openedAt,
+                ClosedAt: null,
+                Version: 0),
+            expectedVersion: 0);
+
+        var olderAcquisition = BuildAcquisitionCommand(
+            ledgerBookId,
+            periodId,
+            expectedPeriodVersion: period.Version,
+            idempotencyKey: "atomic-acquisition:fifo-older",
+            lotId: "lot-aapl-20260510",
+            acquiredDate: new DateOnly(2026, 5, 10),
+            unitCost: 125m,
+            evidenceId: "evidence-fifo-older",
+            evidenceHashCharacter: 'e');
+        var older = await database.JournalStore.AppendAssetPostingAsync(olderAcquisition);
+        var newerAcquisition = BuildAcquisitionCommand(
+            ledgerBookId,
+            periodId,
+            expectedPeriodVersion: period.Version,
+            idempotencyKey: "atomic-acquisition:fifo-newer",
+            lotId: "lot-aapl-20260512",
+            acquiredDate: new DateOnly(2026, 5, 12),
+            unitCost: 100m,
+            evidenceId: "evidence-fifo-newer",
+            evidenceHashCharacter: 'f');
+        var newer = await database.JournalStore.AppendAssetPostingAsync(newerAcquisition);
+
+        await database.JournalStore.SaveTaxLotPolicyAsync(
+            new LedgerAccountTaxLotPolicyRecord(
+                PolicyRecordId: Guid.NewGuid(),
+                LedgerBookId: ledgerBookId,
+                Account: older.MutatedLots[0].Account,
+                ReliefMethod: LedgerTaxLotReliefMethod.Fifo,
+                PolicyId: "tax-policy-fifo-v1",
+                EffectiveDate: new DateOnly(2026, 5, 1),
+                CreatedAt: openedAt,
+                UpdatedAt: openedAt,
+                Rationale: "Persisted FIFO authority for deterministic open-lot selection"));
+
+        async Task AssertRejectedPostingRolledBackAsync(AtomicTaxLotJournalCommand rejected)
+        {
+            var unchangedLots = (await database.JournalStore.GetTaxLotsByIdsAsync(
+                    ledgerBookId,
+                    [older.MutatedLots[0].TaxLotRecordId, newer.MutatedLots[0].TaxLotRecordId]))
+                .ToDictionary(static lot => lot.TaxLotRecordId);
+            unchangedLots[older.MutatedLots[0].TaxLotRecordId].Version.Should().Be(1);
+            unchangedLots[older.MutatedLots[0].TaxLotRecordId].OpenQuantity.Should().Be(100m);
+            unchangedLots[older.MutatedLots[0].TaxLotRecordId].LastMutationBatchId
+                .Should().Be(olderAcquisition.MutationBatchId);
+            unchangedLots[newer.MutatedLots[0].TaxLotRecordId].Version.Should().Be(1);
+            unchangedLots[newer.MutatedLots[0].TaxLotRecordId].OpenQuantity.Should().Be(100m);
+            unchangedLots[newer.MutatedLots[0].TaxLotRecordId].LastMutationBatchId
+                .Should().Be(newerAcquisition.MutationBatchId);
+
+            var retainedJournals = await database.JournalStore.GetByPeriodAsync(periodId);
+            retainedJournals.Select(static item => item.Entry.JournalEntryId).Should().BeEquivalentTo(
+                new[]
+                {
+                    olderAcquisition.Journal.Entry.JournalEntryId,
+                    newerAcquisition.Journal.Entry.JournalEntryId
+                });
+            retainedJournals.Should().NotContain(item =>
+                item.Entry.JournalEntryId == rejected.Journal.Entry.JournalEntryId);
+            (await database.JournalStore.GetAtomicTaxLotPostingAsync(rejected.MutationBatchId))
+                .Should().BeNull();
+        }
+
+        var disposalEvidence = BuildEvidence("evidence-fifo-disposal", 'd');
+        var nonFifoSourceEventId = Guid.NewGuid();
+        var nonFifoJournal = BuildJournalWrite(
+            ledgerBookId,
+            periodId,
+            nonFifoSourceEventId,
+            "atomic-disposal:fifo-newer-first",
+            debitAccount: "Cash",
+            creditAccount: "Investment lots",
+            amount: 1_000m);
+        var nonFifoDisposal = AtomicTaxLotJournalCommand.Create(
+            Guid.NewGuid(),
+            ledgerBookId,
+            nonFifoJournal,
+            nonFifoSourceEventId,
+            "atomic-disposal:fifo-newer-first",
+            period.Version,
+            AtomicTaxLotMutationKind.Disposal,
+            [disposalEvidence],
+            disposalSelections:
+            [
+                new LedgerTaxLotDisposalSelection(
+                    newer.MutatedLots[0].TaxLotRecordId,
+                    newer.MutatedLots[0].LotId,
+                    ExpectedVersion: 1,
+                    ExpectedOpenQuantity: 100m,
+                    Quantity: 10m,
+                    SelectionOrdinal: 0,
+                    disposalEvidence.EvidenceId,
+                    ExpectedUnitCost: 100m,
+                    ExpectedCostBasis: 1_000m)
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-fifo-v1");
+
+        var nonFifoAct = () => database.JournalStore.AppendAssetPostingAsync(nonFifoDisposal);
+
+        await nonFifoAct.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*does not match the authoritative Fifo open-lot relief plan*");
+        await AssertRejectedPostingRolledBackAsync(nonFifoDisposal);
+
+        var policyMismatchSourceEventId = Guid.NewGuid();
+        var policyMismatchJournal = BuildJournalWrite(
+            ledgerBookId,
+            periodId,
+            policyMismatchSourceEventId,
+            "atomic-disposal:fifo-policy-mismatch",
+            debitAccount: "Cash",
+            creditAccount: "Investment lots",
+            amount: 1_250m);
+        var policyMismatchDisposal = AtomicTaxLotJournalCommand.Create(
+            Guid.NewGuid(),
+            ledgerBookId,
+            policyMismatchJournal,
+            policyMismatchSourceEventId,
+            "atomic-disposal:fifo-policy-mismatch",
+            period.Version,
+            AtomicTaxLotMutationKind.Disposal,
+            [disposalEvidence],
+            disposalSelections:
+            [
+                new LedgerTaxLotDisposalSelection(
+                    older.MutatedLots[0].TaxLotRecordId,
+                    older.MutatedLots[0].LotId,
+                    ExpectedVersion: 1,
+                    ExpectedOpenQuantity: 100m,
+                    Quantity: 10m,
+                    SelectionOrdinal: 0,
+                    disposalEvidence.EvidenceId,
+                    ExpectedUnitCost: 125m,
+                    ExpectedCostBasis: 1_250m)
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-fifo-v2");
+
+        var policyMismatchAct = () => database.JournalStore.AppendAssetPostingAsync(policyMismatchDisposal);
+
+        await policyMismatchAct.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*does not match effective policy*");
+        await AssertRejectedPostingRolledBackAsync(policyMismatchDisposal);
+
+        var legitimateSourceEventId = Guid.NewGuid();
+        var legitimateJournal = BuildJournalWrite(
+            ledgerBookId,
+            periodId,
+            legitimateSourceEventId,
+            "atomic-disposal:fifo-oldest-first",
+            debitAccount: "Cash",
+            creditAccount: "Investment lots",
+            amount: 5_000m);
+        var legitimateDisposal = AtomicTaxLotJournalCommand.Create(
+            Guid.NewGuid(),
+            ledgerBookId,
+            legitimateJournal,
+            legitimateSourceEventId,
+            "atomic-disposal:fifo-oldest-first",
+            period.Version,
+            AtomicTaxLotMutationKind.Disposal,
+            [disposalEvidence],
+            disposalSelections:
+            [
+                new LedgerTaxLotDisposalSelection(
+                    older.MutatedLots[0].TaxLotRecordId,
+                    older.MutatedLots[0].LotId,
+                    ExpectedVersion: 1,
+                    ExpectedOpenQuantity: 100m,
+                    Quantity: 40m,
+                    SelectionOrdinal: 0,
+                    disposalEvidence.EvidenceId,
+                    ExpectedUnitCost: 125m,
+                    ExpectedCostBasis: 5_000m)
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-fifo-v1");
+
+        var legitimate = await database.JournalStore.AppendAssetPostingAsync(legitimateDisposal);
+
+        legitimate.Mutations.Should().ContainSingle().Which.Should().Match<LedgerTaxLotMutationRecord>(mutation =>
+            mutation.QuantityBefore == 100m &&
+            mutation.QuantityDelta == -40m &&
+            mutation.QuantityAfter == 60m &&
+            mutation.UnitCost == 125m &&
+            mutation.CostBasis == 5_000m &&
+            mutation.ExpectedVersion == 1 &&
+            mutation.ResultVersion == 2);
+        var retainedAfterLegitimatePosting = await database.JournalStore.GetByPeriodAsync(periodId);
+        retainedAfterLegitimatePosting.Select(static item => item.Entry.JournalEntryId).Should().BeEquivalentTo(
+            new[]
+            {
+                olderAcquisition.Journal.Entry.JournalEntryId,
+                newerAcquisition.Journal.Entry.JournalEntryId,
+                legitimateJournal.Entry.JournalEntryId
+            });
+        var finalLots = (await database.JournalStore.GetTaxLotsByIdsAsync(
+                ledgerBookId,
+                [older.MutatedLots[0].TaxLotRecordId, newer.MutatedLots[0].TaxLotRecordId]))
+            .ToDictionary(static lot => lot.TaxLotRecordId);
+        finalLots[older.MutatedLots[0].TaxLotRecordId].Version.Should().Be(2);
+        finalLots[older.MutatedLots[0].TaxLotRecordId].OpenQuantity.Should().Be(60m);
+        finalLots[older.MutatedLots[0].TaxLotRecordId].LastMutationBatchId
+            .Should().Be(legitimateDisposal.MutationBatchId);
+        finalLots[newer.MutatedLots[0].TaxLotRecordId].Version.Should().Be(1);
+        finalLots[newer.MutatedLots[0].TaxLotRecordId].OpenQuantity.Should().Be(100m);
+        finalLots[newer.MutatedLots[0].TaxLotRecordId].LastMutationBatchId
+            .Should().Be(newerAcquisition.MutationBatchId);
+    }
+
+    [LedgerDatabaseFact]
     public async Task AppendAssetPostingAsync_AcquisitionReplayDisposalAndRollbackShareOneTransaction()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
@@ -399,6 +641,18 @@ public sealed class AtomicTaxLotJournalStoreTests
             mutation.QuantityAfter == 100m &&
             mutation.ExpectedVersion == 0 &&
             mutation.ResultVersion == 1);
+
+        await database.JournalStore.SaveTaxLotPolicyAsync(
+            new LedgerAccountTaxLotPolicyRecord(
+                PolicyRecordId: Guid.NewGuid(),
+                LedgerBookId: ledgerBookId,
+                Account: acquired.MutatedLots[0].Account,
+                ReliefMethod: LedgerTaxLotReliefMethod.Fifo,
+                PolicyId: "tax-policy-v1",
+                EffectiveDate: new DateOnly(2026, 5, 1),
+                CreatedAt: openedAt,
+                UpdatedAt: openedAt,
+                Rationale: "Authoritative FIFO integration fixture"));
 
         var advancedPeriod = await database.JournalStore.SavePeriodAsync(
             period with { Version = period.Version + 1 },
@@ -527,7 +781,8 @@ public sealed class AtomicTaxLotJournalStoreTests
             staleSourceEventId,
             "atomic-disposal:stale-lot",
             debitAccount: "Cash",
-            creditAccount: "Investment lots");
+            creditAccount: "Investment lots",
+            amount: 1_000m);
         var stale = AtomicTaxLotJournalCommand.Create(
             Guid.NewGuid(),
             ledgerBookId,
@@ -549,7 +804,9 @@ public sealed class AtomicTaxLotJournalStoreTests
                     disposalEvidence.EvidenceId,
                     ExpectedUnitCost: 100m,
                     ExpectedCostBasis: 1_000m)
-            ]);
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-v1");
 
         var staleAct = () => database.JournalStore.AppendAssetPostingAsync(stale);
         await staleAct.Should().ThrowAsync<LedgerValidationException>()
@@ -565,7 +822,8 @@ public sealed class AtomicTaxLotJournalStoreTests
                 idempotencyCollisionSourceId,
                 disposal.IdempotencyKey,
                 debitAccount: "Cash",
-                creditAccount: "Investment lots"),
+                creditAccount: "Investment lots",
+                amount: 500m),
             idempotencyCollisionSourceId,
             disposal.IdempotencyKey,
             advancedPeriod.Version,
@@ -583,7 +841,9 @@ public sealed class AtomicTaxLotJournalStoreTests
                     disposalEvidence.EvidenceId,
                     ExpectedUnitCost: 100m,
                     ExpectedCostBasis: 500m)
-            ]);
+            ],
+            reliefMethod: "Fifo",
+            policyRevision: "tax-policy-v1");
         var collisionAct = () => database.JournalStore.AppendAssetPostingAsync(idempotencyCollision);
         await collisionAct.Should().ThrowAsync<LedgerValidationException>()
             .WithMessage("*identity collision*");
@@ -613,13 +873,19 @@ public sealed class AtomicTaxLotJournalStoreTests
         Guid? ledgerBookId = null,
         Guid? periodId = null,
         long expectedPeriodVersion = 0,
-        string idempotencyKey = "atomic-acquisition:lot-1")
+        string idempotencyKey = "atomic-acquisition:lot-1",
+        string lotId = "lot-aapl-20260512",
+        DateOnly? acquiredDate = null,
+        decimal quantity = 100m,
+        decimal unitCost = 100m,
+        string evidenceId = "evidence-acquisition",
+        char evidenceHashCharacter = 'a')
     {
         var bookId = ledgerBookId ?? Guid.NewGuid();
         var retainedPeriodId = periodId ?? Guid.NewGuid();
         var sourceEventId = Guid.NewGuid();
         var mutationBatchId = Guid.NewGuid();
-        var evidence = BuildEvidence("evidence-acquisition", 'a');
+        var evidence = BuildEvidence(evidenceId, evidenceHashCharacter);
         var recordedAt = DateTimeOffset.Parse("2026-05-12T14:00:00Z");
         var journal = BuildJournalWrite(
             bookId,
@@ -627,16 +893,17 @@ public sealed class AtomicTaxLotJournalStoreTests
             sourceEventId,
             idempotencyKey,
             debitAccount: "Investment lots",
-            creditAccount: "Cash");
+            creditAccount: "Cash",
+            amount: quantity * unitCost);
         var lot = new LedgerTaxLotRecord(
             Guid.NewGuid(),
             bookId,
             new LedgerAccount("Investment lots", LedgerAccountType.Asset),
-            "lot-aapl-20260512",
-            new DateOnly(2026, 5, 12),
-            OriginalQuantity: 100m,
-            OpenQuantity: 100m,
-            UnitCost: 100m,
+            lotId,
+            acquiredDate ?? new DateOnly(2026, 5, 12),
+            OriginalQuantity: quantity,
+            OpenQuantity: quantity,
+            UnitCost: unitCost,
             Currency: "USD",
             CreatedAt: recordedAt,
             UpdatedAt: recordedAt,

@@ -36,10 +36,17 @@ and is not an alias for a posted journal.
   versioned book position, ledger book, period, accounting basis, economic event, projection
   lineage, retained evidence, projected effects, durable journal impact, lot-mutation batch, and
   correction lineage without making a projection a balance fact.
-- `Expected`, `Projected`, `Drafted`, `Approved`, `Posted`, `Reconciled`, and `Reported` are distinct
-  lifecycle states. A stage carries its own actor, timestamp, reference, and typed retained evidence;
-  stage names are not synonyms for one another and cannot be inferred from endpoint availability or
-  UI labels.
+- `Expected` and `Projected` are separate durable spine versions. `Drafted`, `Approved`, and
+  `Posted` likewise each append exactly one next canonical stage in their own durable version;
+  lifecycle appends cannot collapse, skip, remove, or rewrite stages. `Reconciled` and `Reported`
+  continue the same one-stage-per-version rule. Every stage carries its own actor, timestamp,
+  reference, and typed retained evidence; stage names cannot be inferred from endpoint availability
+  or UI labels.
+- Approval evidence uses the fully scoped `AssetAccountingPostingApproval` subject identity. It
+  binds the economic event id and version, fund, ledger book, period, accounting basis, approval id,
+  canonical Drafted-candidate fingerprint, and optional tenant/company scope in one retained
+  artifact. Legacy event/fund/book-only subject keys remain migration/diagnostic input and do not
+  satisfy the canonical approval gate.
 - `FactorPaydownProjectionService` in Instruments is the single calculator for factor-driven
   principal economics. It requires retained factor evidence, validates held face, factors,
   currency rounding, and position version, and derives a deterministic source event from Security
@@ -61,8 +68,11 @@ and is not an alias for a posted journal.
 
 ## Invariants
 
-- Posted journal entries are immutable accounting facts. Corrections must append adjustment,
-  reversal, rebook, or restatement records and preserve the original source event and evidence chain.
+- Posted journal entries are immutable accounting facts. A correction uses a new economic-event id
+  and its own currently open target period. It appends an adjustment, reversal, rebook, or
+  restatement while typed correction lineage preserves the original event/version, immutable posted
+  journal, original accounting period, ledger book, accounting basis, and mutation batch when
+  applicable; it never rewrites the original fact.
 - Material posting commands require `HumanOperator` action origin. Reviewed automation may prepare
   draft support, but storage rejects material commands that claim assistant or automation origin.
 - Posting commands require a durable idempotency key. Canonical `AssetAccounting.*` commands require
@@ -82,6 +92,12 @@ and is not an alias for a posted journal.
   canonical fingerprint, before/after lot snapshots, selected-lot evidence, relief method and policy
   revision, correction lineage, and exact-replay result; any stale period or lot CAS rolls back both
   journal and lot consequences.
+- Atomic disposal does not trust caller-selected lot order or policy labels. Storage resolves the
+  effective persisted account policy and the exact open-lot set for book, account, Security Master
+  id, book position, currency, and effective date under the posting transaction, then requires the
+  submitted selections to equal the authoritative FIFO, LIFO, HIFO, or SpecificId relief plan.
+  `AverageCost` remains available to other ledger-engine workflows but is unsupported by this
+  lot-discrete atomic asset-posting path and fails closed.
 - Ledger projections are rebuildable views over durable journal facts. They may consume report-pack
   outputs, approval metadata, and evidence references, but they do not redefine posting policy or
   survive as authority when they disagree with the immutable journal.
@@ -112,11 +128,12 @@ The shared Asset Accounting Event Spine follows one path for all eight event kin
 
 ```text
 retained source evidence
--> Security Master identity / versioned book position
--> Expected then Projected asset accounting event
--> Rules Studio posting candidate
--> independent human approval
--> immutable JournalEntry plus atomic lot mutation when applicable
+-> Security Master identity / current retained versioned book position
+-> durable Expected asset accounting event
+-> durable Projected asset accounting event
+-> durable Drafted Rules Studio posting candidate
+-> durable independent human Approved attestation
+-> durable Posted attestation plus immutable JournalEntry and atomic lot mutation when applicable
 -> Reconciled evidence
 -> Reported lineage
 ```
@@ -125,6 +142,11 @@ retained source evidence
 position, ledger book, period version, accounting policy, and promoted rule pack before Rules Studio
 drafting. A submitted event kind, amount, currency, event identity/version, book, position version,
 period version, evidence set, or lineage that does not match server state blocks candidate creation.
+The resolved current `BookPositionDto` must retain the exact economic-event identity, version,
+source, content hash, effective dates, Security Master id, and position id plus every exact typed
+evidence identity asserted by the event. That position/economic-state snapshot remains a rebuildable
+pre-ledger view, not journal truth. This boundary validates retained evidence identities embedded in
+the persisted snapshot; it does not claim to resolve physical Evidence Vault objects or bytes.
 The Drafted transition retains the complete candidate request and generated result together with
 canonical fingerprints and any lot instruction. Posting must reproduce that exact authority; a
 same-source journal, changed dimension, changed rule outcome, changed approval artifact, or changed

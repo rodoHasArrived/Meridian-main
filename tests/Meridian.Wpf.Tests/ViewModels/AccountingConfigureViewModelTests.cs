@@ -1,6 +1,7 @@
 using System.Globalization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -206,8 +207,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "Configurable multi-ledger accounting"
             && row.Status.Contains("Blocked", StringComparison.OrdinalIgnoreCase)
             && row.Detail.Contains("Ledger Books", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("ledger-books.workflow-evidence-rollout-scope-mismatch", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("Retain workflow certification evidence that names the authenticated tenant", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("ledger-books.workflow-evidence-missing", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("Attach retained evidence identifying the selected ledger book", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("multi-ledger-native-workflows", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ProductionReadinessGapRows.Should().Contain(row =>
             row.Name == "Enterprise accounting configuration studio"
@@ -468,7 +469,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
     }
 
     [Fact]
-    public async Task ProductionCertificationProfile_SaveRetainsOperatorScopedControlEvidence()
+    public async Task ProductionCertificationProfile_LoadedTypedEvidenceRemainsReadOnlyInDesktopEditor()
     {
         Directory.CreateDirectory(_root);
         var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
@@ -484,70 +485,33 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             IsDefault: true));
         await fundContext.SelectFundProfileAsync(profile.FundProfileId);
         var harness = CreateHarness(fundContext);
+        var loadedProfile = CreateGovernedProductionCertificationProfile(
+            harness.LedgerBookService.Book.LedgerBookId);
+        await harness.ProductionCertificationProfileStore.UpsertAsync(
+            new AccountingProductionCertificationProfileUpsertRequestDto(
+                loadedProfile,
+                "governed-certification-controller",
+                "seed-governed-production-certification",
+                EvidenceLinks: loadedProfile.EvidenceReferences,
+                RetainedEvidence: loadedProfile.RetainedEvidence));
 
         await harness.ViewModel.LoadAsync();
         await harness.ViewModel.SeedBaselineConfigurationAsync();
+        var retainedBefore = await harness.ProductionCertificationProfileStore.GetAsync(
+            "alpha-fund",
+            "Alpha Fund LP",
+            "alpha-fund",
+            harness.LedgerBookService.Book.LedgerBookId);
 
-        var scopePrefix =
-            $"evidence://tenant/alpha-fund/company/Alpha Fund LP/fund/alpha-fund/ledger-book/{harness.LedgerBookService.Book.LedgerBookId:D}/production-certification";
-        var operatorEvidence = new[]
-        {
-            "evidence://controller-review/alpha-fund/production-certification-kickoff",
-            $"{scopePrefix}/posting-candidate",
-            $"{scopePrefix}/journal-lifecycle",
-            $"{scopePrefix}/close-reporting",
-            $"{scopePrefix}/external-gl",
-            $"{scopePrefix}/reconciliation",
-            $"{scopePrefix}/direct-lending",
-            $"{scopePrefix}/strategy-ledger",
-            $"{scopePrefix}/dimensions/period-report/dimension-scope/canonical-production",
-            $"{scopePrefix}/dimensions/cross-period/dimension-scope/canonical-production",
-            $"{scopePrefix}/dimensions/journal-query/dimension-scope/canonical-production",
-            $"{scopePrefix}/dimensions/external-export/dimension-scope/canonical-production",
-            $"{scopePrefix}/dimensions/ledger-line/dimension-scope/canonical-production",
-            $"{scopePrefix}/dimensions/trial-balance-filter/dimension-scope/canonical-production",
-            $"{scopePrefix}/dimensions/report-package-provenance/dimension-scope/canonical-production"
-        };
-        harness.ViewModel.ProductionCertificationEvidenceText = string.Join(Environment.NewLine, operatorEvidence);
-        harness.ViewModel.PostingRulesLedgerBookNativeCertified = true;
-        harness.ViewModel.JournalLifecycleLedgerBookNativeCertified = true;
-        harness.ViewModel.CloseReportingLedgerBookNativeCertified = true;
-        harness.ViewModel.ExternalGlLedgerBookNativeCertified = true;
-        harness.ViewModel.ReconciliationLedgerBookNativeCertified = true;
-        harness.ViewModel.DirectLendingLedgerBookNativeCertified = true;
-        harness.ViewModel.StrategyLedgerReadLedgerBookNativeCertified = true;
-        harness.ViewModel.PeriodReportDimensionQueriesCertified = true;
-        harness.ViewModel.CrossPeriodReportDimensionQueriesCertified = true;
-        harness.ViewModel.JournalQueryDimensionFiltersCertified = true;
-        harness.ViewModel.ExternalExportDimensionMappingCertified = true;
-        harness.ViewModel.LedgerLineDimensionsPersistedCertified = true;
-        harness.ViewModel.TrialBalanceDimensionFiltersCertified = true;
-        harness.ViewModel.ReportPackageDimensionProvenanceCertified = true;
-        harness.ViewModel.TenantScopeConfigured = true;
-        harness.ViewModel.AdminRoleProfileConfigured = true;
-        harness.ViewModel.ScopedAccessPoliciesConfigured = true;
-        harness.ViewModel.ReportingGroupsConfigured = true;
-        harness.ViewModel.AccountingAdminSurfaceConfigured = true;
-        harness.ViewModel.WpfAccountingAdminSurfaceConfigured = true;
-        harness.ViewModel.ChartAdministrationStudioConfigured = true;
-        harness.ViewModel.RuleTestPromotionStudioConfigured = true;
-        harness.ViewModel.CloseSetupStudioConfigured = true;
-        harness.ViewModel.ProviderMappingStudioConfigured = true;
-        harness.ViewModel.TenantCompanyReportGroupSetupStudioConfigured = true;
-        harness.ViewModel.LedgerBookAdministrationStudioConfigured = true;
-        harness.ViewModel.PostingRuleAuthoringStudioConfigured = true;
-        harness.ViewModel.ApprovalQueueStudioConfigured = true;
-        harness.ViewModel.DimensionMappingStudioConfigured = true;
-        harness.ViewModel.ImplementationSandboxConfigured = true;
-        harness.ViewModel.CanSaveProductionCertificationProfile.Should().BeTrue();
-        harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should().BeTrue();
-
-        harness.ViewModel.ProductionCertificationEvidenceText = "   ";
+        harness.ViewModel.PostingRulesLedgerBookNativeCertified.Should().BeTrue();
+        harness.ViewModel.JournalLifecycleLedgerBookNativeCertified.Should().BeFalse();
         harness.ViewModel.CanSaveProductionCertificationProfile.Should().BeFalse();
-        harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should()
-            .BeFalse("production certification commands must share the retained-evidence guard");
-        harness.ViewModel.ProductionCertificationEvidenceText = string.Join(Environment.NewLine, operatorEvidence);
-        harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should().BeTrue();
+        harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should().BeFalse();
+        harness.ViewModel.ProductionCertificationSaveGuidanceText.Should()
+            .Contain("cannot create, change, or revoke production certification");
+
+        harness.ViewModel.ProductionCertificationEvidenceText =
+            "evidence://diagnostic-index/alpha-fund/production-certification";
 
         await harness.ViewModel.SaveProductionCertificationProfileAsync();
 
@@ -557,68 +521,34 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             "alpha-fund",
             harness.LedgerBookService.Book.LedgerBookId);
         retained.Should().NotBeNull();
-        retained!.EvidenceReferences.Should().Contain("evidence://controller-review/alpha-fund/production-certification-kickoff");
-        retained.EvidenceReferences.Should().Contain("correlation:" + retained.CorrelationId);
+        retained.Should().BeEquivalentTo(retainedBefore,
+            "diagnostic references must never overwrite a retained certification snapshot");
+        retained!.EvidenceReferences.Should().NotContain(
+            "evidence://diagnostic-index/alpha-fund/production-certification");
+        harness.ViewModel.ProductionCertificationProfileStatusText.Should()
+            .Contain("cannot create, change, or revoke production certification");
 
-        retained.EvidenceReferences.Should().Contain(operatorEvidence);
-        retained.PostingRulesLedgerBookNativeCertified.Should().BeTrue();
-        retained.ReportPackageDimensionProvenanceCertified.Should().BeTrue();
-        retained.WorkflowCertificationArtifacts.Should().ContainSingle();
-        retained.WorkflowCertificationArtifacts[0].Status.Should().Be(AccountingCertificationArtifactStatusDto.Certified);
-        retained.WorkflowCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
-        retained.WorkflowCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
-            AccountingWorkflowCertificationLaneKindDto.PostingRules,
-            AccountingWorkflowCertificationLaneKindDto.JournalLifecycle,
-            AccountingWorkflowCertificationLaneKindDto.CloseReporting,
-            AccountingWorkflowCertificationLaneKindDto.ExternalGl,
-            AccountingWorkflowCertificationLaneKindDto.Reconciliation,
-            AccountingWorkflowCertificationLaneKindDto.DirectLendingProjection,
-            AccountingWorkflowCertificationLaneKindDto.StrategyLedgerReads
-        ]);
-        retained.WorkflowCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
-            lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
-        retained.DimensionalCertificationArtifacts.Should().ContainSingle();
-        retained.DimensionalCertificationArtifacts[0].DimensionScopeEvidenceKey.Should().Be("canonical-production");
-        retained.DimensionalCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
-        retained.DimensionalCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
-            AccountingDimensionalCertificationLaneKindDto.PeriodReports,
-            AccountingDimensionalCertificationLaneKindDto.CrossPeriodReports,
-            AccountingDimensionalCertificationLaneKindDto.JournalFilters,
-            AccountingDimensionalCertificationLaneKindDto.ExternalExportMappings,
-            AccountingDimensionalCertificationLaneKindDto.LedgerLinePersistence,
-            AccountingDimensionalCertificationLaneKindDto.TrialBalanceFilters,
-            AccountingDimensionalCertificationLaneKindDto.ReportPackageProvenance
-        ]);
-        retained.DimensionalCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
-            lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
-        retained.TenantAdminCertificationArtifacts.Should().ContainSingle();
-        retained.TenantAdminCertificationArtifacts[0].SourceService.Should().Be("wpf-accounting-configure");
-        retained.TenantAdminCertificationArtifacts[0].LedgerBookId.Should().Be(harness.LedgerBookService.Book.LedgerBookId);
-        retained.TenantAdminCertificationArtifacts[0].Lanes.Select(lane => lane.Kind).Should().Contain([
-            AccountingTenantAdminCertificationLaneKindDto.TenantScope,
-            AccountingTenantAdminCertificationLaneKindDto.AdminRoleProfile,
-            AccountingTenantAdminCertificationLaneKindDto.ScopedAccessPolicies,
-            AccountingTenantAdminCertificationLaneKindDto.ReportingGroups,
-            AccountingTenantAdminCertificationLaneKindDto.AccountingAdminSurface,
-            AccountingTenantAdminCertificationLaneKindDto.WpfAccountingAdminSurface,
-            AccountingTenantAdminCertificationLaneKindDto.ChartAdministrationStudio,
-            AccountingTenantAdminCertificationLaneKindDto.RuleTestPromotionStudio,
-            AccountingTenantAdminCertificationLaneKindDto.CloseSetupStudio,
-            AccountingTenantAdminCertificationLaneKindDto.ProviderMappingStudio,
-            AccountingTenantAdminCertificationLaneKindDto.TenantCompanyReportGroupSetupStudio,
-            AccountingTenantAdminCertificationLaneKindDto.LedgerBookAdministrationStudio,
-            AccountingTenantAdminCertificationLaneKindDto.PostingRuleAuthoringStudio,
-            AccountingTenantAdminCertificationLaneKindDto.ApprovalQueueStudio,
-            AccountingTenantAdminCertificationLaneKindDto.DimensionMappingStudio,
-            AccountingTenantAdminCertificationLaneKindDto.ImplementationSandbox
-        ]);
-        retained.TenantAdminCertificationArtifacts[0].Lanes.Should().OnlyContain(lane =>
-            lane.Status == AccountingCertificationArtifactLaneStatusDto.Passed);
-        harness.ViewModel.ProductionCertificationProfileStatusText.Should().Contain("saved");
+        var secondProfile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "beta-fund",
+            DisplayName: "Beta Fund",
+            LegalEntityName: "Beta Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-beta"],
+            IsDefault: false));
+        await fundContext.SelectFundProfileAsync(secondProfile.FundProfileId);
+
+        await harness.ViewModel.LoadAsync();
+
+        harness.ViewModel.PostingRulesLedgerBookNativeCertified.Should().BeFalse();
+        harness.ViewModel.JournalLifecycleLedgerBookNativeCertified.Should().BeFalse();
+        harness.ViewModel.ProductionCertificationEvidenceText.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task ProductionCertificationProfile_SaveRequiresOperatorEvidenceBeforeGeneratedMarkers()
+    public async Task ProductionCertificationProfile_StringOnlyEvidenceCannotEnableOrSave()
     {
         Directory.CreateDirectory(_root);
         var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
@@ -638,21 +568,27 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         await harness.ViewModel.LoadAsync();
         await harness.ViewModel.SeedBaselineConfigurationAsync();
 
-        harness.ViewModel.ProductionCertificationEvidenceText = "   ";
+        harness.ViewModel.ProductionCertificationEvidenceText =
+            "evidence://diagnostic-index/alpha-fund/string-only-production-certification";
         harness.ViewModel.PostingRulesLedgerBookNativeCertified = true;
         harness.ViewModel.JournalLifecycleLedgerBookNativeCertified = true;
         harness.ViewModel.PeriodReportDimensionQueriesCertified = true;
 
+        harness.ViewModel.CanSaveProductionCertificationProfile.Should().BeFalse();
+        harness.ViewModel.SaveProductionCertificationProfileCommand.CanExecute(null).Should().BeFalse();
+        harness.ViewModel.ProductionCertificationSaveGuidanceText.Should()
+            .Contain("URI and reference text is diagnostic only");
+
         await harness.ViewModel.SaveProductionCertificationProfileAsync();
 
         harness.ViewModel.ProductionCertificationProfileStatusText.Should()
-            .Be("Retained evidence is required before saving production certification controls.");
+            .Contain("URI and reference text is diagnostic only");
         var retained = await harness.ProductionCertificationProfileStore.GetAsync(
             "alpha-fund",
             "Alpha Fund LP",
             "alpha-fund",
             harness.LedgerBookService.Book.LedgerBookId);
-        retained.Should().BeNull("generated certification markers cannot stand in for retained operator evidence");
+        retained.Should().BeNull("string locators cannot stand in for complete typed retained evidence authority");
     }
 
     [Fact]
@@ -1582,6 +1518,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("ManualJournalLedgerImpactGrid");
         xaml.Should().Contain("ManualJournalReportOutputGrid");
         xaml.Should().Contain("Report Output Route");
+        xaml.Should().Contain("Diagnostic evidence references");
+        xaml.Should().Contain("URI and reference text helps operators locate retained support");
+        xaml.Should().Contain("AccountingProductionCertificationEvidenceGuidanceText");
+        xaml.Should().Contain("ProductionCertificationSaveGuidanceText");
+        xaml.Should().MatchRegex("IsEnabled=\"False\"\\s+AutomationProperties.AutomationId=\"AccountingProductionCertificationProfileControlPanel\"");
+        xaml.Should().MatchRegex("IsReadOnly=\"True\"\\s+AutomationProperties.Name=\"Diagnostic production certification evidence references; not certification authority\"");
         xaml.Should().Contain("ToolTip=\"{Binding StatusText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding ConfigurationDetailText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding CloseDetailText}\"");
@@ -1596,6 +1538,71 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         {
             Directory.Delete(_root, recursive: true);
         }
+    }
+
+    private static AccountingProductionCertificationProfileDto CreateGovernedProductionCertificationProfile(
+        Guid ledgerBookId)
+    {
+        const string certificationId = "workflow-certification:alpha-fund:posting-rules:v7";
+        const string evidenceUri = "evidence://governed-certification/alpha-fund/posting-rules/v7";
+        var reviewedAtUtc = DateTimeOffset.Parse(
+            "2026-07-20T15:00:00Z",
+            CultureInfo.InvariantCulture);
+        var retainedAtUtc = reviewedAtUtc.AddMinutes(5);
+        var retainedEvidence = new RetainedEvidenceIdentityDto(
+            EvidenceId: "evidence:workflow-certification:alpha-fund:posting-rules:v7",
+            EvidenceUri: evidenceUri,
+            ContentHashSha256: new string('a', 64),
+            SourceSystem: "GovernedCertificationRunner",
+            SourceReference: "certification-run://alpha-fund/posting-rules/v7",
+            ReviewStatus: RetainedEvidenceIdentityValidator.AcceptedReviewStatus,
+            ReviewedBy: "independent-controller",
+            ReviewedAtUtc: reviewedAtUtc,
+            EffectiveDate: new DateOnly(2026, 7, 20),
+            EvidenceVersion: 7,
+            RetainedAtUtc: retainedAtUtc,
+            RetainedBy: "governed-evidence-store",
+            SubjectType: AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+            SubjectId: certificationId);
+        var workflowArtifact = new AccountingWorkflowCertificationArtifactDto(
+            CertificationId: certificationId,
+            Status: AccountingCertificationArtifactStatusDto.Certified,
+            TenantId: "alpha-fund",
+            CompanyId: "Alpha Fund LP",
+            FundProfileId: "alpha-fund",
+            LedgerBookId: ledgerBookId,
+            CertifiedBy: "independent-controller",
+            CertifiedAtUtc: reviewedAtUtc,
+            SourceService: "governed-certification-runner",
+            Lanes:
+            [
+                new AccountingWorkflowCertificationLaneDto(
+                    AccountingWorkflowCertificationLaneKindDto.PostingRules,
+                    AccountingCertificationArtifactLaneStatusDto.Passed,
+                    [evidenceUri])
+            ],
+            EvidenceReferences: [evidenceUri],
+            CorrelationId: "governed-certification-run-v7");
+
+        return new AccountingProductionCertificationProfileDto(
+            FundProfileId: "alpha-fund",
+            LedgerBookId: ledgerBookId,
+            PostingRulesLedgerBookNativeCertified: true,
+            JournalLifecycleLedgerBookNativeCertified: false,
+            CloseReportingLedgerBookNativeCertified: false,
+            ExternalGlLedgerBookNativeCertified: false,
+            PeriodReportDimensionQueriesCertified: false,
+            CrossPeriodReportDimensionQueriesCertified: false,
+            JournalQueryDimensionFiltersCertified: false,
+            ExternalExportDimensionMappingCertified: false,
+            UpdatedAtUtc: retainedAtUtc,
+            UpdatedBy: "governed-certification-controller",
+            EvidenceReferences: [evidenceUri],
+            CorrelationId: "governed-certification-run-v7",
+            TenantId: "alpha-fund",
+            CompanyId: "Alpha Fund LP",
+            WorkflowCertificationArtifacts: [workflowArtifact],
+            RetainedEvidence: [retainedEvidence]);
     }
 
     private AccountingConfigureHarness CreateHarness(FundContextService fundContext)

@@ -286,7 +286,10 @@
                                                Margin="0,4,0,10"
                                                TextWrapping="Wrap"
                                                AutomationProperties.AutomationId="AccountingProductionCertificationProfileUpdatedText" />
-                                    <UniformGrid Columns="4" Margin="0,0,0,12" AutomationProperties.AutomationId="AccountingProductionCertificationProfileControlPanel">
+                                    <UniformGrid Columns="4"
+                                                 Margin="0,0,0,12"
+                                                 IsEnabled="False"
+                                                 AutomationProperties.AutomationId="AccountingProductionCertificationProfileControlPanel">
                                         <CheckBox Content="Rules by book"
                                                   IsChecked="{Binding PostingRulesLedgerBookNativeCertified, Mode=TwoWay}"
                                                   Margin="0,0,10,6"
@@ -344,18 +347,33 @@
                                                   Margin="0,0,0,6"
                                                   AutomationProperties.AutomationId="AccountingProductionCertificationReportPackageDimensionsCheckBox" />
                                     </UniformGrid>
+                                    <TextBlock Text="Diagnostic evidence references"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               FontWeight="SemiBold"
+                                               Margin="0,2,0,4" />
+                                    <TextBlock Text="This editor cannot create, change, or revoke production certification. URI and reference text helps operators locate retained support but is not certification authority; an authorized server-side operation with complete typed retained evidence is required."
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,6"
+                                               AutomationProperties.AutomationId="AccountingProductionCertificationEvidenceGuidanceText" />
                                     <TextBox Text="{Binding ProductionCertificationEvidenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              MinHeight="32"
-                                             Margin="0,0,0,10"
-                                             AutomationProperties.Name="Retained production certification evidence"
+                                             Margin="0,0,0,6"
+                                             IsReadOnly="True"
+                                             AutomationProperties.Name="Diagnostic production certification evidence references; not certification authority"
                                              AutomationProperties.AutomationId="AccountingProductionCertificationEvidenceTextBox" />
+                                    <TextBlock Text="{Binding ProductionCertificationSaveGuidanceText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,10"
+                                               AutomationProperties.AutomationId="AccountingProductionCertificationSaveGuidanceText" />
                                     <Button AutomationProperties.AutomationId="AccountingProductionCertificationSaveButton"
                                             Content="Save Certification"
                                             Command="{Binding SaveProductionCertificationProfileCommand}"
                                             IsEnabled="{Binding CanSaveProductionCertificationProfile}"
                                             Style="{StaticResource SecondaryButtonStyle}"
                                             HorizontalAlignment="Left"
-                                            ToolTip="{Binding ProductionCertificationProfileStatusText}"
+                                            ToolTip="{Binding ProductionCertificationSaveGuidanceText}"
                                             ToolTipService.ShowOnDisabled="True"
                                             Margin="0,0,0,8" />
                                     <TextBlock Text="{Binding ProductionCertificationProfileStatusText}"

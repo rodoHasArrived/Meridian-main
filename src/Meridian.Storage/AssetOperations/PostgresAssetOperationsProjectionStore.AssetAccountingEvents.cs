@@ -40,6 +40,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
                 transaction: null,
                 eventId,
                 eventVersion,
+                forUpdate: false,
                 ct)
             .ConfigureAwait(false);
     }
@@ -120,6 +121,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
                 transaction,
                 projection.EventId,
                 projection.EventVersion,
+                forUpdate: true,
                 ct)
             .ConfigureAwait(false);
         var currentSpineVersion = latest?.Projection.SpineVersion ?? 0;
@@ -250,9 +252,10 @@ public sealed partial class PostgresAssetOperationsProjectionStore
 
     private async Task<AssetAccountingEventProjectionRecord?> ReadLatestAssetAccountingEventAsync(
         NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
+        NpgsqlTransaction? transaction,
         Guid eventId,
         long eventVersion,
+        bool forUpdate,
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
@@ -264,7 +267,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
             where event_id = @event_id and event_version = @event_version
             order by spine_version desc
             limit 1
-            for update;
+            {(forUpdate ? "for update" : string.Empty)};
             """;
         command.Parameters.AddWithValue("event_id", eventId);
         command.Parameters.AddWithValue("event_version", eventVersion);

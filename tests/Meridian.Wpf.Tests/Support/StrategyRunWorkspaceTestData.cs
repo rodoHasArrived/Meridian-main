@@ -93,9 +93,12 @@ internal static class StrategyRunWorkspaceTestData
             ElapsedTime: TimeSpan.FromMinutes(30),
             TotalEventsProcessed: 100);
 
-        return StrategyRunEntry.Start("recon-strategy", "Reconciliation Strategy", RunType.Backtest) with
+        var run = StrategyRunEntry.Start(
+            "recon-strategy",
+            "Reconciliation Strategy",
+            RunType.Backtest,
+            runId) with
         {
-            RunId = runId,
             StartedAt = startedAt,
             EndedAt = completedAt,
             Metrics = result,
@@ -105,7 +108,28 @@ internal static class StrategyRunWorkspaceTestData
             LedgerReference = "recon-ledger",
             AuditReference = $"audit-{runId}",
             FundProfileId = "alpha-fund",
-            FundDisplayName = "Alpha Fund"
+            FundDisplayName = "Alpha Fund",
+            TerminalStatus = StrategyRunStatus.Completed,
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
+            LifecycleEventAtUtc = completedAt,
+            Reason = "Strategy run completed."
+        };
+
+        return run with
+        {
+            InputHashSha256 = StrategyRunEntry.ComputeInputHash(
+                run.StrategyId,
+                run.StrategyName,
+                run.RunType,
+                run.DatasetReference,
+                run.FeedReference,
+                run.Engine,
+                run.ParameterSet,
+                parentRunId: run.ParentRunId,
+                portfolioId: run.PortfolioId,
+                ledgerReference: run.LedgerReference,
+                auditReference: run.AuditReference,
+                fundProfileId: run.FundProfileId)
         };
     }
 

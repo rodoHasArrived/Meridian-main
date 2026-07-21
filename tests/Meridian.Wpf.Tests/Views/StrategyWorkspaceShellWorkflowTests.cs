@@ -9,7 +9,9 @@ using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using Meridian.Storage.Operations;
 using Meridian.Strategies.Interfaces;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
@@ -53,6 +55,9 @@ public sealed class StrategyWorkspaceShellWorkflowTests
 
             configureServices.Should().NotBeNull();
             AppServiceTestHost.InvokeConfigureServices(configureServices!, services);
+            services.RemoveAll(typeof(IOperationalCaseHistoryStore));
+            services.AddSingleton<IOperationalCaseHistoryStore>(
+                new FileOperationalCaseHistoryStore(Path.Combine(tempRoot, "operational-case-history")));
             var briefing = BuildBriefing(runId, expectedSummary);
             services.RemoveAll(typeof(IWorkstationStrategyBriefingApiClient));
             services.AddSingleton<IWorkstationStrategyBriefingApiClient>(new FakeWorkstationStrategyBriefingApiClient

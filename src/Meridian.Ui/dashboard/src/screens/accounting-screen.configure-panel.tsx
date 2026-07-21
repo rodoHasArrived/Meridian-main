@@ -826,6 +826,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                     <input
                       type="checkbox"
                       checked={control.checked}
+                      disabled
                       onChange={(event) => view.productionCertificationProfile.updateControl(control.id, event.currentTarget.checked)}
                     />
                     {control.label}
@@ -838,6 +839,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
               <Input
                 id="accounting-production-certification-evidence"
                 value={view.productionCertificationProfile.evidenceValue}
+                readOnly
                 onChange={(event) => view.productionCertificationProfile.updateEvidence(event.currentTarget.value)}
                 placeholder="evidence://accounting/production-certification"
               />

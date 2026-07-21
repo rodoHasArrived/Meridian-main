@@ -100,7 +100,7 @@ import type {
   GeneratedPostingLine,
 } from "@/types";
 
-const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Retained evidence is required before saving production certification controls.";
+const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Production certification changes are unavailable in this editor because it has no complete retained-evidence selection; URI references are diagnostic only.";
 interface AccountingTenantAdministrationProfileDraft {
   tenantScopeConfigured: boolean;
   adminRoleProfileConfigured: boolean;
@@ -564,102 +564,12 @@ export function useAccountingConfigurationViewModel(
   }, []);
 
   const saveProductionCertificationProfile = useCallback(async () => {
-    if (!productionCertificationProfile || !productionCertificationDraft || productionCertificationProfileSaveBusy) {
-      return;
-    }
-
-    const correlationId = `browser-accounting-production-certification-${Date.now()}`;
-    const retainedEvidenceReferences = splitAccountingEvidenceReferences(productionCertificationDraft.evidenceText);
-    if (retainedEvidenceReferences.length === 0) {
-      setProductionCertificationProfileSaveError({
-        summary: PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED,
-        details: []
-      });
-      setProductionCertificationProfileSaveMessage(null);
-      return;
-    }
-
-    const evidenceReferences = withProductionCertificationControlEvidence(
-      retainedEvidenceReferences,
-      productionCertificationProfile,
-      productionCertificationDraft
-    );
-    const workflowCertificationArtifact = buildAccountingWorkflowCertificationArtifact(
-      productionCertificationProfile,
-      productionCertificationDraft,
-      evidenceReferences,
-      correlationId
-    );
-    const dimensionalCertificationArtifact = buildAccountingDimensionalCertificationArtifact(
-      productionCertificationProfile,
-      productionCertificationDraft,
-      evidenceReferences,
-      correlationId
-    );
-    const tenantAdminCertificationArtifact = buildAccountingTenantAdminCertificationArtifact(
-      productionCertificationProfile,
-      tenantAdministrationProfile,
-      tenantAdministrationDraft,
-      evidenceReferences,
-      workspace?.ledgerBookId ?? null,
-      correlationId
-    );
-    const nextProfile: AccountingProductionCertificationProfile = {
-      ...productionCertificationProfile,
-      postingRulesLedgerBookNativeCertified: productionCertificationDraft.postingRulesLedgerBookNativeCertified,
-      journalLifecycleLedgerBookNativeCertified: productionCertificationDraft.journalLifecycleLedgerBookNativeCertified,
-      closeReportingLedgerBookNativeCertified: productionCertificationDraft.closeReportingLedgerBookNativeCertified,
-      closePlanConfigurationLedgerBookNativeCertified: productionCertificationDraft.closePlanConfigurationLedgerBookNativeCertified,
-      externalGlLedgerBookNativeCertified: productionCertificationDraft.externalGlLedgerBookNativeCertified,
-      reconciliationLedgerBookNativeCertified: productionCertificationDraft.reconciliationLedgerBookNativeCertified,
-      directLendingLedgerBookNativeCertified: productionCertificationDraft.directLendingLedgerBookNativeCertified,
-      strategyLedgerReadLedgerBookNativeCertified: productionCertificationDraft.strategyLedgerReadLedgerBookNativeCertified,
-      periodReportDimensionQueriesCertified: productionCertificationDraft.periodReportDimensionQueriesCertified,
-      crossPeriodReportDimensionQueriesCertified: productionCertificationDraft.crossPeriodReportDimensionQueriesCertified,
-      journalQueryDimensionFiltersCertified: productionCertificationDraft.journalQueryDimensionFiltersCertified,
-      externalExportDimensionMappingCertified: productionCertificationDraft.externalExportDimensionMappingCertified,
-      ledgerLineDimensionsPersistedCertified: productionCertificationDraft.ledgerLineDimensionsPersistedCertified,
-      trialBalanceDimensionFiltersCertified: productionCertificationDraft.trialBalanceDimensionFiltersCertified,
-      reportPackageDimensionProvenanceCertified: productionCertificationDraft.reportPackageDimensionProvenanceCertified,
-      updatedAtUtc: new Date().toISOString(),
-      updatedBy: "browser-accounting-operator",
-      evidenceReferences,
-      correlationId,
-      workflowCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.workflowCertificationArtifacts,
-        workflowCertificationArtifact
-      ),
-      dimensionalCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.dimensionalCertificationArtifacts,
-        dimensionalCertificationArtifact
-      ),
-      tenantAdminCertificationArtifacts: mergeAccountingCertificationArtifacts(
-        productionCertificationProfile.tenantAdminCertificationArtifacts,
-        tenantAdminCertificationArtifact
-      )
-    };
-
-    setProductionCertificationProfileSaveBusy(true);
-    setProductionCertificationProfileSaveError(null);
+    setProductionCertificationProfileSaveError({
+      summary: PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED,
+      details: []
+    });
     setProductionCertificationProfileSaveMessage(null);
-    try {
-      const saved = await services.upsertProductionCertificationProfile({
-        profile: nextProfile,
-        actor: "browser-accounting-operator",
-        correlationId,
-        evidenceLinks: evidenceReferences
-      });
-      setProductionCertificationProfile(saved);
-      setProductionCertificationDraft(buildAccountingProductionCertificationProfileDraft(saved));
-      setProductionCertificationProfileError(null);
-      setProductionCertificationProfileSaveMessage("Production certification profile saved; readiness refreshed from retained book and dimension controls.");
-      await refresh();
-    } catch (err) {
-      setProductionCertificationProfileSaveError(describeApiError(err, "Production certification profile save failed."));
-    } finally {
-      setProductionCertificationProfileSaveBusy(false);
-    }
-  }, [productionCertificationDraft, productionCertificationProfile, productionCertificationProfileSaveBusy, refresh, services, tenantAdministrationDraft, tenantAdministrationProfile, workspace?.ledgerBookId]);
+  }, []);
 
   const updateTenantAdministrationControl = useCallback((controlId: string, checked: boolean) => {
     setTenantAdministrationDraft((current) => {
@@ -3320,7 +3230,7 @@ function buildAccountingProductionCertificationProfileEditorViewModel(
   const hasFundScope = Boolean(profile?.fundProfileId?.trim());
   const controls = buildAccountingProductionCertificationProfileControls(draft);
   const evidenceValue = draft?.evidenceText ?? "";
-  const missingEvidence = splitAccountingEvidenceReferences(evidenceValue).length === 0;
+  const missingEvidence = !hasCompleteProductionCertificationRetainedEvidenceSelection();
   const saveDisabledReason = !profile || !draft
     ? "Load accounting production scope before saving certification controls."
     : !hasFundScope
@@ -3343,13 +3253,22 @@ function buildAccountingProductionCertificationProfileEditorViewModel(
     saveDisabledReason,
     saveBusy,
     canSave: saveDisabledReason === null && !saveBusy,
-    statusText: saveError?.summary ?? saveMessage ?? loadError?.summary ?? null,
+    statusText: saveError?.summary
+      ?? saveMessage
+      ?? loadError?.summary
+      ?? (saveDisabledReason === PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED ? saveDisabledReason : null),
     errorText: saveError?.summary ?? null,
     errorDetails: saveError?.details ?? [],
     updateControl,
     updateEvidence,
     save
   };
+}
+
+function hasCompleteProductionCertificationRetainedEvidenceSelection(): boolean {
+  // This editor currently exposes locator strings only. Do not infer hashes, review/retention
+  // metadata, or certification-artifact bindings from those strings or from a prior profile.
+  return false;
 }
 
 function buildAccountingProductionCertificationProfileControls(
