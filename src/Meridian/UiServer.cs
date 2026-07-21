@@ -902,16 +902,30 @@ public sealed class UiServer : IAsyncDisposable
             {
                 var config = configStore.Load();
 
-                // Every source that can feed the pipeline counts: the top-level DataSource plus,
-                // when failover is enabled, each enabled real-time failover source — otherwise a
-                // synthetic failover source could publish fabricated prices while the banner
-                // reports the top-level source as live.
-                var candidateSources = new List<DataSourceKind> { config.DataSource };
-                if (config.DataSources is { EnableFailover: true, Sources.Length: > 0 })
+                // Mirror exactly which providers CollectorModeRunner instantiates, because those
+                // are what actually feed the pipeline. With failover enabled it builds clients
+                // from the first rule's primary + backup ids (each mapped to its source's provider,
+                // or the top-level DataSource when an id has no matching source entry) and does NOT
+                // consult Enabled/Type — so a disabled or historical synthetic backup named in a
+                // rule still publishes fabricated prices and must be flagged here. Without failover
+                // it is the single top-level DataSource.
+                var failoverCfg = config.DataSources;
+                var failoverRules = failoverCfg?.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
+                var candidateSources = new List<DataSourceKind>();
+                if (failoverCfg?.EnableFailover == true && failoverRules.Length > 0)
                 {
-                    candidateSources.AddRange(config.DataSources.Sources
-                        .Where(s => s.Enabled && s.Type is DataSourceType.RealTime or DataSourceType.Both)
-                        .Select(s => s.Provider));
+                    var rule = failoverRules[0];
+                    var sources = failoverCfg.Sources ?? Array.Empty<DataSourceConfig>();
+                    foreach (var providerId in new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds))
+                    {
+                        var source = sources.FirstOrDefault(
+                            s => string.Equals(s.Id, providerId, StringComparison.OrdinalIgnoreCase));
+                        candidateSources.Add(source?.Provider ?? config.DataSource);
+                    }
+                }
+                else
+                {
+                    candidateSources.Add(config.DataSource);
                 }
 
                 var simulatedSources = candidateSources

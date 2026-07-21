@@ -271,8 +271,14 @@ class Doctor:
             parts = urlsplit(conn_str)
             if parts.hostname:
                 host = parts.hostname
-            if parts.port:
-                port = parts.port
+            try:
+                if parts.port:
+                    port = parts.port
+            except ValueError:
+                # Malformed or out-of-range port in the URL; keep the default so the
+                # connection attempt below surfaces the unreachable diagnostic instead
+                # of crashing here.
+                pass
         elif conn_str:
             host_m = re.search(r"[Hh]ost=([^;, ]+)", conn_str)
             port_m = re.search(r"[Pp]ort=(\d+)", conn_str)
