@@ -45,7 +45,7 @@ fund-accounting deliverables, then safety and governance hardening, then institu
    evidence claims to be.
 3. **The deliverable is the product (ranks 5–6).** Fund-ops teams judge the platform by what they
    can hand to a client or auditor. Rank 5 makes governed report packs export client-grade PDF/XLSX
-   including a partners'-capital statement; rank 6 supplies the ledger-backed economics (unitized
+   including a partners-capital statement; rank 6 supplies the ledger-backed economics (unitized
    NAV, fees, waterfalls, capital calls) that statement needs to be right. Rank 5 and rank 6
    reconcile against each other.
 4. **Never overpromise safety or governance (ranks 7–8).** Safety buttons that do nothing and
