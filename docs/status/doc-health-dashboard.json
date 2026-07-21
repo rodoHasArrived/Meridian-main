@@ -1,11 +1,11 @@
 {
-  "total_files": 630,
-  "total_lines": 113540,
+  "total_files": 631,
+  "total_lines": 113906,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 207,
-  "average_lines": 180.2,
+  "todo_count": 208,
+  "average_lines": 180.5,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2548,7 +2548,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9299,
+      "line_count": 9300,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2891,8 +2891,16 @@
       "stale": false
     },
     {
+      "path": "docs/product/product-roadmap-priorities-2026-07.md",
+      "line_count": 93,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/README.md",
-      "line_count": 233,
+      "line_count": 236,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3236,7 +3244,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 520,
+      "line_count": 780,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3244,7 +3252,7 @@
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 41,
+      "line_count": 50,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
