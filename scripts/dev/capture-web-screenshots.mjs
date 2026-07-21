@@ -372,21 +372,33 @@ function extractExplicitAppRoutes(source) {
 }
 
 function collectExpectedCapturePaths(routeCatalog, appRoutes) {
+  // Compatibility redirect routes forward to a canonical screen that already has
+  // its own capture, so they do not need a dedicated screenshot entry. This list
+  // must stay in sync with the compatibility routes excluded by the coverage
+  // tests in tests/scripts/test_refresh_screenshots_workflow.py.
   const compatibilityRouteKeys = new Set([
+    "accountingTrialBalanceLegacy",
+    "dataAlertsLegacy",
     "dataSecurityMasterLegacy",
+    "dataWatchlistLegacy",
     "settingsIntegrations",
     "settingsFeatureCoverage",
     "settingsAlpacaProviderSetup",
     "settingsBackendCapabilityCoverage",
-    "settingsDiagnosticEndpoints"
+    "settingsDiagnosticEndpoints",
+    "strategyFormulaWorkbenchLegacy"
   ]);
   const compatibilityAppRoutes = new Set([
+    "/accounting/trial-balance",
+    "/data/alerts",
     "/data/security-master",
     "/data/security-master/*",
+    "/data/watchlist",
     "/overview/*",
     "/research/*",
     "/data-operations/*",
-    "/governance/*"
+    "/governance/*",
+    "/strategy/formula-workbench"
   ]);
   const expected = new Set(["/"]);
 
@@ -658,7 +670,16 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   }
 
   const actualUrl = page.url();
-  const expectedPath = new URL(url).pathname;
+  const requestedPath = new URL(url).pathname;
+  // Some captures deliberately target a compatibility route that redirects to
+  // the canonical screen (e.g. the accounting/data evidence entry points land
+  // on the reporting evidence workbench). When a capture declares that redirect
+  // via `expectedRedirectPath`, treat the redirect destination as the expected
+  // final path so the intentional navigation is not mistaken for a route that
+  // bounced to a fallback. The strict check still catches undeclared redirects.
+  const expectedPath = typeof capture.expectedRedirectPath === "string" && capture.expectedRedirectPath.trim().length > 0
+    ? new URL(toRouteUrl(baseUrl, capture.expectedRedirectPath.trim())).pathname
+    : requestedPath;
   const actualPath = new URL(actualUrl).pathname;
   if (actualPath !== expectedPath) {
     throw new Error(`Capture ${capture.name} ended on '${actualPath}', expected '${expectedPath}'.`);
@@ -677,6 +698,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     route: capture.path,
     url,
     actualUrl,
+    requestedPath,
     expectedPath,
     actualPath,
     file: fileName,
