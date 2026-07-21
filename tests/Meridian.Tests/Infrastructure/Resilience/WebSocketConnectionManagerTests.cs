@@ -384,8 +384,9 @@ public class WebSocketConnectionManagerTests
         // Forced transport cleanup always disposes the detached cancellation sources, but under CI
         // load that disposal can land just after DisposeAsync/DisconnectAsync returns. Poll Cancel()
         // for the terminal ObjectDisposedException rather than requiring it on the very first call.
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
-        while (DateTime.UtcNow < deadline)
+        // A monotonic Stopwatch keeps the poll budget immune to wall-clock/NTP adjustments.
+        var elapsed = Stopwatch.StartNew();
+        while (elapsed.Elapsed < TimeSpan.FromSeconds(2))
         {
             try
             {
