@@ -297,7 +297,7 @@ public sealed class AccountingProductionReadinessOperationalHardeningTests
             ReviewedAtUtc: DateTimeOffset.Parse("2026-07-21T18:30:00Z"),
             EffectiveDate: new DateOnly(2026, 7, 21),
             EvidenceVersion: 3,
-            RetainedAtUtc: DateTimeOffset.Parse("2026-07-21T18:20:00Z"),
+            RetainedAtUtc: DateTimeOffset.Parse("2026-07-21T18:45:00Z"),
             RetainedBy: "evidence-retention@meridian.local",
             SubjectType: subjectType,
             SubjectId: certificationId);
