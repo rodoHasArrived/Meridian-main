@@ -64,6 +64,31 @@ public sealed class PromotionWalkForwardGateTests
     }
 
     [Fact]
+    public async Task EvaluateAsync_PaperRunTargetingLive_WithExcessiveOutOfSampleDrawdown_IsNotEligible()
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult(),
+            WalkForwardEvidence = new StrategyRunWalkForwardEvidence(
+                OutOfSampleSharpeRatio: 0.9,
+                OutOfSampleMaxDrawdownPercent: 0.45m,
+                DegradationRatio: 0.8,
+                WindowCount: 6,
+                RecordedAt: DateTimeOffset.UtcNow)
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.EvaluateAsync(run.RunId);
+
+        result.IsEligible.Should().BeFalse();
+        result.BlockingReasons.Should().NotBeNull();
+        result.BlockingReasons!.Should().Contain(reason =>
+            reason.Contains("Out-of-sample max drawdown", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task EvaluateAsync_PaperRunTargetingLive_WithExcessiveDegradation_IsNotEligible()
     {
         var service = BuildService(out var store);

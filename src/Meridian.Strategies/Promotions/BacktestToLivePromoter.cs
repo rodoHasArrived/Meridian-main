@@ -101,13 +101,16 @@ public static class PromotionDecisionKinds
 /// ratio; values below this floor indicate the in-sample edge did not survive out of sample.</param>
 /// <param name="RequireWalkForwardEvidenceForLive">When true, paper runs cannot be promoted to
 /// live on a single full-period backtest alone — recorded walk-forward evidence is required.</param>
+/// <param name="MaxOutOfSampleDrawdownPercent">Maximum tolerated drawdown of the stitched
+/// out-of-sample equity curve when walk-forward evidence is recorded.</param>
 public sealed record PromotionCriteria(
     double MinSharpeRatio,
     decimal MaxAllowedDrawdownPercent,
     decimal MinTotalReturn,
     double MinOutOfSampleSharpe = 0.0,
     double MinWalkForwardDegradationRatio = 0.5,
-    bool RequireWalkForwardEvidenceForLive = true)
+    bool RequireWalkForwardEvidenceForLive = true,
+    decimal MaxOutOfSampleDrawdownPercent = 0.25m)
 {
     /// <summary>Conservative default criteria suitable for first-time promotion to paper trading.</summary>
     public static readonly PromotionCriteria Default = new(

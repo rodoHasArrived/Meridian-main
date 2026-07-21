@@ -25,7 +25,9 @@ type PromotionPolicyInput =
       OutOfSampleSharpeRatio: double
       WalkForwardDegradationRatio: double
       MinOutOfSampleSharpe: double
-      MinWalkForwardDegradationRatio: double }
+      MinWalkForwardDegradationRatio: double
+      OutOfSampleMaxDrawdownPercent: decimal
+      MaxOutOfSampleDrawdownPercent: decimal }
 
 let private passRule ruleId owner evidence isOverride precedence =
     { RuleId = ruleId
@@ -88,6 +90,12 @@ let evaluatePolicy (input: PromotionPolicyInput) : PromotionDecision =
                     failRule OutOfSampleSharpeThreshold StrategyResearch [ WalkForwardReportEvidence ] $"Out-of-sample Sharpe {input.OutOfSampleSharpeRatio:F2} is below required {input.MinOutOfSampleSharpe:F2}." false 54
 
             if input.HasWalkForwardEvidence then
+                if input.OutOfSampleMaxDrawdownPercent <= input.MaxOutOfSampleDrawdownPercent then
+                    passRule OutOfSampleDrawdownThreshold StrategyResearch [ WalkForwardReportEvidence ] false 55
+                else
+                    failRule OutOfSampleDrawdownThreshold StrategyResearch [ WalkForwardReportEvidence ] $"Out-of-sample max drawdown {input.OutOfSampleMaxDrawdownPercent:P2} exceeds allowed {input.MaxOutOfSampleDrawdownPercent:P2}." false 55
+
+            if input.HasWalkForwardEvidence then
                 if input.WalkForwardDegradationRatio >= input.MinWalkForwardDegradationRatio then
                     passRule WalkForwardDegradationThreshold StrategyResearch [ WalkForwardReportEvidence ] false 56
                 else
@@ -142,6 +150,7 @@ let evaluatePolicy (input: PromotionPolicyInput) : PromotionDecision =
                 || rule.RuleId = TotalReturnThreshold
                 || rule.RuleId = WalkForwardEvidencePresent
                 || rule.RuleId = OutOfSampleSharpeThreshold
+                || rule.RuleId = OutOfSampleDrawdownThreshold
                 || rule.RuleId = WalkForwardDegradationThreshold))
     let hasReadinessFailures =
         rules |> List.exists (fun rule -> not rule.Passed && (rule.RuleId = RunCompleted || rule.RuleId = MetricsPresent))

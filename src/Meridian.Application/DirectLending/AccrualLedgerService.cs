@@ -31,7 +31,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             accrual.InterestAmount,
             accrual.CommitmentFeeAmount,
             accrual.PenaltyAmount,
-            accrual.AnnualRateApplied
+            accrual.AnnualRateApplied,
+            accrual.PikInterestAmount
         });
 
         return _projector.ProjectAsync(
@@ -62,7 +63,8 @@ public sealed class AccrualLedgerService : IAccrualLedgerService
             accrual.InterestAmount,
             accrual.CommitmentFeeAmount,
             accrual.PenaltyAmount,
-            accrual.AnnualRateApplied
+            accrual.AnnualRateApplied,
+            accrual.PikInterestAmount
         });
 
         return _projector.ProjectAsync(

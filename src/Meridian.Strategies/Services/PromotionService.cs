@@ -133,7 +133,9 @@ public sealed class PromotionService
             outOfSampleSharpeRatio: walkForwardEvidence?.OutOfSampleSharpeRatio ?? 0.0,
             walkForwardDegradationRatio: walkForwardEvidence?.DegradationRatio ?? 0.0,
             minOutOfSampleSharpe: effectiveCriteria.MinOutOfSampleSharpe,
-            minWalkForwardDegradationRatio: effectiveCriteria.MinWalkForwardDegradationRatio);
+            minWalkForwardDegradationRatio: effectiveCriteria.MinWalkForwardDegradationRatio,
+            outOfSampleMaxDrawdownPercent: walkForwardEvidence?.OutOfSampleMaxDrawdownPercent ?? 0m,
+            maxOutOfSampleDrawdownPercent: effectiveCriteria.MaxOutOfSampleDrawdownPercent);
         var policyDecision = Interop.PromotionInterop.EvaluatePromotionPolicy(policyInput);
         var hasBrokerageGap = brokerageValidation?.HasBlockingGap == true;
         var eligible = policyDecision.Eligible && !hasBrokerageGap;

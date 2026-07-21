@@ -8,6 +8,7 @@ type PromotionRuleId =
     | TotalReturnThreshold
     | WalkForwardEvidencePresent
     | OutOfSampleSharpeThreshold
+    | OutOfSampleDrawdownThreshold
     | WalkForwardDegradationThreshold
     | TrustEvidenceFresh
     | TrustEvidenceComplete

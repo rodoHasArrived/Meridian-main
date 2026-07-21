@@ -29,7 +29,21 @@ let private livePolicyInput hasOverride =
         WalkForwardDegradationRatio = 0.8
         MinOutOfSampleSharpe = 0.0
         MinWalkForwardDegradationRatio = 0.5
+        OutOfSampleMaxDrawdownPercent = 0.10m
+        MaxOutOfSampleDrawdownPercent = 0.25m
     }
+
+[<Fact>]
+let ``Live promotion policy rejects excessive out-of-sample drawdown`` () =
+    let input = { livePolicyInput true with OutOfSampleMaxDrawdownPercent = 0.40m }
+    let decision = PromotionInterop.EvaluatePromotionPolicy(input)
+
+    decision.Eligible |> should equal false
+    decision.Outcome |> should equal "requires_human_review"
+
+    decision.Reasons
+    |> Array.exists (fun reason -> reason.Contains("Out-of-sample max drawdown"))
+    |> should equal true
 
 [<Fact>]
 let ``Live promotion policy requires walk-forward evidence when none is recorded`` () =

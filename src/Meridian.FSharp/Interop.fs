@@ -355,6 +355,8 @@ type PromotionInterop private () =
                 WalkForwardDegradationRatio = 0.0
                 MinOutOfSampleSharpe = 0.0
                 MinWalkForwardDegradationRatio = 0.0
+                OutOfSampleMaxDrawdownPercent = 0m
+                MaxOutOfSampleDrawdownPercent = 1m
             }
 
         PromotionPolicy.evaluatePolicy policyInput
