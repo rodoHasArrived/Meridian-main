@@ -258,7 +258,9 @@ class Doctor:
 
     def _check_postgres(self) -> None:
         """Try a TCP connection to PostgreSQL and report fix hints."""
-        conn_str = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "")
+        conn_str = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "") or os.getenv(
+        "MERIDIAN_DATABASE_URL", ""
+    )
         host = _POSTGRES_DEFAULT_HOST
         port = _POSTGRES_DEFAULT_PORT
 

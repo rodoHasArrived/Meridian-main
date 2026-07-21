@@ -21,6 +21,36 @@ public sealed class StatusResponse
 
     [JsonPropertyName("pipeline")]
     public PipelineData? Pipeline { get; set; }
+
+    /// <summary>
+    /// Degraded-mode posture (simulated market data, missing persistence). Null when the host
+    /// does not evaluate degraded modes; consumers must not treat null as "everything is fine".
+    /// </summary>
+    [JsonPropertyName("degradedMode")]
+    public DegradedModeStatus? DegradedMode { get; set; }
+}
+
+/// <summary>
+/// Loud degraded-mode posture surfaced to operators: whether market data is simulated and
+/// whether the money-path stores actually persist anything.
+/// </summary>
+public sealed class DegradedModeStatus
+{
+    /// <summary>Market data fidelity: "live", "simulated", or "unknown".</summary>
+    [JsonPropertyName("marketDataMode")]
+    public string MarketDataMode { get; set; } = "unknown";
+
+    /// <summary>Human-readable detail for the market data mode (provider, reason).</summary>
+    [JsonPropertyName("marketDataDetail")]
+    public string? MarketDataDetail { get; set; }
+
+    /// <summary>Persistence posture: "none", "partial", or "configured".</summary>
+    [JsonPropertyName("persistenceMode")]
+    public string PersistenceMode { get; set; } = "none";
+
+    /// <summary>Store domains currently running without a database (in-memory or unregistered).</summary>
+    [JsonPropertyName("missingPersistenceDomains")]
+    public string[] MissingPersistenceDomains { get; set; } = Array.Empty<string>();
 }
 
 /// <summary>

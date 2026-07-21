@@ -64,7 +64,11 @@ public static class CommitmentRollForwardCalculator
                         case ManualJournalEntryTypeDto.Distribution
                             when activity.Recallability == DistributionRecallability.RecallableReturnOfCapital:
                             var capacity = Math.Max(0m, commitment.RecallCapAmount - cumulativeRestored);
-                            var restorable = Math.Min(activity.GrossAmount, capacity);
+                            // A recall can only restore capital that was actually drawn: cap it at the
+                            // currently net-called amount as well as the recall cap, so a return that
+                            // exceeds contributions can never push uncalled above the commitment.
+                            var netCalledSoFar = Math.Max(0m, cumulativeCalled - cumulativeRestored);
+                            var restorable = Math.Min(Math.Min(activity.GrossAmount, capacity), netCalledSoFar);
                             recallableDelta = restorable;
                             cumulativeRestored += restorable;
                             recallableDistributions.Add(new RecallableDistributionEvent(

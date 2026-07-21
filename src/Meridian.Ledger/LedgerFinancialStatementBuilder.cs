@@ -179,15 +179,20 @@ public static class LedgerFinancialStatementBuilder
             if (equityLines.Length == 0)
                 continue;
 
-            var hasIncomeCounterpart = entry.Lines.Any(static line =>
-                line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense
-                || (line.Account.AccountType == LedgerAccountType.Equity
-                    && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal)));
+            // Only counterpart legs within the report scope may classify the movement, so a batched
+            // journal that also touches other funds/dimensions cannot misclassify this scope's
+            // contribution as an allocation (or vice versa).
+            var hasIncomeCounterpart = entry.Lines.Any(line =>
+                MatchesScope(line, financialAccountId, lineDimensions)
+                && (line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense
+                    || (line.Account.AccountType == LedgerAccountType.Equity
+                        && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal))));
             // Contributions and distributions settle through cash, receivables, or payables
             // (subscription-receivable and distribution-payable clearing), so treat asset and
             // liability counterparts alike as capital movement rather than "other".
-            var hasSettlementCounterpart = entry.Lines.Any(static line =>
-                line.Account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Liability);
+            var hasSettlementCounterpart = entry.Lines.Any(line =>
+                MatchesScope(line, financialAccountId, lineDimensions)
+                && line.Account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Liability);
 
             foreach (var line in equityLines)
             {

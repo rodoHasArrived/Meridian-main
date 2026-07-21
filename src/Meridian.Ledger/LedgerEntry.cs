@@ -74,11 +74,27 @@ public sealed record LedgerEntry
                 "Exactly one of Debit or Credit must be non-zero per ledger entry " +
                 $"(debit={debit}, credit={credit}).");
 
-        if (currency is not null && currency.IsDebit != debit > 0m)
+        if (currency is not null)
         {
-            throw new LedgerValidationException(
-                "Transaction currency detail must be on the same side as the functional amount " +
-                $"(functional debit={debit}, credit={credit}; transaction debit={currency.TransactionDebit}, credit={currency.TransactionCredit}).");
+            if (currency.IsDebit != debit > 0m)
+            {
+                throw new LedgerValidationException(
+                    "Transaction currency detail must be on the same side as the functional amount " +
+                    $"(functional debit={debit}, credit={credit}; transaction debit={currency.TransactionDebit}, credit={currency.TransactionCredit}).");
+            }
+
+            // The functional amount must be the transaction amount converted at the recorded FX rate,
+            // so the ledger never persists mutually inconsistent currency evidence (e.g. a USD 1 leg
+            // tagged as EUR 100 at 1.1). Allow a one-cent tolerance for 2-dp posting rounding.
+            var functionalAmount = debit > 0m ? debit : credit;
+            var transactionAmount = currency.IsDebit ? currency.TransactionDebit : currency.TransactionCredit;
+            var expectedFunctional = transactionAmount * currency.FxRateToFunctional;
+            if (Math.Abs(functionalAmount - expectedFunctional) > 0.01m)
+            {
+                throw new LedgerValidationException(
+                    $"Functional amount {functionalAmount} does not match transaction amount {transactionAmount} " +
+                    $"{currency.TransactionCurrency} at FX rate {currency.FxRateToFunctional} (expected ~{expectedFunctional} {currency.FunctionalCurrency}).");
+            }
         }
 
         EntryId = entryId;

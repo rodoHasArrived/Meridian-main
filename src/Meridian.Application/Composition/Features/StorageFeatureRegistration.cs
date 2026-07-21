@@ -77,6 +77,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
+        // decision below reads the per-domain variables.
+        MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         SecurityMasterStartup.EnsureEnvironmentDefaults();
         AssetOperationsStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
@@ -604,7 +608,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         throw new InvalidOperationException(
             "Production-safe startup requires persistence-backed governance domain services. " +
-            $"Configure {string.Join(", ", missing)} or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
+            $"Configure {string.Join(", ", missing)} (or set {MeridianDatabaseEnvironment.UnifiedVariable} to cover all store domains at once), " +
+            "or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
     }
 
     private static bool IsInMemoryGovernanceProfileEnabled()

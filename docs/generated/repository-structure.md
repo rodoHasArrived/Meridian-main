@@ -1828,6 +1828,7 @@ Meridian-main
 │   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md
 │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
+│   │   ├── product-roadmap-priorities-2026-07.md
 │   │   ├── README.md
 │   │   ├── web-ui-improvements-brainstorm-2026-07.md
 │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
@@ -3328,6 +3329,7 @@ Meridian-main
 │   │   │   ├── LedgerStartup.cs
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
+│   │   │   ├── PersistenceConfigurationStatus.cs
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
 │   │   │   ├── SecurityMasterStartup.cs
@@ -4589,6 +4591,7 @@ Meridian-main
 │   │   │   │   ├── SymbolResolution
 │   │   │   │   │   ├── CanonicalRegistrySymbolResolver.cs
 │   │   │   │   │   └── ISymbolResolver.cs
+│   │   │   │   ├── BackfillBarValidation.cs
 │   │   │   │   ├── BackfillProgressTracker.cs
 │   │   │   │   ├── BaseHistoricalDataProvider.cs
 │   │   │   │   ├── BaseSymbolSearchProvider.cs
@@ -5488,6 +5491,7 @@ Meridian-main
 │   │   │   └── JsonlMarketDataStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Storage.csproj
+│   │   ├── MeridianDatabaseEnvironment.cs
 │   │   ├── README.md
 │   │   ├── StorageOptions.cs
 │   │   ├── StorageProfiles.cs
@@ -5727,6 +5731,8 @@ Meridian-main
 │   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.test.ts
 │   │   │   │   │   │   ├── coverage-passport-drill-in.view-model.ts
 │   │   │   │   │   │   ├── decision-brief-pill.tsx
+│   │   │   │   │   │   ├── degraded-mode-banner.test.tsx
+│   │   │   │   │   │   ├── degraded-mode-banner.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
@@ -8009,6 +8015,7 @@ Meridian-main
 │   │   │   │   ├── ConfigValidatorTests.cs
 │   │   │   │   ├── ConfigWatcherTests.cs
 │   │   │   │   ├── CredentialPlaceholderDetectorTests.cs
+│   │   │   │   ├── DataSourceKindConverterTests.cs
 │   │   │   │   └── DefaultConfigPathResolverTests.cs
 │   │   │   ├── BackoffTests.cs
 │   │   │   └── CircuitBreakerTests.cs
@@ -8220,9 +8227,11 @@ Meridian-main
 │   │   │   │   ├── AlphaVantageCorporateActionProviderTests.cs
 │   │   │   │   ├── AlphaVantageHistoricalDataProviderTests.cs
 │   │   │   │   ├── AlphaVantageSymbolSearchProviderTests.cs
+│   │   │   │   ├── BackfillBarValidationTests.cs
 │   │   │   │   ├── BackfillRetryAfterTests.cs
 │   │   │   │   ├── BaseSymbolSearchProviderTests.cs
 │   │   │   │   ├── CanonicalRegistrySymbolResolverTests.cs
+│   │   │   │   ├── CompositeProviderStaleDataTests.cs
 │   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
@@ -8594,6 +8603,7 @@ Meridian-main
 │   │   │   ├── MaintenancePersistenceTests.cs
 │   │   │   ├── MaintenanceSchedulerTests.cs
 │   │   │   ├── MemoryMappedJsonlReaderTests.cs
+│   │   │   ├── MeridianDatabaseEnvironmentTests.cs
 │   │   │   ├── MetadataTagServiceTests.cs
 │   │   │   ├── OperationsContinuityTenantColumnMigrationTests.cs
 │   │   │   ├── ParquetConversionServiceTests.cs

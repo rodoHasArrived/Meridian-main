@@ -135,6 +135,27 @@ public sealed class CommitmentRollForwardCalculatorTests
     }
 
     [Fact]
+    public void RecallCappedAtCapitalDrawn_CannotPushUncalledAboveCommitment()
+    {
+        var commitment = Commitment(); // 10M, cap 1.0
+        var events = new[]
+        {
+            Call("call-1", 1_000_000m, new DateOnly(2026, 3, 31)),
+            RecallableReturn("dist-1", 5_000_000m, new DateOnly(2026, 6, 30)),
+        };
+
+        var result = CommitmentRollForwardCalculator.Build(commitment, events);
+
+        // Only the 1M actually drawn can be recalled, so uncalled returns to the full commitment
+        // rather than ballooning to 14M.
+        result.CumulativeRecallableRestored.Should().Be(1_000_000m);
+        result.Uncalled.Should().Be(10_000_000m);
+        result.Uncalled.Should().BeLessThanOrEqualTo(commitment.TotalCommitment);
+        result.RecallableDistributions.Single().PermanentPortion.Should().Be(4_000_000m);
+        result.InvariantHolds.Should().BeTrue();
+    }
+
+    [Fact]
     public void NonRecallableDistribution_DoesNotRestoreUncalled()
     {
         var commitment = Commitment();

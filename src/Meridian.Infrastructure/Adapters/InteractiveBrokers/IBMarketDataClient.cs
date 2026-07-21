@@ -61,6 +61,10 @@ public sealed class IBMarketDataClient :
 #else
         _inner = new IBSimulationClient(publisher);
         _isSimulation = true;
+        Log.ForContext<IBMarketDataClient>().Warning(
+            "Interactive Brokers market data is running in SIMULATION mode: prices are a synthetic random walk, " +
+            "historical requests return no bars, and no order reaches a broker. Build with the IBAPI compile flag " +
+            "and connect TWS/Gateway for real market data.");
 #endif
         _inner.ConnectionDiagnosticsChanged += OnInnerConnectionDiagnosticsChanged;
     }
@@ -69,6 +73,20 @@ public sealed class IBMarketDataClient :
     /// True when running without the IBAPI reference (simulation mode).
     /// </summary>
     public bool IsSimulation => _isSimulation;
+
+    /// <inheritdoc/>
+    public bool IsSimulated => _isSimulation;
+
+    /// <summary>
+    /// True when this build carries no IBAPI reference, so every IB client it creates is a
+    /// random-walk simulator. Lets hosts report simulation mode without constructing a client.
+    /// </summary>
+    public static bool IsSimulationBuild =>
+#if IBAPI
+        false;
+#else
+        true;
+#endif
 
     public bool IsEnabled => _inner.IsEnabled;
 

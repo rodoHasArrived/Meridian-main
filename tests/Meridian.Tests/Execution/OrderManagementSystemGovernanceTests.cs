@@ -91,7 +91,9 @@ public sealed class OrderManagementSystemGovernanceTests
             changedBy: "ops");
 
         using var oms = new OrderManagementSystem(
-            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            new ExecutionGateway(
+                NullLogger<ExecutionGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             auditTrail: auditTrail,
@@ -152,7 +154,9 @@ public sealed class OrderManagementSystemGovernanceTests
             changedBy: "ops");
 
         using var oms = new OrderManagementSystem(
-            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            new ExecutionGateway(
+                NullLogger<ExecutionGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             auditTrail: auditTrail,
@@ -218,7 +222,9 @@ public sealed class OrderManagementSystemGovernanceTests
             changedBy: "ops");
 
         using var oms = new OrderManagementSystem(
-            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            new ExecutionGateway(
+                NullLogger<ExecutionGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             auditTrail: auditTrail,
@@ -273,7 +279,9 @@ public sealed class OrderManagementSystemGovernanceTests
             reason: "Event-risk limit");
 
         using var oms = new OrderManagementSystem(
-            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            new ExecutionGateway(
+                NullLogger<ExecutionGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             auditTrail: auditTrail,
@@ -331,7 +339,9 @@ public sealed class OrderManagementSystemGovernanceTests
             RunId: "run-force-block"));
 
         using var oms = new OrderManagementSystem(
-            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            new ExecutionGateway(
+                NullLogger<ExecutionGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls,
             auditTrail: auditTrail,

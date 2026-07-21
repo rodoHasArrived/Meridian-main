@@ -38,6 +38,16 @@ public sealed class LedgerEntryCurrencyTests
     }
 
     [Fact]
+    public void FunctionalAmount_MustMatchTransactionTimesFxRate()
+    {
+        // EUR 100 at 1.1 should be ~110 functional; recording it as 1 is inconsistent evidence.
+        var inconsistent = new LedgerEntryCurrency("EUR", "USD", transactionDebit: 100m, transactionCredit: 0m, fxRateToFunctional: 1.1m);
+        var construct = () => new LedgerEntry(Guid.NewGuid(), Guid.NewGuid(), Timestamp, LedgerAccounts.Cash, 1m, 0m, "cash", dimensions: null, currency: inconsistent);
+
+        construct.Should().Throw<LedgerValidationException>().WithMessage("*does not match transaction amount*");
+    }
+
+    [Fact]
     public void MultiCurrencyProjection_ProducesCurrencyAwareLines()
     {
         var input = new MultiCurrencyJournalInput(
