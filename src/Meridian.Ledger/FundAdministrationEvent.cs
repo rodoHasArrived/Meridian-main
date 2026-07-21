@@ -46,6 +46,9 @@ public enum FundAdministrationEventKind
 
     /// <summary>A service-level-agreement timer breached its due time.</summary>
     SlaBreached,
+
+    /// <summary>A reconciliation true-break escalation was resolved.</summary>
+    ReconciliationBreakResolved,
 }
 
 /// <summary>

@@ -87,10 +87,30 @@ public sealed record OnboardingTemplate
                 throw new ArgumentException($"Onboarding node key '{node.Key}' is duplicated.", nameof(nodes));
         }
 
+        var parentOf = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         foreach (var node in nodes)
         {
-            if (node.ParentKey is { } parentKey && !string.IsNullOrWhiteSpace(parentKey) && !keys.Contains(parentKey.Trim()))
+            var key = node.Key.Trim();
+            var parentKey = string.IsNullOrWhiteSpace(node.ParentKey) ? null : node.ParentKey!.Trim();
+            if (parentKey is not null && !keys.Contains(parentKey))
                 throw new ArgumentException($"Onboarding node '{node.Key}' references unknown parent '{parentKey}'.", nameof(nodes));
+            if (parentKey is not null && string.Equals(parentKey, key, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException($"Onboarding node '{node.Key}' cannot be its own parent.", nameof(nodes));
+            parentOf[key] = parentKey;
+        }
+
+        // Reject parent cycles: these nodes must be created parent-first through the fund-structure
+        // services, so a cycle (a -> b -> a) is unbuildable — no member could be created before its
+        // ancestor exists.
+        foreach (var start in parentOf.Keys)
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var current = start;
+            while (current is not null && seen.Add(current))
+                current = parentOf.TryGetValue(current, out var next) ? next : null;
+
+            if (current is not null)
+                throw new ArgumentException($"Onboarding nodes contain a parent cycle involving '{start}'.", nameof(nodes));
         }
 
         TemplateId = templateId.Trim();

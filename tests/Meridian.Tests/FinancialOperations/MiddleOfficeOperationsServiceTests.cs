@@ -111,7 +111,7 @@ public sealed class MiddleOfficeOperationsServiceTests
     [Fact]
     public void ResolveBreak_StopsTimerAndClosesEscalation()
     {
-        var service = NewService(out _);
+        var service = NewService(out var log);
         var escalation = service.RaiseTrueBreak(new TrueBreakEscalationRequest(
             "brk-1", BreakClassification.TrueBreak, ReconciliationBreakSeverity.High, "reason", "ops", RaisedAtUtc: At));
 
@@ -120,6 +120,14 @@ public sealed class MiddleOfficeOperationsServiceTests
         resolved.Status.Should().Be(TrueBreakEscalationStatus.Resolved);
         resolved.Timer!.StateAt(At.AddHours(10)).Should().Be(WorkflowSlaState.Stopped);
         service.OpenEscalations.Should().BeEmpty();
+
+        // The resolution is recorded in the immutable governance trail, provably attributing who closed
+        // the break and why, even after it leaves OpenEscalations.
+        var resolvedEvent = log.EventsOfKind(FundAdministrationEventKind.ReconciliationBreakResolved)
+            .Should().ContainSingle().Which;
+        resolvedEvent.SubjectId.Should().Be("brk-1");
+        resolvedEvent.Attributes["resolvedBy"].Should().Be("supervisor");
+        log.VerifyIntegrity().Should().BeTrue();
     }
 
     [Fact]

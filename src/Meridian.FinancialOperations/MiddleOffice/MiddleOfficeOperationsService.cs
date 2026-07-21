@@ -302,6 +302,25 @@ public sealed class MiddleOfficeOperationsService
                 ResolutionNote = resolutionNote.Trim(),
                 Timer = escalation.Timer?.Stop(resolvedAt),
             };
+
+            // Record the resolution in the governance chain before exposing the terminal state, so the
+            // immutable trail can prove who resolved the break and why even after it leaves
+            // OpenEscalations. Appending first also keeps a durable sink that throws from closing the
+            // case without an audit record.
+            _eventSink.Append(
+                FundAdministrationEventKind.ReconciliationBreakResolved,
+                updated.ResolvedBy!,
+                updated.SubjectId,
+                $"True-break escalation resolved at level {updated.Level}.",
+                new Dictionary<string, string>
+                {
+                    ["escalationId"] = updated.EscalationId,
+                    ["breakId"] = updated.BreakId,
+                    ["resolvedBy"] = updated.ResolvedBy!,
+                    ["resolutionNote"] = updated.ResolutionNote!,
+                },
+                occurredAtUtc: resolvedAt);
+
             _escalations[updated.EscalationId] = updated;
             return updated;
         }

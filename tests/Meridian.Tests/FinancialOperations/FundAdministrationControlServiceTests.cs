@@ -176,6 +176,37 @@ public sealed class FundAdministrationControlServiceTests
     }
 
     [Fact]
+    public void OnboardingTemplate_SelfParentedNode_Throws()
+    {
+        var act = () => new OnboardingTemplate(
+            "std-fund",
+            "Standard Fund",
+            "Standard fund skeleton.",
+            [new OnboardingTemplateNode(OnboardingTemplateNode.Types.Portfolio, "port", "P", "P", ParentKey: "port")],
+            "admin",
+            At);
+
+        act.Should().Throw<ArgumentException>("a node cannot be its own parent");
+    }
+
+    [Fact]
+    public void OnboardingTemplate_ParentCycle_Throws()
+    {
+        var act = () => new OnboardingTemplate(
+            "std-fund",
+            "Standard Fund",
+            "Standard fund skeleton.",
+            [
+                new OnboardingTemplateNode(OnboardingTemplateNode.Types.Entity, "a", "A", "A", ParentKey: "b"),
+                new OnboardingTemplateNode(OnboardingTemplateNode.Types.Portfolio, "b", "B", "B", ParentKey: "a"),
+            ],
+            "admin",
+            At);
+
+        act.Should().Throw<ArgumentException>("a parent cycle is unbuildable parent-first");
+    }
+
+    [Fact]
     public void RecordJournalPosted_AppendsPostingEvent()
     {
         var service = new FundAdministrationControlService();
