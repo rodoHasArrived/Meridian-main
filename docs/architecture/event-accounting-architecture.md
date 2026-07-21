@@ -132,6 +132,14 @@ lot selection is an idempotency collision rather than a replay.
 The existing factor-paydown calculator remains one source-specific projection producer; it no longer
 defines the boundary for other asset accounting event kinds. Compatibility bridges and backtesting
 adjusters may call projection calculators, but they do not establish production posting authority.
+Consistent with that boundary, the shared instrument-to-journal proof
+(`FinancialRecordExplorerReadService.InstrumentJournalProof.cs`) reconstructs the source-event ->
+role/position -> projection -> posting-candidate -> approval -> immutable-journal chain for any
+position whose projection lineage is authoritative and self-consistent, regardless of model key. It
+no longer special-cases the factor-paydown model, so "prove the number" is demonstrable on any
+security and any of the eight canonical asset accounting event kinds; the source-evidence label is
+derived from the triggering event kind (for example "Corporate Action Evidence" or "Income
+Evidence") rather than fixed to factor-paydown wording.
 
 The Slice 1 semantic alignment is additive and transport-compatible. Slice 2 added only the planned
 Asset Operations role, book-position, and append-only economic-state projection tables needed for
