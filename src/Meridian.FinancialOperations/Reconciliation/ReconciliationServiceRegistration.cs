@@ -1,6 +1,8 @@
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
+using Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
+using Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
 using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
 using Meridian.Infrastructure.Reconciliation;
@@ -94,6 +96,8 @@ public static class ReconciliationServiceRegistration
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, OfxStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, IbFlexStatementConnector>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, AlpacaActivityStatementConnector>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Camt053StatementConnector>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IStatementConnector, Bai2StatementConnector>());
         services.TryAddSingleton<StatementConnectorRegistry>();
 
         services.TryAddSingleton(sp => new StatementImportService(
