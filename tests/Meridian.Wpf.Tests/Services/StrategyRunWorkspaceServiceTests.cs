@@ -62,7 +62,11 @@ public sealed class StrategyRunWorkspaceServiceTests
             var replayed = await restarted.GetRunByIdAsync(started.RunId);
 
             replayed.Should().NotBeNull();
-            replayed!.TerminalStatus.Should().Be(StrategyRunStatus.Completed);
+            // Under the hardened strategy-run lifecycle (commit 1aae6a9b), a completed run's terminal
+            // status is derived from its retained lifecycle event rather than stored on the optional
+            // TerminalStatus field (which Complete() intentionally leaves null; only Fail/Cancel set it).
+            replayed!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            replayed.EndedAt.Should().NotBeNull();
             File.Exists(Path.Combine(dataRoot, "operations", "case-history.jsonl")).Should().BeTrue();
         }
         finally
