@@ -90,12 +90,15 @@ public sealed class CommandModeRunnerTests
             imports.Should().ContainSingle();
             imports[0].Broker.Should().Be("custodian");
 
+            // No internal book is wired (default empty populations), so all three statement rows
+            // (position, cash, fee) reconcile to unmatched breaks instead of the old self-matcher's
+            // fabricated position match.
             var breaks = await breakStore.ListOpenAsync();
-            breaks.Should().HaveCount(2);
+            breaks.Should().HaveCount(3);
             breaks.Should().OnlyContain(item => item.ImportId == imports[0].ImportId);
 
             var cases = await caseStore.ListAsync();
-            cases.Should().HaveCount(2);
+            cases.Should().HaveCount(3);
             cases.Should().OnlyContain(item => item.ImportId == imports[0].ImportId);
         }
         finally

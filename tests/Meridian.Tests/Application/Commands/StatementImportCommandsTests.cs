@@ -198,12 +198,16 @@ public sealed class StatementImportCommandsTests
             imports[0].Broker.Should().Be("custodian");
             imports[0].SourceInstitution.Should().Be("Sample Custodian");
 
+            // With no internal book wired (the default empty population provider), the matcher
+            // reconciles each statement row against nothing and correctly surfaces all three rows
+            // (position, cash, fee) as unmatched breaks — the previous self-matcher fabricated a
+            // position match and only opened two.
             var breaks = await breakStore.ListOpenAsync();
-            breaks.Should().HaveCount(2);
+            breaks.Should().HaveCount(3);
             breaks.Should().OnlyContain(item => item.ImportId == imports[0].ImportId);
 
             var cases = await caseStore.ListAsync();
-            cases.Should().HaveCount(2);
+            cases.Should().HaveCount(3);
             cases.Should().OnlyContain(item => item.ImportId == imports[0].ImportId && item.Attachments.Count > 0);
             cases.Should().OnlyContain(item => item.BreakExplanation != null);
         }
