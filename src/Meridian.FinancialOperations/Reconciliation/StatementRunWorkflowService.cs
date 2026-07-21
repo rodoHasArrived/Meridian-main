@@ -10,7 +10,8 @@ public sealed class StatementRunWorkflowService(
     IBrokerStatementService brokerStatementService,
     IStatementReconciliationValidationService validationService,
     IInternalReconciliationPopulationProvider? populationProvider = null,
-    IReconciliationFxRateProvider? fxRateProvider = null) : IStatementRunWorkflowService
+    IReconciliationFxRateProvider? fxRateProvider = null,
+    IStatementToleranceProfileProvider? toleranceProfileProvider = null) : IStatementRunWorkflowService
 {
     // The internal book to reconcile against and the FX seam used to normalize foreign-currency
     // lines. Both default to safe, fail-closed implementations: an empty book (every row becomes a
@@ -20,6 +21,13 @@ public sealed class StatementRunWorkflowService(
         populationProvider ?? EmptyInternalReconciliationPopulationProvider.Instance;
     private readonly IReconciliationFxRateProvider _fxRateProvider =
         fxRateProvider ?? IdentityReconciliationFxRateProvider.Instance;
+
+    // Resolves the tolerance thresholds for the run's selected profile. Defaults to a provider that
+    // knows only the built-in default profile; a deployment registers a provider carrying its operator
+    // profiles so a run configured with a non-default profile is matched with that profile's thresholds
+    // rather than silently using the defaults.
+    private readonly IStatementToleranceProfileProvider _toleranceProfileProvider =
+        toleranceProfileProvider ?? new InMemoryStatementToleranceProfileProvider();
 
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken cancellationToken = default)
         => importStore.ListImportsAsync(cancellationToken);
@@ -47,12 +55,13 @@ public sealed class StatementRunWorkflowService(
                 cancellationToken)
             .ConfigureAwait(false);
 
+        var toleranceProfile = await ResolveToleranceProfileAsync(normalizedRequest.ToleranceProfileId, cancellationToken).ConfigureAwait(false);
         var createdAtUtc = DateTimeOffset.UtcNow;
         var matchResult = StatementRunMatcher.Match(
             imported.Import,
             imported.Rows,
             populations,
-            StatementToleranceProfile.Default,
+            toleranceProfile,
             _fxRateProvider,
             baseCurrency,
             createdAtUtc);
@@ -247,6 +256,26 @@ public sealed class StatementRunWorkflowService(
             SuggestedNextAction: "Assign the case, compare the external statement row to retained ledger and position evidence, then attach support before disposition.",
             RequiredSignoffRole: breakRecord.ToleranceBreached ? "Fund accounting" : "Fund operations",
             EvidenceLinks: evidenceReferences);
+    }
+
+    private async Task<StatementToleranceProfile> ResolveToleranceProfileAsync(string? profileId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(profileId))
+        {
+            return StatementToleranceProfile.Default;
+        }
+
+        try
+        {
+            return await _toleranceProfileProvider.GetProfileAsync(profileId.Trim(), cancellationToken).ConfigureAwait(false);
+        }
+        catch (KeyNotFoundException)
+        {
+            // The run references a profile the configured provider does not know. Fail safe to the
+            // default thresholds rather than aborting the import; the run's persisted profile id still
+            // records the operator's selection for follow-up.
+            return StatementToleranceProfile.Default;
+        }
     }
 
     private static async Task<string> ComputeSourceFileHashAsync(string sourcePath, CancellationToken cancellationToken)

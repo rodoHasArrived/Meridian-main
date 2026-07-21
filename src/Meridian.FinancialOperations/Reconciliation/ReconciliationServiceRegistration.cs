@@ -68,6 +68,10 @@ public static class ReconciliationServiceRegistration
         // its own implementations before calling AddStatementReconciliationServices, or via Replace.
         services.TryAddSingleton<IInternalReconciliationPopulationProvider>(EmptyInternalReconciliationPopulationProvider.Instance);
         services.TryAddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);
+        // Knows only the built-in default profile; a deployment registers a provider carrying its
+        // operator profiles (first-wins/Replace) so non-default runs are matched with the selected
+        // profile's thresholds instead of silently falling back to the defaults.
+        services.TryAddSingleton<IStatementToleranceProfileProvider>(new InMemoryStatementToleranceProfileProvider());
         services.TryAddSingleton<StatementReconciliationService>();
         services.TryAddSingleton<StatementReconciliationContextAdapter>();
         services.TryAddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());

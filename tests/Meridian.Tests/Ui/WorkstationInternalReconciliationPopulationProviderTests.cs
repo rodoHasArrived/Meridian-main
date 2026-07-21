@@ -75,6 +75,28 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
     }
 
     [Fact]
+    public async Task GetPopulationsAsync_ReturnsLatestBalancePerCurrency()
+    {
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+        accounts.GetBalanceTimelineAsync(Arg.Any<Guid>(), Arg.Any<DateOnly?>(), Arg.Any<DateOnly?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<AccountBalanceSnapshotDto>
+            {
+                Balance(new DateOnly(2026, 5, 20), 100m, "USD"),
+                Balance(new DateOnly(2026, 5, 31), 2500.25m, "USD"),
+                Balance(new DateOnly(2026, 5, 31), 900m, "EUR"),
+            });
+
+        var provider = new WorkstationInternalReconciliationPopulationProvider(accounts);
+
+        var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
+
+        result.CashBalances.Should().HaveCount(2, "each retained currency keeps its own period-end balance");
+        result.CashBalances.Should().ContainSingle(cash => cash.Currency == "USD" && cash.Balance == 2500.25m);
+        result.CashBalances.Should().ContainSingle(cash => cash.Currency == "EUR" && cash.Balance == 900m);
+    }
+
+    [Fact]
     public async Task GetPopulationsAsync_SnapshotAfterPeriodEnd_ExcludesPositions()
     {
         var accounts = Substitute.For<IAccountQueryService>();
@@ -132,8 +154,8 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
     private static InternalReconciliationPopulationContext Context(string fundAccountId) =>
         new(fundAccountId, "EXT-1", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31), "USD");
 
-    private static AccountBalanceSnapshotDto Balance(DateOnly asOf, decimal cash) => new(
-        Guid.NewGuid(), AccountId, null, asOf, "USD", cash,
+    private static AccountBalanceSnapshotDto Balance(DateOnly asOf, decimal cash, string currency = "USD") => new(
+        Guid.NewGuid(), AccountId, null, asOf, currency, cash,
         null, null, null, "internal", DateTimeOffset.UnixEpoch, null);
 
     private static AccountSummaryDto Account(string code, string runId) => new(

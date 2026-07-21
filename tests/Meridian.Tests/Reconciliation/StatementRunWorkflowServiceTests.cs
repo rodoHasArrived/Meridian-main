@@ -131,9 +131,41 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         breakRecord.ToleranceBreached.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task CreateAsync_HonorsSelectedToleranceProfile()
+    {
+        // The statement cash is 0.50 off the internal book: a break under the default 0.01 cash
+        // tolerance, but a tolerance-tier match under a loose profile. This proves the run's selected
+        // ToleranceProfileId threads into the matcher instead of always using the default thresholds.
+        var path = await WriteStatementAsync(
+            "tolerance.csv",
+            "FUND-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
+        var populations = Populations(new InternalReconciliationPopulations(
+            [],
+            [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash")],
+            []));
+        var looseProfile = new StatementToleranceProfile(
+            "statement-loose",
+            1,
+            [new CashToleranceRule("cash-loose-v1", 1.00m, null, TimeSpan.FromDays(5))],
+            [new PositionToleranceRule("position-loose-v1", 0.0001m, 0m, 0m)],
+            [new TransactionToleranceRule("transaction-loose-v1", 1.00m, TimeSpan.FromDays(5), 0m)]);
+        var toleranceProvider = new InMemoryStatementToleranceProfileProvider(
+            [StatementToleranceProfile.Default, looseProfile]);
+
+        var defaultRun = await CreateWorkflow(populations)
+            .CreateAsync(Request(path), CancellationToken.None);
+        defaultRun.Breaks.Should().ContainSingle("the 0.50 delta exceeds the default 0.01 cash tolerance");
+
+        var looseRun = await CreateWorkflow(populations, toleranceProfileProvider: toleranceProvider)
+            .CreateAsync(Request(path, toleranceProfileId: "statement-loose"), CancellationToken.None);
+        looseRun.Breaks.Should().BeEmpty("the 0.50 delta is within the selected loose profile's 1.00 cash tolerance");
+    }
+
     private StatementRunWorkflowService CreateWorkflow(
         IInternalReconciliationPopulationProvider? populations = null,
-        IReconciliationFxRateProvider? fxRateProvider = null)
+        IReconciliationFxRateProvider? fxRateProvider = null,
+        IStatementToleranceProfileProvider? toleranceProfileProvider = null)
     {
         var importStore = new JsonCanonicalStatementStore(_root);
         return new StatementRunWorkflowService(
@@ -143,7 +175,8 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             new CsvBrokerStatementService(importStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             populations,
-            fxRateProvider);
+            fxRateProvider,
+            toleranceProfileProvider);
     }
 
     private async Task<string> WriteStatementAsync(string fileName, params string[] rows)
@@ -155,7 +188,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         return path;
     }
 
-    private static StatementRunRequest Request(string path) => new(
+    private static StatementRunRequest Request(string path, string toleranceProfileId = "statement-default") => new(
         Broker: "custodian",
         SourceInstitution: "Sample Custodian",
         FundAccountId: "FUND-1",
@@ -165,7 +198,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         SourcePath: path,
         OriginalFileName: Path.GetFileName(path),
         MappingProfileId: "canonical-csv-v1",
-        ToleranceProfileId: "statement-default",
+        ToleranceProfileId: toleranceProfileId,
         ImportedBy: "ops-user",
         SourceFileHash: string.Empty);
 

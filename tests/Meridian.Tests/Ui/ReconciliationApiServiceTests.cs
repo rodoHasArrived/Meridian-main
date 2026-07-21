@@ -46,6 +46,7 @@ public sealed class ReconciliationApiServiceTests
                 [],
                 [])));
         services.AddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);
+        services.AddSingleton<IStatementToleranceProfileProvider>(new InMemoryStatementToleranceProfileProvider());
         services.AddSingleton<IStatementRunWorkflowService, StatementRunWorkflowService>();
         services.AddSingleton<IReconciliationApiService, ReconciliationApiService>();
 

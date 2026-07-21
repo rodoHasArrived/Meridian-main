@@ -95,36 +95,39 @@ public sealed class WorkstationInternalReconciliationPopulationProvider(
         DateOnly? asOfCeiling,
         CancellationToken ct)
     {
-        // Resolve the balance the statement period closes on, not the account's newest balance:
+        // Resolve the balances the statement period closes on, not the account's newest balances:
         // reconciling a closed statement period against a balance recorded after the period end would
         // compare across time and manufacture spurious breaks. Bound the timeline by the period end and
-        // take the most recent retained balance at or before it.
+        // keep only balances at or before it.
         var timeline = await accounts
             .GetBalanceTimelineAsync(accountId, null, asOfCeiling, ct)
             .ConfigureAwait(false);
 
-        var balance = (timeline ?? [])
+        var eligible = (timeline ?? [])
             .Where(snapshot => snapshot is not null
                 && !string.IsNullOrWhiteSpace(snapshot.Currency)
-                && (asOfCeiling is null || snapshot.AsOfDate <= asOfCeiling.Value))
-            .OrderByDescending(snapshot => snapshot.AsOfDate)
-            .ThenByDescending(snapshot => snapshot.RecordedAt)
-            .FirstOrDefault();
+                && (asOfCeiling is null || snapshot.AsOfDate <= asOfCeiling.Value));
 
-        if (balance is null)
-        {
-            return [];
-        }
-
-        return
-        [
-            new InternalCashBalance(
-                $"internal-cash:{accountId:D}:{balance.Currency}",
-                accountKey,
-                balance.Currency,
-                balance.CashBalance,
-                $"internal:balance:{balance.SnapshotId:D}")
-        ];
+        // One balance per currency: an account can retain balances in several currencies at the period
+        // close (USD and EUR, ...), and the matcher reconciles a separate cash row per currency. Emitting
+        // only the globally-latest snapshot would drop every other currency and turn each into a spurious
+        // unmatched break, so take the latest eligible snapshot per normalized currency and return them all.
+        return eligible
+            .GroupBy(snapshot => snapshot.Currency.Trim().ToUpperInvariant())
+            .Select(group =>
+            {
+                var latest = group
+                    .OrderByDescending(snapshot => snapshot.AsOfDate)
+                    .ThenByDescending(snapshot => snapshot.RecordedAt)
+                    .First();
+                return new InternalCashBalance(
+                    $"internal-cash:{accountId:D}:{group.Key}",
+                    accountKey,
+                    latest.Currency,
+                    latest.CashBalance,
+                    $"internal:balance:{latest.SnapshotId:D}");
+            })
+            .ToArray();
     }
 
     private static async Task<IReadOnlyList<InternalPortfolioPosition>> ReadPositionsAsync(

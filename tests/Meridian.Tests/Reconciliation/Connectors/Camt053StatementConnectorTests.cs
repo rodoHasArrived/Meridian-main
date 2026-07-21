@@ -50,4 +50,35 @@ public sealed class Camt053StatementConnectorTests
 
         _connector.CanHandle(document).Should().BeFalse("camt.053 must not claim IB Flex XML");
     }
+
+    [Fact]
+    public async Task Parse_Camt053_WithMultipleAccounts_IsRejected()
+    {
+        // Two Stmt elements for two different IBANs. The statement-run matcher would normalize every
+        // row to the run's single external account, so committing this file would compare one account's
+        // balances against another account's Meridian records. The connector must reject it instead.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                </Stmt>
+                <Stmt>
+                  <Acct><Id><IBAN>FR7630006000011234567890189</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">200.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("multi-account.xml", Encoding.UTF8.GetBytes(xml));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a multi-account camt.053 file must not commit into a single-account run");
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_MULTIPLE_ACCOUNTS");
+    }
 }

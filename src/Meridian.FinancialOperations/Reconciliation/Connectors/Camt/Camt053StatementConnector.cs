@@ -60,6 +60,23 @@ public sealed class Camt053StatementConnector : IStatementConnector
             return Task.FromResult(EmptyResult(issues));
         }
 
+        // A camt.053 file may carry statements for several accounts, but a statement run reconciles a
+        // single account and the matcher normalizes every imported row to the run's one external
+        // account. Committing a multi-account file would compare (and coincidentally match) one account's
+        // balances and entries against another account's Meridian records, so reject it: the operator
+        // must split the file into one document per account before importing.
+        var distinctAccounts = statements
+            .Select(static statement => ResolveAccount(Element(statement, "Acct")))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinctAccounts.Length > 1)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "CAMT_MULTIPLE_ACCOUNTS",
+                $"The camt.053 document contains statements for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the file into one document per account before importing."));
+            return Task.FromResult(EmptyResult(issues));
+        }
+
         var records = new List<StatementCanonicalRecord>();
         var rowNumber = 0;
         foreach (var statement in statements)
