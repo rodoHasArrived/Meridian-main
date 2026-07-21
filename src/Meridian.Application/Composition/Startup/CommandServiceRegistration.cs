@@ -1,17 +1,22 @@
 using Meridian.Application.Commands;
+using Meridian.Application.Reconciliation;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Historical;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.Services;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
+using Meridian.Contracts.Domain;
 using Meridian.Domain.Reconciliation;
 using Meridian.Contracts.Operations;
+using Meridian.PortfolioRecords.Accounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage;
 using Meridian.Storage.Operations;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 
 namespace Meridian.Application.Composition.Startup;
@@ -58,6 +63,18 @@ internal static class CommandServiceRegistration
             sp.GetRequiredService<IOperationalCaseHistoryStore>(),
             sp.GetServices<Meridian.Workflow.Runbooks.IRunbookStepHandler>()));
         services.AddStatementReconciliationServices(dataRoot);
+        // Reconcile CLI statement imports against Meridian's own retained account records (positions +
+        // cash) instead of the fail-closed empty book, matching the browser workstation graph. The
+        // file-backed fund-account and position stores read retained governance/position data under the
+        // CLI data root; a run whose FundAccountId is a Meridian fund-account GUID reconciles, while a
+        // non-GUID label or missing retained data fails closed to breaks. Replace (not TryAdd) so this
+        // wins over the empty default AddStatementReconciliationServices registers via TryAddSingleton.
+        services.TryAddSingleton<IPositionSnapshotStore>(sp => new JsonlPositionSnapshotStore(
+            sp.GetRequiredService<StorageOptions>(),
+            NullLogger<JsonlPositionSnapshotStore>.Instance));
+        services.TryAddSingleton<IAccountQueryService>(_ => new InMemoryFundAccountService(
+            Path.Combine(dataRoot, "governance", "fund-accounts.json")));
+        services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, RetainedInternalReconciliationPopulationProvider>());
 
         services.AddSingleton<ICliCommand, HelpCommand>();
         services.AddSingleton<ICliCommand>(sp => new ConfigCommands(

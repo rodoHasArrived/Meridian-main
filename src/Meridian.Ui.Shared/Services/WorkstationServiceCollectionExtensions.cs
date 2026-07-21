@@ -6,6 +6,7 @@ using Meridian.Application.DirectLending;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Audit.Compliance;
 using Meridian.Application.FundStructure;
+using Meridian.Application.Reconciliation;
 using Meridian.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -295,7 +296,7 @@ public static class WorkstationServiceCollectionExtensions
         // instead of the fail-closed empty book. Replace (not TryAdd) so this wins over the
         // EmptyInternalReconciliationPopulationProvider that AddStatementReconciliationServices
         // registers via TryAddSingleton, regardless of composition order.
-        services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, WorkstationInternalReconciliationPopulationProvider>());
+        services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, RetainedInternalReconciliationPopulationProvider>());
         services.TryAddSingleton<FundAccountCloseReadinessService>();
 
         services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();

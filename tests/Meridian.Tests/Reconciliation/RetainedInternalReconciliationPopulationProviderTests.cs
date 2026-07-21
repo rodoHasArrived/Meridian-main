@@ -1,20 +1,20 @@
 using FluentAssertions;
+using Meridian.Application.Reconciliation;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.FundStructure;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
-using Meridian.Ui.Shared.Services;
 using NSubstitute;
 
-namespace Meridian.Tests.Ui;
+namespace Meridian.Tests.Reconciliation;
 
 /// <summary>
-/// Verifies the workstation internal-book provider that replaces the empty default: it resolves
-/// Meridian's retained cash balance and position snapshot for a fund account as of the statement
-/// period end, labels them with the run's external account key, and fails closed to an empty book on
-/// any resolution gap so the matcher never fabricates a match.
+/// Verifies the retained internal-book provider that replaces the empty default across the browser
+/// workstation and CLI graphs: it resolves Meridian's retained cash balance and position snapshot for a
+/// fund account as of the statement period end, labels them with the run's external account key, and
+/// fails closed to an empty book on any resolution gap so the matcher never fabricates a match.
 /// </summary>
-public sealed class WorkstationInternalReconciliationPopulationProviderTests
+public sealed class RetainedInternalReconciliationPopulationProviderTests
 {
     private static readonly Guid AccountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
@@ -33,7 +33,7 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
                 [new PositionRecord("SPY", 10m, 500m, 0m, 0m)],
                 new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero)));
 
-        var provider = new WorkstationInternalReconciliationPopulationProvider(accounts, positions);
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts, positions);
 
         var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
 
@@ -64,7 +64,7 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
                 Balance(new DateOnly(2026, 6, 30), 9999.99m),
             });
 
-        var provider = new WorkstationInternalReconciliationPopulationProvider(accounts);
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts);
 
         var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
 
@@ -87,7 +87,7 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
                 Balance(new DateOnly(2026, 5, 31), 900m, "EUR"),
             });
 
-        var provider = new WorkstationInternalReconciliationPopulationProvider(accounts);
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts);
 
         var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
 
@@ -109,7 +109,7 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
                 [new PositionRecord("SPY", 10m, 500m, 0m, 0m)],
                 new DateTimeOffset(2026, 6, 15, 0, 0, 0, TimeSpan.Zero)));
 
-        var provider = new WorkstationInternalReconciliationPopulationProvider(accounts, positions);
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts, positions);
 
         var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
 
@@ -120,7 +120,7 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
     [Fact]
     public async Task GetPopulationsAsync_NonGuidFundAccount_FailsClosedToEmpty()
     {
-        var provider = new WorkstationInternalReconciliationPopulationProvider(Substitute.For<IAccountQueryService>());
+        var provider = new RetainedInternalReconciliationPopulationProvider(Substitute.For<IAccountQueryService>());
 
         var result = await provider.GetPopulationsAsync(Context("FUND-LABEL"));
 
@@ -133,7 +133,7 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
         var accounts = Substitute.For<IAccountQueryService>();
         accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(Account("FUND-1", "run-1") with { IsActive = false });
-        var provider = new WorkstationInternalReconciliationPopulationProvider(accounts);
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts);
 
         var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
 
@@ -144,7 +144,7 @@ public sealed class WorkstationInternalReconciliationPopulationProviderTests
     [Fact]
     public async Task GetPopulationsAsync_WithoutSources_FailsClosedToEmpty()
     {
-        var provider = new WorkstationInternalReconciliationPopulationProvider();
+        var provider = new RetainedInternalReconciliationPopulationProvider();
 
         var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
 

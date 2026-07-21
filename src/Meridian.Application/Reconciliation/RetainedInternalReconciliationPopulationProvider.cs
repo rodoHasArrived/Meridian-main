@@ -4,12 +4,14 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
 using Microsoft.Extensions.Logging;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.Application.Reconciliation;
 
 /// <summary>
 /// Resolves the internal book (positions and cash) a statement run reconciles against from Meridian's
 /// own retained account records, replacing the fail-closed empty default so shipped imports actually
-/// reconcile instead of surfacing every external row as an unmatched break.
+/// reconcile instead of surfacing every external row as an unmatched break. Lives in the application
+/// layer so both the browser workstation service graph and the CLI command graph resolve the same
+/// retained-book provider over shared account and position stores.
 /// </summary>
 /// <remarks>
 /// Sources and assumptions (documented for operator/domain review):
@@ -33,10 +35,10 @@ namespace Meridian.Ui.Shared.Services;
 /// Every resolution failure degrades to <see cref="InternalReconciliationPopulations.Empty"/> so the
 /// matcher never fabricates a match and the import workflow never throws.
 /// </remarks>
-public sealed class WorkstationInternalReconciliationPopulationProvider(
+public sealed class RetainedInternalReconciliationPopulationProvider(
     IAccountQueryService? accounts = null,
     IPositionSnapshotStore? positionSnapshots = null,
-    ILogger<WorkstationInternalReconciliationPopulationProvider>? logger = null)
+    ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null)
     : IInternalReconciliationPopulationProvider
 {
     public async Task<InternalReconciliationPopulations> GetPopulationsAsync(
