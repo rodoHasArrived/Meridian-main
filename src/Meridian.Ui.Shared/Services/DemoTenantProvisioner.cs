@@ -88,6 +88,15 @@ public sealed class DemoTenantProvisioner(
             var existing = await strategyRuns.GetRunByIdAsync(DemoTenantBlueprint.StrategyRunId, ct).ConfigureAwait(false);
             if (existing is not null)
             {
+                // A prior run that recorded the Started event but was interrupted before Completed
+                // would otherwise be left permanently incomplete. Finish it so re-provisioning
+                // converges on a completed run instead of silently skipping.
+                if (existing.EndedAt is null)
+                {
+                    await strategyRuns.RecordRunAsync(existing.Complete(metrics: null), ct).ConfigureAwait(false);
+                    return true;
+                }
+
                 return false;
             }
 

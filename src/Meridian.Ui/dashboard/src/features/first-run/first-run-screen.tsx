@@ -204,10 +204,10 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
             {workspace.reconciliationBreaks.map((item) => (
               <li key={item.id}>
                 <button type="button" onClick={() => onOpen(item.route)} className="w-full rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left transition hover:border-amber-400">
-                  <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center justify-between gap-2">
                     <strong className="text-slate-100">{item.title}</strong>
                     <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-xs font-semibold text-amber-200">{item.severity}</span>
-                  </div>
+                  </span>
                   <span className="mt-1 block text-xs text-slate-400">{item.summary}</span>
                   <span className="mt-1 block text-xs text-slate-500">Variance {formatUsd(item.variance)} · {item.category}</span>
                 </button>
