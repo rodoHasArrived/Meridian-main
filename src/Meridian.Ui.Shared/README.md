@@ -146,10 +146,13 @@ presentation code renders it.
 The existing explorer route now renders the retained `PositionId` dimension as a shared Position
 field when present. Browser and WPF clients consume the same server-built field and proof graph; no
 instrument-accounting-specific explorer route or client-side ledger query is added.
-For typed factor events the shared explorer queries `ILedgerJournalStore` with the exact ledger book,
-book aggregate, and indexed source event, then renders factor evidence -> holder role/book position
--> economic projection -> posting candidate -> independent approval -> immutable `JournalEntry` ->
-ledger/report evidence. The identities are present in shared selected-record fields and
+For canonical Asset Accounting events the shared explorer resolves the typed spine and queries
+`ILedgerJournalStore` with the exact ledger book, book aggregate, and indexed source event. It keeps
+Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported distinct, and renders
+retained source evidence -> Security Master/book position -> projection -> posting candidate ->
+independent approval -> immutable `JournalEntry` -> reconciliation/report lineage. Journal impact is
+absent unless the durable journal identity, book, period, balanced amounts, and Posted status match
+the spine. The identities are present in shared selected-record fields and
 relationships as well as the proof graph, so the browser and WPF generic explorers remain thin and
 show the same durable chain after restart.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
@@ -205,6 +208,10 @@ desktop hosts can ask Financial Operations to produce per-basis, per-ledger-book
 for a single source event while keeping ledger posting behind explicit approval. The generated
 candidate append endpoint is separate from preview/projection, requires `AdminMaintenance`, stamps
 the trusted tenant/company/actor context, and delegates durable append to Financial Operations.
+The canonical Asset Accounting candidate endpoint is also separate from the generic request path.
+It stamps trusted scope, invokes `IAssetAccountingEventSpineService`, and requires the server to
+re-read the retained projected spine, authoritative position/book/period/policy/rule pack, and typed
+evidence before Drafted state can be appended.
 Trading operator readiness treats retained Live promotion evidence as a fail-closed shared control:
 the promotion gate requires the full live approval checklist plus evidence-reference keys for each
 W7 live-readiness item, including broker execution reconciliation, before a live promotion trace can
@@ -381,8 +388,10 @@ guidance into one shared fail-closed payload for browser, WPF, and admin setup s
 Ledger-book-native workflow controls are evidence-qualified per lane: posting rules, journal
 lifecycle, close/reporting, close-plan configuration, external GL, reconciliation, direct-lending
 projections, and strategy ledger reads only count as complete when the selected ledger book has
-retained evidence for that workflow or an explicit full workflow certification packet. A generic
-ledger-book evidence link no longer certifies every workflow control by implication. Posting Rule
+complete typed retained evidence for that workflow. String links, legacy full-token packets,
+boolean flags, service registration, and route availability remain navigation or prerequisite
+metadata and cannot establish readiness. A generic ledger-book evidence link no longer certifies
+every workflow control by implication. Posting Rule
 Execution, Journal Lifecycle, Close/Reporting, External GL, reconciliation, direct-lending, and
 strategy-ledger readiness controls consume
 the same workflow certification state, so those lanes remain blocked even when their services or
@@ -1939,6 +1948,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

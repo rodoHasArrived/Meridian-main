@@ -210,6 +210,11 @@ public static class WorkstationServiceCollectionExtensions
             ?? throw new InvalidOperationException(
                 "The configured Asset Operations projection store must also implement " +
                 $"{nameof(IInstrumentPositionProjectionStore)}."));
+        services.TryAddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+            sp.GetService<IAssetOperationsProjectionStore>() as IAssetAccountingEventProjectionStore
+            ?? throw new InvalidOperationException(
+                "The configured Asset Operations projection store must also implement " +
+                $"{nameof(IAssetAccountingEventProjectionStore)}."));
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
@@ -620,10 +625,28 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
+            sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder
+            ?? throw new InvalidOperationException(
+                "The configured accounting posting candidate write builder must also implement " +
+                $"{nameof(IAccountingPostingCandidateAuthorityBuilder)}."));
+        services.TryAddSingleton<IAssetAccountingEventSpineService>(sp =>
+            AssetAccountingEventSpineService.TryCreate(
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetService<IInstrumentPositionProjectionStore>(),
+                sp.GetService<ContractSecurityMasterQueryService>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IAccountingPolicyService>(),
+                sp.GetService<IAccountingConfigurationService>(),
+                sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
+                sp.GetService<ILedgerJournalStore>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
-                sp.GetService<ILedgerJournalStore>()));
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IAtomicTaxLotJournalStore>(),
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(

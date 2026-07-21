@@ -10,6 +10,7 @@ namespace Meridian.Storage.Ledger;
 
 public sealed partial class PostgresLedgerJournalStore :
     ITransactionalLedgerJournalStore,
+    IAtomicTaxLotJournalStore,
     ILedgerPostingIdentityCollisionLookup
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
@@ -809,7 +810,7 @@ public sealed partial class PostgresLedgerJournalStore :
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            insert into {Qualified("tax_lots")} (
+            insert into {Qualified("tax_lots")} as retained (
                 tax_lot_record_id,
                 ledger_book_id,
                 account_name,
@@ -824,8 +825,13 @@ public sealed partial class PostgresLedgerJournalStore :
                 currency,
                 source_journal_entry_id,
                 evidence_ref,
+                version,
+                originating_mutation_batch_id,
+                last_mutation_batch_id,
                 created_at,
-                updated_at)
+                updated_at,
+                security_id,
+                book_position_id)
             values (
                 @tax_lot_record_id,
                 @ledger_book_id,
@@ -841,8 +847,13 @@ public sealed partial class PostgresLedgerJournalStore :
                 @currency,
                 @source_journal_entry_id,
                 @evidence_ref,
+                @version,
+                null,
+                null,
                 @created_at,
-                @updated_at)
+                @updated_at,
+                @security_id,
+                @book_position_id)
             on conflict (tax_lot_record_id) do update
             set ledger_book_id = excluded.ledger_book_id,
                 account_name = excluded.account_name,
@@ -857,7 +868,13 @@ public sealed partial class PostgresLedgerJournalStore :
                 currency = excluded.currency,
                 source_journal_entry_id = excluded.source_journal_entry_id,
                 evidence_ref = excluded.evidence_ref,
+                security_id = excluded.security_id,
+                book_position_id = excluded.book_position_id,
+                version = retained.version + 1,
                 updated_at = excluded.updated_at
+            where retained.originating_mutation_batch_id is null
+              and @expected_version > 0
+              and retained.version = @expected_version
             returning tax_lot_record_id,
                       ledger_book_id,
                       account_name,
@@ -872,8 +889,13 @@ public sealed partial class PostgresLedgerJournalStore :
                       currency,
                       source_journal_entry_id,
                       evidence_ref,
+                      version,
+                      originating_mutation_batch_id,
+                      last_mutation_batch_id,
                       created_at,
-                      updated_at;
+                      updated_at,
+                      security_id,
+                      book_position_id;
             """;
         command.Parameters.AddWithValue("tax_lot_record_id", lot.TaxLotRecordId);
         command.Parameters.AddWithValue("ledger_book_id", lot.LedgerBookId);
@@ -886,13 +908,22 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("currency", RequireLineageText(lot.Currency, nameof(lot.Currency)).ToUpperInvariant());
         command.Parameters.AddWithValue("source_journal_entry_id", (object?)lot.SourceJournalEntryId ?? DBNull.Value);
         command.Parameters.AddWithValue("evidence_ref", (object?)NormalizeOptional(lot.EvidenceRef) ?? DBNull.Value);
+        command.Parameters.AddWithValue("version", lot.Version <= 0 ? 1 : lot.Version);
+        command.Parameters.AddWithValue("expected_version", Math.Max(0, lot.Version));
         command.Parameters.AddWithValue("created_at", lot.CreatedAt.UtcDateTime);
         command.Parameters.AddWithValue("updated_at", lot.UpdatedAt.UtcDateTime);
+        command.Parameters.AddWithValue(
+            "security_id",
+            lot.SecurityId == Guid.Empty ? DBNull.Value : lot.SecurityId);
+        command.Parameters.AddWithValue(
+            "book_position_id",
+            lot.BookPositionId == Guid.Empty ? DBNull.Value : lot.BookPositionId);
 
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            throw new InvalidOperationException($"Ledger tax lot '{lot.TaxLotRecordId}' was not saved.");
+            throw new InvalidOperationException(
+                $"Ledger tax lot '{lot.TaxLotRecordId}' was not saved because its version was stale or it is managed by an atomic posting batch.");
         }
 
         return ReadTaxLot(reader);
@@ -928,8 +959,13 @@ public sealed partial class PostgresLedgerJournalStore :
                    currency,
                    source_journal_entry_id,
                    evidence_ref,
+                   version,
+                   originating_mutation_batch_id,
+                   last_mutation_batch_id,
                    created_at,
-                   updated_at
+                   updated_at,
+                   security_id,
+                   book_position_id
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
@@ -943,6 +979,68 @@ public sealed partial class PostgresLedgerJournalStore :
         AddAccountParameters(command, account);
 
         var lots = new List<LedgerTaxLotRecord>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            lots.Add(ReadTaxLot(reader));
+        }
+
+        return lots;
+    }
+
+    public async Task<IReadOnlyList<LedgerTaxLotRecord>> GetTaxLotsByIdsAsync(
+        Guid ledgerBookId,
+        IReadOnlyList<Guid> taxLotRecordIds,
+        CancellationToken ct = default)
+    {
+        if (ledgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
+        }
+
+        ArgumentNullException.ThrowIfNull(taxLotRecordIds);
+        var ids = taxLotRecordIds.Distinct().ToArray();
+        if (ids.Length == 0 || ids.Any(static id => id == Guid.Empty))
+        {
+            throw new ArgumentException(
+                "At least one distinct non-empty tax-lot record id is required.",
+                nameof(taxLotRecordIds));
+        }
+
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select tax_lot_record_id,
+                   ledger_book_id,
+                   account_name,
+                   account_type,
+                   symbol,
+                   financial_account_id,
+                   lot_id,
+                   acquired_date,
+                   original_quantity,
+                   open_quantity,
+                   unit_cost,
+                   currency,
+                   source_journal_entry_id,
+                   evidence_ref,
+                   version,
+                   originating_mutation_batch_id,
+                   last_mutation_batch_id,
+                   created_at,
+                   updated_at,
+                   security_id,
+                   book_position_id
+            from {Qualified("tax_lots")}
+            where ledger_book_id = @ledger_book_id
+              and tax_lot_record_id = any(@tax_lot_record_ids)
+            order by tax_lot_record_id;
+            """;
+        command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+        command.Parameters.AddWithValue("tax_lot_record_ids", ids);
+
+        var lots = new List<LedgerTaxLotRecord>(ids.Length);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
@@ -1641,6 +1739,23 @@ public sealed partial class PostgresLedgerJournalStore :
         {
             throw new ArgumentOutOfRangeException(nameof(lot), lot.UnitCost, "Tax-lot unit cost cannot be negative.");
         }
+
+        if (lot.Version < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lot), lot.Version, "Tax-lot version cannot be negative.");
+        }
+
+        if ((lot.SecurityId == Guid.Empty) != (lot.BookPositionId == Guid.Empty))
+        {
+            throw new LedgerValidationException(
+                "Tax-lot Security Master and book-position identities must either both be supplied or both be absent.");
+        }
+
+        if (lot.OriginatingMutationBatchId.HasValue || lot.LastMutationBatchId.HasValue)
+        {
+            throw new LedgerValidationException(
+                "Atomic tax-lot mutation lineage can only be written through IAtomicTaxLotJournalStore.");
+        }
     }
 
     private static void AddAccountParameters(NpgsqlCommand command, LedgerAccount account)
@@ -1681,10 +1796,15 @@ public sealed partial class PostgresLedgerJournalStore :
             reader.GetDecimal(9),
             reader.GetDecimal(10),
             reader.GetString(11),
-            ReadUtcDateTimeOffset(reader, 14),
-            ReadUtcDateTimeOffset(reader, 15),
+            ReadUtcDateTimeOffset(reader, 17),
+            ReadUtcDateTimeOffset(reader, 18),
             reader.IsDBNull(12) ? null : reader.GetGuid(12),
-            reader.IsDBNull(13) ? null : reader.GetString(13));
+            reader.IsDBNull(13) ? null : reader.GetString(13),
+            reader.GetInt64(14),
+            reader.IsDBNull(15) ? null : reader.GetGuid(15),
+            reader.IsDBNull(16) ? null : reader.GetGuid(16),
+            reader.IsDBNull(19) ? Guid.Empty : reader.GetGuid(19),
+            reader.IsDBNull(20) ? Guid.Empty : reader.GetGuid(20));
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
     {

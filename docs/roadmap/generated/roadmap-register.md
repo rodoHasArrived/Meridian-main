@@ -546,6 +546,38 @@ Rank 4 of the 2026-07 first-order improvement slate. Alpaca is the only turnkey 
 - `SRC-INFRASTRUCTURE`
 - `SRC-APP`
 
+## W9-ASSET-010 - Asset Accounting Event Spine and atomic lot posting
+| Field | Value |
+| --- | --- |
+| Wave | W9 |
+| Status | in_progress |
+| Health | on_track |
+| Priority | critical |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-07-21 |
+
+### Current Summary
+
+Active 2026-07-21. Establishes one evidence-backed Asset Accounting Event Spine across acquisition, capitalization, valuation, income, corporate action, impairment, depreciation/amortization, and disposal. Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported remain distinct lifecycle states; only a retained immutable journal may establish Posted impact. Acquisition lot creation and versioned selected-lot disposal are joined to the governed journal append in one idempotent serializable transaction, while readiness and UI projections fail closed when retained evidence identity, hash, source, review, effective-date, version, or scope is incomplete. Completion remains gated on focused and full CI evidence plus authoritative GitHub Actions checks.
+
+### Exit Criteria
+
+- All eight canonical asset accounting event kinds resolve Security Master identity, authoritative book position and version, ledger book, period and version, accounting basis, promoted rule pack, projection lineage, and complete retained evidence before candidate drafting.
+- Lifecycle contracts and shared read models never collapse Expected or Projected into a candidate, Approved into Posted, or Reported into Published; journal impact is absent unless an immutable journal id, ledger book, period, balanced amounts, currency, and Posted status are retained.
+- Acquisition creates its lot with the journal, and disposal consumes explicitly selected lot ids and expected versions with retained selection evidence, relief policy, before/after snapshots, correction lineage, and replay-safe fingerprints in one database transaction.
+- Production-readiness flags, service or endpoint availability, navigation links, legacy full tokens, and synthesized obligations cannot substitute for complete typed retained evidence.
+- Focused contract, spine, storage, endpoint, shared-read-model, and readiness tests pass before the full repository CI and GitHub Actions authority gates.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-INSTRUMENTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-LEDGER`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+
 ## W9-DEMO-002 - One-command seeded demo with durable storage
 | Field | Value |
 | --- | --- |

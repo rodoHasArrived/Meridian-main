@@ -92,6 +92,13 @@ candidate and approval workflow. Ledger and Storage remain responsible for balan
 `JournalEntry` append and its child ledger entries. Candidate journals, projected economic events,
 position state, and balance snapshots remain drafts or rebuildable read models rather than a second
 accounting truth.
+Asset Operations supplies the Expected and Projected inputs to the shared Asset Accounting Event
+Spine for Acquisition, Capitalization, Valuation, Income, Corporate Action, Impairment,
+Depreciation/Amortization, and Disposal. Every projected event carries the authoritative
+SecurityId, book-position id and expected version, book/period/basis scope, economic-event identity,
+projection lineage, projected balanced effect, and complete typed retained evidence. Generated
+obligations and service availability can explain pending work, but neither can manufacture evidence
+readiness or advance an event into Drafted or Posted state.
 The factor-paydown model computes `held face x (prior factor - current factor)`. Equal factors emit
 no posting candidate; factor increases, missing evidence, stale versions, invalid face/factors, and
 unrepresentable currency results fail closed. Its event identity excludes run timestamps so replay
@@ -116,6 +123,7 @@ UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsCha
 | --- | --- |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

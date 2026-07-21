@@ -47,7 +47,14 @@ public sealed record AccountingPostingEvidenceReferenceDto(
     string RetainedBy,
     string? SubjectId = null,
     string? ContentHash = null,
-    string? Description = null);
+    string? Description = null,
+    string? SourceReference = null,
+    string? Reviewer = null,
+    DateTimeOffset? ReviewedAtUtc = null,
+    DateOnly? EffectiveDate = null,
+    long? EvidenceVersion = null,
+    string? ReviewStatus = null,
+    string? SubjectType = null);
 
 public sealed record AccountingPostingCommandDto(
     Guid CommandId,

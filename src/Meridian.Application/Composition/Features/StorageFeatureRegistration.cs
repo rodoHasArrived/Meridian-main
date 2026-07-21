@@ -367,6 +367,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
             services.AddSingleton<IInstrumentPositionProjectionStore>(sp =>
                 sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
+            services.AddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
         }
 
         // Register null/stub implementations as fallbacks when Security Master is not configured.
@@ -410,6 +412,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
                 sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
             services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            services.TryAddSingleton<IAssetAccountingEventProjectionStore>(sp =>
                 sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
         }
         services.TryAddSingleton<AssetObligationProjectionService>();
