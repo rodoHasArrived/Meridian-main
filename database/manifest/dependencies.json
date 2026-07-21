@@ -36749,6 +36749,36 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "target": "database:ledger.journal_legs.functional_currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "target": "database:ledger.journal_legs.fx_rate_to_functional"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "target": "database:ledger.journal_legs.transaction_credit"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "target": "database:ledger.journal_legs.transaction_currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "target": "database:ledger.journal_legs.transaction_debit"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_journal_legs_non_negative_amounts on ledger.journal_legs",
       "target": "database:ledger.journal_legs.credit"
     },
@@ -39820,7 +39850,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f9d32f9850dbf39426402d284bfb03887a3dbc742d6b67f762e30e8dd8c6edf2",
+  "fingerprint": "52bfb73c7d5db9d87cb245136e68bf2a20ab9a61155080f37926564b04b34b29",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -55284,6 +55314,11 @@
       "label": "ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs"
     },
     {
+      "id": "database:ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "kind": "database-object",
+      "label": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs"
+    },
+    {
       "id": "database:ledger.ck_journal_legs_non_negative_amounts on ledger.journal_legs",
       "kind": "database-object",
       "label": "ledger.ck_journal_legs_non_negative_amounts on ledger.journal_legs"
@@ -55388,9 +55423,34 @@
       "label": "ledger.journal_legs.debit"
     },
     {
+      "id": "database:ledger.journal_legs.functional_currency",
+      "kind": "database-object",
+      "label": "ledger.journal_legs.functional_currency"
+    },
+    {
+      "id": "database:ledger.journal_legs.fx_rate_to_functional",
+      "kind": "database-object",
+      "label": "ledger.journal_legs.fx_rate_to_functional"
+    },
+    {
       "id": "database:ledger.journal_legs.posting_kind",
       "kind": "database-object",
       "label": "ledger.journal_legs.posting_kind"
+    },
+    {
+      "id": "database:ledger.journal_legs.transaction_credit",
+      "kind": "database-object",
+      "label": "ledger.journal_legs.transaction_credit"
+    },
+    {
+      "id": "database:ledger.journal_legs.transaction_currency",
+      "kind": "database-object",
+      "label": "ledger.journal_legs.transaction_currency"
+    },
+    {
+      "id": "database:ledger.journal_legs.transaction_debit",
+      "kind": "database-object",
+      "label": "ledger.journal_legs.transaction_debit"
     },
     {
       "id": "database:ledger.journal_legs_journal_entry_id_fkey on ledger.journal_legs",
@@ -57687,9 +57747,9 @@
   "summary": {
     "contract_references": 2801,
     "contract_set_memberships": 3230,
-    "edges": 6621,
+    "edges": 6626,
     "foreign_keys": 77,
     "logical_references": 6,
-    "nodes": 3049
+    "nodes": 3055
   }
 }

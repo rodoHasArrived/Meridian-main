@@ -163,6 +163,11 @@ erDiagram
         text posting_kind
         jsonb adjustment_approval_metadata
         jsonb dimensions
+        text transaction_currency
+        text functional_currency
+        numeric_38_10_ transaction_debit
+        numeric_38_10_ transaction_credit
+        numeric_38_10_ fx_rate_to_functional
     }
     ledger_ledger_books {
         uuid ledger_book_id PK

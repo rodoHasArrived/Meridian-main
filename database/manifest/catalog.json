@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "de0b57f199bfbcc91d96387cd8ef022a9a14062317ef78ed69184131e753bf9f",
+  "database_fingerprint": "37b1d86d45d3a16b87cb230fc3983aef2e4c6e0f58677b6d2bb10626442bc854",
   "dependencies": [
     {
       "fingerprint": "bd0cffb97d60bc4565436fedefc5799877f5565530ebfa44a25ebebeb8a8a4e5",
@@ -837,6 +837,66 @@
       "source_name": null,
       "source_schema": "ledger",
       "target": "ledger.journal_legs.posting_kind",
+      "target_kind": "table column",
+      "target_name": "journal_legs",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "577b9ba21eb131df181d428195e7459a0166551944aa5aee1da82deb431ac9e3",
+      "kind": "normal",
+      "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_legs.functional_currency",
+      "target_kind": "table column",
+      "target_name": "journal_legs",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "099ac90c3f1d36e7223aab1c048fe05361b08b6c3365c0ab79f565aa689331b4",
+      "kind": "normal",
+      "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_legs.fx_rate_to_functional",
+      "target_kind": "table column",
+      "target_name": "journal_legs",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "af9deab107fedff8c213c93f2ad9be6bb819685c408044e332f96dfe66982efb",
+      "kind": "normal",
+      "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_legs.transaction_credit",
+      "target_kind": "table column",
+      "target_name": "journal_legs",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "36a743984776048784c9c2491a098363d641545b341589eb32b1c64a83aba42c",
+      "kind": "normal",
+      "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_legs.transaction_currency",
+      "target_kind": "table column",
+      "target_name": "journal_legs",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "23f5fd5f2c3538adf0caac406c52c7c7f5d2a53ad787a3b78e0dccba69f1092b",
+      "kind": "normal",
+      "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_legs.transaction_debit",
       "target_kind": "table column",
       "target_name": "journal_legs",
       "target_schema": "ledger"
@@ -6513,6 +6573,14 @@
       "object": "column:ledger.journal_legs.financial_account_id"
     },
     {
+      "fingerprint": "cf4c6b53cf8fca6dc7b0b2ffd77f9f6c09bb7bb9e2ceed78b2ba3e6094cf708c",
+      "object": "column:ledger.journal_legs.functional_currency"
+    },
+    {
+      "fingerprint": "6eaed66eddc77655e9ffbb65e93caaac9255af8bdca7e6390da7c3fd98361a6b",
+      "object": "column:ledger.journal_legs.fx_rate_to_functional"
+    },
+    {
       "fingerprint": "6e4232a417fe4d577677e5a243881141c1618a9543368c6e97b978db9a26d044",
       "object": "column:ledger.journal_legs.journal_entry_id"
     },
@@ -6551,6 +6619,18 @@
     {
       "fingerprint": "cb13809c2c77f5a3e2deaafec9894a4e9f2c2b5a31c967ee4d8314a07a7bd435",
       "object": "column:ledger.journal_legs.symbol"
+    },
+    {
+      "fingerprint": "48c9b1736cfff603d6838b7457cb70895eb024c18e4a060ad30bacb141f890d9",
+      "object": "column:ledger.journal_legs.transaction_credit"
+    },
+    {
+      "fingerprint": "a73fe4d3d1a373d51e9cdc7555276b9cdd0f4398ae5211a422adb2aa02569ffa",
+      "object": "column:ledger.journal_legs.transaction_currency"
+    },
+    {
+      "fingerprint": "29b20d641f9e02be2a99e92f2db7b31e963f0da3f4c326fb7f5327460e8d88dd",
+      "object": "column:ledger.journal_legs.transaction_debit"
     },
     {
       "fingerprint": "2bee8f6e3269d02bf2902d712051734906eff26fe609046c6ee317bea95824e2",
@@ -10837,6 +10917,10 @@
       "object": "constraint:ledger.journal_legs.ck_journal_legs_adjustment_approval_metadata"
     },
     {
+      "fingerprint": "3b91c89b14fdffdf480c7f9606912a4884f36ee5f1ff9962fc39dbdbe0eefd85",
+      "object": "constraint:ledger.journal_legs.ck_journal_legs_currency_detail"
+    },
+    {
       "fingerprint": "860233e39d3ad7111273dbefede8fc95181d7645121a920b992aa71892203a7a",
       "object": "constraint:ledger.journal_legs.ck_journal_legs_non_negative_amounts"
     },
@@ -12207,6 +12291,26 @@
     {
       "fingerprint": "03c5260b22f76d510b112661174c9d5deb5d002437411baf332727c900935ab0",
       "object": "dependency:ledger.ck_journal_legs_adjustment_approval_metadata on ledger.journal_legs->ledger.journal_legs.posting_kind:normal"
+    },
+    {
+      "fingerprint": "577b9ba21eb131df181d428195e7459a0166551944aa5aee1da82deb431ac9e3",
+      "object": "dependency:ledger.ck_journal_legs_currency_detail on ledger.journal_legs->ledger.journal_legs.functional_currency:normal"
+    },
+    {
+      "fingerprint": "099ac90c3f1d36e7223aab1c048fe05361b08b6c3365c0ab79f565aa689331b4",
+      "object": "dependency:ledger.ck_journal_legs_currency_detail on ledger.journal_legs->ledger.journal_legs.fx_rate_to_functional:normal"
+    },
+    {
+      "fingerprint": "af9deab107fedff8c213c93f2ad9be6bb819685c408044e332f96dfe66982efb",
+      "object": "dependency:ledger.ck_journal_legs_currency_detail on ledger.journal_legs->ledger.journal_legs.transaction_credit:normal"
+    },
+    {
+      "fingerprint": "36a743984776048784c9c2491a098363d641545b341589eb32b1c64a83aba42c",
+      "object": "dependency:ledger.ck_journal_legs_currency_detail on ledger.journal_legs->ledger.journal_legs.transaction_currency:normal"
+    },
+    {
+      "fingerprint": "23f5fd5f2c3538adf0caac406c52c7c7f5d2a53ad787a3b78e0dccba69f1092b",
+      "object": "dependency:ledger.ck_journal_legs_currency_detail on ledger.journal_legs->ledger.journal_legs.transaction_debit:normal"
     },
     {
       "fingerprint": "f6f7d5e2ca52882b2d587170fdf031ffe39fdb7772b36264cd8e1a362a29779b",
@@ -13837,6 +13941,10 @@
       "object": "index:ledger.ix_journal_legs_period_posting_kind"
     },
     {
+      "fingerprint": "d68b86655fbe325919562f902f6d34c886330662840ddbd1b96e9ece31eae25e",
+      "object": "index:ledger.ix_journal_legs_transaction_currency"
+    },
+    {
       "fingerprint": "68ea251ac212d3e9f674877c54580d81f19a95be22478ebd74f46749a4317331",
       "object": "index:ledger.ix_ledger_books_accounting_basis"
     },
@@ -15365,7 +15473,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "a72d7225935729b66df40db883954466dd338f5636533c20d9e7755c73d54570",
+      "fingerprint": "113152ff6ac0df6da838310449d67d0b5fd939e0a6e7b91bc3fbb724fa017f96",
       "object": "schema:ledger"
     },
     {
@@ -15617,7 +15725,7 @@
       "object": "table:ledger.journal_entries"
     },
     {
-      "fingerprint": "9714f5b0c19afee3b3fce93aaa27eac8c91a719c80677224696ce30518172849",
+      "fingerprint": "7bf688add67986e27839bfad91c9b42060bb815b00b9a200d2106f0631d7ae73",
       "object": "table:ledger.journal_legs"
     },
     {
@@ -44869,6 +44977,66 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "577b9ba21eb131df181d428195e7459a0166551944aa5aee1da82deb431ac9e3",
+          "kind": "normal",
+          "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_legs.functional_currency",
+          "target_kind": "table column",
+          "target_name": "journal_legs",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "099ac90c3f1d36e7223aab1c048fe05361b08b6c3365c0ab79f565aa689331b4",
+          "kind": "normal",
+          "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_legs.fx_rate_to_functional",
+          "target_kind": "table column",
+          "target_name": "journal_legs",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "af9deab107fedff8c213c93f2ad9be6bb819685c408044e332f96dfe66982efb",
+          "kind": "normal",
+          "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_legs.transaction_credit",
+          "target_kind": "table column",
+          "target_name": "journal_legs",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "36a743984776048784c9c2491a098363d641545b341589eb32b1c64a83aba42c",
+          "kind": "normal",
+          "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_legs.transaction_currency",
+          "target_kind": "table column",
+          "target_name": "journal_legs",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "23f5fd5f2c3538adf0caac406c52c7c7f5d2a53ad787a3b78e0dccba69f1092b",
+          "kind": "normal",
+          "source": "ledger.ck_journal_legs_currency_detail on ledger.journal_legs",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_legs.transaction_debit",
+          "target_kind": "table column",
+          "target_name": "journal_legs",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "f6f7d5e2ca52882b2d587170fdf031ffe39fdb7772b36264cd8e1a362a29779b",
           "kind": "normal",
           "source": "ledger.ck_journal_legs_non_negative_amounts on ledger.journal_legs",
@@ -45161,7 +45329,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "a72d7225935729b66df40db883954466dd338f5636533c20d9e7755c73d54570",
+      "fingerprint": "113152ff6ac0df6da838310449d67d0b5fd939e0a6e7b91bc3fbb724fa017f96",
       "foreign_tables": [],
       "functions": [],
       "logical_modules": [
@@ -49722,6 +49890,86 @@
               "security_labels": [],
               "type_name": "jsonb",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a73fe4d3d1a373d51e9cdc7555276b9cdd0f4398ae5211a422adb2aa02569ffa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "transaction_currency",
+              "nullable": true,
+              "ordinal_position": 26,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "cf4c6b53cf8fca6dc7b0b2ffd77f9f6c09bb7bb9e2ceed78b2ba3e6094cf708c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "functional_currency",
+              "nullable": true,
+              "ordinal_position": 27,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,10)",
+              "default": null,
+              "fingerprint": "29b20d641f9e02be2a99e92f2db7b31e963f0da3f4c326fb7f5327460e8d88dd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "transaction_debit",
+              "nullable": true,
+              "ordinal_position": 28,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,10)",
+              "default": null,
+              "fingerprint": "48c9b1736cfff603d6838b7457cb70895eb024c18e4a060ad30bacb141f890d9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "transaction_credit",
+              "nullable": true,
+              "ordinal_position": 29,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,10)",
+              "default": null,
+              "fingerprint": "6eaed66eddc77655e9ffbb65e93caaac9255af8bdca7e6390da7c3fd98361a6b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fx_rate_to_functional",
+              "nullable": true,
+              "ordinal_position": 30,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -49739,6 +49987,30 @@
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_journal_legs_adjustment_approval_metadata",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "transaction_currency",
+                "functional_currency",
+                "transaction_debit",
+                "transaction_credit",
+                "fx_rate_to_functional"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (transaction_currency IS NULL AND functional_currency IS NULL AND transaction_debit IS NULL AND transaction_credit IS NULL AND fx_rate_to_functional IS NULL OR transaction_currency ~ '^[A-Z]{3}$'::text AND functional_currency ~ '^[A-Z]{3}$'::text AND transaction_debit IS NOT NULL AND transaction_debit >= 0::numeric AND transaction_credit IS NOT NULL AND transaction_credit >= 0::numeric AND (transaction_debit > 0::numeric AND transaction_credit = 0::numeric OR transaction_debit = 0::numeric AND transaction_credit > 0::numeric) AND fx_rate_to_functional IS NOT NULL AND fx_rate_to_functional > 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "3b91c89b14fdffdf480c7f9606912a4884f36ee5f1ff9962fc39dbdbe0eefd85",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_journal_legs_currency_detail",
               "no_inherit": false,
               "referenced_columns": [],
               "referenced_schema": null,
@@ -49875,7 +50147,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "9714f5b0c19afee3b3fce93aaa27eac8c91a719c80677224696ce30518172849",
+          "fingerprint": "7bf688add67986e27839bfad91c9b42060bb815b00b9a200d2106f0631d7ae73",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -49989,6 +50261,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_legs_transaction_currency ON ledger.journal_legs USING btree (transaction_currency) WHERE (transaction_currency IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "d68b86655fbe325919562f902f6d34c886330662840ddbd1b96e9ece31eae25e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "transaction_currency"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_legs_transaction_currency",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "transaction_currency IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -57600,6 +57894,86 @@
               "security_labels": [],
               "type_name": "jsonb",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a73fe4d3d1a373d51e9cdc7555276b9cdd0f4398ae5211a422adb2aa02569ffa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "transaction_currency",
+              "nullable": true,
+              "ordinal_position": 26,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "cf4c6b53cf8fca6dc7b0b2ffd77f9f6c09bb7bb9e2ceed78b2ba3e6094cf708c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "functional_currency",
+              "nullable": true,
+              "ordinal_position": 27,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,10)",
+              "default": null,
+              "fingerprint": "29b20d641f9e02be2a99e92f2db7b31e963f0da3f4c326fb7f5327460e8d88dd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "transaction_debit",
+              "nullable": true,
+              "ordinal_position": 28,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,10)",
+              "default": null,
+              "fingerprint": "48c9b1736cfff603d6838b7457cb70895eb024c18e4a060ad30bacb141f890d9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "transaction_credit",
+              "nullable": true,
+              "ordinal_position": 29,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,10)",
+              "default": null,
+              "fingerprint": "6eaed66eddc77655e9ffbb65e93caaac9255af8bdca7e6390da7c3fd98361a6b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fx_rate_to_functional",
+              "nullable": true,
+              "ordinal_position": 30,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -57617,6 +57991,30 @@
               "initially_deferred": false,
               "match_type": null,
               "name": "ck_journal_legs_adjustment_approval_metadata",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "transaction_currency",
+                "functional_currency",
+                "transaction_debit",
+                "transaction_credit",
+                "fx_rate_to_functional"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (transaction_currency IS NULL AND functional_currency IS NULL AND transaction_debit IS NULL AND transaction_credit IS NULL AND fx_rate_to_functional IS NULL OR transaction_currency ~ '^[A-Z]{3}$'::text AND functional_currency ~ '^[A-Z]{3}$'::text AND transaction_debit IS NOT NULL AND transaction_debit >= 0::numeric AND transaction_credit IS NOT NULL AND transaction_credit >= 0::numeric AND (transaction_debit > 0::numeric AND transaction_credit = 0::numeric OR transaction_debit = 0::numeric AND transaction_credit > 0::numeric) AND fx_rate_to_functional IS NOT NULL AND fx_rate_to_functional > 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "3b91c89b14fdffdf480c7f9606912a4884f36ee5f1ff9962fc39dbdbe0eefd85",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_journal_legs_currency_detail",
               "no_inherit": false,
               "referenced_columns": [],
               "referenced_schema": null,
@@ -57753,7 +58151,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "9714f5b0c19afee3b3fce93aaa27eac8c91a719c80677224696ce30518172849",
+          "fingerprint": "7bf688add67986e27839bfad91c9b42060bb815b00b9a200d2106f0631d7ae73",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -57867,6 +58265,28 @@
               "options": [],
               "owner": "meridian",
               "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_legs_transaction_currency ON ledger.journal_legs USING btree (transaction_currency) WHERE (transaction_currency IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "d68b86655fbe325919562f902f6d34c886330662840ddbd1b96e9ece31eae25e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "transaction_currency"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_legs_transaction_currency",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "transaction_currency IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
