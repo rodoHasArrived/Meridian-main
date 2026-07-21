@@ -1611,19 +1611,26 @@ function PortfolioDrillInReturnDistribution({
   profile: EquityCurveSummary;
   runTitle: string;
 }) {
-  const returns = useMemo(
-    () => profile.points.map((point) => point.dailyReturn * 100),
-    [profile.points]
-  );
+  // Memoize the returns series and its summary stats on the fetched points so they are not
+  // recomputed on every crosshair move — the parent re-renders on each hover, but these O(n)
+  // reductions only depend on profile.points.
+  const stats = useMemo(() => {
+    const returns = profile.points.map((point) => point.dailyReturn * 100);
+    if (returns.length < 2) {
+      return null;
+    }
+    const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
+    const best = Math.max(...returns);
+    const worst = Math.min(...returns);
+    const positiveShare = (returns.filter((value) => value > 0).length / returns.length) * 100;
+    return { returns, mean, best, worst, positiveShare };
+  }, [profile.points]);
 
-  if (returns.length < 2) {
+  if (!stats) {
     return null;
   }
 
-  const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
-  const best = Math.max(...returns);
-  const worst = Math.min(...returns);
-  const positiveShare = (returns.filter((value) => value > 0).length / returns.length) * 100;
+  const { returns, mean, best, worst, positiveShare } = stats;
 
   return (
     <ChartCard
