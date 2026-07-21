@@ -22,6 +22,31 @@ public sealed partial class PostgresLedgerJournalStore
     private static JournalEntryMetadata DeserializeMetadata(string json)
         => JsonSerializer.Deserialize<JournalEntryMetadata>(json, JsonOptions) ?? new JournalEntryMetadata();
 
+    private static LedgerEntryCurrency? ReadLegCurrency(
+        NpgsqlDataReader reader,
+        int transactionCurrencyOrdinal,
+        int functionalCurrencyOrdinal,
+        int transactionDebitOrdinal,
+        int transactionCreditOrdinal,
+        int fxRateOrdinal)
+    {
+        if (reader.IsDBNull(transactionCurrencyOrdinal)
+            || reader.IsDBNull(functionalCurrencyOrdinal)
+            || reader.IsDBNull(transactionDebitOrdinal)
+            || reader.IsDBNull(transactionCreditOrdinal)
+            || reader.IsDBNull(fxRateOrdinal))
+        {
+            return null;
+        }
+
+        return new LedgerEntryCurrency(
+            reader.GetString(transactionCurrencyOrdinal),
+            reader.GetString(functionalCurrencyOrdinal),
+            reader.GetDecimal(transactionDebitOrdinal),
+            reader.GetDecimal(transactionCreditOrdinal),
+            reader.GetDecimal(fxRateOrdinal));
+    }
+
     private static object SerializeAdjustmentApproval(LedgerAdjustmentApprovalMetadataDto? approval)
         => approval is null ? DBNull.Value : JsonSerializer.Serialize(approval, JsonOptions);
 
