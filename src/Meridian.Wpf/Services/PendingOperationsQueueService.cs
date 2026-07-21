@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Wpf.Services;
 
@@ -22,7 +27,9 @@ public sealed class PendingOperation
     public string OperationType { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the operation payload.
+    /// Gets or sets the operation payload. Payloads must be JSON-serializable — the queue is
+    /// persisted across restarts, and a payload restored from disk is surfaced to its handler
+    /// as a <see cref="JsonElement"/>.
     /// </summary>
     public object? Payload { get; set; }
 
@@ -43,17 +50,48 @@ public sealed class PendingOperation
 }
 
 /// <summary>
-/// Service for managing a queue of pending operations.
+/// Durable envelope for the persisted pending-operations queue.
+/// </summary>
+internal sealed class PendingOperationsEnvelope
+{
+    public int Version { get; set; } = 1;
+    public DateTimeOffset SavedAt { get; set; }
+    public List<PersistedPendingOperation> Operations { get; set; } = [];
+}
+
+/// <summary>
+/// JSON-serializable form of a <see cref="PendingOperation"/>.
+/// </summary>
+internal sealed class PersistedPendingOperation
+{
+    public string Id { get; set; } = string.Empty;
+    public string OperationType { get; set; } = string.Empty;
+    public JsonElement? Payload { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public int RetryCount { get; set; }
+    public int MaxRetries { get; set; } = 3;
+}
+
+/// <summary>
+/// Service for managing a durable queue of pending operations: mutations that failed while the
+/// backend was unreachable are enqueued here, persisted to local storage via
+/// <see cref="AtomicFileWriter"/> so they survive shutdown and crashes, and replayed through
+/// their registered handlers on startup and on reconnect.
 /// Implements singleton pattern for application-wide operation queue management.
 /// </summary>
 public sealed class PendingOperationsQueueService
 {
+    private const string FileName = "pending-operations.json";
+    private static readonly AsyncLocal<string?> FilePathOverride = new();
+
     private static readonly Lazy<PendingOperationsQueueService> _instance =
         new(() => new PendingOperationsQueueService());
 
     private readonly ConcurrentQueue<PendingOperation> _queue = new();
     private readonly ConcurrentDictionary<string, Func<object?, Task>> _handlers = new();
+    private readonly SemaphoreSlim _persistGate = new(1, 1);
     private bool _initialized;
+    private volatile bool _persistenceSuppressed;
 
     /// <summary>
     /// Gets the singleton instance of the PendingOperationsQueueService.
@@ -70,29 +108,69 @@ public sealed class PendingOperationsQueueService
     /// </summary>
     public int PendingCount => _queue.Count;
 
-    private PendingOperationsQueueService()
+    internal PendingOperationsQueueService()
     {
     }
 
     /// <summary>
-    /// Initializes the pending operations queue service.
+    /// Resolves the durable queue file below the shared Meridian local-application-data root.
+    /// </summary>
+    public static string GetDefaultFilePath()
+    {
+        var dir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Meridian");
+        Directory.CreateDirectory(dir);
+        return Path.Combine(dir, FileName);
+    }
+
+    internal static void SetFilePathOverrideForTests(string? filePath)
+    {
+        FilePathOverride.Value = filePath;
+    }
+
+    private static string GetFilePath() => FilePathOverride.Value ?? GetDefaultFilePath();
+
+    /// <summary>
+    /// Initializes the pending operations queue service, restoring any operations that were
+    /// persisted by a previous session (clean shutdown or crash).
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
+        if (_initialized)
+        {
+            return;
+        }
+
+        _persistenceSuppressed = false;
+        await RestorePersistedOperationsAsync().ConfigureAwait(false);
         _initialized = true;
-        return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Shuts down the pending operations queue service and clears the queue.
+    /// Shuts down the pending operations queue service, persisting any still-pending operations
+    /// to disk so they can be replayed by the next session before releasing the in-memory queue.
+    /// Later persistence attempts (for example an enqueue-scheduled snapshot that loses the race
+    /// with shutdown) are suppressed so they cannot overwrite the final snapshot with the
+    /// cleared queue.
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
-    public Task ShutdownAsync()
+    public async Task ShutdownAsync()
     {
+        await _persistGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            await WriteSnapshotLockedAsync(default).ConfigureAwait(false);
+            _persistenceSuppressed = true;
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
+
         _initialized = false;
         _queue.Clear();
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -117,20 +195,22 @@ public sealed class PendingOperationsQueueService
     }
 
     /// <summary>
-    /// Enqueues an operation for processing.
+    /// Enqueues an operation for processing and schedules a snapshot of the queue to durable
+    /// storage, so an enqueued operation survives a crash before the next clean shutdown.
     /// </summary>
     /// <param name="operation">The operation to enqueue.</param>
     public void Enqueue(PendingOperation operation)
     {
         ArgumentNullException.ThrowIfNull(operation);
         _queue.Enqueue(operation);
+        _ = PersistAsync();
     }
 
     /// <summary>
     /// Enqueues an operation for processing.
     /// </summary>
     /// <param name="operationType">The operation type.</param>
-    /// <param name="payload">The operation payload.</param>
+    /// <param name="payload">The operation payload (must be JSON-serializable).</param>
     public void Enqueue(string operationType, object? payload = null)
     {
         Enqueue(new PendingOperation
@@ -168,8 +248,9 @@ public sealed class PendingOperationsQueueService
 
     /// <summary>
     /// Processes all pending operations by dequeuing and executing their registered handlers.
-    /// Operations that fail and have retries remaining are re-enqueued.
-    /// Operations with no registered handler are silently discarded.
+    /// Operations that fail and have retries remaining are re-enqueued. Operations with no
+    /// registered handler are kept in the queue so a handler registered later (or by the next
+    /// session) can still process them. The surviving queue is persisted afterwards.
     /// </summary>
     /// <returns>A task representing the async operation.</returns>
     public async Task ProcessAllAsync(CancellationToken ct = default)
@@ -181,7 +262,10 @@ public sealed class PendingOperationsQueueService
                 break;
 
             if (!_handlers.TryGetValue(op.OperationType, out var handler))
+            {
+                _queue.Enqueue(op);
                 continue;
+            }
 
             try
             {
@@ -196,5 +280,113 @@ public sealed class PendingOperationsQueueService
                 }
             }
         }
+
+        await PersistAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Writes the current queue contents to durable storage using an atomic replace, so a
+    /// crash mid-write can never corrupt the previously persisted queue.
+    /// </summary>
+    public async Task PersistAsync(CancellationToken ct = default)
+    {
+        await _persistGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_persistenceSuppressed)
+            {
+                return;
+            }
+
+            await WriteSnapshotLockedAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _persistGate.Release();
+        }
+    }
+
+    private async Task WriteSnapshotLockedAsync(CancellationToken ct)
+    {
+        try
+        {
+            var envelope = new PendingOperationsEnvelope
+            {
+                SavedAt = DateTimeOffset.UtcNow,
+                Operations = _queue
+                    .Select(static op => new PersistedPendingOperation
+                    {
+                        Id = op.Id,
+                        OperationType = op.OperationType,
+                        Payload = SerializePayload(op.Payload),
+                        CreatedAt = op.CreatedAt,
+                        RetryCount = op.RetryCount,
+                        MaxRetries = op.MaxRetries
+                    })
+                    .ToList()
+            };
+
+            var json = JsonSerializer.Serialize(envelope, Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint);
+            await AtomicFileWriter.WriteAsync(GetFilePath(), json, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            // Persistence is best-effort: a failed snapshot must never take down the
+            // enqueue/replay path. The next mutation or shutdown retries the write.
+            Trace.TraceWarning("Pending-operations queue persistence failed: {0}", ex.Message);
+        }
+    }
+
+    private async Task RestorePersistedOperationsAsync()
+    {
+        try
+        {
+            var path = GetFilePath();
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            var json = await File.ReadAllTextAsync(path).ConfigureAwait(false);
+            var envelope = JsonSerializer.Deserialize<PendingOperationsEnvelope>(
+                json, Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint);
+            if (envelope is null)
+            {
+                return;
+            }
+
+            foreach (var persisted in envelope.Operations)
+            {
+                _queue.Enqueue(new PendingOperation
+                {
+                    Id = persisted.Id,
+                    OperationType = persisted.OperationType,
+                    Payload = persisted.Payload,
+                    CreatedAt = persisted.CreatedAt,
+                    RetryCount = persisted.RetryCount,
+                    MaxRetries = persisted.MaxRetries
+                });
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            // A damaged snapshot must not block startup; recovery resumes with an empty queue.
+            Trace.TraceWarning("Pending-operations queue restore failed: {0}", ex.Message);
+        }
+    }
+
+    private static JsonElement? SerializePayload(object? payload)
+    {
+        if (payload is null)
+        {
+            return null;
+        }
+
+        if (payload is JsonElement element)
+        {
+            return element;
+        }
+
+        return JsonSerializer.SerializeToElement(payload, Meridian.Ui.Services.DesktopJsonOptions.Api);
     }
 }

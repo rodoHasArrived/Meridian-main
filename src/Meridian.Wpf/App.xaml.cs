@@ -543,6 +543,11 @@ public partial class App : System.Windows.Application
             // Start background task scheduler
             await InitializeBackgroundServicesAsync();
 
+            // Arm offline replay: materialize the clients that register durable-queue handlers,
+            // drain operations persisted by earlier sessions, and replay again whenever
+            // connectivity to the workstation service is restored.
+            WireOfflineOperationReplay();
+
             // Notify if running in fixture/demo mode
             if (_isFixtureMode)
             {
@@ -608,6 +613,51 @@ public partial class App : System.Windows.Application
         {
             WpfServices.LoggingService.Instance.LogWarning(
                 "Offline tracking persistence failed to initialize; continuing without crash recovery persistence");
+        }
+    }
+
+    /// <summary>
+    /// Wires durable offline-operation replay: resolves the API clients whose constructors
+    /// register pending-operation handlers, replays operations persisted by earlier sessions,
+    /// and subscribes reconnect events so queued mutations drain when the backend returns.
+    /// </summary>
+    private void WireOfflineOperationReplay()
+    {
+        try
+        {
+            // Resolving the client registers its pending-operation replay handlers.
+            _ = Services.GetService<WpfServices.IWorkstationReconciliationApiClient>();
+
+            WpfServices.ConnectionService.Instance.ReconnectSucceeded += static (_, _) =>
+                _ = ReplayPendingOperationsAsync("reconnect");
+
+            _ = ReplayPendingOperationsAsync("startup");
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                $"Offline operation replay wiring failed: {ex.Message}");
+        }
+    }
+
+    private static async Task ReplayPendingOperationsAsync(string trigger)
+    {
+        try
+        {
+            var queue = WpfServices.PendingOperationsQueueService.Instance;
+            if (queue.PendingCount == 0)
+            {
+                return;
+            }
+
+            WpfServices.LoggingService.Instance.LogInfo(
+                $"Replaying {queue.PendingCount} pending offline operation(s) ({trigger})");
+            await queue.ProcessAllAsync();
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                $"Pending operation replay failed: {ex.Message}");
         }
     }
 
