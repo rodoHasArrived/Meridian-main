@@ -32,6 +32,7 @@ erDiagram
         numeric_24_8_ penalty_amount
         numeric_18_8_ annual_rate_applied
         timestamp_with_time_zone recorded_at
+        numeric_24_8_ pik_interest_amount
     }
     security_master_bond_accrual_convention_projection {
         uuid security_id PK,FK
@@ -936,7 +937,7 @@ erDiagram
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
 | `accounting_period_lock` | table | 10 | `ledger_basis`, `period_start_date`, `period_end_date` | 0 | 1 | - |
-| `accrual_entry_projection` | table | 8 | `accrual_entry_id` | 0 | 2 | - |
+| `accrual_entry_projection` | table | 9 | `accrual_entry_id` | 0 | 2 | - |
 | `bond_accrual_convention_projection` | table | 9 | `security_id` | 1 | 1 | - |
 | `bond_issuer_projection` | table | 8 | `security_id` | 1 | 2 | - |
 | `bond_lifecycle_projection` | table | 13 | `security_id` | 1 | 1 | - |

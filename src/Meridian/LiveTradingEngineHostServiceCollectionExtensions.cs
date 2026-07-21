@@ -1,3 +1,4 @@
+using Meridian.Backtesting.Plugins;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Events.Publishers;
@@ -37,7 +38,33 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
         services.TryAddSingleton<LiveMarketEventHub>(static sp =>
             new LiveMarketEventHub(sp.GetService<ILogger<LiveMarketEventHub>>()));
         services.TryAddSingleton<ILiveMarketEventFeed>(static sp => sp.GetRequiredService<LiveMarketEventHub>());
-        services.TryAddSingleton<ILiveStrategyCatalog>(static _ => LiveStrategyCatalog.CreateDefault());
+        // User-authored strategies: plugin assemblies resolve through this source and reach
+        // live execution wrapped in BacktestStrategyLiveAdapter via the catalog fallback below.
+        services.AddSingleton<IBacktestStrategyLiveSource>(static sp => new PluginBacktestStrategyLiveSource(
+            sp.GetRequiredService<LiveTradingEngineOptions>().StrategyPluginDirectory,
+            sp.GetService<ILogger<PluginBacktestStrategyLiveSource>>()));
+
+        services.TryAddSingleton<ILiveStrategyCatalog>(static sp =>
+        {
+            var catalog = LiveStrategyCatalog.CreateDefault();
+            foreach (var source in sp.GetServices<IBacktestStrategyLiveSource>())
+            {
+                var capturedSource = source;
+                catalog.RegisterFallback((LiveStrategyCreationContext context, out ILiveStrategy? strategy, out string? failureReason) =>
+                {
+                    if (!capturedSource.TryCreate(context, out var inner, out failureReason) || inner is null)
+                    {
+                        strategy = null;
+                        return false;
+                    }
+
+                    strategy = new BacktestStrategyLiveAdapter(context.StrategyId, inner);
+                    return true;
+                });
+            }
+
+            return catalog;
+        });
 
         services.TryAddSingleton<LiveTradingEngine>(static sp => new LiveTradingEngine(
             sp.GetRequiredService<ILiveStrategyCatalog>(),

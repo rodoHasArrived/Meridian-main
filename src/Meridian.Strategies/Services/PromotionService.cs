@@ -110,6 +110,7 @@ public sealed class PromotionService
             }
         }
 
+        var walkForwardEvidence = run.WalkForwardEvidence;
         var policyInput = new Meridian.FSharp.Promotion.PromotionPolicy.PromotionPolicyInput(
             run.EndedAt.HasValue,
             run.Metrics is not null,
@@ -126,7 +127,15 @@ public sealed class PromotionService
             controlsSnapshot?.CircuitBreaker.IsOpen ?? false,
             hasConflictingOverride,
             targetMode != RunType.Live || hasLivePromotionOverride,
-            ExecutionManualOverrideKinds.AllowLivePromotion);
+            ExecutionManualOverrideKinds.AllowLivePromotion,
+            requireWalkForwardEvidence: effectiveCriteria.RequireWalkForwardEvidenceForLive && targetMode == RunType.Live,
+            hasWalkForwardEvidence: walkForwardEvidence is not null,
+            outOfSampleSharpeRatio: walkForwardEvidence?.OutOfSampleSharpeRatio ?? 0.0,
+            walkForwardDegradationRatio: walkForwardEvidence?.DegradationRatio ?? 0.0,
+            minOutOfSampleSharpe: effectiveCriteria.MinOutOfSampleSharpe,
+            minWalkForwardDegradationRatio: effectiveCriteria.MinWalkForwardDegradationRatio,
+            outOfSampleMaxDrawdownPercent: walkForwardEvidence?.OutOfSampleMaxDrawdownPercent ?? 0m,
+            maxOutOfSampleDrawdownPercent: effectiveCriteria.MaxOutOfSampleDrawdownPercent);
         var policyDecision = Interop.PromotionInterop.EvaluatePromotionPolicy(policyInput);
         var hasBrokerageGap = brokerageValidation?.HasBlockingGap == true;
         var eligible = policyDecision.Eligible && !hasBrokerageGap;
@@ -806,6 +815,42 @@ public sealed class PromotionService
             .ToArray();
     }
 
+    /// <summary>
+    /// Records walk-forward/out-of-sample robustness evidence on a completed run so the
+    /// promotion policy can gate eligibility on it. Returns the updated run, or <c>null</c>
+    /// when the run does not exist.
+    /// </summary>
+    public async Task<StrategyRunEntry?> RecordWalkForwardEvidenceAsync(
+        string runId,
+        StrategyRunWalkForwardEvidence evidence,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(evidence);
+        if (evidence.Validate() is { } validationError)
+            throw new ArgumentException(validationError, nameof(evidence));
+
+        var run = await FindRunAsync(runId, ct).ConfigureAwait(false);
+        if (run is null)
+        {
+            return null;
+        }
+
+        var updated = run with { WalkForwardEvidence = evidence };
+        await _repository.RecordRunAsync(updated, ct).ConfigureAwait(false);
+
+        // The run id arrives from the API route; strip line endings so a crafted value
+        // cannot forge additional log entries.
+        _logger.LogInformation(
+            "Recorded walk-forward evidence for run {RunId}: oosSharpe={OosSharpe:F3}, degradation={Degradation:F3}, windows={Windows}",
+            runId.ReplaceLineEndings(string.Empty),
+            evidence.OutOfSampleSharpeRatio,
+            evidence.DegradationRatio,
+            evidence.WindowCount);
+
+        return updated;
+    }
+
     private async Task<StrategyRunEntry?> FindRunAsync(string runId, CancellationToken ct)
     {
         await foreach (var run in _repository.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
@@ -945,6 +990,14 @@ public sealed record PromotionRejectionRequest(
     string? ReviewNotes = null,
     string? RejectedBy = null,
     string? ManualOverrideId = null);
+
+/// <summary>Request to record walk-forward/out-of-sample evidence on a run.</summary>
+public sealed record RecordWalkForwardEvidenceRequest(
+    double OutOfSampleSharpeRatio,
+    decimal OutOfSampleMaxDrawdownPercent,
+    double DegradationRatio,
+    int WindowCount,
+    string? SourceReference = null);
 
 /// <summary>Result of a promotion approval or rejection.</summary>
 public sealed record PromotionDecisionResult(

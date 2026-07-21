@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Execution;
 using Meridian.Execution.Models;
-using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -48,15 +47,15 @@ public sealed record RiskRuleConfigUpdateRequest(
     string? Reason = null);
 
 /// <summary>
-/// Single source of truth for operator-managed risk guardrails: it powers the read-only risk
-/// dashboard (<see cref="GetAllStatusesAsync"/>, config get/update) <em>and</em> is the
-/// <see cref="IRiskValidator"/> the OMS invokes before routing an order. Position limits are
-/// enforced by the operator-controls gate (<see cref="ExecutionOperatorControlService"/>) that the
-/// OMS runs earlier in the pipeline — with its manual-override/bypass semantics — so this validator
-/// enforces the two guardrails that otherwise never gated an order: the drawdown circuit breaker and
-/// the order-rate throttle.
+/// Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only
+/// risk dashboard (<see cref="GetAllStatusesAsync"/>, config get/update) and supplies the live
+/// thresholds and drawdown evaluation that the enforced pre-trade validator — Meridian.Risk's
+/// <c>CompositeRiskValidator</c>, registered as the <see cref="IRiskValidator"/> the OMS invokes —
+/// reads on every order. Position limits are additionally enforced by the operator-controls gate
+/// (<see cref="ExecutionOperatorControlService"/>) that the OMS runs earlier in the pipeline with
+/// its manual-override/bypass semantics.
 /// </summary>
-public sealed class RiskRuleRuntimeService : IRiskValidator
+public sealed class RiskRuleRuntimeService
 {
     private const decimal DefaultDrawdownPercent = 5m;
     private const int DefaultMaxOrdersPerMinute = 60;
@@ -65,11 +64,6 @@ public sealed class RiskRuleRuntimeService : IRiskValidator
     private readonly ILogger<RiskRuleRuntimeService> _logger;
     private readonly RiskRuleRuntimeOptions _options;
     private readonly Lock _gate = new();
-
-    // Serializes the purge -> count -> enqueue sequence for the pre-trade order-rate throttle so a
-    // burst of concurrent orders cannot all observe a below-limit count and slip past the cap.
-    private readonly Lock _orderRateGate = new();
-    private readonly Queue<DateTimeOffset> _recentOrderTimestamps = new();
 
     private decimal _maxDrawdownPercent = DefaultDrawdownPercent;
     private int _maxOrdersPerMinute = DefaultMaxOrdersPerMinute;
@@ -86,27 +80,18 @@ public sealed class RiskRuleRuntimeService : IRiskValidator
     }
 
     /// <summary>
-    /// Pre-trade risk gate invoked by the OMS. Enforces the drawdown circuit breaker and the
-    /// order-rate throttle against the same live state and thresholds this service reports on the
-    /// dashboard, so a guardrail can never show "Healthy" while it silently fails to gate an order.
-    /// Position limits are enforced upstream by the operator-controls gate.
+    /// Operator-tuned order-rate ceiling, read per evaluation by the enforced order-rate
+    /// throttle rule so hot updates take effect immediately.
     /// </summary>
-    public Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        ct.ThrowIfCancellationRequested();
+    public int MaxOrdersPerMinute => GetMaxOrdersPerMinute();
 
-        var drawdownDecision = EvaluateDrawdownGuardrail();
-        if (!drawdownDecision.IsApproved)
-        {
-            return Task.FromResult(drawdownDecision);
-        }
-
-        var orderRateDecision = EvaluateOrderRateGuardrail(DateTimeOffset.UtcNow);
-        return Task.FromResult(orderRateDecision);
-    }
-
-    private RiskValidationResult EvaluateDrawdownGuardrail()
+    /// <summary>
+    /// Evaluates the drawdown circuit breaker against the same live portfolio state and
+    /// operator-tuned threshold this service reports on the dashboard, so the guardrail can
+    /// never show "Healthy" while it silently fails to gate an order. Invoked by the enforced
+    /// pre-trade validator on every order.
+    /// </summary>
+    public RiskValidationResult EvaluateDrawdownGuardrail()
     {
         var portfolio = Resolve<IPortfolioState>();
         if (portfolio is null)
@@ -135,36 +120,6 @@ public sealed class RiskRuleRuntimeService : IRiskValidator
         }
 
         return RiskValidationResult.Approved();
-    }
-
-    private RiskValidationResult EvaluateOrderRateGuardrail(DateTimeOffset now)
-    {
-        var maxOrdersPerMinute = GetMaxOrdersPerMinute();
-
-        lock (_orderRateGate)
-        {
-            PurgeExpiredOrderRateSamplesLocked(now);
-
-            if (_recentOrderTimestamps.Count >= maxOrdersPerMinute)
-            {
-                var reason =
-                    $"Order rate limit: {_recentOrderTimestamps.Count.ToString(CultureInfo.InvariantCulture)} orders/min exceeds {maxOrdersPerMinute.ToString(CultureInfo.InvariantCulture)} limit.";
-                _logger.LogWarning("Pre-trade risk rejection (order rate): {Reason}", reason);
-                return RiskValidationResult.Rejected(reason);
-            }
-
-            _recentOrderTimestamps.Enqueue(now);
-            return RiskValidationResult.Approved();
-        }
-    }
-
-    private void PurgeExpiredOrderRateSamplesLocked(DateTimeOffset now)
-    {
-        var cutoff = now.AddMinutes(-1);
-        while (_recentOrderTimestamps.Count > 0 && _recentOrderTimestamps.Peek() < cutoff)
-        {
-            _recentOrderTimestamps.Dequeue();
-        }
     }
 
     public async Task<IReadOnlyList<RiskRuleStatusDto>> GetAllStatusesAsync(CancellationToken ct = default)

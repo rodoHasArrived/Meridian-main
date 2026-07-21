@@ -63,10 +63,10 @@ public sealed class RiskEndpointsTests
     [Fact]
     public async Task RiskAndExecutionIntegration_RegisteredValidatorEnforcesOrderRateThrottle()
     {
-        // Proves the consolidation: the same RiskRuleRuntimeService that powers the dashboard is the
-        // registered IRiskValidator the OMS invokes, so a guardrail that reports on the dashboard now
-        // actually gates orders (before this fix IRiskValidator was unregistered and this block was
-        // dead code — zero enforcement ran).
+        // Proves the consolidation: the RiskRuleRuntimeService that powers the dashboard supplies
+        // the live thresholds to Meridian.Risk's CompositeRiskValidator — the registered
+        // IRiskValidator the OMS invokes — so a guardrail that reports on the dashboard actually
+        // gates orders through the visible risk library.
         await using var app = await CreateAppAsync(services =>
         {
             services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
@@ -74,7 +74,18 @@ public sealed class RiskEndpointsTests
             services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
             services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(NullLogger<Meridian.Execution.PaperTradingGateway>.Instance));
             services.AddSingleton<RiskRuleRuntimeService>();
-            services.AddSingleton<IRiskValidator>(sp => sp.GetRequiredService<RiskRuleRuntimeService>());
+            services.AddSingleton<IRiskValidator>(sp =>
+            {
+                var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
+                return new Meridian.Risk.CompositeRiskValidator(
+                    [
+                        new DrawdownGuardrailRule(runtime),
+                        new Meridian.Risk.Rules.OrderRateThrottle(
+                            () => runtime.MaxOrdersPerMinute,
+                            NullLogger<Meridian.Risk.Rules.OrderRateThrottle>.Instance),
+                    ],
+                    NullLogger<Meridian.Risk.CompositeRiskValidator>.Instance);
+            });
             services.AddSingleton<IOrderManager>(sp =>
                 new OrderManagementSystem(
                     sp.GetRequiredService<IExecutionGateway>(),

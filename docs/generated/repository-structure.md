@@ -3342,7 +3342,8 @@ Meridian-main
 │   │   │   ├── ConfigValidatorCli.cs
 │   │   │   └── IBGatewayProbe.cs
 │   │   ├── DataQuality
-│   │   │   └── CompositeDataQualityReadService.cs
+│   │   │   ├── CompositeDataQualityReadService.cs
+│   │   │   └── QualityMonitoringPublisher.cs
 │   │   ├── DirectLending
 │   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
@@ -3591,6 +3592,7 @@ Meridian-main
 │   │   │   ├── PostSimulationTcaReporter.cs
 │   │   │   └── XirrCalculator.cs
 │   │   ├── Plugins
+│   │   │   ├── PluginBacktestStrategyLiveSource.cs
 │   │   │   └── StrategyPluginLoader.cs
 │   │   ├── Portfolio
 │   │   │   ├── ICommissionModel.cs
@@ -4592,6 +4594,7 @@ Meridian-main
 │   │   │   │   ├── ICorporateActionProvider.cs
 │   │   │   │   ├── IHistoricalAggregateBarProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
+│   │   │   │   ├── IReconnectionGapSource.cs
 │   │   │   │   ├── ISymbolSearchProvider.cs
 │   │   │   │   ├── PollingProviderBase.cs
 │   │   │   │   ├── ProviderCapabilityDescriptorCatalog.cs
@@ -4733,8 +4736,7 @@ Meridian-main
 │   │   ├── Shared
 │   │   │   ├── ISymbolStateStore.cs
 │   │   │   ├── SubscriptionManager.cs
-│   │   │   ├── TaskSafetyExtensions.cs
-│   │   │   └── WebSocketReconnectionHelper.cs
+│   │   │   └── TaskSafetyExtensions.cs
 │   │   ├── Utilities
 │   │   │   ├── HttpResponseHandler.cs
 │   │   │   ├── JsonElementExtensions.cs
@@ -5190,7 +5192,8 @@ Meridian-main
 │   │   │   │   ├── 006_direct_lending_operations_workflow_audit.sql
 │   │   │   │   ├── 006_direct_lending_terms_projection_extended_fields.sql
 │   │   │   │   ├── 006_servicer_statement_intake.sql
-│   │   │   │   └── 007_direct_lending_command_idempotency.sql
+│   │   │   │   ├── 007_direct_lending_command_idempotency.sql
+│   │   │   │   └── 008_direct_lending_pik_accrual.sql
 │   │   │   ├── DirectLendingMigrationRunner.cs
 │   │   │   ├── DirectLendingPersistenceBatch.cs
 │   │   │   ├── IDirectLendingOperationsStore.cs
@@ -5483,6 +5486,7 @@ Meridian-main
 │   │   │   │   ├── BuyAndHoldLiveStrategy.cs
 │   │   │   │   └── MovingAverageCrossoverLiveStrategy.cs
 │   │   │   ├── BacktestStrategyLiveAdapter.cs
+│   │   │   ├── IBacktestStrategyLiveSource.cs
 │   │   │   ├── LiveRunMetricsTracker.cs
 │   │   │   ├── LiveStrategyBase.cs
 │   │   │   ├── LiveStrategyCatalog.cs
@@ -6736,6 +6740,7 @@ Meridian-main
 │   │   │   ├── DesktopWorkstationLaunchService.cs
 │   │   │   ├── DirectLendingOperationsReadService.cs
 │   │   │   ├── Dk1TrustGateReadinessService.cs
+│   │   │   ├── DrawdownGuardrailRule.cs
 │   │   │   ├── FamilyOfficeReadService.cs
 │   │   │   ├── FeatureCapabilitySettingsService.cs
 │   │   │   ├── FileFundProfileTenancyRegistry.cs
@@ -7834,10 +7839,12 @@ Meridian-main
 │   │   │   ├── Credentials
 │   │   │   │   └── CredentialTestingServiceTests.cs
 │   │   │   ├── DataQuality
-│   │   │   │   └── CompositeDataQualityReadServiceTests.cs
+│   │   │   │   ├── CompositeDataQualityReadServiceTests.cs
+│   │   │   │   └── QualityMonitoringPublisherTests.cs
 │   │   │   ├── DirectLending
 │   │   │   │   ├── AccrualLedgerServiceTests.cs
 │   │   │   │   ├── DailyAccrualWorkerTests.cs
+│   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
 │   │   │   │   └── PostgresDirectLendingCommandServiceTests.cs
@@ -7952,6 +7959,8 @@ Meridian-main
 │   │   │   ├── InstrumentPositionProjectionStoreTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   └── PortfolioCashLadderReadServiceTests.cs
+│   │   ├── Backtesting
+│   │   │   └── PluginBacktestStrategyLiveSourceTests.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   └── CertificateOfDepositProjectionServiceTests.cs
 │   │   ├── Commodities
@@ -8419,6 +8428,7 @@ Meridian-main
 │   │   ├── Risk
 │   │   │   ├── CompositeRiskValidatorTests.cs
 │   │   │   ├── DrawdownCircuitBreakerTests.cs
+│   │   │   ├── EnforcedRiskValidatorCompositionTests.cs
 │   │   │   ├── OrderRateThrottleTests.cs
 │   │   │   ├── PositionLimitRuleTests.cs
 │   │   │   └── RiskIntegrationTests.cs
@@ -8583,10 +8593,12 @@ Meridian-main
 │   │   │   ├── CashFlowProjectionTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
+│   │   │   ├── LiveStrategyCatalogFallbackTests.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
+│   │   │   ├── PromotionWalkForwardGateTests.cs
 │   │   │   ├── ReconciliationBreakQueueRepositoryTests.cs
 │   │   │   ├── ReconciliationCaseWorkflowServiceTests.cs
 │   │   │   ├── ReconciliationCaseWorkflowVocabularyTests.cs
@@ -8925,6 +8937,7 @@ Meridian-main
 │   │   │   ├── NotificationServiceTests.cs
 │   │   │   ├── OfflineTrackingPersistenceServiceTests.cs
 │   │   │   ├── OperationsContinuityDtoContractTests.cs
+│   │   │   ├── PendingOperationsQueuePersistenceTests.cs
 │   │   │   ├── PendingOperationsQueueServiceTests.cs
 │   │   │   ├── QuantScriptExecutionHistoryServiceTests.cs
 │   │   │   ├── QuantScriptTemplateCatalogServiceTests.cs
