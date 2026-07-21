@@ -114,7 +114,10 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
             throw new InvalidOperationException("Provider endpoint path must be a non-empty URI path without backslashes.");
         }
 
-        var target = Uri.TryCreate(request.Path, UriKind.Absolute, out var absolute)
+        // On Unix a rooted path like "/v1/data" parses as an absolute file:// URI, so only
+        // honor pre-parsed absolute targets when they are actually HTTP(S); everything else
+        // is resolved against the approved base origin.
+        var target = Uri.TryCreate(request.Path, UriKind.Absolute, out var absolute) && IsHttpScheme(absolute)
             ? absolute
             : new Uri(approvedBaseUri, request.Path);
         if (request.Query.Count == 0)
@@ -131,6 +134,10 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
         builder.Query = string.IsNullOrEmpty(existing) ? added : $"{existing}&{added}";
         return builder.Uri;
     }
+
+    private static bool IsHttpScheme(Uri uri)
+        => string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase);
 
     private async Task ValidateApprovedTargetAsync(Uri approvedBaseUri, Uri target, CancellationToken ct)
     {
