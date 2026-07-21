@@ -113,10 +113,14 @@ it is where nearly all the user-facing value now sits.
   path (statement → break) currently makes the user *source their own file* — the only statement CSVs
   live under `tests/`. The CLI even advertises a `./statements/sample.csv` that doesn't exist
   (`HelpCommand.cs:150`).
-- **Be honest about provider/broker availability.** IB is a **stub in the default build**
+- **Be honest about provider/broker availability.** Two brokers trade out of the box:
+  **Alpaca** (REST) and **Robinhood** (registered under `"robinhood"` in
+  `HostedBrokerageGatewayServiceCollectionExtensions.cs:46-52`; `RobinhoodBrokerageGateway.SubmitOrderAsync`
+  POSTs equity `/orders/` and `/options/orders/`) — though Robinhood is an **unofficial API** and
+  should be labeled experimental. By contrast, IB is a **stub in the default build**
   (`#if IBAPI`; ships `UnsupportedIBBrokerageClient`; `IBHistoricalDataProvider.cs:541-627`), and
-  TradeStation/Tradier are mapping-only scaffolds — yet they can appear selectable. Only Alpaca (REST)
-  trades out of the box. Mark the rest experimental/unavailable.
+  TradeStation/Tradier are mapping-only scaffolds — yet they can appear selectable. Mark IB/TradeStation/Tradier
+  unavailable and Robinhood experimental so the roster reflects what can actually trade.
 
 ---
 
@@ -132,9 +136,12 @@ it is where nearly all the user-facing value now sits.
 - **912-line config sample + a CLI still branded "market data collector"** (`MDC_*` env vars,
   placeholder support URL `HelpCommand.cs:712`, banner `:456-457`). Ship a slim default config and
   re-skin the CLI for operational finance.
-- **Corporate-action posting engine missing.** Only split/RoC/factor exist as basis math
-  (`LedgerTaxLotBasisAdjuster.cs:64-84`); **dividends, DRIP, mergers, spinoffs are ingested but never
-  posted** — a real functional gap for a fund-accounting product.
+- **Corporate-action posting has real gaps at mergers/spinoffs.** Dividends *are* posted —
+  `SecurityMasterLedgerBridge.PostCorporateActionsAsync` books dividend declaration, withholding
+  accrual, and receipt journal entries (`SecurityMasterLedgerBridge.cs:150-175`), and split/RoC/factor
+  basis math exists (`LedgerTaxLotBasisAdjuster.cs:64-84`). The real gap is **mergers and spinoffs**,
+  which currently produce only symbolic memo postings with **no cost-basis/lot transformation** — a
+  genuine functional hole for a fund-accounting product (and DRIP reinvestment is worth confirming).
 - **The "accrual" module doesn't accrue** — `AccrualTypes.fs:92-95` is a record + sum; the real
   day-count/interest math lives elsewhere (`DefaultInterestCalculator.cs`, `DayCountConventions.cs`).
   Wire or relocate it.
