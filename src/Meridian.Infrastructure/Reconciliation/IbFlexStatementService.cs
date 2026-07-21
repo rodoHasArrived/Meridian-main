@@ -291,15 +291,29 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         (string?)element.Attribute("accountId") is { Length: > 0 } account ? account : statementAccount;
 
     /// <summary>
-    /// Maps a Flex CashTransaction <c>type</c> to the canonical activity type so downstream
-    /// matching applies fee handling to fee-like rows ("Other Fees", "Advisor Fees", …) instead
-    /// of cash tolerance rules. All other cash transaction types (dividends, deposits,
-    /// withholding tax, interest) stay canonical <c>cash</c>.
+    /// Maps a Flex CashTransaction <c>type</c> to the canonical activity type. Cash transactions are
+    /// ledger movements, not the account's ending cash balance, so they reconcile against ledger
+    /// transactions rather than the closing balance: fee-like rows ("Other Fees", "Advisor Fees", …)
+    /// become <c>fee</c>, dividends become <c>dividend</c>, and the rest (deposits, withdrawals,
+    /// interest, withholding tax) become generic <c>transaction</c> rows. Canonical <c>cash</c> and
+    /// <c>cashbalance</c> are reserved for balance rows so a movement is never treated as a balance.
     /// </summary>
-    public static string MapCashTransactionActivity(string? flexType) =>
-        flexType is not null && flexType.Contains("fee", StringComparison.OrdinalIgnoreCase)
-            ? "fee"
-            : "cash";
+    public static string MapCashTransactionActivity(string? flexType)
+    {
+        if (flexType is null)
+        {
+            return "transaction";
+        }
+
+        if (flexType.Contains("fee", StringComparison.OrdinalIgnoreCase))
+        {
+            return "fee";
+        }
+
+        return flexType.Contains("dividend", StringComparison.OrdinalIgnoreCase)
+            ? "dividend"
+            : "transaction";
+    }
 
     private static decimal ParseDecimal(XElement element, string attribute)
     {

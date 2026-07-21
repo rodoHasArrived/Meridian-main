@@ -143,7 +143,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         position.TradeDate.Should().Be(new DateOnly(2026, 6, 30));
 
         var dividend = result.Rows[3];
-        dividend.ActivityType.Should().Be("cash");
+        dividend.ActivityType.Should().Be("dividend", "cash transactions are ledger movements matched against transactions, not the ending cash balance");
         dividend.CashAmount.Should().Be(24.00m);
         dividend.TradeDate.Should().Be(new DateOnly(2026, 6, 10)); // date part of dateTime
 
@@ -388,7 +388,7 @@ public sealed class IbFlexStatementServiceTests : IDisposable
 
         var profile = registry.Resolve(StatementMappingProfileRegistry.IbFlexV1ProfileId);
         profile.DisplayName.Should().Contain("Interactive Brokers");
-        profile.MapActivityType("Dividends").Should().Be("cash");
+        profile.MapActivityType("Dividends").Should().Be("dividend");
         profile.MapActivityType("BUY").Should().Be("trade");
 
         registry.ResolveForSourceKind("ib-flex").ProfileId
