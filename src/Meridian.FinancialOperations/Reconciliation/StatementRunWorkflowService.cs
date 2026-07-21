@@ -149,11 +149,12 @@ public sealed class StatementRunWorkflowService(
         IReadOnlyList<StatementRunBreak> breaks,
         string actor)
     {
-        var now = DateTimeOffset.UtcNow;
-
         return breaks.Select(item =>
         {
             var breakRecord = item.Record;
+            // Anchor every case, history entry, comment, and audit event to the break's own
+            // creation timestamp so the run's records share one consistent instant.
+            var now = breakRecord.CreatedAtUtc;
             var engineResult = item.EngineResult;
             var row = item.StatementRow;
             var sourceRowHash = row?.RawChecksum ?? breakRecord.SourceReference;

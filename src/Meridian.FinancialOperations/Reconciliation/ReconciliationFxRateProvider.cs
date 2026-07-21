@@ -89,7 +89,9 @@ public sealed class TableReconciliationFxRateProvider : IReconciliationFxRatePro
         var map = new Dictionary<(string, string), decimal>();
         foreach (var quote in quotes)
         {
-            if (quote is null || quote.Rate == 0m)
+            if (quote is null || quote.Rate == 0m
+                || string.IsNullOrWhiteSpace(quote.FromCurrency)
+                || string.IsNullOrWhiteSpace(quote.ToCurrency))
             {
                 continue;
             }

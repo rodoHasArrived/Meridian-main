@@ -27,7 +27,9 @@ public sealed class InMemoryFxRateProvider : IFxRateProvider
     {
         ArgumentNullException.ThrowIfNull(rates);
         _quotesByPair = rates
-            .Where(static rate => rate is not null)
+            .Where(static rate => rate is not null
+                && !string.IsNullOrWhiteSpace(rate.BaseCurrency)
+                && !string.IsNullOrWhiteSpace(rate.QuoteCurrency))
             .GroupBy(static rate => (Normalize(rate.BaseCurrency), Normalize(rate.QuoteCurrency)))
             .ToDictionary(
                 static group => group.Key,
