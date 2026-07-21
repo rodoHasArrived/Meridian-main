@@ -15,6 +15,11 @@ namespace Meridian.FinancialOperations.MiddleOffice;
 /// break classification (<see cref="BreakClassification"/>), and secure-distribution pipeline. Every
 /// escalation, SLA breach, and delivery is mirrored into the shared
 /// <see cref="IFundAdministrationEventSink"/> so the governance trail is append-only and hash-chained.
+/// The <see cref="IFileDistributionTransport"/> is required rather than defaulted, so a caller must
+/// consciously choose one: a real dispatching transport for operational use, or the explicit
+/// <see cref="LoopbackFileDistributionTransport"/> for tests and local development. This fails closed —
+/// there is no silent no-op default that would archive <c>Delivered</c> evidence for a file that never
+/// actually left the process.
 /// </remarks>
 public sealed class MiddleOfficeOperationsService
 {
@@ -25,10 +30,10 @@ public sealed class MiddleOfficeOperationsService
     private readonly Dictionary<string, TrueBreakEscalation> _escalations = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<FileDeliveryRecord> _deliveryLog = [];
 
-    public MiddleOfficeOperationsService(IFundAdministrationEventSink eventSink, IFileDistributionTransport? transport = null)
+    public MiddleOfficeOperationsService(IFundAdministrationEventSink eventSink, IFileDistributionTransport transport)
     {
         _eventSink = eventSink ?? throw new ArgumentNullException(nameof(eventSink));
-        _transport = transport ?? new LoopbackFileDistributionTransport();
+        _transport = transport ?? throw new ArgumentNullException(nameof(transport));
     }
 
     // ── T+0 booking / T+1 reconciliation ───────────────────────────────────────
@@ -250,7 +255,13 @@ public sealed class MiddleOfficeOperationsService
         return advanced;
     }
 
-    /// <summary>Resolves an escalation, stopping its SLA timer.</summary>
+    /// <summary>
+    /// Resolves an open escalation, stopping its SLA timer. Resolution is a one-time terminal
+    /// transition: re-resolving an already-resolved escalation is rejected so a duplicate or corrective
+    /// call cannot silently overwrite the original resolver, note, or closure time. The resolution time
+    /// must also not precede when the escalation was raised.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the escalation is already resolved.</exception>
     public TrueBreakEscalation ResolveBreak(string escalationId, string resolvedBy, string resolutionNote, DateTimeOffset resolvedAtUtc)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(escalationId);
@@ -262,6 +273,19 @@ public sealed class MiddleOfficeOperationsService
         {
             if (!_escalations.TryGetValue(escalationId.Trim(), out var escalation))
                 throw new KeyNotFoundException($"Escalation '{escalationId}' was not found.");
+
+            if (!escalation.IsOpen)
+            {
+                throw new InvalidOperationException(
+                    $"Escalation '{escalation.EscalationId}' is already resolved; re-resolving would overwrite its " +
+                    "resolution provenance. Use a separate audited amend flow if a correction is required.");
+            }
+
+            if (resolvedAt < escalation.RaisedAtUtc)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(resolvedAtUtc), resolvedAtUtc, "An escalation cannot be resolved before it was raised.");
+            }
 
             var updated = escalation with
             {

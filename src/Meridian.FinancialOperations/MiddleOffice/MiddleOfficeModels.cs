@@ -88,9 +88,23 @@ public sealed record WorkflowSlaTimer
 
     public DateTimeOffset WarningAtUtc => StartedAtUtc + (Policy.Duration * Policy.WarningFraction);
 
-    /// <summary>Returns a copy of this timer stopped at <paramref name="stoppedAtUtc"/>.</summary>
+    /// <summary>
+    /// Returns a copy of this timer stopped at <paramref name="stoppedAtUtc"/>. The stop instant must
+    /// not precede <see cref="StartedAtUtc"/>, so the timer can never record an impossible negative
+    /// elapsed window (and thereby suppress breach evaluation over a bogus timeline).
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the stop time precedes the start.</exception>
     public WorkflowSlaTimer Stop(DateTimeOffset stoppedAtUtc)
-        => new(TimerId, Subject, Policy, StartedAtUtc, stoppedAtUtc);
+    {
+        var stoppedAt = stoppedAtUtc.ToUniversalTime();
+        if (stoppedAt < StartedAtUtc)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(stoppedAtUtc), stoppedAtUtc, "An SLA timer cannot stop before it started.");
+        }
+
+        return new(TimerId, Subject, Policy, StartedAtUtc, stoppedAt);
+    }
 
     /// <summary>The timer's state as of <paramref name="asOfUtc"/>.</summary>
     public WorkflowSlaState StateAt(DateTimeOffset asOfUtc)

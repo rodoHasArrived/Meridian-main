@@ -19,7 +19,7 @@ public sealed class MiddleOfficeOperationsServiceTests
     private static MiddleOfficeOperationsService NewService(out FundAdministrationEventLog log)
     {
         log = new FundAdministrationEventLog();
-        return new MiddleOfficeOperationsService(log);
+        return new MiddleOfficeOperationsService(log, new LoopbackFileDistributionTransport());
     }
 
     [Fact]
@@ -275,6 +275,48 @@ public sealed class MiddleOfficeOperationsServiceTests
 
         second.EscalationId.Should().NotBe(first.EscalationId, "a resolved break may recur as a fresh escalation");
         service.OpenEscalations.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Constructor_NullTransport_Throws()
+    {
+        // The transport is required (fail-closed): there is no silent no-op default that would archive
+        // Delivered evidence for a file that never left the process.
+        var act = () => new MiddleOfficeOperationsService(new FundAdministrationEventLog(), null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void WorkflowSlaTimer_StopBeforeStart_Throws()
+    {
+        var timer = new WorkflowSlaTimer("t1", "brk-1", new WorkflowSlaPolicy("p", TimeSpan.FromHours(4)), At);
+        var act = () => timer.Stop(At.AddHours(-1));
+        act.Should().Throw<ArgumentOutOfRangeException>("a timer cannot stop before it started");
+    }
+
+    [Fact]
+    public void ResolveBreak_BeforeRaised_Throws()
+    {
+        var service = NewService(out _);
+        var escalation = service.RaiseTrueBreak(new TrueBreakEscalationRequest(
+            "brk-1", BreakClassification.TrueBreak, ReconciliationBreakSeverity.High, "reason", "ops", RaisedAtUtc: At));
+
+        var act = () => service.ResolveBreak(escalation.EscalationId, "supervisor", "note", At.AddHours(-1));
+        act.Should().Throw<ArgumentOutOfRangeException>("an escalation cannot be resolved before it was raised");
+    }
+
+    [Fact]
+    public void ResolveBreak_AlreadyResolved_Throws()
+    {
+        var service = NewService(out _);
+        var escalation = service.RaiseTrueBreak(new TrueBreakEscalationRequest(
+            "brk-1", BreakClassification.TrueBreak, ReconciliationBreakSeverity.High, "reason", "ops", RaisedAtUtc: At));
+        var resolved = service.ResolveBreak(escalation.EscalationId, "supervisor", "custodian error corrected", At.AddHours(2));
+
+        // A duplicate/corrective resolve must not overwrite the original provenance.
+        var act = () => service.ResolveBreak(escalation.EscalationId, "other", "different note", At.AddHours(3));
+        act.Should().Throw<InvalidOperationException>();
+        resolved.ResolvedBy.Should().Be("supervisor", "the original resolution provenance is preserved");
     }
 
     private sealed class FailingTransport : IFileDistributionTransport
