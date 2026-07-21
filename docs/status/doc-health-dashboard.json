@@ -1,11 +1,11 @@
 {
   "total_files": 632,
-  "total_lines": 114298,
+  "total_lines": 114503,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 211,
-  "average_lines": 180.9,
+  "average_lines": 181.2,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1461,7 +1461,7 @@
     },
     {
       "path": "docs/architecture/event-accounting-architecture.md",
-      "line_count": 154,
+      "line_count": 199,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2549,7 +2549,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9362,
+      "line_count": 9402,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2909,7 +2909,7 @@
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 236,
+      "line_count": 237,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3253,7 +3253,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 780,
+      "line_count": 812,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3261,7 +3261,7 @@
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 50,
+      "line_count": 51,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3461,7 +3461,7 @@
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 138,
+      "line_count": 144,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4973,7 +4973,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1405,
+      "line_count": 1419,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5037,7 +5037,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 591,
+      "line_count": 611,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5101,7 +5101,7 @@
     },
     {
       "path": "src/Meridian.Instruments/README.md",
-      "line_count": 163,
+      "line_count": 171,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5117,7 +5117,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 242,
+      "line_count": 248,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5205,7 +5205,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 453,
+      "line_count": 475,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5229,7 +5229,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 1969,
+      "line_count": 1979,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
