@@ -53,7 +53,10 @@ public static class DefaultInterestCalculator
         ArgumentNullException.ThrowIfNull(installments);
         ArgumentNullException.ThrowIfNull(fundingReceipts);
 
+        // Only receipts known as of the report date may affect a historical default calculation;
+        // a later funding must not retroactively shorten interest or mark an installment cured.
         var fundingByInstallment = fundingReceipts
+            .Where(receipt => receipt.ReceivedDate <= asOf)
             .GroupBy(static receipt => receipt.InstallmentId, StringComparer.Ordinal)
             .ToDictionary(
                 static group => group.Key,
@@ -66,16 +69,14 @@ public static class DefaultInterestCalculator
                      .OrderBy(static item => item.Sequence))
         {
             var called = installment.ResolveCallAmount(commitment.TotalCommitment);
-            fundingByInstallment.TryGetValue(installment.InstallmentId, out var receipts);
+            var receipts = fundingByInstallment.TryGetValue(installment.InstallmentId, out var found) ? found : [];
             var accrualStart = installment.DueDate.AddDays(commitment.DefaultGraceDays);
             if (asOf <= accrualStart)
                 continue;
 
-            // The defaulted principal is what remained unfunded at the end of the grace period;
-            // funding that arrived within grace cures the shortfall without a default.
-            var fundedByGraceEnd = receipts
-                ?.Where(receipt => receipt.ReceivedDate <= accrualStart)
-                .Sum(static receipt => receipt.Amount) ?? 0m;
+            // The principal that entered default is what remained unfunded at the end of the grace
+            // period; funding that arrived within grace cures the shortfall without a default.
+            var fundedByGraceEnd = receipts.Where(receipt => receipt.ReceivedDate <= accrualStart).Sum(static receipt => receipt.Amount);
             var defaultedPrincipal = RoundCurrency(called - fundedByGraceEnd);
             if (defaultedPrincipal <= 0m)
                 continue;
@@ -84,28 +85,22 @@ public static class DefaultInterestCalculator
             // the receipt that closes the gap. Interest accrues until cure (if any) or the as-of date.
             var cureDate = ResolveCureDate(called, receipts);
             var accrualEnd = cureDate ?? asOf;
-            var interest = ComputeSimpleInterest(
-                defaultedPrincipal,
-                commitment.DefaultInterestRateAnnual,
-                accrualStart,
-                accrualEnd,
-                commitment.DefaultInterestConvention);
-
             var defaultId = $"default:{commitment.CommitmentId}:{installment.InstallmentId}";
-            var accruals = interest > 0m
-                ? new List<DefaultInterestAccrual>
-                {
-                    new(
-                        $"{defaultId}:{accrualEnd:yyyyMMdd}",
-                        defaultId,
-                        accrualStart,
-                        accrualEnd,
-                        defaultedPrincipal,
-                        commitment.DefaultInterestRateAnnual,
-                        commitment.DefaultInterestConvention,
-                        interest),
-                }
-                : new List<DefaultInterestAccrual>();
+
+            // Post-grace partial receipts amortize the interest-bearing principal: split the accrual
+            // window at each receipt so interest is charged on the running outstanding balance.
+            var accruals = new List<DefaultInterestAccrual>();
+            var outstanding = defaultedPrincipal;
+            var segmentStart = accrualStart;
+            var accrualIndex = 0;
+            foreach (var receipt in receipts.Where(receipt => receipt.ReceivedDate > accrualStart && receipt.ReceivedDate <= accrualEnd))
+            {
+                AddAccrual(accruals, commitment, defaultId, ref accrualIndex, segmentStart, receipt.ReceivedDate, outstanding);
+                outstanding = Math.Max(0m, RoundCurrency(outstanding - receipt.Amount));
+                segmentStart = receipt.ReceivedDate;
+            }
+
+            AddAccrual(accruals, commitment, defaultId, ref accrualIndex, segmentStart, accrualEnd, outstanding);
 
             defaults.Add(new CapitalCallDefault(
                 defaultId,
@@ -121,11 +116,37 @@ public static class DefaultInterestCalculator
         return defaults;
     }
 
-    private static DateOnly? ResolveCureDate(decimal called, IReadOnlyList<CapitalCallFundingReceipt>? receipts)
+    private static void AddAccrual(
+        List<DefaultInterestAccrual> accruals,
+        InvestorCommitment commitment,
+        string defaultId,
+        ref int accrualIndex,
+        DateOnly from,
+        DateOnly to,
+        decimal principal)
     {
-        if (receipts is null)
-            return null;
+        var interest = ComputeSimpleInterest(
+            principal,
+            commitment.DefaultInterestRateAnnual,
+            from,
+            to,
+            commitment.DefaultInterestConvention);
+        if (interest <= 0m)
+            return;
 
+        accruals.Add(new DefaultInterestAccrual(
+            $"{defaultId}:{accrualIndex++}:{to:yyyyMMdd}",
+            defaultId,
+            from,
+            to,
+            principal,
+            commitment.DefaultInterestRateAnnual,
+            commitment.DefaultInterestConvention,
+            interest));
+    }
+
+    private static DateOnly? ResolveCureDate(decimal called, IReadOnlyList<CapitalCallFundingReceipt> receipts)
+    {
         var running = 0m;
         foreach (var receipt in receipts)
         {

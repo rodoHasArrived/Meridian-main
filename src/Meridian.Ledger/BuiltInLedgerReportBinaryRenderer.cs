@@ -58,7 +58,8 @@ public sealed class BuiltInLedgerReportBinaryRenderer : ILedgerReportBinaryRende
             var suffix = 2;
             while (!seen.Add(candidate))
             {
-                var trimmed = baseName.Length > 28 ? baseName[..28] : baseName;
+                // Trim to 25 so even a long suffix keeps the name within Excel's 31-char limit.
+                var trimmed = baseName.Length > 25 ? baseName[..25] : baseName;
                 candidate = $"{trimmed} {suffix++}";
             }
 

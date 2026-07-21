@@ -63,7 +63,8 @@ public static class LedgerFinancialStatementBuilder
 
         var statements = BuildAsOf(ledger, asOf, chart, financialAccountId, lineDimensions);
         var cashFlow = BuildCashFlowStatement(ledger, periodStart, asOf, financialAccountId, lineDimensions);
-        var partnersCapital = BuildPartnersCapitalStatement(ledger, periodStart, asOf, financialAccountId, lineDimensions);
+        var partnersCapital = BuildPartnersCapitalStatement(
+            ledger, periodStart, asOf, financialAccountId, lineDimensions, statements.NetIncome);
 
         return statements with { CashFlow = cashFlow, PartnersCapital = partnersCapital };
     }
@@ -75,8 +76,8 @@ public static class LedgerFinancialStatementBuilder
         string? financialAccountId,
         LedgerLineDimensionSet? lineDimensions)
     {
-        var beginningCash = SumCashBalances(ledger, periodStart, financialAccountId);
-        var endingCash = SumCashBalances(ledger, asOf, financialAccountId);
+        var beginningCash = SumCashBalances(ledger.TrialBalanceAsOf(periodStart, financialAccountId, lineDimensions));
+        var endingCash = SumCashBalances(ledger.TrialBalanceAsOf(asOf, financialAccountId, lineDimensions));
 
         var operating = 0m;
         var investing = 0m;
@@ -151,11 +152,16 @@ public static class LedgerFinancialStatementBuilder
         DateTimeOffset periodStart,
         DateTimeOffset asOf,
         string? financialAccountId,
-        LedgerLineDimensionSet? lineDimensions)
+        LedgerLineDimensionSet? lineDimensions,
+        decimal netIncome)
     {
-        var equityAccounts = ledger.Accounts
+        // Opening and closing capital come from dimension-scoped trial balances so a scoped report
+        // never discloses or reconciles against balances outside its scope.
+        var beginningBalances = ledger.TrialBalanceAsOf(periodStart, financialAccountId, lineDimensions);
+        var endingBalances = ledger.TrialBalanceAsOf(asOf, financialAccountId, lineDimensions);
+        var equityAccounts = beginningBalances.Keys
+            .Concat(endingBalances.Keys)
             .Where(static account => account.AccountType == LedgerAccountType.Equity)
-            .Where(account => MatchesFinancialAccount(account, financialAccountId))
             .Distinct()
             .ToArray();
 
@@ -177,8 +183,11 @@ public static class LedgerFinancialStatementBuilder
                 line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense
                 || (line.Account.AccountType == LedgerAccountType.Equity
                     && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal)));
-            var hasCashCounterpart = entry.Lines.Any(static line =>
-                line.Account.AccountType == LedgerAccountType.Asset);
+            // Contributions and distributions settle through cash, receivables, or payables
+            // (subscription-receivable and distribution-payable clearing), so treat asset and
+            // liability counterparts alike as capital movement rather than "other".
+            var hasSettlementCounterpart = entry.Lines.Any(static line =>
+                line.Account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Liability);
 
             foreach (var line in equityLines)
             {
@@ -190,7 +199,7 @@ public static class LedgerFinancialStatementBuilder
                 {
                     current.Allocated += signed;
                 }
-                else if (hasCashCounterpart)
+                else if (hasSettlementCounterpart)
                 {
                     if (signed >= 0m)
                         current.Contributions += signed;
@@ -209,8 +218,8 @@ public static class LedgerFinancialStatementBuilder
         var rollForwards = equityAccounts
             .Select(account =>
             {
-                var beginning = ledger.GetBalanceAsOf(account, periodStart);
-                var ending = ledger.GetBalanceAsOf(account, asOf);
+                var beginning = beginningBalances.TryGetValue(account, out var openingBalance) ? openingBalance : 0m;
+                var ending = endingBalances.TryGetValue(account, out var closingBalance) ? closingBalance : 0m;
                 var movement = movements[account];
                 return new LedgerPartnersCapitalRollForward(
                     account,
@@ -230,6 +239,26 @@ public static class LedgerFinancialStatementBuilder
                 || rollForward.Distributions != 0m
                 || rollForward.AllocatedResult != 0m
                 || rollForward.OtherMovements != 0m)
+            .ToList();
+
+        // Current-period net income that has not yet been closed to equity still belongs to the
+        // partners; carry it as an undistributed line so ending capital ties to balance-sheet
+        // ending equity (TotalEquity + NetIncome) on interim reports.
+        if (netIncome != 0m)
+        {
+            rollForwards.Add(new LedgerPartnersCapitalRollForward(
+                new LedgerAccount("Undistributed Net Income", LedgerAccountType.Equity),
+                "Undistributed Net Income",
+                InvestorId: null,
+                BeginningCapital: 0m,
+                Contributions: 0m,
+                Distributions: 0m,
+                AllocatedResult: netIncome,
+                OtherMovements: 0m,
+                EndingCapital: netIncome));
+        }
+
+        var orderedRollForwards = rollForwards
             .OrderBy(static rollForward => rollForward.AccountName, StringComparer.Ordinal)
             .ThenBy(static rollForward => rollForward.InvestorId ?? string.Empty, StringComparer.Ordinal)
             .ToArray();
@@ -237,13 +266,13 @@ public static class LedgerFinancialStatementBuilder
         return new LedgerPartnersCapitalStatement(
             periodStart,
             asOf,
-            rollForwards.Sum(static rollForward => rollForward.BeginningCapital),
-            rollForwards.Sum(static rollForward => rollForward.Contributions),
-            rollForwards.Sum(static rollForward => rollForward.Distributions),
-            rollForwards.Sum(static rollForward => rollForward.AllocatedResult),
-            rollForwards.Sum(static rollForward => rollForward.OtherMovements),
-            rollForwards.Sum(static rollForward => rollForward.EndingCapital),
-            rollForwards);
+            orderedRollForwards.Sum(static rollForward => rollForward.BeginningCapital),
+            orderedRollForwards.Sum(static rollForward => rollForward.Contributions),
+            orderedRollForwards.Sum(static rollForward => rollForward.Distributions),
+            orderedRollForwards.Sum(static rollForward => rollForward.AllocatedResult),
+            orderedRollForwards.Sum(static rollForward => rollForward.OtherMovements),
+            orderedRollForwards.Sum(static rollForward => rollForward.EndingCapital),
+            orderedRollForwards);
     }
 
     private static IEnumerable<JournalEntry> PeriodEntries(
@@ -252,15 +281,10 @@ public static class LedgerFinancialStatementBuilder
         DateTimeOffset asOf)
         => ledger.Journal.Where(entry => entry.Timestamp > periodStart && entry.Timestamp <= asOf);
 
-    private static decimal SumCashBalances(
-        IReadOnlyLedger ledger,
-        DateTimeOffset asOf,
-        string? financialAccountId)
-        => ledger.Accounts
-            .Where(IsCashAccount)
-            .Where(account => MatchesFinancialAccount(account, financialAccountId))
-            .Distinct()
-            .Sum(account => ledger.GetBalanceAsOf(account, asOf));
+    private static decimal SumCashBalances(IReadOnlyDictionary<LedgerAccount, decimal> scopedTrialBalance)
+        => scopedTrialBalance
+            .Where(pair => IsCashAccount(pair.Key))
+            .Sum(static pair => pair.Value);
 
     private static bool IsCashAccount(LedgerAccount account)
         => account.AccountType == LedgerAccountType.Asset

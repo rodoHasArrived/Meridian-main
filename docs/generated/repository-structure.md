@@ -4156,6 +4156,7 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.Documents
 │   │   ├── DesignModule.cs
+│   │   ├── FinancialReportDocumentRenderer.cs
 │   │   ├── Meridian.Documents.csproj
 │   │   └── README.md
 │   ├── Meridian.Domain
@@ -4369,6 +4370,8 @@ Meridian-main
 │   │   │   ├── OperationsWorkflowAuditHashJsonContext.cs
 │   │   │   └── PostgresOperationsContinuityStore.cs
 │   │   ├── PrivateCapital
+│   │   │   ├── CommitmentRollForwardCalculator.cs
+│   │   │   ├── DefaultInterestCalculator.cs
 │   │   │   ├── LedgerCapitalAccountReconciliationResolver.cs
 │   │   │   ├── PrivateCapitalActivityProjectionBuilder.cs
 │   │   │   ├── PrivateCapitalCapitalAccountSubledgerBuilder.cs
@@ -4812,6 +4815,10 @@ Meridian-main
 │   │   ├── AutomatedJournalEvent.cs
 │   │   ├── AutomatedJournalEventKind.cs
 │   │   ├── AutomatedJournalPostingTarget.cs
+│   │   ├── BuiltInLedgerReportBinaryRenderer.cs
+│   │   ├── CapitalCallDraftFactory.cs
+│   │   ├── CapitalCallPlanBuilder.cs
+│   │   ├── CarriedInterestClawbackCalculator.cs
 │   │   ├── ChartOfAccounts.cs
 │   │   ├── ChartOfAccountsNode.cs
 │   │   ├── DailyPortfolioPriceMark.cs
@@ -4826,6 +4833,8 @@ Meridian-main
 │   │   ├── DepreciationPeriod.cs
 │   │   ├── DepreciationProjection.cs
 │   │   ├── DepreciationScheduleCalculator.cs
+│   │   ├── EqualizationCalculator.cs
+│   │   ├── EuropeanDistributionWaterfall.cs
 │   │   ├── FairValueLevel.cs
 │   │   ├── FixedAssetDepreciationDraftBuilder.cs
 │   │   ├── FixedAssetDepreciationProjector.cs
@@ -4836,6 +4845,7 @@ Meridian-main
 │   │   ├── FundLedgerBook.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── IDepreciationScheduleCalculator.cs
+│   │   ├── ILedgerReportBinaryRenderer.cs
 │   │   ├── IReadOnlyLedger.cs
 │   │   ├── JournalEntry.cs
 │   │   ├── JournalEntryMetadata.cs
@@ -4849,10 +4859,12 @@ Meridian-main
 │   │   ├── LedgerAccountType.cs
 │   │   ├── LedgerBalancePoint.cs
 │   │   ├── LedgerBookKey.cs
+│   │   ├── LedgerCashFlowStatement.cs
 │   │   ├── LedgerChartBalance.cs
 │   │   ├── LedgerCurrencyExposure.cs
 │   │   ├── LedgerCurrencyTranslation.cs
 │   │   ├── LedgerEntry.cs
+│   │   ├── LedgerEntryCurrency.cs
 │   │   ├── LedgerFinancialReportPack.cs
 │   │   ├── LedgerFinancialStatementBuilder.cs
 │   │   ├── LedgerFinancialStatements.cs
@@ -4861,6 +4873,7 @@ Meridian-main
 │   │   ├── LedgerLineDimensionSet.cs
 │   │   ├── LedgerLineDimensionSetFields.cs
 │   │   ├── LedgerLineDimensionSetNormalizer.cs
+│   │   ├── LedgerPartnersCapitalStatement.cs
 │   │   ├── LedgerQuery.cs
 │   │   ├── LedgerReportExportFormat.cs
 │   │   ├── LedgerReportPackArtifact.cs
@@ -4868,6 +4881,7 @@ Meridian-main
 │   │   ├── LedgerReportPackLifecycle.cs
 │   │   ├── LedgerReportPackRequest.cs
 │   │   ├── LedgerReportPackSignature.cs
+│   │   ├── LedgerReportPresentation.cs
 │   │   ├── LedgerReportSchedule.cs
 │   │   ├── LedgerReportScheduledExport.cs
 │   │   ├── LedgerReportScheduleFrequency.cs
@@ -4895,6 +4909,7 @@ Meridian-main
 │   │   ├── MultiCurrencyJournalProjection.cs
 │   │   ├── MultiCurrencyJournalProjector.cs
 │   │   ├── MultiCurrencyLedgerTranslator.cs
+│   │   ├── NavPerUnitCalculator.cs
 │   │   ├── PartnershipInvestor.cs
 │   │   ├── PartnershipInvestorAccountingProjector.cs
 │   │   ├── PartnershipInvestorAllocation.cs
@@ -4911,6 +4926,8 @@ Meridian-main
 │   │   ├── PeriodCloseLine.cs
 │   │   ├── PeriodCloseProjection.cs
 │   │   ├── PeriodCloseProjector.cs
+│   │   ├── PreferredReturnCalculator.cs
+│   │   ├── PrivateCapitalCommitments.cs
 │   │   ├── PrivateCapitalFundEventLedgerProjector.cs
 │   │   ├── ProjectLedgerBook.cs
 │   │   ├── README.md
@@ -4920,6 +4937,8 @@ Meridian-main
 │   │   ├── ShadowNavValidationPolicy.cs
 │   │   ├── ShadowNavValidationReport.cs
 │   │   ├── ShadowNavValidator.cs
+│   │   ├── ShareClass.cs
+│   │   ├── ShareClassUnitRegisterProjector.cs
 │   │   ├── StalePricePolicy.cs
 │   │   └── WashSale.cs
 │   ├── Meridian.LifecycleSupervisor
@@ -5276,7 +5295,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_022__tenant_lower_indexes.sql
 │   │   │   │   ├── V_ledger_023__journal_as_of_indexes.sql
 │   │   │   │   ├── V_ledger_024__tax_lot_average_cost_method.sql
-│   │   │   │   └── V_ledger_025__global_posting_command_identity.sql
+│   │   │   │   ├── V_ledger_025__global_posting_command_identity.sql
+│   │   │   │   └── V_ledger_026__journal_leg_currency.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── DurableAutomatedJournalPoster.cs
@@ -8130,6 +8150,10 @@ Meridian-main
 │   │   │   ├── OperationsContinuity
 │   │   │   │   └── FinancialOperationsCommandCenterReadServiceTests.cs
 │   │   │   ├── PrivateCapital
+│   │   │   │   ├── CapitalCallDraftFactoryTests.cs
+│   │   │   │   ├── CapitalCallPlanBuilderTests.cs
+│   │   │   │   ├── CommitmentRollForwardCalculatorTests.cs
+│   │   │   │   ├── DefaultInterestCalculatorTests.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.cs
 │   │   │   │   └── PrivateCapitalFundEventLedgerReadinessBuilderTests.cs
 │   │   │   └── Reconciliation
@@ -8325,19 +8349,28 @@ Meridian-main
 │   │   │   └── YahooFinancePcgPreferredIntegrationTests.cs
 │   │   ├── Ledger
 │   │   │   ├── AutomatedJournalPostingTargetTests.cs
+│   │   │   ├── CarriedInterestClawbackCalculatorTests.cs
 │   │   │   ├── DailyPortfolioPricingDeltaTests.cs
 │   │   │   ├── DepreciationScheduleCalculatorTests.cs
 │   │   │   ├── DimensionSignatureBackwardCompatibilityTests.cs
+│   │   │   ├── EuropeanDistributionWaterfallTests.cs
+│   │   │   ├── FinancialReportDocumentRendererTests.cs
 │   │   │   ├── FixedAssetDepreciationDraftBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationProjectorTests.cs
 │   │   │   ├── LedgerAccountIdentityTests.cs
 │   │   │   ├── LedgerAccountTypeOrdinalContractTests.cs
+│   │   │   ├── LedgerEntryCurrencyTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
 │   │   │   ├── LedgerJournalReversalTests.cs
+│   │   │   ├── LedgerPeriodStatementsTests.cs
+│   │   │   ├── LedgerScheduledExportFormatTests.cs
 │   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
 │   │   │   ├── LedgerTaxLotReliefWashSaleTests.cs
 │   │   │   ├── LotConsumptionTests.cs
-│   │   │   └── PeriodCloseProjectorTests.cs
+│   │   │   ├── NavPerUnitAndEqualizationTests.cs
+│   │   │   ├── PeriodCloseProjectorTests.cs
+│   │   │   ├── PreferredReturnCalculatorTests.cs
+│   │   │   └── ShareClassUnitRegisterTests.cs
 │   │   ├── MoneyMarketFunds
 │   │   │   └── MoneyMarketFundProjectionServiceTests.cs
 │   │   ├── Options

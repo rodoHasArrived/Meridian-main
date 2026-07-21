@@ -102,6 +102,44 @@ public sealed class DefaultInterestCalculatorTests
     }
 
     [Fact]
+    public void PostGracePartialPayment_AmortizesInterestBearingPrincipal()
+    {
+        var commitment = Commitment(graceDays: 10);
+        var installment = Installment(1_000_000m, new DateOnly(2026, 3, 31)); // grace end 2026-04-10
+
+        var defaults = DefaultInterestCalculator.Evaluate(
+            commitment,
+            [installment],
+            fundingReceipts: [new CapitalCallFundingReceipt("inst-1", new DateOnly(2026, 4, 25), 400_000m)],
+            asOf: new DateOnly(2026, 5, 25));
+
+        var capitalDefault = defaults.Should().ContainSingle().Subject;
+        capitalDefault.Accruals.Should().HaveCount(2);
+        capitalDefault.Accruals[0].Principal.Should().Be(1_000_000m); // before the partial payment
+        capitalDefault.Accruals[1].Principal.Should().Be(600_000m);   // after the partial payment
+        capitalDefault.Status.Should().Be(DrawdownInstallmentStatus.Defaulted);
+    }
+
+    [Fact]
+    public void FutureReceipt_IsIgnoredForHistoricalAsOf()
+    {
+        var commitment = Commitment(graceDays: 10);
+        var installment = Installment(1_000_000m, new DateOnly(2026, 3, 31));
+
+        // Funding lands 2026-05-20 but the report is as of 2026-05-01 — it must not cure or shorten.
+        var defaults = DefaultInterestCalculator.Evaluate(
+            commitment,
+            [installment],
+            fundingReceipts: [new CapitalCallFundingReceipt("inst-1", new DateOnly(2026, 5, 20), 1_000_000m)],
+            asOf: new DateOnly(2026, 5, 1));
+
+        var capitalDefault = defaults.Should().ContainSingle().Subject;
+        capitalDefault.Status.Should().Be(DrawdownInstallmentStatus.Defaulted);
+        capitalDefault.CuredDate.Should().BeNull();
+        capitalDefault.Accruals.Single().AccrualTo.Should().Be(new DateOnly(2026, 5, 1));
+    }
+
+    [Fact]
     public void PartialFunding_LeavesUnfundedPrincipalInDefault()
     {
         var commitment = Commitment();

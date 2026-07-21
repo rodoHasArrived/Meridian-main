@@ -68,8 +68,47 @@ public sealed class LedgerPeriodStatementsTests
         partnersCapital.BeginningCapital.Should().Be(5_000_000m);
         partnersCapital.Contributions.Should().Be(3_000_000m);
         partnersCapital.Distributions.Should().Be(500_000m);
-        partnersCapital.EndingCapital.Should().Be(7_500_000m);
+        // Unclosed net income (200k interest income - 100k management fee) rides an undistributed line.
+        partnersCapital.AllocatedResult.Should().Be(100_000m);
+        partnersCapital.EndingCapital.Should().Be(7_600_000m);
         partnersCapital.IsReconciled.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PartnersCapital_EndingTiesToBalanceSheetEquity()
+    {
+        var statements = BuildStatements();
+
+        statements.PartnersCapital!.EndingCapital.Should().Be(statements.EndingEquity);
+    }
+
+    [Fact]
+    public void PeriodStatements_ScopeBalancesToLineDimensions()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var capitalA = LedgerAccounts.InvestorCapitalFor("lp-a");
+        var capitalB = LedgerAccounts.InvestorCapitalFor("lp-b");
+        var fundA = new LedgerLineDimensionSet(FundId: "fund-a");
+        var fundB = new LedgerLineDimensionSet(FundId: "fund-b");
+
+        // Two funds share the same cash account but are separated by line dimensions.
+        ledger.PostLines(new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero), "fund-a contribution",
+            [(LedgerAccounts.Cash, 1_000_000m, 0m, (LedgerLineDimensionSet?)fundA), (capitalA, 0m, 1_000_000m, fundA)]);
+        ledger.PostLines(new DateTimeOffset(2026, 2, 2, 0, 0, 0, TimeSpan.Zero), "fund-b contribution",
+            [(LedgerAccounts.Cash, 2_000_000m, 0m, (LedgerLineDimensionSet?)fundB), (capitalB, 0m, 2_000_000m, fundB)]);
+
+        var scoped = LedgerFinancialStatementBuilder.BuildForPeriod(
+            ledger,
+            new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.Zero),
+            lineDimensions: fundA);
+
+        // Only fund-a's 1,000,000 cash and capital appear — fund-b's 2,000,000 must not leak in.
+        scoped.CashFlow!.EndingCash.Should().Be(1_000_000m);
+        scoped.CashFlow.FinancingCashFlow.Should().Be(1_000_000m);
+        scoped.PartnersCapital!.EndingCapital.Should().Be(1_000_000m);
+        scoped.PartnersCapital.Accounts.Should().Contain(account => account.InvestorId == "lp-a");
+        scoped.PartnersCapital.Accounts.Should().NotContain(account => account.InvestorId == "lp-b");
     }
 
     [Fact]
@@ -77,8 +116,8 @@ public sealed class LedgerPeriodStatementsTests
     {
         var partnersCapital = BuildStatements().PartnersCapital!;
 
-        var lp1 = partnersCapital.Accounts.Should().ContainSingle().Subject;
-        lp1.InvestorId.Should().Be("lp-1");
+        var lp1 = partnersCapital.Accounts.Should().ContainSingle(account => account.InvestorId == "lp-1").Subject;
         lp1.ReconciliationVariance.Should().BeApproximately(0m, 0.0001m);
+        partnersCapital.Accounts.Should().Contain(account => account.AccountName == "Undistributed Net Income");
     }
 }

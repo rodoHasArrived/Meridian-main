@@ -1,11 +1,11 @@
 {
   "total_files": 630,
-  "total_lines": 113540,
+  "total_lines": 113605,
   "orphaned_count": 257,
   "no_heading_count": 148,
   "stale_count": 0,
   "todo_count": 207,
-  "average_lines": 180.2,
+  "average_lines": 180.3,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1484,7 +1484,7 @@
     },
     {
       "path": "docs/architecture/ledger-architecture.md",
-      "line_count": 631,
+      "line_count": 638,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2548,7 +2548,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9299,
+      "line_count": 9332,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5100,7 +5100,7 @@
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 217,
+      "line_count": 242,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

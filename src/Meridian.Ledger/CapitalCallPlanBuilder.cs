@@ -141,12 +141,27 @@ public static class CapitalCallPlanBuilder
         ArgumentNullException.ThrowIfNull(request);
 
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+
+        // Fail closed on any roll-forward that already carries a broken invariant (e.g. an over-call
+        // or misrouted expiry surfaced a Critical issue upstream): planning a call from it would let
+        // notices and postings flow from an invalid commitment state.
+        var invalid = request.RollForwards.Where(static rollForward => !rollForward.InvariantHolds).ToArray();
+        foreach (var breach in invalid)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "private-capital.capital-call-invariant-breach",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Commitment '{breach.CommitmentId}' roll-forward is invalid (invariant does not hold); it cannot back a capital call.",
+                breach.CommitmentId,
+                "Reconcile the commitment roll-forward and clear its critical issues before calling capital."));
+        }
+
         var callable = request.RollForwards
-            .Where(static rollForward => rollForward.Commitment.IsCallable && rollForward.Uncalled > 0m)
+            .Where(static rollForward => rollForward.InvariantHolds && rollForward.Commitment.IsCallable && rollForward.Uncalled > 0m)
             .OrderBy(static rollForward => rollForward.CommitmentId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        foreach (var skipped in request.RollForwards.Except(callable))
+        foreach (var skipped in request.RollForwards.Except(callable).Except(invalid))
         {
             issues.Add(new AccountingConfigurationValidationIssueDto(
                 "private-capital.capital-call-commitment-skipped",

@@ -85,6 +85,29 @@ public sealed class CapitalCallPlanBuilderTests
     }
 
     [Fact]
+    public void InvalidRollForward_FailsClosed()
+    {
+        // An over-call leaves a Critical issue and !InvariantHolds even though uncalled stays positive.
+        var commitment = new InvestorCommitment(
+            "commitment:fund-a:lp-1:1", "fund-a", null, "ca:lp-1", "lp-1", "USD",
+            10_000_000m, new DateOnly(2026, 1, 1), new DateOnly(2031, 1, 1), CommitmentStatus.Active);
+        var overCalled = CommitmentRollForwardCalculator.Build(
+            commitment,
+            [new CommitmentActivityEvent("over", ManualJournalEntryTypeDto.CapitalCall, new DateOnly(2026, 1, 2), 12_000_000m)]);
+        overCalled.InvariantHolds.Should().BeFalse();
+
+        var request = new CapitalCallPlanRequest(
+            "call-x", "fund-a", 1_000_000m, new DateOnly(2026, 4, 1), new DateOnly(2026, 4, 15), [overCalled]);
+
+        var plan = CapitalCallPlanBuilder.Build(request);
+
+        plan.IsExecutable.Should().BeFalse();
+        plan.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "private-capital.capital-call-invariant-breach"
+            && issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
     public void PlanLine_BuildsNoticedInstallment()
     {
         var request = new CapitalCallPlanRequest(
