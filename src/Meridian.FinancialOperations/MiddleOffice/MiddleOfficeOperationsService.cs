@@ -121,12 +121,17 @@ public sealed class MiddleOfficeOperationsService
 
         var raisedAt = (request.RaisedAtUtc ?? DateTimeOffset.UtcNow).ToUniversalTime();
         var escalationId = $"esc-{Guid.NewGuid():N}";
+        var breakId = request.BreakId.Trim();
+        // Correlate the governance event with the caller's subject (fund/account/workflow) when
+        // supplied, so EventsFor(subject) finds the escalation; otherwise key it by the break itself.
+        var subject = string.IsNullOrWhiteSpace(request.SubjectId) ? breakId : request.SubjectId.Trim();
         var policy = request.SlaPolicy ?? DefaultPolicyForSeverity(request.Severity);
-        var timer = new WorkflowSlaTimer($"sla-{escalationId}", request.BreakId.Trim(), policy, raisedAt);
+        var timer = new WorkflowSlaTimer($"sla-{escalationId}", breakId, policy, raisedAt);
 
         var escalation = new TrueBreakEscalation(
             EscalationId: escalationId,
-            BreakId: request.BreakId.Trim(),
+            BreakId: breakId,
+            SubjectId: subject,
             Classification: request.Classification,
             Severity: request.Severity,
             Level: 0,
@@ -142,11 +147,12 @@ public sealed class MiddleOfficeOperationsService
             _eventSink.Append(
                 FundAdministrationEventKind.ReconciliationBreakEscalated,
                 escalation.AssignedTo,
-                escalation.BreakId,
+                escalation.SubjectId,
                 $"True-break escalation raised at level 0 ({escalation.Severity}).",
                 new Dictionary<string, string>
                 {
                     ["escalationId"] = escalationId,
+                    ["breakId"] = escalation.BreakId,
                     ["classification"] = escalation.Classification.ToString(),
                     ["severity"] = escalation.Severity.ToString(),
                     ["assignedTo"] = escalation.AssignedTo,
@@ -191,11 +197,12 @@ public sealed class MiddleOfficeOperationsService
                 _eventSink.Append(
                     FundAdministrationEventKind.SlaBreached,
                     escalation.AssignedTo,
-                    escalation.BreakId,
+                    escalation.SubjectId,
                     $"SLA breached; escalated to level {newLevel}.",
                     new Dictionary<string, string>
                     {
                         ["escalationId"] = escalation.EscalationId,
+                        ["breakId"] = escalation.BreakId,
                         ["level"] = newLevel.ToString(),
                         ["severity"] = escalation.Severity.ToString(),
                         ["breachedDueAtUtc"] = escalation.Timer!.DueAtUtc.ToString("O"),

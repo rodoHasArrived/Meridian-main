@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -176,44 +177,47 @@ public sealed class FundAdministrationEventLog : IFundAdministrationEventSink
 
     private static string ComputeHash(FundAdministrationEvent evt)
     {
-        // Fields are joined with the ASCII unit separator (U+001F), which cannot appear in the
-        // normalized text fields, so the canonical form is unambiguous and deterministic.
-        const char sep = (char)0x1F;
-
         var builder = new StringBuilder();
-        builder.Append(evt.Sequence).Append(sep);
-        builder.Append((int)evt.Kind).Append(sep);
-        builder.Append(evt.OccurredAtUtc.ToUniversalTime().ToString("O")).Append(sep);
-        builder.Append(evt.Actor).Append(sep);
-        builder.Append(evt.SubjectId).Append(sep);
-        builder.Append(evt.Summary).Append(sep);
 
+        // Length-prefix every field so the canonical form is unambiguous even when a value contains the
+        // delimiter: each value is preceded by its exact character count, so an embedded separator or
+        // '=' can never be misread as a field boundary. The attribute and evidence counts are hashed
+        // too, so splitting or merging entries also changes the hash. Every evidence field is folded in
+        // (not just id + content hash), so tampering with any supporting-record field is detectable.
+        AppendField(builder, evt.Sequence.ToString(CultureInfo.InvariantCulture));
+        AppendField(builder, ((int)evt.Kind).ToString(CultureInfo.InvariantCulture));
+        AppendField(builder, evt.OccurredAtUtc.ToUniversalTime().ToString("O"));
+        AppendField(builder, evt.Actor);
+        AppendField(builder, evt.SubjectId);
+        AppendField(builder, evt.Summary);
+
+        AppendField(builder, evt.Attributes.Count.ToString(CultureInfo.InvariantCulture));
         foreach (var pair in evt.Attributes.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
         {
-            builder.Append(pair.Key).Append('=').Append(pair.Value).Append(sep);
+            AppendField(builder, pair.Key);
+            AppendField(builder, pair.Value);
         }
 
-        builder.Append(sep);
+        AppendField(builder, evt.Evidence.Count.ToString(CultureInfo.InvariantCulture));
         foreach (var reference in evt.Evidence)
         {
-            // Fold every evidence field into the chain so any post-append alteration of the supporting
-            // record (URI, kind, source system, retention actor/time, subject, description) is
-            // detectable — not just its id and content hash.
-            builder.Append(reference.EvidenceId).Append('|')
-                .Append(reference.Uri).Append('|')
-                .Append(reference.Kind).Append('|')
-                .Append(reference.SourceSystem).Append('|')
-                .Append(reference.RetainedAtUtc.ToUniversalTime().ToString("O")).Append('|')
-                .Append(reference.RetainedBy).Append('|')
-                .Append(reference.SubjectId ?? string.Empty).Append('|')
-                .Append(reference.ContentHash ?? string.Empty).Append('|')
-                .Append(reference.Description ?? string.Empty).Append(sep);
+            AppendField(builder, reference.EvidenceId);
+            AppendField(builder, reference.Uri);
+            AppendField(builder, reference.Kind);
+            AppendField(builder, reference.SourceSystem);
+            AppendField(builder, reference.RetainedAtUtc.ToUniversalTime().ToString("O"));
+            AppendField(builder, reference.RetainedBy);
+            AppendField(builder, reference.SubjectId ?? string.Empty);
+            AppendField(builder, reference.ContentHash ?? string.Empty);
+            AppendField(builder, reference.Description ?? string.Empty);
         }
 
-        builder.Append(sep);
-        builder.Append(evt.PreviousHash ?? string.Empty);
+        AppendField(builder, evt.PreviousHash ?? string.Empty);
 
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
         return Convert.ToHexString(bytes);
     }
+
+    private static void AppendField(StringBuilder builder, string value)
+        => builder.Append(value.Length).Append((char)0x1F).Append(value);
 }

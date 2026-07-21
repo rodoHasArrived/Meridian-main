@@ -6,9 +6,12 @@ namespace Meridian.Ledger;
 /// <remarks>
 /// Access to the internal lock and reopen collections is synchronized so the book is safe to share
 /// across threads — consistent with <see cref="JournalTemplateBook"/> and
-/// <see cref="PortfolioPricingRuleBook"/>. Check-then-act operations (lock, reopen) hold the lock for
-/// their whole body so they stay atomic; the posting helpers rely on the synchronized
-/// <see cref="TryFindLock"/> and never hold the lock while posting into the ledger book.
+/// <see cref="PortfolioPricingRuleBook"/>. Composite operations hold the lock for their whole body so
+/// they stay atomic: locking and reopening are atomic check-then-act, and <see cref="Post"/> /
+/// <see cref="PostLines"/> perform their lock check and the ledger post under a single lock
+/// acquisition, so a period cannot be locked between the check and the post and admit a journal that
+/// should have been blocked. Internal <c>*Locked</c> helpers assume the caller already holds the lock,
+/// which keeps the composite paths free of the non-reentrant re-lock that would otherwise deadlock.
 /// </remarks>
 public sealed class LockedAccountingPeriodBook
 {
@@ -92,7 +95,7 @@ public sealed class LockedAccountingPeriodBook
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
         lock (_gate)
         {
-            lockedPeriod = _lockedPeriods.FirstOrDefault(period => SameLedgerKey(period.LedgerKey, normalizedKey) && period.Contains(timestamp));
+            lockedPeriod = FindLockLocked(normalizedKey, timestamp);
         }
 
         return lockedPeriod is not null;
@@ -159,14 +162,10 @@ public sealed class LockedAccountingPeriodBook
     {
         ArgumentNullException.ThrowIfNull(journalEntry);
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
-
-        if (!TryFindLock(normalizedKey, journalEntry.Timestamp, out var lockedPeriod))
-            return;
-
-        throw new LedgerValidationException(
-            $"Accounting period '{lockedPeriod!.PeriodId}' for ledger book '{normalizedKey.LedgerBook}' is locked; " +
-            $"journal '{journalEntry.JournalEntryId}' dated '{journalEntry.Timestamp:O}' cannot be posted. " +
-            $"Locked by '{lockedPeriod.LockedBy}' at '{lockedPeriod.LockedAtUtc:O}'.");
+        lock (_gate)
+        {
+            EnsureCanPostLocked(normalizedKey, journalEntry);
+        }
     }
 
     public void Post(ProjectLedgerBook projectLedgerBook, LedgerBookKey ledgerKey, JournalEntry journalEntry)
@@ -175,8 +174,13 @@ public sealed class LockedAccountingPeriodBook
         ArgumentNullException.ThrowIfNull(journalEntry);
 
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
-        EnsureCanPost(normalizedKey, journalEntry);
-        projectLedgerBook.GetOrCreate(normalizedKey).Post(journalEntry);
+        // Hold the lock across the check and the post so a concurrent LockPeriod cannot slip in between
+        // and admit a journal into a period that became locked after the check.
+        lock (_gate)
+        {
+            EnsureCanPostLocked(normalizedKey, journalEntry);
+            projectLedgerBook.GetOrCreate(normalizedKey).Post(journalEntry);
+        }
     }
 
     public void PostLines(
@@ -190,14 +194,35 @@ public sealed class LockedAccountingPeriodBook
         ArgumentNullException.ThrowIfNull(projectLedgerBook);
 
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
-        if (TryFindLock(normalizedKey, timestamp, out var lockedPeriod))
+        lock (_gate)
         {
-            throw new LedgerValidationException(
-                $"Accounting period '{lockedPeriod!.PeriodId}' for ledger book '{normalizedKey.LedgerBook}' is locked; " +
-                $"journal dated '{timestamp:O}' cannot be posted. Locked by '{lockedPeriod.LockedBy}' at '{lockedPeriod.LockedAtUtc:O}'.");
-        }
+            var lockedPeriod = FindLockLocked(normalizedKey, timestamp);
+            if (lockedPeriod is not null)
+            {
+                throw new LedgerValidationException(
+                    $"Accounting period '{lockedPeriod.PeriodId}' for ledger book '{normalizedKey.LedgerBook}' is locked; " +
+                    $"journal dated '{timestamp:O}' cannot be posted. Locked by '{lockedPeriod.LockedBy}' at '{lockedPeriod.LockedAtUtc:O}'.");
+            }
 
-        projectLedgerBook.GetOrCreate(normalizedKey).PostLines(timestamp, description, lines, metadata);
+            projectLedgerBook.GetOrCreate(normalizedKey).PostLines(timestamp, description, lines, metadata);
+        }
+    }
+
+    // ── Lock-held helpers (caller must hold _gate) ─────────────────────────────
+
+    private LockedAccountingPeriod? FindLockLocked(LedgerBookKey normalizedKey, DateTimeOffset timestamp)
+        => _lockedPeriods.FirstOrDefault(period => SameLedgerKey(period.LedgerKey, normalizedKey) && period.Contains(timestamp));
+
+    private void EnsureCanPostLocked(LedgerBookKey normalizedKey, JournalEntry journalEntry)
+    {
+        var lockedPeriod = FindLockLocked(normalizedKey, journalEntry.Timestamp);
+        if (lockedPeriod is null)
+            return;
+
+        throw new LedgerValidationException(
+            $"Accounting period '{lockedPeriod.PeriodId}' for ledger book '{normalizedKey.LedgerBook}' is locked; " +
+            $"journal '{journalEntry.JournalEntryId}' dated '{journalEntry.Timestamp:O}' cannot be posted. " +
+            $"Locked by '{lockedPeriod.LockedBy}' at '{lockedPeriod.LockedAtUtc:O}'.");
     }
 
     private static LedgerBookKey NormalizeLedgerKey(LedgerBookKey ledgerKey)

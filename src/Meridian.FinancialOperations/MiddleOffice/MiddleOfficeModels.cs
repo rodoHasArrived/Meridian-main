@@ -220,6 +220,7 @@ public enum TrueBreakEscalationStatus
 public sealed record TrueBreakEscalation(
     string EscalationId,
     string BreakId,
+    string SubjectId,
     BreakClassification Classification,
     ReconciliationBreakSeverity Severity,
     int Level,

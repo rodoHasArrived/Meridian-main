@@ -182,4 +182,25 @@ public sealed class MiddleOfficeOperationsServiceTests
         booking.SettlementDate.Should().Be(new DateOnly(2026, 7, 6), "Friday + 1 business day is Monday");
         booking.ReconciliationDueDate.Should().Be(new DateOnly(2026, 7, 6));
     }
+
+    [Fact]
+    public void RaiseTrueBreak_WithSubject_CorrelatesEventToSubjectAndRetainsBreakId()
+    {
+        var service = NewService(out var log);
+
+        var escalation = service.RaiseTrueBreak(new TrueBreakEscalationRequest(
+            "brk-1",
+            BreakClassification.TrueBreak,
+            ReconciliationBreakSeverity.High,
+            "Position variance",
+            "ops",
+            SubjectId: "FUND-A",
+            RaisedAtUtc: At));
+
+        escalation.SubjectId.Should().Be("FUND-A");
+        log.EventsFor("FUND-A").Should().ContainSingle("the event is keyed by the supplied subject");
+        log.EventsFor("brk-1").Should().BeEmpty("the break id is not the subject when a subject is supplied");
+        var evt = log.EventsOfKind(FundAdministrationEventKind.ReconciliationBreakEscalated).Should().ContainSingle().Which;
+        evt.Attributes["breakId"].Should().Be("brk-1");
+    }
 }

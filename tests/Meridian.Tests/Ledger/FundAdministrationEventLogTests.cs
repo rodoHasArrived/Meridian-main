@@ -111,4 +111,23 @@ public sealed class FundAdministrationEventLogTests
 
         altered.Hash.Should().NotBe(original.Hash);
     }
+
+    [Fact]
+    public void Append_AmbiguousAttributeEncoding_ProducesDistinctHashes()
+    {
+        // Under a naive "key=value" join these two distinct attribute maps would both encode to
+        // "a=b=c" and collide. Length-prefixed hashing keeps them distinct, so a value cannot be
+        // silently restructured across the key/value boundary without changing the hash.
+        var left = new FundAdministrationEventLog();
+        var right = new FundAdministrationEventLog();
+
+        var keyHasEquals = left.Append(
+            FundAdministrationEventKind.PeriodLocked, "controller", "FUND", "Locked",
+            attributes: new Dictionary<string, string> { ["a=b"] = "c" }, occurredAtUtc: At);
+        var valueHasEquals = right.Append(
+            FundAdministrationEventKind.PeriodLocked, "controller", "FUND", "Locked",
+            attributes: new Dictionary<string, string> { ["a"] = "b=c" }, occurredAtUtc: At);
+
+        keyHasEquals.Hash.Should().NotBe(valueHasEquals.Hash);
+    }
 }
