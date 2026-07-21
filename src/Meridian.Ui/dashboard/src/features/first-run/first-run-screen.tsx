@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { apiGetJson, apiPostJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { Button } from "@/components/ui/button";
-import type { FirstRunStatus } from "./types";
+import type { FirstRunStatus, SampleWorkspace } from "./types";
 
 const goals = [
   ["monitor-investments", "Monitor investments"],
@@ -112,8 +112,9 @@ export function FirstRunScreen({ initialStatus, onStatusChange }: { initialStatu
 
           {step === 4 ? <>
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-400/15 text-emerald-300"><Check size={32} /></div>
-            <h1 id="first-run-title" className="mt-6 text-4xl font-semibold">Your workspace is ready</h1>
+            <h1 id="first-run-title" className="mt-6 text-4xl font-semibold">{status.sampleWorkspace ? status.sampleWorkspace.headline : "Your workspace is ready"}</h1>
             {status.workspace.isSample ? <p className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-amber-400/15 px-3 py-1.5 text-sm font-semibold text-amber-200"><Database size={15} /> {status.workspace.badge}</p> : null}
+            {status.sampleWorkspace ? <SampleWorkspacePanel workspace={status.sampleWorkspace} onOpen={(route) => navigate(route)} /> : null}
             <div className="mt-8 grid gap-4 md:grid-cols-3">{status.recommendedActions.map((action) => <button key={action.route} className="rounded-2xl border border-slate-700 bg-slate-950/40 p-5 text-left transition hover:border-cyan-400" onClick={() => navigate(action.route)}><strong className="block text-slate-100">{action.label}</strong><span className="mt-2 block text-sm text-slate-400">{action.description}</span></button>)}</div>
           </> : null}
 
@@ -135,4 +136,105 @@ function Choice({ selected, onClick, title, description }: { selected: boolean; 
 
 function Review({ label, value }: { label: string; value: string }) {
   return <div className="grid gap-1 px-5 py-4 md:grid-cols-[13rem_1fr]"><span className="text-sm text-slate-400">{label}</span><strong className="font-medium text-slate-100">{value}</strong></div>;
+}
+
+const formatUsd = (value: number) => value.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+const formatSignedUsd = (value: number) => `${value >= 0 ? "+" : ""}${formatUsd(value)}`;
+const pnlToneClass = (value: number) => (value > 0 ? "text-emerald-300" : value < 0 ? "text-red-300" : "text-slate-200");
+
+function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspace; onOpen: (route: string) => void }) {
+  return (
+    <section className="mt-6 rounded-2xl border border-slate-700 bg-slate-950/40 p-6" aria-label="Sample workspace contents">
+      <p className="text-sm text-slate-300">{workspace.summary}</p>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <Stat label={`${workspace.portfolioName} value`} value={formatUsd(workspace.portfolioValue)} />
+        <Stat label="Cash" value={formatUsd(workspace.cash)} />
+        <Stat label="Unrealized P&L" value={formatSignedUsd(workspace.unrealizedPnl)} tone={pnlToneClass(workspace.unrealizedPnl)} />
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {workspace.highlights.map((highlight) => (
+          <button
+            key={highlight.label}
+            type="button"
+            onClick={() => onOpen(highlight.route)}
+            className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 text-left transition hover:border-cyan-400"
+          >
+            <span className="text-xs uppercase tracking-wide text-slate-400">{highlight.label}</span>
+            <strong className="mt-1 block text-lg text-slate-100">{highlight.value}</strong>
+            <span className="mt-1 block text-xs text-slate-400">{highlight.detail}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-200">Holdings</h3>
+            <button type="button" className="text-xs text-cyan-300 hover:text-cyan-200" onClick={() => onOpen("/portfolio")}>Open portfolio →</button>
+          </div>
+          <div className="mt-2 overflow-x-auto rounded-xl border border-slate-800">
+            <table className="w-full min-w-[26rem] text-left text-sm">
+              <thead className="bg-slate-900/60 text-xs uppercase tracking-wide text-slate-400">
+                <tr><th className="px-3 py-2">Symbol</th><th className="px-3 py-2 text-right">Qty</th><th className="px-3 py-2 text-right">Mark</th><th className="px-3 py-2 text-right">Value</th><th className="px-3 py-2 text-right">Unreal. P&L</th></tr>
+              </thead>
+              <tbody>
+                {workspace.holdings.map((holding) => (
+                  <tr key={holding.symbol} className="border-t border-slate-800">
+                    <td className="px-3 py-2 font-medium text-slate-100">{holding.symbol}</td>
+                    <td className="px-3 py-2 text-right text-slate-300">{holding.quantity.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right text-slate-300">{formatUsd(holding.lastPrice)}</td>
+                    <td className="px-3 py-2 text-right text-slate-300">{formatUsd(holding.marketValue)}</td>
+                    <td className={`px-3 py-2 text-right ${pnlToneClass(holding.unrealizedPnl)}`}>{formatSignedUsd(holding.unrealizedPnl)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-xs text-slate-500">Watchlist: {workspace.watchlist.join(", ")} · {workspace.marketHistory.sessions} sessions of history for {workspace.marketHistory.symbols.join(", ")}</p>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-200">Reconciliation breaks</h3>
+            <button type="button" className="text-xs text-cyan-300 hover:text-cyan-200" onClick={() => onOpen("/accounting/reconciliation/match")}>Review breaks →</button>
+          </div>
+          <ul className="mt-2 space-y-2">
+            {workspace.reconciliationBreaks.map((item) => (
+              <li key={item.id}>
+                <button type="button" onClick={() => onOpen(item.route)} className="w-full rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left transition hover:border-amber-400">
+                  <div className="flex items-center justify-between gap-2">
+                    <strong className="text-slate-100">{item.title}</strong>
+                    <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-xs font-semibold text-amber-200">{item.severity}</span>
+                  </div>
+                  <span className="mt-1 block text-xs text-slate-400">{item.summary}</span>
+                  <span className="mt-1 block text-xs text-slate-500">Variance {formatUsd(item.variance)} · {item.category}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <ArtifactCard title="Report" artifact={workspace.report} onOpen={onOpen} />
+            <ArtifactCard title="Strategy" artifact={workspace.strategy} onOpen={onOpen} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Stat({ label, value, tone = "text-slate-100" }: { label: string; value: string; tone?: string }) {
+  return <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4"><span className="text-xs uppercase tracking-wide text-slate-400">{label}</span><strong className={`mt-1 block text-xl ${tone}`}>{value}</strong></div>;
+}
+
+function ArtifactCard({ title, artifact, onOpen }: { title: string; artifact: SampleWorkspace["report"]; onOpen: (route: string) => void }) {
+  return (
+    <button type="button" onClick={() => onOpen(artifact.route)} className="rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left transition hover:border-cyan-400">
+      <span className="text-xs uppercase tracking-wide text-slate-400">{title}</span>
+      <strong className="mt-1 block text-slate-100">{artifact.name}</strong>
+      <span className="mt-1 block text-xs text-cyan-300">{artifact.status}</span>
+      <span className="mt-1 block text-xs text-slate-400">{artifact.detail}</span>
+    </button>
+  );
 }
