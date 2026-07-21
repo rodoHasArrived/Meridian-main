@@ -245,6 +245,12 @@ public sealed class DirectLendingEventRebuilder
                         var commitmentFeeAmount = root.GetProperty("commitmentFeeAmount").GetDecimal();
                         var penaltyAmount = root.GetProperty("penaltyAmount").GetDecimal();
                         var annualRateApplied = root.GetProperty("annualRateApplied").GetDecimal();
+                        // Events recorded before PIK accrual wiring carry no pikInterestAmount.
+                        var pikInterestAmount =
+                            root.TryGetProperty("pikInterestAmount", out var pikElement) &&
+                            pikElement.ValueKind == JsonValueKind.Number
+                                ? pikElement.GetDecimal()
+                                : 0m;
                         var accrualEntry = new DailyAccrualEntryDto(
                             accrualEntryId,
                             accrualDate,
@@ -252,12 +258,14 @@ public sealed class DirectLendingEventRebuilder
                             commitmentFeeAmount,
                             penaltyAmount,
                             annualRateApplied,
-                            entry.RecordedAt);
+                            entry.RecordedAt,
+                            pikInterestAmount);
 
                         servicing = servicing! with
                         {
                             Balances = servicing.Balances with
                             {
+                                PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + pikInterestAmount,
                                 InterestAccruedUnpaid = servicing.Balances.InterestAccruedUnpaid + interestAmount,
                                 CommitmentFeeAccruedUnpaid = servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
                             },
@@ -268,7 +276,9 @@ public sealed class DirectLendingEventRebuilder
                                 servicing.ServicingRevision + 1,
                                 "InternalEvent",
                                 accrualDate,
-                                $"Daily accrual posted at annual rate {annualRateApplied:P4}.",
+                                pikInterestAmount > 0m
+                                    ? $"Daily PIK accrual capitalized at annual rate {annualRateApplied:P4}."
+                                    : $"Daily accrual posted at annual rate {annualRateApplied:P4}.",
                                 entry.RecordedAt),
                             AccrualEntries = servicing.AccrualEntries.Concat([accrualEntry]).OrderByDescending(static item => item.AccrualDate).ToArray()
                         };
