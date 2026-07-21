@@ -96,6 +96,9 @@ public sealed class SystemHealthService
     /// </summary>
     public async Task<DiagnosticBundle?> GenerateDiagnosticBundleAsync(CancellationToken ct = default)
     {
+        // Honor cancellation up front so a cancelled token fails fast rather than being folded into a
+        // null result by the ApiResponse<T> seam (keeps the async cancellation flow intact).
+        ct.ThrowIfCancellationRequested();
         return (await _apiClient.PostWithResponseAsync<DiagnosticBundle>(UiApiRoutes.HealthDiagnosticsBundle, null, ct).ConfigureAwait(false)).DataOrLoggedNull("Generate diagnostic bundle");
     }
 
