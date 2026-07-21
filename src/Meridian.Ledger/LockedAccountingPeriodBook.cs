@@ -6,6 +6,7 @@ namespace Meridian.Ledger;
 public sealed class LockedAccountingPeriodBook
 {
     private readonly List<LockedAccountingPeriod> _lockedPeriods = [];
+    private readonly List<ReopenedAccountingPeriod> _reopenHistory = [];
 
     public IReadOnlyList<LockedAccountingPeriod> LockedPeriods
         => _lockedPeriods
@@ -15,6 +16,12 @@ public sealed class LockedAccountingPeriodBook
             .ThenBy(period => period.LedgerKey.ScenarioId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(period => period.StartsAtInclusive)
             .ToList();
+
+    /// <summary>
+    /// Chronological audit trail of every period reopen, newest actions appended last. A reopen never
+    /// erases history; the original lock and its reopen evidence both remain queryable here.
+    /// </summary>
+    public IReadOnlyList<ReopenedAccountingPeriod> ReopenHistory => _reopenHistory.ToList();
 
     public LockedAccountingPeriod LockPeriod(
         LedgerBookKey ledgerKey,
@@ -56,6 +63,57 @@ public sealed class LockedAccountingPeriodBook
         var normalizedKey = NormalizeLedgerKey(ledgerKey);
         lockedPeriod = _lockedPeriods.FirstOrDefault(period => SameLedgerKey(period.LedgerKey, normalizedKey) && period.Contains(timestamp));
         return lockedPeriod is not null;
+    }
+
+    /// <summary>Returns <see langword="true"/> when a period with the given id is currently locked for the book.</summary>
+    public bool IsLocked(LedgerBookKey ledgerKey, string periodId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(periodId);
+        var normalizedKey = NormalizeLedgerKey(ledgerKey);
+        var normalizedPeriodId = periodId.Trim();
+        return _lockedPeriods.Any(period => SameLedgerKey(period.LedgerKey, normalizedKey)
+                                            && string.Equals(period.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Reopens a currently-locked accounting period, removing its posting guard so corrections can be
+    /// posted again, and records the reopen — with its supporting <paramref name="evidence"/> — in
+    /// <see cref="ReopenHistory"/>. The period may be re-locked afterwards via <see cref="LockPeriod"/>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the period is not currently locked.</exception>
+    public ReopenedAccountingPeriod ReopenPeriod(
+        LedgerBookKey ledgerKey,
+        string periodId,
+        DateTimeOffset reopenedAtUtc,
+        string reopenedBy,
+        PeriodReopenEvidence evidence)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(periodId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reopenedBy);
+        ArgumentNullException.ThrowIfNull(evidence);
+
+        var normalizedKey = NormalizeLedgerKey(ledgerKey);
+        var normalizedPeriodId = periodId.Trim();
+
+        var lockedPeriod = _lockedPeriods.FirstOrDefault(period =>
+            SameLedgerKey(period.LedgerKey, normalizedKey)
+            && string.Equals(period.PeriodId, normalizedPeriodId, StringComparison.OrdinalIgnoreCase));
+
+        if (lockedPeriod is null)
+        {
+            throw new InvalidOperationException(
+                $"Accounting period '{normalizedPeriodId}' is not locked for ledger book '{normalizedKey.LedgerBook}'; nothing to reopen.");
+        }
+
+        _lockedPeriods.Remove(lockedPeriod);
+
+        var reopened = new ReopenedAccountingPeriod(
+            lockedPeriod,
+            reopenedAtUtc.ToUniversalTime(),
+            reopenedBy.Trim(),
+            evidence);
+        _reopenHistory.Add(reopened);
+        return reopened;
     }
 
     public void EnsureCanPost(LedgerBookKey ledgerKey, JournalEntry journalEntry)

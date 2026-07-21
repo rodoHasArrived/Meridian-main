@@ -1,0 +1,422 @@
+using Meridian.Ledger;
+
+namespace Meridian.FinancialOperations.FundAdministration;
+
+/// <summary>
+/// FundStudio-style administration control surface. Drives organization/entity/portfolio/account/book/
+/// period/report administration by composing the ledger-domain primitives — multi-book locked periods
+/// with evidence-bearing reopen, journal templates, recurring journals, year-end close, and
+/// portfolio-specific pricing rules — and recording every privileged action into a tamper-evident,
+/// append-only <see cref="FundAdministrationEventLog"/>.
+/// </summary>
+/// <remarks>
+/// State is held in-memory behind a single lock, matching the repository's in-memory service
+/// convention. The same <see cref="FundAdministrationEventLog"/> can be shared with the middle-office
+/// service so postings, locks, reopens, exports, and deliveries land in one governance chain.
+/// </remarks>
+public sealed class FundAdministrationControlService
+{
+    private readonly object _gate = new();
+    private readonly FundAdministrationEventLog _eventLog;
+    private readonly JournalTemplateBook _templates = new();
+    private readonly PortfolioPricingRuleBook _pricingRules = new();
+    private readonly LockedAccountingPeriodBook _periods = new();
+    private readonly Dictionary<string, RecurringJournalSchedule> _recurringSchedules = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, OnboardingTemplate> _onboardingTemplates = new(StringComparer.OrdinalIgnoreCase);
+
+    public FundAdministrationControlService(FundAdministrationEventLog? eventLog = null)
+    {
+        _eventLog = eventLog ?? new FundAdministrationEventLog();
+    }
+
+    /// <summary>The append-only, hash-chained governance event log this surface writes to.</summary>
+    public FundAdministrationEventLog EventLog => _eventLog;
+
+    /// <summary>The locked-period registry; use it to guard postings via <c>EnsureCanPost</c>.</summary>
+    public LockedAccountingPeriodBook Periods => _periods;
+
+    /// <summary>The registered journal templates.</summary>
+    public JournalTemplateBook TemplateBook => _templates;
+
+    /// <summary>The portfolio pricing rule registry.</summary>
+    public PortfolioPricingRuleBook PricingRuleBook => _pricingRules;
+
+    // ── Journal templates & recurring journals ─────────────────────────────────
+
+    /// <summary>Registers (or replaces) a journal template and records the change.</summary>
+    public JournalTemplate RegisterJournalTemplate(JournalTemplate template, string actor)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            _templates.Register(template);
+            _eventLog.Append(
+                FundAdministrationEventKind.JournalTemplateRegistered,
+                actor,
+                template.TemplateId,
+                $"Registered journal template '{template.Name}' with {template.Lines.Count} line(s).",
+                new Dictionary<string, string>
+                {
+                    ["templateId"] = template.TemplateId,
+                    ["lineCount"] = template.Lines.Count.ToString(),
+                });
+        }
+
+        return template;
+    }
+
+    /// <summary>Schedules a recurring journal, verifying its template is registered first.</summary>
+    public RecurringJournalSchedule ScheduleRecurringJournal(RecurringJournalSchedule schedule, string actor)
+    {
+        ArgumentNullException.ThrowIfNull(schedule);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            if (!_templates.TryGet(schedule.TemplateId, out _))
+                throw new InvalidOperationException($"Recurring journal '{schedule.ScheduleId}' references unregistered template '{schedule.TemplateId}'.");
+
+            _recurringSchedules[schedule.ScheduleId] = schedule;
+            _eventLog.Append(
+                FundAdministrationEventKind.RecurringJournalScheduled,
+                actor,
+                schedule.ScheduleId,
+                $"Scheduled recurring journal from template '{schedule.TemplateId}' ({schedule.Cadence}).",
+                new Dictionary<string, string>
+                {
+                    ["templateId"] = schedule.TemplateId,
+                    ["cadence"] = schedule.Cadence.ToString(),
+                    ["ledgerBook"] = schedule.LedgerKey.LedgerBook,
+                });
+        }
+
+        return schedule;
+    }
+
+    /// <summary>
+    /// Plans a recurring journal's occurrences through <paramref name="throughDate"/>, annotating each
+    /// with whether it is currently blocked by a locked period. Read-only; nothing is recorded.
+    /// </summary>
+    public IReadOnlyList<RecurringJournalOccurrence> PlanRecurringJournals(string scheduleId, DateOnly throughDate)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        lock (_gate)
+        {
+            var schedule = ResolveScheduleLocked(scheduleId);
+            var template = _templates.Get(schedule.TemplateId);
+            var occurrences = RecurringJournalPlanner.PlanThrough(schedule, template, throughDate);
+            return RecurringJournalPlanner.ApplyLocks(occurrences, _periods);
+        }
+    }
+
+    /// <summary>
+    /// Materializes the recurring journal occurrences due through <paramref name="throughDate"/> that
+    /// are not blocked by a locked period, recording a run event for each. The returned occurrences are
+    /// ready to post; the caller posts them against its ledger.
+    /// </summary>
+    public IReadOnlyList<RecurringJournalOccurrence> MaterializeDueRecurringJournals(string scheduleId, DateOnly throughDate, string actor)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            var schedule = ResolveScheduleLocked(scheduleId);
+            var template = _templates.Get(schedule.TemplateId);
+            var occurrences = RecurringJournalPlanner.ApplyLocks(
+                RecurringJournalPlanner.PlanThrough(schedule, template, throughDate),
+                _periods);
+
+            var postable = occurrences.Where(static occurrence => !occurrence.BlockedByLock).ToArray();
+            foreach (var occurrence in postable)
+            {
+                _eventLog.Append(
+                    FundAdministrationEventKind.RecurringJournalRun,
+                    actor,
+                    schedule.ScheduleId,
+                    $"Materialized recurring journal for {occurrence.EffectiveDate:yyyy-MM-dd} (debits {occurrence.Journal.TotalDebits}).",
+                    new Dictionary<string, string>
+                    {
+                        ["templateId"] = schedule.TemplateId,
+                        ["effectiveDate"] = occurrence.EffectiveDate.ToString("yyyy-MM-dd"),
+                        ["ledgerBook"] = schedule.LedgerKey.LedgerBook,
+                    },
+                    occurredAtUtc: occurrence.EffectiveAtUtc);
+            }
+
+            return postable;
+        }
+    }
+
+    // ── Locked periods & evidence-bearing reopen ───────────────────────────────
+
+    /// <summary>Locks an accounting period and records the lock.</summary>
+    public LockedAccountingPeriod LockPeriod(
+        LedgerBookKey ledgerKey,
+        string periodId,
+        DateTimeOffset startsAtInclusive,
+        DateTimeOffset endsAtInclusive,
+        DateTimeOffset lockedAtUtc,
+        string actor,
+        string reason)
+    {
+        ArgumentNullException.ThrowIfNull(ledgerKey);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            var locked = _periods.LockPeriod(ledgerKey, periodId, startsAtInclusive, endsAtInclusive, lockedAtUtc, actor, reason);
+            _eventLog.Append(
+                FundAdministrationEventKind.PeriodLocked,
+                actor,
+                $"{locked.LedgerKey.LedgerBook}:{locked.PeriodId}",
+                $"Locked accounting period '{locked.PeriodId}' for book '{locked.LedgerKey.LedgerBook}'.",
+                new Dictionary<string, string>
+                {
+                    ["periodId"] = locked.PeriodId,
+                    ["ledgerBook"] = locked.LedgerKey.LedgerBook,
+                    ["reason"] = locked.Reason,
+                },
+                occurredAtUtc: locked.LockedAtUtc);
+            return locked;
+        }
+    }
+
+    /// <summary>Reopens a locked period with supporting evidence and records the reopen and its evidence.</summary>
+    public ReopenedAccountingPeriod ReopenPeriod(
+        LedgerBookKey ledgerKey,
+        string periodId,
+        DateTimeOffset reopenedAtUtc,
+        string actor,
+        PeriodReopenEvidence evidence)
+    {
+        ArgumentNullException.ThrowIfNull(ledgerKey);
+        ArgumentNullException.ThrowIfNull(evidence);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            var reopened = _periods.ReopenPeriod(ledgerKey, periodId, reopenedAtUtc, actor, evidence);
+            _eventLog.Append(
+                FundAdministrationEventKind.PeriodReopened,
+                actor,
+                $"{reopened.Period.LedgerKey.LedgerBook}:{reopened.Period.PeriodId}",
+                $"Reopened period '{reopened.Period.PeriodId}': {evidence.Reason}",
+                new Dictionary<string, string>
+                {
+                    ["periodId"] = reopened.Period.PeriodId,
+                    ["ledgerBook"] = reopened.Period.LedgerKey.LedgerBook,
+                    ["reopenId"] = evidence.ReopenId,
+                    ["approvedBy"] = evidence.ApprovedBy,
+                },
+                evidence: evidence.EvidenceReferences,
+                occurredAtUtc: reopened.ReopenedAtUtc);
+            return reopened;
+        }
+    }
+
+    // ── Year-end close ─────────────────────────────────────────────────────────
+
+    /// <summary>Projects a fiscal-year-end close and records it, whether or not it is ready to post.</summary>
+    public YearEndCloseProjection RunYearEndClose(YearEndCloseInput input, string actor)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        RequireActor(actor);
+
+        var projection = YearEndCloseProjector.Project(input);
+        lock (_gate)
+        {
+            _eventLog.Append(
+                FundAdministrationEventKind.YearEndClosed,
+                actor,
+                input.FiscalYearLabel,
+                projection.IsReady
+                    ? $"Year-end close projected for {input.FiscalYearLabel} (net income {projection.NetIncome})."
+                    : $"Year-end close projected for {input.FiscalYearLabel} but not ready: {projection.MissingPeriods.Count} period(s) still open.",
+                new Dictionary<string, string>
+                {
+                    ["fiscalYear"] = input.FiscalYearLabel,
+                    ["isReady"] = projection.IsReady.ToString(),
+                    ["netIncome"] = projection.NetIncome.ToString(),
+                    ["missingPeriods"] = string.Join(",", projection.MissingPeriods),
+                },
+                occurredAtUtc: input.FiscalYearEndUtc);
+        }
+
+        return projection;
+    }
+
+    // ── Portfolio-specific pricing rules ───────────────────────────────────────
+
+    /// <summary>Adds or replaces a portfolio pricing rule and records the change.</summary>
+    public PortfolioPricingRule SetPortfolioPricingRule(PortfolioPricingRule rule, string actor)
+    {
+        ArgumentNullException.ThrowIfNull(rule);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            _pricingRules.Add(rule);
+            _eventLog.Append(
+                FundAdministrationEventKind.PricingRuleChanged,
+                actor,
+                rule.PortfolioId,
+                $"Set pricing rule '{rule.RuleId}' for portfolio '{rule.PortfolioId}' ({rule.PriceSource}/{rule.ValuationMethod}).",
+                new Dictionary<string, string>
+                {
+                    ["ruleId"] = rule.RuleId,
+                    ["portfolioId"] = rule.PortfolioId,
+                    ["priceSource"] = rule.PriceSource,
+                    ["valuationMethod"] = rule.ValuationMethod,
+                    ["instrumentType"] = rule.InstrumentType ?? "*",
+                });
+            return rule;
+        }
+    }
+
+    /// <summary>Resolves the effective pricing rule for a portfolio, instrument, and date (read-only).</summary>
+    public PortfolioPricingRule? ResolvePortfolioPricing(string portfolioId, string? instrumentType, DateOnly asOf)
+        => _pricingRules.Resolve(portfolioId, instrumentType, asOf);
+
+    // ── Onboarding templates ───────────────────────────────────────────────────
+
+    /// <summary>Registers (or replaces) a reusable onboarding template.</summary>
+    public OnboardingTemplate RegisterOnboardingTemplate(OnboardingTemplate template)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        lock (_gate)
+        {
+            _onboardingTemplates[template.TemplateId] = template;
+        }
+
+        return template;
+    }
+
+    /// <summary>
+    /// Applies a registered onboarding template, producing a concrete structure plan and recording the
+    /// application. The plan's nodes are then created through the fund-structure services by the caller.
+    /// </summary>
+    public OnboardingPlan ApplyOnboardingTemplate(string templateId, IReadOnlyDictionary<string, string> parameters, string actor)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
+        ArgumentNullException.ThrowIfNull(parameters);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            if (!_onboardingTemplates.TryGetValue(templateId.Trim(), out var template))
+                throw new KeyNotFoundException($"Onboarding template '{templateId}' is not registered.");
+
+            var plan = template.Apply(parameters);
+            _eventLog.Append(
+                FundAdministrationEventKind.OnboardingApplied,
+                actor,
+                template.TemplateId,
+                $"Applied onboarding template '{template.Name}' producing {plan.Nodes.Count} node(s).",
+                new Dictionary<string, string>
+                {
+                    ["templateId"] = template.TemplateId,
+                    ["nodeCount"] = plan.Nodes.Count.ToString(),
+                });
+            return plan;
+        }
+    }
+
+    // ── Posting & report-export governance records ─────────────────────────────
+
+    /// <summary>Records that a journal was posted to a book, for the immutable posting trail.</summary>
+    public FundAdministrationEvent RecordJournalPosted(string ledgerBook, JournalEntry entry, string actor)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(ledgerBook);
+        ArgumentNullException.ThrowIfNull(entry);
+        RequireActor(actor);
+
+        var debits = entry.Lines.Sum(static line => line.Debit);
+        lock (_gate)
+        {
+            return _eventLog.Append(
+                FundAdministrationEventKind.JournalPosted,
+                actor,
+                $"{ledgerBook.Trim()}:{entry.JournalEntryId:N}",
+                $"Posted journal '{entry.Description}' (debits {debits}).",
+                new Dictionary<string, string>
+                {
+                    ["ledgerBook"] = ledgerBook.Trim(),
+                    ["journalEntryId"] = entry.JournalEntryId.ToString(),
+                    ["amount"] = debits.ToString(),
+                },
+                occurredAtUtc: entry.Timestamp);
+        }
+    }
+
+    /// <summary>Records that a governed report pack was exported, for the immutable export trail.</summary>
+    public FundAdministrationEvent RecordReportExport(LedgerReportScheduledExport export, string actor, DateTimeOffset occurredAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(export);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            return _eventLog.Append(
+                FundAdministrationEventKind.ReportExported,
+                actor,
+                export.ReportId,
+                $"Exported report '{export.ReportId}' for period '{export.PeriodId}' to {export.Recipients.Count} recipient(s).",
+                new Dictionary<string, string>
+                {
+                    ["reportId"] = export.ReportId,
+                    ["periodId"] = export.PeriodId,
+                    ["fundId"] = export.Schedule.FundId,
+                    ["recipientCount"] = export.Recipients.Count.ToString(),
+                    ["dueAtUtc"] = export.DueAtUtc.ToString("O"),
+                },
+                occurredAtUtc: occurredAtUtc);
+        }
+    }
+
+    // ── Read snapshots ─────────────────────────────────────────────────────────
+
+    /// <summary>All registered recurring journal schedules.</summary>
+    public IReadOnlyList<RecurringJournalSchedule> RecurringSchedules
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _recurringSchedules.Values
+                    .OrderBy(static schedule => schedule.ScheduleId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+            }
+        }
+    }
+
+    /// <summary>All registered onboarding templates.</summary>
+    public IReadOnlyList<OnboardingTemplate> OnboardingTemplates
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _onboardingTemplates.Values
+                    .OrderBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+            }
+        }
+    }
+
+    private RecurringJournalSchedule ResolveScheduleLocked(string scheduleId)
+    {
+        if (!_recurringSchedules.TryGetValue(scheduleId.Trim(), out var schedule))
+            throw new KeyNotFoundException($"Recurring journal schedule '{scheduleId}' is not registered.");
+
+        return schedule;
+    }
+
+    private static void RequireActor(string actor)
+    {
+        if (string.IsNullOrWhiteSpace(actor))
+            throw new ArgumentException("A governance action must record an actor.", nameof(actor));
+    }
+}
