@@ -37,9 +37,34 @@ public sealed class YearEndCloseTests
         projection.MissingPeriods.Should().BeEmpty();
         projection.ClosingEntries.IsBalanced.Should().BeTrue();
         projection.NetIncome.Should().Be(700m, "1000 + 200 revenue less 500 expense");
-        // Opening retained earnings for next year = prior 5000 + net income 700.
-        projection.OpeningRetainedEarningsByScope[PeriodCloseProjection.DefaultScope].Should().Be(5_700m);
+        // Opening retained earnings for next year = prior 5000 + net income 700 (a single scope here).
+        var roll = projection.OpeningRetainedEarnings.Should().ContainSingle().Which;
+        roll.FinancialScope.Should().Be(PeriodCloseProjection.DefaultScope);
+        roll.OpeningBalance.Should().Be(5_700m);
         projection.TotalOpeningRetainedEarnings.Should().Be(5_700m);
+    }
+
+    [Fact]
+    public void Project_DimensionSplitRetainedEarnings_RollsForwardPerEntity()
+    {
+        var entityA = new LedgerLineDimensionSet(EntityId: "ENT-A");
+        var entityB = new LedgerLineDimensionSet(EntityId: "ENT-B");
+        var trialBalance = new List<PeriodCloseAccountBalance>
+        {
+            new(LedgerAccounts.RealizedGain, 1_000m, entityA),     // entity A: +1000 net income
+            new(LedgerAccounts.RetainedEarnings, 200m, entityA),   // entity A: 200 prior retained earnings
+            new(LedgerAccounts.CommissionExpense, 400m, entityB),  // entity B: -400 net loss
+            new(LedgerAccounts.RetainedEarnings, 500m, entityB),   // entity B: 500 prior retained earnings
+        };
+
+        var projection = YearEndCloseProjector.Project(new YearEndCloseInput(
+            "FY2026", YearEnd, trialBalance, "controller"));
+
+        projection.OpeningRetainedEarnings.Should().HaveCount(2, "each entity rolls forward independently");
+        projection.OpeningRetainedEarnings.Single(roll => roll.Dimensions?.EntityId == "ENT-A")
+            .OpeningBalance.Should().Be(1_200m, "200 prior + 1000 net income");
+        projection.OpeningRetainedEarnings.Single(roll => roll.Dimensions?.EntityId == "ENT-B")
+            .OpeningBalance.Should().Be(100m, "500 prior - 400 net loss");
     }
 
     [Fact]

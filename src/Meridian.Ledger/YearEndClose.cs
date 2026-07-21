@@ -73,16 +73,26 @@ public sealed record YearEndCloseInput
 }
 
 /// <summary>
+/// One (financial-account, dimensional) retained-earnings scope carried into next year. Keeping the
+/// dimensional scope lets a caller seed each entity/sleeve's opening retained earnings independently,
+/// rather than a single merged financial-account total.
+/// </summary>
+public sealed record YearEndRetainedEarningsRoll(
+    string FinancialScope,
+    LedgerLineDimensionSet? Dimensions,
+    decimal OpeningBalance);
+
+/// <summary>
 /// The projected result of a fiscal-year-end close: the annual closing entries (reusing the
 /// single-period projector over the year-end trial balance), the readiness gate over constituent
-/// periods, and next year's opening retained earnings by scope.
+/// periods, and next year's opening retained earnings per dimensional scope.
 /// </summary>
 public sealed record YearEndCloseProjection(
     YearEndCloseInput Input,
     bool IsReady,
     IReadOnlyList<string> MissingPeriods,
     PeriodCloseProjection ClosingEntries,
-    IReadOnlyDictionary<string, decimal> OpeningRetainedEarningsByScope)
+    IReadOnlyList<YearEndRetainedEarningsRoll> OpeningRetainedEarnings)
 {
     /// <summary>Net income rolled to retained earnings for the fiscal year.</summary>
     public decimal NetIncome => ClosingEntries.NetIncome;
@@ -91,7 +101,7 @@ public sealed record YearEndCloseProjection(
     public bool HasClosingEntries => ClosingEntries.HasClosingEntries;
 
     /// <summary>Total opening retained earnings carried into next year across all scopes.</summary>
-    public decimal TotalOpeningRetainedEarnings => OpeningRetainedEarningsByScope.Values.Sum();
+    public decimal TotalOpeningRetainedEarnings => OpeningRetainedEarnings.Sum(static roll => roll.OpeningBalance);
 }
 
 /// <summary>
@@ -117,24 +127,37 @@ public static class YearEndCloseProjector
             input.ClosedBy));
 
         var retainedEarningsName = LedgerAccounts.RetainedEarnings.Name;
-        var existingRetainedEarnings = input.TrialBalance
-            .Where(row => row.Account.AccountType == LedgerAccountType.Equity
-                          && string.Equals(row.Account.Name, retainedEarningsName, StringComparison.OrdinalIgnoreCase))
-            .GroupBy(
-                row => row.Account.FinancialAccountId ?? PeriodCloseProjection.DefaultScope,
-                StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(
-                group => group.Key,
-                group => group.Sum(static row => row.Balance),
-                StringComparer.OrdinalIgnoreCase);
 
-        var openingRetainedEarnings = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-        foreach (var scope in existingRetainedEarnings.Keys.Union(closingEntries.NetIncomeByScope.Keys, StringComparer.OrdinalIgnoreCase))
+        // Accumulate opening retained earnings per (financial-account scope, dimensional scope) so
+        // entity/sleeve retained earnings roll forward independently — matching how
+        // PeriodCloseProjector preserves dimensional scopes in its closing entries.
+        var rolls = new Dictionary<string, YearEndRollAccumulator>(StringComparer.Ordinal);
+
+        // Prior-year retained earnings from the year-end trial balance.
+        foreach (var row in input.TrialBalance)
         {
-            var opening = existingRetainedEarnings.GetValueOrDefault(scope)
-                          + closingEntries.NetIncomeByScope.GetValueOrDefault(scope);
-            openingRetainedEarnings[scope] = opening;
+            if (row.Account.AccountType == LedgerAccountType.Equity
+                && string.Equals(row.Account.Name, retainedEarningsName, StringComparison.OrdinalIgnoreCase))
+            {
+                AccumulateRoll(rolls, row.Account.FinancialAccountId, row.Dimensions, row.Balance);
+            }
         }
+
+        // Current-year net income, taken from the closing entries' retained-earnings roll lines so each
+        // roll keeps its dimensional scope (a credit increases equity; a debit is a net loss).
+        foreach (var line in closingEntries.JournalLines)
+        {
+            if (string.Equals(line.account.Name, retainedEarningsName, StringComparison.OrdinalIgnoreCase))
+            {
+                AccumulateRoll(rolls, line.account.FinancialAccountId, line.dimensions, line.credit - line.debit);
+            }
+        }
+
+        var openingRetainedEarnings = rolls.Values
+            .Select(static roll => new YearEndRetainedEarningsRoll(roll.FinancialScope, roll.Dimensions, roll.Opening))
+            .OrderBy(static roll => roll.FinancialScope, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static roll => LedgerLineDimensionSetFields.BuildScopeKey(roll.Dimensions), StringComparer.Ordinal)
+            .ToArray();
 
         return new YearEndCloseProjection(
             input,
@@ -143,4 +166,19 @@ public static class YearEndCloseProjector
             closingEntries,
             openingRetainedEarnings);
     }
+
+    private static void AccumulateRoll(
+        IDictionary<string, YearEndRollAccumulator> rolls,
+        string? financialAccountId,
+        LedgerLineDimensionSet? dimensions,
+        decimal amount)
+    {
+        var financialScope = financialAccountId ?? PeriodCloseProjection.DefaultScope;
+        var key = FormattableString.Invariant($"{financialScope}|{LedgerLineDimensionSetFields.BuildScopeKey(dimensions)}");
+        rolls[key] = rolls.TryGetValue(key, out var current)
+            ? current with { Dimensions = current.Dimensions ?? dimensions, Opening = current.Opening + amount }
+            : new YearEndRollAccumulator(financialScope, dimensions, amount);
+    }
+
+    private sealed record YearEndRollAccumulator(string FinancialScope, LedgerLineDimensionSet? Dimensions, decimal Opening);
 }
