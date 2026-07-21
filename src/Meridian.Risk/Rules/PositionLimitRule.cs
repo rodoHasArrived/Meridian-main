@@ -11,16 +11,29 @@ namespace Meridian.Risk.Rules;
 public sealed class PositionLimitRule : IRiskRule
 {
     private readonly IPositionTracker _positionTracker;
-    private readonly decimal _maxPositionSize;
+    private readonly Func<decimal?> _maxPositionSize;
     private readonly ILogger<PositionLimitRule> _logger;
 
     public PositionLimitRule(
         IPositionTracker positionTracker,
         decimal maxPositionSize,
         ILogger<PositionLimitRule> logger)
+        : this(positionTracker, () => maxPositionSize, logger)
+    {
+    }
+
+    /// <summary>
+    /// Creates a rule whose limit is read per evaluation, so operator-tuned limits take
+    /// effect without rebuilding the rule. A <see langword="null"/> limit means no limit
+    /// is configured and the rule approves.
+    /// </summary>
+    public PositionLimitRule(
+        IPositionTracker positionTracker,
+        Func<decimal?> maxPositionSize,
+        ILogger<PositionLimitRule> logger)
     {
         _positionTracker = positionTracker ?? throw new ArgumentNullException(nameof(positionTracker));
-        _maxPositionSize = maxPositionSize;
+        _maxPositionSize = maxPositionSize ?? throw new ArgumentNullException(nameof(maxPositionSize));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -30,11 +43,17 @@ public sealed class PositionLimitRule : IRiskRule
     /// <inheritdoc />
     public Task<RiskValidationResult> EvaluateAsync(OrderRequest request, CancellationToken ct = default)
     {
+        var maxPositionSize = _maxPositionSize();
+        if (maxPositionSize is null)
+        {
+            return Task.FromResult(RiskValidationResult.Approved());
+        }
+
         var currentPosition = _positionTracker.GetPosition(request.Symbol);
         var context = Interop.RiskInterop.CreateContext(
             request,
             currentPosition.Quantity,
-            _maxPositionSize,
+            maxPositionSize.Value,
             portfolioValue: default,
             initialCapital: default,
             maxDrawdownPercent: default);
