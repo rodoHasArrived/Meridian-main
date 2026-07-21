@@ -967,6 +967,20 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void LedgerJournalCurrencyMigration_DefinesTransactionCurrencyColumns()
+    {
+        var sql = ReadMigration("V_ledger_026__journal_leg_currency.sql");
+
+        sql.Should().Contain("alter table __SCHEMA__.journal_legs");
+        sql.Should().Contain("add column if not exists transaction_currency text null");
+        sql.Should().Contain("add column if not exists functional_currency text null");
+        sql.Should().Contain("add column if not exists transaction_debit numeric(38, 10) null");
+        sql.Should().Contain("add column if not exists transaction_credit numeric(38, 10) null");
+        sql.Should().Contain("add column if not exists fx_rate_to_functional numeric(38, 10) null");
+        sql.Should().Contain("ck_journal_legs_currency_detail");
+    }
+
+    [Fact]
     public void LedgerJournalAsOfIndexMigration_DefinesHydrationIndexes()
     {
         var sql = ReadMigration("V_ledger_023__journal_as_of_indexes.sql");

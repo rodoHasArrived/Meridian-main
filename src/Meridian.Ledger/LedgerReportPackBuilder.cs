@@ -22,8 +22,9 @@ public static class LedgerReportPackBuilder
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(request);
 
-        var statements = LedgerFinancialStatementBuilder.BuildAsOf(
+        var statements = LedgerFinancialStatementBuilder.BuildForPeriod(
             ledger,
+            request.PeriodStart,
             request.AsOf,
             chart,
             financialAccountId,
@@ -34,6 +35,8 @@ public static class LedgerReportPackBuilder
             CreateCsvArtifact("trial-balance.csv", statements.TrialBalanceRows),
             CreateCsvArtifact("income-statement.csv", statements.IncomeStatementRows),
             CreateCsvArtifact("balance-sheet.csv", statements.BalanceSheetRows),
+            CreateCashFlowArtifact("cash-flow-statement.csv", statements.CashFlow),
+            CreatePartnersCapitalArtifact("partners-capital-statement.csv", statements.PartnersCapital),
             CreateFinancialStatementsJsonArtifact(request, statements),
             CreateTaxLotRealizedGainsArtifact(taxLotReliefProjections ?? []),
         };
@@ -153,6 +156,91 @@ public static class LedgerReportPackBuilder
     private static LedgerReportPackArtifact CreateCsvArtifact(string name, IReadOnlyList<LedgerChartBalance> rows)
     {
         var content = BuildCsv(rows);
+        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+    }
+
+    private static LedgerReportPackArtifact CreateCashFlowArtifact(string name, LedgerCashFlowStatement? cashFlow)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("Category,Description,CounterpartyType,Amount");
+        if (cashFlow is not null)
+        {
+            foreach (var line in cashFlow.Lines
+                .OrderBy(static line => line.Category)
+                .ThenBy(static line => line.Description, StringComparer.Ordinal))
+            {
+                builder.Append(line.Category);
+                builder.Append(',');
+                builder.Append(EscapeCsv(line.Description));
+                builder.Append(',');
+                builder.Append(line.CounterpartyType);
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(line.Amount));
+            }
+
+            AppendCashFlowTotal(builder, "Operating cash flow", cashFlow.OperatingCashFlow);
+            AppendCashFlowTotal(builder, "Investing cash flow", cashFlow.InvestingCashFlow);
+            AppendCashFlowTotal(builder, "Financing cash flow", cashFlow.FinancingCashFlow);
+            AppendCashFlowTotal(builder, "Net change in cash", cashFlow.NetCashFlow);
+            AppendCashFlowTotal(builder, "Beginning cash", cashFlow.BeginningCash);
+            AppendCashFlowTotal(builder, "Ending cash", cashFlow.EndingCash);
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
+    }
+
+    private static void AppendCashFlowTotal(StringBuilder builder, string label, decimal amount)
+    {
+        builder.Append("Total,");
+        builder.Append(EscapeCsv(label));
+        builder.Append(',');
+        builder.Append(',');
+        builder.AppendLine(FormatDecimal(amount));
+    }
+
+    private static LedgerReportPackArtifact CreatePartnersCapitalArtifact(string name, LedgerPartnersCapitalStatement? partnersCapital)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("AccountName,InvestorId,BeginningCapital,Contributions,Distributions,AllocatedResult,OtherMovements,EndingCapital");
+        if (partnersCapital is not null)
+        {
+            foreach (var account in partnersCapital.Accounts
+                .OrderBy(static account => account.AccountName, StringComparer.Ordinal)
+                .ThenBy(static account => account.InvestorId ?? string.Empty, StringComparer.Ordinal))
+            {
+                builder.Append(EscapeCsv(account.AccountName));
+                builder.Append(',');
+                builder.Append(EscapeCsv(account.InvestorId ?? string.Empty));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.BeginningCapital));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.Contributions));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.Distributions));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.AllocatedResult));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.OtherMovements));
+                builder.Append(',');
+                builder.AppendLine(FormatDecimal(account.EndingCapital));
+            }
+
+            builder.Append("Total,,");
+            builder.Append(FormatDecimal(partnersCapital.BeginningCapital));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.Contributions));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.Distributions));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.AllocatedResult));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.OtherMovements));
+            builder.Append(',');
+            builder.AppendLine(FormatDecimal(partnersCapital.EndingCapital));
+        }
+
+        var content = builder.ToString();
         return new LedgerReportPackArtifact(name, "text/csv", content, ComputeSha256(content));
     }
 
