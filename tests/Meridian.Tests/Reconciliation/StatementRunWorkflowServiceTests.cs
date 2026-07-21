@@ -180,6 +180,24 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         result.Breaks.Should().BeEmpty("the 0.50 delta is within the selected loose profile's 1.00 cash tolerance");
     }
 
+    [Fact]
+    public async Task CreateAsync_WithUnknownToleranceProfile_FailsClosed()
+    {
+        // The default provider knows only "statement-default". A run that names an unregistered profile
+        // must fail rather than silently reconcile with default thresholds while recording the requested
+        // id, so the persisted profile is always the profile actually applied.
+        var path = await WriteStatementAsync(
+            "unknown-tolerance.csv",
+            "FUND-1,,0,0,1000,cash,2026-05-28,,USD,,");
+        var workflow = CreateWorkflow();
+
+        var act = async () => await workflow.CreateAsync(
+            Request(path, toleranceProfileId: "nonexistent-profile"),
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
+
     private StatementRunWorkflowService CreateWorkflow(
         IInternalReconciliationPopulationProvider? populations = null,
         IReconciliationFxRateProvider? fxRateProvider = null,

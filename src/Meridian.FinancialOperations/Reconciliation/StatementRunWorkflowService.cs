@@ -269,12 +269,15 @@ public sealed class StatementRunWorkflowService(
         {
             return await _toleranceProfileProvider.GetProfileAsync(profileId.Trim(), cancellationToken).ConfigureAwait(false);
         }
-        catch (KeyNotFoundException)
+        catch (KeyNotFoundException ex)
         {
-            // The run references a profile the configured provider does not know. Fail safe to the
-            // default thresholds rather than aborting the import; the run's persisted profile id still
-            // records the operator's selection for follow-up.
-            return StatementToleranceProfile.Default;
+            // Fail closed: a run must not silently reconcile with default thresholds while recording a
+            // different selected profile id, or the persisted profile would not be the profile actually
+            // applied. Surface the misconfiguration so the operator registers the profile or submits a
+            // known id instead.
+            throw new InvalidOperationException(
+                $"Statement tolerance profile '{profileId.Trim()}' is not registered; register it (reconciliation/tolerance-profiles.json) or submit the run with a known profile id.",
+                ex);
         }
     }
 

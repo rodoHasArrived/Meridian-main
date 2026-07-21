@@ -52,7 +52,7 @@ public sealed class StatementImportCommands(
             TryGetDate(args, "--statement-period-end", out var periodEnd) ? periodEnd : statementDate,
             path,
             Get(args, "--statement-mapping-profile-id") ?? "legacy-mapping-profile",
-            Get(args, "--statement-tolerance-profile-id") ?? "legacy-tolerance-profile",
+            Get(args, "--statement-tolerance-profile-id") ?? StatementToleranceProfile.DefaultProfileId,
             Get(args, "--statement-imported-by") ?? Environment.UserName,
             ct: ct);
         var imported = await statementRunWorkflowService.CreateAsync(runRequest.ToStatementRunRequest(), ct).ConfigureAwait(false);

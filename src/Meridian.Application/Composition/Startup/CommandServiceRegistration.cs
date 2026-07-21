@@ -80,6 +80,10 @@ internal static class CommandServiceRegistration
         // identity-only default. A missing or empty table keeps cross-currency lines failing closed.
         services.Replace(ServiceDescriptor.Singleton<IReconciliationFxRateProvider>(_ =>
             FileReconciliationFxRateProvider.Load(dataRoot)));
+        // Resolve the run's selected tolerance profile from the operator-maintained profile table under
+        // the data root, matching the workstation graph; an unknown id fails closed at the workflow.
+        services.Replace(ServiceDescriptor.Singleton<IStatementToleranceProfileProvider>(_ =>
+            FileStatementToleranceProfileProvider.Load(dataRoot)));
 
         services.AddSingleton<ICliCommand, HelpCommand>();
         services.AddSingleton<ICliCommand>(sp => new ConfigCommands(
