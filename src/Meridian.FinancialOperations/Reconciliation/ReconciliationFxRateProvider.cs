@@ -69,37 +69,39 @@ public sealed class IdentityReconciliationFxRateProvider : IReconciliationFxRate
     }
 }
 
-/// <summary>A single directional FX quote used to seed <see cref="TableReconciliationFxRateProvider"/>.</summary>
-public sealed record ReconciliationFxQuote(string FromCurrency, string ToCurrency, decimal Rate);
+/// <summary>
+/// A single directional FX quote effective as of a business date, used to seed
+/// <see cref="TableReconciliationFxRateProvider"/>.
+/// </summary>
+public sealed record ReconciliationFxQuote(string FromCurrency, string ToCurrency, decimal Rate, DateOnly AsOf);
 
 /// <summary>
 /// A deterministic table-backed provider. Resolves a pair by identity, direct quote, inverse quote,
-/// or triangulation through an optional pivot currency. Rates are treated as constant across dates
-/// (the <c>asOf</c> argument is accepted for interface parity but not used to select between quotes),
-/// which keeps deployment-seeded reconciliation rates simple and reproducible.
+/// or triangulation through an optional pivot currency. Quotes are date-effective: for a requested
+/// <c>asOf</c> the most recent quote at or before that date is used, and a pair whose quotes are all
+/// later than <c>asOf</c> resolves to no rate so a backdated run fails closed rather than converting a
+/// historical statement at a later (or today's) rate. Non-positive rates are rejected on construction.
 /// </summary>
 public sealed class TableReconciliationFxRateProvider : IReconciliationFxRateProvider
 {
-    private readonly IReadOnlyDictionary<(string From, string To), decimal> _rates;
+    private readonly IReadOnlyDictionary<(string From, string To), IReadOnlyList<(DateOnly AsOf, decimal Rate)>> _rates;
     private readonly string? _pivotCurrency;
 
     public TableReconciliationFxRateProvider(IEnumerable<ReconciliationFxQuote> quotes, string? pivotCurrency = null)
     {
         ArgumentNullException.ThrowIfNull(quotes);
-        var map = new Dictionary<(string, string), decimal>();
-        foreach (var quote in quotes)
-        {
-            if (quote is null || quote.Rate == 0m
-                || string.IsNullOrWhiteSpace(quote.FromCurrency)
-                || string.IsNullOrWhiteSpace(quote.ToCurrency))
-            {
-                continue;
-            }
-
-            map[(Normalize(quote.FromCurrency), Normalize(quote.ToCurrency))] = quote.Rate;
-        }
-
-        _rates = map;
+        _rates = quotes
+            .Where(static quote => quote is not null
+                && quote.Rate > 0m
+                && !string.IsNullOrWhiteSpace(quote.FromCurrency)
+                && !string.IsNullOrWhiteSpace(quote.ToCurrency))
+            .GroupBy(static quote => (Normalize(quote.FromCurrency), Normalize(quote.ToCurrency)))
+            .ToDictionary(
+                static group => group.Key,
+                static group => (IReadOnlyList<(DateOnly AsOf, decimal Rate)>)group
+                    .Select(static quote => (quote.AsOf, quote.Rate))
+                    .OrderBy(static entry => entry.AsOf)
+                    .ToArray());
         _pivotCurrency = string.IsNullOrWhiteSpace(pivotCurrency) ? null : Normalize(pivotCurrency);
     }
 
@@ -111,10 +113,10 @@ public sealed class TableReconciliationFxRateProvider : IReconciliationFxRatePro
             return false;
         }
 
-        return TryResolve(Normalize(fromCurrency), Normalize(toCurrency), out rate);
+        return TryResolve(Normalize(fromCurrency), Normalize(toCurrency), asOf, out rate);
     }
 
-    private bool TryResolve(string from, string to, out decimal rate)
+    private bool TryResolve(string from, string to, DateOnly asOf, out decimal rate)
     {
         if (string.Equals(from, to, StringComparison.Ordinal))
         {
@@ -122,7 +124,7 @@ public sealed class TableReconciliationFxRateProvider : IReconciliationFxRatePro
             return true;
         }
 
-        if (TryDirectOrInverse(from, to, out rate))
+        if (TryDirectOrInverse(from, to, asOf, out rate))
         {
             return true;
         }
@@ -130,8 +132,8 @@ public sealed class TableReconciliationFxRateProvider : IReconciliationFxRatePro
         if (_pivotCurrency is { } pivot
             && !string.Equals(pivot, from, StringComparison.Ordinal)
             && !string.Equals(pivot, to, StringComparison.Ordinal)
-            && TryDirectOrInverse(from, pivot, out var firstLeg)
-            && TryDirectOrInverse(pivot, to, out var secondLeg))
+            && TryDirectOrInverse(from, pivot, asOf, out var firstLeg)
+            && TryDirectOrInverse(pivot, to, asOf, out var secondLeg))
         {
             rate = firstLeg * secondLeg;
             return true;
@@ -141,14 +143,14 @@ public sealed class TableReconciliationFxRateProvider : IReconciliationFxRatePro
         return false;
     }
 
-    private bool TryDirectOrInverse(string from, string to, out decimal rate)
+    private bool TryDirectOrInverse(string from, string to, DateOnly asOf, out decimal rate)
     {
-        if (_rates.TryGetValue((from, to), out rate))
+        if (SelectAsOf(from, to, asOf, out rate))
         {
             return true;
         }
 
-        if (_rates.TryGetValue((to, from), out var inverse) && inverse != 0m)
+        if (SelectAsOf(to, from, asOf, out var inverse) && inverse != 0m)
         {
             rate = 1m / inverse;
             return true;
@@ -156,6 +158,34 @@ public sealed class TableReconciliationFxRateProvider : IReconciliationFxRatePro
 
         rate = 0m;
         return false;
+    }
+
+    // Prefer the most recent quote effective at or before asOf. When every quote for the pair is later
+    // than asOf, report no rate: converting a backdated line at a future/today's rate would fabricate a
+    // match or break, so the caller keeps the line in its source currency and surfaces it for review.
+    private bool SelectAsOf(string from, string to, DateOnly asOf, out decimal rate)
+    {
+        rate = 0m;
+        if (!_rates.TryGetValue((from, to), out var quotes) || quotes.Count == 0)
+        {
+            return false;
+        }
+
+        var found = false;
+        foreach (var quote in quotes)
+        {
+            if (quote.AsOf <= asOf)
+            {
+                rate = quote.Rate;
+                found = true;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return found;
     }
 
     private static string Normalize(string currency) => currency.Trim().ToUpperInvariant();

@@ -13,9 +13,10 @@ namespace Meridian.FinancialOperations.Reconciliation;
 /// A missing, empty, or malformed file yields an empty table, so the provider still reconciles
 /// same-currency lines exactly and fails closed on cross-currency lines until an operator supplies
 /// rates — the same safe default as <see cref="IdentityReconciliationFxRateProvider"/>. The file
-/// format is a JSON object with an optional triangulation pivot and a list of directional quotes:
+/// format is a JSON object with an optional triangulation pivot and a list of directional, date-
+/// effective quotes; the most recent quote at or before a run's as-of date is applied:
 /// <code>
-/// { "pivotCurrency": "USD", "quotes": [ { "from": "EUR", "to": "USD", "rate": 1.085 } ] }
+/// { "pivotCurrency": "USD", "quotes": [ { "from": "EUR", "to": "USD", "rate": 1.085, "asOf": "2026-05-31" } ] }
 /// </code>
 /// </remarks>
 public static class FileReconciliationFxRateProvider
@@ -38,7 +39,7 @@ public static class FileReconciliationFxRateProvider
             var document = JsonSerializer.Deserialize<ReconciliationFxRateFile>(File.ReadAllText(path), JsonOptions);
             var quotes = (document?.Quotes ?? [])
                 .Where(static quote => quote is not null)
-                .Select(static quote => new ReconciliationFxQuote(quote!.From, quote.To, quote.Rate));
+                .Select(static quote => new ReconciliationFxQuote(quote!.From, quote.To, quote.Rate, quote.AsOf));
             return new TableReconciliationFxRateProvider(quotes, document?.PivotCurrency);
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
@@ -55,5 +56,5 @@ public static class FileReconciliationFxRateProvider
 
     private sealed record ReconciliationFxRateFile(string? PivotCurrency, IReadOnlyList<ReconciliationFxRateFileQuote?>? Quotes);
 
-    private sealed record ReconciliationFxRateFileQuote(string From, string To, decimal Rate);
+    private sealed record ReconciliationFxRateFileQuote(string From, string To, decimal Rate, DateOnly AsOf);
 }

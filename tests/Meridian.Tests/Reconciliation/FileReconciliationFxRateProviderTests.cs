@@ -42,7 +42,7 @@ public sealed class FileReconciliationFxRateProviderTests : IDisposable
     public void Load_WithRateTable_ResolvesConfiguredAndInverseRates()
     {
         WriteTable("""
-            { "pivotCurrency": "USD", "quotes": [ { "from": "EUR", "to": "USD", "rate": 1.085 } ] }
+            { "pivotCurrency": "USD", "quotes": [ { "from": "EUR", "to": "USD", "rate": 1.085, "asOf": "2026-01-01" } ] }
             """);
 
         var provider = FileReconciliationFxRateProvider.Load(_root);
@@ -51,6 +51,54 @@ public sealed class FileReconciliationFxRateProviderTests : IDisposable
         direct.Should().Be(1.085m);
         provider.TryGetRate("USD", "EUR", AsOf, out var inverse).Should().BeTrue();
         inverse.Should().BeApproximately(1m / 1.085m, 0.0000001m);
+    }
+
+    [Fact]
+    public void Load_SelectsRateEffectiveAtOrBeforeAsOf()
+    {
+        WriteTable("""
+            { "quotes": [
+                { "from": "EUR", "to": "USD", "rate": 1.05, "asOf": "2026-01-01" },
+                { "from": "EUR", "to": "USD", "rate": 1.09, "asOf": "2026-05-01" },
+                { "from": "EUR", "to": "USD", "rate": 1.20, "asOf": "2026-12-01" }
+            ] }
+            """);
+
+        var provider = FileReconciliationFxRateProvider.Load(_root);
+
+        // AsOf is 2026-05-31: the 2026-05-01 quote is the latest effective at or before it.
+        provider.TryGetRate("EUR", "USD", AsOf, out var rate).Should().BeTrue();
+        rate.Should().Be(1.09m);
+    }
+
+    [Fact]
+    public void Load_WhenAllRatesAreFuture_FailsClosed()
+    {
+        WriteTable("""
+            { "quotes": [ { "from": "EUR", "to": "USD", "rate": 1.09, "asOf": "2026-07-01" } ] }
+            """);
+
+        var provider = FileReconciliationFxRateProvider.Load(_root);
+
+        // AsOf (2026-05-31) precedes every quote, so converting at the future rate would leak
+        // look-ahead information into a backdated run; the provider fails closed instead.
+        provider.TryGetRate("EUR", "USD", AsOf, out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Load_IgnoresNonPositiveRates()
+    {
+        WriteTable("""
+            { "quotes": [
+                { "from": "EUR", "to": "USD", "rate": 0, "asOf": "2026-01-01" },
+                { "from": "GBP", "to": "USD", "rate": -1.3, "asOf": "2026-01-01" }
+            ] }
+            """);
+
+        var provider = FileReconciliationFxRateProvider.Load(_root);
+
+        provider.TryGetRate("EUR", "USD", AsOf, out _).Should().BeFalse("a zero rate must not convert every value to zero");
+        provider.TryGetRate("GBP", "USD", AsOf, out _).Should().BeFalse("a negative rate must not invert cash signs");
     }
 
     [Fact]

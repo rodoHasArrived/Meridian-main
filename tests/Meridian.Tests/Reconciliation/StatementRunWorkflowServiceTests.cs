@@ -83,7 +83,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
                 [],
                 [new InternalCashBalance("i-cash", "EXT-1", "USD", 1085m, "internal:cash")],
                 [])),
-            new TableReconciliationFxRateProvider([new ReconciliationFxQuote("EUR", "USD", 1.085m)]));
+            new TableReconciliationFxRateProvider([new ReconciliationFxQuote("EUR", "USD", 1.085m, new DateOnly(2026, 5, 1))]));
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
 

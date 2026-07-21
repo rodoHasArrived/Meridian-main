@@ -116,6 +116,19 @@ public sealed class InMemoryFxRateProviderTests
     }
 
     [Fact]
+    public async Task GetRateAsync_IgnoresNonPositiveSeededQuotes()
+    {
+        var provider = new InMemoryFxRateProvider(
+            [
+                new FxRate("EUR", "USD", 0m, AsOf),
+                new FxRate("GBP", "USD", -1.30m, AsOf),
+            ]);
+
+        (await provider.GetRateAsync("EUR", "USD", AsOf)).Should().BeNull("a zero rate would convert every value to zero");
+        (await provider.GetRateAsync("GBP", "USD", AsOf)).Should().BeNull("a negative rate would invert cash and valuation signs");
+    }
+
+    [Fact]
     public async Task GetRequiredRateAsync_WhenMissing_Throws()
     {
         var provider = new InMemoryFxRateProvider([]);
