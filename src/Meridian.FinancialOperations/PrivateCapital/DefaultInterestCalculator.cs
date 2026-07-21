@@ -158,18 +158,33 @@ public static class DefaultInterestCalculator
         return null;
     }
 
-    /// <summary>US 30/360 day count between two dates (bond-basis).</summary>
+    /// <summary>
+    /// US 30/360 (NASD bond-basis) day count between two dates, including the end-of-February
+    /// normalization: the last day of February is treated as day 30, and a day-31 endpoint collapses
+    /// to 30 against a day-30 (or normalized) start.
+    /// </summary>
     internal static int Thirty360Days(DateOnly from, DateOnly to)
     {
         var d1 = from.Day;
         var d2 = to.Day;
+        var fromIsLastOfFebruary = IsLastDayOfFebruary(from);
+
+        // NASD sequence: both last-of-Feb collapses the end, then last-of-Feb start, then the day-31
+        // rules against the (possibly normalized) start.
+        if (fromIsLastOfFebruary && IsLastDayOfFebruary(to))
+            d2 = 30;
+        if (fromIsLastOfFebruary)
+            d1 = 30;
+        if (d2 == 31 && d1 >= 30)
+            d2 = 30;
         if (d1 == 31)
             d1 = 30;
-        if (d2 == 31 && d1 == 30)
-            d2 = 30;
 
         return ((to.Year - from.Year) * 360)
                + ((to.Month - from.Month) * 30)
                + (d2 - d1);
     }
+
+    private static bool IsLastDayOfFebruary(DateOnly date)
+        => date.Month == 2 && date.Day == DateTime.DaysInMonth(date.Year, 2);
 }
