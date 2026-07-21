@@ -323,6 +323,10 @@ public partial class App : System.Windows.Application
     /// </summary>
     private static void ConfigureServices(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
+        // Unified persistence config must resolve before feature modules read the
+        // per-domain connection-string variables.
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         AddHostEnvironmentFallback(services);
 
         // Register shared desktop HttpClient configurations

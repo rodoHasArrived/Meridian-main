@@ -417,9 +417,13 @@ and UI presentation concerns in their owning layers.
   in `Backfill/` alongside the rest of the backfill pipeline.
 - `Composition/` - application feature registration and service wiring.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
-  startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
-  `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
-  persistence-backed services. Local/dev launcher flows may set
+  startup requires `MERIDIAN_DATABASE_URL` (or the per-domain
+  `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`)
+  so fund account and fund structure workflows use persistence-backed services.
+  `MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl` (in `Meridian.Storage`) propagates
+  `MERIDIAN_DATABASE_URL` into every unset per-domain connection-string variable at composition
+  time; `PersistenceConfigurationStatus.Evaluate` reports the resulting NONE/PARTIAL/CONFIGURED
+  posture for status endpoints and readiness checks. Local/dev launcher flows may set
   `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment. Placeholder
   projection-reconciliation jobs are also omitted from production composition until real domain
   reconcilers replace them; production startup does not report a no-op comparison as assurance.

@@ -83,6 +83,14 @@ public static class ProviderEndpoints
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest("Name is required.");
 
+            // Fail closed on unknown provider names: silently coercing a typo to IB would
+            // persist a data source pointed at a provider the operator never chose.
+            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider))
+            {
+                return Results.BadRequest(
+                    $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -91,7 +99,7 @@ public static class ProviderEndpoints
             var source = new DataSourceConfig(
                 Id: id,
                 Name: req.Name,
-                Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
+                Provider: provider,
                 Enabled: req.Enabled,
                 Type: Enum.TryParse<Meridian.Core.Config.DataSourceType>(req.Type, ignoreCase: true, out var t)
                     ? t
@@ -652,6 +660,14 @@ public static class ProviderEndpoints
             if (string.IsNullOrWhiteSpace(req.Name))
                 return Results.BadRequest("Name is required.");
 
+            // Fail closed on unknown provider names: silently coercing a typo to IB would
+            // persist a data source pointed at a provider the operator never chose.
+            if (!Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var provider))
+            {
+                return Results.BadRequest(
+                    $"Unknown provider '{req.Provider}'. Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.");
+            }
+
             var cfg = store.Load();
             var dataSources = cfg.DataSources ?? new DataSourcesConfig();
             var sources = (dataSources.Sources ?? Array.Empty<DataSourceConfig>()).ToList();
@@ -660,7 +676,7 @@ public static class ProviderEndpoints
             var source = new DataSourceConfig(
                 Id: id,
                 Name: req.Name,
-                Provider: Enum.TryParse<DataSourceKind>(req.Provider, ignoreCase: true, out var p) ? p : DataSourceKind.IB,
+                Provider: provider,
                 Enabled: req.Enabled,
                 Type: Enum.TryParse<Meridian.Core.Config.DataSourceType>(req.Type, ignoreCase: true, out var t)
                     ? t

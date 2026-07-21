@@ -8,9 +8,11 @@ namespace Meridian.Execution;
 
 /// <summary>
 /// Simulated execution gateway for paper trading. Market orders fill immediately at the
-/// caller-provided simulated price (<see cref="OrderRequest.LimitPrice"/>), the last observed
-/// live feed price when an <see cref="Interfaces.ILiveFeedAdapter"/> is wired, or, when neither is
-/// available, the configured scaffold notional price. Limit and stop orders are accepted and rest
+/// caller-provided simulated price (<see cref="OrderRequest.LimitPrice"/>) or the last observed
+/// live feed price when an <see cref="Interfaces.ILiveFeedAdapter"/> is wired. When neither is
+/// available the order is rejected, unless scaffold pricing is explicitly enabled via
+/// <see cref="Adapters.PaperTradingGatewayOptions.AllowScaffoldMarketFills"/>, in which case it
+/// fills at the configured scaffold notional price. Limit and stop orders are accepted and rest
 /// in memory but are never simulated to fill — this gateway performs no price-touch matching and
 /// exposes no execution-report stream. Cancel and modify act only on orders currently resting in
 /// this gateway; an unknown order id is rejected rather than acknowledged.
@@ -20,6 +22,7 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
     private readonly ILogger<PaperTradingGateway> _logger;
     private readonly Adapters.PaperTradingGatewayTradingParameters _tradingParameters;
     private readonly decimal _scaffoldMarketFillPrice;
+    private readonly bool _allowScaffoldMarketFills;
     private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     // Ids of limit/stop orders accepted and resting in this gateway, so cancel/modify can
     // distinguish a real resting order from an unknown id instead of fabricating success.
@@ -40,6 +43,7 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
             securityMaster,
             LogLevel.Warning);
         _scaffoldMarketFillPrice = Adapters.PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
+        _allowScaffoldMarketFills = Adapters.PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
         _liveFeed = liveFeed;
     }
 
@@ -89,11 +93,34 @@ public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayMo
         if (request.Type is OrderType.Market)
         {
             // Callers may set a simulated price via LimitPrice; otherwise the last observed
-            // live feed price applies, then the configured scaffold notional price
-            // (with a one-time warning).
+            // live feed price applies. Without either, the order is rejected unless scaffold
+            // pricing is explicitly enabled (with a one-time warning when it is).
             var simulatedPrice = request.LimitPrice ?? GetLiveReferencePrice(request.Symbol);
             if (simulatedPrice is null)
             {
+                if (!_allowScaffoldMarketFills)
+                {
+                    var rejectReason = Adapters.PaperTradingGatewayScaffoldPricing
+                        .BuildNoReferencePriceRejectReason(request.Symbol);
+                    _logger.LogWarning(
+                        "Paper order rejected: {Symbol} {Side} {Quantity} — {RejectReason}",
+                        request.Symbol, request.Side, request.Quantity, rejectReason);
+
+                    return new ExecutionReport
+                    {
+                        OrderId = request.ClientOrderId ?? $"PAPER-{fillSeq}",
+                        ReportType = ExecutionReportType.Rejected,
+                        Symbol = request.Symbol,
+                        Side = request.Side,
+                        OrderStatus = OrderStatus.Rejected,
+                        OrderQuantity = request.Quantity,
+                        FilledQuantity = 0,
+                        RejectReason = rejectReason,
+                        Timestamp = DateTimeOffset.UtcNow,
+                        GatewayOrderId = $"PAPER-{fillSeq}"
+                    };
+                }
+
                 WarnScaffoldPriceUsed();
             }
 

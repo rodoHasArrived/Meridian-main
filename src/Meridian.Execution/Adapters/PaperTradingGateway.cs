@@ -13,8 +13,10 @@ namespace Meridian.Execution.Adapters;
 
 /// <summary>
 /// Simulated order gateway that routes no real orders to any exchange.
-/// Fills are generated synthetically at a notional price (or at the limit price for
-/// limit orders), making this the safe default for strategy validation before live promotion.
+/// Fills are priced from the limit/stop price or the live feed's last observed price;
+/// market orders with no available reference price are rejected unless scaffold notional
+/// pricing is explicitly enabled via
+/// <see cref="PaperTradingGatewayOptions.AllowScaffoldMarketFills"/>.
 /// Implements ADR-015.
 /// </summary>
 [ImplementsAdr("ADR-015", "Simulated IOrderGateway over live Meridian feed — no real orders")]
@@ -23,7 +25,9 @@ public sealed class PaperTradingGateway : IOrderGateway
     // Notional fallback fill price used for market orders when no live feed price is
     // available, configurable via PaperTradingGatewayOptions. When a live feed adapter
     // is supplied, market fills are priced from the last trade (or quote midpoint).
+    // Scaffold pricing is opt-in: without it, priceless market orders are rejected.
     private readonly decimal _scaffoldMarketFillPrice;
+    private readonly bool _allowScaffoldMarketFills;
     private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     private int _scaffoldPriceWarningIssued;
 
@@ -98,6 +102,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             securityMaster,
             LogLevel.Debug);
         _scaffoldMarketFillPrice = PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
+        _allowScaffoldMarketFills = PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
         _liveFeed = liveFeed;
         // Use EventPipelinePolicy for consistent backpressure settings across the platform (ADR-013).
         // Disposal waits for in-flight fills before completing this bounded update channel.
@@ -273,6 +278,33 @@ public sealed class PaperTradingGateway : IOrderGateway
 
         if (referencePrice is null)
         {
+            if (!_allowScaffoldMarketFills)
+            {
+                var rejectReason = PaperTradingGatewayScaffoldPricing.BuildNoReferencePriceRejectReason(request.Symbol);
+                _logger.LogWarning(
+                    "Paper order rejected: {ClientOrderId} {Symbol} — {RejectReason}",
+                    orderId, request.Symbol, rejectReason);
+
+                var rejection = new OrderStatusUpdate(
+                    OrderId: orderId,
+                    ClientOrderId: orderId,
+                    Symbol: request.Symbol,
+                    Status: GatewayOrderStatus.Rejected,
+                    FilledQuantity: 0,
+                    AverageFillPrice: null,
+                    RejectReason: rejectReason,
+                    Timestamp: DateTimeOffset.UtcNow);
+
+                if (!_updates.Writer.TryWrite(rejection))
+                {
+                    _logger.LogWarning(
+                        "Paper rejection update for {OrderId} could not be queued because the update channel was unavailable.",
+                        orderId);
+                }
+
+                return;
+            }
+
             WarnScaffoldPriceUsed();
         }
 

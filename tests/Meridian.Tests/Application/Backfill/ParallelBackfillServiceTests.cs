@@ -923,7 +923,9 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
 
         var svc = new HistoricalBackfillService([provider]);
-        var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" });
+        // MakeBar produces bars dated 2024-01-02; an explicit matching range keeps this a
+        // covered historical request rather than an open-ended one implying "through today".
+        var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" }, To: new DateOnly(2024, 1, 2));
 
         // Act
         var result = await svc.RunAsync(request, _pipeline);
@@ -945,7 +947,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
                 symbol == "TSLA" ? [] : new[] { MakeBar(symbol) }));
 
         var svc = new HistoricalBackfillService([provider]);
-        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" });
+        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" }, To: new DateOnly(2024, 1, 2));
 
         // Act
         var result = await svc.RunAsync(request, _pipeline);
@@ -975,6 +977,24 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task RunAsync_OpenEndedRequestWithFrozenDataset_EmitsStaleWarnSignal()
+    {
+        // An open-ended request implies "through today"; a frozen dataset (e.g. Nasdaq WIKI,
+        // ended March 2018) must be flagged stale instead of passing as fresh coverage.
+        var provider = new ControllableProvider("test", (symbol, ct) =>
+            Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest("test", ["SPY"]);
+
+        var result = await svc.RunAsync(request, _pipeline);
+
+        var signal = result.SymbolValidationSignals.Should().ContainSingle(s => s.Symbol == "SPY").Which;
+        signal.Status.Should().Be("Warn");
+        signal.Reason.Should().Contain("stale");
+    }
+
+    [Fact]
     public async Task RunAsync_FailedSymbol_EmitsFailSignal()
     {
         // Arrange — TSLA always throws
@@ -986,7 +1006,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
         });
 
         var svc = new HistoricalBackfillService([provider]);
-        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" });
+        var request = new AppBackfillRequest("test", new[] { "SPY", "TSLA" }, To: new DateOnly(2024, 1, 2));
 
         // Act
         var result = await svc.RunAsync(request, _pipeline);
