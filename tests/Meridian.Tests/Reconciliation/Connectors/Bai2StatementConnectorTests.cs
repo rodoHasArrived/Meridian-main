@@ -66,6 +66,35 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Bai2_ScalesAmountsByDeclaredCurrencyExponent()
+    {
+        // JPY has no minor unit, so a BAI2 amount of 10000 is 10000 yen, not 100. Assuming cents would
+        // understate every balance and transaction by two orders of magnitude for zero-decimal currencies.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260531,,JPY,2/
+            03,0975312468,JPY,015,10000,,/
+            16,115,25000,,BANKREF01,CUSTREF01,Incoming wire/
+            49,10000,3/
+            98,10000,1,3/
+            99,10000,1,5/
+            """;
+        var document = new StatementSourceDocument("jpy.bai", Encoding.UTF8.GetBytes(bai2));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeFalse();
+        result.Records.Should().OnlyContain(record => record.Currency == "JPY");
+
+        var balance = result.Records.Single(record => record.Kind == StatementRecordKind.CashBalance);
+        balance.CashAmount.Should().Be(10000m, "JPY amounts carry no minor unit and must not be divided by 100");
+
+        var transaction = result.Records.Single(record => record.Kind == StatementRecordKind.Transaction);
+        transaction.CashAmount.Should().Be(25000m, "type code 115 is a JPY credit expressed in whole yen");
+    }
+
+    [Fact]
     public void CanHandle_CsvText_ReturnsFalse()
     {
         var document = new StatementSourceDocument(

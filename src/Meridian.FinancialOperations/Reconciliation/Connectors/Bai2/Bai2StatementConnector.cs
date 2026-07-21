@@ -76,7 +76,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
                             Symbol: string.Empty,
                             Quantity: 0m,
                             Price: 0m,
-                            CashAmount: ToMajorUnits(balanceMinorUnits),
+                            CashAmount: ToMajorUnits(balanceMinorUnits, accountCurrency),
                             ActivityType: "cashbalance",
                             TradeDate: balanceDate,
                             SettlementDate: null,
@@ -102,7 +102,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     }
 
                     rowNumber++;
-                    var signedAmount = SignByTypeCode(ToMajorUnits(amountMinorUnits), typeCode);
+                    var signedAmount = SignByTypeCode(ToMajorUnits(amountMinorUnits, accountCurrency), typeCode);
                     records.Add(new StatementCanonicalRecord(
                         StatementRecordKind.Transaction,
                         account,
@@ -220,7 +220,17 @@ public sealed class Bai2StatementConnector : IStatementConnector
     private static bool TryParseMinorUnits(string? value, out long minorUnits)
         => long.TryParse(value?.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out minorUnits);
 
-    private static decimal ToMajorUnits(long minorUnits) => minorUnits / 100m;
+    // BAI2 expresses amounts in the currency's minor units, so the scale to major units follows the
+    // declared ISO 4217 currency, not an assumed two decimals: JPY has no minor unit (10000 is 10000
+    // yen, not 100), while the Gulf dinars use three. Assuming cents would misstate every balance and
+    // transaction for those currencies by one or two orders of magnitude.
+    private static decimal ToMajorUnits(long minorUnits, string currency) => currency.Trim().ToUpperInvariant() switch
+    {
+        "JPY" or "KRW" or "CLP" or "ISK" or "VND" or "XAF" or "XOF" or "XPF"
+            or "BIF" or "DJF" or "GNF" or "KMF" or "PYG" or "RWF" or "UGX" or "VUV" => minorUnits,
+        "BHD" or "IQD" or "JOD" or "KWD" or "LYD" or "OMR" or "TND" => minorUnits / 1_000m,
+        _ => minorUnits / 100m
+    };
 
     private static DateOnly? ParseBaiDate(string? value)
     {
