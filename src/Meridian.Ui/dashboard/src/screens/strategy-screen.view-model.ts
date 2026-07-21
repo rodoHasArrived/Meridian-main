@@ -837,7 +837,6 @@ export function useStrategyRunLibraryViewModel(
     if (!shouldCloseRunDetailForKey(key)) {
       return false;
     }
-
     setSelectedRun(null);
     return true;
   }, []);
@@ -847,7 +846,6 @@ export function useStrategyRunLibraryViewModel(
     if (!nextView) {
       return null;
     }
-
     setActivePlotToolView(nextView);
     return plotToolTabIdForView(nextView);
   }, [activePlotToolView]);

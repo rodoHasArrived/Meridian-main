@@ -9244,6 +9244,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto"
     },
     {
@@ -28533,6 +28545,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.BrokerageAccountKindDto"
     },
@@ -34480,6 +34498,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse",
       "target": "contract:Meridian.Contracts.Workstation.StrategyDesignCompiledScript"
     },
     {
@@ -34655,6 +34679,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyRunCrossModeTransitionMetadata",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunMode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyRunDetail",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
     },
     {
       "kind": "contract-reference",
@@ -35873,6 +35903,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationStrategyPayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationTimelineCard"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationStrategyRunCard",
+      "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
     },
     {
       "kind": "contract-reference",
@@ -39772,7 +39808,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "56838f2254907481f19db7c2ed388252a295706b59499b9214780f1cbe0d4ab1",
+  "fingerprint": "e38f2cfd271665c5341da45e2d32d028a0dd296d218f571dcd29b154ff20d9a4",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -49067,6 +49103,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.BiasDisclosureDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.BiasDisclosureItemDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.BiasDisclosureItemDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto"
@@ -57619,11 +57667,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2796,
-    "contract_set_memberships": 3227,
-    "edges": 6613,
+    "contract_references": 2800,
+    "contract_set_memberships": 3229,
+    "edges": 6619,
     "foreign_keys": 77,
     "logical_references": 6,
-    "nodes": 3046
+    "nodes": 3048
   }
 }
