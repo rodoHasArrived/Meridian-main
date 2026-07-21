@@ -88,12 +88,17 @@ it is where nearly all the user-facing value now sits.
 
 ## Tier 3 — Strong assets that are hidden from users (value unlock)
 
-- **Surface the backtester.** The event-driven `BacktestEngine` (fill models, walk-forward,
-  XIRR/TCA, bias disclosure) is genuinely strong but reachable **only by writing QuantScript**. The
-  named "Backtesting Studio" engine (`MeridianNativeBacktestStudioEngine`,
-  `BacktestStudioRunOrchestrator`) is **orphaned** — wired to no endpoint/screen. Ship a first-class
-  `/api/backtest/run` + config screen; the charts (`EquityCurve.tsx`, `DrawdownChart.tsx`,
-  `bias-disclosure-panel.tsx`) already exist.
+- **Generalize no-code backtesting beyond the one vertical.** The event-driven `BacktestEngine`
+  (fill models, walk-forward, XIRR/TCA, bias disclosure) is genuinely strong and *is* already
+  reachable no-code for one vertical: `/strategy/covered-call` → `CoveredCallScreen` (`app.tsx:615`)
+  → `POST /api/strategies/covered-call/runs` (`CoveredCallEndpoints.cs:25`) →
+  `CoveredCallBacktestService` → `BacktestEngine.RunAsync` (`CoveredCallBacktestService.cs:525`), with
+  async run/status/result/cancel. But that is a bespoke covered-call flow; there is **no *general*
+  config-driven backtest screen** for arbitrary strategies/symbols (most still require QuantScript),
+  and the named "Backtesting Studio" engine (`MeridianNativeBacktestStudioEngine`,
+  `BacktestStudioRunOrchestrator`) remains **orphaned** — wired to no endpoint/screen. Generalize the
+  covered-call pattern into a first-class backtest screen (reusing the existing `EquityCurve.tsx`,
+  `DrawdownChart.tsx`, `bias-disclosure-panel.tsx`) or wire the Studio engine.
 - **Connect the strategy templates to executable strategies.** The browser Strategy Designer
   *already* ships a one-click starter gallery — 7 `STRATEGY_BUILDER_TEMPLATES`
   (`strategy-designer-screen.view-model.ts:711`: equity-momentum-breakout, investment-grade-income,
@@ -171,8 +176,9 @@ it is where nearly all the user-facing value now sits.
 3. **Generalize the instrument→journal proof beyond the one hardcoded model** — makes "prove the
    number" demonstrable on any security. (Tier 1 #3)
 4. **Subscribe to Alpaca `trade_updates`** — closes a genuine money-state correctness bug. (Tier 1 #4)
-5. **Ship a first-class Backtesting Studio screen over the existing engine** — surfaces the strongest
-   hidden asset to non-coders. (Tier 3)
+5. **Generalize no-code backtesting into a first-class screen** — the covered-call vertical already
+   runs `BacktestEngine` no-code; extend that pattern to arbitrary strategies (or wire the orphaned
+   Studio engine) so the strong backtester isn't limited to one bespoke flow. (Tier 3)
 
 ---
 
