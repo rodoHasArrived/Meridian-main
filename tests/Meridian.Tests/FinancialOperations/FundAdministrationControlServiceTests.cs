@@ -190,6 +190,30 @@ public sealed class FundAdministrationControlServiceTests
     }
 
     [Fact]
+    public void ApplyOnboardingTemplate_OrdersNodesParentFirst()
+    {
+        var service = new FundAdministrationControlService();
+        service.RegisterOnboardingTemplate(new OnboardingTemplate(
+            "std-fund",
+            "Standard Fund",
+            "Standard fund skeleton.",
+            [
+                // A child declared before its parent must still be emitted parent-first in the plan.
+                new OnboardingTemplateNode(OnboardingTemplateNode.Types.Book, "book", "GL", "GL", ParentKey: "org"),
+                new OnboardingTemplateNode(OnboardingTemplateNode.Types.Organization, "org", "ORG", "Org"),
+            ],
+            "admin",
+            At));
+
+        var plan = service.ApplyOnboardingTemplate("std-fund", new Dictionary<string, string>(), "admin");
+
+        var nodes = plan.Nodes.ToList();
+        var orgIndex = nodes.FindIndex(node => node.Key == "org");
+        var bookIndex = nodes.FindIndex(node => node.Key == "book");
+        orgIndex.Should().BeLessThan(bookIndex, "a parent must be created before its child");
+    }
+
+    [Fact]
     public void OnboardingTemplate_ParentCycle_Throws()
     {
         var act = () => new OnboardingTemplate(

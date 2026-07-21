@@ -327,6 +327,16 @@ public sealed class MiddleOfficeOperationsServiceTests
     }
 
     [Fact]
+    public void WorkflowSlaTimer_ConstructedStoppedBeforeStart_Throws()
+    {
+        // The chronology guard is enforced at construction, so a directly-constructed or deserialized
+        // timer cannot bypass it and represent an impossible negative-duration interval.
+        var act = () => new WorkflowSlaTimer(
+            "t1", "brk-1", new WorkflowSlaPolicy("p", TimeSpan.FromHours(4)), At, At.AddHours(-1));
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
     public void ResolveBreak_BeforeRaised_Throws()
     {
         var service = NewService(out _);

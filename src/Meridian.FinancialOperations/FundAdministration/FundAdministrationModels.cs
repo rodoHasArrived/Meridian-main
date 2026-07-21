@@ -168,9 +168,37 @@ public sealed record OnboardingTemplate
                     pair => pair.Key,
                     pair => Resolve(pair.Value, normalized),
                     StringComparer.OrdinalIgnoreCase)))
-            .ToArray();
+            .ToList();
 
-        return new OnboardingPlan(TemplateId, planNodes, normalized);
+        return new OnboardingPlan(TemplateId, OrderParentFirst(planNodes), normalized);
+    }
+
+    /// <summary>
+    /// Orders resolved nodes parent-first so a consumer creating <see cref="OnboardingPlan.Nodes"/>
+    /// sequentially always finds each node's parent already created, even when the template declared a
+    /// child before its parent. The template is validated acyclic at construction, so a ready node
+    /// (a root, or one whose parent is already emitted) exists on every iteration until all are placed.
+    /// </summary>
+    private static IReadOnlyList<OnboardingPlanNode> OrderParentFirst(List<OnboardingPlanNode> nodes)
+    {
+        var ordered = new List<OnboardingPlanNode>(nodes.Count);
+        var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var remaining = new List<OnboardingPlanNode>(nodes);
+        while (remaining.Count > 0)
+        {
+            var readyIndex = remaining.FindIndex(node => node.ParentKey is null || emitted.Contains(node.ParentKey));
+            if (readyIndex < 0)
+                break; // defensive: unreachable for a validated-acyclic template
+
+            var ready = remaining[readyIndex];
+            ordered.Add(ready);
+            emitted.Add(ready.Key);
+            remaining.RemoveAt(readyIndex);
+        }
+
+        // Never drop nodes: if no valid order was found (should not happen post-validation), fall back
+        // to the original input order.
+        return ordered.Count == nodes.Count ? ordered : nodes;
     }
 
     private static string Resolve(string? template, IReadOnlyDictionary<string, string> parameters)

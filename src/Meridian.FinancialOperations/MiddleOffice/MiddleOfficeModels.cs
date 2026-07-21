@@ -71,7 +71,18 @@ public sealed record WorkflowSlaTimer
         Subject = subject.Trim();
         Policy = policy;
         StartedAtUtc = startedAtUtc.ToUniversalTime();
-        StoppedAtUtc = stoppedAtUtc?.ToUniversalTime();
+
+        // Enforce the stop-after-start invariant here, at the single construction point, so a directly
+        // constructed or deserialized timer cannot represent an impossible negative-duration interval
+        // (which would otherwise report Stopped over a bogus timeline and suppress breach evaluation).
+        var normalizedStop = stoppedAtUtc?.ToUniversalTime();
+        if (normalizedStop is { } stop && stop < StartedAtUtc)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(stoppedAtUtc), stoppedAtUtc, "An SLA timer cannot stop before it started.");
+        }
+
+        StoppedAtUtc = normalizedStop;
     }
 
     public string TimerId { get; }
@@ -90,21 +101,12 @@ public sealed record WorkflowSlaTimer
 
     /// <summary>
     /// Returns a copy of this timer stopped at <paramref name="stoppedAtUtc"/>. The stop instant must
-    /// not precede <see cref="StartedAtUtc"/>, so the timer can never record an impossible negative
-    /// elapsed window (and thereby suppress breach evaluation over a bogus timeline).
+    /// not precede <see cref="StartedAtUtc"/> (enforced by the constructor), so the timer can never
+    /// record an impossible negative elapsed window and thereby suppress breach evaluation.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the stop time precedes the start.</exception>
     public WorkflowSlaTimer Stop(DateTimeOffset stoppedAtUtc)
-    {
-        var stoppedAt = stoppedAtUtc.ToUniversalTime();
-        if (stoppedAt < StartedAtUtc)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(stoppedAtUtc), stoppedAtUtc, "An SLA timer cannot stop before it started.");
-        }
-
-        return new(TimerId, Subject, Policy, StartedAtUtc, stoppedAt);
-    }
+        => new(TimerId, Subject, Policy, StartedAtUtc, stoppedAtUtc);
 
     /// <summary>The timer's state as of <paramref name="asOfUtc"/>.</summary>
     public WorkflowSlaState StateAt(DateTimeOffset asOfUtc)
