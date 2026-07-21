@@ -297,19 +297,8 @@ public static class LedgerFinancialStatementBuilder
             .Sum(static pair => pair.Value);
 
     private static decimal NetIncomeOf(IReadOnlyDictionary<LedgerAccount, decimal> trialBalance)
-    {
-        var revenue = 0m;
-        var expense = 0m;
-        foreach (var (account, balance) in trialBalance)
-        {
-            if (account.AccountType == LedgerAccountType.Revenue)
-                revenue += balance;
-            else if (account.AccountType == LedgerAccountType.Expense)
-                expense += balance;
-        }
-
-        return revenue - expense;
-    }
+        => SumTrialBalance(trialBalance, LedgerAccountType.Revenue)
+           - SumTrialBalance(trialBalance, LedgerAccountType.Expense);
 
     private static bool IsCashAccount(LedgerAccount account)
         => account.AccountType == LedgerAccountType.Asset
