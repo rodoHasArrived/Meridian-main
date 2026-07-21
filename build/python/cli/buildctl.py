@@ -684,7 +684,9 @@ def _check_docker_daemon() -> tuple[bool, bool, str, str | None]:
 
 def _check_postgres() -> tuple[bool, bool, str, str | None]:
     """Attempt a TCP connection to the PostgreSQL port and report fix hints."""
-    conn_str = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "")
+    conn_str = os.getenv("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING", "") or os.getenv(
+        "MERIDIAN_DATABASE_URL", ""
+    )
     host = _POSTGRES_DEFAULT_HOST
     port = _POSTGRES_DEFAULT_PORT
 

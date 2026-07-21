@@ -120,7 +120,7 @@ public sealed class PaperGatewayLiveFeedPricingTests
     }
 
     [Fact]
-    public async Task ExecutionGateway_MarketOrder_WithoutFeed_FallsBackToScaffoldPrice()
+    public async Task ExecutionGateway_MarketOrder_WithoutFeed_RejectsByDefault()
     {
         var gateway = new ExecutionGateway(
             NullLogger<ExecutionGateway>.Instance,
@@ -135,7 +135,61 @@ public sealed class PaperGatewayLiveFeedPricingTests
             Quantity = 3m
         });
 
+        report.OrderStatus.Should().Be(OrderStatus.Rejected,
+            "a market order with no live reference price must fail closed instead of filling at a fabricated price");
+        report.FilledQuantity.Should().Be(0);
+        report.RejectReason.Should().Contain("SPY").And.Contain("AllowScaffoldMarketFills");
+    }
+
+    [Fact]
+    public async Task ExecutionGateway_MarketOrder_WithoutFeed_FillsAtScaffoldPriceWhenOptedIn()
+    {
+        var gateway = new ExecutionGateway(
+            NullLogger<ExecutionGateway>.Instance,
+            securityMaster: null,
+            options: new PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true,
+                ScaffoldMarketFillPrice = 42m
+            });
+
+        var report = await gateway.SubmitOrderAsync(new OrderRequest
+        {
+            Symbol = "SPY",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 3m
+        });
+
+        report.OrderStatus.Should().Be(OrderStatus.Filled);
         report.FillPrice.Should().Be(42m);
+    }
+
+    [Fact]
+    public async Task AdapterGateway_MarketOrder_WithoutFeed_RejectsByDefault()
+    {
+        await using var gateway = new AdapterGateway(NullLogger<AdapterGateway>.Instance);
+
+        await gateway.SubmitAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m
+        });
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await foreach (var update in gateway.StreamOrderUpdatesAsync(cts.Token))
+        {
+            update.Status.Should().Be(Meridian.Execution.Models.OrderStatus.Rejected,
+                "a market order with no live reference price must fail closed instead of filling at a fabricated price");
+            update.FilledQuantity.Should().Be(0);
+            update.AverageFillPrice.Should().BeNull();
+            update.RejectReason.Should().Contain("AAPL").And.Contain("AllowScaffoldMarketFills");
+            return;
+        }
+
+        Assert.Fail("No order update was received from the paper gateway.");
     }
 
     [Fact]
