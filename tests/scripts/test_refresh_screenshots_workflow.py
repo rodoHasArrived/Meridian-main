@@ -496,6 +496,51 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("assertCaptureRouteStateIdentity(allCaptures)", self.web_screenshot_capture_script)
         self.assertIn("must use a unique route state", self.web_screenshot_capture_script)
 
+    def test_web_screenshot_capture_script_excludes_all_compatibility_redirect_routes(self) -> None:
+        # The JS coverage-exclusion lists must match the compatibility redirect
+        # routes the coverage tests exclude below; otherwise the capture run fails
+        # with "Live route(s) without a screenshot capture entry" for routes that
+        # intentionally forward to an already-captured canonical screen.
+        for compatibility_route_key in (
+            "accountingTrialBalanceLegacy",
+            "dataAlertsLegacy",
+            "dataWatchlistLegacy",
+            "strategyFormulaWorkbenchLegacy",
+        ):
+            self.assertIn(compatibility_route_key, self.web_screenshot_capture_script)
+        for compatibility_app_route in (
+            '"/accounting/trial-balance"',
+            '"/data/alerts"',
+            '"/data/watchlist"',
+            '"/strategy/formula-workbench"',
+        ):
+            self.assertIn(compatibility_app_route, self.web_screenshot_capture_script)
+
+    def test_web_screenshot_capture_script_honors_declared_route_redirects(self) -> None:
+        # Captures that intentionally redirect to a canonical screen assert the
+        # redirect destination instead of failing the strict path-identity check.
+        self.assertIn("capture.expectedRedirectPath", self.web_screenshot_capture_script)
+        self.assertIn(
+            "new URL(toRouteUrl(baseUrl, capture.expectedRedirectPath.trim())).pathname",
+            self.web_screenshot_capture_script,
+        )
+
+    def test_web_screenshot_evidence_captures_declare_expected_redirect(self) -> None:
+        # The accounting/data evidence entry points are compatibility routes that
+        # redirect to the reporting evidence workbench; declaring the redirect lets
+        # each capture assert the intended destination and still produce an
+        # entry-point-specific screenshot.
+        captures = {
+            capture.get("id"): capture
+            for capture in self.web_screenshot_routes.get("captures", [])
+        }
+        for capture_id in ("W03I5", "W03L", "W06F"):
+            self.assertEqual(
+                "/reporting/evidence",
+                captures[capture_id].get("expectedRedirectPath"),
+                f"{capture_id} must declare its redirect to the reporting evidence workbench",
+            )
+
     def test_web_screenshot_capture_script_isolates_per_route_failures(self) -> None:
         # A screen that fails to render is recorded and skipped so the run continues
         # through the remaining screens, then exits non-zero with a consolidated
