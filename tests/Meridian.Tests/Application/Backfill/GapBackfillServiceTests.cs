@@ -332,6 +332,47 @@ public sealed class GapBackfillServiceTests
     }
 
     [Fact]
+    public async Task OnReconnectionGap_RequestDefaultsToMinuteGranularity()
+    {
+        // A reconnection gap is an intraday window; requesting the default daily bars would
+        // report the gap as remediated without restoring the missed intraday interval.
+        var tcs = new TaskCompletionSource<BackfillRequest>();
+        var svc = new GapBackfillService(
+            async (req, ct) => { tcs.TrySetResult(req); await Task.Yield(); return SuccessResult(req); },
+            subscribedSymbols: () => ["QQQ"],
+            minimumGap: TimeSpan.FromSeconds(10));
+
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
+
+        source.Raise(MakeGap(TimeSpan.FromSeconds(45)));
+
+        var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        request.Granularity.Should().Be(DataGranularity.Minute1);
+    }
+
+    [Fact]
+    public async Task OnReconnectionGap_ExplicitRecoveryGranularity_IsPassedToExecutor()
+    {
+        var tcs = new TaskCompletionSource<BackfillRequest>();
+        var svc = new GapBackfillService(
+            async (req, ct) => { tcs.TrySetResult(req); await Task.Yield(); return SuccessResult(req); },
+            subscribedSymbols: () => ["QQQ"],
+            minimumGap: TimeSpan.FromSeconds(10),
+            recoveryGranularity: DataGranularity.Minute5);
+
+        var source = new FakeGapSource();
+        svc.Subscribe(source);
+
+        source.Raise(MakeGap(TimeSpan.FromSeconds(45)));
+
+        var request = await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        request.Granularity.Should().Be(DataGranularity.Minute5);
+    }
+
+    [Fact]
     public async Task OnReconnectionGap_RequestDateRange_MatchesReconnectionGapWindow()
     {
         var tcs = new TaskCompletionSource<BackfillRequest>();

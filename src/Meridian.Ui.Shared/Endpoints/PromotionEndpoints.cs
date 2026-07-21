@@ -125,8 +125,8 @@ public static class PromotionEndpoints
             if (service is null)
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
-            if (request is null || request.WindowCount <= 0)
-                return Results.BadRequest(new { error = "Walk-forward evidence requires at least one evaluated window." });
+            if (request is null)
+                return Results.BadRequest(new { error = "Walk-forward evidence payload is required." });
 
             var evidence = new StrategyRunWalkForwardEvidence(
                 OutOfSampleSharpeRatio: request.OutOfSampleSharpeRatio,
@@ -135,6 +135,12 @@ public static class PromotionEndpoints
                 WindowCount: request.WindowCount,
                 RecordedAt: DateTimeOffset.UtcNow,
                 SourceReference: string.IsNullOrWhiteSpace(request.SourceReference) ? null : request.SourceReference.Trim());
+
+            // Reject values outside their mathematical domain (non-finite numbers, negative
+            // drawdown magnitudes) — they would pass the promotion policy's threshold
+            // comparisons and let fabricated evidence clear the live-promotion gate.
+            if (evidence.Validate() is { } validationError)
+                return Results.BadRequest(new { error = validationError });
 
             var updated = await service.RecordWalkForwardEvidenceAsync(runId, evidence, context.RequestAborted).ConfigureAwait(false);
             return updated is null

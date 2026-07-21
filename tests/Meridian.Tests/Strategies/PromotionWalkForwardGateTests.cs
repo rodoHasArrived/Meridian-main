@@ -208,6 +208,40 @@ public sealed class PromotionWalkForwardGateTests
             reason.Contains("walk-forward", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory]
+    [InlineData(double.NaN, 0.10, 0.8, 6)]
+    [InlineData(double.PositiveInfinity, 0.10, 0.8, 6)]
+    [InlineData(1.0, -1.0, 0.8, 6)]
+    [InlineData(1.0, 0.10, double.NaN, 6)]
+    [InlineData(1.0, 0.10, 0.8, 0)]
+    public async Task RecordWalkForwardEvidenceAsync_InvalidMetricDomain_Throws(
+        double oosSharpe, double oosDrawdown, double degradation, int windowCount)
+    {
+        // A negative drawdown "magnitude" or a non-finite metric would sail through the
+        // policy's threshold comparisons, letting fabricated evidence clear the live gate.
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var act = () => service.RecordWalkForwardEvidenceAsync(
+            run.RunId,
+            new StrategyRunWalkForwardEvidence(
+                OutOfSampleSharpeRatio: oosSharpe,
+                OutOfSampleMaxDrawdownPercent: (decimal)oosDrawdown,
+                DegradationRatio: degradation,
+                WindowCount: windowCount,
+                RecordedAt: DateTimeOffset.UtcNow));
+
+        await act.Should().ThrowAsync<ArgumentException>();
+
+        var unchanged = await service.EvaluateAsync(run.RunId);
+        unchanged.IsEligible.Should().BeFalse("rejected evidence must not unblock the walk-forward gate");
+    }
+
     [Fact]
     public async Task RecordWalkForwardEvidenceAsync_UnknownRun_ReturnsNull()
     {

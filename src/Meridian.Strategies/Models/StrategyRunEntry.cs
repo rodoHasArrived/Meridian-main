@@ -23,7 +23,28 @@ public sealed record StrategyRunWalkForwardEvidence(
     double DegradationRatio,
     int WindowCount,
     DateTimeOffset RecordedAt,
-    string? SourceReference = null);
+    string? SourceReference = null)
+{
+    /// <summary>
+    /// Validates the metric domains, returning an error message or <c>null</c> when valid.
+    /// Failing metric values (weak Sharpe, deep drawdown, heavy degradation) are recordable —
+    /// the promotion policy judges those — but values outside their mathematical domain
+    /// (non-finite numbers, negative drawdown magnitudes) would bypass the policy's
+    /// threshold comparisons and must never be persisted as evidence.
+    /// </summary>
+    public string? Validate()
+    {
+        if (WindowCount <= 0)
+            return "Walk-forward evidence requires at least one evaluated window.";
+        if (!double.IsFinite(OutOfSampleSharpeRatio))
+            return "Out-of-sample Sharpe ratio must be a finite number.";
+        if (!double.IsFinite(DegradationRatio))
+            return "Walk-forward degradation ratio must be a finite number.";
+        if (OutOfSampleMaxDrawdownPercent < 0m)
+            return "Out-of-sample max drawdown must be a non-negative magnitude.";
+        return null;
+    }
+}
 
 /// <summary>
 /// An immutable record of a single strategy run (backtest, paper, or live).

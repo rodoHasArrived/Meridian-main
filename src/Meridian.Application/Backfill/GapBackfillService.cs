@@ -19,6 +19,7 @@ public sealed class GapBackfillService
     private readonly Func<IReadOnlyCollection<string>> _subscribedSymbols;
     private readonly bool _enabled;
     private readonly TimeSpan _minimumGap;
+    private readonly DataGranularity _recoveryGranularity;
     private int _gapBackfillsTriggered;
     private int _gapBackfillsSucceeded;
 
@@ -31,16 +32,22 @@ public sealed class GapBackfillService
     /// gap time so hot-reloaded subscription changes are honored.</param>
     /// <param name="enabled">Whether auto gap-fill is enabled.</param>
     /// <param name="minimumGap">Minimum gap duration before triggering backfill (default 10s).</param>
+    /// <param name="recoveryGranularity">Granularity requested for gap-recovery backfills. Reconnection
+    /// gaps are intraday windows, so this defaults to 1-minute bars; the backfill service rejects the
+    /// request loudly when no configured historical provider supports it, rather than silently
+    /// remediating an intraday gap with daily bars.</param>
     public GapBackfillService(
         Func<BackfillRequest, CancellationToken, Task<BackfillResult>> backfillExecutor,
         Func<IReadOnlyCollection<string>>? subscribedSymbols = null,
         bool enabled = true,
-        TimeSpan? minimumGap = null)
+        TimeSpan? minimumGap = null,
+        DataGranularity recoveryGranularity = DataGranularity.Minute1)
     {
         _backfillExecutor = backfillExecutor;
         _subscribedSymbols = subscribedSymbols ?? (static () => Array.Empty<string>());
         _enabled = enabled;
         _minimumGap = minimumGap ?? TimeSpan.FromSeconds(10);
+        _recoveryGranularity = recoveryGranularity;
     }
 
     /// <summary>
@@ -125,7 +132,8 @@ public sealed class GapBackfillService
                 Provider: "composite",
                 Symbols: symbols,
                 From: DateOnly.FromDateTime(gap.DisconnectedAt.UtcDateTime),
-                To: DateOnly.FromDateTime(gap.ReconnectedAt.UtcDateTime));
+                To: DateOnly.FromDateTime(gap.ReconnectedAt.UtcDateTime),
+                Granularity: _recoveryGranularity);
 
             _log.Information(
                 "Enqueuing gap backfill request for {SymbolCount} symbols from {From} to {To} " +

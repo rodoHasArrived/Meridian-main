@@ -827,6 +827,8 @@ public sealed class PromotionService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         ArgumentNullException.ThrowIfNull(evidence);
+        if (evidence.Validate() is { } validationError)
+            throw new ArgumentException(validationError, nameof(evidence));
 
         var run = await FindRunAsync(runId, ct).ConfigureAwait(false);
         if (run is null)
