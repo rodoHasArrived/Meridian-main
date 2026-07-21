@@ -148,6 +148,26 @@ erDiagram
         text receipt_hash_sha256
         timestamp_with_time_zone retained_at_utc
     }
+    reporting_reporting_reconciliation_evidence_v2 {
+        text tenant_id PK
+        text receipt_key_sha256 PK
+        text organization_id
+        text company_id
+        text fund_id
+        text ledger_book_id
+        text accounting_period_id
+        text accounting_basis
+        date as_of_date
+        text source_checkpoint_id
+        text source_checkpoint_hash
+        text reconciliation_checkpoint_id
+        text reconciliation_checkpoint_hash
+        text receipt_payload
+        text receipt_hash_sha256
+        timestamp_with_time_zone retained_at_utc
+        smallint receipt_format_version
+        text supersedes_legacy_receipt_key_sha256
+    }
     reporting_reporting_restatement_requests {
         text tenant_id PK,FK
         text request_id PK

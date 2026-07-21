@@ -77,6 +77,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        // Unified persistence config must resolve before any per-domain in-memory-vs-Postgres
+        // decision below reads the per-domain variables.
+        MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         SecurityMasterStartup.EnsureEnvironmentDefaults();
         AssetOperationsStartup.EnsureEnvironmentDefaults();
         DirectLendingStartup.EnsureEnvironmentDefaults();
@@ -85,7 +89,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         var securityMasterOptions = CreateSecurityMasterOptions();
         var assetOperationsOptions = CreateAssetOperationsOptions();
         var directLendingOptions = CreateDirectLendingOptions();
-        var ledgerOptions = CreateLedgerOptions();
+        var ledgerOptions = CreateLedgerOptions(
+            ProductionServiceRegistrationPolicy.IsProductionComposition(services));
 
         services.TryAddSingleton<ISecurityValidationSnapshotStore, FileSecurityValidationSnapshotStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
@@ -108,7 +113,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationDryRunService>();
         services.TryAddSingleton<IProviderIntegrationHttpTransport>(sp =>
             new ProviderIntegrationHttpClientTransport(
-                new HttpClient(),
+                new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ProviderIntegrationHttpClientTransport>>()));
         services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
         services.TryAddSingleton<ProviderIntegrationOpenApiImportService>();
@@ -362,6 +367,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
             services.AddSingleton<IInstrumentPositionProjectionStore>(sp =>
                 sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
+            services.AddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+                sp.GetRequiredService<PostgresAssetOperationsProjectionStore>());
         }
 
         // Register null/stub implementations as fallbacks when Security Master is not configured.
@@ -405,6 +412,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.TryAddSingleton<IAssetOperationsProjectionStore>(sp =>
                 sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
             services.TryAddSingleton<IInstrumentPositionProjectionStore>(sp =>
+                sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
+            services.TryAddSingleton<IAssetAccountingEventProjectionStore>(sp =>
                 sp.GetRequiredService<InMemoryAssetOperationsProjectionStore>());
         }
         services.TryAddSingleton<AssetObligationProjectionService>();
@@ -603,7 +612,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
 
         throw new InvalidOperationException(
             "Production-safe startup requires persistence-backed governance domain services. " +
-            $"Configure {string.Join(", ", missing)} or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
+            $"Configure {string.Join(", ", missing)} (or set {MeridianDatabaseEnvironment.UnifiedVariable} to cover all store domains at once), " +
+            "or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
     }
 
     private static bool IsInMemoryGovernanceProfileEnabled()
@@ -660,12 +670,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             Schema = Environment.GetEnvironmentVariable(AssetOperationsStartup.SchemaVariable) ?? AssetOperationsStartup.DefaultSchema
         };
 
-    private static LedgerJournalStoreOptions CreateLedgerOptions()
+    private static LedgerJournalStoreOptions CreateLedgerOptions(bool requireGovernedProductionWrites)
         => new()
         {
             ConnectionString = Environment.GetEnvironmentVariable(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
             SchemaName = Environment.GetEnvironmentVariable(LedgerStartup.SchemaVariable) ?? LedgerStartup.DefaultSchema,
-            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true)
+            EnablePeriodLocking = ParseBool("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true),
+            RequireGovernedPostingCommand = requireGovernedProductionWrites,
+            RequireExpectedVersion = requireGovernedProductionWrites
         };
 
     private static bool IsScopedAccessPostgresConfigured()

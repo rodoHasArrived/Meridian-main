@@ -167,22 +167,34 @@ public partial class App : System.Windows.Application
         _isFixtureMode = DetectFixtureMode(_launchArgs);
         ApplyRenderModeOverrides();
 
+        var includeDesktopConfiguration = true;
+        try
+        {
+            var recoveryOutcome = await WpfServices.FirstRunService.Instance.EnsureConfigurationExistsAsync();
+            WpfServices.LoggingService.Instance.LogInfo(
+                "Desktop configuration preflight completed before host construction",
+                ("Outcome", recoveryOutcome.ToString()));
+        }
+        catch (Exception ex) when (IsConfigurationStartupFailure(ex))
+        {
+            includeDesktopConfiguration = false;
+            WpfServices.LoggingService.Instance.LogError(
+                "Desktop configuration could not be recovered; starting with host defaults so configuration can be repaired in-app",
+                ex);
+        }
+
         // Configure the host with dependency injection
-        _host = Host.CreateDefaultBuilder()
-            .ConfigureAppConfiguration(config =>
-            {
-                // The operator's desktop settings file is the source for host-level
-                // sections (e.g. Connectivity:Probes); layer it over the process defaults.
-                config.AddJsonFile(
-                    Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath(),
-                    optional: true,
-                    reloadOnChange: false);
-            })
-            .ConfigureServices((context, services) =>
-            {
-                ConfigureServices(services, context.Configuration);
-            })
-            .Build();
+        try
+        {
+            _host = BuildDesktopHost(includeDesktopConfiguration);
+        }
+        catch (Exception ex) when (includeDesktopConfiguration && IsConfigurationStartupFailure(ex))
+        {
+            WpfServices.LoggingService.Instance.LogError(
+                "Desktop configuration failed during host construction; retrying startup with host defaults",
+                ex);
+            _host = BuildDesktopHost(includeDesktopConfiguration: false);
+        }
         WpfServices.LoggingService.Instance.LogInfo("WPF application host built");
 
         Services = _host.Services;
@@ -233,6 +245,39 @@ public partial class App : System.Windows.Application
         _ = RestoreMainWindowVisibilityAsync(mainWindow);
     }
 
+    private static IHost BuildDesktopHost(bool includeDesktopConfiguration)
+    {
+        return Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(config =>
+            {
+                // The operator's desktop settings file is the source for host-level
+                // sections (e.g. Connectivity:Probes); layer it over the process defaults.
+                if (includeDesktopConfiguration)
+                {
+                    config.AddJsonFile(
+                        Meridian.Contracts.Configuration.MeridianPathDefaults.GetDesktopConfigPath(),
+                        optional: true,
+                        reloadOnChange: false);
+                }
+            })
+            .ConfigureServices((context, services) =>
+            {
+                ConfigureServices(services, context.Configuration);
+            })
+            .Build();
+    }
+
+    private static bool IsConfigurationStartupFailure(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is JsonException or FormatException or InvalidDataException or IOException or UnauthorizedAccessException)
+                return true;
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Detects whether fixture mode should be activated.
     /// Checks for --fixture command-line argument or MDC_FIXTURE_MODE=1 environment variable.
@@ -278,6 +323,10 @@ public partial class App : System.Windows.Application
     /// </summary>
     private static void ConfigureServices(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
+        // Unified persistence config must resolve before feature modules read the
+        // per-domain connection-string variables.
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         AddHostEnvironmentFallback(services);
 
         // Register shared desktop HttpClient configurations
@@ -498,6 +547,11 @@ public partial class App : System.Windows.Application
             // Start background task scheduler
             await InitializeBackgroundServicesAsync();
 
+            // Arm offline replay: materialize the clients that register durable-queue handlers,
+            // drain operations persisted by earlier sessions, and replay again whenever
+            // connectivity to the workstation service is restored.
+            WireOfflineOperationReplay();
+
             // Notify if running in fixture/demo mode
             if (_isFixtureMode)
             {
@@ -563,6 +617,51 @@ public partial class App : System.Windows.Application
         {
             WpfServices.LoggingService.Instance.LogWarning(
                 "Offline tracking persistence failed to initialize; continuing without crash recovery persistence");
+        }
+    }
+
+    /// <summary>
+    /// Wires durable offline-operation replay: resolves the API clients whose constructors
+    /// register pending-operation handlers, replays operations persisted by earlier sessions,
+    /// and subscribes reconnect events so queued mutations drain when the backend returns.
+    /// </summary>
+    private void WireOfflineOperationReplay()
+    {
+        try
+        {
+            // Resolving the client registers its pending-operation replay handlers.
+            _ = Services.GetService<WpfServices.IWorkstationReconciliationApiClient>();
+
+            WpfServices.ConnectionService.Instance.ReconnectSucceeded += static (_, _) =>
+                _ = ReplayPendingOperationsAsync("reconnect");
+
+            _ = ReplayPendingOperationsAsync("startup");
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                $"Offline operation replay wiring failed: {ex.Message}");
+        }
+    }
+
+    private static async Task ReplayPendingOperationsAsync(string trigger)
+    {
+        try
+        {
+            var queue = WpfServices.PendingOperationsQueueService.Instance;
+            if (queue.PendingCount == 0)
+            {
+                return;
+            }
+
+            WpfServices.LoggingService.Instance.LogInfo(
+                $"Replaying {queue.PendingCount} pending offline operation(s) ({trigger})");
+            await queue.ProcessAllAsync();
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                $"Pending operation replay failed: {ex.Message}");
         }
     }
 
@@ -928,7 +1027,9 @@ public partial class App : System.Windows.Application
                  System.Net.Http.HttpRequestException or
                  TimeoutException or
                  OperationCanceledException or
-                 System.IO.IOException;
+                 System.IO.IOException or
+                 UnauthorizedAccessException or
+                 JsonException;
 
         // Always log with structured logging so the error is visible in the log file.
         WpfServices.LoggingService.Instance.LogError("Dispatcher unhandled exception", ex);

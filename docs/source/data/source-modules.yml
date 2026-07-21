@@ -102,6 +102,7 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W9-ASSET-010
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -236,6 +237,7 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W9-ASSET-010
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -402,6 +404,7 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W9-ASSET-010
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -688,6 +691,7 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W5-MASSET-001
+      - W9-ASSET-010
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -739,6 +743,7 @@ modules:
       - W5X-FINOPS-001
       - W5X-CONNECT-001
       - W5X-STMT-ONBOARD-001
+      - W9-ASSET-010
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -933,6 +938,7 @@ modules:
       - W5X-CONNECT-001
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
+      - W9-ASSET-010
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview

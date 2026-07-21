@@ -4,26 +4,26 @@
 
 This is a source inventory of public DTOs and related contract objects. Database-to-contract links are explicit module associations; they do not assert one-to-one structural equivalence.
 
-- Public contract objects: 2429
-- Namespaces: 53
+- Public contract objects: 2465
+- Namespaces: 54
 
 ## Classifications
 
 | Classification | Count |
 | --- | ---: |
 | `catalog` | 10 |
-| `class` | 158 |
-| `configuration` | 18 |
-| `dto` | 1199 |
-| `enum` | 333 |
+| `class` | 162 |
+| `configuration` | 19 |
+| `dto` | 1205 |
+| `enum` | 340 |
 | `event` | 5 |
 | `payload` | 60 |
-| `record` | 287 |
+| `record` | 301 |
 | `record_struct` | 3 |
-| `request` | 143 |
+| `request` | 144 |
 | `response` | 87 |
-| `result` | 37 |
-| `service_contract` | 82 |
+| `result` | 39 |
+| `service_contract` | 83 |
 | `struct` | 7 |
 
 ## Database-adjacent diagrams
@@ -35,5 +35,5 @@ This is a source inventory of public DTOs and related contract objects. Database
 - [`fund-governance-contracts`](contracts/fund-governance-contracts.md): 141 objects; mapped schemas: `fund_accounts`, `fund_structure`.
 - [`banking-contracts`](contracts/banking-contracts.md): 10 objects; mapped schemas: `banking`.
 - [`money-market-contracts`](contracts/money-market-contracts.md): 1 objects; mapped schemas: `money_market`.
-- [`reporting-contracts`](contracts/reporting-contracts.md): 21 objects; mapped schemas: `reporting`.
-- [`identity-access-contracts`](contracts/identity-access-contracts.md): 47 objects; mapped schemas: `identity_access`.
+- [`reporting-contracts`](contracts/reporting-contracts.md): 22 objects; mapped schemas: `reporting`.
+- [`identity-access-contracts`](contracts/identity-access-contracts.md): 50 objects; mapped schemas: `identity_access`.

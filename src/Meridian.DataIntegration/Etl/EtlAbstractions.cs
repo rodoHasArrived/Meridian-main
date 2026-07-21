@@ -63,6 +63,11 @@ public sealed class EtlRunResult
 {
     public required VerifiedOperationOutcome Outcome { get; init; }
     public bool Success => Outcome.IsSuccessful;
+    public EtlRunStatus Status => Success
+        ? EtlRunStatus.Completed
+        : RecordsAccepted > 0
+            ? EtlRunStatus.Partial
+            : EtlRunStatus.Failed;
     public int FilesProcessed { get; init; }
     public long RecordsProcessed { get; init; }
     public long RecordsAccepted { get; init; }
@@ -71,6 +76,13 @@ public sealed class EtlRunResult
     public string[] Errors { get; init; } = [];
     public string[] Warnings { get; init; } = [];
     public EtlExportResult? ExportResult { get; init; }
+}
+
+public enum EtlRunStatus
+{
+    Failed,
+    Partial,
+    Completed
 }
 
 public sealed class EtlExportResult

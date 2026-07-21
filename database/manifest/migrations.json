@@ -325,6 +325,15 @@
       "sha256": "4e2b96e2c56f60291acc2a8b739afa5034b873232022ec0e8171159c9c1f4283"
     },
     {
+      "filename": "008_direct_lending_pik_accrual.sql",
+      "immutable": true,
+      "migration_set_id": "direct-lending",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/DirectLending/Migrations/008_direct_lending_pik_accrual.sql",
+      "schema": "security_master",
+      "sha256": "379a1f18e73605d31c910a6de81b9a6be4d6f929ba8ddfba2ec3916d0d57bc3c"
+    },
+    {
       "filename": "001_asset_operations.sql",
       "immutable": true,
       "migration_set_id": "asset-operations",
@@ -586,6 +595,15 @@
       "sha256": "0ce4b1bd9d4221dbc89c6bea57c44247a6722872ab542936dea9bf653136e381"
     },
     {
+      "filename": "V_ledger_026__journal_leg_currency.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_026__journal_leg_currency.sql",
+      "schema": "ledger",
+      "sha256": "029b10b7501f8906cdd633ed73adae80e0a7177571a4e922b3ffdf8ec2eaf025"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -727,7 +745,7 @@
       "ordinal": null,
       "path": "src/Meridian.Storage/Reporting/Migrations/009_reporting_reconciliation_evidence_v2.sql",
       "schema": "reporting",
-      "sha256": "666426f3e71fd7e9d1807fad5f45d3f1d755dc0d6ddf240920b7a1e82b6f0dba"
+      "sha256": "d695b69e1f716ad8e30b7b5cb6f51bccedd4f987e18a353042ea709a03067922"
     },
     {
       "filename": "001_user_access_assignment.sql",
@@ -740,7 +758,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "470a072ae3e0fc3e2714751c829da423b75c6defa2fea5b1ea4783f2f469195b",
+  "fingerprint": "c401d7a37c32c4ea714283aaba032f807185b457c9000851417203a59104d9a8",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -978,7 +996,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 82,
+    "files": 84,
     "migration_sets": 10,
     "waivers": 1,
     "warnings": 0

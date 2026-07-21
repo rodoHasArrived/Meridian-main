@@ -73,7 +73,11 @@ public sealed class PaperTradingGatewayTests
     {
         var gateway = new PaperTradingGateway(
             NullLogger<PaperTradingGateway>.Instance,
-            options: new PaperTradingGatewayOptions { ScaffoldMarketFillPrice = 123.45m });
+            options: new PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true,
+                ScaffoldMarketFillPrice = 123.45m
+            });
 
         var acknowledgement = await gateway.SubmitAsync(MarketBuy("SPY", 10));
 

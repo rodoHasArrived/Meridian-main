@@ -36,6 +36,9 @@ Preview and estimate services must fail closed when the API cannot return source
 Do not return synthetic successful counts, latency values, sample sizes, or alignment metrics from
 UI-service fallbacks; callers should see an unavailable/error state instead of plausible-looking
 operational data.
+Scheduled archive-maintenance state is exposed through stable snapshots so operator edits can run
+concurrently with scheduler ticks. Timer callbacks are cancellation-aware and contain background
+exceptions at the service boundary instead of allowing a maintenance tick to terminate the host.
 
 Use this module when changing workstation endpoint behavior, operator workflow read models,
 readiness projections, or UI-service orchestration consumed by browser and WPF clients.

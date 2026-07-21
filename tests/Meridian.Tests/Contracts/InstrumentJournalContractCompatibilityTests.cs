@@ -197,6 +197,17 @@ public sealed class InstrumentJournalContractCompatibilityTests
     }
 
     [Fact]
+    public void JsonRoundTrip_RetainedEvidenceIdentity_PreservesCompleteTypedFields()
+    {
+        var evidence = BuildRetainedEvidence();
+
+        var copy = RoundTrip(evidence);
+
+        copy.Should().BeEquivalentTo(evidence);
+        RetainedEvidenceIdentityValidator.IsComplete(copy).Should().BeTrue();
+    }
+
+    [Fact]
     public void JsonDeserialize_LegacyPostingPayloads_DefaultTypedContextAndCollections()
     {
         const string legacyCandidateJson = """
@@ -388,6 +399,22 @@ public sealed class InstrumentJournalContractCompatibilityTests
         SourceDomain: "AssetOperations",
         SourceEntityId: "mbs-1");
 
+    private static RetainedEvidenceIdentityDto BuildRetainedEvidence() => new(
+        EvidenceId: "evidence-factor-2026-06-v1",
+        EvidenceUri: "evidence://asset-operations/factor-2026-06-v1",
+        ContentHashSha256: "b4a1e1f84f4c67b4aa1f8f736f66a2c9a9f73c8c2ec64e2b613967ae07d1f8b3",
+        SourceSystem: "Trustee",
+        SourceReference: "factor-2026-06",
+        ReviewStatus: RetainedEvidenceIdentityValidator.AcceptedReviewStatus,
+        ReviewedBy: "controller@meridian.local",
+        ReviewedAtUtc: DateTimeOffset.Parse("2026-07-01T12:00:00Z"),
+        EffectiveDate: new DateOnly(2026, 6, 30),
+        EvidenceVersion: 1,
+        RetainedAtUtc: DateTimeOffset.Parse("2026-07-01T12:30:00Z"),
+        RetainedBy: "evidence-retention@meridian.local",
+        SubjectType: "security-master",
+        SubjectId: SecurityId.ToString("D"));
+
     private static T RoundTrip<T>(T value)
     {
         var json = JsonSerializer.Serialize(value, JsonOptions);
@@ -401,6 +428,8 @@ public sealed class InstrumentJournalContractCompatibilityTests
         detail.BookPositions.Should().BeEmpty();
         detail.PositionEconomicStates.Should().BeEmpty();
         detail.ProjectionLineages.Should().BeEmpty();
+        detail.RetainedEvidence.Should().BeEmpty();
+        detail.Readiness.RetainedEvidence.Should().BeEmpty();
     }
 
     private static void AssertEmptyTypedCollections(AssetOperationsProjectionDto projection)
@@ -409,6 +438,8 @@ public sealed class InstrumentJournalContractCompatibilityTests
         projection.BookPositions.Should().BeEmpty();
         projection.PositionEconomicStates.Should().BeEmpty();
         projection.ProjectionLineages.Should().BeEmpty();
+        projection.RetainedEvidence.Should().BeEmpty();
+        projection.Readiness.RetainedEvidence.Should().BeEmpty();
     }
 
     private static void AssertTypedContextIsAbsent(PostingRuleJournalCandidateRequestDto candidate)

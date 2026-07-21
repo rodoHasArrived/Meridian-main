@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Catalog;
+using Meridian.Contracts.Coordination;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Pipeline;
@@ -97,7 +98,7 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_WhenParserFails_PostProcessesCurrentFileAsFailure()
+    public async Task RunAsync_WhenParserFails_RetainsCurrentSourceFile()
     {
         Directory.CreateDirectory(_root);
         var sourceReader = new RecordingSourceReader();
@@ -111,7 +112,8 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         result.Success.Should().BeFalse();
         result.Outcome.State.Should().Be(OperationTerminalState.Failed);
         result.FilesProcessed.Should().Be(0);
-        sourceReader.PostProcessCalls.Should().ContainSingle().Which.Should().Be((sourceReader.File, false));
+        result.Status.Should().Be(EtlRunStatus.Failed);
+        sourceReader.PostProcessCalls.Should().BeEmpty();
     }
 
     [Fact]
@@ -152,6 +154,7 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         var result = await fixture.Orchestrator.RunAsync(job.JobId);
 
         result.Success.Should().BeFalse();
+        result.Status.Should().Be(EtlRunStatus.Failed);
         result.Outcome.State.Should().Be(OperationTerminalState.Failed);
         result.ExportResult.Should().NotBeNull();
         result.ExportResult!.Success.Should().BeFalse();
@@ -531,6 +534,31 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
             EtlJobOrchestrator.ComputeInputHash(remoteAck));
     }
 
+    [Fact]
+    public async Task RunAsync_WhenLeaseIsOwnedByAnotherRunner_DoesNoWork()
+    {
+        Directory.CreateDirectory(_root);
+        var sourceReader = new RecordingSourceReader();
+        var lease = Substitute.For<ILeaseManager>();
+        lease.TryAcquireAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new LeaseAcquireResult(false, false, null, "runner-a", DateTimeOffset.UtcNow.AddMinutes(1), "held"));
+        await using var fixture = CreateOrchestratorFixture(
+            sourceReader,
+            new EmptyPartnerFileParser(),
+            new RecordingExportService(),
+            leaseManager: lease);
+        var job = await fixture.Ingestion.CreateJobAsync(IngestionWorkloadType.Historical, ["AAPL"], "partner-a");
+        await fixture.DefinitionStore.SaveAsync(CreateDefinition(job.JobId));
+        await fixture.Ingestion.TransitionAsync(job.JobId, IngestionJobState.Queued);
+
+        var result = await fixture.Orchestrator.RunAsync(job.JobId);
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().ContainSingle(message => message.Contains("runner-a", StringComparison.Ordinal));
+        sourceReader.StageCalls.Should().Be(0);
+        await lease.DidNotReceive().ReleaseAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_root))
@@ -542,7 +570,8 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         IPartnerFileParser parser,
         IEtlExportService export,
         Func<IngestionJobService, IEtlIngestionJobCoordinator>? coordinatorFactory = null,
-        IOperationalCaseHistoryStore? caseHistoryStore = null)
+        IOperationalCaseHistoryStore? caseHistoryStore = null,
+        ILeaseManager? leaseManager = null)
     {
         var ingestion = new IngestionJobService(Path.Combine(_root, "jobs"));
         var definitionStore = new EtlJobDefinitionStore(_root);
@@ -568,7 +597,8 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
             audit,
             rejects,
             export,
-            caseHistoryStore: history);
+            caseHistoryStore: history,
+            leaseManager: leaseManager);
         return new OrchestratorFixture(orchestrator, ingestion, definitionStore, audit, history, pipeline);
     }
 
@@ -639,6 +669,7 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
         };
 
         public List<(EtlRemoteFile File, bool Succeeded)> PostProcessCalls { get; } = [];
+        public int StageCalls { get; private set; }
 
         public bool ThrowOnSuccessfulPostProcess { get; init; }
 
@@ -648,7 +679,9 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
             => Task.FromResult<IReadOnlyList<EtlRemoteFile>>([File]);
 
         public Task<EtlStagedFile> StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default)
-            => Task.FromResult(new EtlStagedFile
+        {
+            StageCalls++;
+            return Task.FromResult(new EtlStagedFile
             {
                 OriginalPath = file.Path,
                 StagedPath = file.Path,
@@ -656,6 +689,7 @@ public sealed partial class EtlJobOrchestratorTests : IDisposable
                 ChecksumSha256 = "checksum",
                 SizeBytes = file.SizeBytes
             });
+        }
 
         public Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
         {

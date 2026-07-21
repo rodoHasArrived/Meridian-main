@@ -139,6 +139,13 @@ account symbols such as the `EUR` symbol on `LedgerAccounts.CashInCurrency("EUR"
 base balances are supplied, it can produce balanced unrealized FX revaluation lines against the
 monetary asset or liability account and the scoped unrealized FX gain/loss accounts.
 
+Individual journal legs can now carry currency explicitly rather than relying on symbol inference:
+the optional `LedgerEntryCurrency` on `LedgerEntry` records the transaction currency, the original
+transaction debit/credit amounts, the functional currency, and the applied FX rate, while the leg's
+`Debit`/`Credit` remain the functional (base) amounts the ledger balances and reports on. The detail
+is persisted in nullable `journal_legs` columns (migration `V_ledger_026__journal_leg_currency.sql`)
+so legacy legs stay currency-blind and back-compatible.
+
 ### `MultiCurrencyJournalProjector`
 
 `MultiCurrencyJournalProjector` handles the posting side of multi-currency accounting. It accepts

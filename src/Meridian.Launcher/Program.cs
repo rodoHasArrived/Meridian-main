@@ -51,7 +51,8 @@ internal static class Program
         }
         else
         {
-            foreach (var argument in args) start.ArgumentList.Add(argument);
+            foreach (var argument in args)
+                start.ArgumentList.Add(argument);
         }
 
         var existingReceipts = StartupOutcomeReceiptMonitor.Capture(receiptRoot);

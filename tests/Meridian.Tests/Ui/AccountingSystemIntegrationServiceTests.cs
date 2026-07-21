@@ -7,6 +7,7 @@ using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -35,11 +36,31 @@ public sealed class AccountingSystemIntegrationServiceTests
 {
     private static readonly Guid ExternalGlLedgerBookId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 
+    private static RetainedEvidenceIdentityDto BuildCertificationRetainedEvidence(
+        string subjectType,
+        string certificationId,
+        string suffix)
+        => new(
+            EvidenceId: $"accounting-certification-{suffix}-v1",
+            EvidenceUri: $"evidence://accounting-certification/{suffix}/v1",
+            ContentHashSha256: new string(suffix[0] is 'd' ? 'b' : suffix[0] is 't' ? 'c' : 'a', 64),
+            SourceSystem: "GovernedEvidenceVault",
+            SourceReference: $"vault://accounting-certification/{suffix}/v1",
+            ReviewStatus: RetainedEvidenceIdentityValidator.AcceptedReviewStatus,
+            ReviewedBy: "accounting-controller",
+            ReviewedAtUtc: DateTimeOffset.Parse("2026-01-31T00:30:00Z"),
+            EffectiveDate: new DateOnly(2026, 1, 31),
+            EvidenceVersion: 1,
+            RetainedAtUtc: DateTimeOffset.Parse("2026-01-31T00:45:00Z"),
+            RetainedBy: "evidence-vault",
+            SubjectType: subjectType,
+            SubjectId: certificationId);
+
     private static AccountingWorkflowCertificationArtifactDto BuildWorkflowCertificationArtifact(
         Guid ledgerBookId,
         string evidenceReference,
-        string? tenantId = null,
-        string? companyId = null,
+        string? tenantId = "tenant-alpha",
+        string? companyId = "company-alpha",
         string fundProfileId = "default-fund")
         => new(
             $"workflow-certification-{ledgerBookId:D}",
@@ -64,8 +85,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         Guid ledgerBookId,
         string evidenceReference,
         string dimensionScope = "canonical-production",
-        string? tenantId = null,
-        string? companyId = null,
+        string? tenantId = "tenant-alpha",
+        string? companyId = "company-alpha",
         string fundProfileId = "default-fund")
         => new(
             $"dimension-certification-{ledgerBookId:D}-{dimensionScope}",
@@ -643,11 +664,21 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Issues.Any(issue => issue.Code == "external-gl.ledger-book-native-evidence-missing"));
 
         var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/workflow-certification/artifact";
+        var workflowArtifact = BuildWorkflowCertificationArtifact(ledgerBookId, certifiedEvidence);
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
-                WorkflowCertificationArtifacts: [BuildWorkflowCertificationArtifact(ledgerBookId, certifiedEvidence)]));
+                WorkflowCertificationArtifacts: [workflowArtifact],
+                RetainedEvidence:
+                [
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.WorkflowArtifact,
+                        workflowArtifact.CertificationId,
+                        "workflow")
+                ]));
 
         certified.LedgerBookWorkflows.Should().NotBeNull();
         certified.LedgerBookWorkflows!.CompletedControlCount.Should().Be(10);
@@ -882,11 +913,21 @@ public sealed class AccountingSystemIntegrationServiceTests
             component.Status == AccountingProductionReadinessStatusDto.Blocked);
 
         var certifiedEvidence = $"evidence://ledger-book/{ledgerBookId:D}/dimensions/certification-artifact/dimension-scope/canonical-production";
+        var dimensionalArtifact = BuildDimensionalCertificationArtifact(ledgerBookId, certifiedEvidence);
         var certified = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
+                TenantId: "tenant-alpha",
+                CompanyId: "company-alpha",
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
-                DimensionalCertificationArtifacts: [BuildDimensionalCertificationArtifact(ledgerBookId, certifiedEvidence)]));
+                DimensionalCertificationArtifacts: [dimensionalArtifact],
+                RetainedEvidence:
+                [
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.DimensionalArtifact,
+                        dimensionalArtifact.CertificationId,
+                        "dimensional")
+                ]));
 
         certified.DimensionalReporting.Should().NotBeNull();
         certified.DimensionalReporting!.CompletedControlCount.Should().Be(10);
@@ -1105,12 +1146,21 @@ public sealed class AccountingSystemIntegrationServiceTests
             issue.Area == AccountingProductionReadinessAreaDto.TenantAdministration);
 
         var tenantAdminEvidence = "evidence://tenant-admin/tenant-alpha/company-alpha/certification-artifact";
+        var tenantAdminArtifact = BuildTenantAdminCertificationArtifact(ExternalGlLedgerBookId, tenantAdminEvidence);
         var readyControls = await provider.GetRequiredService<AccountingProductionReadinessService>()
             .AssessAsync(new AccountingProductionReadinessRequestDto(
                 FundProfileId: "default-fund",
+                LedgerBookId: ExternalGlLedgerBookId,
                 TenantId: "tenant-alpha",
                 CompanyId: "company-alpha",
-                TenantAdminCertificationArtifacts: [BuildTenantAdminCertificationArtifact(null, tenantAdminEvidence)]));
+                TenantAdminCertificationArtifacts: [tenantAdminArtifact],
+                RetainedEvidence:
+                [
+                    BuildCertificationRetainedEvidence(
+                        AccountingProductionCertificationEvidenceSubjectTypes.TenantAdministrationArtifact,
+                        tenantAdminArtifact.CertificationId,
+                        "tenant-admin")
+                ]));
 
         readyControls.TenantAdministration.Should().NotBeNull();
         readyControls.TenantAdministration!.TenantId.Should().Be("tenant-alpha");

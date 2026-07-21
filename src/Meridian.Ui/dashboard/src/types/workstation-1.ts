@@ -781,6 +781,7 @@ export interface StrategyRunRecord {
   netPnl?: number | null;
   totalReturn?: number | null;
   finalEquity?: number | null;
+  biasDisclosure?: import("./workstation-6").BiasDisclosure | null;
 }
 
 // --- Promotion workflow types ---

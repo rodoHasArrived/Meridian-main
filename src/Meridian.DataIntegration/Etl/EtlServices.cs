@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.Coordination;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Pipeline;
 using Meridian.Storage.Etl;
@@ -88,6 +89,7 @@ public sealed partial class EtlJobOrchestrator
     private readonly EtlAuditStore _auditStore;
     private readonly EtlRejectSink _rejectSink;
     private readonly IEtlExportService _exportService;
+    private readonly ILeaseManager? _leaseManager;
     private readonly IOperationalCaseHistoryStore? _caseHistoryStore;
 
     public EtlJobOrchestrator(
@@ -102,7 +104,8 @@ public sealed partial class EtlJobOrchestrator
         EtlRejectSink rejectSink,
         IEtlExportService exportService,
         ILogger<EtlJobOrchestrator>? logger = null,
-        IOperationalCaseHistoryStore? caseHistoryStore = null)
+        IOperationalCaseHistoryStore? caseHistoryStore = null,
+        ILeaseManager? leaseManager = null)
     {
         _ingestionJobService = ingestionJobService;
         _definitionStore = definitionStore;
@@ -115,6 +118,7 @@ public sealed partial class EtlJobOrchestrator
         _rejectSink = rejectSink;
         _exportService = exportService;
         _caseHistoryStore = caseHistoryStore;
+        _leaseManager = leaseManager;
         _logger = logger ?? NullLogger<EtlJobOrchestrator>.Instance;
     }
 
@@ -129,11 +133,12 @@ public sealed partial class EtlJobOrchestrator
         IngestionJob? job = null;
         IEtlSourceReader? reader = null;
         var admitted = false;
+        var leaseResource = $"jobs/etl/{jobId}";
+        EtlOwnershipLease? ownership = null;
         var filesProcessed = 0;
         long processed = 0, accepted = 0, rejected = 0;
         var errors = new List<string>();
         var filesReadyForPostProcessing = new List<EtlRemoteFile>();
-        EtlRemoteFile? currentFile = null;
         EtlExportResult? exportResult = null;
         IReadOnlyList<OperationArtifactReference> verifiedArtifacts = [];
         var dedupBefore = 0L;
@@ -153,6 +158,18 @@ public sealed partial class EtlJobOrchestrator
 
             reader = _sourceReaders.FirstOrDefault(x => x.Kind == definition.Source.Kind)
                 ?? throw new EtlOperationBlockedException($"No ETL source reader is registered for kind '{definition.Source.Kind}'.");
+
+            if (_leaseManager is not null)
+            {
+                var acquired = await _leaseManager.TryAcquireAsync(leaseResource, ct).ConfigureAwait(false);
+                if (!acquired.Acquired)
+                {
+                    throw new EtlOperationBlockedException(
+                        $"ETL job '{jobId}' is owned by another runner ({acquired.CurrentOwner ?? "unknown"}).");
+                }
+
+                ownership = new EtlOwnershipLease(_leaseManager, leaseResource);
+            }
 
             var runningRetained = await _ingestionJobService
                 .TransitionAsync(jobId, IngestionJobState.Running, ct: ct)
@@ -175,7 +192,6 @@ public sealed partial class EtlJobOrchestrator
             foreach (var file in files)
             {
                 ct.ThrowIfCancellationRequested();
-                currentFile = file;
                 var staged = await reader.StageFileAsync(jobId, definition.Source, file, ct).ConfigureAwait(false);
                 await _auditStore.WriteEventAsync(jobId, new EtlAuditEvent { Stage = "staged", Message = $"Staged {file.Name}." }, ct).ConfigureAwait(false);
 
@@ -198,10 +214,6 @@ public sealed partial class EtlJobOrchestrator
                                 LastRecordHash = outcome.RecordHash,
                                 CapturedAtUtc = DateTime.UtcNow
                             };
-                            if (processed % Math.Max(1, definition.CheckpointEveryRecords) == 0)
-                            {
-                                await PersistCheckpointAsync(jobId, checkpoint, ct).ConfigureAwait(false);
-                            }
                             break;
                         case EtlRecordDisposition.Rejected:
                             rejected++;
@@ -234,20 +246,24 @@ public sealed partial class EtlJobOrchestrator
                     };
                 }
                 filesReadyForPostProcessing.Add(file);
-                currentFile = null;
             }
 
             await _pipeline.FlushAsync(ct).ConfigureAwait(false);
-            if (checkpoint is not null)
-                await PersistCheckpointAsync(jobId, checkpoint, ct).ConfigureAwait(false);
-            var catalogResult = await _catalog.RebuildCatalogAsync(new CatalogRebuildOptions { Recursive = true }, ct: ct).ConfigureAwait(false);
+            await EnsureOwnershipAsync(leaseResource, ct).ConfigureAwait(false);
+            var catalogResult = await _catalog.RebuildCatalogAsync(
+                new CatalogRebuildOptions { Recursive = true },
+                ct: ct).ConfigureAwait(false);
             if (!catalogResult.Success)
-                throw new InvalidOperationException("ETL catalog rebuild returned an unsuccessful result.");
+            {
+                throw new InvalidOperationException(
+                    catalogResult.Errors.FirstOrDefault() ?? "Storage catalog rebuild failed.");
+            }
 
             var deliveryConfigured = IsDeliveryConfigured(definition);
             var exportSucceeded = true;
             if (deliveryConfigured)
             {
+                await EnsureOwnershipAsync(leaseResource, ct).ConfigureAwait(false);
                 exportResult = await _exportService.ExportAsync(job, definition, ct).ConfigureAwait(false);
                 exportSucceeded = exportResult.Success;
                 verifiedArtifacts = await BuildVerifiedArtifactReferencesAsync(
@@ -395,14 +411,16 @@ public sealed partial class EtlJobOrchestrator
                     errors: [exportError]);
             }
 
-            if (exportSucceeded)
+            await EnsureOwnershipAsync(leaseResource, ct).ConfigureAwait(false);
+            if (checkpoint is not null)
             {
-                foreach (var file in filesReadyForPostProcessing)
-                {
-                    await reader.PostProcessFileAsync(definition.Source, file, succeeded: true, ct).ConfigureAwait(false);
-                }
+                await PersistCheckpointAsync(jobId, checkpoint, ct).ConfigureAwait(false);
             }
 
+            foreach (var file in filesReadyForPostProcessing)
+            {
+                await reader.PostProcessFileAsync(definition.Source, file, succeeded: true, ct).ConfigureAwait(false);
+            }
             var completedStateRetained = await _ingestionJobService
                 .TransitionAsync(jobId, IngestionJobState.Completed, ct: CancellationToken.None)
                 .ConfigureAwait(false);
@@ -478,28 +496,7 @@ public sealed partial class EtlJobOrchestrator
             }
 
             var terminalizationFailures = new List<string>();
-            if (currentFile is not null && reader is not null && definition is not null)
-            {
-                try
-                {
-                    await reader.PostProcessFileAsync(
-                        definition.Source,
-                        currentFile,
-                        succeeded: false,
-                        CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (Exception postProcessException)
-                {
-                    errors.Add(postProcessException.Message);
-                    _logger.LogError(
-                        postProcessException,
-                        "ETL job {JobId} failed to post-process failed source file {FileName}",
-                        jobId,
-                        currentFile.Name);
-                }
-            }
-
-            if (job is not null)
+            if (admitted && job is not null)
             {
                 try
                 {
@@ -630,6 +627,27 @@ public sealed partial class EtlJobOrchestrator
                 exportResult,
                 errors: errors.ToArray());
         }
+        finally
+        {
+            if (ownership is not null)
+            {
+                await ownership.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+    }
+
+    private async Task EnsureOwnershipAsync(string resourceId, CancellationToken ct)
+    {
+        if (_leaseManager is null)
+        {
+            return;
+        }
+
+        if (!_leaseManager.HoldsLease(resourceId) ||
+            !await _leaseManager.RenewAsync(resourceId, ct).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException($"ETL ownership lease '{resourceId}' was lost before durable commit.");
+        }
     }
 
     private static EtlRunResult CreateResult(
@@ -702,6 +720,17 @@ public sealed partial class EtlJobOrchestrator
             LastOffset = checkpoint.CurrentRecordIndex,
             CapturedAt = checkpoint.CapturedAtUtc
         }, ct).ConfigureAwait(false);
+    }
+
+    private sealed class EtlOwnershipLease(ILeaseManager? manager, string resourceId) : IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            if (manager is not null)
+            {
+                await manager.ReleaseAsync(resourceId, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
     }
 
     private sealed class EtlOperationBlockedException(string message) : InvalidOperationException(message);

@@ -133,7 +133,7 @@ public sealed class BrokerageConnectionEndpointsTests
         }
     }
 
-    [Fact(Skip = "Full UiServer BackfillCoordinator resolution is a long-running integration fixture; provider factory credential registration is covered by ProviderFactoryCredentialContextTests.")]
+    [Fact]
     public async Task UiServer_BackfillCoordinator_UsesRegisteredHistoricalProviders()
     {
         using var governance = UiServerDevelopmentEnvironmentScope.Enable();

@@ -90,12 +90,15 @@ public sealed class CommandModeRunnerTests
             imports.Should().ContainSingle();
             imports[0].Broker.Should().Be("custodian");
 
+            // Sided reconciliation against an unprovisioned (empty) internal book: the position,
+            // cash, and fee rows each lack an internal counterpart, so all three are honest
+            // unmatched breaks (the retired shim fabricated a position self-match).
             var breaks = await breakStore.ListOpenAsync();
-            breaks.Should().HaveCount(2);
+            breaks.Should().HaveCount(3);
             breaks.Should().OnlyContain(item => item.ImportId == imports[0].ImportId);
 
             var cases = await caseStore.ListAsync();
-            cases.Should().HaveCount(2);
+            cases.Should().HaveCount(3);
             cases.Should().OnlyContain(item => item.ImportId == imports[0].ImportId);
         }
         finally

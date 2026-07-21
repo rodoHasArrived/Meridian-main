@@ -66,6 +66,10 @@ public sealed class DataSourcesViewModelTests
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataSourcesPage.xaml.cs"));
 
         xaml.Should().Contain("DataSourcesEditReadinessCard");
+        xaml.Should().Contain("DataSourcesConfigurationRecoveryCard");
+        xaml.Should().Contain("{Binding ConfigurationRecoveryTitle}");
+        xaml.Should().Contain("{Binding ConfigurationRecoveryDetail}");
+        xaml.Should().Contain("Command=\"{Binding RetryConfigurationCommand}\"");
         xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("{Binding SourceSetupReadinessTitle}");
         xaml.Should().Contain("{Binding SourceSetupReadinessDetail}");
@@ -94,6 +98,28 @@ public sealed class DataSourcesViewModelTests
         codeBehind.Should().NotContain("EditDataSource_Click");
         codeBehind.Should().NotContain("DeleteDataSource_Click");
         codeBehind.Should().NotContain("SourceEnabled_Changed");
+        codeBehind.Should().Contain("WpfServices.FirstRunService firstRunService");
+        codeBehind.Should().Contain("new DataSourcesViewModel(configService, firstRunService)");
         codeBehind.Should().Contain("_viewModel.PolygonApiKey = PolygonApiKeyInput.Secret");
+    }
+
+    [Fact]
+    public void DesktopStartupSource_PreflightsConfigurationBeforeHostConstructionAndRetainsFallback()
+    {
+        var source = File.ReadAllText(
+            RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\App.xaml.cs"));
+
+        var preflightIndex = source.IndexOf(
+            "EnsureConfigurationExistsAsync()",
+            StringComparison.Ordinal);
+        var hostConstructionIndex = source.IndexOf(
+            "_host = BuildDesktopHost(includeDesktopConfiguration)",
+            StringComparison.Ordinal);
+
+        preflightIndex.Should().BeGreaterThanOrEqualTo(0);
+        hostConstructionIndex.Should().BeGreaterThan(preflightIndex);
+        source.Should().Contain("starting with host defaults so configuration can be repaired in-app");
+        source.Should().Contain("_host = BuildDesktopHost(includeDesktopConfiguration: false)");
+        source.Should().Contain("IsConfigurationStartupFailure");
     }
 }

@@ -1,13 +1,21 @@
 using Meridian.Contracts.AssetOperations;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.Storage.AssetOperations;
 
 public sealed partial class InMemoryAssetOperationsProjectionStore :
     IAssetOperationsProjectionStore,
-    IInstrumentPositionProjectionStore
+    IInstrumentPositionProjectionStore,
+    IAssetAccountingEventProjectionStore
 {
+    private readonly ILedgerJournalStore? _assetAccountingJournalStore;
     private readonly object _gate = new();
     private readonly Dictionary<Guid, AssetOperationsDetailDto> _details = new();
+
+    public InMemoryAssetOperationsProjectionStore(ILedgerJournalStore? assetAccountingJournalStore = null)
+    {
+        _assetAccountingJournalStore = assetAccountingJournalStore;
+    }
 
     public Task<AssetOperationsDetailDto?> GetAsync(Guid securityId, CancellationToken ct = default)
     {

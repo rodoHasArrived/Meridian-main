@@ -93,6 +93,12 @@ public sealed class ConfigEnvironmentOverride
                 result = ApplyOverride(result, configPath, value);
                 appliedOverrides.Add($"{envVar} -> {configPath}");
             }
+            catch (Meridian.Core.Exceptions.ConfigurationException)
+            {
+                // A recognized variable carrying an invalid value (e.g. a typo'd MDC_DATASOURCE)
+                // must fail startup instead of being quietly skipped.
+                throw;
+            }
             catch (Exception ex)
             {
                 _log.Warning(ex, "Failed to apply environment override {EnvVar} to {Path}", envVar, configPath);
@@ -378,9 +384,16 @@ public sealed class ConfigEnvironmentOverride
 
     private static DataSourceKind ParseDataSource(string value)
     {
-        return Enum.TryParse<DataSourceKind>(value, ignoreCase: true, out var result)
-            ? result
-            : DataSourceKind.IB;
+        // Enum.TryParse accepts numeric strings for undefined values ("99"), so IsDefined
+        // is required to keep the fail-closed contract.
+        if (Enum.TryParse<DataSourceKind>(value, ignoreCase: true, out var result) && Enum.IsDefined(result))
+            return result;
+
+        throw new Meridian.Core.Exceptions.ConfigurationException(
+            $"Unknown data source '{value}' in MDC_DATASOURCE. " +
+            $"Valid values: {string.Join(", ", Enum.GetNames<DataSourceKind>())}.",
+            configPath: null,
+            fieldName: "DataSource");
     }
 
     private static bool IsSensitiveVariable(string envVar)

@@ -86,6 +86,22 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 | WPF production shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production` | Requires persistence-backed governance connection strings before host startup. |
 | Headless collector | `dotnet run --project src/Meridian/Meridian.csproj -- --mode headless` | Use for non-UI collection scenarios. |
 
+### Persistence and simulation defaults
+
+Two defaults matter before you trust what a local launch shows you:
+
+- **Persistence.** Without database configuration, every money-path store (ledger, fund
+  accounts, banking, reporting, and more) runs in-memory — journal entries, reconciliations,
+  and approvals are lost on restart. Set one variable to persist all store domains to
+  PostgreSQL: `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian`
+  (per-domain `MERIDIAN_*_CONNECTION_STRING` variables override it individually). Hosts log
+  `PERSISTENCE: NONE`/`PARTIAL` at startup, report it on `/readyz`, and the browser
+  workstation shows a persistent red banner until persistence is configured.
+- **Market data.** The default `ib` streaming source runs as a random-walk **simulator** in
+  standard builds (no IBAPI reference), and the `synthetic` source is always simulated.
+  Simulated data is flagged in `/api/status` (`degradedMode.marketDataMode`) and by the same
+  red workstation banner — never treat quotes, fills, or P&L from a simulated source as real.
+
 The WPF desktop startup screen prompts for the environment-backed Meridian operator profile. Configure
 `MDC_USERS` with `passwordHash` values for multi-user login, or use the legacy `MDC_USERNAME` /
 `MDC_PASSWORD_HASH` bootstrap pair for a single local admin. Development launches can continue

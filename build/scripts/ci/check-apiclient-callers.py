@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -28,12 +29,26 @@ EXCLUDED_FILES = {
     "src/Meridian.Ui.Services/Services/ApiClientService.cs",
 }
 
+EXCLUDED_DIRECTORY_NAMES = {"bin", "node_modules", "obj"}
+
 
 def count_call_sites(repo_root: Path) -> dict[str, int]:
     counts: dict[str, int] = {}
-    for path in sorted((repo_root / "src").rglob("*.cs")):
+    source_root = repo_root / "src"
+    candidate_paths: list[Path] = []
+    for current_root, directories, files in os.walk(source_root, topdown=True, followlinks=False):
+        directories[:] = sorted(
+            directory for directory in directories if directory.lower() not in EXCLUDED_DIRECTORY_NAMES
+        )
+        candidate_paths.extend(
+            Path(current_root) / file_name
+            for file_name in files
+            if file_name.lower().endswith(".cs")
+        )
+
+    for path in sorted(candidate_paths):
         rel = path.relative_to(repo_root).as_posix()
-        if rel in EXCLUDED_FILES or "/obj/" in rel or "/bin/" in rel:
+        if rel in EXCLUDED_FILES:
             continue
         matches = CALL_PATTERN.findall(path.read_text(encoding="utf-8", errors="replace"))
         if matches:

@@ -23,7 +23,8 @@ namespace Meridian.Infrastructure.Adapters.NYSE;
 public sealed class NyseMarketDataClient :
     IMarketDataClient,
     IProviderConnectionDiagnosticsSource,
-    IProviderRateLimitDiagnosticsSource
+    IProviderRateLimitDiagnosticsSource,
+    IReconnectionGapSource
 {
     private readonly NYSEDataSource _source;
     private readonly TradeDataCollector _tradeCollector;
@@ -93,6 +94,13 @@ public sealed class NyseMarketDataClient :
     {
         add => _source.ConnectionDiagnosticsChanged += value;
         remove => _source.ConnectionDiagnosticsChanged -= value;
+    }
+
+    /// <inheritdoc/>
+    public event Action<ReconnectionGap>? ReconnectionGapDetected
+    {
+        add => _source.ReconnectionGapDetected += value;
+        remove => _source.ReconnectionGapDetected -= value;
     }
 
     /// <inheritdoc/>

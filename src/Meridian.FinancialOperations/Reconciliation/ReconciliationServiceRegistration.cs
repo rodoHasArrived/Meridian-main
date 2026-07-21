@@ -66,6 +66,10 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
         services.TryAddSingleton<IDataIntegrationIngestionService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
         services.TryAddSingleton<IReconciliationCaseIntakeService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
+        // Default internal-book source: an empty book. Deployments wire reconciliation against
+        // their authoritative internal records by registering a real IInternalReconciliationBookSource
+        // before this call; TryAdd keeps that override in force.
+        services.TryAddSingleton<IInternalReconciliationBookSource, EmptyInternalReconciliationBookSource>();
         services.TryAddSingleton<IStatementRunWorkflowService, StatementRunWorkflowService>();
         services.TryAddSingleton<StatementReconciliationOrchestrator>();
     }
@@ -96,6 +100,8 @@ public static class ReconciliationServiceRegistration
             sp.GetRequiredService<StatementMappingProfileCatalog>(),
             sp.GetRequiredService<IStatementRunWorkflowService>(),
             resolveDataRoot(sp)));
+        services.TryAddSingleton<IStatementImportCommitService>(sp =>
+            sp.GetRequiredService<StatementImportService>());
 
         services.TryAddSingleton<IStatementFetchScheduleStore>(sp =>
             new FileStatementFetchScheduleStore(

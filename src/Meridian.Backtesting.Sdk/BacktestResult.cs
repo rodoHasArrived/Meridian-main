@@ -69,4 +69,5 @@ public sealed record BacktestResult(
     long TotalEventsProcessed,
     IReadOnlyList<TradeTicket>? TradeTickets = null,
     TcaReport? TcaReport = null,
-    BacktestEngineMetadata? EngineMetadata = null);
+    BacktestEngineMetadata? EngineMetadata = null,
+    BiasDisclosureReport? BiasDisclosure = null);

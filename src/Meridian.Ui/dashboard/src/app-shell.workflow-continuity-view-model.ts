@@ -281,9 +281,7 @@ function buildWorkflowContinuityStepStatus(
       return context.error || context.workflowError
         ? { label: "Review", tone: "review" }
         : { label: "Finance queue", tone: "ready" };
-    case "watchlist":
-    case "quotes":
-    case "alerts":
+    case "market-data":
     case "trusted-data":
     case "data-health":
       return buildTrustedDataContinuityStatus(context.payload.data);
@@ -343,9 +341,7 @@ const workflowContinuityWorkspaceErrors: Record<string, WorkspaceKey[]> = {
   close: ["accounting"],
   reports: ["reporting"],
   "data-health": ["data"],
-  watchlist: ["data"],
-  quotes: ["data"],
-  alerts: ["data"],
+  "market-data": ["data"],
   "trusted-data": ["data"],
   "strategy-runs": ["strategy"],
   "quant-lab": ["strategy"],

@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-07-19
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.Contracts
@@ -30,7 +30,8 @@ or provider implementations.
   case-history port. Terminal operations use only `Succeeded`, `CompletedWithWarnings`, `Failed`,
   or `Blocked`, with evaluated postconditions, retained evidence and artifacts, issues, and
   actionable recovery guidance. Durable stores assign case-event sequence and hash-chain values.
-- `Workstation/` - workstation and operator workflow DTOs.
+- `Workstation/` - workstation and operator workflow DTOs, including the persisted
+  statement-to-report status, stage, retained-artifact, evidence-link, and recovery payloads.
 - `AssetOperations/` - shared Security Master-keyed asset operations DTOs, readiness payloads,
   terms/obligations timeline payloads, instrument-role and book-position semantics, economic-state
   and event references, projection lineage, and query/command service contracts.
@@ -236,6 +237,19 @@ multiple accounting bases, ledger books, periods, policies, and dimension scopes
 governed posting candidate for each target without creating posted ledger facts. Approved generated
 candidate posting uses a separate request/result contract so clients cannot confuse preview with
 durable append.
+`AssetAccountingEventSpineDto` provides the canonical Acquisition, Capitalization, Valuation,
+Income, Corporate Action, Impairment, Depreciation/Amortization, and Disposal lifecycle envelope.
+It keeps Expected, Projected, Drafted, Approved, Posted, Reconciled, and Reported distinct and allows
+posted impact only when the response identifies the immutable journal, book, period, accounting
+basis, Posted status, currency, balanced amounts, and journal lines. `RetainedEvidenceIdentityDto`
+is the shared fail-closed evidence shape; a URI or operator rationale without identity, SHA-256,
+source reference, accepted review, effective date, positive version, retention metadata, and subject
+scope does not satisfy canonical asset posting or production-readiness gates.
+Drafted authority retains the full candidate intent/result and canonical fingerprints, including
+all dimensions, rule-pack and policy identity, period/version assertions, evidence, and any lot
+instruction. Typed correction lineage identifies the exact earlier event version and posted journal
+(plus mutation batch for lot-backed events). Acquisition and disposal lot instructions retain exact
+asset account and cost authority; other event kinds cannot carry lot mutations.
 The workspace can also carry a `LedgerBookSetupCandidateDto` when a selected ledger book is missing
 but the server can derive a safe setup target from registered ledger-book scope. Clients should use
 that candidate for ledger-book setup actions instead of guessing fund-structure node context.
@@ -264,8 +278,9 @@ evidence instead of relying on account or run names.
 `AccountingLedgerBookWorkflowReadinessDto` counts posting rules, journal lifecycle,
 close/reporting, close-plan configuration, external GL, reconciliation, direct-lending, and
 strategy-ledger-read controls as complete only when the certification flag is paired with retained
-ledger-book-scoped evidence for that specific workflow lane or an explicit full workflow
-certification packet. Ledger-book evidence must use an explicit `ledger-book:<id>`,
+ledger-book-scoped typed evidence for that specific workflow lane. Legacy string links and full-token
+certification packets remain navigation metadata and cannot establish readiness. The retained
+evidence URI must use an explicit `ledger-book:<id>`,
 `ledger-book/<id>`, `book:<id>`, or `ledgerBookId=<id>` marker, with `ledgerBookId:<id>` and
 `ledgerBookId/<id>` accepted for route-shaped evidence; incidental bare GUID references and generic
 evidence links do not certify every workflow lane by implication.
@@ -274,9 +289,8 @@ persistence, trial-balance dimension filters, period reports, cross-period repor
 dimension filters, report-package provenance, and external-export dimension mappings with retained
 ledger-book-scoped evidence before production readiness treats dimensional reporting as complete.
 Each dimensional control requires evidence for that specific ledger/query/report/export lane and a
-`dimension-scope` or `ledger-dimension-set` marker on the same ledger-book-scoped artifact, unless
-the artifact is an explicit full dimensional or production certification packet with that same
-dimension-scope proof. This keeps one generic ledger-book evidence link, incidental bare GUID
+`dimension-scope` or `ledger-dimension-set` marker on the same complete typed retained artifact.
+This keeps one generic ledger-book evidence link, incidental bare GUID
 reference, or split support artifact from certifying all dimensional reporting controls by
 implication, and keeps ledger-book proof separate from proof that fund, entity, sleeve, strategy,
 investor, capital-account, instrument, tax-lot, cost-center, counterparty, and external-GL
@@ -1356,6 +1370,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

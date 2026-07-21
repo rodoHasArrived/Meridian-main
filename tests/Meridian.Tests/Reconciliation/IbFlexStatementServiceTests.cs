@@ -198,11 +198,17 @@ public sealed class IbFlexStatementServiceTests : IDisposable
         var path = WriteFlexFile(SampleFlexXml);
         var imported = await _service.ImportAsync(MakeRequest(path));
 
-        var outcomes = new StatementMatchingService().MatchRows(imported.Rows);
+        var result = StatementRunMatchingService.Match(
+            imported.Import,
+            imported.Rows,
+            InternalReconciliationBook.Empty,
+            StatementToleranceProfile.Default);
 
-        outcomes.Should().HaveCount(5);
-        // Position row has non-trivial quantity and a symbol → matches.
-        outcomes[2].OutcomeType.Should().Be("matched");
+        result.Outcomes.Should().HaveCount(5);
+        // With no internal book wired, the sided engine reports every row as an honest unmatched
+        // break — nothing is fabricated as a self-match.
+        result.Outcomes.Should().OnlyContain(outcome => outcome.OutcomeType != "matched");
+        result.Breaks.Should().HaveCount(5);
     }
 
     [Theory]

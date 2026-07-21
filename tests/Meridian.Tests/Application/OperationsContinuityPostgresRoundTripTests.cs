@@ -267,7 +267,8 @@ public sealed class OperationsContinuityPostgresRoundTripTests
                     ["fixture"] = "operations-continuity-postgres"
                 }),
             IdempotencyKey: idempotencyKey,
-            SecurityMasterProvenance: provenance);
+            SecurityMasterProvenance: provenance,
+            ExpectedLedgerVersion: 1);
     }
 
     private static IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks() =>

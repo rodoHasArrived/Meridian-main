@@ -74,6 +74,10 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
     {
+        // Unified persistence config must resolve before the reporting/scoped-access
+        // registrations below read the per-domain connection-string variables.
+        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
 
         services.TryAddSingleton<ConfigStore>(sp =>
@@ -156,18 +160,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<UserProfileRegistry>();
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<InitialAccountBootstrapService>();
+        services.TryAddSingleton<DemoTenantProvisioner>();
         services.TryAddSingleton<FirstRunExperienceService>();
         services.TryAddSingleton<DesktopWorkstationLaunchService>();
         services.TryAddSingleton<DesktopLaunchTicketService>();
         if (!isProductionComposition)
         {
             services.TryAddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
+            services.TryAddSingleton<ImmutableAuditLogService>();
         }
         services.TryAddSingleton<FeatureCapabilitySettingsService>();
         services.TryAddSingleton<IngestionOperationsService>();
         services.TryAddSingleton<StorageAssuranceService>();
         services.TryAddSingleton<SensitiveActionPolicyEngine>();
-        services.TryAddSingleton<ImmutableAuditLogService>();
         services.TryAddSingleton<AccessReviewService>();
         services.TryAddSingleton<IFundAccountTraversalQueryService, FundAccountTraversalQueryService>();
         services.TryAddSingleton<FundStructureSetupWorkflowService>();
@@ -205,6 +210,11 @@ public static class WorkstationServiceCollectionExtensions
             ?? throw new InvalidOperationException(
                 "The configured Asset Operations projection store must also implement " +
                 $"{nameof(IInstrumentPositionProjectionStore)}."));
+        services.TryAddSingleton<IAssetAccountingEventProjectionStore>(sp =>
+            sp.GetService<IAssetOperationsProjectionStore>() as IAssetAccountingEventProjectionStore
+            ?? throw new InvalidOperationException(
+                "The configured Asset Operations projection store must also implement " +
+                $"{nameof(IAssetAccountingEventProjectionStore)}."));
         services.TryAddSingleton<IAssetOperationsCommandService, AssetOperationsProjectionCommandService>();
         services.TryAddSingleton<IAssetOperationsQueryService, AssetOperationsReadService>();
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
@@ -293,13 +303,39 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ILiveOrderReadinessGate, TradingOperatorLiveOrderReadinessGate>();
         services.TryAddSingleton<CollateralExposureService>();
         services.TryAddSingleton<RiskRuleRuntimeService>();
-        // Consolidated risk path: the same service that powers the read-only risk dashboard is the
-        // IRiskValidator the OMS invokes before routing an order. Without this registration
-        // sp.GetService<IRiskValidator>() resolved to null at every composition root and the OMS
-        // pre-trade risk block was dead code — the drawdown circuit breaker and order-rate throttle
-        // never gated an order even while the dashboard reported them.
+        // Enforced pre-trade risk path: Meridian.Risk's CompositeRiskValidator is the
+        // IRiskValidator the OMS invokes before routing an order, composed of the operator-tuned
+        // guardrails (thresholds sourced live from RiskRuleRuntimeService and the operator
+        // controls, so the dashboard and the enforcement can never disagree) plus any additional
+        // IRiskRule registrations a host contributes. Rules run in registration order: drawdown
+        // circuit breaker, order-rate throttle, then the position-limit back-stop (position
+        // limits are also enforced upstream by the operator-controls gate with its
+        // manual-override semantics).
         services.TryAddSingleton<Meridian.Execution.IRiskValidator>(sp =>
-            sp.GetRequiredService<RiskRuleRuntimeService>());
+        {
+            var runtime = sp.GetRequiredService<RiskRuleRuntimeService>();
+            var rules = new List<Meridian.Risk.IRiskRule>
+            {
+                new DrawdownGuardrailRule(runtime),
+                new Meridian.Risk.Rules.OrderRateThrottle(
+                    () => runtime.MaxOrdersPerMinute,
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.OrderRateThrottle>>()),
+            };
+
+            if (sp.GetService<Meridian.Execution.Sdk.IPositionTracker>() is { } positionTracker)
+            {
+                var operatorControls = sp.GetService<Meridian.Execution.Services.ExecutionOperatorControlService>();
+                rules.Add(new Meridian.Risk.Rules.PositionLimitRule(
+                    positionTracker,
+                    () => operatorControls?.GetSnapshot().DefaultMaxPositionSize,
+                    sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.Rules.PositionLimitRule>>()));
+            }
+
+            rules.AddRange(sp.GetServices<Meridian.Risk.IRiskRule>());
+            return new Meridian.Risk.CompositeRiskValidator(
+                rules,
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Meridian.Risk.CompositeRiskValidator>>());
+        });
         services.TryAddSingleton<StrategyRunReviewPacketService>();
         services.TryAddSingleton<BacktestToLivePromoter>();
         services.TryAddSingleton<PromotionService>();
@@ -584,10 +620,28 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
+        services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
+            sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder
+            ?? throw new InvalidOperationException(
+                "The configured accounting posting candidate write builder must also implement " +
+                $"{nameof(IAccountingPostingCandidateAuthorityBuilder)}."));
+        services.TryAddSingleton<IAssetAccountingEventSpineService>(sp =>
+            AssetAccountingEventSpineService.TryCreate(
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetService<IInstrumentPositionProjectionStore>(),
+                sp.GetService<ContractSecurityMasterQueryService>(),
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<IAccountingPolicyService>(),
+                sp.GetService<IAccountingConfigurationService>(),
+                sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
+                sp.GetService<ILedgerJournalStore>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
-                sp.GetService<ILedgerJournalStore>()));
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<IAtomicTaxLotJournalStore>(),
+                sp.GetService<IAssetAccountingEventProjectionStore>(),
+                sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
@@ -730,7 +784,9 @@ public static class WorkstationServiceCollectionExtensions
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
             var dataRoot = configStore.GetDataRoot();
-            return new ProviderCredentialStore(dataRoot);
+            return new ProviderCredentialStore(
+                sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(),
+                dataRoot);
         });
         services.TryAddSingleton<IProviderModuleSetupService, ProviderModuleSetupService>();
 

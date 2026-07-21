@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-20
 ---
 
 # src/Meridian.FinancialOperations
@@ -60,7 +60,12 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
-- `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that persists canonical imports, linked breaks, and case materialization for shared UI consumers.
+- `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
+- `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
+- `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
+- `Reconciliation/Connectors/StatementImportService.cs` - preview and authoritative import-commit
+  boundary used by the persisted statement-to-report coordinator; a committed import is checkpointed
+  before Evidence Vault linkage or report publication so recovery cannot silently repeat the import.
 - `Reconciliation/StatementReconciliationService.cs` - broker/custodian statement intake, mapping-profile validation, duplicate detection, normalization, matching, and reconciliation result projection. Position rows match through the shared `StatementMatchingEngine` against internal portfolio positions; rows without internal evidence surface as break cases instead of auto-matching.
 - `Reconciliation/StatementReconciliationOrchestrator.cs` - staged reconciliation orchestration, checkpoint persistence, failure recovery, and case intake coordination.
 - `Reconciliation/StatementRepositories.cs` - statement-run, validation, match, break, and case-link repository contracts and file-backed implementations.
@@ -471,6 +476,13 @@ Security Master remains the canonical source of instrument identity, Instruments
 own economic projections, and this module owns the governed candidate/approval handoff. These
 optional fields add no Financial Operations persistence, direct ledger-entry input, or alternate
 posting route; the approved immutable `JournalEntry` remains the accounting aggregate.
+`AssetAccountingEventSpineService` generalizes that authority boundary across Acquisition,
+Capitalization, Valuation, Income, Corporate Action, Impairment, Depreciation/Amortization, and
+Disposal. It re-reads the immutable Projected spine version, authoritative book position, ledger
+book, period version, accounting policy, and promoted rule pack, rejects any client assertion drift,
+and appends Drafted only after Rules Studio returns a balanced approval-gated candidate. Generic
+`AssetAccounting.*` candidate requests are rejected so callers cannot bypass this server-owned
+authority path.
 For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
 position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
 the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
@@ -487,6 +499,17 @@ matches that ledger book, and a period owned by that book before calling the jou
 for the same `(ledger book aggregate, source event)` return the existing journal, while the same
 economic event may still produce separate GAAP, cash, tax, statutory, or primary postings because
 each basis uses its own ledger-book aggregate.
+Canonical asset acquisition and disposal candidates additionally require the Postgres atomic
+tax-lot journal store. Acquisition creates the new lot in the journal transaction; disposal consumes
+explicit selected lot ids under exact expected-version/open-quantity CAS. Both paths retain the
+mutation fingerprint, evidence, relief policy, before/after snapshots, correction lineage, and
+idempotent replay result. The event spine records Approved and Posted only from the durable journal
+identity and balanced posted amounts returned by that boundary.
+For this spine, a same-source journal is a replay only when its deterministic journal identity,
+complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
+lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
+disposal rechecks selected unit cost and aggregate cost basis against the exact asset-relief journal
+line under the same serializable transaction. A mismatch is a collision and blocks posting.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,
@@ -497,9 +520,10 @@ preparer before the append gate can move a generated candidate into the Meridian
 Production certification profiles also fail closed before persistence when a retained profile marks
 posting rules, journal lifecycle, close/reporting, external GL, reconciliation, direct lending,
 strategy ledger reads, or dimensional reporting controls as certified without evidence that names
-the selected tenant, company, fund, ledger book, and the specific certified control family. A full
-production-certification evidence artifact can certify the full profile, but category-specific
-evidence cannot be reused to bless unrelated controls.
+the selected tenant, company, fund, ledger book, and the specific certified control family. Each
+positive control requires a complete typed retained-evidence identity; boolean flags, service or
+endpoint availability, legacy full-token links, and synthesized profile/report references cannot
+certify the profile.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid
@@ -532,6 +556,7 @@ evidence deletion.
 | `W5X-FINOPS-001` | Financial operations control center |
 | `W5X-CONNECT-001` | Custodian and broker statement connector library |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
+| `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

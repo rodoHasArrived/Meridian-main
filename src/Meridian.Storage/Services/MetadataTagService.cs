@@ -298,11 +298,9 @@ public sealed class MetadataTagService : IMetadataTagService
 
     private void PersistChange(Func<bool> mutate)
     {
-        // Bounded wait so persistence never blocks a thread-pool thread indefinitely.
-        // If the timeout expires, the in-memory state is already updated; the disk write
-        // will be retried on the next mutation.
+        // A metadata mutation is not successful unless the durable snapshot is written.
         if (!_saveLock.Wait(TimeSpan.FromSeconds(10)))
-            return;
+            throw new TimeoutException("Metadata persistence lock timed out before the mutation could be committed.");
 
         try
         {

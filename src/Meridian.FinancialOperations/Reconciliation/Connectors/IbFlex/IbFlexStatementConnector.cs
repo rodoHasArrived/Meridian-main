@@ -18,6 +18,8 @@ public sealed class IbFlexStatementConnector(StatementMappingProfileCatalog cata
     public const string ConnectorId = "ib-flex";
 
     private const string FlexRootElement = "FlexQueryResponse";
+    private const int MaximumStatementBytes = 32 * 1024 * 1024;
+    private const int MaximumStatementRows = 100_000;
 
     public StatementConnectorDescriptor Descriptor { get; } = new(
         ConnectorId,
@@ -52,11 +54,28 @@ public sealed class IbFlexStatementConnector(StatementMappingProfileCatalog cata
             return EmptyResult(profileId, issues);
         }
 
-        var content = Encoding.UTF8.GetString(document.Content.Span);
+        if (document.Content.Length > MaximumStatementBytes)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "STATEMENT_TOO_LARGE",
+                $"The Flex report exceeds the {MaximumStatementBytes}-byte limit."));
+            return EmptyResult(profileId, issues);
+        }
+
         XDocument xml;
         try
         {
-            xml = XDocument.Parse(content);
+            var settings = new XmlReaderSettings
+            {
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null,
+                Async = true,
+                MaxCharactersInDocument = MaximumStatementBytes,
+                MaxCharactersFromEntities = 0
+            };
+            await using var stream = new MemoryStream(document.Content.ToArray(), writable: false);
+            using var reader = XmlReader.Create(stream, settings);
+            xml = await XDocument.LoadAsync(reader, LoadOptions.None, ct).ConfigureAwait(false);
         }
         catch (XmlException ex)
         {
@@ -94,6 +113,11 @@ public sealed class IbFlexStatementConnector(StatementMappingProfileCatalog cata
             foreach (var trade in Section(statement, "Trades", "Trade"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
                 CountSection(sectionCounts, "Trades");
                 CollectAttributeNames(trade, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -116,6 +140,11 @@ public sealed class IbFlexStatementConnector(StatementMappingProfileCatalog cata
             foreach (var cash in Section(statement, "CashTransactions", "CashTransaction"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
                 CountSection(sectionCounts, "CashTransactions");
                 CollectAttributeNames(cash, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>
@@ -134,6 +163,11 @@ public sealed class IbFlexStatementConnector(StatementMappingProfileCatalog cata
             foreach (var position in Section(statement, "OpenPositions", "OpenPosition"))
             {
                 rowNumber++;
+                if (rowNumber > MaximumStatementRows)
+                {
+                    issues.Add(StatementParseIssue.Error("ROW_LIMIT_EXCEEDED", $"The Flex report exceeds the {MaximumStatementRows}-row limit."));
+                    return EmptyResult(profileId, issues);
+                }
                 CountSection(sectionCounts, "OpenPositions");
                 CollectAttributeNames(position, detectedColumns);
                 var values = new Dictionary<StatementCanonicalField, string>

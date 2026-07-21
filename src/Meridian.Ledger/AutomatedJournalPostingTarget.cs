@@ -19,7 +19,11 @@ public sealed record AutomatedJournalPostingContext
         DateTimeOffset occurredAtUtc,
         string reason,
         IReadOnlyList<string> evidenceLinks,
-        Guid? aggregateId = null)
+        Guid ledgerBookId,
+        long expectedPeriodVersion,
+        Guid? aggregateId = null,
+        string accountingPolicyId = "automated-journal",
+        string accountingPolicyVersion = "1")
     {
         if (periodId == Guid.Empty)
         {
@@ -27,11 +31,24 @@ public sealed record AutomatedJournalPostingContext
         }
 
         PeriodId = periodId;
+        if (ledgerBookId == Guid.Empty)
+        {
+            throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
+        }
+        if (expectedPeriodVersion < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(expectedPeriodVersion));
+        }
+
         Actor = NormalizeRequired(actor, nameof(actor));
         OccurredAtUtc = occurredAtUtc;
         Reason = NormalizeRequired(reason, nameof(reason));
         EvidenceLinks = NormalizeEvidence(evidenceLinks);
         AggregateId = aggregateId;
+        LedgerBookId = ledgerBookId;
+        ExpectedPeriodVersion = expectedPeriodVersion;
+        AccountingPolicyId = NormalizeRequired(accountingPolicyId, nameof(accountingPolicyId));
+        AccountingPolicyVersion = NormalizeRequired(accountingPolicyVersion, nameof(accountingPolicyVersion));
     }
 
     public Guid PeriodId { get; init; }
@@ -45,6 +62,14 @@ public sealed record AutomatedJournalPostingContext
     public IReadOnlyList<string> EvidenceLinks { get; init; }
 
     public Guid? AggregateId { get; init; }
+
+    public Guid LedgerBookId { get; init; }
+
+    public long ExpectedPeriodVersion { get; init; }
+
+    public string AccountingPolicyId { get; init; }
+
+    public string AccountingPolicyVersion { get; init; }
 
     private static string NormalizeRequired(string value, string parameterName)
     {

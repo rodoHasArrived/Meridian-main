@@ -6,12 +6,14 @@ import {
   useAccountingCloseReportPackageViewModel,
 } from "@/screens/accounting-screen.close-cockpit.view-model";
 import type { AccountingCloseReportPackageServices } from "@/screens/accounting-screen.view-model";
+import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
 import type {
   AccountingReportPackageBundle,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
   ClosePeriodPlan,
+  ClosePeriodLockResult,
   DailyValuationScheduleWorkItem,
   FinancialOperationsCommandCenter,
   MultiAssetCoverageSummary,
@@ -19,6 +21,24 @@ import type {
   ReconciliationBreakQueueItem,
   ReportExportArtifactManifest,
 } from "@/types";
+
+function closePeriodLockResult(
+  plan: ClosePeriodPlan,
+  isLocked = false
+): ClosePeriodLockResult {
+  return {
+    isLocked,
+    plan,
+    transition: null,
+    issues: [],
+    outcome: buildSuccessfulVerifiedOperationOutcome({
+      operationId: `close-period:${plan.closePlanId}`,
+      operationKind: isLocked
+        ? "accounting.close-period.lock"
+        : "accounting.close-period.prepare-closing-entries"
+    })
+  };
+}
 
 const reconciliationQueue: AccountingWorkspaceResponse["reconciliationQueue"] = [
   {
@@ -849,12 +869,10 @@ describe("accounting-screen close-cockpit view model", () => {
     const reviewLateAdjustment = vi.fn(async () => closePeriodPlan);
     const signOffCloseTask = vi.fn(async () => closePeriodPlan);
     const configureClosePlan = vi.fn(async () => postedClosePeriodPlan);
-    const lockClosePeriod = vi.fn(async () => ({
-      isLocked: true,
-      plan: { ...postedClosePeriodPlan, isPeriodLocked: true },
-      transition: null,
-      issues: []
-    }));
+    const lockClosePeriod = vi.fn(async () => closePeriodLockResult(
+      { ...postedClosePeriodPlan, isPeriodLocked: true },
+      true
+    ));
     const buildPackage = vi.fn(async () => accountingReportPackage);
     const certifyPackage = vi.fn(async () => ({
       ...accountingReportPackage,
@@ -1440,12 +1458,7 @@ describe("accounting-screen close-cockpit view model", () => {
     const getClosePlan = vi.fn()
       .mockResolvedValueOnce(requiredClosePlan)
       .mockResolvedValue(queuedClosePlan);
-    const lockClosePeriod = vi.fn(async () => ({
-      isLocked: false,
-      plan: queuedClosePlan,
-      transition: null,
-      issues: []
-    }));
+    const lockClosePeriod = vi.fn(async () => closePeriodLockResult(queuedClosePlan));
     const services: AccountingCloseReportPackageServices = {
       getClosePlan,
       createLateAdjustment: vi.fn(async () => requiredClosePlan),
@@ -1603,7 +1616,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment: vi.fn(async () => multiTaskClosePlan),
       signOffCloseTask: vi.fn(async () => multiTaskClosePlan),
       configureClosePlan,
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: multiTaskClosePlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(multiTaskClosePlan)),
       buildPackage: vi.fn(async () => accountingReportPackage),
       certifyPackage: vi.fn(async () => accountingReportPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -1778,7 +1791,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
       signOffCloseTask: vi.fn(async () => closePeriodPlan),
       configureClosePlan,
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(closePeriodPlan)),
       buildPackage: vi.fn(async () => accountingReportPackage),
       certifyPackage: vi.fn(async () => accountingReportPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -1813,7 +1826,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
       signOffCloseTask: vi.fn(async () => closePeriodPlan),
       configureClosePlan,
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(closePeriodPlan)),
       buildPackage: vi.fn(async () => accountingReportPackage),
       certifyPackage: vi.fn(async () => accountingReportPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -1860,7 +1873,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
       signOffCloseTask: vi.fn(async () => closePeriodPlan),
       configureClosePlan,
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(closePeriodPlan)),
       buildPackage: vi.fn(async () => accountingReportPackage),
       certifyPackage: vi.fn(async () => accountingReportPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -1964,7 +1977,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
       signOffCloseTask: vi.fn(async () => closePeriodPlan),
       configureClosePlan: vi.fn(async () => closePeriodPlan),
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(closePeriodPlan)),
       buildPackage: vi.fn(async () => serviceOwnedPackage),
       certifyPackage: vi.fn(async () => serviceOwnedPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -2019,7 +2032,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment: vi.fn(async () => closePeriodPlan),
       signOffCloseTask: vi.fn(async () => closePeriodPlan),
       configureClosePlan: vi.fn(async () => closePeriodPlan),
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: closePeriodPlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(closePeriodPlan)),
       buildPackage: vi.fn(async () => accountingReportPackage),
       certifyPackage: vi.fn(async () => accountingReportPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -2119,7 +2132,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment,
       signOffCloseTask,
       configureClosePlan,
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: pendingLateAdjustmentPlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(pendingLateAdjustmentPlan)),
       buildPackage,
       certifyPackage,
       getExportManifest,
@@ -2239,7 +2252,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment,
       signOffCloseTask,
       configureClosePlan,
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: signedClosePlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(signedClosePlan)),
       buildPackage,
       certifyPackage,
       getExportManifest,
@@ -2352,7 +2365,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment: vi.fn(async () => unsignedClosePlan),
       signOffCloseTask,
       configureClosePlan: vi.fn(async () => unsignedClosePlan),
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: unsignedClosePlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(unsignedClosePlan)),
       buildPackage: vi.fn(async () => accountingReportPackage),
       certifyPackage: vi.fn(async () => accountingReportPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),
@@ -2413,7 +2426,7 @@ describe("accounting-screen close-cockpit view model", () => {
       reviewLateAdjustment: vi.fn(async () => unsignedClosePlan),
       signOffCloseTask,
       configureClosePlan: vi.fn(async () => unsignedClosePlan),
-      lockClosePeriod: vi.fn(async () => ({ isLocked: false, plan: unsignedClosePlan, transition: null, issues: [] })),
+      lockClosePeriod: vi.fn(async () => closePeriodLockResult(unsignedClosePlan)),
       buildPackage: vi.fn(async () => accountingReportPackage),
       certifyPackage: vi.fn(async () => accountingReportPackage),
       getExportManifest: vi.fn(async () => accountingReportExportManifest),

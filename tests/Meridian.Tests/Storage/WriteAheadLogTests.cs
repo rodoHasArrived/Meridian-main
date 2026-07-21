@@ -395,6 +395,31 @@ public sealed class WriteAheadLogTests : TempDirectoryAsyncTestBase
         await act.Should().NotThrowAsync();
     }
 
+    [Fact]
+    public async Task BatchedSync_IdleSingleAppend_IsFlushedWithinMaxDelay()
+    {
+        var root = Path.Combine(TestDataRoot, "idle-flush");
+        await using var wal = new WriteAheadLog(root, new WalOptions
+        {
+            SyncMode = WalSyncMode.BatchedSync,
+            SyncBatchSize = 1_000,
+            MaxFlushDelay = TimeSpan.FromMilliseconds(50)
+        });
+        await wal.InitializeAsync();
+
+        await wal.AppendAsync(new { marker = "idle-single-append" }, "TEST");
+        await Task.Delay(TimeSpan.FromMilliseconds(250));
+
+        var walPath = Directory.GetFiles(root, "*.wal").Should().ContainSingle().Subject;
+        await using var stream = new FileStream(
+            walPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        (await reader.ReadToEndAsync()).Should().Contain("idle-single-append");
+    }
+
     private async Task Scenario_WalReplay_GeneratedUncommittedStreamsReplayOnceInSequenceAsync(
         int recordCountSeed,
         int duplicateModuloSeed)

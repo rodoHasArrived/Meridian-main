@@ -1266,6 +1266,25 @@ export interface StrategyRunSummary {
   auditReference: string | null;
 }
 
+export type BiasDisclosureSeverity = "info" | "caution" | "warning";
+
+export interface BiasDisclosureItem {
+  code: string;
+  severity: BiasDisclosureSeverity;
+  title: string;
+  detail: string;
+}
+
+export interface BiasDisclosure {
+  fillTiming: string;
+  fillConservatism: string;
+  delistingPolicy: string;
+  universeSource: string;
+  corporateActionsAdjusted: boolean;
+  maxSeverity: BiasDisclosureSeverity;
+  items: BiasDisclosureItem[];
+}
+
 export interface StrategyRunDetail {
   summary: StrategyRunSummary;
   parameters: Record<string, string>;
@@ -1275,6 +1294,7 @@ export interface StrategyRunDetail {
   promotion?: unknown | null;
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
+  biasDisclosure?: BiasDisclosure | null;
 }
 
 export interface StrategyRunContinuityLink {
