@@ -1,11 +1,11 @@
 {
-  "total_files": 631,
-  "total_lines": 114049,
-  "orphaned_count": 257,
+  "total_files": 632,
+  "total_lines": 114275,
+  "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
-  "todo_count": 208,
-  "average_lines": 180.7,
+  "todo_count": 211,
+  "average_lines": 180.8,
   "health_score": 79,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -223,6 +223,7 @@
     "docs/generated/provider-registry.md",
     "docs/integrations/tastytrade-endpoint-coverage.md",
     "docs/plans/report-writer-auto-preview-blueprint.md",
+    "docs/product/adversarial-program-review-2026-07.md",
     "docs/product/deferred-expansion-boundaries.md",
     "docs/product/web-ui-report-run-stream-blueprint-2026-07.md",
     "docs/reference/governance-report-packs.md",
@@ -2548,7 +2549,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9344,
+      "line_count": 9345,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2831,6 +2832,14 @@
       "line_count": 730,
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/adversarial-program-review-2026-07.md",
+      "line_count": 225,
+      "has_heading": true,
+      "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
