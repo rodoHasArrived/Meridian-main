@@ -20,13 +20,15 @@ public sealed class MiddleOfficeOperationsService
 {
     private readonly object _gate = new();
     private readonly IFundAdministrationEventSink _eventSink;
+    private readonly IFileDistributionTransport _transport;
     private readonly Dictionary<string, TradeBooking> _bookings = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, TrueBreakEscalation> _escalations = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<FileDeliveryRecord> _deliveryLog = [];
 
-    public MiddleOfficeOperationsService(IFundAdministrationEventSink eventSink)
+    public MiddleOfficeOperationsService(IFundAdministrationEventSink eventSink, IFileDistributionTransport? transport = null)
     {
         _eventSink = eventSink ?? throw new ArgumentNullException(nameof(eventSink));
+        _transport = transport ?? new LoopbackFileDistributionTransport();
     }
 
     // ── T+0 booking / T+1 reconciliation ───────────────────────────────────────
@@ -62,11 +64,34 @@ public sealed class MiddleOfficeOperationsService
 
         lock (_gate)
         {
+            if (_bookings.TryGetValue(booking.BookingId, out var existing))
+            {
+                // An exact retry (identical economics) is idempotent; a conflicting reuse of the id is
+                // rejected so the original trade record cannot be silently overwritten and lost from
+                // reconciliation with no amendment trail.
+                if (IsSameEconomics(existing, booking))
+                    return existing;
+
+                throw new InvalidOperationException(
+                    $"Trade booking '{booking.BookingId}' already exists with different details; " +
+                    "use a distinct id or an audited amend/rebook flow.");
+            }
+
             _bookings[booking.BookingId] = booking;
         }
 
         return booking;
     }
+
+    private static bool IsSameEconomics(TradeBooking existing, TradeBooking candidate)
+        => string.Equals(existing.AccountId, candidate.AccountId, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(existing.Symbol, candidate.Symbol, StringComparison.OrdinalIgnoreCase)
+           && existing.Dimension == candidate.Dimension
+           && existing.Quantity == candidate.Quantity
+           && existing.Amount == candidate.Amount
+           && string.Equals(existing.Currency, candidate.Currency, StringComparison.OrdinalIgnoreCase)
+           && existing.TradeDate == candidate.TradeDate
+           && existing.SettlementCycleDays == candidate.SettlementCycleDays;
 
     /// <summary>All bookings, ordered by trade date then booking id.</summary>
     public IReadOnlyList<TradeBooking> Bookings
@@ -289,40 +314,62 @@ public sealed class MiddleOfficeOperationsService
         var subject = string.IsNullOrWhiteSpace(request.SubjectId) ? fileName : request.SubjectId.Trim();
         var records = new List<FileDeliveryRecord>(request.Recipients.Count);
 
-        lock (_gate)
+        foreach (var recipient in request.Recipients)
         {
-            foreach (var recipient in request.Recipients)
+            ArgumentNullException.ThrowIfNull(recipient);
+
+            // Attempt the actual dispatch through the transport (outside the lock, since a real
+            // transport performs I/O) and drive the recorded status from its outcome, so an
+            // unreachable host or invalid mailbox is captured as Failed rather than false success.
+            FileDeliveryOutcome outcome;
+            try
             {
-                ArgumentNullException.ThrowIfNull(recipient);
-                var record = new FileDeliveryRecord(
-                    DeliveryId: $"delivery-{Guid.NewGuid():N}",
-                    DistributionId: distributionId,
-                    FileName: fileName,
-                    ContentSha256: checksum,
-                    ContentLength: request.ContentLength,
-                    Recipient: recipient,
-                    Status: FileDeliveryStatus.Delivered,
-                    DeliveredAtUtc: distributedAt,
-                    DistributedBy: distributedBy);
+                outcome = _transport.Deliver(recipient, request);
+            }
+            catch (Exception ex)
+            {
+                outcome = new FileDeliveryOutcome(false, ex.Message);
+            }
 
+            var record = new FileDeliveryRecord(
+                DeliveryId: $"delivery-{Guid.NewGuid():N}",
+                DistributionId: distributionId,
+                FileName: fileName,
+                ContentSha256: checksum,
+                ContentLength: request.ContentLength,
+                Recipient: recipient,
+                Status: outcome.Delivered ? FileDeliveryStatus.Delivered : FileDeliveryStatus.Failed,
+                DeliveredAtUtc: distributedAt,
+                DistributedBy: distributedBy,
+                FailureReason: outcome.Delivered ? null : outcome.FailureReason);
+
+            records.Add(record);
+
+            lock (_gate)
+            {
                 _deliveryLog.Add(record);
-                records.Add(record);
 
-                _eventSink.Append(
-                    FundAdministrationEventKind.FileDelivered,
-                    distributedBy,
-                    subject,
-                    $"Delivered '{fileName}' to {recipient.Kind} '{recipient.Name}' via {recipient.Channel}.",
-                    new Dictionary<string, string>
-                    {
-                        ["distributionId"] = distributionId,
-                        ["deliveryId"] = record.DeliveryId,
-                        ["recipientKind"] = recipient.Kind.ToString(),
-                        ["recipientName"] = recipient.Name,
-                        ["channel"] = recipient.Channel,
-                        ["contentSha256"] = checksum,
-                    },
-                    occurredAtUtc: distributedAt);
+                // Only a genuinely-delivered file produces a FileDelivered governance event; failed
+                // attempts remain in the archived delivery log but are never recorded as delivery
+                // evidence.
+                if (outcome.Delivered)
+                {
+                    _eventSink.Append(
+                        FundAdministrationEventKind.FileDelivered,
+                        distributedBy,
+                        subject,
+                        $"Delivered '{fileName}' to {recipient.Kind} '{recipient.Name}' via {recipient.Channel}.",
+                        new Dictionary<string, string>
+                        {
+                            ["distributionId"] = distributionId,
+                            ["deliveryId"] = record.DeliveryId,
+                            ["recipientKind"] = recipient.Kind.ToString(),
+                            ["recipientName"] = recipient.Name,
+                            ["channel"] = recipient.Channel,
+                            ["contentSha256"] = checksum,
+                        },
+                        occurredAtUtc: distributedAt);
+                }
             }
         }
 

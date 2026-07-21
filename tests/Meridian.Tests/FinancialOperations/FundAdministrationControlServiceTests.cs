@@ -53,7 +53,7 @@ public sealed class FundAdministrationControlServiceTests
     }
 
     [Fact]
-    public void MaterializeDueRecurringJournals_SkipsLockedOccurrencesAndLogsRuns()
+    public void DueRecurringJournals_SkipsLockedOccurrences_AndRecordsRunsOnPost()
     {
         var service = new FundAdministrationControlService();
         service.RegisterJournalTemplate(FeeTemplate(), "controller");
@@ -78,10 +78,15 @@ public sealed class FundAdministrationControlServiceTests
             "controller",
             "February lock");
 
-        var postable = service.MaterializeDueRecurringJournals("sched-1", new DateOnly(2026, 3, 31), "controller");
+        var due = service.DueRecurringJournals("sched-1", new DateOnly(2026, 3, 31));
 
-        postable.Should().HaveCount(2, "the February occurrence is blocked by the lock");
-        postable.Should().OnlyContain(occurrence => !occurrence.BlockedByLock);
+        due.Should().HaveCount(2, "the February occurrence is blocked by the lock");
+        due.Should().OnlyContain(occurrence => !occurrence.BlockedByLock);
+
+        // Querying is read-only; the run event is recorded only when a post is confirmed.
+        service.EventLog.EventsOfKind(FundAdministrationEventKind.RecurringJournalRun).Should().BeEmpty();
+        foreach (var occurrence in due)
+            service.RecordRecurringJournalPosted("sched-1", occurrence.EffectiveDate, "controller");
         service.EventLog.EventsOfKind(FundAdministrationEventKind.RecurringJournalRun).Should().HaveCount(2);
         service.EventLog.VerifyIntegrity().Should().BeTrue();
     }
@@ -98,7 +103,7 @@ public sealed class FundAdministrationControlServiceTests
     }
 
     [Fact]
-    public void RunYearEndClose_RecordsProjectionAndReadiness()
+    public void ProjectYearEndClose_PreviewsWithoutRecording_ThenRecordsOnClose()
     {
         var service = new FundAdministrationControlService();
         var input = new YearEndCloseInput(
@@ -113,10 +118,14 @@ public sealed class FundAdministrationControlServiceTests
             requiredPeriodIds: ["Q1", "Q2"],
             closedPeriodIds: ["Q1", "Q2"]);
 
-        var projection = service.RunYearEndClose(input, "controller");
+        var projection = service.ProjectYearEndClose(input);
 
         projection.IsReady.Should().BeTrue();
         projection.NetIncome.Should().Be(600m);
+        // The projection is a preview only — nothing is recorded until the close actually posts.
+        service.EventLog.EventsOfKind(FundAdministrationEventKind.YearEndClosed).Should().BeEmpty();
+
+        service.RecordYearEndClosed("FY2026", projection.NetIncome, input.FiscalYearEndUtc, "controller");
         service.EventLog.EventsOfKind(FundAdministrationEventKind.YearEndClosed).Should().ContainSingle();
     }
 
@@ -187,7 +196,7 @@ public sealed class FundAdministrationControlServiceTests
     }
 
     [Fact]
-    public void RunYearEndClose_NotReady_DoesNotRecordClosedEvent()
+    public void ProjectYearEndClose_NotReady_RecordsNothing()
     {
         var service = new FundAdministrationControlService();
         var input = new YearEndCloseInput(
@@ -198,15 +207,15 @@ public sealed class FundAdministrationControlServiceTests
             requiredPeriodIds: ["Q1", "Q2"],
             closedPeriodIds: ["Q1"]);
 
-        var projection = service.RunYearEndClose(input, "controller");
+        var projection = service.ProjectYearEndClose(input);
 
         projection.IsReady.Should().BeFalse();
         service.EventLog.EventsOfKind(FundAdministrationEventKind.YearEndClosed)
-            .Should().BeEmpty("an unclosed fiscal year must not be recorded as closed");
+            .Should().BeEmpty("a projection records nothing, and an unclosed fiscal year is never recorded as closed");
     }
 
     [Fact]
-    public void MaterializeDueRecurringJournals_SecondCall_ReturnsNoDuplicates()
+    public void DueRecurringJournals_AreRetrySafeUntilPosted_ThenExcludedOnce()
     {
         var service = new FundAdministrationControlService();
         service.RegisterJournalTemplate(FeeTemplate(), "controller");
@@ -222,12 +231,19 @@ public sealed class FundAdministrationControlServiceTests
                 parameters: new Dictionary<string, decimal> { ["fee"] = 1_000m }),
             "controller");
 
-        var first = service.MaterializeDueRecurringJournals("sched-1", new DateOnly(2026, 3, 31), "controller");
-        var second = service.MaterializeDueRecurringJournals("sched-1", new DateOnly(2026, 3, 31), "controller");
+        var due = service.DueRecurringJournals("sched-1", new DateOnly(2026, 3, 31));
+        due.Should().HaveCount(3);
 
-        first.Should().HaveCount(3);
-        second.Should().BeEmpty("already-materialized occurrences must not be re-emitted");
+        // A failed/absent post leaves occurrences due, so a retry sees the same set (no silent drop).
+        service.DueRecurringJournals("sched-1", new DateOnly(2026, 3, 31)).Should().HaveCount(3);
+
+        // Confirming each post records exactly one run event and removes it; re-confirm is a no-op.
+        foreach (var occurrence in due)
+            service.RecordRecurringJournalPosted("sched-1", occurrence.EffectiveDate, "controller");
+        service.RecordRecurringJournalPosted("sched-1", due[0].EffectiveDate, "controller").Should().BeNull();
+
+        service.DueRecurringJournals("sched-1", new DateOnly(2026, 3, 31)).Should().BeEmpty("posted occurrences are no longer due");
         service.EventLog.EventsOfKind(FundAdministrationEventKind.RecurringJournalRun)
-            .Should().HaveCount(3, "no duplicate run events are recorded on re-invocation");
+            .Should().HaveCount(3, "each occurrence records exactly one run event, and never double-posts");
     }
 }

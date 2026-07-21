@@ -307,3 +307,27 @@ public sealed record FileDeliveryRecord(
     DateTimeOffset DeliveredAtUtc,
     string DistributedBy,
     string? FailureReason = null);
+
+/// <summary>The outcome of a single transport dispatch attempt.</summary>
+public sealed record FileDeliveryOutcome(bool Delivered, string? FailureReason = null);
+
+/// <summary>
+/// Transport seam that actually dispatches a distributed file to one recipient. The middle-office
+/// service records <c>Delivered</c> only when the transport reports success, so a real
+/// (SFTP/email/portal) transport injected in production yields honest delivery evidence.
+/// </summary>
+public interface IFileDistributionTransport
+{
+    FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request);
+}
+
+/// <summary>
+/// Default in-process transport that assumes success without performing real I/O. Suitable for tests
+/// and local development; production hosts inject a transport that dispatches over the recipient's
+/// channel and reports genuine success or failure.
+/// </summary>
+public sealed class LoopbackFileDistributionTransport : IFileDistributionTransport
+{
+    public FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request)
+        => new(Delivered: true);
+}

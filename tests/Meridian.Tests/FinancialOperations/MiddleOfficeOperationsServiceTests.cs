@@ -203,4 +203,52 @@ public sealed class MiddleOfficeOperationsServiceTests
         var evt = log.EventsOfKind(FundAdministrationEventKind.ReconciliationBreakEscalated).Should().ContainSingle().Which;
         evt.Attributes["breakId"].Should().Be("brk-1");
     }
+
+    [Fact]
+    public void Distribute_FailedTransport_RecordsFailedWithoutDeliveredEvent()
+    {
+        var log = new FundAdministrationEventLog();
+        var service = new MiddleOfficeOperationsService(log, new FailingTransport());
+
+        var records = service.Distribute(new FileDistributionRequest(
+            "nav-pack.zip",
+            "application/zip",
+            ContentSha256: "abc123",
+            ContentLength: 2048,
+            Recipients: [new DistributionRecipient(DistributionRecipientKind.Custodian, "BigBank Custody", "SFTP", "sftp://bigbank")],
+            DistributedBy: "fund-ops",
+            DistributedAtUtc: At));
+
+        records.Should().ContainSingle();
+        records[0].Status.Should().Be(FileDeliveryStatus.Failed);
+        records[0].FailureReason.Should().Be("unreachable host");
+        service.DeliveryLog.Should().ContainSingle("failed attempts are still archived in the delivery log");
+        log.EventsOfKind(FundAdministrationEventKind.FileDelivered)
+            .Should().BeEmpty("a failed delivery must not be recorded as delivery evidence");
+    }
+
+    [Fact]
+    public void BookTrade_ConflictingId_Throws_ButExactRetryIsIdempotent()
+    {
+        var service = NewService(out _);
+        var request = new TradeBookingRequest(
+            "ACC-1", "AAPL", ReconciliationDimension.Trade, 100m, 19_000m, "USD",
+            new DateOnly(2026, 6, 30), SettlementCycleDays: 1, BookedBy: "ops", BookingId: "bk-1");
+
+        var first = service.BookTrade(request);
+        var retry = service.BookTrade(request);
+
+        retry.BookingId.Should().Be(first.BookingId);
+        service.Bookings.Should().ContainSingle("an exact retry is idempotent");
+
+        // Re-using the id with different economics must be rejected rather than silently overwriting.
+        var act = () => service.BookTrade(request with { Amount = 25_000m });
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    private sealed class FailingTransport : IFileDistributionTransport
+    {
+        public FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request)
+            => new(Delivered: false, FailureReason: "unreachable host");
+    }
 }

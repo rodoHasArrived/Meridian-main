@@ -23,7 +23,7 @@ public sealed class FundAdministrationControlService
     private readonly LockedAccountingPeriodBook _periods = new();
     private readonly Dictionary<string, RecurringJournalSchedule> _recurringSchedules = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, OnboardingTemplate> _onboardingTemplates = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HashSet<string> _materializedOccurrences = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _postedOccurrences = new(StringComparer.OrdinalIgnoreCase);
 
     public FundAdministrationControlService(FundAdministrationEventLog? eventLog = null)
     {
@@ -113,22 +113,15 @@ public sealed class FundAdministrationControlService
     }
 
     /// <summary>
-    /// Materializes the recurring journal occurrences due through <paramref name="throughDate"/> that
-    /// are not blocked by a locked period, recording a run event for each. The returned occurrences are
-    /// ready to post; the caller posts them against its ledger.
+    /// Returns the recurring journal occurrences due through <paramref name="throughDate"/> that are
+    /// not blocked by a locked period and have not yet been confirmed posted. Read-only and idempotent:
+    /// it neither consumes occurrences nor records events, so a post that fails or is interrupted can
+    /// simply be retried — the occurrence only leaves this list once
+    /// <see cref="RecordRecurringJournalPosted"/> confirms it reached the ledger.
     /// </summary>
-    /// <remarks>
-    /// Idempotent per schedule occurrence: each occurrence (identified by its effective date) is
-    /// materialized at most once for the lifetime of this service, so re-invoking for an overlapping
-    /// horizon returns only newly-due occurrences and never re-emits a run event — preventing
-    /// double-posting of recurring fees and accruals. Occurrences currently blocked by a locked period
-    /// are not recorded, so they can still materialize once the period is reopened.
-    /// </remarks>
-    public IReadOnlyList<RecurringJournalOccurrence> MaterializeDueRecurringJournals(string scheduleId, DateOnly throughDate, string actor)
+    public IReadOnlyList<RecurringJournalOccurrence> DueRecurringJournals(string scheduleId, DateOnly throughDate)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
-        RequireActor(actor);
-
         lock (_gate)
         {
             var schedule = ResolveScheduleLocked(scheduleId);
@@ -137,34 +130,47 @@ public sealed class FundAdministrationControlService
                 RecurringJournalPlanner.PlanThrough(schedule, template, throughDate),
                 _periods);
 
-            var fresh = new List<RecurringJournalOccurrence>();
-            foreach (var occurrence in occurrences)
-            {
-                if (occurrence.BlockedByLock)
-                    continue;
-
-                var occurrenceKey = $"{schedule.ScheduleId}|{occurrence.EffectiveDate:yyyy-MM-dd}";
-                if (!_materializedOccurrences.Add(occurrenceKey))
-                    continue;
-
-                fresh.Add(occurrence);
-                _eventLog.Append(
-                    FundAdministrationEventKind.RecurringJournalRun,
-                    actor,
-                    schedule.ScheduleId,
-                    $"Materialized recurring journal for {occurrence.EffectiveDate:yyyy-MM-dd} (debits {occurrence.Journal.TotalDebits}).",
-                    new Dictionary<string, string>
-                    {
-                        ["templateId"] = schedule.TemplateId,
-                        ["effectiveDate"] = occurrence.EffectiveDate.ToString("yyyy-MM-dd"),
-                        ["ledgerBook"] = schedule.LedgerKey.LedgerBook,
-                    },
-                    occurredAtUtc: occurrence.EffectiveAtUtc);
-            }
-
-            return fresh;
+            return occurrences
+                .Where(occurrence => !occurrence.BlockedByLock
+                                     && !_postedOccurrences.Contains(OccurrenceKey(schedule.ScheduleId, occurrence.EffectiveDate)))
+                .ToArray();
         }
     }
+
+    /// <summary>
+    /// Records that a recurring journal occurrence has actually posted to the ledger, appending the run
+    /// event and removing the occurrence from <see cref="DueRecurringJournals"/>. Recording the same
+    /// occurrence again is a no-op (returns <see langword="null"/>), so at-least-once posting collapses
+    /// to a single governance record and a fee cannot be double-posted.
+    /// </summary>
+    public FundAdministrationEvent? RecordRecurringJournalPosted(string scheduleId, DateOnly effectiveDate, string actor)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
+        RequireActor(actor);
+
+        lock (_gate)
+        {
+            var schedule = ResolveScheduleLocked(scheduleId);
+            if (!_postedOccurrences.Add(OccurrenceKey(schedule.ScheduleId, effectiveDate)))
+                return null;
+
+            return _eventLog.Append(
+                FundAdministrationEventKind.RecurringJournalRun,
+                actor,
+                schedule.ScheduleId,
+                $"Posted recurring journal for {effectiveDate:yyyy-MM-dd}.",
+                new Dictionary<string, string>
+                {
+                    ["templateId"] = schedule.TemplateId,
+                    ["effectiveDate"] = effectiveDate.ToString("yyyy-MM-dd"),
+                    ["ledgerBook"] = schedule.LedgerKey.LedgerBook,
+                },
+                occurredAtUtc: new DateTimeOffset(effectiveDate.ToDateTime(schedule.PostingTime), TimeSpan.Zero));
+        }
+    }
+
+    private static string OccurrenceKey(string scheduleId, DateOnly effectiveDate)
+        => $"{scheduleId}|{effectiveDate:yyyy-MM-dd}";
 
     // ── Locked periods & evidence-bearing reopen ───────────────────────────────
 
@@ -236,36 +242,49 @@ public sealed class FundAdministrationControlService
     // ── Year-end close ─────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Projects a fiscal-year-end close. A <see cref="FundAdministrationEventKind.YearEndClosed"/>
-    /// event is recorded only when the close is ready (every required constituent period is closed), so
-    /// the immutable event trail never marks an unclosed fiscal year as closed. A not-ready projection
-    /// is still returned so the caller can preview the pending close.
+    /// Projects fiscal-year-end closing entries and the retained-earnings roll-forward. This is a
+    /// preview only and records nothing: it has no ledger or posting target, so it cannot commit the
+    /// close. Post the projection's closing journals through the ledger, then call
+    /// <see cref="RecordYearEndClosed"/> to record the completed close in the governance log.
     /// </summary>
-    public YearEndCloseProjection RunYearEndClose(YearEndCloseInput input, string actor)
+    public YearEndCloseProjection ProjectYearEndClose(YearEndCloseInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
+        return YearEndCloseProjector.Project(input);
+    }
+
+    /// <summary>
+    /// Records that a fiscal year's closing journals have actually posted, appending a
+    /// <see cref="FundAdministrationEventKind.YearEndClosed"/> event. Call this only after the governed
+    /// closing entries have committed to the ledger, so the immutable trail never marks an unposted year
+    /// as closed.
+    /// </summary>
+    public FundAdministrationEvent RecordYearEndClosed(
+        string fiscalYearLabel,
+        decimal netIncome,
+        DateTimeOffset occurredAtUtc,
+        string actor,
+        IReadOnlyList<JournalEvidenceReference>? evidence = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fiscalYearLabel);
         RequireActor(actor);
 
-        var projection = YearEndCloseProjector.Project(input);
-        if (projection.IsReady)
+        var label = fiscalYearLabel.Trim();
+        lock (_gate)
         {
-            lock (_gate)
-            {
-                _eventLog.Append(
-                    FundAdministrationEventKind.YearEndClosed,
-                    actor,
-                    input.FiscalYearLabel,
-                    $"Year-end close completed for {input.FiscalYearLabel} (net income {projection.NetIncome}).",
-                    new Dictionary<string, string>
-                    {
-                        ["fiscalYear"] = input.FiscalYearLabel,
-                        ["netIncome"] = projection.NetIncome.ToString(),
-                    },
-                    occurredAtUtc: input.FiscalYearEndUtc);
-            }
+            return _eventLog.Append(
+                FundAdministrationEventKind.YearEndClosed,
+                actor,
+                label,
+                $"Year-end close recorded for {label} (net income {netIncome}).",
+                new Dictionary<string, string>
+                {
+                    ["fiscalYear"] = label,
+                    ["netIncome"] = netIncome.ToString(),
+                },
+                evidence: evidence,
+                occurredAtUtc: occurredAtUtc);
         }
-
-        return projection;
     }
 
     // ── Portfolio-specific pricing rules ───────────────────────────────────────
