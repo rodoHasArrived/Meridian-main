@@ -95,6 +95,27 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Bai2_TruncatedFileMissingTrailers_IsRejected()
+    {
+        // A file with valid 03/16 records but no 49/98/99 trailers is truncated. Accepting it would
+        // reconcile a partial bank statement as if it were complete, so it must be rejected.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260531,,USD,2/
+            03,0975312468,USD,015,1234567,,/
+            16,115,250000,,BANKREF01,CUSTREF01,Incoming wire/
+            """;
+        var document = new StatementSourceDocument("truncated.bai", Encoding.UTF8.GetBytes(bai2));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a truncated BAI2 file must not commit as a reconciled statement");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_MISSING_FILE_TRAILER");
+    }
+
+    [Fact]
     public void CanHandle_CsvText_ReturnsFalse()
     {
         var document = new StatementSourceDocument(

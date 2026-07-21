@@ -46,6 +46,16 @@ public sealed class Bai2StatementConnector : IStatementConnector
         var accountCurrency = groupCurrency;
         var rowNumber = 0;
 
+        // Trailer bookkeeping. A truncated file drops its 49/98/99 trailers, so every opener must be
+        // matched by its trailer and the file trailer's declared group count must agree; otherwise the
+        // file is incomplete and must not be accepted as a reconciled statement.
+        var groupCount = 0;
+        var accountCount = 0;
+        var groupTrailerCount = 0;
+        var accountTrailerCount = 0;
+        var fileTrailerCount = 0;
+        int? declaredFileGroupCount = null;
+
         foreach (var rawLine in content.Split('\n'))
         {
             ct.ThrowIfCancellationRequested();
@@ -59,12 +69,14 @@ public sealed class Bai2StatementConnector : IStatementConnector
             switch (fields[0])
             {
                 case "02":
+                    groupCount++;
                     asOfDate = ParseBaiDate(FieldAt(fields, 4)) ?? asOfDate;
                     groupCurrency = NormalizeCurrency(FieldAt(fields, 6), groupCurrency);
                     accountCurrency = groupCurrency;
                     break;
 
                 case "03":
+                    accountCount++;
                     account = string.IsNullOrWhiteSpace(FieldAt(fields, 1)) ? "unknown-account" : FieldAt(fields, 1)!.Trim();
                     accountCurrency = NormalizeCurrency(FieldAt(fields, 2), groupCurrency);
                     if (TryResolveClosingBalance(fields, out var balanceMinorUnits) && asOfDate is { } balanceDate)
@@ -117,6 +129,24 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         FeesCommission: null,
                         ExternalTransactionId: ResolveReference(fields)));
                     break;
+
+                case "49":
+                    accountTrailerCount++;
+                    break;
+
+                case "98":
+                    groupTrailerCount++;
+                    break;
+
+                case "99":
+                    fileTrailerCount++;
+                    // 99,<file control total>,<number of groups>,<number of records>
+                    if (int.TryParse(FieldAt(fields, 2), NumberStyles.Integer, CultureInfo.InvariantCulture, out var fileGroups))
+                    {
+                        declaredFileGroupCount = fileGroups;
+                    }
+
+                    break;
             }
         }
 
@@ -140,6 +170,52 @@ public sealed class Bai2StatementConnector : IStatementConnector
             issues.Add(StatementParseIssue.Error(
                 "BAI2_MULTIPLE_ACCOUNTS",
                 $"The BAI2 file contains records for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the file into one document per account before importing."));
+            return Task.FromResult(new StatementParseResult(
+                ConnectorId,
+                ProfileId: null,
+                detectedColumns,
+                ColumnMappings: [],
+                [],
+                issues,
+                fingerprint));
+        }
+
+        // Validate the file's trailer structure so a truncated or corrupt file (valid 03/16 records but
+        // missing or mismatched 49/98/99 trailers) is rejected rather than reconciled as a complete
+        // statement. Structural counts are used, not the trailer control totals whose composition varies
+        // by bank and would risk false rejections of otherwise valid files.
+        var trailerErrors = new List<StatementParseIssue>();
+        if (fileTrailerCount == 0)
+        {
+            trailerErrors.Add(StatementParseIssue.Error(
+                "BAI2_MISSING_FILE_TRAILER",
+                "The BAI2 file has no 99 file trailer; it may be truncated or incomplete."));
+        }
+
+        if (accountTrailerCount != accountCount)
+        {
+            trailerErrors.Add(StatementParseIssue.Error(
+                "BAI2_ACCOUNT_TRAILER_MISMATCH",
+                $"The BAI2 file has {accountCount} account identifier(s) (03) but {accountTrailerCount} account trailer(s) (49); it may be truncated or corrupt."));
+        }
+
+        if (groupTrailerCount != groupCount)
+        {
+            trailerErrors.Add(StatementParseIssue.Error(
+                "BAI2_GROUP_TRAILER_MISMATCH",
+                $"The BAI2 file has {groupCount} group header(s) (02) but {groupTrailerCount} group trailer(s) (98); it may be truncated or corrupt."));
+        }
+
+        if (declaredFileGroupCount is { } declaredGroups && declaredGroups != groupCount)
+        {
+            trailerErrors.Add(StatementParseIssue.Error(
+                "BAI2_FILE_TRAILER_GROUP_COUNT",
+                $"The BAI2 file trailer declares {declaredGroups} group(s) but {groupCount} were found; the file may be truncated or corrupt."));
+        }
+
+        if (trailerErrors.Count > 0)
+        {
+            issues.AddRange(trailerErrors);
             return Task.FromResult(new StatementParseResult(
                 ConnectorId,
                 ProfileId: null,
