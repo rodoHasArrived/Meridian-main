@@ -161,4 +161,25 @@ public sealed class MiddleOfficeOperationsServiceTests
         timer.StateAt(At.AddHours(5)).Should().Be(WorkflowSlaState.Breached);
         timer.Stop(At.AddHours(1)).StateAt(At.AddHours(5)).Should().Be(WorkflowSlaState.Stopped);
     }
+
+    [Fact]
+    public void BookTrade_FridayTradeWithT1_SettlesAndReconcilesNextBusinessDay()
+    {
+        var service = NewService(out _);
+
+        // 2026-07-03 is a Friday; T+1 in business days settles the following Monday, not Saturday.
+        var booking = service.BookTrade(new TradeBookingRequest(
+            "ACC-1",
+            "AAPL",
+            ReconciliationDimension.Trade,
+            Quantity: 100m,
+            Amount: 19_000m,
+            Currency: "USD",
+            TradeDate: new DateOnly(2026, 7, 3),
+            SettlementCycleDays: 1,
+            BookedBy: "ops"));
+
+        booking.SettlementDate.Should().Be(new DateOnly(2026, 7, 6), "Friday + 1 business day is Monday");
+        booking.ReconciliationDueDate.Should().Be(new DateOnly(2026, 7, 6));
+    }
 }

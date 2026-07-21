@@ -185,4 +185,49 @@ public sealed class FundAdministrationControlServiceTests
         var posted = service.EventLog.EventsOfKind(FundAdministrationEventKind.JournalPosted).Should().ContainSingle().Which;
         posted.Attributes["amount"].Should().Be("250");
     }
+
+    [Fact]
+    public void RunYearEndClose_NotReady_DoesNotRecordClosedEvent()
+    {
+        var service = new FundAdministrationControlService();
+        var input = new YearEndCloseInput(
+            "FY2026",
+            new DateTimeOffset(2026, 12, 31, 23, 59, 59, TimeSpan.Zero),
+            new Dictionary<LedgerAccount, decimal> { [LedgerAccounts.RealizedGain] = 1_000m },
+            "controller",
+            requiredPeriodIds: ["Q1", "Q2"],
+            closedPeriodIds: ["Q1"]);
+
+        var projection = service.RunYearEndClose(input, "controller");
+
+        projection.IsReady.Should().BeFalse();
+        service.EventLog.EventsOfKind(FundAdministrationEventKind.YearEndClosed)
+            .Should().BeEmpty("an unclosed fiscal year must not be recorded as closed");
+    }
+
+    [Fact]
+    public void MaterializeDueRecurringJournals_SecondCall_ReturnsNoDuplicates()
+    {
+        var service = new FundAdministrationControlService();
+        service.RegisterJournalTemplate(FeeTemplate(), "controller");
+        service.ScheduleRecurringJournal(
+            new RecurringJournalSchedule(
+                "sched-1",
+                "fee",
+                Book,
+                RecurringJournalCadence.Monthly,
+                new DateOnly(2026, 1, 15),
+                "controller",
+                At,
+                parameters: new Dictionary<string, decimal> { ["fee"] = 1_000m }),
+            "controller");
+
+        var first = service.MaterializeDueRecurringJournals("sched-1", new DateOnly(2026, 3, 31), "controller");
+        var second = service.MaterializeDueRecurringJournals("sched-1", new DateOnly(2026, 3, 31), "controller");
+
+        first.Should().HaveCount(3);
+        second.Should().BeEmpty("already-materialized occurrences must not be re-emitted");
+        service.EventLog.EventsOfKind(FundAdministrationEventKind.RecurringJournalRun)
+            .Should().HaveCount(3, "no duplicate run events are recorded on re-invocation");
+    }
 }

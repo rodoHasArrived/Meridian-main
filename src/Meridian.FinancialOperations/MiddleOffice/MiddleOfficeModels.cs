@@ -156,8 +156,41 @@ public sealed record TradeBooking(
     DateTimeOffset BookedAtUtc,
     string BookedBy)
 {
-    /// <summary>The T+1 date on which this booking's trade/cash/position reconciliation is due.</summary>
-    public DateOnly ReconciliationDueDate => TradeDate.AddDays(1);
+    /// <summary>
+    /// The T+1 date on which this booking's trade/cash/position reconciliation is due, counted in
+    /// business days (a Friday trade reconciles the following Monday).
+    /// </summary>
+    public DateOnly ReconciliationDueDate => MiddleOfficeBusinessDays.Add(TradeDate, 1);
+}
+
+/// <summary>
+/// Weekend-aware business-day arithmetic for booking dates. Trade settlement and T+1 reconciliation
+/// are conventionally counted in business days, so a Friday T+1 trade settles the following Monday
+/// rather than Saturday.
+/// </summary>
+/// <remarks>
+/// This skips Saturdays and Sundays but does not yet apply a market holiday calendar. Holiday-aware
+/// settlement should consume the platform trading/holiday calendar (the security-master
+/// <c>SettlementCycleDays</c> contract) as a follow-up.
+/// </remarks>
+internal static class MiddleOfficeBusinessDays
+{
+    public static DateOnly Add(DateOnly start, int businessDays)
+    {
+        if (businessDays <= 0)
+            return start;
+
+        var date = start;
+        var added = 0;
+        while (added < businessDays)
+        {
+            date = date.AddDays(1);
+            if (date.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday))
+                added++;
+        }
+
+        return date;
+    }
 }
 
 /// <summary>Request to raise a true-break escalation.</summary>

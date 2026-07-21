@@ -55,7 +55,7 @@ public sealed class MiddleOfficeOperationsService
             Amount: request.Amount,
             Currency: request.Currency.Trim().ToUpperInvariant(),
             TradeDate: request.TradeDate,
-            SettlementDate: request.TradeDate.AddDays(request.SettlementCycleDays),
+            SettlementDate: MiddleOfficeBusinessDays.Add(request.TradeDate, request.SettlementCycleDays),
             SettlementCycleDays: request.SettlementCycleDays,
             BookedAtUtc: (request.BookedAtUtc ?? DateTimeOffset.UtcNow).ToUniversalTime(),
             BookedBy: request.BookedBy.Trim());

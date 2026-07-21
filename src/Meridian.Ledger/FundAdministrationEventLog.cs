@@ -196,7 +196,18 @@ public sealed class FundAdministrationEventLog : IFundAdministrationEventSink
         builder.Append(sep);
         foreach (var reference in evt.Evidence)
         {
-            builder.Append(reference.EvidenceId).Append('|').Append(reference.ContentHash ?? string.Empty).Append(sep);
+            // Fold every evidence field into the chain so any post-append alteration of the supporting
+            // record (URI, kind, source system, retention actor/time, subject, description) is
+            // detectable — not just its id and content hash.
+            builder.Append(reference.EvidenceId).Append('|')
+                .Append(reference.Uri).Append('|')
+                .Append(reference.Kind).Append('|')
+                .Append(reference.SourceSystem).Append('|')
+                .Append(reference.RetainedAtUtc.ToUniversalTime().ToString("O")).Append('|')
+                .Append(reference.RetainedBy).Append('|')
+                .Append(reference.SubjectId ?? string.Empty).Append('|')
+                .Append(reference.ContentHash ?? string.Empty).Append('|')
+                .Append(reference.Description ?? string.Empty).Append(sep);
         }
 
         builder.Append(sep);

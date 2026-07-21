@@ -95,4 +95,20 @@ public sealed class FundAdministrationEventLogTests
         evt.Evidence[0].EvidenceId.Should().Be("ev-1");
         log.VerifyIntegrity().Should().BeTrue();
     }
+
+    [Fact]
+    public void Append_EvidenceFieldChange_ChangesHash()
+    {
+        // Altering any evidence field (here the URI) — not just its id or content hash — must change
+        // the chained hash, so tampering with the supporting record for a governed action is detectable.
+        var left = new FundAdministrationEventLog();
+        var right = new FundAdministrationEventLog();
+        var evidence = new JournalEvidenceReference("ev-1", "vault://approval/1", "Approval", "Governance", At, "approver");
+        var tampered = evidence with { Uri = "vault://approval/forged" };
+
+        var original = left.Append(FundAdministrationEventKind.PeriodReopened, "approver", "FUND:2026-Q2", "Reopened", evidence: [evidence], occurredAtUtc: At);
+        var altered = right.Append(FundAdministrationEventKind.PeriodReopened, "approver", "FUND:2026-Q2", "Reopened", evidence: [tampered], occurredAtUtc: At);
+
+        altered.Hash.Should().NotBe(original.Hash);
+    }
 }

@@ -23,6 +23,7 @@ public sealed class FundAdministrationControlService
     private readonly LockedAccountingPeriodBook _periods = new();
     private readonly Dictionary<string, RecurringJournalSchedule> _recurringSchedules = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, OnboardingTemplate> _onboardingTemplates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _materializedOccurrences = new(StringComparer.OrdinalIgnoreCase);
 
     public FundAdministrationControlService(FundAdministrationEventLog? eventLog = null)
     {
@@ -116,6 +117,13 @@ public sealed class FundAdministrationControlService
     /// are not blocked by a locked period, recording a run event for each. The returned occurrences are
     /// ready to post; the caller posts them against its ledger.
     /// </summary>
+    /// <remarks>
+    /// Idempotent per schedule occurrence: each occurrence (identified by its effective date) is
+    /// materialized at most once for the lifetime of this service, so re-invoking for an overlapping
+    /// horizon returns only newly-due occurrences and never re-emits a run event — preventing
+    /// double-posting of recurring fees and accruals. Occurrences currently blocked by a locked period
+    /// are not recorded, so they can still materialize once the period is reopened.
+    /// </remarks>
     public IReadOnlyList<RecurringJournalOccurrence> MaterializeDueRecurringJournals(string scheduleId, DateOnly throughDate, string actor)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);
@@ -129,9 +137,17 @@ public sealed class FundAdministrationControlService
                 RecurringJournalPlanner.PlanThrough(schedule, template, throughDate),
                 _periods);
 
-            var postable = occurrences.Where(static occurrence => !occurrence.BlockedByLock).ToArray();
-            foreach (var occurrence in postable)
+            var fresh = new List<RecurringJournalOccurrence>();
+            foreach (var occurrence in occurrences)
             {
+                if (occurrence.BlockedByLock)
+                    continue;
+
+                var occurrenceKey = $"{schedule.ScheduleId}|{occurrence.EffectiveDate:yyyy-MM-dd}";
+                if (!_materializedOccurrences.Add(occurrenceKey))
+                    continue;
+
+                fresh.Add(occurrence);
                 _eventLog.Append(
                     FundAdministrationEventKind.RecurringJournalRun,
                     actor,
@@ -146,7 +162,7 @@ public sealed class FundAdministrationControlService
                     occurredAtUtc: occurrence.EffectiveAtUtc);
             }
 
-            return postable;
+            return fresh;
         }
     }
 
@@ -219,30 +235,34 @@ public sealed class FundAdministrationControlService
 
     // ── Year-end close ─────────────────────────────────────────────────────────
 
-    /// <summary>Projects a fiscal-year-end close and records it, whether or not it is ready to post.</summary>
+    /// <summary>
+    /// Projects a fiscal-year-end close. A <see cref="FundAdministrationEventKind.YearEndClosed"/>
+    /// event is recorded only when the close is ready (every required constituent period is closed), so
+    /// the immutable event trail never marks an unclosed fiscal year as closed. A not-ready projection
+    /// is still returned so the caller can preview the pending close.
+    /// </summary>
     public YearEndCloseProjection RunYearEndClose(YearEndCloseInput input, string actor)
     {
         ArgumentNullException.ThrowIfNull(input);
         RequireActor(actor);
 
         var projection = YearEndCloseProjector.Project(input);
-        lock (_gate)
+        if (projection.IsReady)
         {
-            _eventLog.Append(
-                FundAdministrationEventKind.YearEndClosed,
-                actor,
-                input.FiscalYearLabel,
-                projection.IsReady
-                    ? $"Year-end close projected for {input.FiscalYearLabel} (net income {projection.NetIncome})."
-                    : $"Year-end close projected for {input.FiscalYearLabel} but not ready: {projection.MissingPeriods.Count} period(s) still open.",
-                new Dictionary<string, string>
-                {
-                    ["fiscalYear"] = input.FiscalYearLabel,
-                    ["isReady"] = projection.IsReady.ToString(),
-                    ["netIncome"] = projection.NetIncome.ToString(),
-                    ["missingPeriods"] = string.Join(",", projection.MissingPeriods),
-                },
-                occurredAtUtc: input.FiscalYearEndUtc);
+            lock (_gate)
+            {
+                _eventLog.Append(
+                    FundAdministrationEventKind.YearEndClosed,
+                    actor,
+                    input.FiscalYearLabel,
+                    $"Year-end close completed for {input.FiscalYearLabel} (net income {projection.NetIncome}).",
+                    new Dictionary<string, string>
+                    {
+                        ["fiscalYear"] = input.FiscalYearLabel,
+                        ["netIncome"] = projection.NetIncome.ToString(),
+                    },
+                    occurredAtUtc: input.FiscalYearEndUtc);
+            }
         }
 
         return projection;
