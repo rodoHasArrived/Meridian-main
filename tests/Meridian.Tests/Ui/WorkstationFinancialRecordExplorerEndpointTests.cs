@@ -344,7 +344,7 @@ public sealed partial class WorkstationEndpointsTests
                 "Accounting Projection",
                 "Projected Accounting Effect",
                 "Reconciliation",
-                "Factor Evidence",
+                "Corporate Action Evidence",
                 "Role / Position",
                 "Accounting Projection",
                 "Posting Candidate",
@@ -376,7 +376,7 @@ public sealed partial class WorkstationEndpointsTests
                 "Accounting projection",
                 "Projected accounting effect",
                 "Posted Journal",
-                "Factor evidence",
+                "Corporate action evidence",
                 "Role / position",
                 "Accounting projection",
                 "Posting candidate",
@@ -408,7 +408,7 @@ public sealed partial class WorkstationEndpointsTests
         actions["open-audit-trail"].Href.Should().Contain($"/api/workstation/evidence/subjects/security-instrument/{FinancialRecordExplorerAaplSecurityId:D}/graph");
 
         explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain(
-            ["Apple Inc.", "Position / transaction", "Reconciliation", "Posted Journal", "Factor evidence", "Role / position", "Accounting projection", "Posting candidate", "Independent approval", "Reported line", "Evidence", "Audit event"]);
+            ["Apple Inc.", "Position / transaction", "Reconciliation", "Posted Journal", "Corporate action evidence", "Role / position", "Accounting projection", "Posting candidate", "Independent approval", "Reported line", "Evidence", "Audit event"]);
         explorer.RecordGraph.Edges.Select(static edge => edge.Label).Should().Contain(
             ["referenced by", "reconciles", "posts", "reported", "supports", "projects", "proposes", "authorizes", "retains evidence", "audits"]);
 
@@ -1052,7 +1052,7 @@ public sealed partial class WorkstationEndpointsTests
             var lineage = new ProjectionLineageDto(
                 Guid.Parse("11111111-1111-1111-1111-111111111116"),
                 Guid.Parse("11111111-1111-1111-1111-111111111117"),
-                "mbs-factor-paydown",
+                "equity-corporate-action",
                 "1.0.0",
                 "factor-paydown-projection-v1",
                 "Base",
@@ -1201,7 +1201,7 @@ public sealed partial class WorkstationEndpointsTests
             var lineage = new ProjectionLineageDto(
                 Guid.Parse("11111111-1111-1111-1111-111111111116"),
                 Guid.Parse("11111111-1111-1111-1111-111111111117"),
-                "mbs-factor-paydown",
+                "equity-corporate-action",
                 "1.0.0",
                 "factor-paydown-projection-v1",
                 "Base",
@@ -1417,7 +1417,7 @@ public sealed partial class WorkstationEndpointsTests
                         ["bookPositionId"] = FinancialRecordExplorerPositionId.ToString("D"),
                         ["projectionRunId"] = "11111111-1111-1111-1111-111111111116",
                         ["projectionEventId"] = "11111111-1111-1111-1111-111111111117",
-                        ["projectionModelKey"] = "mbs-factor-paydown",
+                        ["projectionModelKey"] = "equity-corporate-action",
                         ["projectionModelVersion"] = "1.0.0",
                         ["projectionEngineVersion"] = "factor-paydown-projection-v1",
                         ["projectionScenario"] = "Base"
