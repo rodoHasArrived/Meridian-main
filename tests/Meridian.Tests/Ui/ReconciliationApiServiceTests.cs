@@ -125,7 +125,7 @@ public sealed class ReconciliationApiServiceTests
 
         const string caseAction = "Assign the case, compare the external statement row to retained ledger and position evidence, then attach support before disposition.";
         var openBreaks = await service.ListOpenStatementBreaksAsync(CancellationToken.None);
-        openBreaks.Should().HaveCount(2);
+        openBreaks.Should().HaveCount(3);
         openBreaks.Should().OnlyContain(item =>
             item.Owner == "fund-ops" &&
             item.SlaDueAtUtc.HasValue &&
@@ -141,7 +141,7 @@ public sealed class ReconciliationApiServiceTests
 
         var reloaded = await service.GetStatementRunAsync(created.RunId!, CancellationToken.None);
         reloaded.Should().NotBeNull();
-        reloaded!.Cases.Should().HaveCount(2);
+        reloaded!.Cases.Should().HaveCount(3);
         reloaded.Cases.Should().OnlyContain(item =>
             item.Attachments != null &&
             item.Attachments.Count > 0 &&
@@ -150,7 +150,7 @@ public sealed class ReconciliationApiServiceTests
             item.BreakExplanation != null &&
                 item.AuditEvents != null &&
                 item.AuditEvents.Count > 0);
-        reloaded.Breaks.Should().HaveCount(2);
+        reloaded.Breaks.Should().HaveCount(3);
         reloaded.Breaks.Should().OnlyContain(item =>
             item.Owner == "fund-ops" &&
             item.SlaState == "OnTrack" &&
