@@ -114,9 +114,13 @@ public sealed class ProviderIntegrationHttpClientTransport : IProviderIntegratio
             throw new InvalidOperationException("Provider endpoint path must be a non-empty URI path without backslashes.");
         }
 
-        var target = Uri.TryCreate(request.Path, UriKind.Absolute, out var absolute)
-            ? absolute
-            : new Uri(approvedBaseUri, request.Path);
+        // A leading slash is an origin-relative HTTP path. Uri.TryCreate can classify the same
+        // value as an absolute file URI on Unix, so resolve it against the approved origin first.
+        var target = request.Path.StartsWith("/", StringComparison.Ordinal)
+            ? new Uri(approvedBaseUri, request.Path)
+            : Uri.TryCreate(request.Path, UriKind.Absolute, out var absolute)
+                ? absolute
+                : new Uri(approvedBaseUri, request.Path);
         if (request.Query.Count == 0)
         {
             return target;
