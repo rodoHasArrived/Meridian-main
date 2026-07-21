@@ -42,9 +42,22 @@ public sealed partial class FinancialRecordExplorerReadService
                 .OrderByDescending(static candidate => candidate.AsOfDate)
                 .ThenByDescending(static candidate => candidate.Version)
                 .FirstOrDefault() ?? position.CurrentEconomicState;
-            var scopeMatches = IsAuthoritativeProjectionScope(position, role, state, lineage);
+            // Fail closed on scope, per the Instrument-to-Journal boundary in
+            // docs/architecture/event-accounting-architecture.md: a structurally authoritative lineage
+            // whose scope does not match the position's current economic state, role, book context, or
+            // dimensions is stale or unrelated to this position. Publishing it would surface source
+            // evidence and an accounting-projection-proof relationship for a projection that is not
+            // authoritative here. The removed model-key filter previously masked this for every
+            // non-factor model, so generalizing the proof must also enforce the scope gate for all of
+            // them. The valid projection-only case (scope matches but no durable spine/journal exists)
+            // is still published below.
+            if (!IsAuthoritativeProjectionScope(position, role, state, lineage))
+            {
+                continue;
+            }
+
             AssetAccountingEventSpineDto? spine = null;
-            if (_assetAccountingEventSpineService is not null && scopeMatches)
+            if (_assetAccountingEventSpineService is not null)
             {
                 try
                 {
