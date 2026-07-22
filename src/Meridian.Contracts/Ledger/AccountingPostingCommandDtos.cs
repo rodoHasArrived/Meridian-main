@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Ledger;
@@ -90,4 +91,12 @@ public sealed record AccountingPostingCommandDto(
     public ProjectionLineageDto? ProjectionLineage { get; init; }
 
     public AccountingRulePackReferenceDto? RulePackReference { get; init; }
+
+    /// <summary>
+    /// Origin of the figures this posting carries. Defaults to <see cref="DataProvenance.Real"/>.
+    /// A non-real value is the retained "simulated mark": the append boundary refuses to persist a
+    /// figure whose evidence declares a simulated origin unless this mark is set, and — once set —
+    /// the mark is written onto the journal so a simulated figure can never be mistaken for real.
+    /// </summary>
+    public DataProvenance Provenance { get; init; } = DataProvenance.Real;
 }

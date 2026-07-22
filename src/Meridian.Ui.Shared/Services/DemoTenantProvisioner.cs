@@ -59,8 +59,8 @@ public sealed class DemoTenantProvisioner(
                     LastUpdatedAt: now,
                     Severity: definition.Severity,
                     ExplainabilitySummary: definition.Summary,
-                    SourceType: "sample",
-                    SourceSystem: "Meridian sample data");
+                    SourceType: DemoTenantBlueprint.SeededSourceType,
+                    SourceSystem: DemoTenantBlueprint.SeededSourceSystem);
 
                 if (await reconciliationBreaks.CreateIfMissingAsync(item, ct).ConfigureAwait(false))
                 {

@@ -102,6 +102,13 @@ public sealed record VerifiedOperationOutcome(
 
     public string SchemaVersion { get; init; } = CurrentSchemaVersion;
 
+    /// <summary>
+    /// Origin of the figures this receipt attests to. Defaults to <see cref="DataProvenance.Real"/>;
+    /// any operation whose inputs are simulated, seeded, or sample data must downgrade this so the
+    /// signal travels with the receipt and downstream evidence gates can fail closed on it.
+    /// </summary>
+    public DataProvenance Provenance { get; init; } = DataProvenance.Real;
+
     public bool IsSuccessful =>
         State is OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings;
 }
@@ -124,6 +131,11 @@ public static class VerifiedOperationOutcomeValidator
         }
         RequireText(outcome.OperationId, nameof(outcome.OperationId), errors);
         RequireText(outcome.OperationKind, nameof(outcome.OperationKind), errors);
+
+        if (!Enum.IsDefined(outcome.Provenance))
+        {
+            errors.Add($"Provenance '{outcome.Provenance}' is not a defined DataProvenance value.");
+        }
 
         if (outcome.AttemptNumber <= 0)
         {

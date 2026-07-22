@@ -4,12 +4,12 @@
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 29.4,
   "endpoint_coverage_percent": 41.2,
-  "contract_coverage_percent": 11.7,
+  "contract_coverage_percent": 11.6,
   "summary": {
     "endpoint_count": 616,
     "documented_endpoint_count": 254,
     "undocumented_endpoint_count": 362,
-    "workstation_contract_count": 884,
+    "workstation_contract_count": 890,
     "documented_workstation_contract_count": 103,
     "undocumented_workstation_contract_count": 787
   },
@@ -1259,25 +1259,25 @@
     {
       "method": "GET",
       "path": "/api/demo/mode",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:71",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:78",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/symbols",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:88",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:95",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/market-data/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:102",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:111",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/demo/historical/{symbol}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/DemoModeEndpoints.cs:132",
       "documented": false
     },
     {

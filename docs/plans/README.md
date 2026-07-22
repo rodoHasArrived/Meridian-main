@@ -1,10 +1,12 @@
 # Plans Source-Material Index
 
-**Status:** migration-source
+**Status:** transitional-compatibility
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-19
 
-This folder is retained for historical and implementation planning references while canonical planning is maintained in:
+This folder is retained only for active or tool-consumed planning inputs that have not yet moved to
+an owning canonical lane. Do not add new durable roadmap truth here. Canonical direction is
+maintained in:
 
 - [`docs/product/README.md`](../product/README.md)
 - [`docs/engineering/README.md`](../engineering/README.md)
@@ -45,4 +47,3 @@ The files still present here stay because they are active or consumed by tooling
 2. Keep this folder as source material for historical context.
 3. Every archive batch must update this file (this index) and the target bucket README.
 4. After any migration batch, run `python build/scripts/docs/validate-docs-structure.py --summary` and link repair checks.
-

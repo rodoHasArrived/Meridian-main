@@ -44,6 +44,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+`ProviderDataReadModelService` aggregates optional provider read interfaces into one typed, live-updating projection for both workstation lanes. Each news, scanner, P&L, calendar, market-rule, and instrument row retains a stable provenance key plus provider connection and entitlement evidence, keeping adapter-specific state outside UI code.
+
 The lifecycle control plane publishes unauthenticated, sanitized `/livez`, `/readyz`, `/startupz`,
 and `/startup` surfaces for local process supervision and pre-login progress. Authenticated browser
 and WPF operator controls use the loopback-only `/api/system/lifecycle`,
@@ -67,9 +69,10 @@ should use that accessor instead of reparsing `HttpContext.Items` or trusting cl
 and company fields. The `/api/workstation` route group also requires that tenant scope before any
 workstation endpoint handler runs, so browser and WPF clients must operate through an authenticated
 tenant-scoped session rather than relying on client-supplied organization fields.
-Session and CSRF cookies are marked `Secure` for HTTPS and non-loopback production requests. The
-supported local-workstation HTTP binding omits that flag only when both ends of the connection are
-loopback, allowing the packaged browser login to return its `SameSite=Strict` cookies on localhost.
+Session and CSRF cookies are marked `Secure` by default, including `ProductionApi` loopback
+reverse-proxy traffic. The supported `LocalWorkstation` HTTP binding omits that flag only when both
+ends of the connection are loopback, allowing the packaged browser login to return its
+`SameSite=Strict` cookies on localhost.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. Statement connector endpoints expose file and remote
@@ -232,6 +235,10 @@ The shared workstation trading endpoint accepts the same optional GUID `fundAcco
 standalone trading-readiness and operator-inbox endpoints. When present, the embedded readiness
 payload resolves account-scoped brokerage-sync and broker-execution reconciliation evidence so
 initial browser payloads and refresh-only calls evaluate the same W7 live-readiness account.
+Execution order submission treats `OrderRequest.FundAccountId` as an account-scoped authorization
+selector rather than a trusted client assertion: when the field is present, the shared submit
+endpoint requires `ManageOrders` scoped to that account before forwarding the request to the OMS and
+live-order readiness gate.
 `TradingOperatorLiveOrderReadinessGate` adapts that service-owned W7 projection into
 `Meridian.Execution.Services.ILiveOrderReadinessGate`, so live broker order submission requires the
 approved live promotion target, retained audit reference, ready live-operation requirements, and a

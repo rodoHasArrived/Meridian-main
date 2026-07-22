@@ -60,6 +60,7 @@ public sealed class FundAdministrationControlService
     {
         ArgumentNullException.ThrowIfNull(template);
         RequireActor(actor);
+        var definition = DescribeJournalTemplate(template);
 
         lock (_gate)
         {
@@ -78,7 +79,7 @@ public sealed class FundAdministrationControlService
                     // sides, amounts, factors, dimensions, required parameters, or book scope produces a
                     // distinct (hashed) registration event — recurring schedules resolve the current
                     // template at materialization, so the chain must preserve which version was approved.
-                    ["definition"] = DescribeJournalTemplate(template),
+                    ["definition"] = definition,
                 });
         }
 
@@ -87,9 +88,14 @@ public sealed class FundAdministrationControlService
 
     private static string DescribeJournalTemplate(JournalTemplate template)
     {
-        var lines = string.Join(";", template.Lines.Select(line =>
-            $"{line.Account.Name}:{line.Account.AccountType}:{line.Account.FinancialAccountId}" +
-            $"|{line.Side}|p={line.AmountParameter}|f={line.FixedAmount}|x={line.Factor}|d={line.Dimensions}|m={line.Memo}"));
+        var lines = string.Join(";", template.Lines.Select((line, index) =>
+        {
+            ArgumentNullException.ThrowIfNull(line, $"{nameof(template)}.{nameof(template.Lines)}[{index}]");
+            ArgumentNullException.ThrowIfNull(line.Account, $"{nameof(template)}.{nameof(template.Lines)}[{index}].{nameof(line.Account)}");
+
+            return $"{line.Account.Name}:{line.Account.AccountType}:{line.Account.FinancialAccountId}" +
+                   $"|{line.Side}|p={line.AmountParameter}|f={line.FixedAmount}|x={line.Factor}|d={line.Dimensions}|m={line.Memo}";
+        }));
         var requiredParameters = string.Join(",", template.RequiredParameters);
         return $"book={template.LedgerBook};params={requiredParameters};lines={lines}";
     }

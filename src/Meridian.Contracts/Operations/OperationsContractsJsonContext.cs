@@ -20,6 +20,8 @@ namespace Meridian.Contracts.Operations;
 [JsonSerializable(typeof(IReadOnlyList<OperationIssue>))]
 [JsonSerializable(typeof(OperationRecoveryAction))]
 [JsonSerializable(typeof(IReadOnlyList<OperationRecoveryAction>))]
+[JsonSerializable(typeof(DataProvenance))]
+[JsonSerializable(typeof(DataProvenanceBadge))]
 [JsonSerializable(typeof(VerifiedOperationOutcome))]
 [JsonSerializable(typeof(OperationalCaseStateTransition))]
 [JsonSerializable(typeof(OperationalCaseAssignment))]

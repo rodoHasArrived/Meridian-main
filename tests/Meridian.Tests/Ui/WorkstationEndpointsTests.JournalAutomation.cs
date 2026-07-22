@@ -140,6 +140,26 @@ public sealed partial class WorkstationEndpointsTests
         result!.Runs.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task DailyMarkToMarketBatchLifecycle_RequiresLedgerCertificationPermission()
+    {
+        await using var app = await CreateAppAsync(
+            mapLedgerApi: true,
+            currentUserPermissions: Meridian.Identity.Auth.UserPermission.ManageDirectLending);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketBatchLifecycle,
+            new DailyValuationBatchLifecycleRequestDto(
+                "daily-mtm-alpha",
+                "fund-alpha",
+                "browser-user",
+                "Attempt to release retained valuation batch.",
+                ["evidence://daily-mtm/batch/daily-mtm-alpha"]),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     private static AutomatedJournalScheduleWorkItem MonthlySchedule(string scheduleId)
         => new(
             ScheduleId: scheduleId,

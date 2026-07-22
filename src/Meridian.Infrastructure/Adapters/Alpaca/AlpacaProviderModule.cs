@@ -102,6 +102,24 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
 
             services.AddSingleton<IMarketDataClient>(sp =>
                 sp.GetRequiredService<AlpacaMarketDataClient>());
+
+            // Keep asset classes independently connectable. The host still selects the equities
+            // adapter as its compatibility default; operators and future routing can resolve the
+            // other streams without treating their entitlements as equivalent.
+            services.AddSingleton<AlpacaOptionsMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+            services.AddSingleton<AlpacaCryptoMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+            services.AddSingleton<AlpacaNewsEventBuffer>();
+            services.AddSingleton<IAlpacaNewsEventSink>(sp => sp.GetRequiredService<AlpacaNewsEventBuffer>());
+            services.AddSingleton<AlpacaNewsMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions,
+                sp.GetRequiredService<IAlpacaNewsEventSink>()));
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaOptionsMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaCryptoMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaNewsMarketDataClient>());
+            services.AddSingleton<IAlpacaMarketDataRouter, AlpacaMarketDataRouter>();
         }
 
         // ----------------------------------------------------------------

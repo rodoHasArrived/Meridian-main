@@ -852,16 +852,27 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
 
     private static OrderState ApplyReport(OrderState current, ExecutionReport report)
     {
-        // A replayed or late non-terminal report (e.g. the submit ack racing the async
-        // report stream) must not regress an order that already reached a terminal status.
-        var status = IsTerminal(current.Status) && !IsTerminal(report.OrderStatus)
-            ? current.Status
-            : report.OrderStatus;
+        // Once the OMS has reached a terminal state, late or malicious stream reports
+        // must not reopen, resize, or otherwise mutate the completed local order.
+        if (IsTerminal(current.Status))
+        {
+            return current;
+        }
+
+        // A broker-accepted modification establishes the new authorized order
+        // quantity. Preserve the current quantity for report types that do not
+        // carry a reliable order quantity (for example, fills from some brokers).
+        var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
+            && report.OrderStatus is OrderStatus.Accepted
+            && report.OrderQuantity > 0m
+            ? Math.Max(report.OrderQuantity, current.FilledQuantity)
+            : current.Quantity;
 
         return current with
         {
-            Status = status,
-            FilledQuantity = Math.Max(report.FilledQuantity, current.FilledQuantity),
+            Status = report.OrderStatus,
+            Quantity = authorizedQuantity,
+            FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
             LastUpdatedAt = report.Timestamp
         };
@@ -1171,11 +1182,19 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDi
                     !string.IsNullOrWhiteSpace(orderId) && _orders.ContainsKey(orderId)));
         }
 
-        // A broker-accepted fill may not be abandoned because the caller or report-pump token
-        // was cancelled after dequeue. Admission to the durable accounting handoff is therefore
-        // non-cancellable; only downstream session/channel bookkeeping observes cancellation.
-        await progress.Gate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
-        try
+        // Gateways report FilledQuantity cumulatively (e.g. IB CumulativeQuantity,
+        // Alpaca filled_qty) while fill consumers treat each report as a discrete
+        // trade, so only the increment since the last tracked fill may be forwarded —
+        // otherwise partial fills are double-applied (5 then 10 becomes 15, not 10).
+        var acceptedFilledQuantity = report.FilledQuantity;
+        if (!string.IsNullOrWhiteSpace(report.ClientOrderId ?? report.OrderId)
+            && _orders.TryGetValue(report.ClientOrderId ?? report.OrderId, out var currentOrder))
+        {
+            acceptedFilledQuantity = currentOrder.FilledQuantity;
+        }
+
+        var incrementQuantity = acceptedFilledQuantity - previousFilledQuantity;
+        if (incrementQuantity <= 0m)
         {
             if (progress.IsComplete)
                 return;

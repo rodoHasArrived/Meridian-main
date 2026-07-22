@@ -202,7 +202,7 @@ public static class LedgerReportPackBuilder
     private static LedgerReportPackArtifact CreatePartnersCapitalArtifact(string name, LedgerPartnersCapitalStatement? partnersCapital)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("AccountName,InvestorId,BeginningCapital,Contributions,Distributions,AllocatedResult,OtherMovements,EndingCapital");
+        builder.AppendLine("AccountName,InvestorId,BeginningCapital,Contributions,Distributions,IncomeGainAllocations,ExpenseAllocations,FeeAllocations,AllocatedResult,OtherMovements,EndingCapital");
         if (partnersCapital is not null)
         {
             foreach (var account in partnersCapital.Accounts
@@ -219,6 +219,12 @@ public static class LedgerReportPackBuilder
                 builder.Append(',');
                 builder.Append(FormatDecimal(account.Distributions));
                 builder.Append(',');
+                builder.Append(FormatDecimal(account.IncomeGainAllocations));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.ExpenseAllocations));
+                builder.Append(',');
+                builder.Append(FormatDecimal(account.FeeAllocations));
+                builder.Append(',');
                 builder.Append(FormatDecimal(account.AllocatedResult));
                 builder.Append(',');
                 builder.Append(FormatDecimal(account.OtherMovements));
@@ -232,6 +238,12 @@ public static class LedgerReportPackBuilder
             builder.Append(FormatDecimal(partnersCapital.Contributions));
             builder.Append(',');
             builder.Append(FormatDecimal(partnersCapital.Distributions));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.IncomeGainAllocations));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.ExpenseAllocations));
+            builder.Append(',');
+            builder.Append(FormatDecimal(partnersCapital.FeeAllocations));
             builder.Append(',');
             builder.Append(FormatDecimal(partnersCapital.AllocatedResult));
             builder.Append(',');

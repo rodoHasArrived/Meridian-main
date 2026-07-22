@@ -72,7 +72,26 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateAsync_WhenCashBalanceDateDiffersFromStatementPeriodEnd_DoesNotMatchEvenIfInternalSourceHasSameStaleDate()
+    public async Task CreateAsync_WhenStatementRowAccountDiffersFromRunAccount_FailsBeforePersistingOrMatching()
+    {
+        var path = await WriteStatementAsync(
+            "wrong-account.csv",
+            "OTHER-ACCOUNT,SPY,10,500,5000,position,2026-05-28,,USD,,");
+        var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
+            [new InternalPortfolioPosition("i-spy", "EXT-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
+            [],
+            [])));
+
+        var act = async () => await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*external account*");
+        var imports = await new JsonCanonicalStatementStore(_root).ListImportsAsync();
+        imports.Should().BeEmpty("an account-mismatched statement must not be retained as a reconcilable run");
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenCashBalanceDateDiffersFromInternal_DoesNotMatchOnAmountAlone()
     {
         // The statement closing balance and a faulty internal source both carry 30 Apr, despite the run
         // closing on 31 May. Date equality between the two sources alone is insufficient: a cash balance

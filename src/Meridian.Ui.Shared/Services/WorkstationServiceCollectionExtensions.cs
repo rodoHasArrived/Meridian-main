@@ -4,6 +4,7 @@ using Meridian.Application.Accounting;
 using Meridian.Core.Contracts;
 using Meridian.Application.DirectLending;
 using Meridian.DataIntegration.Credentials;
+using Meridian.Documents;
 using Meridian.Audit.Compliance;
 using Meridian.Application.FundStructure;
 using Meridian.Application.Reconciliation;
@@ -37,6 +38,7 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Infrastructure.Adapters.Plaid;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
 using Meridian.Instruments.AssetOperations;
@@ -79,6 +81,14 @@ public static class WorkstationServiceCollectionExtensions
         // Unified persistence config must resolve before the reporting/scoped-access
         // registrations below read the per-domain connection-string variables.
         Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+        services.TryAddSingleton<ProviderDataReadModelService>();
+        // Persisted evidence does not enable live IB access in a guidance/non-vendor build.
+        services.TryAddSingleton<IBDurableResultStore>(sp =>
+        {
+            var root = sp.GetRequiredService<StorageOptions>().RootPath;
+            return new JsonIBDurableResultStore(Path.Combine(root, "providers", "interactive-brokers", "results.json"));
+        });
+        services.TryAddSingleton<IBResultQueryService>();
 
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
 
@@ -411,6 +421,14 @@ public static class WorkstationServiceCollectionExtensions
             Meridian.Application.SecurityMaster.ISecurityMasterRevisionPublishedHandler,
             Meridian.Application.SecurityMaster.CoverageInvalidationHandler>());
         services.TryAddSingleton<NavAttributionService>();
+        // Client-grade PDF/XLSX report rendering (QuestPDF/ClosedXML). Registering the concrete
+        // renderer for the ILedgerReportBinaryRenderer seam flips governed ledger exports off the
+        // dependency-free plain-text fallback so the governed pack is the client deliverable. The
+        // shared export service is the single seam both the browser and WPF workstations route
+        // through when turning a governed report pack into client deliverables.
+        services.AddFinancialReportDocumentRenderer();
+        services.TryAddSingleton(sp => new LedgerClientReportExportService(
+            sp.GetService<Meridian.Ledger.ILedgerReportBinaryRenderer>()));
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
@@ -463,7 +481,10 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<PostgresReportingReconciliationEvidenceStore>());
             services.TryAddSingleton<IReportingReconciliationEvidenceSource, ReportingReconciliationEvidenceSource>();
             services.TryAddSingleton<ReportingReconciliationEvidenceRetentionService>();
-            services.TryAddSingleton<IReportingCertifiedArtifactProducer, DeterministicReportingCertifiedArtifactProducer>();
+            services.TryAddSingleton<IReportingPrimaryDocumentRenderer, DocumentsReportingPrimaryDocumentRenderer>();
+            services.TryAddSingleton<IReportingCertifiedArtifactProducer>(sp =>
+                new DeterministicReportingCertifiedArtifactProducer(
+                    sp.GetRequiredService<IReportingPrimaryDocumentRenderer>()));
             services.TryAddSingleton<IReportingArtifactRetentionAuthorityProvider, ReportingArtifactRetentionAuthorityProvider>();
             services.TryAddSingleton<IReportingRestatementChangedLineResolver, GovernedReportingRestatementChangedLineResolver>();
             services.TryAddSingleton<IReportingRestatementCertificationInputProvider, GovernedReportingRestatementCertificationInputProvider>();

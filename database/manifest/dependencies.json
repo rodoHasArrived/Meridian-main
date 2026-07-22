@@ -7372,6 +7372,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenanceBadge"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenanceExtensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Operations.IOperationalCaseHistoryStore"
     },
     {
@@ -20571,6 +20589,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Api.DemoMarketSnapshot",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.DemoModeConfig",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Api.DemoModeConfig",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenanceBadge"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Api.ErrorResponse",
       "target": "contract:Meridian.Contracts.Api.FieldError"
     },
@@ -25834,6 +25870,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
@@ -28101,6 +28143,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Operations.DataProvenanceBadge",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Operations.OperationIssue",
       "target": "contract:Meridian.Contracts.Operations.OperationIssueSeverity"
     },
@@ -28217,6 +28265,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
       "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome",
+      "target": "contract:Meridian.Contracts.Operations.DataProvenance"
     },
     {
       "kind": "contract-reference",
@@ -37147,11 +37201,66 @@
       "target": "contract:Meridian.Identity.Auth.UserRole"
     },
     {
+      "constraint": "fk_asset_accounting_event_book_position",
+      "kind": "foreign-key",
+      "label": "book_position_id",
+      "source": "database:asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.book_position_projections"
+    },
+    {
       "constraint": "fk_book_position_projection_role_scope",
       "kind": "foreign-key",
       "label": "role_id, security_id, owner_scope_id, owner_scope_kind",
       "source": "database:asset_operations.book_position_projections",
       "target": "database:asset_operations.instrument_role_projections"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_authority_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.expected_book_position_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_authority_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.expected_security_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_currency on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.currency"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_fingerprint on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.canonical_fingerprint"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_source_hash on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.source_content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.event_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.prior_spine_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.asset_accounting_event_projections.spine_version"
     },
     {
       "kind": "normal",
@@ -37194,6 +37303,18 @@
       "label": "",
       "source": "database:asset_operations.ck_position_economic_state_version on asset_operations.position_economic_state_projections",
       "target": "database:asset_operations.position_economic_state_projections.version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.fk_asset_accounting_event_book_position on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.book_position_projections.position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:asset_operations.fk_asset_accounting_event_book_position on asset_operations.asset_accounting_event_projections",
+      "target": "database:asset_operations.book_position_projections_pkey"
     },
     {
       "kind": "normal",
@@ -37659,6 +37780,82 @@
       "target": "database:ledger.ledger_books_pkey"
     },
     {
+      "constraint": "atomic_tax_lot_posting_batches_period_id_fkey",
+      "kind": "foreign-key",
+      "label": "period_id",
+      "source": "database:ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "constraint": "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "corrects_mutation_batch_id",
+      "source": "database:ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "atomic_tax_lot_posting_batches_journal_entry_id_fkey",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "atomic_tax_lot_posting_batches_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_journal_entry_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_journal_entry_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_ledger_book_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_ledger_book_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.accounting_periods.period_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.accounting_periods_pkey"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:ledger.ck_accounting_periods_date_range on ledger.accounting_periods",
@@ -37675,6 +37872,48 @@
       "label": "",
       "source": "database:ledger.ck_accounting_periods_status on ledger.accounting_periods",
       "target": "database:ledger.accounting_periods.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.book_position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_evidence on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.retained_evidence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_fingerprint on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.canonical_fingerprint"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_idempotency on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.idempotency_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_kind on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_atomic_tax_lot_batch_period_version on ledger.atomic_tax_lot_posting_batches",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.expected_period_version"
     },
     {
       "kind": "normal",
@@ -37781,8 +38020,122 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_asset_scope on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.book_position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_asset_scope on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.cost_basis"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.quantity_delta"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.unit_cost"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_evidence on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.retained_evidence"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_evidence on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.selection_evidence_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_kind on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.mutation_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_ordinal on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.selection_ordinal"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.mutation_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.quantity_after"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.quantity_before"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.quantity_delta"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_snapshots on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.lot_snapshot_after"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_snapshots on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.lot_snapshot_before"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_versions on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.expected_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lot_mutations_versions on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lot_mutations.result_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.ck_tax_lot_policies_relief_method on ledger.tax_lot_policies",
       "target": "database:ledger.tax_lot_policies.relief_method"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.book_position_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.security_id"
     },
     {
       "kind": "normal",
@@ -37807,6 +38160,12 @@
       "label": "",
       "source": "database:ledger.ck_tax_lots_unit_cost on ledger.tax_lots",
       "target": "database:ledger.tax_lots.unit_cost"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ck_tax_lots_version on ledger.tax_lots",
+      "target": "database:ledger.tax_lots.version"
     },
     {
       "constraint": "journal_legs_journal_entry_id_fkey",
@@ -37866,6 +38225,82 @@
       "target": "database:ledger.accounting_periods_pkey"
     },
     {
+      "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "corrects_mutation_batch_id",
+      "source": "database:ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "tax_lot_mutations_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "mutation_batch_id",
+      "source": "database:ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "tax_lot_mutations_journal_entry_id_fkey",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.tax_lot_mutations",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "tax_lot_mutations_tax_lot_record_id_fkey",
+      "kind": "foreign-key",
+      "label": "tax_lot_record_id",
+      "source": "database:ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lots"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_journal_entry_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_journal_entry_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_tax_lot_record_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lots.tax_lot_record_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lot_mutations_tax_lot_record_id_fkey on ledger.tax_lot_mutations",
+      "target": "database:ledger.tax_lots_pkey"
+    },
+    {
       "constraint": "tax_lot_policies_ledger_book_id_fkey",
       "kind": "foreign-key",
       "label": "ledger_book_id",
@@ -37885,6 +38320,20 @@
       "target": "database:ledger.ledger_books_pkey"
     },
     {
+      "constraint": "tax_lots_last_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "last_mutation_batch_id",
+      "source": "database:ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "constraint": "tax_lots_originating_mutation_batch_id_fkey",
+      "kind": "foreign-key",
+      "label": "originating_mutation_batch_id",
+      "source": "database:ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
       "constraint": "tax_lots_source_journal_entry_id_fkey",
       "kind": "foreign-key",
       "label": "source_journal_entry_id",
@@ -37901,6 +38350,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.tax_lots_last_mutation_batch_id_fkey on ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lots_last_mutation_batch_id_fkey on ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.tax_lots_ledger_book_id_fkey on ledger.tax_lots",
       "target": "database:ledger.ledger_books.ledger_book_id"
     },
@@ -37909,6 +38370,18 @@
       "label": "",
       "source": "database:ledger.tax_lots_ledger_book_id_fkey on ledger.tax_lots",
       "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lots_originating_mutation_batch_id_fkey on ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.tax_lots_originating_mutation_batch_id_fkey on ledger.tax_lots",
+      "target": "database:ledger.atomic_tax_lot_posting_batches_pkey"
     },
     {
       "kind": "normal",
@@ -39776,6 +40249,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:asset_operations",
+      "target": "database:asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:asset_operations",
       "target": "database:asset_operations.asset_actual_activity"
     },
     {
@@ -40148,6 +40627,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.fund_profile_tenancy"
     },
     {
@@ -40197,6 +40682,12 @@
       "label": "",
       "source": "schema:ledger",
       "target": "database:ledger.period_close_events"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.tax_lot_mutations"
     },
     {
       "kind": "contains",
@@ -40810,7 +41301,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f620816e46e8dfbd58ea1994bf99b0caf769364a87c0c54dba0403cd9cf74078",
+  "fingerprint": "9dfa9018cdbd2e1ad6f9a3417f0a2426be230c8b45876ec337520bb689034175",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -48230,6 +48721,24 @@
       "id": "contract:Meridian.Contracts.Monitoring.MetricsSnapshot",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Monitoring.MetricsSnapshot"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Operations.DataProvenance",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.DataProvenance"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.DataProvenanceBadge",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.DataProvenanceBadge"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.DataProvenanceExtensions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.DataProvenanceExtensions"
     },
     {
       "classification": "service_contract",
@@ -55888,6 +56397,52 @@
       "label": "Meridian.Identity.UserProfileRegistry"
     },
     {
+      "id": "database:asset_operations.asset_accounting_event_projections",
+      "kind": "database-table",
+      "label": "asset_operations.asset_accounting_event_projections",
+      "schema": "asset_operations"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.canonical_fingerprint",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.canonical_fingerprint"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.currency",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.currency"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.event_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.event_version"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.expected_book_position_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.expected_book_position_version"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.expected_security_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.expected_security_version"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.prior_spine_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.prior_spine_version"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.source_content_hash",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.source_content_hash"
+    },
+    {
+      "id": "database:asset_operations.asset_accounting_event_projections.spine_version",
+      "kind": "database-object",
+      "label": "asset_operations.asset_accounting_event_projections.spine_version"
+    },
+    {
       "id": "database:asset_operations.asset_actual_activity",
       "kind": "database-table",
       "label": "asset_operations.asset_actual_activity",
@@ -56006,6 +56561,36 @@
       "label": "asset_operations.book_position_projections.version"
     },
     {
+      "id": "database:asset_operations.book_position_projections_pkey",
+      "kind": "database-object",
+      "label": "asset_operations.book_position_projections_pkey"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_authority_versions on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_authority_versions on asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_currency on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_currency on asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_fingerprint on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_fingerprint on asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_source_hash on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_source_hash on asset_operations.asset_accounting_event_projections"
+    },
+    {
+      "id": "database:asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.ck_asset_accounting_event_versions on asset_operations.asset_accounting_event_projections"
+    },
+    {
       "id": "database:asset_operations.ck_book_position_projection_dates on asset_operations.book_position_projections",
       "kind": "database-object",
       "label": "asset_operations.ck_book_position_projection_dates on asset_operations.book_position_projections"
@@ -56029,6 +56614,11 @@
       "id": "database:asset_operations.ck_position_economic_state_version on asset_operations.position_economic_state_projections",
       "kind": "database-object",
       "label": "asset_operations.ck_position_economic_state_version on asset_operations.position_economic_state_projections"
+    },
+    {
+      "id": "database:asset_operations.fk_asset_accounting_event_book_position on asset_operations.asset_accounting_event_projections",
+      "kind": "database-object",
+      "label": "asset_operations.fk_asset_accounting_event_book_position on asset_operations.asset_accounting_event_projections"
     },
     {
       "id": "database:asset_operations.fk_book_position_projection_role_scope on asset_operations.book_position_projections",
@@ -56483,6 +57073,77 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-table",
+      "label": "ledger.atomic_tax_lot_posting_batches",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.book_position_id",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.book_position_id"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.canonical_fingerprint",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.canonical_fingerprint"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.expected_period_version",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.expected_period_version"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.idempotency_key",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.idempotency_key"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.mutation_batch_id",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.mutation_batch_id"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.mutation_kind",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.mutation_kind"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.retained_evidence",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.retained_evidence"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches.security_id",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches.security_id"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_journal_entry_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_journal_entry_id_fkey on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_ledger_book_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_ledger_book_id_fkey on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.atomic_tax_lot_posting_batches_pkey",
+      "kind": "database-object",
+      "label": "ledger.atomic_tax_lot_posting_batches_pkey"
+    },
+    {
       "id": "database:ledger.ck_accounting_periods_date_range on ledger.accounting_periods",
       "kind": "database-object",
       "label": "ledger.ck_accounting_periods_date_range on ledger.accounting_periods"
@@ -56491,6 +57152,36 @@
       "id": "database:ledger.ck_accounting_periods_status on ledger.accounting_periods",
       "kind": "database-object",
       "label": "ledger.ck_accounting_periods_status on ledger.accounting_periods"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_asset_scope on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_evidence on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_evidence on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_fingerprint on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_fingerprint on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_idempotency on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_idempotency on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_kind on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_kind on ledger.atomic_tax_lot_posting_batches"
+    },
+    {
+      "id": "database:ledger.ck_atomic_tax_lot_batch_period_version on ledger.atomic_tax_lot_posting_batches",
+      "kind": "database-object",
+      "label": "ledger.ck_atomic_tax_lot_batch_period_version on ledger.atomic_tax_lot_posting_batches"
     },
     {
       "id": "database:ledger.ck_journal_entries_adjustment_approval_metadata on ledger.journal_entries",
@@ -56538,9 +57229,54 @@
       "label": "ledger.ck_period_close_events_prior_status on ledger.period_close_events"
     },
     {
+      "id": "database:ledger.ck_tax_lot_mutations_asset_scope on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_asset_scope on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_cost on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_evidence on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_evidence on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_kind on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_kind on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_ordinal on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_ordinal on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_quantities on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_snapshots on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_snapshots on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.ck_tax_lot_mutations_versions on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lot_mutations_versions on ledger.tax_lot_mutations"
+    },
+    {
       "id": "database:ledger.ck_tax_lot_policies_relief_method on ledger.tax_lot_policies",
       "kind": "database-object",
       "label": "ledger.ck_tax_lot_policies_relief_method on ledger.tax_lot_policies"
+    },
+    {
+      "id": "database:ledger.ck_tax_lots_asset_scope on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_asset_scope on ledger.tax_lots"
     },
     {
       "id": "database:ledger.ck_tax_lots_currency on ledger.tax_lots",
@@ -56556,6 +57292,11 @@
       "id": "database:ledger.ck_tax_lots_unit_cost on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.ck_tax_lots_unit_cost on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.ck_tax_lots_version on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.ck_tax_lots_version on ledger.tax_lots"
     },
     {
       "id": "database:ledger.fund_profile_tenancy",
@@ -56722,6 +57463,107 @@
       "label": "ledger.period_close_events_period_id_fkey on ledger.period_close_events"
     },
     {
+      "id": "database:ledger.tax_lot_mutations",
+      "kind": "database-table",
+      "label": "ledger.tax_lot_mutations",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.book_position_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.book_position_id"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.cost_basis",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.cost_basis"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.expected_version",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.expected_version"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.lot_snapshot_after",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.lot_snapshot_after"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.lot_snapshot_before",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.lot_snapshot_before"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.mutation_kind",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.mutation_kind"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.quantity_after",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.quantity_after"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.quantity_before",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.quantity_before"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.quantity_delta",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.quantity_delta"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.result_version",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.result_version"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.retained_evidence",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.retained_evidence"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.security_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.security_id"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.selection_evidence_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.selection_evidence_id"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.selection_ordinal",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.selection_ordinal"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations.unit_cost",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations.unit_cost"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations_journal_entry_id_fkey on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations_journal_entry_id_fkey on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations_mutation_batch_id_fkey on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations_mutation_batch_id_fkey on ledger.tax_lot_mutations"
+    },
+    {
+      "id": "database:ledger.tax_lot_mutations_tax_lot_record_id_fkey on ledger.tax_lot_mutations",
+      "kind": "database-object",
+      "label": "ledger.tax_lot_mutations_tax_lot_record_id_fkey on ledger.tax_lot_mutations"
+    },
+    {
       "id": "database:ledger.tax_lot_policies",
       "kind": "database-table",
       "label": "ledger.tax_lot_policies",
@@ -56744,6 +57586,11 @@
       "schema": "ledger"
     },
     {
+      "id": "database:ledger.tax_lots.book_position_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.book_position_id"
+    },
+    {
       "id": "database:ledger.tax_lots.currency",
       "kind": "database-object",
       "label": "ledger.tax_lots.currency"
@@ -56759,14 +57606,44 @@
       "label": "ledger.tax_lots.original_quantity"
     },
     {
+      "id": "database:ledger.tax_lots.security_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.security_id"
+    },
+    {
+      "id": "database:ledger.tax_lots.tax_lot_record_id",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.tax_lot_record_id"
+    },
+    {
       "id": "database:ledger.tax_lots.unit_cost",
       "kind": "database-object",
       "label": "ledger.tax_lots.unit_cost"
     },
     {
+      "id": "database:ledger.tax_lots.version",
+      "kind": "database-object",
+      "label": "ledger.tax_lots.version"
+    },
+    {
+      "id": "database:ledger.tax_lots_last_mutation_batch_id_fkey on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.tax_lots_last_mutation_batch_id_fkey on ledger.tax_lots"
+    },
+    {
       "id": "database:ledger.tax_lots_ledger_book_id_fkey on ledger.tax_lots",
       "kind": "database-object",
       "label": "ledger.tax_lots_ledger_book_id_fkey on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.tax_lots_originating_mutation_batch_id_fkey on ledger.tax_lots",
+      "kind": "database-object",
+      "label": "ledger.tax_lots_originating_mutation_batch_id_fkey on ledger.tax_lots"
+    },
+    {
+      "id": "database:ledger.tax_lots_pkey",
+      "kind": "database-object",
+      "label": "ledger.tax_lots_pkey"
     },
     {
       "id": "database:ledger.tax_lots_source_journal_entry_id_fkey on ledger.tax_lots",
@@ -58939,11 +59816,11 @@
     }
   ],
   "summary": {
-    "contract_references": 2889,
-    "contract_set_memberships": 3302,
-    "edges": 6786,
-    "foreign_keys": 77,
+    "contract_references": 2895,
+    "contract_set_memberships": 3305,
+    "edges": 6866,
+    "foreign_keys": 88,
     "logical_references": 6,
-    "nodes": 3094
+    "nodes": 3170
   }
 }

@@ -9,6 +9,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
+using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.Infrastructure.Adapters.Tiingo;
@@ -73,9 +74,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         services.AddSingleton(new AlpacaOptions(
             KeyId: "AKTESTDESCRIPTOR0001",
             SecretKey: "descriptor-secret-for-di-tests"));
+        services.AddSingleton(new IBOptions());
         services.AddSingleton<IMarketEventPublisher, TestMarketEventPublisher>();
         services.AddSingleton<QuoteCollector>();
         services.AddSingleton<TradeDataCollector>();
+        services.AddSingleton<MarketDepthCollector>();
 
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
@@ -115,6 +118,12 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         robinhood.CorporateActions.Should().BeNull(
             "Robinhood has no dedicated ICorporateActionProvider implementation in the runtime catalog");
 
+        var ibkr = descriptorsById["ibkr"];
+        ibkr.Streaming.Should().Be(typeof(IBMarketDataClient));
+        ibkr.Historical.Should().Be(typeof(IBHistoricalDataProvider));
+        ibkr.Brokerage.Should().Be(typeof(IBBrokerageGateway));
+        ibkr.ExecutionMode.Should().Be(IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable);
+
         descriptorsById.Keys.Should().Contain("edgar");
         var edgar = descriptorsById["edgar"];
         edgar.Search.Should().Be(typeof(EdgarSymbolSearchProvider));
@@ -124,6 +133,9 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         edgar.Brokerage.Should().BeNull();
         edgar.CorporateActions.Should().BeNull(
             "EDGAR corporate-action support is routed through Security Master/reference-data workflows, not an ICorporateActionProvider implementation");
+
+        descriptorsById.Keys.Should().NotContain("ib",
+            "the IB family uses one provider identifier across streaming, historical, and brokerage capabilities");
     }
 
     [Fact]

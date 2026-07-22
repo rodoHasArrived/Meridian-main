@@ -11,6 +11,7 @@ using Meridian.Core.Logging;
 using Meridian.Core.Performance;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Resilience;
+using Meridian.ProviderSdk;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -45,6 +46,8 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     private readonly ConcurrentDictionary<int, TaskCompletionSource<List<IBApi.Bar>>> _historicalDataRequests = new();
     private readonly ConcurrentDictionary<int, List<IBApi.Bar>> _historicalDataBuffers = new();
     private int _nextBrokerRequestId = 50_000;
+    private readonly ConcurrentDictionary<int, int> _marketRuleRequests = new();
+    private readonly ConcurrentQueue<int> _depthExchangeRequests = new();
 
     // Performance monitoring
     private readonly ConnectionWarmUp _warmUp;
@@ -151,6 +154,22 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public event EventHandler? PositionsCompleted;
     public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
     public event EventHandler<int>? AccountSummaryCompleted;
+    public event EventHandler<(int RequestId, ProviderContractDetails Details)>? ContractDetailsReceived;
+    public event EventHandler<(int RequestId, ProviderOptionChainDefinition Definition)>? OptionChainDefinitionReceived;
+    public event EventHandler<(int RequestId, ProviderNewsHeadline Headline)>? HistoricalNewsReceived;
+    public event EventHandler<(int RequestId, ProviderNewsArticle Article)>? NewsArticleReceived;
+    public event EventHandler<(int RequestId, ProviderFundamentalReport Report)>? FundamentalReportReceived;
+    public event EventHandler<(int RequestId, ProviderTickByTickObservation Observation)>? TickByTickReceived;
+    public event EventHandler<(int RequestId, IReadOnlyList<ProviderDepthExchangeDescription> Exchanges)>? DepthExchangesReceived;
+    public event EventHandler<(int RequestId, ProviderDividendEarnings Payload)>? DividendEarningsReceived;
+    public event EventHandler<(int RequestId, ProviderOptionContract Contract)>? OptionContractReceived;
+    public event EventHandler<(int RequestId, ProviderScannerResult Result)>? ScannerResultReceived;
+    public event EventHandler<(int RequestId, ProviderRealTimeBar Bar)>? RealTimeBarReceived;
+    public event EventHandler<(int RequestId, ProviderHistoricalTick Tick, bool Completed)>? HistoricalTickReceived;
+    public event EventHandler<(int RequestId, ProviderAccountPnl Pnl)>? PnlReceived;
+    public event EventHandler<(int RequestId, IReadOnlyList<ProviderMarketRuleIncrement> Increments)>? MarketRuleReceived;
+    public event EventHandler<int>? RequestCompleted;
+    public event EventHandler<(int RequestId, string Code, string Message)>? RequestRejected;
 
     public async Task ConnectAsync(CancellationToken ct = default)
     {
@@ -755,6 +774,148 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     }
 
     // -----------------------
+    // IB entitlement-sensitive data services
+    private void ThrowIfNotConnected()
+    {
+        if (!IsConnected)
+            throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+    }
+
+    // -----------------------
+    public void RequestScanner(int requestId, IBScannerRequest request)
+    {
+        ThrowIfNotConnected();
+        var subscription = new ScannerSubscription
+        {
+            Instrument = request.Instrument,
+            LocationCode = request.LocationCode,
+            ScanCode = request.ScanCode,
+            NumberOfRows = request.NumberOfRows,
+            AbovePrice = request.AbovePrice,
+            AboveVolume = request.AboveVolume
+        };
+        _clientSocket.reqScannerSubscription(requestId, subscription, [], []);
+    }
+
+    public void RequestContractDetails(int requestId, SymbolConfig contract)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqContractDetails(requestId, ContractFactory.Create(contract));
+    }
+
+    public void RequestOptionChain(int requestId, SymbolConfig underlying)
+    {
+        ThrowIfNotConnected();
+        if (underlying.ConId is not int conId || conId <= 0)
+            throw new ArgumentException("IB option-chain requests require the resolved underlying ConId.", nameof(underlying));
+        _clientSocket.reqSecDefOptParams(requestId, underlying.Symbol, string.Empty, ContractFactory.ResolveSecType(underlying), conId);
+    }
+
+    public void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqHistoricalNews(requestId, conId, providerCodes,
+            start.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture),
+            end.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture), maximumResults, []);
+    }
+
+    public void RequestNewsArticle(int requestId, string providerCode, string articleId)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqNewsArticle(requestId, providerCode, articleId, []);
+    }
+
+    public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqFundamentalData(requestId, ContractFactory.Create(contract), reportType, []);
+    }
+
+    public void RequestDividendEarnings(int requestId, SymbolConfig contract)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqMktData(requestId, ContractFactory.Create(contract), "456,258", false, false, []);
+    }
+
+    public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqTickByTickData(requestId, ContractFactory.Create(contract), tickType, numberOfTicks, ignoreSize);
+    }
+
+    public void RequestPnl(int requestId, string account, string? modelCode)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqPnL(requestId, account, modelCode ?? string.Empty);
+    }
+
+    public void RequestMarketRule(int requestId, int marketRuleId)
+    {
+        ThrowIfNotConnected();
+        _marketRuleRequests[marketRuleId] = requestId;
+        _clientSocket.reqMarketRule(marketRuleId);
+    }
+
+    public void RequestDepthExchanges(int requestId)
+    {
+        ThrowIfNotConnected();
+        _depthExchangeRequests.Enqueue(requestId);
+        _clientSocket.reqMktDepthExchanges();
+    }
+
+    /// <summary>Starts a correlated, five-second real-time bar stream.</summary>
+    public void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request)
+    {
+        ThrowIfNotConnected();
+#if IBAPI_VENDOR
+        _clientSocket.reqRealTimeBars(requestId, ContractFactory.Create(request.Contract), 5, request.WhatToShow, request.UseRegularTradingHours, []);
+#else
+        throw new NotSupportedException("Real-time bars require the official Interactive Brokers vendor SDK.");
+#endif
+    }
+
+    /// <summary>Requests a bounded historical-tick page with explicit time bounds.</summary>
+    public void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request)
+    {
+        ThrowIfNotConnected();
+#if IBAPI_VENDOR
+        _clientSocket.reqHistoricalTicks(requestId, ContractFactory.Create(request.Contract),
+            request.Start?.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty,
+            request.End?.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture) ?? string.Empty,
+            request.NumberOfTicks, request.WhatToShow, request.UseRegularTradingHours ? 1 : 0, false, []);
+#else
+        throw new NotSupportedException("Historical ticks require the official Interactive Brokers vendor SDK.");
+#endif
+    }
+
+    /// <summary>Cancels the associated vendor stream when its request lifetime ends.</summary>
+    public void CancelDataRequest(int requestId, string capability)
+    {
+        if (!IsConnected) return;
+        switch (capability)
+        {
+            case "scanner":
+#if IBAPI_VENDOR
+                _clientSocket.cancelScannerSubscription(requestId);
+#endif
+                break;
+            case "tick-by-tick": _clientSocket.cancelTickByTickData(requestId); break;
+            case "pnl":
+#if IBAPI_VENDOR
+                _clientSocket.cancelPnL(requestId);
+#endif
+                break;
+            case "real-time-bars":
+#if IBAPI_VENDOR
+                _clientSocket.cancelRealTimeBars(requestId);
+#endif
+                break;
+            case "historical-ticks":
+                break; // IB historical ticks are bounded and complete from their terminal callback.
+        }
+    }
+
+    // -----------------------
     // EWrapper depth callbacks
     // -----------------------
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -776,6 +937,9 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         RecordMessageReceived();
         _router.OnTickByTickAllLast(reqId, tickType, time, price, (double)size, exchange, specialConditions);
+        TickByTickReceived?.Invoke(this, (reqId, new ProviderTickByTickObservation(
+            DateTimeOffset.FromUnixTimeSeconds(time), tickType == 1 ? "last" : "all-last",
+            (decimal)price, size, Exchange: exchange, SpecialConditions: specialConditions)));
     }
 
     // -----------------------
@@ -843,6 +1007,8 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         }
 
         ErrorOccurred?.Invoke(this, new IBApiError(id, errorCode, errorMsg, advancedOrderRejectJson));
+        if (id > 0)
+            RequestRejected?.Invoke(this, (id, errorCode.ToString(CultureInfo.InvariantCulture), errorMsg));
     }
 
     public void connectionClosed()
@@ -878,6 +1044,8 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         RecordMessageReceived();
         _router.OnTickString(tickerId, field, value);
+        if (field is 47 or 59 && TryParseDividendEarnings(value, out var payload))
+            DividendEarningsReceived?.Invoke(this, (tickerId, payload));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -944,17 +1112,169 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         }
     }
 
-    public void marketDataType(int reqId, int marketDataType) { }
-    public void contractDetails(int reqId, ContractDetails contractDetails) { }
-    public void contractDetailsEnd(int reqId) { }
+    public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
+
+    public void marketDataType(int reqId, int marketDataType)
+    {
+        RecordMessageReceived();
+        MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(reqId, marketDataType));
+    }
+    public void contractDetails(int reqId, ContractDetails contractDetails)
+    {
+        RecordMessageReceived();
+        var contract = contractDetails.Contract;
+        var expiration = ParseIbDate(contract.LastTradeDateOrContractMonth);
+        var details = new ProviderContractDetails(
+            contract.ConId.ToString(CultureInfo.InvariantCulture), contract.Symbol ?? string.Empty, contract.LocalSymbol,
+            contract.SecType, contract.Exchange, contract.PrimaryExch, contract.Currency, contract.TradingClass,
+            contract.Multiplier, expiration, contract.Strike > 0 ? (decimal)contract.Strike : null, contract.Right,
+            contractDetails.MarketRuleIds, contractDetails.MinTick > 0 ? (decimal)contractDetails.MinTick : null,
+            contractDetails.LongName, contractDetails.Industry, contractDetails.Category, contractDetails.Subcategory,
+            contractDetails.TimeZoneId, contractDetails.TradingHours, contractDetails.LiquidHours);
+        ContractDetailsReceived?.Invoke(this, (reqId, details));
+
+        if (expiration is not null && contract.Strike > 0 && !string.IsNullOrWhiteSpace(contract.Right))
+            OptionContractReceived?.Invoke(this, (reqId, new ProviderOptionContract(contract.Symbol ?? string.Empty, string.Empty,
+                expiration.Value, (decimal)contract.Strike, contract.Right, contract.Exchange ?? string.Empty,
+                contract.TradingClass, contract.Multiplier, contract.ConId.ToString(CultureInfo.InvariantCulture))));
+    }
+
+    public void contractDetailsEnd(int reqId)
+    {
+        RecordMessageReceived();
+        RequestCompleted?.Invoke(this, reqId);
+    }
+
+    public void securityDefinitionOptionParameter(int reqId, string exchange, int underlyingConId, string tradingClass,
+        string multiplier, HashSet<string> expirations, HashSet<double> strikes)
+    {
+        RecordMessageReceived();
+        var dates = expirations.Select(ParseIbDate).Where(static value => value is not null).Select(static value => value!.Value).Order().ToArray();
+        var normalizedStrikes = strikes.Where(static value => value >= 0).Select(static value => (decimal)value).Order().ToArray();
+        OptionChainDefinitionReceived?.Invoke(this, (reqId, new ProviderOptionChainDefinition(exchange,
+            underlyingConId.ToString(CultureInfo.InvariantCulture), tradingClass, multiplier, dates, normalizedStrikes)));
+    }
+
+    public void securityDefinitionOptionParameterEnd(int reqId)
+    {
+        RecordMessageReceived();
+        RequestCompleted?.Invoke(this, reqId);
+    }
+
+    public void scannerData(int reqId, int rank, ContractDetails contractDetails, string distance, string benchmark, string projection, string legs)
+    {
+        RecordMessageReceived();
+        var contract = contractDetails.Contract;
+        ScannerResultReceived?.Invoke(this, (reqId, new ProviderScannerResult(rank, contract.Symbol ?? string.Empty,
+            contract.Exchange, contract.ConId > 0 ? contract.ConId.ToString(CultureInfo.InvariantCulture) : null,
+            distance, benchmark, projection, legs)));
+    }
+
+    public void scannerDataEnd(int reqId)
+    {
+        RecordMessageReceived();
+        RequestCompleted?.Invoke(this, reqId);
+    }
+
     public void symbolSamples(int reqId, ContractDescription[] contractDescriptions) { }
-    public void reqMktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions) { }
+
+    public void reqMktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions)
+    {
+        RecordMessageReceived();
+        if (!_depthExchangeRequests.TryDequeue(out var requestId)) return;
+        var values = depthMktDataDescriptions.Select(value => new ProviderDepthExchangeDescription(
+            value.Exchange, value.SecType, value.ListingExch, value.ServiceDataType, value.AggGroup != 0)).ToArray();
+        DepthExchangesReceived?.Invoke(this, (requestId, values));
+    }
+
     public void tickReqParams(int tickerId, double minTick, string bboExchange, int snapshotPermissions) { }
     public void newsProviders(NewsProvider[] newsProviders) { }
-    public void newsArticle(int requestId, int articleType, string articleText) { }
-    public void historicalNews(int requestId, string time, string providerCode, string articleId, string headline) { }
-    public void historicalNewsEnd(int requestId, bool hasMore) { }
+
+    public void newsArticle(int requestId, int articleType, string articleText)
+    {
+        RecordMessageReceived();
+        NewsArticleReceived?.Invoke(this, (requestId, new ProviderNewsArticle(articleType, articleText)));
+    }
+
+    public void historicalNews(int requestId, string time, string providerCode, string articleId, string headline)
+    {
+        RecordMessageReceived();
+        var timestamp = DateTimeOffset.TryParse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
+            ? parsed : DateTimeOffset.UtcNow;
+        HistoricalNewsReceived?.Invoke(this, (requestId, new ProviderNewsHeadline(timestamp, providerCode, articleId, headline)));
+    }
+
+    public void historicalNewsEnd(int requestId, bool hasMore)
+    {
+        RecordMessageReceived();
+        RequestCompleted?.Invoke(this, requestId);
+    }
+
+    public void fundamentalData(int reqId, string data)
+    {
+        RecordMessageReceived();
+        FundamentalReportReceived?.Invoke(this, (reqId, new ProviderFundamentalReport(data)));
+    }
+
+    public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, decimal bidSize, decimal askSize, TickAttribBidAsk tickAttribBidAsk)
+    {
+        RecordMessageReceived();
+        TickByTickReceived?.Invoke(this, (reqId, new ProviderTickByTickObservation(DateTimeOffset.FromUnixTimeSeconds(time), "bid-ask",
+            Bid: (decimal)bidPrice, Ask: (decimal)askPrice, BidSize: bidSize, AskSize: askSize)));
+    }
+
+    public void tickByTickMidPoint(int reqId, long time, double midPoint)
+    {
+        RecordMessageReceived();
+        TickByTickReceived?.Invoke(this, (reqId, new ProviderTickByTickObservation(DateTimeOffset.FromUnixTimeSeconds(time), "midpoint", Price: (decimal)midPoint)));
+    }
+
+    public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements)
+    {
+        RecordMessageReceived();
+        if (_marketRuleRequests.TryRemove(marketRuleId, out var requestId))
+            MarketRuleReceived?.Invoke(this, (requestId, priceIncrements.Select(value =>
+                new ProviderMarketRuleIncrement((decimal)value.LowEdge, (decimal)value.Increment)).ToArray()));
+    }
+
+    public void pnl(int reqId, string account, string modelCode, double dailyPnL, double unrealizedPnL, double realizedPnL)
+    {
+        RecordMessageReceived();
+        PnlReceived?.Invoke(this, (reqId, new ProviderAccountPnl(account, string.IsNullOrWhiteSpace(modelCode) ? null : modelCode,
+            (decimal)dailyPnL, (decimal)unrealizedPnL, (decimal)realizedPnL)));
+    }
+
     public void headTimestamp(int reqId, string headTimestamp) { }
+
+    private static DateOnly? ParseIbDate(string? value)
+        => DateOnly.TryParseExact(value, ["yyyyMMdd", "yyyyMM"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            ? date : null;
+
+    private static bool TryParseDividendEarnings(string value, out ProviderDividendEarnings payload)
+    {
+        // IB's dividend generic tick is trailing-12-month, forward-12-month, next date, next amount.
+        // Fundamental-ratio payloads may append EPS and P/E as semicolon-delimited key/value pairs.
+        var fields = value.Split(',', StringSplitOptions.TrimEntries);
+        decimal? DecimalAt(int index) => index < fields.Length && decimal.TryParse(fields[index], NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
+        var nextDate = fields.Length > 2 ? ParseIbDate(fields[2].Replace("-", string.Empty, StringComparison.Ordinal)) : null;
+        var eps = TryGetFundamentalRatio(value, "EPS");
+        var pe = TryGetFundamentalRatio(value, "PE");
+        payload = new ProviderDividendEarnings(DecimalAt(0), DecimalAt(1), nextDate, DecimalAt(3), eps, pe);
+        return payload.TrailingTwelveMonthDividend is not null || payload.ForwardTwelveMonthDividend is not null
+            || payload.NextDividendDate is not null || payload.NextDividendAmount is not null || eps is not null || pe is not null;
+    }
+
+    private static decimal? TryGetFundamentalRatio(string value, string name)
+    {
+        foreach (var part in value.Split(';', StringSplitOptions.TrimEntries))
+        {
+            var pair = part.Split('=', 2, StringSplitOptions.TrimEntries);
+            if (pair.Length == 2 && pair[0].Equals(name, StringComparison.OrdinalIgnoreCase)
+                && decimal.TryParse(pair[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
+                return parsed;
+        }
+        return null;
+    }
 
     // -----------------------
     // EWrapper Historical Data callbacks

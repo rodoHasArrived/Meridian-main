@@ -331,7 +331,36 @@ public sealed class SecurityMasterLedgerBridgeTests
     }
 
     [Fact]
-    public async Task PostCorporateActionsAsync_BondCall_PostsRedemptionMemo()
+    public async Task PostCorporateActionsAsync_BondCall_PostsRedemptionProceedsScaledByHeldFace()
+    {
+        var bondCall = MakeStockSplit(1m, new DateOnly(2026, 4, 15)) with
+        {
+            EventType = "BondCall",
+            SplitRatio = null,
+            RedemptionPricePercentOfPar = 101.25m
+        };
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
+            .Returns(new[] { bondCall });
+
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(
+            SecurityId,
+            Ticker,
+            ledger,
+            new CorporateActionLedgerPostingContext(PositionQuantity: 1_000m));
+
+        var entry = ledger.Journal.Should().ContainSingle().Subject;
+        entry.IsBalanced.Should().BeTrue();
+        entry.Metadata.ActivityType.Should().Be("BondCall");
+        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(1_012.50m);
+        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-1_012.50m);
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_BondCallWithoutHeldFace_DoesNotPost()
     {
         var bondCall = MakeStockSplit(1m, new DateOnly(2026, 4, 15)) with
         {
@@ -348,11 +377,7 @@ public sealed class SecurityMasterLedgerBridgeTests
 
         await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger);
 
-        var entry = ledger.Journal.Should().ContainSingle().Subject;
-        entry.IsBalanced.Should().BeTrue();
-        entry.Metadata.ActivityType.Should().Be("BondCall");
-        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(101.25m);
-        ledger.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-101.25m);
+        ledger.Journal.Should().BeEmpty();
     }
 
     [Fact]

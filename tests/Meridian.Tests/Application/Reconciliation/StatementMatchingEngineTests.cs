@@ -71,6 +71,31 @@ public sealed class StatementMatchingEngineTests
     }
 
     [Fact]
+    public void Run_WhenExternalTransactionIdMatchesButTransactionDetailsDiffer_EmitsUnmatchedBreaks()
+    {
+        var engine = new StatementMatchingEngine();
+        var request = new StatementMatchingRequest(
+            [],
+            [],
+            [new NormalizedStatementTransaction("stmt-tx-1", "EXT-123", "EVIL-ACCT", "TSLA", null, new DateOnly(2026, 5, 29), new DateOnly(2026, 5, 30), "SELL", 999m, 999m, "broker:tx:1")],
+            [],
+            [],
+            [new InternalLedgerTransaction("int-tx-1", "EXT-123", "A1", "MSFT", null, new DateOnly(2026, 5, 27), new DateOnly(2026, 5, 28), "BUY", 5m, -100m, "internal:tx:1")],
+            Tolerances());
+
+        var result = engine.Run(request);
+
+        result.Results.Should().HaveCount(2);
+        result.Results.Should().OnlyContain(match => match.MatchTier == StatementMatchTier.Unmatched);
+        result.Results.Should().Contain(match => match.BrokerEvidenceReference == "broker:tx:1"
+            && match.InternalEvidenceReference == null
+            && match.RuleIds.Contains("statement-transaction-break-v1"));
+        result.Results.Should().Contain(match => match.BrokerEvidenceReference == null
+            && match.InternalEvidenceReference == "internal:tx:1"
+            && match.RuleIds.Contains("statement-transaction-break-v1"));
+    }
+
+    [Fact]
     public void Run_WhenOnlyLooseCandidatesExist_EmitsCandidateBeforeBreaks()
     {
         var engine = new StatementMatchingEngine();

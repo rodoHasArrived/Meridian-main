@@ -632,8 +632,6 @@ public sealed class AccountingSystemIntegrationServiceTests
                 CompanyId: "company-alpha",
                 FundProfileId: "default-fund",
                 LedgerBookId: ledgerBookId,
-                TenantId: "tenant-alpha",
-                CompanyId: "company-alpha",
                 PostingRulesLedgerBookNativeCertified: true,
                 JournalLifecycleLedgerBookNativeCertified: true,
                 CloseReportingLedgerBookNativeCertified: true,

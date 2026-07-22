@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 
@@ -105,6 +106,8 @@ public static class AccountingPostingCommandValidator
             throw new LedgerValidationException("Accounting posting command requires retained evidence or an operator rationale.");
         }
 
+        ValidateDataProvenance(command);
+
         if (command.Intent is AccountingPostingIntentDto.Reversal or AccountingPostingIntentDto.Rebook or AccountingPostingIntentDto.Restatement)
         {
             if (!command.SourceJournalEntryId.HasValue && !write.SourceJournalEntryId.HasValue)
@@ -138,6 +141,77 @@ public static class AccountingPostingCommandValidator
 
     private static bool RequiresApproval(AccountingPostingIntentDto intent)
         => intent is not AccountingPostingIntentDto.AutomatedDraft;
+
+    /// <summary>
+    /// Data-provenance evidence gate (fail closed): a figure whose evidence declares a simulated,
+    /// seeded, or sample origin may only cross the authoritative append boundary when the posting
+    /// carries the retained simulated mark (<see cref="AccountingPostingCommandDto.Provenance"/> set
+    /// to a non-real value). An unmarked simulated figure is refused rather than silently posted as
+    /// if it were real; a marked one is allowed and the mark is retained onto the journal metadata.
+    /// </summary>
+    private static void ValidateDataProvenance(AccountingPostingCommandDto command)
+    {
+        var declaredProvenance = command.Provenance;
+        if (!Enum.IsDefined(declaredProvenance))
+        {
+            throw new LedgerValidationException(
+                $"Accounting posting command provenance '{declaredProvenance}' is not a defined DataProvenance value.");
+        }
+
+        if (declaredProvenance.IsNonReal())
+        {
+            // The mark is retained via the "dataProvenance" journal tag in BuildCommandTags.
+            return;
+        }
+
+        if (DeclaresSimulatedOrigin(command))
+        {
+            throw new LedgerValidationException(
+                "Accounting posting command evidence declares a simulated, seeded, or sample origin but the " +
+                "posting is marked as real. Refusing to post an unmarked simulated figure; set the command's " +
+                "DataProvenance mark so the simulated origin is retained on the journal.");
+        }
+    }
+
+    // Unambiguous, structured simulated-origin markers. Matched by exact (trimmed, case-insensitive)
+    // equality against the source system / source domain — never by substring — so legitimate values
+    // like "Sample Custodian" or "fixture-bank" are not mistaken for a simulated origin. The explicit
+    // command Provenance mark is the primary gate; this is a narrow safety net for a source that is
+    // labeled simulated while the posting forgot to carry the mark.
+    private static readonly string[] SimulatedOriginTokens =
+        ["simulated", "simulation", "synthetic", "backtest"];
+
+    private static bool DeclaresSimulatedOrigin(AccountingPostingCommandDto command)
+    {
+        foreach (var evidence in command.Evidence)
+        {
+            if (IsSimulatedOriginToken(evidence.SourceSystem))
+            {
+                return true;
+            }
+        }
+
+        return IsSimulatedOriginToken(command.EconomicEvent?.SourceDomain);
+    }
+
+    private static bool IsSimulatedOriginToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var trimmed = value.Trim();
+        foreach (var token in SimulatedOriginTokens)
+        {
+            if (string.Equals(trimmed, token, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private static void ValidateAssetAccountingEvidence(AccountingPostingCommandDto command)
     {
@@ -369,6 +443,7 @@ public static class AccountingPostingCommandValidator
         };
 
         AddTag(tags, "approvalId", command.ApprovalId);
+        AddTag(tags, "dataProvenance", command.Provenance.Label());
         AddTag(tags, "sourceEventId", (command.EconomicEvent?.EventId ?? command.SourceEventId)?.ToString("D"));
         AddTag(tags, "sourceEventType", command.EconomicEvent?.EventType ?? command.SourceEventType);
         AddTag(tags, "sourceEventVersion", command.EconomicEvent?.EventVersion.ToString(System.Globalization.CultureInfo.InvariantCulture));

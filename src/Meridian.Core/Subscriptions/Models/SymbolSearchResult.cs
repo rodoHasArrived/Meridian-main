@@ -110,7 +110,23 @@ public sealed record SymbolDetails(
 
     // <summary>When the details were last updated.</summary>
     DateTimeOffset? LastUpdated = null
-);
+)
+{
+    public SymbolTradingEligibility? TradingEligibility { get; init; }
+}
+
+/// <summary>Provider-supplied borrow and order-increment evidence for a symbol.</summary>
+public sealed record SymbolTradingEligibility(
+    bool? IsTradable,
+    bool? IsMarginable,
+    bool? IsShortable,
+    bool? IsEasyToBorrow,
+    bool? IsFractionable,
+    decimal? MaintenanceMarginRequirement,
+    decimal? MinimumOrderSize,
+    decimal? MinimumTradeIncrement,
+    decimal? PriceIncrement,
+    string? Source);
 
 /// <summary>
 /// Request for symbol search/autocomplete.

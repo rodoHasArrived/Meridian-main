@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.Config;
@@ -75,6 +76,25 @@ public sealed class FirstRunExperienceServiceTests
         status.SampleWorkspace!.Highlights.Should().BeEmpty();
         // The illustrative sample portfolio preview is still shown.
         status.SampleWorkspace.Holdings.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task CompleteAsync_SampleMode_WhenProvisioningLoadsNothing_PersistsNoDeskHighlights()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CompleteAsync_SampleMode_WhenProvisioningLoadsNothing_PersistsNoDeskHighlights));
+        var config = new ConfigStore(Path.Combine(artifacts.RootPath, "appsettings.json"));
+        await config.SaveAsync(new AppConfig(DataRoot: artifacts.RootPath));
+        // During a demo-store outage, the durable sample artifact must agree with the Ready screen
+        // and must not advertise desks that remain empty.
+        var service = new FirstRunExperienceService(config, new DemoTenantProvisioner());
+
+        await service.CompleteAsync("local-admin", new CompleteFirstRunRequestDto(
+            "monitor-investments", "personal-portfolio", "sample", true));
+
+        var packPath = Path.Combine(artifacts.RootPath, "workspaces", "local-admin", "sample-pack.json");
+        using var pack = JsonDocument.Parse(await File.ReadAllTextAsync(packPath));
+
+        pack.RootElement.GetProperty("workspace").GetProperty("highlights").GetArrayLength().Should().Be(0);
     }
 
     [Fact]
