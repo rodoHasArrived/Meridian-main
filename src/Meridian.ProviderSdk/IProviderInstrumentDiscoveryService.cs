@@ -14,9 +14,10 @@ public sealed record ProviderInstrument(
     string Symbol,
     string Name,
     string AssetClass,
-    string? Exchange = null,
-    string? Currency = null,
-    string? ProviderInstrumentId = null);
+    string? Exchange,
+    string? Currency,
+    string? ProviderInstrumentId,
+    ProviderDataProvenance Provenance);
 
 /// <summary>Optional provider capability for instrument and contract discovery.</summary>
 public interface IProviderInstrumentDiscoveryService : IProviderMetadata

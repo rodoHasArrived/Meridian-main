@@ -238,7 +238,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
             _ => IBMarketDataAvailability.Unknown
         };
         var lineage = Update(requestId, x => x with { Availability = availability, IsDelayed = availability is IBMarketDataAvailability.Delayed or IBMarketDataAvailability.DelayedFrozen, Status = "market-data-type", ObservedAt = DateTimeOffset.UtcNow });
-        UpdateReadModel(requestId, current => current with { Provenance = CreateRequestProvenance(lineage) });
+        UpdateReadModel(requestId, current => RefreshProvenance(current, lineage));
     }
 
     /// <summary>Records contract exchange and market-rule evidence returned by IB.</summary>
@@ -445,14 +445,30 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         return CreateProvenance(lineage, providerNativeId, sourceTimestamp);
     }
 
-    private ProviderDataProvenance CreateProvenance(IBDataLineage lineage, string providerNativeId, DateTimeOffset sourceTimestamp)
+    private ProviderDataRequestReadModel RefreshProvenance(ProviderDataRequestReadModel request, IBDataLineage lineage)
+        => request with
+        {
+            Provenance = RefreshProvenance(lineage, request.Provenance),
+            OptionContracts = request.OptionContracts?.Select(contract => contract with { Provenance = RefreshProvenance(lineage, contract.Provenance) }).ToArray(),
+            ScannerResults = request.ScannerResults?.Select(result => result with { Provenance = RefreshProvenance(lineage, result.Provenance) }).ToArray(),
+            RealTimeBars = request.RealTimeBars?.Select(bar => bar with { Provenance = RefreshProvenance(lineage, bar.Provenance) }).ToArray(),
+            HistoricalTicks = request.HistoricalTicks?.Select(tick => tick with { Provenance = RefreshProvenance(lineage, tick.Provenance) }).ToArray(),
+            Pnl = request.Pnl is { } pnl ? pnl with { Provenance = RefreshProvenance(lineage, pnl.Provenance) } : null,
+            MarketRuleIncrements = request.MarketRuleIncrements?.Select(increment => increment with { Provenance = RefreshProvenance(lineage, increment.Provenance) }).ToArray()
+        };
+
+    private ProviderDataProvenance RefreshProvenance(IBDataLineage lineage, ProviderDataProvenance provenance)
+        => CreateProvenance(lineage, provenance.ProviderNativeId, provenance.SourceTimestamp, provenance.ReceiptTimestamp);
+
+    private ProviderDataProvenance CreateProvenance(IBDataLineage lineage, string providerNativeId, DateTimeOffset sourceTimestamp, DateTimeOffset? receiptTimestamp = null)
     {
+        providerNativeId = string.IsNullOrWhiteSpace(providerNativeId) ? lineage.Symbol : providerNativeId;
         var availability = lineage.Availability.ToString();
         var descriptor = string.Join("|", lineage.Service, lineage.Symbol, lineage.Exchange ?? string.Empty, lineage.Subscription ?? string.Empty);
         var correlationId = lineage.RequestId.ToString(System.Globalization.CultureInfo.InvariantCulture);
         var keyMaterial = string.Join("|", ProviderId, _providerConnectionId, providerNativeId, descriptor, correlationId);
         var deduplicationKey = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(keyMaterial))).ToLowerInvariant();
-        return new ProviderDataProvenance(ProviderId, _providerConnectionId, sourceTimestamp, DateTimeOffset.UtcNow,
+        return new ProviderDataProvenance(ProviderId, _providerConnectionId, sourceTimestamp, receiptTimestamp ?? DateTimeOffset.UtcNow,
             availability == nameof(IBMarketDataAvailability.Unknown) ? "unknown" : "reported", lineage.Subscription ?? "unspecified",
             availability, descriptor, providerNativeId, correlationId, deduplicationKey);
     }

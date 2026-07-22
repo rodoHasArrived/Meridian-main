@@ -6,7 +6,7 @@ namespace Meridian.ProviderSdk;
 public sealed record ProviderPnlStreamRequest(string AccountId, string? ModelAccountId = null);
 
 /// <summary>Timestamped account P&amp;L update emitted by a provider-neutral stream.</summary>
-public sealed record ProviderPnlUpdate(DateTimeOffset ObservedAt, ProviderAccountPnl Pnl);
+public sealed record ProviderPnlUpdate(DateTimeOffset ObservedAt, ProviderAccountPnl Pnl, ProviderDataProvenance Provenance);
 
 /// <summary>Optional provider capability for streaming account and model-account P&amp;L.</summary>
 public interface IProviderPnlStream : IProviderMetadata
