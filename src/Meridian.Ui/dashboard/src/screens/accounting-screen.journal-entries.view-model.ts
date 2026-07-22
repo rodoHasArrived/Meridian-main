@@ -102,11 +102,13 @@ export function useManualJournalEntryWorkbenchViewModel(
   const [lifecycleBusyAction, setLifecycleBusyAction] = useState<JournalEntryLifecycleAction | null>(null);
   const [lifecycleStatusText, setLifecycleStatusText] = useState<string | null>(null);
   const [lifecycleCorrectionDrafts, setLifecycleCorrectionDrafts] = useState<ManualJournalEntryDraft[]>([]);
+  const [validatedDraftSignature, setValidatedDraftSignature] = useState<string | null>(null);
   const query = useMemo(() => parseManualJournalEntryWorkbenchQuery(search), [search]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setValidatedDraftSignature(null);
     try {
       const next = await services.getWorkbench(query);
       setWorkbench(next);
@@ -142,8 +144,9 @@ export function useManualJournalEntryWorkbenchViewModel(
     [workbench]
   );
 
-  const applyServerDraft = useCallback((next: ManualJournalEntryDraft) => {
+  const applyServerDraft = useCallback((next: ManualJournalEntryDraft, validationIsCurrent = false) => {
     setDraft(next);
+    setValidatedDraftSignature(validationIsCurrent ? buildManualJournalValidationSignature(next) : null);
     setSelectedLineId(next.lines[0]?.lineId ?? selectedLineId);
     setWorkbench((current) => current
       ? {
@@ -156,6 +159,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   const applyLifecycleResult = useCallback((result: JournalEntryLifecycleActionResult) => {
     const generated = result.generatedJournalEntries ?? [];
     setDraft(result.journalEntry);
+    setValidatedDraftSignature(null);
     setSelectedLineId(result.journalEntry.lines[0]?.lineId ?? selectedLineId);
     setLifecycleCorrectionDrafts(generated);
     setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} -> ${result.transition.toStatus}`);
@@ -174,10 +178,12 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [selectedLineId]);
 
   const updateHeader = useCallback<ManualJournalEntryWorkbenchViewModel["updateHeader"]>((field, value) => {
+    setValidatedDraftSignature(null);
     setDraft((current) => ({ ...current, [field]: value }));
   }, []);
 
   const updateLine = useCallback<ManualJournalEntryWorkbenchViewModel["updateLine"]>((lineId, patch) => {
+    setValidatedDraftSignature(null);
     setDraft((current) => ({
       ...withManualJournalTotals({
         ...current,
@@ -224,6 +230,7 @@ export function useManualJournalEntryWorkbenchViewModel(
 
   const addLine = useCallback((side: AccountingTemplateLineSide) => {
     const line = createManualJournalEntryLine(side, draft.currency, accountOptions[0]?.value ?? "");
+    setValidatedDraftSignature(null);
     setDraft((current) => withManualJournalTotals({ ...current, lines: [...current.lines, line] }));
     setSelectedLineId(line.lineId);
   }, [accountOptions, draft.currency]);
@@ -234,6 +241,7 @@ export function useManualJournalEntryWorkbenchViewModel(
         return current;
       }
 
+      setValidatedDraftSignature(null);
       const nextLines = current.lines.filter((line) => line.lineId !== lineId);
       if (selectedLineId === lineId) {
         setSelectedLineId(nextLines[0]?.lineId ?? "line-1");
@@ -296,6 +304,11 @@ export function useManualJournalEntryWorkbenchViewModel(
   const removeAttachment = useCallback<ManualJournalEntryWorkbenchViewModel["removeAttachment"]>((attachmentId) => {
     setDraft((current) => {
       const nextAttachments = (current.evidenceAttachments ?? []).filter((item) => item.attachmentId !== attachmentId);
+      if (nextAttachments.length === (current.evidenceAttachments ?? []).length) {
+        return current;
+      }
+
+      setValidatedDraftSignature(null);
       const retainedUris = new Set(nextAttachments.map((item) => item.uri));
       return {
         ...current,
@@ -312,6 +325,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     }
 
     setDraft(selected);
+    setValidatedDraftSignature(null);
     setSelectedLineId(selected.lines[0]?.lineId ?? selectedLineId);
   }, [selectedLineId, workbench?.drafts]);
 
@@ -320,12 +334,13 @@ export function useManualJournalEntryWorkbenchViewModel(
     setError(null);
     const draftForValidation = withManualJournalTotals(draft);
     try {
-      applyServerDraft(await services.validateDraft({
+      const validatedDraft = await services.validateDraft({
         draft: draftForValidation,
         actor: "browser-user",
         correlationId: "manual-je-validate",
         ledgerBookId: draftForValidation.ledgerBookId ?? query.ledgerBookId ?? null
-      }));
+      });
+      applyServerDraft(validatedDraft, true);
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry validation failed."));
     } finally {
@@ -352,9 +367,17 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [applyServerDraft, draft, query.ledgerBookId, services]);
 
   const submit = useCallback(async () => {
+    const draftForSubmit = withManualJournalTotals(draft);
+    const validationIsCurrent = validatedDraftSignature !== null
+      && validatedDraftSignature === buildManualJournalValidationSignature(draftForSubmit);
+    const blockedReason = getManualJournalSubmitDisabledReason(draftForSubmit, validationIsCurrent);
+    if (blockedReason) {
+      setError({ summary: blockedReason, details: [] });
+      return;
+    }
+
     setSubmitBusy(true);
     setError(null);
-    const draftForSubmit = withManualJournalTotals(draft);
     try {
       applyServerDraft(await services.submitApproval({
         journalEntryId: draftForSubmit.journalEntryId,
@@ -369,7 +392,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     } finally {
       setSubmitBusy(false);
     }
-  }, [applyServerDraft, draft, query.ledgerBookId, services]);
+  }, [applyServerDraft, draft, query.ledgerBookId, services, validatedDraftSignature]);
 
   const applyLifecycleAction = useCallback<ManualJournalEntryWorkbenchViewModel["applyLifecycleAction"]>(async (action) => {
     if (lifecycleBusyAction) {
@@ -443,8 +466,10 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [draft.evidenceAttachments, draft.lines, draft.validationIssues]);
   const balancedDraft = withManualJournalTotals(draft);
   const balanceImpactRows = buildManualJournalBalanceImpactRows(balancedDraft, workbench?.chartOfAccounts ?? []);
-  const hasEvidence = (balancedDraft.evidenceLinks?.length ?? 0) > 0 || (balancedDraft.evidenceAttachments?.length ?? 0) > 0;
-  const canSubmit = balancedDraft.validationIssues.every((issue) => issue.severity !== "Critical") && Math.abs(balancedDraft.imbalance) === 0 && balancedDraft.lines.length >= 2 && hasEvidence;
+  const validationIsCurrent = validatedDraftSignature !== null
+    && validatedDraftSignature === buildManualJournalValidationSignature(balancedDraft);
+  const submitDisabledReason = getManualJournalSubmitDisabledReason(balancedDraft, validationIsCurrent);
+  const canSubmit = submitDisabledReason === null;
   const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatCurrency(Math.abs(balancedDraft.imbalance));
   const treasuryContextLabel = formatManualJournalTreasuryContext(draft);
   const privateCapitalActivity = useMemo(
@@ -471,6 +496,7 @@ export function useManualJournalEntryWorkbenchViewModel(
   return {
     title: "Manual journal entry workbench",
     description: "Author controller-owned journal entries with GL account picks, line-level Security Master attribution, balancing validation, draft save, and approval submission.",
+    available: workbench !== null,
     loading,
     errorText: error?.summary ?? null,
     statusLabel: `${draft.status} v${draft.version}`,
@@ -505,8 +531,9 @@ export function useManualJournalEntryWorkbenchViewModel(
     submitBusy,
     attachEvidenceBusy,
     attachEvidenceStatusText,
+    validationIsCurrent,
     canSubmit,
-    submitDisabledReason: canSubmit ? null : "Resolve critical validation issues, balance debits to credits, and attach source evidence before approval submission.",
+    submitDisabledReason,
     refresh,
     updateHeader,
     selectDraft,
@@ -586,18 +613,20 @@ function buildManualJournalPrivateCapitalActivityView(
   }
 
   const currency = activity.currency || "USD";
+  const fundEvents = activity.fundEvents ?? [];
+  const capitalAccounts = activity.capitalAccounts ?? [];
   const capitalAccountSubledgers = activity.capitalAccountSubledgers ?? [];
-  const capitalAccountSubledgerEntries = activity.capitalAccountSubledgerEntries;
-  const ledgerImpacts = activity.ledgerImpacts;
-  const reportOutputs = activity.reportOutputs;
-  const fundEventLedgerRecords = activity.fundEventRecords;
+  const capitalAccountSubledgerEntries = activity.capitalAccountSubledgerEntries ?? [];
+  const ledgerImpacts = activity.ledgerImpacts ?? [];
+  const reportOutputs = activity.reportOutputs ?? [];
+  const fundEventLedgerRecords = activity.fundEventRecords ?? [];
   const paymentIntents = activity.paymentIntents ?? [];
   const fundEventLedgerRecordCount = fundEventLedgerRecords.length;
   const deferredPaymentIntentCount = paymentIntents.filter((item) => item.status === "ExecutionDeferred").length;
   const blockedPaymentIntentCount = paymentIntents.filter((item) => item.status === "Blocked" || item.status === "BankReturned").length;
   const postedFundEventCount = activity.postedFundEventCount ?? 0;
   const publishedReportOutputCount = activity.publishedReportOutputCount ?? 0;
-  const validationIssues = activity.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+  const validationIssues = (activity.validationIssues ?? []).map<AccountingConfigurationIssueViewModel>((issue, index) => ({
     id: `${issue.code}-${index}`,
     label: issue.code,
     message: issue.message,
@@ -689,8 +718,8 @@ function buildManualJournalPrivateCapitalActivityView(
         tone: validationIssues.length > 0 ? "warning" : "success"
       }
     ],
-    fundEvents: activity.fundEvents.map(buildManualJournalPrivateCapitalFundEventRow),
-    capitalAccounts: activity.capitalAccounts.map(buildManualJournalPrivateCapitalAccountRow),
+    fundEvents: fundEvents.map(buildManualJournalPrivateCapitalFundEventRow),
+    capitalAccounts: capitalAccounts.map(buildManualJournalPrivateCapitalAccountRow),
     capitalAccountSubledgers: capitalAccountSubledgers.map(buildManualJournalPrivateCapitalCapitalAccountSubledgerRow),
     capitalAccountSubledgerEntries: capitalAccountSubledgerEntries.map(buildManualJournalPrivateCapitalSubledgerEntryRow),
     ledgerImpacts: ledgerImpacts.map(buildManualJournalPrivateCapitalLedgerImpactRow),
@@ -1185,6 +1214,41 @@ function withManualJournalTotals(draft: ManualJournalEntryDraft): ManualJournalE
     totalCredits,
     imbalance: totalDebits - totalCredits
   };
+}
+
+function buildManualJournalValidationSignature(draft: ManualJournalEntryDraft): string {
+  return JSON.stringify(withManualJournalTotals(draft));
+}
+
+function getManualJournalSubmitDisabledReason(
+  draft: ManualJournalEntryDraft,
+  validationIsCurrent: boolean
+): string | null {
+  if (!validationIsCurrent) {
+    return "Run Validate on the current draft before approval submission.";
+  }
+
+  if (draft.validationIssues.some((issue) => issue.severity === "Critical")) {
+    return "Resolve critical validation issues before approval submission.";
+  }
+
+  if (Math.abs(draft.imbalance) !== 0) {
+    return "Balance debits and credits before approval submission.";
+  }
+
+  if (draft.lines.length < 2) {
+    return "Add at least two journal lines before approval submission.";
+  }
+
+  const evidenceCount = new Set([
+    ...(draft.evidenceLinks ?? []),
+    ...(draft.evidenceAttachments ?? []).map((attachment) => attachment.uri)
+  ].filter((value) => value.trim().length > 0)).size;
+  if (evidenceCount === 0) {
+    return "Attach source evidence before approval submission.";
+  }
+
+  return null;
 }
 
 function buildManualJournalBalanceImpactRows(

@@ -3,6 +3,7 @@ using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Failover;
+using Meridian.Infrastructure.Resilience;
 using Xunit;
 
 namespace Meridian.Tests.Providers;
@@ -175,6 +176,61 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ConnectionDiagnostics_TrackCompositeConnectAndDisconnect()
+    {
+        var observed = new List<WebSocketConnectionDiagnostics>();
+        _sut.ConnectionDiagnosticsChanged += observed.Add;
+
+        await _sut.ConnectAsync();
+        var connected = _sut.GetConnectionDiagnosticsSnapshot();
+        await _sut.DisconnectAsync();
+        var disconnected = _sut.GetConnectionDiagnosticsSnapshot();
+
+        connected.ProviderName.Should().Be("Failover (primary)");
+        connected.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Connected);
+        connected.IsConnected.Should().BeTrue();
+        connected.LastConnectedAt.Should().NotBeNull();
+        disconnected.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+        disconnected.IsConnected.Should().BeFalse();
+        disconnected.LastDisconnectedAt.Should().NotBeNull();
+        observed.Should().Contain(snapshot =>
+            snapshot.ProviderName == "Failover (primary)" &&
+            snapshot.LifecycleState == ProviderConnectionLifecycleState.Connected &&
+            snapshot.IsConnected);
+        observed.Should().Contain(snapshot =>
+            snapshot.ProviderName == "Failover (primary)" &&
+            snapshot.LifecycleState == ProviderConnectionLifecycleState.Disconnected &&
+            !snapshot.IsConnected);
+    }
+
+    [Fact]
+    public async Task ConnectionDiagnostics_ForcedFailover_PublishesConnectedActiveProviderSwitch()
+    {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 60,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+
+        var switched = new TaskCompletionSource<WebSocketConnectionDiagnostics>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        _sut.ConnectionDiagnosticsChanged += snapshot =>
+        {
+            if (snapshot.ProviderName == "Failover (backup)" && snapshot.IsConnected)
+                switched.TrySetResult(snapshot);
+        };
+
+        _failoverService.ForceFailover("test-rule", "backup").Should().BeTrue();
+
+        var switchSnapshot = await switched.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        _sut.ActiveProviderId.Should().Be("backup");
+        switchSnapshot.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Connected);
+        switchSnapshot.IsReconnecting.Should().BeFalse();
+        _backupClient.ConnectCallCount.Should().Be(1);
+        _primaryClient.DisconnectCallCount.Should().Be(1);
+    }
+
+    [Fact]
     public void SubscribeMarketDepth_DelegatesToActiveClient()
     {
         var cfg = new SymbolConfig("SPY", SubscribeDepth: true, DepthLevels: 5);
@@ -295,6 +351,9 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     {
         private readonly string _id;
         private int _nextSubId = 1;
+        private ProviderConnectionLifecycleState _lifecycleState = ProviderConnectionLifecycleState.Configured;
+        private DateTimeOffset? _lastConnectedAt;
+        private DateTimeOffset? _lastDisconnectedAt;
 
         public bool ShouldFailConnect { get; set; }
         public bool ShouldCancelConnect { get; set; }
@@ -320,6 +379,29 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
         public Meridian.Infrastructure.Adapters.Core.ProviderCapabilities ProviderCapabilities
             => Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming();
 
+        public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
+
+        public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot()
+            => new(
+                ProviderName: ProviderDisplayName,
+                LifecycleState: _lifecycleState,
+                WebSocketState: System.Net.WebSockets.WebSocketState.None,
+                IsConnected: _lifecycleState == ProviderConnectionLifecycleState.Connected,
+                IsReconnecting: false,
+                ReconnectAttempts: 0,
+                LastConnectedAt: _lastConnectedAt,
+                LastDisconnectedAt: _lastDisconnectedAt,
+                LastHeartbeatReceivedAt: null,
+                LastMessageReceivedAt: null,
+                LastReconnectAttemptAt: null,
+                LastError: null,
+                LastFailureKind: null,
+                ConnectionAge: _lastConnectedAt.HasValue && _lifecycleState == ProviderConnectionLifecycleState.Connected
+                    ? DateTimeOffset.UtcNow - _lastConnectedAt.Value
+                    : null,
+                IdleDuration: null,
+                ActiveSubscriptions: DepthSubscriptions.Count + TradeSubscriptions.Count);
+
         public Task ConnectAsync(CancellationToken ct = default)
         {
             ConnectCallCount++;
@@ -327,12 +409,18 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
                 return Task.FromCanceled(ct.IsCancellationRequested ? ct : new CancellationToken(canceled: true));
             if (ShouldFailConnect)
                 throw new InvalidOperationException($"Fake connect failure for {_id}");
+            _lifecycleState = ProviderConnectionLifecycleState.Connected;
+            _lastConnectedAt = DateTimeOffset.UtcNow;
+            ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
             return Task.CompletedTask;
         }
 
         public Task DisconnectAsync(CancellationToken ct = default)
         {
             DisconnectCallCount++;
+            _lifecycleState = ProviderConnectionLifecycleState.Disconnected;
+            _lastDisconnectedAt = DateTimeOffset.UtcNow;
+            ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
             return Task.CompletedTask;
         }
 

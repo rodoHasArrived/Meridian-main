@@ -70,7 +70,8 @@ public sealed class ConfigJsonSchemaGeneratorTests
             "AllowInsecureTransportForReverseProxy",
             "DeploymentMode",
             "ServeWorkstationAssets",
-            "Urls");
+            "Urls",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]
@@ -81,6 +82,26 @@ public sealed class ConfigJsonSchemaGeneratorTests
             .Select(static node => node!.GetValue<string>());
 
         modes.Should().Contain(["LocalWorkstation", "ProductionApi", "Worker", "Migration"]);
+    }
+
+    [Fact]
+    public void GenerateSchema_IncludesSecurityMasterWorkbenchOptions()
+    {
+        var workbenchSchema = GetRootProperty("SecurityMasterWorkbench");
+        var workbenchBranch = workbenchSchema["anyOf"]!.AsArray()
+            .Select(static node => node!.AsObject())
+            .First(static node => node["$ref"] is not null);
+
+        workbenchBranch["$ref"]?.GetValue<string>().Should().Be("#/$defs/SecurityMasterWorkbenchOptions");
+
+        var definition = _generator.GenerateSchema()["$defs"]!["SecurityMasterWorkbenchOptions"]!.AsObject();
+        var properties = definition["properties"]!.AsObject();
+        properties.Select(static property => property.Key).Should().Contain(
+            "SourcePrecedence",
+            "GoldenCopySource",
+            "RequireIndependentReviewer",
+            "MaxBulkResolveBatch",
+            "__VACUITY_PROBE__");
     }
 
     [Fact]

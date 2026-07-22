@@ -1,0 +1,1 @@
+Loading placeholder with a subtle shimmer (reduced-motion safe). Use `block` for cards, `text` for copy lines (multi-line via `lines`, last line shortened), `circle` for avatars. `SkeletonTable` lays out a dense placeholder grid for tables that are still fetching.

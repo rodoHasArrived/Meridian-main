@@ -26,7 +26,10 @@ public sealed record AssetTermsVersionDto(
     string SourceDomain,
     string? SourceEntityId,
     string Summary,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetLifecycleEventDto(
     Guid LifecycleEventId,
@@ -38,7 +41,10 @@ public sealed record AssetLifecycleEventDto(
     string SourceDomain,
     string? SourceEntityId,
     string Summary,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetCashFlowProjectionRunDto(
     Guid ProjectionRunId,
@@ -49,7 +55,10 @@ public sealed record AssetCashFlowProjectionRunDto(
     DateTimeOffset GeneratedAt,
     string SourceDomain,
     string? SourceEntityId,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetProjectedCashFlowDto(
     Guid ProjectedCashFlowId,
@@ -67,7 +76,10 @@ public sealed record AssetProjectedCashFlowDto(
     decimal? AnnualRate = null,
     string? SourceDomain = null,
     string? SourceEntityId = null,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetActualActivityDto(
     Guid ActivityId,
@@ -81,7 +93,10 @@ public sealed record AssetActualActivityDto(
     string SourceDomain,
     string? SourceEntityId,
     string? EvidenceLink,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetReconciliationRunDto(
     Guid ReconciliationRunId,
@@ -92,7 +107,10 @@ public sealed record AssetReconciliationRunDto(
     DateTimeOffset? CompletedAt,
     string SourceDomain,
     string? SourceEntityId,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetReconciliationResultDto(
     Guid ReconciliationResultId,
@@ -107,7 +125,10 @@ public sealed record AssetReconciliationResultDto(
     string SourceDomain,
     string? SourceEntityId,
     string? EvidenceLink,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetLedgerProjectionDto(
     Guid LedgerProjectionId,
@@ -122,7 +143,10 @@ public sealed record AssetLedgerProjectionDto(
     string SourceDomain,
     string? SourceEntityId,
     string? LedgerReferenceId,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetTermsObligationTimelineEventDto(
     Guid TimelineEventId,
@@ -150,6 +174,8 @@ public sealed record AssetTermsObligationTimelineEventDto(
     public string? LedgerReference { get; init; }
 
     public string? NextAction { get; init; }
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 
 public sealed record AssetTimelineVarianceDto(
@@ -166,7 +192,10 @@ public sealed record AssetTimelineVarianceDto(
     string SourceDomain,
     string? SourceEntityId,
     string Summary,
-    string? EvidenceLink = null);
+    string? EvidenceLink = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetTermsObligationsTimelineDto(
     Guid SecurityId,
@@ -183,6 +212,8 @@ public sealed record AssetTermsObligationsTimelineDto(
     public string? AssetClass { get; init; }
 
     public IReadOnlyList<AssetTimelineVarianceDto> Variances { get; init; } = [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 
 public sealed record AssetOperationsReadinessDto(
@@ -195,7 +226,10 @@ public sealed record AssetOperationsReadinessDto(
     DateTimeOffset EvaluatedAt,
     string SourceDomain,
     string? SourceEntityId,
-    JsonElement? ExtensionPayload = null);
+    JsonElement? ExtensionPayload = null)
+{
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
+}
 
 public sealed record AssetOperationsDetailDto(
     AssetOperationSubjectDto Subject,
@@ -211,6 +245,16 @@ public sealed record AssetOperationsDetailDto(
     IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit)
 {
     public AssetTermsObligationsTimelineDto? TermsObligationsTimeline { get; init; }
+
+    public IReadOnlyList<InstrumentRoleDto> InstrumentRoles { get; init; } = [];
+
+    public IReadOnlyList<BookPositionDto> BookPositions { get; init; } = [];
+
+    public IReadOnlyList<PositionEconomicStateDto> PositionEconomicStates { get; init; } = [];
+
+    public IReadOnlyList<ProjectionLineageDto> ProjectionLineages { get; init; } = [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 
 public sealed record AssetOperationsProjectionDto(
@@ -227,6 +271,16 @@ public sealed record AssetOperationsProjectionDto(
     IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit)
 {
     public AssetTermsObligationsTimelineDto? TermsObligationsTimeline { get; init; }
+
+    public IReadOnlyList<InstrumentRoleDto> InstrumentRoles { get; init; } = [];
+
+    public IReadOnlyList<BookPositionDto> BookPositions { get; init; } = [];
+
+    public IReadOnlyList<PositionEconomicStateDto> PositionEconomicStates { get; init; } = [];
+
+    public IReadOnlyList<ProjectionLineageDto> ProjectionLineages { get; init; } = [];
+
+    public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 
 public sealed record AssetOperationsWriteApprovalDto(

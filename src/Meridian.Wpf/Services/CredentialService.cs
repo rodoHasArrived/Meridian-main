@@ -12,8 +12,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Credentials;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.Contracts;
 using HttpClientFactoryProvider = Meridian.Ui.Services.HttpClientFactoryProvider;
 using HttpClientNames = Meridian.Ui.Services.HttpClientNames;
+using SharedCredentialExpirationEventArgs = Meridian.Ui.Services.CredentialExpirationEventArgs;
+using SharedCredentialMetadataInfo = Meridian.Ui.Services.CredentialMetadataInfo;
+using SharedCredentialMetadataUpdate = Meridian.Ui.Services.CredentialMetadataUpdate;
+using SharedCredentialWithMetadata = Meridian.Ui.Services.CredentialWithMetadata;
+using SharedOAuthRefreshResult = Meridian.Ui.Services.OAuthRefreshResult;
 
 namespace Meridian.Wpf.Services;
 
@@ -106,8 +112,10 @@ public sealed class CredentialExpirationEventArgs : EventArgs
 /// <summary>
 /// Service for secure credential management using DPAPI-encrypted file storage.
 /// Enhanced with OAuth support, expiration tracking, and credential testing capabilities.
+/// Implements the shared <see cref="ICredentialService"/> seam so shared UI services can
+/// consume this host implementation instead of the no-op default.
 /// </summary>
-public sealed class CredentialService : IDisposable
+public sealed class CredentialService : ICredentialService, IDisposable
 {
     private const string ResourcePrefix = "Meridian";
     private const string CredentialVaultFileName = "credentials.enc";
@@ -159,13 +167,21 @@ public sealed class CredentialService : IDisposable
     public (int RetrievalFailures, int SaveFailures, int RemovalFailures, int VaultAccessFailures) GetTelemetryCounters()
         => (_credentialRetrievalFailures, _credentialSaveFailures, _credentialRemovalFailures, _vaultAccessFailures);
 
-    public CredentialService()
+    /// <param name="storageDirectory">
+    /// Optional override for the credential storage directory. Production and DI callers pass
+    /// nothing, so credentials persist under <c>%LocalAppData%\Meridian</c> exactly as before;
+    /// tests and alternative hosts can supply an isolated directory instead of touching the real
+    /// operator vault.
+    /// </param>
+    public CredentialService(string? storageDirectory = null)
     {
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.CredentialTest);
 
-        var appDataDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Meridian");
+        var appDataDir = string.IsNullOrWhiteSpace(storageDirectory)
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian")
+            : storageDirectory;
         Directory.CreateDirectory(appDataDir);
 
         _vaultPath = Path.Combine(appDataDir, CredentialVaultFileName);
@@ -237,8 +253,13 @@ public sealed class CredentialService : IDisposable
                 var encrypted = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
                 File.WriteAllBytes(_vaultPath, encrypted);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Vault persistence is best-effort; disk/DPAPI failures must not crash the caller.
+                LoggingService.Instance.LogDebug(
+                    "Failed to persist credential vault.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
     }
@@ -464,8 +485,13 @@ public sealed class CredentialService : IDisposable
             var json = JsonSerializer.Serialize(snapshot, DesktopJsonOptions.PrettyPrint);
             await File.WriteAllTextAsync(_metadataPath, json);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            // Metadata persistence is best-effort; failures must not crash the caller.
+            LoggingService.Instance.LogDebug(
+                "Failed to persist credential metadata.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -502,6 +528,7 @@ public sealed class CredentialService : IDisposable
             if (remaining.TotalDays <= 7 && remaining.TotalSeconds > 0)
             {
                 CredentialExpiring?.Invoke(this, new CredentialExpirationEventArgs(resource, metadata.ExpiresAt.Value));
+                _sharedCredentialExpiring?.Invoke(this, new SharedCredentialExpirationEventArgs(resource, metadata.ExpiresAt.Value));
             }
         }
     }
@@ -928,6 +955,66 @@ public sealed class CredentialService : IDisposable
     }
 
 
+
+    // ICredentialService adapter: explicit implementations map the narrower shared UI seam
+    // onto this host implementation, so shared services get real credentials without the
+    // WPF surface (richer metadata, typed test results) leaking into the contract.
+
+    private EventHandler<SharedCredentialExpirationEventArgs>? _sharedCredentialExpiring;
+
+    event EventHandler<SharedCredentialExpirationEventArgs>? ICredentialService.CredentialExpiring
+    {
+        add => _sharedCredentialExpiring += value;
+        remove => _sharedCredentialExpiring -= value;
+    }
+
+    IReadOnlyList<SharedCredentialWithMetadata> ICredentialService.GetAllCredentialsWithMetadata()
+        => GetAllCredentialsWithMetadata()
+            .Select(c => new SharedCredentialWithMetadata
+            {
+                Resource = c.Resource,
+                IsOAuthToken = c.CredentialType == CredentialType.OAuth2Token,
+                ExpiresAt = c.ExpiresAt,
+                CanAutoRefresh = c.CanAutoRefresh,
+                AutoRefreshEnabled = c.CanAutoRefresh
+            })
+            .ToList();
+
+    async Task<SharedOAuthRefreshResult> ICredentialService.RefreshOAuthTokenAsync(string providerId, CancellationToken ct)
+    {
+        var success = await RefreshOAuthTokenAsync(providerId, ct).ConfigureAwait(false);
+        var metadata = GetMetadata($"{OAuthTokenResource}.{providerId}");
+        return new SharedOAuthRefreshResult
+        {
+            Success = success,
+            ErrorMessage = success ? null : "OAuth token refresh failed.",
+            NewExpiration = success ? metadata?.ExpiresAt : null
+        };
+    }
+
+    Task ICredentialService.UpdateMetadataAsync(string resource, Action<SharedCredentialMetadataUpdate> updateAction, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(updateAction);
+
+        var update = new SharedCredentialMetadataUpdate
+        {
+            AutoRefreshEnabled = GetMetadata(resource)?.AutoRefreshEnabled ?? false
+        };
+        updateAction(update);
+        return UpdateMetadataAsync(resource, m => m.AutoRefreshEnabled = update.AutoRefreshEnabled, ct);
+    }
+
+    SharedCredentialMetadataInfo? ICredentialService.GetMetadata(string resource)
+    {
+        var metadata = GetMetadata(resource);
+        return metadata is null
+            ? null
+            : new SharedCredentialMetadataInfo
+            {
+                AutoRefreshEnabled = metadata.AutoRefreshEnabled,
+                ExpiresAt = metadata.ExpiresAt
+            };
+    }
 
     private void LogCredentialOperation(string operation, string resource, bool success, string? details = null)
     {

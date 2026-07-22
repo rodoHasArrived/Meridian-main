@@ -256,14 +256,30 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     public bool CanAddToSecurityMaster
     {
         get => _canAddToSecurityMaster;
-        private set => SetProperty(ref _canAddToSecurityMaster, value);
+        private set
+        {
+            // Keep the command's CanExecute in lockstep so command-only consumers
+            // (e.g. the symbol context-menu items) refresh when the async Security
+            // Master lookup flips this flag, not just the panel buttons that also
+            // bind visibility. Null-guarded for the pre-construction set path.
+            if (SetProperty(ref _canAddToSecurityMaster, value))
+            {
+                AddToSecurityMasterCommand?.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     private bool _canViewInSecurityMaster;
     public bool CanViewInSecurityMaster
     {
         get => _canViewInSecurityMaster;
-        private set => SetProperty(ref _canViewInSecurityMaster, value);
+        private set
+        {
+            if (SetProperty(ref _canViewInSecurityMaster, value))
+            {
+                ViewInSecurityMasterCommand?.NotifyCanExecuteChanged();
+            }
+        }
     }
 
     private Guid? _selectedSymbolSecurityId;
@@ -424,8 +440,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
     public void CancelActivation()
     {
-        CancelWithoutDisposing(Interlocked.Exchange(ref _loadCts, null));
         CancelWithoutDisposing(Interlocked.Exchange(ref _activationCts, null));
+        CancelWithoutDisposing(Interlocked.Exchange(ref _loadCts, null));
     }
 
     public void Deactivate()
@@ -517,6 +533,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
             }
             catch (ObjectDisposedException)
             {
+                // The previous token source was already disposed; nothing to cancel.
+                _loggingService.LogDebug(
+                    "Ignored cancel on already-disposed token source.",
+                    ("view", GetType().Name));
             }
 
             previousLoadCts.Dispose();
@@ -542,7 +562,13 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
                 });
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when the view is torn down mid-load; benign.
+            _loggingService.LogDebug(
+                "Symbols page watchlist load cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load watchlists", ex);
@@ -1135,6 +1161,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(SymbolsPageViewModel)));
         }
 
         cts.Dispose();
@@ -1151,6 +1181,10 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(SymbolsPageViewModel)));
         }
     }
 

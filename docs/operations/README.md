@@ -1,10 +1,12 @@
 # Operations Documentation
 
-**Status:** source-material
+**Status:** transitional-compatibility
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-19
 
-This folder is now migration source material. Active operational guidance is in [operators/README.md](../operators/README.md).
+This folder is a compatibility lane. Active operational guidance is in
+[Operators](../operators/README.md), but a small set of paths remains because tests, monitoring
+registries, rules, or strong links still consume them. Do not add new durable guidance here.
 
 ## Canonical Operator Paths
 
@@ -15,6 +17,17 @@ This folder is now migration source material. Active operational guidance is in 
 
 ## Migration Notes
 
-Each legacy file below remains as an archive-migration stub and points to the canonical operator lane.
+Full historical copies are retained in
+[archive/docs/operations/](../../archive/docs/operations/README.md), and the legacy-path routing
+table in [Operators](../operators/README.md) maps old paths to canonical replacements.
 
-- High-traffic historical operator pages are retained in [../archive/docs/operations/](../../archive/docs/operations/README.md)
+The files still present here stay because active tooling consumes them at these paths:
+
+- [operator-runbook.md](operator-runbook.md) — alert/SLO runbook anchor referenced by
+  `src/Meridian.Platform/Monitoring` registries, `deploy/monitoring/alert-rules.yml`, and
+  `build/rules/doc-rules.yaml`.
+- [service-level-objectives.md](service-level-objectives.md) — SLO doc anchor referenced by
+  `SloDefinitionRegistry`.
+- [live-execution-controls.md](live-execution-controls.md) — route-consistency test input
+  (`tests/scripts/test_live_execution_controls_route_consistency.py`).
+- [cleanup-and-maintenance.md](cleanup-and-maintenance.md) — retained maintenance guidance.

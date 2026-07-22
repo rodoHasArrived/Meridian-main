@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -6,7 +7,9 @@ public sealed record ReportAccessQueryContext(
     string? ActorPrincipalId = null,
     IReadOnlyList<string>? GroupPrincipalIds = null,
     string? CompanyId = null,
-    bool HasGlobalOverride = false);
+    bool HasGlobalOverride = false,
+    string? TenantId = null,
+    bool RequireBoundScope = false);
 
 public static class ReportAccessPolicyEvaluator
 {
@@ -59,7 +62,7 @@ public static class ReportAccessPolicyEvaluator
         var normalized = Normalize(policy);
         var principals = normalized.Principals ?? [];
         if (normalized.Mode is ReportAccessModeDto.Private or ReportAccessModeDto.Restricted
-            && string.IsNullOrWhiteSpace(normalized.OwnerPrincipalId)
+            && (!normalized.AllowOwnerAccess || string.IsNullOrWhiteSpace(normalized.OwnerPrincipalId))
             && principals.Count == 0)
         {
             issues.Add("Private or restricted report access requires an owner or at least one allowed principal.");
@@ -77,13 +80,18 @@ public static class ReportAccessPolicyEvaluator
     public static ReportAccessEvaluationDto Evaluate(ReportAccessPolicyDto? policy, ReportAccessQueryContext? context)
     {
         var normalized = Normalize(policy);
-        if (context?.HasGlobalOverride == true)
-        {
-            return Allow("Access granted by reporting administrator override.", []);
-        }
-
         var actor = NormalizeId(context?.ActorPrincipalId);
         var company = NormalizeId(context?.CompanyId);
+        var tenant = NormalizeId(context?.TenantId);
+        if (context?.RequireBoundScope == true
+            && (actor is null || company is null || tenant is null))
+        {
+            return Deny("Report access requires authenticated actor, tenant, and company scope.");
+        }
+        if (context?.HasGlobalOverride == true)
+        {
+            return Allow("Access granted by reporting administrator override within the bound tenant scope.", []);
+        }
         var groupIds = new HashSet<string>(
             context?.GroupPrincipalIds?
                 .Select(NormalizeId)
@@ -102,6 +110,11 @@ public static class ReportAccessPolicyEvaluator
 
         if (normalized.Mode == ReportAccessModeDto.CompanyWide)
         {
+            if (context?.RequireBoundScope == true && string.IsNullOrWhiteSpace(normalized.CompanyId))
+            {
+                return Deny("Company-wide report access is not bound to a company snapshot.");
+            }
+
             if (string.IsNullOrWhiteSpace(normalized.CompanyId)
                 || string.Equals(normalized.CompanyId, company, StringComparison.OrdinalIgnoreCase))
             {
@@ -133,6 +146,77 @@ public static class ReportAccessPolicyEvaluator
         }
 
         return Deny(BuildDenyReason(normalized));
+    }
+
+    public static ReportAccessEvaluationDto Evaluate(
+        ReportingOutputManifest manifest,
+        ReportAccessQueryContext? context)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+        var actor = NormalizeId(context?.ActorPrincipalId);
+        var company = NormalizeId(context?.CompanyId);
+        var tenant = NormalizeId(context?.TenantId);
+        if (context?.RequireBoundScope == true && (actor is null || company is null || tenant is null))
+        {
+            return Deny("Report access requires authenticated actor, tenant, and company scope.");
+        }
+
+        if (manifest.OperationalScope is null || manifest.ImmutableAccessScope is null)
+        {
+            return context?.RequireBoundScope == true
+                ? Deny("This legacy reporting run has no immutable tenant and access snapshot.")
+                : Evaluate(manifest.AccessPolicy, context);
+        }
+
+        if (!string.Equals(manifest.OperationalScope.TenantId, tenant, StringComparison.Ordinal)
+            || !string.Equals(manifest.OperationalScope.CompanyId, company, StringComparison.Ordinal))
+        {
+            return Deny("The reporting run belongs to another tenant or company scope.");
+        }
+
+        if (context?.HasGlobalOverride == true)
+        {
+            return Allow("Access granted by reporting administrator override within the immutable tenant scope.", []);
+        }
+
+        var access = manifest.ImmutableAccessScope;
+        if (access.AllowOwnerAccess
+            && !string.IsNullOrWhiteSpace(access.OwnerPrincipalId)
+            && string.Equals(access.OwnerPrincipalId, actor, StringComparison.OrdinalIgnoreCase))
+        {
+            return Allow("Access granted to the immutable report owner.", [BuildUserPrincipal(actor!)]);
+        }
+
+        if (access.Mode == ReportingGovernanceAccessMode.CompanyWide)
+        {
+            return Allow("Access granted by the immutable company-wide report policy.", []);
+        }
+
+        var groupIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var group in context?.GroupPrincipalIds ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(group))
+            {
+                groupIds.Add(group.Trim());
+            }
+        }
+
+        bool Matches(ReportingAccessPrincipalScope principal) => principal.Kind switch
+        {
+            ReportingAccessPrincipalKind.User => string.Equals(principal.PrincipalId, actor, StringComparison.OrdinalIgnoreCase),
+            ReportingAccessPrincipalKind.Group => groupIds.Contains(principal.PrincipalId),
+            ReportingAccessPrincipalKind.Company => string.Equals(principal.PrincipalId, company, StringComparison.OrdinalIgnoreCase),
+            _ => false
+        };
+
+        var namedPrincipalMatched = !access.Principals.IsDefaultOrEmpty
+            && access.Principals.Any(principal =>
+                Matches(principal)
+                && (access.Mode == ReportingGovernanceAccessMode.Restricted
+                    || principal.Kind == ReportingAccessPrincipalKind.User));
+        return namedPrincipalMatched
+            ? Allow("Access granted by the immutable named report audience.", [])
+            : Deny("The caller is not included in the immutable report access snapshot.");
     }
 
     public static string BuildSummary(ReportAccessPolicyDto? policy)

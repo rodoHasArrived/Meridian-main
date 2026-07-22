@@ -186,4 +186,4 @@ Use `./scripts/dev/run-provider-validation-evidence-bundle.ps1` to generate:
 The evidence bundle standardizes schema and emits promotion posture (`candidate-approved`, `candidate-rejected`, or `not-run`) with baseline-versus-candidate kernel metadata.
 Bundle outputs are written under the same date-scoped automation root (`artifacts/provider-validation/_automation/<yyyy-mm-dd>/`) so provider-validation summaries, DK1 packet/sign-off outputs, and degradation governance evidence remain in one canonical artifact structure.
 
-Promotion checklist and rollback triggers are authoritative in `docs/operations/provider-degradation-calibration.md`; this matrix requires those checks for any DK1 promotion decision.
+Promotion checklist and rollback triggers are authoritative in `archive/docs/operations/provider-degradation-calibration.md`; this matrix requires those checks for any DK1 promotion decision.

@@ -1,8 +1,11 @@
 using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using System.Text.Json;
 
 namespace Meridian.Tests.Storage;
@@ -76,9 +79,144 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public async Task AppendAsync_TypedPostingCommandWithoutBookContext_RejectsBeforeOpeningConnection()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var write = BuildBookScopedPostingWrite(
+            ledgerBookId,
+            Guid.NewGuid(),
+            bookContext: null,
+            accountingPolicyId: "gaap-policy",
+            accountingPolicyVersion: "v1");
+        var store = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions());
+
+        var act = () => store.AppendAsync(write);
+
+        await act.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*require authoritative book context*");
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AppendAsync_ClientContextConflictsWithRetainedBook_RejectsEveryConflict()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var ownerNodeId = Guid.NewGuid();
+        var recordedAt = DateTimeOffset.Parse("2026-01-02T12:00:00Z");
+        var book = new LedgerBookRecord(
+            ledgerBookId,
+            "fund-alpha",
+            ownerNodeId,
+            FundStructureNodeKindDto.Fund,
+            "Fund Alpha GAAP",
+            "USD",
+            recordedAt,
+            recordedAt,
+            AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "gaap-policy",
+            AccountingPolicyVersion: "v1");
+        await database.JournalStore.SaveLedgerBookAsync(book);
+        await database.JournalStore.SavePeriodAsync(
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                1,
+                "2026-01",
+                new DateOnly(2026, 1, 1),
+                new DateOnly(2026, 1, 31),
+                "Open",
+                recordedAt,
+                ClosedAt: null,
+                Version: 0),
+            expectedVersion: 0);
+
+        var retainedContext = new AccountingBookContextDto(
+            ledgerBookId,
+            book.FundProfileId,
+            book.FundStructureNodeId,
+            book.FundStructureNodeKind,
+            book.DisplayName,
+            book.BaseCurrency,
+            book.AccountingBasis,
+            book.AccountingPolicyId,
+            book.AccountingPolicyVersion,
+            periodId);
+        var conflicts = new (string Name, AccountingBookContextDto Context, string PolicyId, string PolicyVersion)[]
+        {
+            ("policy id", retainedContext with { AccountingPolicyId = "client-policy" }, "client-policy", book.AccountingPolicyVersion),
+            ("policy version", retainedContext with { AccountingPolicyVersion = "v2" }, book.AccountingPolicyId, "v2"),
+            ("fund owner", retainedContext with { FundProfileId = "fund-beta" }, book.AccountingPolicyId, book.AccountingPolicyVersion),
+            ("owner node", retainedContext with { FundStructureNodeId = Guid.NewGuid() }, book.AccountingPolicyId, book.AccountingPolicyVersion),
+            ("owner kind", retainedContext with { FundStructureNodeKind = FundStructureNodeKindDto.Entity }, book.AccountingPolicyId, book.AccountingPolicyVersion),
+            ("base currency", retainedContext with { BaseCurrency = "EUR" }, book.AccountingPolicyId, book.AccountingPolicyVersion)
+        };
+
+        foreach (var conflict in conflicts)
+        {
+            var write = BuildBookScopedPostingWrite(
+                ledgerBookId,
+                periodId,
+                conflict.Context,
+                conflict.PolicyId,
+                conflict.PolicyVersion);
+            var act = () => database.JournalStore.AppendAsync(write);
+
+            await act.Should().ThrowAsync<LedgerValidationException>(conflict.Name)
+                .WithMessage("*retained ledger book*");
+        }
+
+        var validWrite = BuildBookScopedPostingWrite(
+            ledgerBookId,
+            periodId,
+            retainedContext,
+            book.AccountingPolicyId,
+            book.AccountingPolicyVersion);
+        await database.JournalStore.AppendAsync(validWrite);
+
+        var retained = await database.JournalStore.QueryAsync(
+            new LedgerJournalEntryQuery(PeriodId: periodId));
+        retained.Should().ContainSingle(record =>
+            record.Entry.JournalEntryId == validWrite.Entry.JournalEntryId);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task AppendAsync_SameCommandAcrossAggregates_V25GlobalIdentityRejectsSecondPosting()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var periodId = Guid.NewGuid();
+        await database.SavePeriodAsync(periodId, "Open");
+        var commandId = Guid.NewGuid();
+        var occurredAt = DateTimeOffset.Parse("2026-05-15T18:00:00Z");
+        var first = BuildBalancedJournalWrite(periodId, occurredAt) with
+        {
+            AggregateId = Guid.NewGuid(),
+            CommandId = commandId
+        };
+        var second = BuildBalancedJournalWrite(periodId, occurredAt.AddMinutes(1)) with
+        {
+            AggregateId = Guid.NewGuid(),
+            CommandId = commandId
+        };
+        await database.JournalStore.AppendAsync(first);
+
+        var act = () => database.JournalStore.AppendAsync(second);
+
+        var exception = await act.Should().ThrowAsync<PostgresException>();
+        exception.Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
+        exception.Which.ConstraintName.Should().Be("ux_journal_entries_command");
+        var retained = await database.JournalStore.GetByPeriodAsync(periodId);
+        retained.Should().ContainSingle(record =>
+            record.Entry.JournalEntryId == first.Entry.JournalEntryId &&
+            record.AggregateId == first.AggregateId);
+    }
+
+    [Fact]
     public void LineDimensionContainmentJson_UsesSparseCanonicalDimensionPayload()
     {
         var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var positionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70");
         var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(new LedgerLineDimensionSet(
             FundId: " fund-alpha ",
             EntityId: "entity-master",
@@ -90,7 +228,10 @@ public sealed class LedgerJournalStoreTests
                 ["Department"] = "FundAccounting",
                 [" "] = "ignored",
                 ["Region"] = " US "
-            }));
+            })
+        {
+            PositionId = positionId
+        });
 
         json.Should().NotBeNull();
         using var document = JsonDocument.Parse(json!);
@@ -98,6 +239,7 @@ public sealed class LedgerJournalStoreTests
         root.GetProperty("fundId").GetString().Should().Be("fund-alpha");
         root.GetProperty("entityId").GetString().Should().Be("entity-master");
         root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("positionId").GetGuid().Should().Be(positionId);
         root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
         root.GetProperty("counterpartyId").GetString().Should().Be("administrator");
         root.TryGetProperty("investorId", out _).Should().BeFalse();
@@ -110,6 +252,7 @@ public sealed class LedgerJournalStoreTests
     public void LineDimensions_AreCanonicalizedBeforeDurableStorageAndQueryFilters()
     {
         var instrumentId = Guid.Parse("2a9e5505-f6c6-4ce4-aac5-a80ab95968f2");
+        var positionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70");
         var dimensions = new LedgerLineDimensionSet(
             FundId: " fund-alpha ",
             EntityId: " entity-master ",
@@ -134,7 +277,10 @@ public sealed class LedgerJournalStoreTests
             AccountId: " account-cash ",
             CustomerId: " customer-investor-services ",
             VendorId: " vendor-administrator ",
-            ProjectId: " project-close ");
+            ProjectId: " project-close ")
+        {
+            PositionId = positionId
+        };
 
         var canonical = PostgresLedgerJournalStore.CanonicalizeLineDimensions(dimensions);
         var json = PostgresLedgerJournalStore.BuildLineDimensionContainmentJson(dimensions);
@@ -147,6 +293,7 @@ public sealed class LedgerJournalStoreTests
         canonical.InvestorId.Should().Be("investor-lp-1");
         canonical.CapitalAccountId.Should().Be("capital-account-lp-1");
         canonical.InstrumentId.Should().Be(instrumentId);
+        canonical.PositionId.Should().Be(positionId);
         canonical.TaxLotId.Should().Be("tax-lot-2026-001");
         canonical.CostCenterId.Should().Be("fund-accounting");
         canonical.CounterpartyId.Should().Be("counterparty-admin");
@@ -172,6 +319,7 @@ public sealed class LedgerJournalStoreTests
         root.GetProperty("investorId").GetString().Should().Be("investor-lp-1");
         root.GetProperty("capitalAccountId").GetString().Should().Be("capital-account-lp-1");
         root.GetProperty("instrumentId").GetGuid().Should().Be(instrumentId);
+        root.GetProperty("positionId").GetGuid().Should().Be(positionId);
         root.GetProperty("taxLotId").GetString().Should().Be("tax-lot-2026-001");
         root.GetProperty("costCenterId").GetString().Should().Be("fund-accounting");
         root.GetProperty("counterpartyId").GetString().Should().Be("counterparty-admin");
@@ -220,6 +368,21 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void JournalEntryQueryFilterSql_SourceEvent_UsesIndexedJournalEntryColumn()
+    {
+        var sourceEventId = Guid.NewGuid();
+
+        var sql = PostgresLedgerJournalStore.BuildJournalEntryQueryFilterSql(
+            "ledger.journal_entries",
+            "ledger.journal_legs",
+            "ledger.accounting_periods",
+            new LedgerJournalEntryQuery(SourceEventId: sourceEventId));
+
+        sql.Should().Contain("je_filter.source_event_id = @source_event_id");
+        sql.Should().NotContain("jl_filter.source_event_id");
+    }
+
+    [Fact]
     public void PostingGuard_OpenPeriod_AllowsOriginatingAndAdjustmentEntries()
     {
         var period = BuildAccountingPeriod("Open");
@@ -231,6 +394,21 @@ public sealed class LedgerJournalStoreTests
 
         originatingAct.Should().NotThrow();
         adjustmentAct.Should().NotThrow();
+    }
+
+    [Fact]
+    public void PostingGuard_OpenPeriod_RejectsClosingEntryUntilPeriodIsSoftClosed()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*ClosingEntry postings*soft-closed*");
     }
 
     [Fact]
@@ -316,6 +494,35 @@ public sealed class LedgerJournalStoreTests
         var write = BuildBalancedJournalWrite(period.PeriodId) with
         {
             PostingKind = LedgerPostingKindDto.Adjustment
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*hard-closed*no postings*");
+    }
+
+    [Fact]
+    public void PostingGuard_SoftClosedPeriod_AllowsClosingEntry()
+    {
+        var period = BuildAccountingPeriod("SoftClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
+        };
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow("closing entries finalize the period being closed");
+    }
+
+    [Fact]
+    public void PostingGuard_HardClosedPeriod_RejectsClosingEntrySoHardCloseIsFinalMutationBoundary()
+    {
+        var period = BuildAccountingPeriod("HardClosed");
+        var write = BuildBalancedJournalWrite(period.PeriodId) with
+        {
+            PostingKind = LedgerPostingKindDto.ClosingEntry
         };
 
         var act = () => LedgerPeriodPostingGuard.Validate(write, period);
@@ -760,6 +967,90 @@ public sealed class LedgerJournalStoreTests
         sql.Should().Contain("using gin (dimensions)");
     }
 
+    [Fact]
+    public void LedgerJournalCurrencyMigration_DefinesTransactionCurrencyColumns()
+    {
+        var sql = ReadMigration("V_ledger_026__journal_leg_currency.sql");
+
+        sql.Should().Contain("alter table __SCHEMA__.journal_legs");
+        sql.Should().Contain("add column if not exists transaction_currency text null");
+        sql.Should().Contain("add column if not exists functional_currency text null");
+        sql.Should().Contain("add column if not exists transaction_debit numeric(38, 10) null");
+        sql.Should().Contain("add column if not exists transaction_credit numeric(38, 10) null");
+        sql.Should().Contain("add column if not exists fx_rate_to_functional numeric(38, 10) null");
+        sql.Should().Contain("ck_journal_legs_currency_detail");
+    }
+
+    [Fact]
+    public void LedgerJournalAsOfIndexMigration_DefinesHydrationIndexes()
+    {
+        var sql = ReadMigration("V_ledger_023__journal_as_of_indexes.sql");
+
+        sql.Should().Contain("ix_accounting_periods_ledger_book_period");
+        sql.Should().Contain("on __SCHEMA__.accounting_periods (ledger_book_id, period_id)");
+        sql.Should().Contain("ix_journal_entries_period_as_of");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (period_id, occurred_at, global_sequence, journal_entry_id)");
+        sql.Should().Contain("ix_journal_entries_as_of");
+        sql.Should().Contain("on __SCHEMA__.journal_entries (occurred_at, global_sequence, journal_entry_id)");
+    }
+
+
+    [Fact]
+    public void PostingCommand_UnmarkedSimulatedEvidence_IsRejectedAtAppendBoundary()
+    {
+        var write = BuildSimulatedOriginPostingWrite(DataProvenance.Real);
+
+        var act = () => AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*unmarked simulated figure*");
+    }
+
+    [Fact]
+    public void PostingCommand_SimulatedMarkRetained_PostsAndRetainsProvenanceTag()
+    {
+        var write = BuildSimulatedOriginPostingWrite(DataProvenance.Simulated);
+
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(write);
+
+        normalized.Entry.Metadata.Tags.Should().ContainKey("dataProvenance");
+        normalized.Entry.Metadata.Tags["dataProvenance"].Should().Be("SIMULATED");
+    }
+
+    private static LedgerJournalEntryWrite BuildSimulatedOriginPostingWrite(DataProvenance provenance)
+    {
+        var periodId = Guid.NewGuid();
+        var aggregateId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        return BuildBalancedJournalWrite(periodId) with
+        {
+            AggregateId = aggregateId,
+            PostingCommand = new AccountingPostingCommandDto(
+                Guid.NewGuid(),
+                aggregateId,
+                periodId,
+                new DateOnly(2026, 1, 31),
+                DateTimeOffset.Parse("2026-01-31T21:00:00Z"),
+                "sim:shadow-book:20260131",
+                SourceEventType: "CapitalCall",
+                ApprovalState: AccountingPostingApprovalStateDto.Approved,
+                ApprovalId: "approval-sim-1",
+                Evidence:
+                [
+                    new AccountingPostingEvidenceReferenceDto(
+                        "evidence-sim-1",
+                        "evidence://sim/shadow-book-1",
+                        AccountingPostingEvidenceKindDto.Source,
+                        "Simulated",
+                        DateTimeOffset.Parse("2026-01-31T20:00:00Z"),
+                        "fund-controller")
+                ],
+                LedgerBookId: ledgerBookId)
+            {
+                Provenance = provenance
+            }
+        };
+    }
 
     [Fact]
     public void PostingCommand_ApprovedCommand_NormalizesWriteMetadataAndEvidence()
@@ -825,6 +1116,7 @@ public sealed class LedgerJournalStoreTests
         var sourceEventId = Guid.NewGuid();
         var commandId = Guid.NewGuid();
         var instrumentId = Guid.NewGuid();
+        var positionId = Guid.NewGuid();
         var ledgerBookId = Guid.NewGuid();
         var write = BuildBalancedJournalWrite(periodId) with
         {
@@ -837,6 +1129,7 @@ public sealed class LedgerJournalStoreTests
             [$"lineDimensions.{debitLine.EntryId:N}.fundId"] = " fund-alpha ",
             [$"lineDimensions.{debitLine.EntryId:N}.entityId"] = "entity-master",
             [$"lineDimensions.{debitLine.EntryId:N}.instrumentId"] = instrumentId.ToString("D"),
+            [$"lineDimensions.{debitLine.EntryId:N}.positionId"] = positionId.ToString("D"),
             [$"lineDimensions.{debitLine.EntryId:N}.costCenterId"] = "investment-ops",
             [$"lineDimensions.{debitLine.EntryId:N}.counterpartyId"] = "custodian-bny",
             [$"lineDimensions.{debitLine.EntryId:N}.externalGl.Department"] = " InvestmentOps ",
@@ -886,6 +1179,7 @@ public sealed class LedgerJournalStoreTests
         normalizedDebit.Dimensions!.FundId.Should().Be("fund-alpha");
         normalizedDebit.Dimensions.EntityId.Should().Be("entity-master");
         normalizedDebit.Dimensions.InstrumentId.Should().Be(instrumentId);
+        normalizedDebit.Dimensions.PositionId.Should().Be(positionId);
         normalizedDebit.Dimensions.CostCenterId.Should().Be("investment-ops");
         normalizedDebit.Dimensions.CounterpartyId.Should().Be("custodian-bny");
         normalizedDebit.Dimensions.ExternalGlDimensions["Department"].Should().Be("InvestmentOps");
@@ -1182,6 +1476,60 @@ public sealed class LedgerJournalStoreTests
                 ]),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
+    }
+
+    private static LedgerJournalEntryWrite BuildBookScopedPostingWrite(
+        Guid ledgerBookId,
+        Guid periodId,
+        AccountingBookContextDto? bookContext,
+        string accountingPolicyId,
+        string accountingPolicyVersion)
+    {
+        var write = BuildBalancedJournalWrite(
+            periodId,
+            DateTimeOffset.Parse("2026-01-15T18:00:00Z")) with
+        {
+            AggregateId = ledgerBookId,
+            AccountingBasis = AccountingBasisKindDto.Gaap,
+            AccountingPolicyId = accountingPolicyId,
+            AccountingPolicyVersion = accountingPolicyVersion,
+            LedgerBookId = ledgerBookId
+        };
+        var command = new AccountingPostingCommandDto(
+            Guid.NewGuid(),
+            write.AggregateId,
+            periodId,
+            new DateOnly(2026, 1, 15),
+            write.Entry.Timestamp,
+            $"governed-book-context:{Guid.NewGuid():N}",
+            AccountingPostingIntentDto.Originating,
+            SourceEventId: Guid.NewGuid(),
+            CorrelationId: Guid.NewGuid(),
+            CausationId: Guid.NewGuid(),
+            SourceEventType: "GovernedBookContextTest",
+            ApprovalState: AccountingPostingApprovalStateDto.Approved,
+            ApprovalId: $"approval:{Guid.NewGuid():N}",
+            Evidence:
+            [
+                new AccountingPostingEvidenceReferenceDto(
+                    $"evidence:{Guid.NewGuid():N}",
+                    "evidence://ledger-book/context",
+                    AccountingPostingEvidenceKindDto.Source,
+                    "LedgerBookAuthority",
+                    write.Entry.Timestamp.AddMinutes(-1),
+                    "fund-controller")
+            ],
+            LedgerBookId: ledgerBookId)
+        {
+            BookContext = bookContext,
+            RulePackReference = new AccountingRulePackReferenceDto(
+                "gaap-rule-pack",
+                "v1",
+                "governed-book-context",
+                "v1")
+        };
+
+        return write with { PostingCommand = command };
     }
 
     private static LedgerJournalEntryWrite BuildTreasuryJournalWrite(

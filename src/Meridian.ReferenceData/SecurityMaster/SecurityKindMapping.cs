@@ -46,6 +46,7 @@ public static class SecurityKindMapping
             ["CryptoCurrency"] = [InstrumentType.Crypto],
             ["Cfd"] = [InstrumentType.CFD],
             ["Warrant"] = [InstrumentType.Warrant],
+            ["InvestmentFund"] = [],
         };
 
     private static readonly IReadOnlyDictionary<InstrumentType, string> InstrumentTypeToAssetClass =

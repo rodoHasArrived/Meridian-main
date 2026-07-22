@@ -10,6 +10,7 @@ using Meridian.Domain.Models;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.DataSources;
+using Meridian.Infrastructure.Utilities;
 using Serilog;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 
@@ -443,12 +444,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
     private static DateOnly ParseBarDate(string ibDate)
     {
         // IB returns dates in format: "yyyyMMdd" for daily bars
-        if (ibDate.Length >= 8 && DateOnly.TryParseExact(
-            ibDate.Substring(0, 8),
-            "yyyyMMdd",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None,
-            out var date))
+        if (ibDate.Length >= 8 &&
+            ProviderDateParsing.TryParseProviderDate(ibDate.Substring(0, 8), "yyyyMMdd", out var date))
         {
             return date;
         }
@@ -588,7 +585,14 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
 
     public ProviderCapabilities ProviderCapabilities { get; } = new()
     {
+        SupportsBackfill = true,
+        SupportsIntraday = true,
+        SupportsAdjustedPrices = true,
         SupportedMarkets = new[] { "US", "EU", "APAC" },
+        DeclaredMarketDataCapabilities = new[]
+        {
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.Bars, new[] { "Equity", "Option", "Future", "Forex", "Bond" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Historical", "Account and market-data subscription may be required", 60, TimeSpan.FromMinutes(10), TimeSpan.FromSeconds(15), "IB historical bar timestamp", "Entitlement-dependent; unavailable without an IBAPI-enabled build")
+        },
         MaxRequestsPerWindow = 60,
         RateLimitWindow = TimeSpan.FromMinutes(10),
         MinRequestDelay = TimeSpan.FromSeconds(15)

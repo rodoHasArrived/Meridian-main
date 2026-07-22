@@ -1,0 +1,52 @@
+<!-- @dsCard group="Trading" viewport="1180x640" name="Option chain" subtitle="OptionChainTable — straddle layout, ITM wash, spot marker, keyboard strike selection" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Option chain</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#ECEFF3);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { OptionChainTable, Eyebrow, Badge } = window.MeridianDesignSystem_4f61be;
+
+const q = (bid, ask, delta, iv, oi, volume) => ({ bid, ask, delta, iv, oi, volume });
+const ROWS = [
+  { strike: 440, call: q(29.80, 30.35, 0.86, 26.1, 4210, 310),  put: q(1.02, 1.09, -0.14, 25.4, 9840, 1420) },
+  { strike: 450, call: q(21.10, 21.60, 0.78, 25.2, 6120, 640),  put: q(2.31, 2.40, -0.22, 24.8, 12110, 2210) },
+  { strike: 460, call: q(13.45, 13.85, 0.65, 24.6, 8850, 1830), put: q(4.55, 4.68, -0.35, 24.1, 14480, 3560) },
+  { strike: 465, call: q(10.20, 10.55, 0.57, 24.3, 7410, 2110), put: q(6.28, 6.42, -0.43, 23.9, 8130, 2840) },
+  { strike: 470, call: q(7.35, 7.60, 0.48, 24.0, 11020, 2410),  put: q(8.42, 8.60, -0.52, 23.8, 6540, 1910) },
+  { strike: 475, call: q(5.05, 5.25, 0.38, 23.8, 14210, 3120),  put: q(11.10, 11.35, -0.62, 23.9, 4220, 880) },
+  { strike: 480, call: q(3.30, 3.45, 0.29, 23.6, 18440, 4890),  put: q(14.35, 14.70, -0.71, 24.1, 3110, 460) },
+  { strike: 490, call: q(1.24, 1.33, 0.14, 23.4, 9310, 1240),   put: q(22.20, 22.75, -0.86, 24.6, 1480, 120) },
+  { strike: 500, call: q(0.42, 0.48, 0.06, 23.5, 5220, 380),    put: q(31.40, 32.10, -0.94, 25.2, 610, 40) },
+];
+
+function Demo() {
+  const [sel, setSel] = React.useState(null);
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2,
+      padding:14, maxWidth:1120, display:"flex", flexDirection:"column", gap:10 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+        <Eyebrow>Option chain · MSFT · 2026-07-24 · 19 DTE</Eyebrow>
+        <div style={{ flex:1 }}></div>
+        <Badge variant="neutral">{sel ? `Selected ${sel.strike.toFixed(2)}` : "Click or ↑/↓ + Enter to select a strike"}</Badge>
+      </div>
+      <OptionChainTable
+        rows={ROWS}
+        underlyingPrice={468.20}
+        underlyingLabel="MSFT last"
+        defaultSelectedStrike={475}
+        onSelect={setSel}
+      />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

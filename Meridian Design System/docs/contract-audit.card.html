@@ -1,0 +1,76 @@
+<!-- @dsCard group="Documentation" viewport="980x660" name="Contract audit · 2026-07" subtitle="Meridian.Ui.Shared contracts vs. DS — coverage, drift, and what 1.14.0 added" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Documentation — contract audit</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px; background: var(--bg); font-family: var(--font-body); color: var(--text-primary); }
+  .wrap { max-width: 940px; display: grid; gap: 16px; }
+  h1 { font-size: 15px; font-weight: 650; margin: 0; }
+  h1 small { font-family: var(--font-data); font-size: 10px; font-weight: 500; color: var(--text-muted); margin-left: 8px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .panel { border: 1px solid var(--border); border-radius: var(--radius-card, 8px); background: var(--bg-light); padding: 12px 14px; }
+  .panel h2 { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em; color: var(--text-muted); margin: 0 0 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  td { padding: 4px 6px 4px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  .mono { font-family: var(--font-data); font-size: 10px; color: var(--text-secondary); }
+  .pill { display: inline-block; font-family: var(--font-data); font-size: 8.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; padding: 2px 6px; border-radius: var(--radius-chip, 2px); border: 1px solid; white-space: nowrap; }
+  .pill--gap { color: var(--severity-blocked-fg); border-color: var(--severity-blocked-bd); background: var(--severity-blocked-bg); }
+  .pill--part { color: var(--severity-action-fg); border-color: var(--severity-action-bd); background: var(--severity-action-bg); }
+  .pill--ok { color: var(--severity-ready-fg); border-color: var(--severity-ready-bd); background: var(--severity-ready-bg); }
+  .pill--new { color: var(--severity-review-fg); border-color: var(--severity-review-bd); background: var(--severity-review-bg); }
+  ul { margin: 0; padding-left: 16px; font-size: 11.5px; line-height: 1.5; }
+  li + li { margin-top: 4px; }
+  .foot { font-size: 10.5px; color: var(--text-muted); }
+  .foot code { font-family: var(--font-data); font-size: 10px; }
+</style>
+</head>
+<body class="meridian">
+<div class="wrap">
+  <h1>Contract &amp; endpoint audit <small>Meridian.Ui.Shared · 2026-07-05 · full report in docs/CONTRACT_AUDIT.md</small></h1>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Backend domains without a template</h2>
+      <table>
+        <tr><td>Statement reconciliation &amp; cases</td><td class="mono">21 routes</td><td><span class="pill pill--gap">Gap</span></td></tr>
+        <tr><td>Operations continuity close</td><td class="mono">28 routes</td><td><span class="pill pill--part">Partial</span></td></tr>
+        <tr><td>Family office</td><td class="mono">4 routes</td><td><span class="pill pill--gap">Gap</span></td></tr>
+        <tr><td>Covered-call strategy lab</td><td class="mono">/api/strategies/covered-call</td><td><span class="pill pill--part">Partial</span></td></tr>
+        <tr><td>OMS integration diagnostics</td><td class="mono">/api/oms</td><td><span class="pill pill--gap">Gap</span></td></tr>
+        <tr><td>Loans · Banking · Fund structure · Risk</td><td class="mono">4 groups</td><td><span class="pill pill--gap">Gap</span></td></tr>
+        <tr><td>Ledger · SecMaster · Ingestion · Strategy · Reports · Admin</td><td class="mono">13 templates</td><td><span class="pill pill--ok">Covered</span></td></tr>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>Data-shape drift found</h2>
+      <ul>
+        <li><strong>Status vocab:</strong> <code class="mono">NotReady · Skipped · Matched · BreaksDetected · AwaitingApproval · OnTrack · Breached</code> fell to muted "info" — normalizer extended.</li>
+        <li><strong>Case lifecycle:</strong> server recon is case-centric (SLA, priority, assignee, sign-off, <code class="mono">Version</code>) — no DS primitive existed.</li>
+        <li><strong>Provenance tuple</strong> repeats on 7 family-office DTOs — no cell-level primitive existed.</li>
+        <li><strong>strategy-runs</strong> mock stores pre-formatted strings; contract sends numerics (<code class="mono">Cagr: 0.2374</code>). Missing <code class="mono">WinRate</code>, <code class="mono">EndedAt</code>.</li>
+        <li><strong>Timestamps</strong> hand-formatted in templates; contracts send ISO UTC — use <code class="mono">Timestamp</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Added in 1.14.0 — components mirroring the contracts</h2>
+    <table>
+      <tr><td><span class="pill pill--new">New</span></td><td><strong>CaseQueue</strong> + <strong>SlaChip</strong></td><td class="mono">ReconciliationCaseSummaryDto · OperationsBreakCaseDto</td><td>Operations</td></tr>
+      <tr><td><span class="pill pill--new">New</span></td><td><strong>ProvenanceChip</strong></td><td class="mono">SourceSystem · AsOf · EvidenceCompleteness · ReconciliationStatus</td><td>Operations</td></tr>
+      <tr><td><span class="pill pill--new">New</span></td><td><strong>OwnershipGraph</strong></td><td class="mono">FamilyOwnershipGraphDto (nodes + %-edges)</td><td>Charts</td></tr>
+      <tr><td><span class="pill pill--new">New</span></td><td><strong>CommitmentBar</strong></td><td class="mono">CapitalCommitmentDto (called · unfunded · DPI · TVPI)</td><td>Accounting</td></tr>
+      <tr><td><span class="pill pill--ok">Fix</span></td><td><strong>status.js</strong> vocabulary</td><td class="mono">+12 contract enum values normalized</td><td>Operations</td></tr>
+    </table>
+  </div>
+
+  <p class="foot">Recommended next (not built): <strong>reconciliation-workstation</strong>, <strong>family-office</strong>, <strong>operations-continuity</strong>, and <strong>covered-call lab</strong> templates — see §D of the report.</p>
+</div>
+</body>
+</html>

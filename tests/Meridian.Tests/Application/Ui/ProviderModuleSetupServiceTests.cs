@@ -46,15 +46,15 @@ public sealed class ProviderModuleSetupServiceTests : IDisposable
     public async Task UpsertModule_StoresCredentials()
     {
         var svc = CreateService();
-        var creds = new Dictionary<string, string?> { ["keyId"] = "abc", ["secretKey"] = "xyz" };
-        var request = new UpsertProviderModuleRequest("test-provider", CredentialValues: creds);
+        var creds = new Dictionary<string, string?> { ["KeyId"] = "abc", ["SecretKey"] = "xyz" };
+        var request = new UpsertProviderModuleRequest("alpaca", CredentialValues: creds);
 
         var result = await svc.UpsertModuleAsync(request);
 
         result.Success.Should().BeTrue();
-        var stored = await _credentialStore.GetCredentialsAsync("test-provider");
-        stored.Should().ContainKey("keyId").WhoseValue.Should().Be("abc");
-        stored.Should().ContainKey("secretKey").WhoseValue.Should().Be("xyz");
+        var stored = await _credentialStore.GetCredentialsAsync("alpaca");
+        stored.Should().ContainKey("KeyId").WhoseValue.Should().Be("abc");
+        stored.Should().ContainKey("SecretKey").WhoseValue.Should().Be("xyz");
     }
 
     [Fact]
@@ -73,15 +73,15 @@ public sealed class ProviderModuleSetupServiceTests : IDisposable
     public async Task RemoveModule_RemovesFromConfigAndCredentials()
     {
         var svc = CreateService();
-        await svc.UpsertModuleAsync(new UpsertProviderModuleRequest("mod-to-remove",
-            CredentialValues: new Dictionary<string, string?> { ["k"] = "v" }));
+        await svc.UpsertModuleAsync(new UpsertProviderModuleRequest("alpaca",
+            CredentialValues: new Dictionary<string, string?> { ["KeyId"] = "v" }));
 
-        var result = await svc.RemoveModuleAsync("mod-to-remove");
+        var result = await svc.RemoveModuleAsync("alpaca");
 
         result.Success.Should().BeTrue();
         var cfg = _configStore.Load();
-        cfg.ProviderModules?.Modules.Should().NotContainKey("mod-to-remove");
-        var creds = await _credentialStore.GetCredentialsAsync("mod-to-remove");
+        cfg.ProviderModules?.Modules.Should().NotContainKey("alpaca");
+        var creds = await _credentialStore.GetCredentialsAsync("alpaca");
         creds.Should().BeEmpty();
     }
 
@@ -124,13 +124,13 @@ public sealed class ProviderModuleSetupServiceTests : IDisposable
     public async Task UpsertModule_DoesNotStoreNullOrEmptyCredentialValues()
     {
         var svc = CreateService();
-        var creds = new Dictionary<string, string?> { ["keyId"] = "val", ["secretKey"] = null };
-        await svc.UpsertModuleAsync(new UpsertProviderModuleRequest("mod", CredentialValues: creds));
+        var creds = new Dictionary<string, string?> { ["KeyId"] = "val", ["SecretKey"] = null };
+        await svc.UpsertModuleAsync(new UpsertProviderModuleRequest("alpaca", CredentialValues: creds));
 
-        var stored = await _credentialStore.GetStoredKeyNamesAsync("mod");
+        var stored = await _credentialStore.GetStoredKeyNamesAsync("alpaca");
 
-        stored.Should().Contain("keyId");
-        stored.Should().NotContain("secretKey");
+        stored.Should().Contain("KeyId");
+        stored.Should().NotContain("SecretKey");
     }
 
     public void Dispose()

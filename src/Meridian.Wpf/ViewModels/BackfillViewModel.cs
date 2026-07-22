@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Backfill;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
@@ -62,6 +63,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     public ObservableCollection<ScheduledJobInfo> ScheduledJobs => WorkbenchSection.ScheduledJobs;
     public ObservableCollection<ResumableJobInfo> ResumableJobs => WorkbenchSection.ResumableJobs;
     public ObservableCollection<GapAnalysisItem> GapItems => WorkbenchSection.GapItems;
+    public ObservableCollection<BackfillRemediationQueuePresentation> RemediationQueue => WorkbenchSection.RemediationQueue;
     public WorkstationTableModel<SymbolProgressInfo> SymbolProgressTable => WorkbenchSection.SymbolProgressTable;
     public WorkstationTableModel<GapAnalysisItem> GapItemsTable => WorkbenchSection.GapItemsTable;
 
@@ -76,6 +78,12 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     {
         get => WorkbenchSection.OverallProgressText;
         private set => SetBackfillSectionProperty(WorkbenchSection.OverallProgressText, text => WorkbenchSection.OverallProgressText = text, value);
+    }
+
+    public double OverallProgressPercent
+    {
+        get => WorkbenchSection.OverallProgressPercent;
+        private set => SetBackfillSectionProperty(WorkbenchSection.OverallProgressPercent, percent => WorkbenchSection.OverallProgressPercent = percent, value);
     }
 
     public string PauseButtonContent
@@ -100,6 +108,30 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     {
         get => WorkbenchSection.IsProgressVisible;
         private set => SetBackfillSectionProperty(WorkbenchSection.IsProgressVisible, visible => WorkbenchSection.IsProgressVisible = visible, value);
+    }
+
+    public bool HasProviderProgress
+    {
+        get => WorkbenchSection.HasProviderProgress;
+        private set => SetBackfillSectionProperty(WorkbenchSection.HasProviderProgress, hasProgress => WorkbenchSection.HasProviderProgress = hasProgress, value);
+    }
+
+    public bool HasRemediationQueue
+    {
+        get => WorkbenchSection.HasRemediationQueue;
+        private set => SetBackfillSectionProperty(WorkbenchSection.HasRemediationQueue, hasQueue => WorkbenchSection.HasRemediationQueue = hasQueue, value);
+    }
+
+    public string ProviderProgressObservedText
+    {
+        get => WorkbenchSection.ProviderProgressObservedText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.ProviderProgressObservedText, text => WorkbenchSection.ProviderProgressObservedText = text, value);
+    }
+
+    public string RemediationDefaultProviderText
+    {
+        get => WorkbenchSection.RemediationDefaultProviderText;
+        private set => SetBackfillSectionProperty(WorkbenchSection.RemediationDefaultProviderText, text => WorkbenchSection.RemediationDefaultProviderText = text, value);
     }
 
     public bool HasNoScheduledJobs
@@ -508,6 +540,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         await LoadScheduledJobsAsync(ActivationToken);
         await LoadResumableJobsAsync(ActivationToken);
         await RefreshStatusFromApiAsync(ActivationToken);
+        await RefreshProviderProgressAsync(ActivationToken);
     }
 
     public void Stop() => Deactivate();
@@ -536,21 +569,31 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     public async Task LoadScheduledJobsAsync(CancellationToken ct = default)
     {
         ScheduledJobs.Clear();
+        RemediationQueue.Clear();
+        HasRemediationQueue = false;
         try
         {
-            var executions = await _backfillApiService.GetExecutionHistoryAsync(limit: 10);
-            foreach (var exec in executions)
+            var response = await _backfillApiService.GetExecutionHistoryResponseAsync(limit: 50, ct);
+            foreach (var exec in response?.Executions ?? [])
             {
                 ScheduledJobs.Add(new ScheduledJobInfo
                 {
-                    Name = $"{exec.Status}: {exec.SymbolsProcessed} symbols",
+                    Name = string.IsNullOrWhiteSpace(exec.ScheduleName)
+                        ? $"{exec.Status}: {exec.SymbolsProcessed} symbols"
+                        : $"{exec.ScheduleName}: {exec.Status}",
                     NextRun = exec.CompletedAt?.ToString("g") ?? exec.StartedAt.ToString("g")
                 });
             }
+
+            ApplyRemediationQueue(response);
         }
-        catch
+        catch (Exception ex)
         {
             // Fallback if API unavailable
+            _loggingService.LogDebug(
+                "Loading scheduled backfill jobs failed; API unavailable.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         HasNoScheduledJobs = ScheduledJobs.Count == 0;
@@ -578,9 +621,13 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                 });
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Checkpoint storage unavailable
+            _loggingService.LogDebug(
+                "Loading resumable backfill jobs failed; checkpoint storage unavailable.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
 
         HasNoResumableJobs = ResumableJobs.Count == 0;
@@ -590,7 +637,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     {
         try
         {
-            var lastStatus = await _backfillApiService.GetLastStatusAsync();
+            var lastStatus = await _backfillApiService.GetLastStatusAsync(ct);
             if (lastStatus != null)
             {
                 UpdateLastApiStatus(lastStatus);
@@ -605,6 +652,94 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             ClearLastApiStatus();
         }
     }
+
+    public async Task RefreshProviderProgressAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var progress = await _backfillApiService.GetProgressAsync(ct);
+            ApplyProviderProgress(progress);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogDebug(
+                "Loading typed provider-attempt progress failed; retaining the last snapshot.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
+        }
+    }
+
+    internal void ApplyProviderProgress(BackfillRunProgressResponse? response)
+    {
+        if (response?.ProviderProgress is not { } snapshot)
+        {
+            return;
+        }
+
+        var rows = BackfillPresentationService.BuildSymbolProgress(response);
+        SymbolProgress.Clear();
+        foreach (var row in rows)
+        {
+            SymbolProgress.Add(new SymbolProgressInfo
+            {
+                Symbol = row.Symbol,
+                RangeText = row.RangeText,
+                CurrentProvider = row.CurrentProvider,
+                FallbackAttemptText = row.FallbackAttemptText,
+                RetryText = row.RetryText,
+                Progress = row.PercentComplete,
+                ProgressText = row.ProgressText,
+                BarsText = row.BarsText,
+                StatusText = row.LiveState,
+                TimeText = row.LastUpdatedText,
+                ErrorText = row.Error ?? string.Empty,
+                StatusBackground = BuildProgressStatusBackground(row.LiveState)
+            });
+        }
+
+        HasProviderProgress = rows.Count > 0;
+        IsProgressVisible = HasProviderProgress;
+        IsBackfillActive = response.IsActive;
+        OverallProgressPercent = Math.Clamp(snapshot.OverallPercentComplete, 0d, 100d);
+        OverallProgressText = $"Overall: {snapshot.CompletedSymbols:N0} / {snapshot.TotalSymbols:N0} symbols complete · {OverallProgressPercent:N1}%";
+        ProviderProgressObservedText = $"Observed {snapshot.Timestamp.ToLocalTime():g} · {snapshot.DroppedProviderNotifications:N0} provider notification(s) dropped";
+
+        if (response.IsActive)
+        {
+            BackfillStatusText = "Running...";
+            _lastCompletedSymbols = (ulong)Math.Max(0, snapshot.CompletedSymbols);
+            _lastTotalSymbols = (ulong)Math.Max(1, snapshot.TotalSymbols);
+            _taskbarProgressService.SetNormal(_lastCompletedSymbols, _lastTotalSymbols);
+        }
+    }
+
+    internal void ApplyRemediationQueue(BackfillExecutionHistoryResponse? response)
+    {
+        var defaultProvider = response?.AutoRemediation?.DefaultProvider;
+        RemediationDefaultProviderText = $"Automatic remediation default: {(string.IsNullOrWhiteSpace(defaultProvider) ? "stooq" : defaultProvider)}";
+
+        RemediationQueue.Clear();
+        foreach (var row in BackfillPresentationService.BuildRemediationQueue(response))
+        {
+            RemediationQueue.Add(row);
+        }
+
+        HasRemediationQueue = RemediationQueue.Count > 0;
+    }
+
+    private static SolidColorBrush BuildProgressStatusBackground(string? status) =>
+        status?.ToLowerInvariant() switch
+        {
+            "completed" => new SolidColorBrush(Color.FromArgb(40, 63, 185, 80)),
+            "failed" => new SolidColorBrush(Color.FromArgb(40, 244, 67, 54)),
+            "running" or "downloading" or "requesting" => new SolidColorBrush(Color.FromArgb(40, 33, 150, 243)),
+            "skipped" => new SolidColorBrush(Color.FromArgb(40, 255, 193, 7)),
+            _ => new SolidColorBrush(Color.FromArgb(40, 139, 148, 158))
+        };
 
     // ── Backfill control ────────────────────────────────────────────────────
     private void UpdateLastApiStatus(BackfillResultDto status)
@@ -705,12 +840,18 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         string granularity, CancellationToken ct = default)
     {
         SymbolProgress.Clear();
+        var rangeText = $"{DateOnly.FromDateTime(fromDate):yyyy-MM-dd} — {DateOnly.FromDateTime(toDate):yyyy-MM-dd}";
         foreach (var symbol in symbols)
         {
             SymbolProgress.Add(new SymbolProgressInfo
             {
                 Symbol = symbol.Trim().ToUpper(),
+                RangeText = rangeText,
+                CurrentProvider = provider,
+                FallbackAttemptText = "Primary · attempt 1",
+                RetryText = "Initial try",
                 Progress = 0,
+                ProgressText = "0.0%",
                 BarsText = "0 bars",
                 StatusText = "Pending",
                 TimeText = "--",
@@ -720,8 +861,11 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
 
         BackfillStatusText = "Running...";
         OverallProgressText = $"Overall: 0 / {symbols.Length} symbols complete";
+        OverallProgressPercent = 0;
         IsBackfillActive = true;
         IsProgressVisible = true;
+        HasProviderProgress = SymbolProgress.Count > 0;
+        ProviderProgressObservedText = "Local run initialized · awaiting provider-attempt snapshot";
         PauseButtonContent = "Pause";
         _taskbarProgressService.SetIndeterminate();
 
@@ -872,6 +1016,8 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         BackfillStatusText = progress.Status;
         var completedCount = progress.CompletedSymbols;
         OverallProgressText = $"Overall: {completedCount} / {progress.TotalSymbols} symbols complete";
+        OverallProgressPercent = progress.ProgressPercent;
+        HasProviderProgress = SymbolProgress.Count > 0;
 
         // Reflect symbol-level progress on the taskbar icon.
         _lastCompletedSymbols = (ulong)Math.Max(0, completedCount);
@@ -885,16 +1031,14 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             var sp = progress.SymbolProgress[i];
             var item = SymbolProgress[i];
             item.Progress = sp.CalculatedProgress;
+            item.ProgressText = $"{sp.CalculatedProgress:N1}%";
             item.BarsText = $"{sp.BarsDownloaded:N0} bars";
             item.StatusText = sp.Status;
             item.TimeText = sp.Duration?.ToString(@"mm\:ss") ?? "--";
-            item.StatusBackground = sp.Status switch
-            {
-                "Completed" => new SolidColorBrush(Color.FromArgb(40, 63, 185, 80)),
-                "Failed" => new SolidColorBrush(Color.FromArgb(40, 244, 67, 54)),
-                "Downloading" => new SolidColorBrush(Color.FromArgb(40, 33, 150, 243)),
-                _ => new SolidColorBrush(Color.FromArgb(40, 139, 148, 158))
-            };
+            item.CurrentProvider = sp.Provider ?? progress.CurrentProvider ?? item.CurrentProvider;
+            item.RetryText = sp.RetryCount <= 0 ? "Initial try" : $"Retry {sp.RetryCount}";
+            item.ErrorText = sp.ErrorMessage ?? string.Empty;
+            item.StatusBackground = BuildProgressStatusBackground(sp.Status);
         }
     }
 
@@ -937,6 +1081,8 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             }
 
             await RefreshStatusFromApiAsync();
+            await RefreshProviderProgressAsync();
+            await LoadScheduledJobsAsync();
             await LoadResumableJobsAsync();
         });
     }
@@ -956,9 +1102,17 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         try
         {
             await _backfillService.PollBackendStatusAsync();
-            await RefreshStatusFromApiAsync();
+            await RefreshStatusFromApiAsync(ActivationToken);
+            await RefreshProviderProgressAsync(ActivationToken);
+            await LoadScheduledJobsAsync(ActivationToken);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is expected when polling is torn down; benign.
+            _loggingService.LogDebug(
+                "Backfill progress poll cancelled.",
+                ("view", GetType().Name));
+        }
         catch (Exception ex)
         {
             _loggingService.LogWarning("Progress poll tick failed", ("Error", ex.Message));
@@ -1444,6 +1598,10 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(BackfillViewModel)));
         }
 
         cts.Dispose();

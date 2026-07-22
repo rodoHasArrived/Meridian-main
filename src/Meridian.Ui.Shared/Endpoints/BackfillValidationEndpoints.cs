@@ -39,7 +39,7 @@ public static class BackfillValidationEndpoints
                 ), jsonOptions);
             }
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var results = new List<BackfillValidationResult>();
                 var distinctSymbols = symbols.Select(s => s.Symbol).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
@@ -100,12 +100,7 @@ public static class BackfillValidationEndpoints
                     AverageCompleteness: avgCompleteness,
                     Symbols: results.ToArray()
                 ), jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Backfill validation report failed");
-                return Results.Problem("Backfill validation failed.");
-            }
+            }, "Backfill validation failed.", logger);
         })
         .WithName("GetBackfillValidation")
         .WithDescription("Returns comprehensive backfill validation report for all configured symbols.")
@@ -126,7 +121,7 @@ public static class BackfillValidationEndpoints
                 ), jsonOptions);
             }
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var query = new FileSearchQuery(Symbols: new[] { symbol }, Take: 1000);
                 var result = await searchService.SearchFilesAsync(query, ct);
@@ -160,12 +155,7 @@ public static class BackfillValidationEndpoints
                     LastDataPoint: lastDataPoint,
                     Status: completeness >= 0.95 ? "Complete" : (completeness >= 0.80 ? "Good" : "Incomplete")
                 ), jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Backfill validation failed for symbol {Symbol}", symbol);
-                return Results.Problem("Backfill validation failed for the requested symbol.");
-            }
+            }, "Backfill validation failed for the requested symbol.", logger);
         })
         .WithName("GetBackfillValidationBySymbol")
         .WithDescription("Returns backfill validation report for a specific symbol.")

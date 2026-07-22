@@ -181,9 +181,13 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         {
             // Normal shutdown
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Status bar update error — non-fatal, timer loop continues on next tick
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Status bar update loop error; retrying on next tick.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 
@@ -241,9 +245,13 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
                 StatusToolTip = toolTip;
             });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Refresh error is non-fatal — status bar will retry on the next timer tick
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Status bar refresh error; retrying on next tick.",
+                ("exception", ex.GetType().Name),
+                ("message", ex.Message));
         }
     }
 

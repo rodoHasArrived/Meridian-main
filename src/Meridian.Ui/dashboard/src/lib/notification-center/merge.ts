@@ -11,7 +11,7 @@ const SEVERITY_RANK: Record<NotificationSeverity, number> = {
   success: 0
 };
 
-const PRICE_ALERTS_ROUTE = "/data/alerts";
+const PRICE_ALERTS_ROUTE = "/data/quotes?view=alerts";
 
 export interface NotificationFeeds {
   inbox: readonly OperatorWorkItem[];

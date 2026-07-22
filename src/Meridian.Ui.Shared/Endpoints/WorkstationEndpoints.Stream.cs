@@ -23,7 +23,8 @@ public static partial class WorkstationEndpoints
     {
         // GET /api/workstation/stream?symbols=AAPL,MSFT — SSE channel emitting `event: quotes`
         // frames with the quotes-snapshot payload for the requested symbols whenever it changes, plus
-        // `: heartbeat` comments while idle.
+        // `event: heartbeat` frames while idle so clients can watchdog liveness (SSE comments are
+        // invisible to EventSource consumers; named events without listeners are simply ignored).
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStream), async (HttpContext context, string? symbols, CancellationToken ct) =>
         {
             var normalizedSymbols = NormalizeStreamSymbols(symbols);
@@ -95,8 +96,9 @@ public static partial class WorkstationEndpoints
                         }
                         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
                         {
-                            // Heartbeat interval elapsed with no snapshot — keep the connection warm.
-                            await context.Response.WriteAsync(": heartbeat\n\n", ct).ConfigureAwait(false);
+                            // Heartbeat interval elapsed with no snapshot — keep the connection warm
+                            // and give clients an observable liveness frame.
+                            await context.Response.WriteAsync("event: heartbeat\ndata: {}\n\n", ct).ConfigureAwait(false);
                             await context.Response.Body.FlushAsync(ct).ConfigureAwait(false);
                         }
                     }

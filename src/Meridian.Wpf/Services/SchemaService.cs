@@ -93,8 +93,13 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
                 if (dictionary != null)
                     return dictionary;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // A missing/corrupt dictionary falls through to the legacy path or defaults.
+                LoggingService.Instance.LogDebug(
+                    "Failed to load data dictionary.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
 
@@ -111,8 +116,13 @@ public sealed class SchemaService : Meridian.Ui.Services.SchemaServiceBase
                     return dictionary;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // A missing/corrupt legacy dictionary falls through to defaults.
+                LoggingService.Instance.LogDebug(
+                    "Failed to load legacy data dictionary.",
+                    ("exception", ex.GetType().Name),
+                    ("message", ex.Message));
             }
         }
 

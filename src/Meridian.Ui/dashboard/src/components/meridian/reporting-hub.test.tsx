@@ -37,5 +37,54 @@ describe("ReportingHub", () => {
     expect(within(facts).getByText("Board reporting committee")).toBeInTheDocument();
     expect(within(facts).getByText("Review delivery")).toBeInTheDocument();
     expect(within(facts).getByText("1 evidence gap")).toBeInTheDocument();
+    expect(within(cockpit).getByLabelText("Selected reporting work detail")).toHaveTextContent("Secure portal rejected the latest board package.");
+  });
+
+  it("renders report families as a health table instead of launch cards", () => {
+    const model = buildReportingHubModel(
+      [
+        {
+          templateId: "monthly",
+          family: "Investor statements",
+          status: "Released",
+          asOfDateLabel: "2026-06-30",
+          runIdLabel: "run-1",
+          drilldownLinks: [{ href: "/reporting/runs/run-1", label: "Run", isBrowserNavigable: true }]
+        }
+      ],
+      [
+        {
+          templateName: "investor-monthly",
+          name: "Investor Monthly Statement",
+          family: "Investor statements"
+        }
+      ]
+    );
+
+    render(<ReportingHub model={model} />);
+
+    const familyHealth = screen.getByRole("region", { name: "Report family organizer" });
+    expect(within(familyHealth).getByRole("columnheader", { name: "Family" })).toBeInTheDocument();
+    expect(within(familyHealth).getByText("Investor Statements")).toBeInTheDocument();
+    expect(within(familyHealth).getByRole("link", { name: "Open latest output for Investor Statements" })).toHaveAttribute(
+      "href",
+      "/reporting/runs/run-1"
+    );
+  });
+
+  it("does not present family setup work as a successful empty queue", () => {
+    const model = buildReportingHubModel([], [{
+      templateName: "draft-pack",
+      name: "Draft Pack",
+      family: "CustomReport",
+      canRunOnDemand: false
+    }]);
+
+    render(<ReportingHub model={model} />);
+
+    const summaryBadges = screen.getAllByText("No urgent work queued · 1 report family needs setup or review");
+    expect(summaryBadges.some((badge) => badge.classList.contains("border-warning/35"))).toBe(true);
+    expect(screen.getByText("No dedicated daily work items are loaded. 1 report family still needs review in the organizer below.")).toBeInTheDocument();
+    expect(screen.queryByText(/No due packages, approvals/i)).not.toBeInTheDocument();
   });
 });

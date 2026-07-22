@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Core.Serialization;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Packaging;
 
@@ -29,24 +30,9 @@ public sealed partial class PortableDataPackager
             return await JsonSerializer.DeserializeAsync<PackageManifest>(entryStream, cancellationToken: ct);
         }
 
-        // For tar.gz, simplified reading
-        await using var fileStream = File.OpenRead(packagePath);
-        await using var gzipStream = new GZipStream(fileStream, CompressionMode.Decompress);
-        using var reader = new StreamReader(gzipStream);
-
-        var line = await reader.ReadLineAsync(ct);
-        if (line?.StartsWith("__MANIFEST__:") != true)
-            return null;
-
-        var jsonBuilder = new StringBuilder();
-        while ((line = await reader.ReadLineAsync(ct)) != null)
-        {
-            if (line == "__END_MANIFEST__")
-                break;
-            jsonBuilder.AppendLine(line);
-        }
-
-        return JsonSerializer.Deserialize<PackageManifest>(jsonBuilder.ToString());
+        // Non-Zip packages have no implemented on-disk format (the removed pseudo-tar.gz writer
+        // corrupted binary content); callers reject them before reaching this point.
+        return null;
     }
 
     private Task<List<string>> VerifyFilesInPackageAsync(
@@ -106,6 +92,7 @@ public sealed partial class PortableDataPackager
             }
 
             Directory.CreateDirectory(stagingRoot);
+            var movedDestinationDirs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             try
             {
@@ -168,8 +155,20 @@ public sealed partial class PortableDataPackager
                     }
 
                     File.Move(stagedPath, destinationPath, overwrite: true);
+                    if (!string.IsNullOrEmpty(destinationDir))
+                    {
+                        movedDestinationDirs.Add(destinationDir);
+                    }
+
                     result.FilesExtracted++;
                     result.BytesExtracted += entry.Length;
+                }
+
+                // Persist the rename metadata like every other durability path does: without a
+                // directory fsync a crash can lose the moves even though the writes completed.
+                foreach (var dir in movedDestinationDirs)
+                {
+                    await AtomicFileWriter.SyncDirectoryAsync(dir, ct);
                 }
             }
             finally

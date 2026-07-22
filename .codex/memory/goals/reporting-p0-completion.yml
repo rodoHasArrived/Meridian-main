@@ -1,0 +1,66 @@
+version: 1
+goal_id: reporting-p0-completion
+objective: Complete every P0 reporting-system capability with requirement-level proof and production-safe integration.
+status: active
+started_at: '2026-07-14T15:00:00Z'
+updated_at: '2026-07-14T15:00:00Z'
+active_task_descriptor: .codex/memory/tasks/reporting-p0-completion.yml
+progress_inventory:
+  - id: architecture-and-contract-inventory
+    status: completed
+    summary: Mapped the live reporting paths, contract consumers, storage gaps, lifecycle bypasses, and P0 acceptance requirements.
+    evidence_refs:
+      - src/Meridian.Reporting/README.md
+      - src/Meridian.Ui.Shared/README.md
+      - docs/architecture/module-map.md
+    updated_at: '2026-07-14T15:00:00Z'
+  - id: certified-point-in-time-snapshot
+    status: in_progress
+    summary: Implement sealed as-of ledger and historical reference-data inputs with deterministic certification receipts.
+    evidence_refs:
+      - src/Meridian.Reporting/ReportGenerationService.cs
+    updated_at: '2026-07-14T15:00:00Z'
+  - id: run-parameters-and-readiness
+    status: in_progress
+    summary: Implement typed shared run parameters and server-owned fail-closed readiness for manual and scheduled runs.
+    evidence_refs:
+      - src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      - src/Meridian.Ui/dashboard/src/screens/report-run-parameters-screen.tsx
+    updated_at: '2026-07-14T15:00:00Z'
+  - id: tenant-safe-governance
+    status: in_progress
+    summary: Implement the canonical maker-checker lifecycle, immutable scope snapshots, release, and governed restatement.
+    evidence_refs:
+      - src/Meridian.Reporting/ReportingGovernanceContracts.cs
+    updated_at: '2026-07-14T15:00:00Z'
+  - id: durable-artifacts-and-audit
+    status: in_progress
+    summary: Implement immutable tenant-scoped artifact persistence and fail-closed reporting state.
+    evidence_refs:
+      - src/Meridian.Reporting/ReportingArtifactContracts.cs
+      - src/Meridian.Storage/Reporting/PostgresReportingArtifactStore.cs
+    updated_at: '2026-07-14T15:00:00Z'
+  - id: secure-distribution
+    status: in_progress
+    summary: Implement opaque access grants, durable dispatch state, truthful transports, retries, and receipts behind the release gate.
+    evidence_refs:
+      - src/Meridian.Reporting/ReportingDistributionContracts.cs
+    updated_at: '2026-07-14T15:00:00Z'
+  - id: cross-surface-proof
+    status: pending
+    summary: Synchronize browser and WPF compatibility, documentation, generated contracts, and requirement-level automated tests.
+    evidence_refs:
+      - tests/Meridian.Tests
+    updated_at: '2026-07-14T15:00:00Z'
+  - id: pr-and-github-actions
+    status: pending
+    summary: Run repository CI, push the feature branch, open the PR, and verify required GitHub Actions checks.
+    evidence_refs:
+      - scripts/ci.sh
+    updated_at: '2026-07-14T15:00:00Z'
+next_actions:
+  - Finish and validate the five isolated implementation lanes.
+  - Wire them into one tenant-scoped run, release, artifact, and distribution path.
+  - Reconcile legacy report-pack routes without preserving approval or delivery bypasses.
+open_questions: []
+promotion_candidates: []

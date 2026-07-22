@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -11,10 +13,14 @@ public sealed class ProviderIntegrationQuarantineReplayService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderIntegrationManifestStore store;
+    private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
 
-    public ProviderIntegrationQuarantineReplayService(IProviderIntegrationManifestStore store)
+    public ProviderIntegrationQuarantineReplayService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationQuarantineReplayService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
+        this.logger = logger ?? NullLogger<ProviderIntegrationQuarantineReplayService>.Instance;
     }
 
     public async Task<ProviderIntegrationQuarantineReplayResultDto> ReplayAsync(
@@ -23,6 +29,21 @@ public sealed class ProviderIntegrationQuarantineReplayService
         => await ReplayAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationQuarantineReplayResultDto> ReplayAsync(
+        string? tenantId,
+        ProviderIntegrationQuarantineReplayRequestDto request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "quarantine-replay",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                SyncRunId: request?.ReplaySyncRunId),
+            () => ReplayCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationQuarantineReplayResultDto> ReplayCoreAsync(
         string? tenantId,
         ProviderIntegrationQuarantineReplayRequestDto request,
         CancellationToken ct = default)

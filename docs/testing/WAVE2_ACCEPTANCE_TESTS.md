@@ -271,4 +271,4 @@ dotnet test tests/Meridian.Tests/Ui/Wave2PaperTradingCockpitAcceptanceTests.cs \
 
 - [Roadmap Registry Summary](../roadmap/generated/ROADMAP_SUMMARY.md) - Wave 2 exit criteria and sequencing
 - [`docs/plans/paper-trading-cockpit-reliability-sprint.md`](../plans/paper-trading-cockpit-reliability-sprint.md) - Detailed acceptance gate definitions
-- [`docs/plans/waves-2-4-operator-readiness-addendum.md`](../plans/waves-2-4-operator-readiness-addendum.md) - Workstream ownership and dependencies
+- [`archive/docs/plans/waves-2-4-operator-readiness-addendum.md`](../../archive/docs/plans/waves-2-4-operator-readiness-addendum.md) - Workstream ownership and dependencies

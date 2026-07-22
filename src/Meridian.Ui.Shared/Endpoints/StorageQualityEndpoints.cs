@@ -30,7 +30,7 @@ public static class StorageQualityEndpoints
             if (qualityService is null)
                 return Results.Json(new { status = "unavailable", message = "Data quality service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var report = await qualityService.GenerateReportAsync(
                     new QualityReportOptions(
@@ -46,12 +46,7 @@ public static class StorageQualityEndpoints
                     recommendations = report.Recommendations,
                     lowQualityFiles = report.LowQualityFiles?.Count ?? 0
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to generate quality summary.");
-                return Results.Problem("Failed to generate quality summary.");
-            }
+            }, "Failed to generate quality summary.", logger);
         })
         .WithName("GetQualitySummary").Produces(200);
 
@@ -64,7 +59,7 @@ public static class StorageQualityEndpoints
             if (qualityService is null)
                 return Results.Json(new { message = "Data quality service not available", scores = Array.Empty<object>() }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var report = await qualityService.GenerateReportAsync(
                     new QualityReportOptions(
@@ -78,12 +73,7 @@ public static class StorageQualityEndpoints
                     filesAnalyzed = report.FilesAnalyzed,
                     lowQualityFiles = report.LowQualityFiles
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to retrieve quality scores.");
-                return Results.Problem("Failed to retrieve quality scores.");
-            }
+            }, "Failed to retrieve quality scores.", logger);
         })
         .WithName("GetQualityScores").Produces(200);
 
@@ -97,7 +87,7 @@ public static class StorageQualityEndpoints
             if (qualityService is null)
                 return Results.Json(new { symbol, message = "Data quality service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var trend = await qualityService.GetTrendAsync(symbol, TimeSpan.FromDays(30), ct);
                 return Results.Json(new
@@ -105,12 +95,7 @@ public static class StorageQualityEndpoints
                     symbol,
                     trend
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to get quality trend for symbol {Symbol}.", symbol);
-                return Results.Problem("Failed to get symbol quality.");
-            }
+            }, "Failed to get symbol quality.", logger);
         })
         .WithName("GetSymbolQuality").Produces(200);
 
@@ -122,7 +107,7 @@ public static class StorageQualityEndpoints
             if (qualityService is null)
                 return Results.Json(new { alerts = Array.Empty<object>(), message = "Data quality service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var alerts = await qualityService.GetQualityAlertsAsync(ct);
                 return Results.Json(new
@@ -130,12 +115,7 @@ public static class StorageQualityEndpoints
                     count = alerts.Length,
                     alerts
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to retrieve quality alerts.");
-                return Results.Problem("Failed to retrieve quality alerts.");
-            }
+            }, "Failed to retrieve quality alerts.", logger);
         })
         .WithName("GetQualityAlerts").Produces(200);
 
@@ -158,7 +138,7 @@ public static class StorageQualityEndpoints
             if (qualityService is null)
                 return Results.Json(new { symbol, message = "Data quality service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var rankings = await qualityService.RankSourcesAsync(
                     symbol,
@@ -172,12 +152,7 @@ public static class StorageQualityEndpoints
                     date = DateTimeOffset.UtcNow.Date,
                     rankings
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to rank quality sources for symbol {Symbol}.", symbol);
-                return Results.Problem("Failed to rank quality sources.");
-            }
+            }, "Failed to rank quality sources.", logger);
         })
         .WithName("GetSourceRankings").Produces(200);
 
@@ -195,7 +170,7 @@ public static class StorageQualityEndpoints
             if (string.IsNullOrWhiteSpace(symbol))
                 symbol = "SPY";
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var trend = await qualityService.GetTrendAsync(symbol, TimeSpan.FromDays(days), ct);
                 var payload = new
@@ -215,12 +190,7 @@ public static class StorageQualityEndpoints
                 };
 
                 return Results.Json(payload, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to compute quality trends.");
-                return Results.Problem("Failed to compute quality trends.");
-            }
+            }, "Failed to compute quality trends.", logger);
         })
         .WithName("GetQualityTrends").Produces(200);
 
@@ -233,7 +203,7 @@ public static class StorageQualityEndpoints
             if (qualityService is null)
                 return Results.Json(new { anomalies = Array.Empty<object>(), message = "Data quality service not available" }, jsonOptions);
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var report = await qualityService.GenerateReportAsync(
                     new QualityReportOptions(
@@ -251,12 +221,7 @@ public static class StorageQualityEndpoints
                         issues = f.Dimensions?.Where(d => d.Score < 0.5).Select(d => new { d.Name, d.Score, d.Issues })
                     })
                 }, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to detect quality anomalies.");
-                return Results.Problem("Failed to detect quality anomalies.");
-            }
+            }, "Failed to detect quality anomalies.", logger);
         })
         .WithName("GetQualityAnomalies").Produces(200);
 
@@ -280,16 +245,11 @@ public static class StorageQualityEndpoints
             if (!File.Exists(fullPath) && !Directory.Exists(fullPath))
                 return Results.NotFound(new { error = $"Path not found: {req.Path}" });
 
-            try
+            return await EndpointHelpers.GuardAsync(async () =>
             {
                 var score = await qualityService.ScoreAsync(fullPath, ct);
                 return Results.Json(score, jsonOptions);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Quality check failed for path {Path}.", req.Path);
-                return Results.Problem("Quality check failed.");
-            }
+            }, "Quality check failed.", logger);
         })
         .WithName("RunQualityCheck").Produces(200).Produces(400).Produces(404)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);

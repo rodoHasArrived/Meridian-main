@@ -8,6 +8,7 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode
 } from "react";
 import {
@@ -27,6 +28,13 @@ import "@/styles/ui-kit-primitives.css";
 const DEFAULT_VIRTUALIZATION_OVERSCAN = 6;
 const DEFAULT_VIRTUALIZATION_VIEWPORT_ROWS = 12;
 const TYPEAHEAD_RESET_MS = 500;
+
+// Default DOM-row guard for non-virtualized tables. Fixed-height tables should
+// pass `virtualization` for true windowing; everything else renders at most this
+// many rows and surfaces a "Show all N rows" control, so a large data set can
+// never dump thousands of nodes into the DOM by omission. Pass `maxVisibleRows={null}`
+// to opt a table out of the cap explicitly.
+export const DEFAULT_DENSE_TABLE_ROW_CAP = 100;
 
 export interface ToolbarStripItem {
   id: string;
@@ -105,6 +113,13 @@ export interface DenseDataTableProps<T> {
   caption?: string | null;
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
+  /**
+   * Soft cap on rows mounted into the DOM for non-virtualized tables; excess
+   * rows collapse behind a "Show all N rows" control. Defaults to
+   * {@link DEFAULT_DENSE_TABLE_ROW_CAP}. Pass an explicit number to tune it, or
+   * `null` to render every row (only safe for bounded data sets). Ignored while
+   * `virtualization` is active, which windows the full set instead.
+   */
   maxVisibleRows?: number | null;
   /**
    * Enable row windowing for large data sets. When set, only a window of rows is
@@ -114,6 +129,12 @@ export interface DenseDataTableProps<T> {
   virtualization?: DenseDataTableVirtualization | null;
   /** Per-row text used for keyboard type-ahead; defaults to `getRowAriaLabel`. */
   getRowTypeaheadText?: (row: T) => string | undefined;
+  /**
+   * Right-click (context-menu gesture) on a data row. Receives the row and the
+   * originating event so callers can open a positioned context menu at the
+   * pointer. Optional; when omitted rows carry no context-menu behaviour.
+   */
+  onRowContextMenu?: (row: T, event: ReactMouseEvent<HTMLTableRowElement>) => void;
 }
 
 function DenseDataTableComponent<T>({
@@ -133,9 +154,10 @@ function DenseDataTableComponent<T>({
   caption,
   sort = null,
   onToggleSort,
-  maxVisibleRows = null,
+  maxVisibleRows = DEFAULT_DENSE_TABLE_ROW_CAP,
   virtualization = null,
-  getRowTypeaheadText
+  getRowTypeaheadText,
+  onRowContextMenu
 }: DenseDataTableProps<T>) {
   const generatedKeyboardInstructionsId = useId();
   const [showAllRows, setShowAllRows] = useState(false);
@@ -428,6 +450,7 @@ function DenseDataTableComponent<T>({
                     if (isInteractiveTableTarget(event.target)) return;
                     selectDenseRow(row, rowAriaLabel, getRowAriaControls?.(row), false, onRowSelect, setSelectionAnnouncement);
                   } : undefined}
+                  onContextMenu={onRowContextMenu ? (event) => onRowContextMenu(row, event) : undefined}
                   onKeyDown={selectable ? (event) => handleRowKeyDown(event, absoluteIndex) : undefined}
                 >
                   {columns.map((column) => (

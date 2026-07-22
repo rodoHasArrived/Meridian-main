@@ -69,6 +69,33 @@ public sealed class PaperTradingGatewayTests
     }
 
     [Fact]
+    public async Task SubmitAsync_WhenDisposedAfterAcknowledgement_DrainsTerminalFillUpdate()
+    {
+        var gateway = new PaperTradingGateway(
+            NullLogger<PaperTradingGateway>.Instance,
+            options: new PaperTradingGatewayOptions
+            {
+                AllowScaffoldMarketFills = true,
+                ScaffoldMarketFillPrice = 123.45m
+            });
+
+        var acknowledgement = await gateway.SubmitAsync(MarketBuy("SPY", 10));
+
+        await gateway.DisposeAsync();
+
+        var updates = new List<Meridian.Execution.Models.OrderStatusUpdate>();
+        await foreach (var update in gateway.StreamOrderUpdatesAsync())
+        {
+            updates.Add(update);
+        }
+
+        updates.Should().ContainSingle(update =>
+            update.OrderId == acknowledgement.OrderId &&
+            update.Status == Meridian.Execution.Models.OrderStatus.Filled &&
+            update.AverageFillPrice == 123.45m);
+    }
+
+    [Fact]
     public async Task ValidateOrderAsync_RejectsMarketOnCloseBecauseTimingIsNotPreserved()
     {
         await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance);

@@ -174,6 +174,10 @@ public sealed class IBClientPortalOptionsValidator : AbstractValidator<IBClientP
 /// </summary>
 public sealed class StorageConfigValidator : AbstractValidator<StorageConfig>
 {
+    private static readonly string[] ValidNamingConventions = ["flat", "bysymbol", "bydate", "bytype"];
+    private static readonly string[] ValidDatePartitions = ["none", "daily", "hourly", "monthly"];
+    private static readonly string[] ValidProfiles = ["research", "lowlatency", "archival"];
+
     public StorageConfigValidator()
     {
         RuleFor(x => x.NamingConvention)
@@ -207,31 +211,17 @@ public sealed class StorageConfigValidator : AbstractValidator<StorageConfig>
     }
 
     private static bool BeValidNamingConvention(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
-
-        var valid = new[] { "flat", "bysymbol", "bydate", "bytype" };
-        return valid.Contains(value.ToLowerInvariant());
-    }
+        => IsAllowedValue(value, ValidNamingConventions);
 
     private static bool BeValidDatePartition(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
-
-        var valid = new[] { "none", "daily", "hourly", "monthly" };
-        return valid.Contains(value.ToLowerInvariant());
-    }
+        => IsAllowedValue(value, ValidDatePartitions);
 
     private static bool BeValidProfile(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
+        => IsAllowedValue(value, ValidProfiles);
 
-        var valid = new[] { "research", "lowlatency", "archival" };
-        return valid.Contains(value.ToLowerInvariant());
-    }
+    private static bool IsAllowedValue(string value, IReadOnlyCollection<string> allowedValues)
+        => !string.IsNullOrWhiteSpace(value) &&
+           allowedValues.Contains(value.Trim().ToLowerInvariant());
 }
 
 /// <summary>

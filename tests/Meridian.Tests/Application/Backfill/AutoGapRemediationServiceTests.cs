@@ -414,6 +414,49 @@ public sealed class AutoGapRemediationServiceTests
         item.ReasonCode.Should().Be("CriticalWorkflow");
     }
 
+    [Fact]
+    public async Task RequestDataQualityGapAsync_ReturnsTruthfulExactRequestOutcome()
+    {
+        var gateway = new FakeGateway();
+        var history = new BackfillExecutionHistory();
+        using var service = new AutoGapRemediationService(
+            gateway,
+            history,
+            policy: new AutoGapRemediationPolicy(
+                MinimumGapDuration: TimeSpan.FromMinutes(1),
+                MinimumGapSize: 1,
+                SymbolCooldown: TimeSpan.Zero,
+                ProviderCooldown: TimeSpan.Zero,
+                MaxConcurrentRemediations: 1,
+                DefaultProvider: "stooq"));
+        var gap = new QualityDataGap(
+            Symbol: "aapl",
+            EventType: "Trade",
+            GapStart: new DateTimeOffset(2026, 07, 10, 13, 35, 00, TimeSpan.Zero),
+            GapEnd: new DateTimeOffset(2026, 07, 10, 13, 42, 00, TimeSpan.Zero),
+            Duration: TimeSpan.FromMinutes(7),
+            MissedSequenceStart: 10,
+            MissedSequenceEnd: 20,
+            EstimatedMissedEvents: 11,
+            Severity: QualityGapSeverity.Significant,
+            PossibleCause: "provider interruption");
+
+        var result = await service.RequestDataQualityGapAsync(gap, " Polygon ");
+
+        result.Outcome.Should().Be(AutoRemediationOutcome.Completed);
+        result.Provider.Should().Be("polygon");
+        result.From.Should().Be(new DateOnly(2026, 07, 10));
+        result.To.Should().Be(new DateOnly(2026, 07, 10));
+        result.IdempotencyKey.Should().Be("AAPL|polygon|2026-07-10|2026-07-10");
+        gateway.Requests.Should().ContainSingle().Which.Should().BeEquivalentTo(new
+        {
+            Provider = "polygon",
+            Symbols = new[] { "AAPL" },
+            From = new DateOnly(2026, 07, 10),
+            To = new DateOnly(2026, 07, 10)
+        });
+    }
+
     private sealed class FakeGateway : IBackfillExecutionGateway
     {
         public int Calls { get; private set; }

@@ -6,6 +6,7 @@ import {
   type AppShellLinkedContextItem
 } from "@/app-shell.linked-context";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { pluralizeCount } from "@/lib/format";
 import type { TradingWorkspaceResponse } from "@/types";
 
 export function buildTradingLinkedContextItem(
@@ -76,5 +77,5 @@ export function buildTradingLinkedContextItem(
 }
 
 function formatTradingLinkedContextCount(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count} ${count === 1 ? singular : plural}`;
+  return pluralizeCount(count, singular, { plural });
 }

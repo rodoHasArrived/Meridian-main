@@ -128,9 +128,24 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Uses signed market values so short positions reduce portfolio value as the
+    /// liability they are, and adds back short margin collateral held at the broker
+    /// (deducted from cash at short entry but still owned by the trader).
+    /// </remarks>
     public decimal PortfolioValue
     {
-        get { lock (_lock) { return _accounts.Values.Sum(static a => a.Cash + a.Positions.Values.Sum(static p => p.MarketValue) - a.MarginBalance); } }
+        get
+        {
+            lock (_lock)
+            {
+                return _accounts.Values.Sum(static a =>
+                    a.Cash
+                    + a.Positions.Values.Sum(static p => p.SignedMarketValue)
+                    - a.MarginBalance
+                    + a.ShortMarginCollateral);
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -511,6 +526,18 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             {
                 pos.Quantity = adjustment.AdjustedQuantity;
                 pos.CostBasis = adjustment.AdjustedCostBasis;
+
+                // Rescale the lot book by the same factors so lots stay consistent with the
+                // aggregate; otherwise the next lot-consuming fill falls into the shortfall
+                // fallback and mis-states realized P&L (e.g. selling through a post-split
+                // position priced at pre-split lot costs).
+                var quantityFactor = originalQuantity == 0m
+                    ? 1m
+                    : adjustment.AdjustedQuantity / originalQuantity;
+                var priceFactor = originalCostBasis == 0m
+                    ? 1m
+                    : adjustment.AdjustedCostBasis / originalCostBasis;
+                pos.RescaleLots(quantityFactor, priceFactor);
             }
         }
     }
@@ -532,14 +559,35 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Positions[symbol] = pos;
         }
 
+        // A fill that crosses through zero closes the existing side first, then opens
+        // the residual on the opposite side — the residual must not be dropped.
+        // Commission is charged once, on the closing leg.
         if (signedQty > 0 && pos.Quantity < 0)
-            ApplyCoverShort(account, pos, symbol, signedQty, price, commission, ts);
+        {
+            var coverQty = Math.Min(signedQty, -pos.Quantity);
+            ApplyCoverShort(account, pos, symbol, coverQty, price, commission, ts);
+
+            var residualQty = signedQty - coverQty;
+            if (residualQty > 0m)
+                ApplyBuy(account, pos, symbol, residualQty, price, 0m, ts);
+        }
         else if (signedQty > 0)
+        {
             ApplyBuy(account, pos, symbol, signedQty, price, commission, ts);
+        }
         else if (signedQty < 0 && pos.Quantity > 0)
-            ApplySellLong(account, pos, symbol, -signedQty, price, commission, ts);
+        {
+            var closeQty = Math.Min(-signedQty, pos.Quantity);
+            ApplySellLong(account, pos, symbol, closeQty, price, commission, ts);
+
+            var residualQty = -signedQty - closeQty;
+            if (residualQty > 0m)
+                ApplyShortSell(account, pos, symbol, residualQty, price, 0m, ts);
+        }
         else if (signedQty < 0)
+        {
             ApplyShortSell(account, pos, symbol, -signedQty, price, commission, ts);
+        }
 
         if (commission > 0)
             PostCommissionEntry(symbol, commission, ts);
@@ -957,11 +1005,18 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// </summary>
     public decimal MarginBorrowed { get; set; }
 
+    /// <summary>Unsigned exposure magnitude (|qty| × price); use <see cref="SignedMarketValue"/> for equity math.</summary>
     public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;
 
-    public decimal UnrealisedPnl => Quantity > 0
-        ? (MarketPrice - CostBasis) * Quantity
-        : 0m; // short unrealised P&L tracked separately
+    /// <summary>Signed market value: positive for longs, negative for shorts (a liability).</summary>
+    public decimal SignedMarketValue => Quantity * MarketPrice;
+
+    /// <summary>
+    /// Unrealised P&amp;L for longs and shorts alike: with a signed quantity,
+    /// (price − cost) × qty yields (cost − price) × |qty| for shorts, where
+    /// <see cref="CostBasis"/> is the weighted-average short entry price.
+    /// </summary>
+    public decimal UnrealisedPnl => (MarketPrice - CostBasis) * Quantity;
 
     public IReadOnlyList<PositionLotEntry> GetLots() => _lots
         .Select(static lot => new PositionLotEntry(
@@ -981,6 +1036,33 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         _lots.Add(new PositionLot($"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
     }
 
+    /// <summary>
+    /// Rescales every open lot by the corporate-action factors applied to the aggregate
+    /// position, preserving lot identity and open time. Keeping the lot book in step with
+    /// <see cref="Quantity"/>/<see cref="CostBasis"/> is required for lot consumption: a
+    /// desynced book would push post-split sells into the shortfall fallback and fabricate
+    /// cost basis at the aggregate average.
+    /// </summary>
+    public void RescaleLots(decimal quantityFactor, decimal priceFactor)
+    {
+        if (quantityFactor == 1m && priceFactor == 1m)
+        {
+            return;
+        }
+
+        var rescaled = _lots
+            .Select(lot => new PositionLot(
+                lot.LotId,
+                lot.OpenQuantity * quantityFactor,
+                lot.EntryPrice * priceFactor,
+                lot.OpenedAt))
+            .Where(static lot => lot.OpenQuantity != 0m)
+            .ToList();
+
+        _lots.Clear();
+        _lots.AddRange(rescaled);
+    }
+
     public decimal ConsumeLots(decimal quantity, PositionLotSelectionMethod method, bool isCoveringShort)
     {
         if (quantity <= 0m)
@@ -988,35 +1070,33 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             return 0m;
         }
 
-        var remaining = quantity;
+        var consumption = LotConsumption.Consume(
+            OrderLots(method, isCoveringShort),
+            quantity,
+            static lot => Math.Abs(lot.OpenQuantity));
+
         var removedCostBasis = 0m;
-
-        while (remaining > 0m)
+        foreach (var slice in consumption.Slices)
         {
-            var lot = SelectNextLot(method, isCoveringShort);
-            if (lot is null)
+            removedCostBasis += slice.Quantity * slice.Lot.EntryPrice;
+
+            if (slice.ClosesLot)
             {
-                removedCostBasis += remaining * CostBasis;
-                break;
-            }
-
-            var lotAvailable = Math.Abs(lot.OpenQuantity);
-            var consumed = Math.Min(remaining, lotAvailable);
-            removedCostBasis += consumed * lot.EntryPrice;
-            remaining -= consumed;
-
-            var newOpenQty = lot.OpenQuantity > 0m
-                ? lot.OpenQuantity - consumed
-                : lot.OpenQuantity + consumed;
-
-            if (newOpenQty == 0m)
-            {
-                _lots.Remove(lot);
+                _lots.Remove(slice.Lot);
             }
             else
             {
-                lot.OpenQuantity = newOpenQty;
+                slice.Lot.OpenQuantity = slice.Lot.OpenQuantity > 0m
+                    ? slice.Lot.OpenQuantity - slice.Quantity
+                    : slice.Lot.OpenQuantity + slice.Quantity;
             }
+        }
+
+        if (consumption.Shortfall > 0m)
+        {
+            // No matching lot records remain; carry the unmatched remainder at the
+            // position-level average cost (legacy positions without lot history).
+            removedCostBasis += consumption.Shortfall * CostBasis;
         }
 
         CostBasis = CalculateRemainingLotCostBasis(isCoveringShort);
@@ -1040,7 +1120,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         return remainingNotional / remainingQuantity;
     }
 
-    private PositionLot? SelectNextLot(PositionLotSelectionMethod method, bool isCoveringShort)
+    private IEnumerable<PositionLot> OrderLots(PositionLotSelectionMethod method, bool isCoveringShort)
     {
         var candidates = isCoveringShort
             ? _lots.Where(static lot => lot.OpenQuantity < 0m)
@@ -1048,10 +1128,10 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
 
         return method switch
         {
-            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
-            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt).FirstOrDefault(),
-            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt).FirstOrDefault(),
-            _ => candidates.OrderBy(static lot => lot.OpenedAt).FirstOrDefault(),
+            PositionLotSelectionMethod.Fifo => candidates.OrderBy(static lot => lot.OpenedAt),
+            PositionLotSelectionMethod.Lifo => candidates.OrderByDescending(static lot => lot.OpenedAt),
+            PositionLotSelectionMethod.Hifo => candidates.OrderByDescending(static lot => lot.EntryPrice).ThenBy(static lot => lot.OpenedAt),
+            _ => candidates.OrderBy(static lot => lot.OpenedAt),
         };
     }
 

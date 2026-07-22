@@ -67,7 +67,36 @@ public sealed record AppConfig(
     ProviderConnectionsConfig? ProviderConnections = null,
     FeatureCapabilityOptions? FeatureCapabilities = null,
     FundOperationsPersistenceConfig? FundOperationsPersistence = null,
-    ProviderModulesConfig? ProviderModules = null
+    ProviderModulesConfig? ProviderModules = null,
+    PipelineRuntimeConfig? Pipeline = null
+)
+{
+    /// <summary>
+    /// Preserves top-level configuration sections this model does not declare (host-level
+    /// sections such as <c>ApiHost</c>, <c>PaperTrading</c>, <c>Status</c>, and
+    /// <c>Connectivity</c>) across load/save round-trips, so config mutation paths
+    /// (data-source/storage/symbol saves) do not silently drop operator-tuned host settings.
+    /// </summary>
+    [JsonExtensionData]
+    public Dictionary<string, System.Text.Json.JsonElement>? AdditionalSections { get; set; }
+}
+
+/// <summary>
+/// Runtime tuning for the event pipeline's flush behaviour. All fields are optional; unset values
+/// fall back to the pipeline's built-in defaults (final flush 30s, periodic sink flush 60s), so
+/// existing configurations keep their current behaviour. Non-positive values are ignored (treated
+/// as unset) by the pipeline registration.
+/// </summary>
+/// <param name="FinalFlushTimeoutSeconds">
+/// Timeout, in seconds, for the final flush during pipeline shutdown before giving up.
+/// </param>
+/// <param name="SinkFlushTimeoutSeconds">
+/// Per-call timeout, in seconds, for periodic sink flushes, preventing a hung sink from stalling
+/// the pipeline indefinitely.
+/// </param>
+public sealed record PipelineRuntimeConfig(
+    int? FinalFlushTimeoutSeconds = null,
+    int? SinkFlushTimeoutSeconds = null
 );
 
 /// <summary>

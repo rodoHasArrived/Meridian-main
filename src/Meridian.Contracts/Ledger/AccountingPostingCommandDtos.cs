@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Ledger;
@@ -46,7 +48,14 @@ public sealed record AccountingPostingEvidenceReferenceDto(
     string RetainedBy,
     string? SubjectId = null,
     string? ContentHash = null,
-    string? Description = null);
+    string? Description = null,
+    string? SourceReference = null,
+    string? Reviewer = null,
+    DateTimeOffset? ReviewedAtUtc = null,
+    DateOnly? EffectiveDate = null,
+    long? EvidenceVersion = null,
+    string? ReviewStatus = null,
+    string? SubjectType = null);
 
 public sealed record AccountingPostingCommandDto(
     Guid CommandId,
@@ -72,4 +81,22 @@ public sealed record AccountingPostingCommandDto(
 {
     public IReadOnlyList<AccountingPostingEvidenceReferenceDto> Evidence { get; init; } =
         Evidence ?? [];
+
+    public AccountingBookContextDto? BookContext { get; init; }
+
+    public Guid? BookPositionId { get; init; }
+
+    public EconomicEventReferenceDto? EconomicEvent { get; init; }
+
+    public ProjectionLineageDto? ProjectionLineage { get; init; }
+
+    public AccountingRulePackReferenceDto? RulePackReference { get; init; }
+
+    /// <summary>
+    /// Origin of the figures this posting carries. Defaults to <see cref="DataProvenance.Real"/>.
+    /// A non-real value is the retained "simulated mark": the append boundary refuses to persist a
+    /// figure whose evidence declares a simulated origin unless this mark is set, and — once set —
+    /// the mark is written onto the journal so a simulated figure can never be mistaken for real.
+    /// </summary>
+    public DataProvenance Provenance { get; init; } = DataProvenance.Real;
 }

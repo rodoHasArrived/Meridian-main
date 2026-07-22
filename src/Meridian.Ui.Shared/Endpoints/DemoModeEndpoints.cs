@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,12 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class DemoModeEndpoints
 {
+    /// <summary>Demo output is always seeded; every response renders this persistent badge.</summary>
+    private const DataProvenance DemoProvenance = DataProvenance.Seeded;
+
+    private static readonly DataProvenanceBadge DemoProvenanceBadge =
+        DataProvenanceBadge.TryCreate(DemoProvenance)!;
+
     private static readonly Dictionary<string, DemoMarketSnapshot[]> DemoMarketData = new()
     {
         ["AAPL"] = new[]
@@ -91,7 +98,9 @@ public static class DemoModeEndpoints
             {
                 symbols = DemoMarketData.Keys.ToArray(),
                 count = DemoMarketData.Count,
-                message = "Demo mode provides seeded market data without external API keys"
+                message = "Demo mode provides seeded market data without external API keys",
+                provenance = DemoProvenance.Token(),
+                provenanceBadge = DemoProvenanceBadge
             }, jsonOptions);
         })
         .WithName("GetDemoSymbols")
@@ -107,11 +116,16 @@ public static class DemoModeEndpoints
             var latest = snapshots.FirstOrDefault();
             return latest is null
                 ? Results.NotFound()
-                : Results.Json(latest, jsonOptions);
+                : Results.Json(new
+                {
+                    snapshot = latest,
+                    provenance = DemoProvenance.Token(),
+                    provenanceBadge = DemoProvenanceBadge
+                }, jsonOptions);
         })
         .WithName("GetDemoMarketData")
         .WithDescription("Returns latest market data snapshot for a demo symbol.")
-        .Produces<DemoMarketSnapshot>(200)
+        .Produces(200)
         .Produces(404);
 
         // Get historical data for demo symbol
@@ -126,7 +140,9 @@ public static class DemoModeEndpoints
                 symbol = symbol,
                 bars = result,
                 count = result.Length,
-                range = new { start = result.LastOrDefault()?.Date, end = result.FirstOrDefault()?.Date }
+                range = new { start = result.LastOrDefault()?.Date, end = result.FirstOrDefault()?.Date },
+                provenance = DemoProvenance.Token(),
+                provenanceBadge = DemoProvenanceBadge
             }, jsonOptions);
         })
         .WithName("GetDemoHistoricalData")

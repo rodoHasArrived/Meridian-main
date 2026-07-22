@@ -21,8 +21,8 @@
         <Border x:Name="FullStrip"
                 Height="28"
                 VerticalAlignment="Bottom"
-                Background="#EE0A0A0F"
-                BorderBrush="#FF1A2A4A"
+                Background="{StaticResource TickerStripBackgroundBrush}"
+                BorderBrush="{StaticResource TickerStripBorderBrush}"
                 BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -44,14 +44,14 @@
                         <DataTemplate>
                             <Border Padding="8,0"
                                     Margin="0,0,1,0"
-                                    Background="#0A0A1A"
+                                    Background="{StaticResource TickerItemBackgroundBrush}"
                                     VerticalAlignment="Stretch">
                                 <!-- Flash highlight: semi-transparent white overlay appears on IsFlashing -->
                                 <Border.Style>
                                     <Style TargetType="Border">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsFlashing}" Value="True">
-                                                <Setter Property="Background" Value="#1AFFFFFF" />
+                                                <Setter Property="Background" Value="{StaticResource TickerFlashOverlayBrush}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -76,7 +76,7 @@
                                     <TextBlock Text="{Binding BidText}"
                                                FontFamily="Consolas"
                                                FontSize="10"
-                                               Foreground="#44AA44"
+                                               Foreground="{StaticResource TickerUpBrush}"
                                                VerticalAlignment="Center" />
                                     <TextBlock Text="/"
                                                FontFamily="Consolas"
@@ -86,7 +86,7 @@
                                     <TextBlock Text="{Binding AskText}"
                                                FontFamily="Consolas"
                                                FontSize="10"
-                                               Foreground="#AA4444"
+                                               Foreground="{StaticResource TickerDownBrush}"
                                                VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
@@ -97,13 +97,13 @@
                 <!-- Right-side controls: context menu hint -->
                 <Border Grid.Column="1"
                         Padding="8,0"
-                        Background="#0A0A1A"
+                        Background="{StaticResource TickerItemBackgroundBrush}"
                         Cursor="Hand"
                         MouseRightButtonUp="OnRightClick"
                         ToolTip="Right-click for options">
                     <TextBlock Text="⋮"
                                FontSize="14"
-                               Foreground="#44667799"
+                               Foreground="{StaticResource TickerMutedGlyphBrush}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center" />
                 </Border>
@@ -114,7 +114,7 @@
         <Border x:Name="HairlineStrip"
                 Height="4"
                 VerticalAlignment="Bottom"
-                Background="#661A2A4A"
+                Background="{StaticResource TickerHairlineBrush}"
                 Visibility="Collapsed" />
     </Grid>
 </Window>

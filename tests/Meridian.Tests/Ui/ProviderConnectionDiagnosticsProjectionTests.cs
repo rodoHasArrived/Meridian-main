@@ -1,5 +1,7 @@
 using System.Net.WebSockets;
 using FluentAssertions;
+using Meridian.Contracts.Configuration;
+using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Resilience;
 using Meridian.Ui.Shared.Endpoints;
@@ -64,6 +66,29 @@ public sealed class ProviderConnectionDiagnosticsProjectionTests
         diagnostics.LastSubscriptionMessageAt.Should().Be(lastMessage);
     }
 
+    [Fact]
+    public void BuildByProviderId_StreamingContractFallbackProjectsConservativeConfiguredState()
+    {
+        using var registry = new ProviderRegistry();
+        registry.Register(new ContractFallbackStreamingProvider());
+
+        var diagnosticsByProviderId = ProviderConnectionDiagnosticsProjection.BuildByProviderId(registry);
+        var diagnostics = ProviderConnectionDiagnosticsProjection.Find(
+            diagnosticsByProviderId,
+            "fallback-stream",
+            "Fallback Streaming");
+
+        diagnostics.Should().NotBeNull(
+            "IMarketDataClient guarantees connection diagnostics even when an adapter has no supervisor");
+        diagnostics!.ProviderName.Should().Be("Fallback Streaming");
+        diagnostics.LifecycleState.Should().Be("Configured");
+        diagnostics.WebSocketState.Should().Be("None");
+        diagnostics.IsConnected.Should().BeFalse(
+            "the compatibility fallback must never infer a live connection from configuration alone");
+        diagnostics.IsReconnecting.Should().BeFalse();
+        diagnostics.ReconnectAttempts.Should().Be(0);
+    }
+
     private sealed class DiagnosticProvider : IProviderMetadata, IProviderConnectionDiagnosticsSource
     {
         private readonly WebSocketConnectionDiagnostics _diagnostics;
@@ -95,5 +120,23 @@ public sealed class ProviderConnectionDiagnosticsProjectionTests
         }
 
         public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot() => _diagnostics;
+    }
+
+    private sealed class ContractFallbackStreamingProvider : IMarketDataClient
+    {
+        public bool IsEnabled => true;
+        public string ProviderId => "fallback-stream";
+        public string ProviderDisplayName => "Fallback Streaming";
+        public string ProviderDescription => "Streaming contract fallback diagnostics test double.";
+        public int ProviderPriority => 100;
+        public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Streaming();
+
+        public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+        public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
+        public int SubscribeMarketDepth(SymbolConfig cfg) => 1;
+        public void UnsubscribeMarketDepth(int subscriptionId) { }
+        public int SubscribeTrades(SymbolConfig cfg) => 2;
+        public void UnsubscribeTrades(int subscriptionId) { }
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

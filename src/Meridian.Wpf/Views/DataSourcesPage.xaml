@@ -14,6 +14,33 @@
     </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,16,28,32">
         <StackPanel MaxWidth="1200">
+            <Border AutomationProperties.AutomationId="DataSourcesConfigurationRecoveryCard"
+                    Style="{StaticResource CardStyle}"
+                    BorderBrush="{StaticResource WarningColorBrush}"
+                    Visibility="{Binding IsConfigurationRecoveryVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                    Margin="0,0,0,24">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{Binding ConfigurationRecoveryTitle}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        <TextBlock Text="{Binding ConfigurationRecoveryDetail}"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,12,0" />
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="Retry load"
+                            Command="{Binding RetryConfigurationCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            VerticalAlignment="Center" />
+                </Grid>
+            </Border>
+
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">

@@ -15,9 +15,44 @@ decisions:
       - W7-LIVE-001
   - id: DEC-UI-LANE-001
     title: Browser and desktop workstations are active UI lanes
-    status: accepted
+    status: superseded
     decided_on: 2026-05-21
     owner_lane: Workstation Shell and UX
-    summary: Browser and WPF workstation work both remain active; shared contracts, API endpoints, and read models should carry business behavior before either client composes it.
+    summary: Superseded by DEC-UI-LANE-002 on 2026-07-05. Browser and WPF workstation work were both active; shared contracts, API endpoints, and read models carried business behavior before either client composed it.
     related_roadmap_items:
       - W2-TRD-001
+  - id: DEC-UI-LANE-002
+    title: Browser workstation active and WPF product work deferred
+    status: accepted
+    decided_on: 2026-07-05
+    owner_lane: Workstation Shell and UX
+    summary: Browser workstation work remains the active operator UI lane. WPF product/UI work is deferred until explicitly reactivated; existing WPF shell code, compatibility, tests, and release workflows remain retained support surfaces, and shared contracts/API/read models must stay client-neutral where existing WPF consumers depend on them.
+    related_roadmap_items:
+      - W5X-FINOPS-001
+      - W5X-FREX-001
+      - W7-LIVE-001
+  - id: DEC-UI-CONSOLIDATION-001
+    title: Consolidate browser screens by deepening host screens behind charter roots
+    status: accepted
+    decided_on: 2026-07-19
+    owner_lane: Workstation Shell and UX
+    summary: Closely related browser-workstation tools fold into deeper host screens instead of holding standalone routes. Folds stay within the seven charter root workspaces, compose as tabs, master panes, or context rails rather than stacked content, retire each old route as a redirect that preserves query and hash scope, keep sidebar sub-items, the route catalog, mounted routes, and command palette commands as one taxonomy, and refresh the WPF parity matrix in the same change. Consolidation is presentation-only; shared contracts, read models, and endpoints do not change.
+    related_roadmap_items:
+      - W8-UX-CONSOL-001
+      - W8-WPF-PARITY-001
+  - id: DEC-PRIORITY-SLATE-001
+    title: Adopt the 2026-07 first-order improvement slate as ranked W9 roadmap priorities
+    status: accepted
+    decided_on: 2026-07-21
+    owner_lane: Core Team
+    summary: Nine product-critical improvements enter the registry as the ranked W9 priority slate, ordered truth-and-evaluation first (fail-closed simulation posture, one-command seeded demo), then promotion-gate integrity and the live feedback loop (paper-trading realism, Alpaca fill streaming), then fund-accounting deliverables (client-grade report exports, unitized NAV and fee/waterfall/capital-call economics), then safety and governance hardening (kill-switch and pre-trade rules, route authorization/tenancy/audit chaining), then institutional statement ingestion with a sided reconciliation matcher. Rank is encoded in each W9 item's numeric ID suffix, and docs/product/product-roadmap-priorities-2026-07.md records the rationale table and production-readiness tracker mapping.
+    related_roadmap_items:
+      - W9-TRUTH-001
+      - W9-DEMO-002
+      - W9-PAPER-003
+      - W9-ALPACA-004
+      - W9-REPORT-005
+      - W9-NAV-006
+      - W9-SAFETY-007
+      - W9-GOV-008
+      - W9-INGEST-009

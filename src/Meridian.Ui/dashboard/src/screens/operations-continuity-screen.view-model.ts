@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
 import {
   getOperationsCloseCalendar,
   getPrivateCapitalCloseCockpit,
@@ -8,7 +9,13 @@ import {
   type PrivateCapitalCloseCockpitQuery
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
+import { humanizeStatus } from "@/components/operations/status";
 import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
+import {
+  buildReviewedAutomationViewModel,
+  evidenceStatusLabel,
+  evidenceStatusTone
+} from "@/screens/operations-continuity-reviewed-automation.view-model";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -28,7 +35,6 @@ import type {
   OperationsGateKey,
   OperationsGateStatus,
   OperationsNextAction,
-  OperationsReviewedAutomationArtifact,
   OperationsTimelineEntry,
   OperationsWorkflowBlocker,
   OperationsWorkflowStatus,
@@ -36,8 +42,7 @@ import type {
   PrivateCapitalCloseCockpitApproval,
   PrivateCapitalCloseCockpitLane,
   PrivateCapitalCloseCockpitWorkflow,
-  PrivateCapitalNavSupportPackage,
-  EvidenceStatus
+  PrivateCapitalNavSupportPackage
 } from "@/types";
 
 export type OperationsContinuityTone = "ready" | "review" | "blocked" | "neutral";
@@ -70,6 +75,7 @@ export interface OperationsContinuityGateRow {
   requiredLabel: string;
   blockerCountLabel: string;
   completedLabel: string;
+  completedByTechnicalLabel: string | null;
   ariaLabel: string;
 }
 
@@ -303,6 +309,7 @@ export interface FinancialOperationsOperatorQueueRow {
   id: string;
   kindLabel: string;
   title: string;
+  technicalCode?: string | null;
   detail: string;
   statusLabel: string;
   statusTone: OperationsContinuityTone;
@@ -568,6 +575,7 @@ export interface OperationsContinuityNextActionViewModel {
   disabled: boolean;
   disabledReason: string | null;
   ariaLabel: string;
+  statusLabel: string;
   statusTone: OperationsContinuityTone;
 }
 
@@ -1096,12 +1104,13 @@ function buildDetailPanel(
     id: OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
     ariaLabel: `Operations continuity detail for ${summary.periodId} close workflow`,
     title: `${summary.periodId} close workflow`,
-    subtitle: `Fund ${summary.fundAccountId} from ${summary.brokerSource || "broker source pending"}.`,
+    subtitle: `Broker source: ${formatWorkflowSourceLabel(summary.brokerSource)}.`,
     description: "Selected close-lane evidence, gate progress, Security Master snapshot, and blocker count.",
     statusLabel: statusLabel(summary.status),
     statusTone: statusTone(summary.status),
     metadata: [
       { label: "Workflow", value: summary.workflowId },
+      { label: "Fund account", value: summary.fundAccountId },
       { label: "Version", value: String(detail?.version ?? summary.version) },
       { label: "Updated", value: formatDate(summary.updatedAtUtc) },
       { label: "Security Master", value: summary.securityMasterSnapshotId ?? "Snapshot pending" },
@@ -1330,7 +1339,8 @@ function buildNextActionViewModel({
   loading: boolean;
   detailError: string | null;
 }): OperationsContinuityNextActionViewModel {
-  const rawAction = selectHighestValueAction(workflow, gates);
+  const selectedAction = selectHighestValueAction(workflow, gates);
+  const rawAction = selectedAction?.action ?? null;
   const href = normalizeLocalWorkstationRoute(rawAction?.route) ?? null;
   const disabledReason = loading
     ? "Wait for the selected workflow to finish loading before taking the next action."
@@ -1346,6 +1356,8 @@ function buildNextActionViewModel({
             ? "The server did not provide a local workstation route for this action."
             : null;
 
+  const status = buildNextActionStatus(selectedAction?.gateStatus ?? null, workflow, rawAction);
+
   return {
     title: rawAction?.label ?? "No action available",
     detail: rawAction?.gate ? `Recommended by the ${gateLabel(rawAction.gate)} gate.` : "Server-derived recommendation for the selected close workflow.",
@@ -1354,14 +1366,20 @@ function buildNextActionViewModel({
     disabled: disabledReason !== null,
     disabledReason,
     ariaLabel: rawAction ? `Open operations continuity next action: ${rawAction.label}` : "Operations continuity next action unavailable",
-    statusTone: disabledReason ? "neutral" : "ready"
+    statusLabel: status.label,
+    statusTone: status.tone
   };
+}
+
+interface SelectedOperationsNextAction {
+  action: OperationsNextAction;
+  gateStatus: OperationsGateStatus;
 }
 
 function selectHighestValueAction(
   workflow: OperationsContinuityWorkflow | OperationsContinuityWorkflowSummary | null,
   gates: OperationsGate[]
-): OperationsNextAction | null {
+): SelectedOperationsNextAction | null {
   if (!workflow) {
     return null;
   }
@@ -1376,7 +1394,44 @@ function selectHighestValueAction(
   ];
 
   allActions.sort((left, right) => gateStatusPriority(right.gateStatus) - gateStatusPriority(left.gateStatus));
-  return allActions.find((entry) => entry.action.label.trim())?.action ?? null;
+  return allActions.find((entry) => entry.action.label.trim()) ?? null;
+}
+
+function buildNextActionStatus(
+  gateStatus: OperationsGateStatus | null,
+  workflow: OperationsContinuityWorkflow | OperationsContinuityWorkflowSummary | null,
+  action: OperationsNextAction | null
+): { label: string; tone: OperationsContinuityTone } {
+  if (!action) {
+    return { label: "Unavailable", tone: "neutral" };
+  }
+
+  switch (gateStatus) {
+    case "Blocked":
+      return { label: "Blocked", tone: "blocked" };
+    case "ReviewRequired":
+      return { label: "Review required", tone: "review" };
+    case "InProgress":
+      return { label: "In progress", tone: "review" };
+    case "NotStarted":
+      return { label: "Pending", tone: "review" };
+    case "Passed":
+      return { label: "Ready", tone: "ready" };
+    default:
+      break;
+  }
+
+  const workflowTone = workflow ? statusTone(workflow.status) : "neutral";
+  if (workflowTone === "blocked") {
+    return { label: "Blocked", tone: workflowTone };
+  }
+  if (workflowTone === "review") {
+    return { label: "Review required", tone: workflowTone };
+  }
+  if (workflowTone === "ready") {
+    return { label: "Ready", tone: workflowTone };
+  }
+  return { label: "Available", tone: "neutral" };
 }
 
 function mapWorkflowRow(
@@ -1389,7 +1444,7 @@ function mapWorkflowRow(
   return {
     id: workflow.workflowId,
     title: `${workflow.periodId} close`,
-    subtitle: `${workflow.brokerSource || "Broker source pending"} / ${workflow.fundAccountId}`,
+    subtitle: `${formatWorkflowSourceLabel(workflow.brokerSource)} source`,
     statusLabel: statusLabel(workflow.status),
     statusTone: tone,
     gatesLabel: `${passedGateCount}/${workflow.gates.length} gates passed`,
@@ -1416,6 +1471,7 @@ function workflowRowClassName(tone: OperationsContinuityTone): OperationsContinu
 }
 
 function mapGateRow(gate: OperationsGate): OperationsContinuityGateRow {
+  const completionActor = gate.completedBy?.trim() || null;
   return {
     id: gate.gateKey,
     gateKey: gate.gateKey,
@@ -1425,7 +1481,10 @@ function mapGateRow(gate: OperationsGate): OperationsContinuityGateRow {
     statusTone: gateTone(gate.status),
     requiredLabel: gate.isRequired ? "Required" : "Optional",
     blockerCountLabel: gate.blockers.length === 0 ? "No blockers" : `${gate.blockers.length} blocker${gate.blockers.length === 1 ? "" : "s"}`,
-    completedLabel: gate.completedAtUtc ? `${formatDate(gate.completedAtUtc)} by ${gate.completedBy ?? "unknown"}` : "Not completed",
+    completedLabel: gate.completedAtUtc
+      ? `${formatDate(gate.completedAtUtc)} by ${formatOperatorDisplayName(completionActor)}`
+      : "Not completed",
+    completedByTechnicalLabel: gate.completedAtUtc ? completionActor : null,
     ariaLabel: `${gate.displayName || gateLabel(gate.gateKey)} gate, ${gateStatusLabel(gate.status)}, ${gate.blockers.length} blockers`
   };
 }
@@ -1944,97 +2003,6 @@ function compareDashboardMetrics(
   return normalizedLeft - normalizedRight || left.label.localeCompare(right.label);
 }
 
-function buildReviewedAutomationViewModel(
-  reviewedAutomation: NonNullable<OperationsContinuityWorkflow["reviewedAutomation"]> | null,
-  loading: boolean
-): OperationsReviewedAutomationViewModel {
-  if (!reviewedAutomation) {
-    return {
-      title: "Reviewed automation",
-      statusLabel: loading ? "Loading" : "Missing",
-      statusTone: loading ? "neutral" : "review",
-      stageLabel: loading ? "Loading review stage" : "Review stage unavailable",
-      reviewLabel: loading ? "Review state pending" : "No reviewed automation posture returned",
-      summaryLabel: loading
-        ? "Loading reviewed automation posture from the shared operations API."
-        : "The shared operations API did not return reviewed automation posture.",
-      allowedUseCasesLabel: loading ? "Loading allowed uses" : "No allowed use cases returned",
-      prohibitedActionsLabel: loading ? "Loading prohibited actions" : "No prohibited actions returned",
-      evidenceLabel: "No retained review evidence",
-      requiredActionsLabel: loading ? "Loading required actions" : "Return reviewed automation posture before relying on local automation state.",
-      artifactsEmptyText: loading ? "Loading reviewed automation output queue..." : "No reviewed automation output queue returned.",
-      artifacts: []
-    };
-  }
-
-  const requiredActions = (reviewedAutomation.requiredActions ?? [])
-    .map((action) => action.trim())
-    .filter(Boolean);
-  const evidenceCount = reviewedAutomation.evidenceLinks.length;
-  const artifacts = buildReviewedAutomationArtifactRows(reviewedAutomation.artifacts ?? []);
-
-  return {
-    title: "Reviewed automation",
-    statusLabel: evidenceStatusLabel(reviewedAutomation.status),
-    statusTone: reviewedAutomation.requiresHumanReview
-      ? evidenceStatusTone(reviewedAutomation.status)
-      : reviewedAutomation.status === "Ready"
-        ? "ready"
-        : evidenceStatusTone(reviewedAutomation.status),
-    stageLabel: `Stage: ${reviewedAutomation.stage?.trim() || "Stage pending"}`,
-    reviewLabel: reviewedAutomation.requiresHumanReview ? "Human review required" : "Human review complete",
-    summaryLabel: reviewedAutomation.summary?.trim() || "No reviewed automation summary returned.",
-    allowedUseCasesLabel: formatReviewedAutomationList(reviewedAutomation.allowedUseCases, "No allowed use cases returned"),
-    prohibitedActionsLabel: formatReviewedAutomationList(reviewedAutomation.prohibitedActions, "No prohibited actions returned"),
-    evidenceLabel: evidenceCount === 0 ? "No retained review evidence" : `${evidenceCount} retained review evidence link${evidenceCount === 1 ? "" : "s"}`,
-    requiredActionsLabel: requiredActions.length === 0 ? "No required actions" : requiredActions.join("; "),
-    artifactsEmptyText: "No reviewed automation outputs are queued for this workflow stage.",
-    artifacts
-  };
-}
-
-function buildReviewedAutomationArtifactRows(artifacts: OperationsReviewedAutomationArtifact[]): OperationsReviewedAutomationArtifactRow[] {
-  return artifacts.map((artifact) => {
-    const evidenceCount = artifact.evidenceLinks.length;
-    const evidenceHref = normalizeLocalWorkstationRoute(artifact.evidenceLinks[0]?.route) ?? null;
-    const checklist = (artifact.reviewChecklist ?? [])
-      .map((item) => item.trim())
-      .filter(Boolean);
-    const title = artifact.title?.trim() || "Reviewed automation output";
-    const kindLabel = artifact.artifactKind?.trim() || "Automation output";
-    return {
-      id: artifact.artifactId,
-      kindLabel,
-      title,
-      statusLabel: evidenceStatusLabel(artifact.status),
-      statusTone: artifact.requiresHumanReview ? evidenceStatusTone(artifact.status) : "ready",
-      reviewLabel: artifact.requiresHumanReview ? "Human review required" : "Review complete",
-      confidenceLabel: formatReviewedAutomationConfidence(artifact.confidencePercent),
-      sourceSummary: artifact.sourceSummary?.trim() || "No source summary returned.",
-      evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
-      evidenceHref,
-      evidenceRouteLabel: evidenceHref ? "Open reviewed automation evidence" : "No local evidence route",
-      suggestedActionLabel: artifact.suggestedOperatorAction?.trim() || "No suggested operator action returned.",
-      blockedActionLabel: artifact.blockedMaterialAction?.trim() || "No blocked material action returned.",
-      checklistLabel: checklist.length === 0 ? "No review checklist returned" : checklist.join("; "),
-      ariaLabel: `${kindLabel} ${title}, ${evidenceStatusLabel(artifact.status)}, ${artifact.requiresHumanReview ? "human review required" : "review complete"}`
-    };
-  });
-}
-
-function formatReviewedAutomationList(values: string[], fallback: string): string {
-  const normalized = values
-    .map((value) => value.trim())
-    .filter(Boolean);
-  return normalized.length === 0 ? fallback : normalized.join(", ");
-}
-
-function formatReviewedAutomationConfidence(value: number | null | undefined): string {
-  return typeof value === "number" && Number.isFinite(value)
-    ? `${Math.round(value)}% confidence`
-    : "Confidence not scored";
-}
-
 function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]): OperationsContinuityEvidencePackageRow[] {
   return [...packages]
     .sort(compareEvidencePackages)
@@ -2246,7 +2214,8 @@ function mapWorkflowBlockerQueueRow(row: OperationsContinuityBlockerRow): Financ
   return {
     id: `workflow-blocker:${row.id}`,
     kindLabel: "Workflow blocker",
-    title: row.code,
+    title: humanizeOperationsCode(row.code),
+    technicalCode: row.code,
     detail: `${row.gateLabel}: ${row.message}`,
     statusLabel: row.severityLabel,
     statusTone: row.severityTone,
@@ -2258,6 +2227,11 @@ function mapWorkflowBlockerQueueRow(row: OperationsContinuityBlockerRow): Financ
     routeLabel,
     ariaLabel: `Financial Operations workflow blocker ${row.ariaLabel}`
   };
+}
+
+function humanizeOperationsCode(code: string): string {
+  const normalized = /^[A-Z0-9_-]+$/.test(code) ? code.toLowerCase() : code;
+  return humanizeStatus(normalized);
 }
 
 function mapReconciliationLaneQueueRow(
@@ -3577,25 +3551,6 @@ function cockpitStatusTone(cockpit: PrivateCapitalCloseCockpit): OperationsConti
   return evidenceStatusTone(cockpit.overallStatus);
 }
 
-function evidenceStatusTone(status: EvidenceStatus): OperationsContinuityTone {
-  switch (status) {
-    case "Ready":
-      return "ready";
-    case "Blocked":
-    case "Missing":
-      return "blocked";
-    case "ReviewRequired":
-    case "Stale":
-      return "review";
-    default:
-      return "neutral";
-  }
-}
-
-function evidenceStatusLabel(status: EvidenceStatus): string {
-  return splitEnumLabel(status);
-}
-
 function compareCloseCockpitWorkflows(
   left: PrivateCapitalCloseCockpitWorkflow,
   right: PrivateCapitalCloseCockpitWorkflow
@@ -3995,6 +3950,24 @@ function splitEnumLabel(value: string): string {
     .trim();
 }
 
+function formatWorkflowSourceLabel(value: string | null | undefined): string {
+  const label = splitEnumLabel(value?.trim() || "broker source pending");
+  return label.replace(/^\w/, (character) => character.toUpperCase());
+}
+
+function formatOperatorDisplayName(value: string | null): string {
+  if (!value) {
+    return "Unknown operator";
+  }
+
+  const label = splitEnumLabel(value)
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.toLowerCase() === "ops" ? "Operations" : part.toLowerCase())
+    .join(" ");
+  return label.replace(/^\w/, (character) => character.toUpperCase());
+}
+
 function formatDate(value: string | null | undefined): string {
   if (!value) {
     return "Not recorded";
@@ -4043,11 +4016,7 @@ function formatCurrency(value: number | null | undefined, currency: string): str
     return `${formatDecimal(value)} ${currency}`;
   }
 
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2
-  }).format(value);
+  return formatCurrencyAmount(value, { currency });
 }
 
 function formatPercent(value: number | null | undefined): string {

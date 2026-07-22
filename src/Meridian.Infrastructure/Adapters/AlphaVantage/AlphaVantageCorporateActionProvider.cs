@@ -1,6 +1,8 @@
 using System.Globalization;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -74,6 +76,11 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
         try
         {
             using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw CreateRateLimitException(response, normalizedSymbol);
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogDebug(
@@ -84,11 +91,20 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            if (IsErrorOrRateLimitBody(json))
+            if (IsRateLimitBody(json))
+            {
+                throw new RateLimitException(
+                    $"Alpha Vantage corporate-action rate limit exceeded for {normalizedSymbol}.",
+                    provider: ProviderId,
+                    symbol: normalizedSymbol,
+                    retryAfter: TimeSpan.FromMinutes(1));
+            }
+
+            if (IsErrorBody(json))
             {
                 _logger.LogDebug(
-                    "Alpha Vantage corporate actions returned an error or throttle body for {Ticker}; skipping.",
-                    ticker);
+                    "Alpha Vantage corporate actions returned an error body for {Ticker}; skipping.",
+                    normalizedSymbol);
                 return [];
             }
 
@@ -115,6 +131,10 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
 
             return commands;
         }
+        catch (RateLimitException)
+        {
+            throw;
+        }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogWarning(ex, "Failed to fetch Alpha Vantage corporate actions for {Ticker}.", ticker);
@@ -127,7 +147,7 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
         AlphaVantageDailyPrice price,
         Guid securityId)
     {
-        if (!DateOnly.TryParse(sessionDateText, CultureInfo.InvariantCulture, DateTimeStyles.None, out var sessionDate))
+        if (!ProviderDateParsing.TryParseProviderDate(sessionDateText, out var sessionDate))
         {
             yield break;
         }
@@ -166,11 +186,28 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
         }
     }
 
-    private static bool IsErrorOrRateLimitBody(string json)
-    {
-        return json.Contains("\"Note\"", StringComparison.Ordinal) ||
-            json.Contains("\"Error Message\"", StringComparison.Ordinal) ||
+    private static bool IsRateLimitBody(string json)
+        => json.Contains("\"Note\"", StringComparison.Ordinal) ||
             json.Contains("Thank you for using Alpha Vantage", StringComparison.Ordinal);
+
+    private static bool IsErrorBody(string json)
+        => json.Contains("\"Error Message\"", StringComparison.Ordinal);
+
+    private RateLimitException CreateRateLimitException(HttpResponseMessage response, string symbol)
+    {
+        var retryAfter = response.Headers.RetryAfter?.Delta;
+        if (retryAfter is null && response.Headers.RetryAfter?.Date is { } retryAt)
+        {
+            var delay = retryAt - DateTimeOffset.UtcNow;
+            if (delay > TimeSpan.Zero)
+                retryAfter = delay;
+        }
+
+        return new RateLimitException(
+            $"Alpha Vantage corporate-action rate limit exceeded for {symbol}.",
+            provider: ProviderId,
+            symbol: symbol,
+            retryAfter: retryAfter ?? TimeSpan.FromMinutes(1));
     }
 
     private string? ResolveApiKey()

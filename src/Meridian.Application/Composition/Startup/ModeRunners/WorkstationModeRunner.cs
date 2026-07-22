@@ -36,11 +36,15 @@ public sealed class WorkstationModeRunner
             ctx.Deployment.HttpPort,
             stopwatch.ElapsedMilliseconds);
 
+        var terminationToken = ctx.Lifecycle is IRuntimeLifecycleControlPlane runtimeLifecycle
+            ? runtimeLifecycle.TerminationToken
+            : ctx.Lifecycle.ShutdownToken;
+
         try
         {
-            await Task.Delay(Timeout.InfiniteTimeSpan, ctx.Lifecycle.ShutdownToken);
+            await Task.Delay(Timeout.InfiniteTimeSpan, terminationToken);
         }
-        catch (OperationCanceledException) when (ctx.Lifecycle.ShutdownToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (terminationToken.IsCancellationRequested)
         {
             _log.Information(
                 "Workstation mode shutdown requested ({Reason}) after {UptimeSeconds:F1} seconds",

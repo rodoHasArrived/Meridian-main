@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Meridian.Platform.Results;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -80,9 +81,58 @@ internal static class EndpointHelpers
             var result = await handler(service, ct);
             return Results.Json(result, opts);
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // The request was aborted; propagate so the host treats it as a cancellation
+            // instead of reporting an error response to a client that is no longer listening.
+            throw;
+        }
         catch (Exception ex)
         {
             return FormatErrorResult(ex, opts);
+        }
+    }
+
+    /// <summary>
+    /// Runs an endpoint handler with the shared guarded-call error contract: cancellations
+    /// propagate to the host, optional per-endpoint exception mapping runs first, and any other
+    /// failure is logged (when a logger is supplied) and converted to a
+    /// <see cref="Results.Problem(string?, string?, int?, string?, string?, System.Collections.Generic.IDictionary{string, object?}?)"/>
+    /// response. Handlers keep full control of their success payloads.
+    /// </summary>
+    /// <param name="handler">The endpoint body producing the success result.</param>
+    /// <param name="errorMessage">Stable, user-facing failure message for the Problem response.</param>
+    /// <param name="logger">Optional logger; failures are recorded as errors when present.</param>
+    /// <param name="mapException">
+    /// Optional per-endpoint mapping for expected exception types (validation, not-found, ...).
+    /// Return null to fall through to the generic Problem response.
+    /// </param>
+    /// <param name="includeExceptionMessage">
+    /// When true the Problem detail is "{errorMessage}: {ex.Message}" — used by endpoints whose
+    /// clients historically surfaced the exception text to operators.
+    /// </param>
+    internal static async Task<IResult> GuardAsync(
+        Func<Task<IResult>> handler,
+        string errorMessage,
+        ILogger? logger = null,
+        Func<Exception, IResult?>? mapException = null,
+        bool includeExceptionMessage = false)
+    {
+        try
+        {
+            return await handler();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            if (mapException?.Invoke(ex) is { } mapped)
+                return mapped;
+
+            logger?.LogError(ex, "{EndpointFailure}", errorMessage);
+            return Results.Problem(includeExceptionMessage ? $"{errorMessage}: {ex.Message}" : errorMessage);
         }
     }
 

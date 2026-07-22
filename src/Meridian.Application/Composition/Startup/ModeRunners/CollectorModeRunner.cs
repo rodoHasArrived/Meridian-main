@@ -1,3 +1,4 @@
+using Meridian.Application.Backfill;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
 using Meridian.Application.Composition.Startup.StartupModels;
@@ -90,6 +91,7 @@ public sealed class CollectorModeRunner
         ConnectionHealthMonitor? healthMonitor = null;
         StreamingFailoverService? failoverService = null;
         IMarketDataClient dataClient;
+        var gapSources = new List<IReconnectionGapSource>();
 
         if (useFailover)
         {
@@ -131,6 +133,8 @@ public sealed class CollectorModeRunner
                 if (client != null)
                 {
                     providerMap[providerId] = client;
+                    if (client is IReconnectionGapSource clientGapSource)
+                        gapSources.Add(clientGapSource);
                     failoverService.RegisterProvider(providerId);
                     _log.Information(
                         "Created streaming client for failover provider {ProviderId} ({Kind})",
@@ -167,6 +171,29 @@ public sealed class CollectorModeRunner
         }
 
         await using var dataClientDisposable = dataClient;
+
+        // The failover wrapper is not itself a gap source; its inner clients were captured
+        // above. In single-provider (or failover-fallback) mode the client is captured here.
+        if (dataClient is IReconnectionGapSource dataClientGapSource)
+            gapSources.Add(dataClientGapSource);
+
+        // Arm reconnection gap recovery: when a streaming provider reconnects after a
+        // disconnection, backfill the missed window for the currently subscribed symbols.
+        GapBackfillService? gapBackfill = null;
+        string[] gapBackfillSymbols = Array.Empty<string>();
+        var backfillGateway = hostStartup.GetService<IBackfillExecutionGateway>();
+        if (backfillGateway is not null && gapSources.Count > 0)
+        {
+            gapBackfill = new GapBackfillService(
+                backfillGateway.RunAsync,
+                () => gapBackfillSymbols);
+            foreach (var gapSource in gapSources)
+                gapBackfill.Subscribe(gapSource);
+
+            _log.Information(
+                "Reconnection gap backfill armed for {SourceCount} streaming source(s)",
+                gapSources.Count);
+        }
 
         try
         {
@@ -218,6 +245,7 @@ public sealed class CollectorModeRunner
             var runtimeCfg = SharedStartupHelpers.EnsureDefaultSymbols(ctx.Config);
             await subscriptionManager.ApplyAsync(runtimeCfg, ct);
             var symbols = runtimeCfg.Symbols ?? Array.Empty<SymbolConfig>();
+            gapBackfillSymbols = symbols.Select(static s => s.Symbol).ToArray();
 
             if (ctx.Deployment.HotReloadEnabled)
             {
@@ -237,6 +265,8 @@ public sealed class CollectorModeRunner
                             return;
                         }
 
+                        gapBackfillSymbols = nextCfg.Symbols?.Select(static s => s.Symbol).ToArray()
+                            ?? Array.Empty<string>();
                         _ = statusWriter.WriteOnceAsync();
                         _log.Information("Applied hot-reloaded configuration: {Count} symbols", nextCfg.Symbols?.Length ?? 0);
                     }, TaskScheduler.Default);
@@ -274,6 +304,12 @@ public sealed class CollectorModeRunner
         }
         finally
         {
+            if (gapBackfill is not null)
+            {
+                foreach (var gapSource in gapSources)
+                    gapBackfill.Unsubscribe(gapSource);
+            }
+
             if (watcher is not null)
             {
                 await watcher.DisposeAsync().ConfigureAwait(false);

@@ -81,7 +81,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
             ],
-            AssetOperationsCapabilities: AssetOperationsCapabilitySet.FixedIncome),
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.FixedIncome,
+            AmortizesTowardPar: true,
+            RequiresMaturity: true),
         new(
             AssetClass: "FxSpot",
             SupportsCashflowScheduleByDefault: false,
@@ -132,7 +134,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ],
+            AmortizesTowardPar: true,
+            RequiresMaturity: true),
         new(
             AssetClass: "CommercialPaper",
             SupportsCashflowScheduleByDefault: true,
@@ -145,7 +149,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ],
+            AmortizesTowardPar: true,
+            RequiresMaturity: true),
         new(
             AssetClass: "TreasuryBill",
             SupportsCashflowScheduleByDefault: true,
@@ -159,7 +165,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Bbgid,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ],
+            AmortizesTowardPar: true,
+            RequiresMaturity: true),
         new(
             AssetClass: "Repo",
             SupportsCashflowScheduleByDefault: true,
@@ -194,7 +202,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Ticker,
                 SecurityIdentifierKind.Figi
-            ]),
+            ],
+            SupportsProfileBackedTerms: true),
         new(
             AssetClass: "CustomAsset",
             SupportsCashflowScheduleByDefault: false,
@@ -208,7 +217,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Lei
-            ]),
+            ],
+            SupportsProfileBackedTerms: true),
         new(
             AssetClass: "Swap",
             SupportsCashflowScheduleByDefault: true,
@@ -220,7 +230,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
-            ]),
+            ],
+            RequiresMaturity: true),
         new(
             AssetClass: "DirectLoan",
             SupportsCashflowScheduleByDefault: true,
@@ -233,7 +244,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
             ],
-            AssetOperationsCapabilities: AssetOperationsCapabilitySet.DirectLending),
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.DirectLending,
+            AmortizesTowardPar: true,
+            Aliases: ["Loan", "AmortizingLoan"]),
         new(
             AssetClass: "StructuredCredit",
             SupportsCashflowScheduleByDefault: true,
@@ -247,7 +260,10 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol
             ],
-            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
+            AmortizesTowardPar: true,
+            SupportsProfileBackedTerms: true,
+            Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"]),
         new(
             AssetClass: "PrivateFundInterest",
             SupportsCashflowScheduleByDefault: true,
@@ -259,7 +275,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
             ],
-            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
+            SupportsProfileBackedTerms: true),
         new(
             AssetClass: "PrivateCompanyEquity",
             SupportsCashflowScheduleByDefault: false,
@@ -272,7 +289,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Cik,
                 SecurityIdentifierKind.ProviderSymbol
             ],
-            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
+            SupportsProfileBackedTerms: true),
         new(
             AssetClass: "RealEstateHolding",
             SupportsCashflowScheduleByDefault: true,
@@ -284,7 +302,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
             ],
-            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
+            SupportsProfileBackedTerms: true),
         new(
             AssetClass: "CommitmentGuarantee",
             SupportsCashflowScheduleByDefault: true,
@@ -296,7 +315,8 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
             ],
-            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations),
+            AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
+            SupportsProfileBackedTerms: true),
         new(
             AssetClass: "Commodity",
             SupportsCashflowScheduleByDefault: false,
@@ -345,19 +365,58 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
+            ]),
+        new(
+            AssetClass: "InvestmentFund",
+            SupportsCashflowScheduleByDefault: false,
+            UsesFaceValueLots: false,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.Ticker,
+                SecurityIdentifierKind.Isin,
+                SecurityIdentifierKind.Cusip,
+                SecurityIdentifierKind.Figi,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.InternalCode
             ])
     ];
 
-    private static readonly IReadOnlyDictionary<string, SecurityAssetClassDescriptor> ByAssetClass =
-        Descriptors.ToDictionary(descriptor => descriptor.AssetClass, StringComparer.OrdinalIgnoreCase);
+    private static readonly IReadOnlyDictionary<string, SecurityAssetClassDescriptor> ByAssetClass = BuildLookup();
+
+    private static IReadOnlyDictionary<string, SecurityAssetClassDescriptor> BuildLookup()
+    {
+        var lookup = new Dictionary<string, SecurityAssetClassDescriptor>(StringComparer.OrdinalIgnoreCase);
+        foreach (var descriptor in Descriptors)
+        {
+            lookup.Add(descriptor.AssetClass, descriptor);
+        }
+
+        // Second pass so an alias colliding with a canonical name (or another alias) fails loudly
+        // at type initialization instead of silently shadowing a descriptor.
+        foreach (var descriptor in Descriptors)
+        {
+            foreach (var alias in descriptor.Aliases ?? [])
+            {
+                lookup.Add(alias, descriptor);
+            }
+        }
+
+        return lookup;
+    }
 
     public static IReadOnlyList<SecurityAssetClassDescriptor> All => Descriptors;
 
     public static IReadOnlyList<string> AssetClasses { get; } =
         Descriptors.Select(descriptor => descriptor.AssetClass).ToArray();
 
+    /// <summary>
+    /// Resolves the descriptor for a canonical asset-class name or a registered alias
+    /// (case-insensitive, whitespace-trimmed). Unknown or blank input returns the non-throwing
+    /// Unknown descriptor so read paths degrade instead of failing.
+    /// </summary>
     public static SecurityAssetClassDescriptor GetOrDefault(string? assetClass)
-        => assetClass is not null && ByAssetClass.TryGetValue(assetClass, out var descriptor)
+        => assetClass is not null && ByAssetClass.TryGetValue(assetClass.Trim(), out var descriptor)
             ? descriptor
             : DefaultDescriptor;
 
@@ -368,13 +427,34 @@ public static class SecurityAssetClassCatalog
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
 }
 
+/// <param name="AssetClass">Canonical Security Master asset-class name (matches the F# <c>AssetClassRegistry</c>).</param>
+/// <param name="SupportsCashflowScheduleByDefault">Whether a cash-flow schedule projection is expected by default.</param>
+/// <param name="UsesFaceValueLots">Whether positions are held as face-value lots (par-denominated quantity).</param>
+/// <param name="SupportsBasicCreateWorkflow">Whether the basic workstation create workflow supports the class.</param>
+/// <param name="PreferredIdentifierKinds">Identifier kinds in preference order for resolution and display.</param>
+/// <param name="AssetOperationsCapabilities">Asset Operations capability set; null means identity-only.</param>
+/// <param name="AmortizesTowardPar">
+/// Whether lots record unit cost as a price per 100 of par and premium/discount amortizes toward par
+/// (drives cost-basis amortization). Deliberately narrower than <paramref name="UsesFaceValueLots"/>:
+/// Deposit and Repo hold face-value lots but are booked at par, so nothing amortizes.
+/// </param>
+/// <param name="RequiresMaturity">Whether the canonical validator requires a maturity date (data-quality rule MA001).</param>
+/// <param name="SupportsProfileBackedTerms">Whether asset-specific terms may be backed by a custom profile payload.</param>
+/// <param name="Aliases">
+/// Non-canonical spellings (vendor feeds, legacy imports) that resolve to this descriptor,
+/// e.g. "MBS" for StructuredCredit. Aliases must not collide with canonical names or each other.
+/// </param>
 public sealed record SecurityAssetClassDescriptor(
     string AssetClass,
     bool SupportsCashflowScheduleByDefault,
     bool UsesFaceValueLots,
     bool SupportsBasicCreateWorkflow,
     IReadOnlyList<SecurityIdentifierKind> PreferredIdentifierKinds,
-    IReadOnlyList<string>? AssetOperationsCapabilities = null);
+    IReadOnlyList<string>? AssetOperationsCapabilities = null,
+    bool AmortizesTowardPar = false,
+    bool RequiresMaturity = false,
+    bool SupportsProfileBackedTerms = false,
+    IReadOnlyList<string>? Aliases = null);
 
 public static class AssetOperationsCapabilitySet
 {

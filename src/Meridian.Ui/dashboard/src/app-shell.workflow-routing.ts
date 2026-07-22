@@ -36,6 +36,8 @@ export function actionLabelForOperatorWorkItem(item: OperatorWorkItem): string {
       return "Open provider trust";
     case "ExecutionControl":
       return "Open execution controls";
+    case "BrokerExecutionReconciliation":
+      return "Review broker orders";
   }
 }
 
@@ -56,6 +58,7 @@ function fallbackRouteForOperatorWorkItemKind(kind: OperatorWorkItem["kind"]): s
     case "PaperReplay":
     case "PromotionReview":
     case "ExecutionControl":
+    case "BrokerExecutionReconciliation":
       return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
     case "BrokerageSync":
       return WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;

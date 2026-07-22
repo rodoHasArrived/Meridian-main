@@ -35,7 +35,7 @@ namespace Meridian.Infrastructure.Adapters.Polygon;
     Description = "Polygon.io API key from https://polygon.io/dashboard/api-keys")]
 public sealed class PolygonOptionsChainProvider : IOptionsChainProvider
 {
-    private const string BaseUrl = "https://api.polygon.io";
+    private const string BaseUrl = PolygonEndpoints.RestBase;
     private const int MinApiKeyLength = PolygonApiKeyLimits.MinLength;
     private const int DefaultPageLimit = 250;
 

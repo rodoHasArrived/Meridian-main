@@ -1,0 +1,1 @@
+ScatterChart — X/Y relationship across a sample (spread vs implied vol, factor exposure, tracking error vs return). History points optionally fade in with recency so the most recent observations read as more saturated; an optional highlighted "current" point sits over the cloud; an optional least-squares trendline overlays. Flat, token-driven.

@@ -4,11 +4,13 @@ import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 import { StatementImportPanel } from "@/screens/statement-import-panel";
 import type { StatementImportPanelServices } from "@/screens/statement-import-panel.view-model";
+import type { StatementFetchPanelServices } from "@/screens/statement-fetch-panel.view-model";
 import { renderWithRouter } from "@/test/render";
 import type {
   StatementConnectorDescriptor,
   StatementImportCommitResult,
   StatementImportPreview,
+  StatementFetchSchedule,
   StatementMappingProfile
 } from "@/types";
 
@@ -112,7 +114,47 @@ const commitResult: StatementImportCommitResult = {
   },
   evidenceWorkbenchRoute: "/accounting/evidence?subjectKind=statement-run&subjectId=stmt-run-77&documentClassification=Statement",
   reconciliationRoute: "/accounting/reconciliation/match?runId=stmt-run-77",
+  breakIds: ["break-cash-1"],
+  caseIds: ["case:break-cash-1"],
+  reconciliationCaseLinks: [
+    {
+      caseId: "case:break-cash-1",
+      breakId: "break-cash-1",
+      route: "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1",
+      label: "Cash break case",
+      status: "Open",
+      priority: "High",
+      reason: "Cash statement break from imported file.",
+      suggestedNextAction: "Assign the case and attach cash support."
+    }
+  ],
   nextActions: ["Open retained statement evidence in Evidence Vault.", "Review reconciliation cases and linked statement evidence."]
+};
+
+const remoteConnector: StatementConnectorDescriptor = {
+  connectorId: "alpaca-activity",
+  displayName: "Alpaca account activity",
+  fileExtensions: [".json"],
+  supportsFileImport: true,
+  supportsRemoteFetch: true,
+  requiresMappingProfile: false,
+  defaultProfileId: "builtin-generic"
+};
+
+const fetchSchedule: StatementFetchSchedule = {
+  scheduleId: "alpaca-daily",
+  connectorId: "alpaca-activity",
+  externalAccountId: "PA3ALPACA01",
+  fundAccountId: "FUND-A",
+  sourceInstitution: "Alpaca",
+  mappingProfileId: "builtin-generic",
+  toleranceProfileId: "statement-default",
+  cadenceHours: 24,
+  enabled: true,
+  lastRunAtUtc: null,
+  lastRunStatus: null,
+  nextDueAtUtc: null,
+  sourceKind: "broker"
 };
 
 function makeServices(): StatementImportPanelServices {
@@ -122,6 +164,16 @@ function makeServices(): StatementImportPanelServices {
     upsertMappingProfile: vi.fn(async (profile: StatementMappingProfile) => profile),
     previewImport: vi.fn(async () => preview),
     commitImport: vi.fn(async () => commitResult)
+  };
+}
+
+function makeFetchServices(): StatementFetchPanelServices {
+  return {
+    deleteSchedule: vi.fn(async () => undefined),
+    fetchPreview: vi.fn(async () => preview),
+    listSchedules: vi.fn(async () => [fetchSchedule]),
+    runSchedule: vi.fn(async () => commitResult),
+    upsertSchedule: vi.fn(async () => fetchSchedule)
   };
 }
 
@@ -181,5 +233,30 @@ describe("StatementImportPanel", () => {
       "href",
       "/accounting/reconciliation/match?runId=stmt-run-77"
     );
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("case:break-cash-1");
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("Cash break case");
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("High");
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("Cash statement break from imported file.");
+    expect(screen.getByLabelText("Statement import reconciliation cases")).toHaveTextContent("Assign the case and attach cash support.");
+    expect(screen.getByRole("link", { name: /case:break-cash-1/ })).toHaveAttribute(
+      "href",
+      "/accounting/reconciliation/match?runId=stmt-run-77&caseId=case%3Abreak-cash-1&breakId=break-cash-1"
+    );
+  });
+
+  it("opens the scheduled-fetch operator path from the Import statement route", async () => {
+    const user = userEvent.setup();
+    const services = makeServices();
+    services.getConnectors = vi.fn(async () => [...connectors, remoteConnector]);
+    renderWithRouter(
+      <StatementImportPanel services={services} fetchServices={makeFetchServices()} />,
+      { initialEntries: ["/accounting/statement-import"] }
+    );
+
+    await waitFor(() => expect(screen.getByRole("tab", { name: "Scheduled fetch" })).toBeEnabled());
+    await user.click(screen.getByRole("tab", { name: "Scheduled fetch" }));
+
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Remote statement preview and schedule" })).toBeInTheDocument());
+    expect(screen.getByRole("table", { name: "Statement fetch schedules" })).toHaveTextContent("alpaca-daily");
   });
 });

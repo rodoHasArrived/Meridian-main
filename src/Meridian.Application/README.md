@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-05
+last_reviewed: 2026-07-19
 ---
 
 # src/Meridian.Application
@@ -46,6 +46,12 @@ and UI presentation concerns in their owning layers.
   schema-aware CSV sampling for `bank.statement.csv.v1` and `bank.transactions.csv.v1`, explicit
   source post-processing options, and runtime SFTP capability checks so operators can validate
   connectivity, host-key pinning, and file shape before committing an import.
+  ETL command execution now consumes the Data Integration-owned `VerifiedOperationOutcome` receipt:
+  every admitted run returns `Succeeded`, `CompletedWithWarnings`, `Failed`, or `Blocked` with
+  postconditions, evidence, artifacts, and recovery guidance. Required normalization, pipeline, and
+  export stages cannot be collapsed into a successful CLI exit when a terminal write or export
+  fails; blocked and failed receipts map to non-zero command results. Runbook commands use the same
+  receipt contract and no longer treat a message-only handler response as execution evidence.
 - `Integrations/` - provider integration template catalog, setup persistence, dry-run
   orchestration, and activation readiness. The catalog seeds the first no-code template pack for
   manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.
@@ -255,7 +261,11 @@ and UI presentation concerns in their owning layers.
 - `SecurityMaster/` - Security Master orchestration, aggregate rebuild helpers, instrument
   passport composition, and the ledger bridge that posts dividends, splits, distributions, and
   factor/principal paydowns into the Security Master ledger view for downstream reconciliation and
-  valuation evidence. Asset-class mapping, instrument-kind mapping, the profile catalog contract,
+  valuation evidence. The compatibility factor bridge delegates economics to Instruments, requires
+  held face, and posts scaled monetary principal rather than a dimensionless factor delta. It remains
+  an in-memory reconciliation bridge; governed production posting still uses the Financial
+  Operations candidate, independent approval, and durable journal path. Asset-class mapping,
+  instrument-kind mapping, the profile catalog contract,
   and seeded approved custom/private asset profile templates are owned by
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
   validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
@@ -369,16 +379,19 @@ and UI presentation concerns in their owning layers.
   `Meridian.Platform.Runtime.CliModeResolver` instead of Application-local runtime policy.
   Connectivity diagnostics and startup summaries use Platform runtime display helpers rather than
   Application-local display primitives. Runtime colocation profile activation is provided by
-  `Meridian.Platform.Performance.CoLocationProfileActivator`. Hosted graceful-shutdown flush and
-  shutdown sequence services live in Platform Runtime and consume the Core-owned
-  `Meridian.Core.Services.IFlushable` and `IFlushableQueueDiagnostics` contracts. Application
-  pipeline components expose queue diagnostics through that Core seam while consuming
-  Platform-owned shutdown lifecycle diagnostics rather than defining shared lifecycle DTOs or
-  diagnostic snapshots in Application. Diagnostic bundle generation lives in
+  `Meridian.Platform.Performance.CoLocationProfileActivator`. Application startup composition owns
+  the host-side lifecycle state machine, readiness checks, shutdown stage coordination, supervisor
+  named-pipe bridge, and participant ordering. The participants consume Core-owned
+  `Meridian.Core.Services.IFlushable` and `IFlushableQueueDiagnostics` contracts, while shared DTOs
+  remain in Contracts and the installed process/database owner remains the Lifecycle Supervisor.
+  The former Platform Runtime graceful-shutdown services are compatibility-only and are not newly
+  registered. Diagnostic bundle generation lives in
   `Meridian.Platform.Diagnostics`; Application composition and endpoints consume it with Core-owned
   redaction/masking helpers, Platform-owned error tracking, and friendly error formatting rather
   than Application-local utility services. Sample market-event
-  generation is registered from `Meridian.DataIntegration.Testing.SampleDataGenerator`. Canonical
+  generation is registered outside Production from
+  `Meridian.DataIntegration.Testing.SampleDataGenerator`; packaged production composition omits the
+  fixture generator entirely. Canonical
   symbol resolution is registered from `Meridian.Storage.Services.CanonicalSymbolRegistry`.
   API documentation model generation is registered from
   `Meridian.Platform.ApiDocumentation.ApiDocumentationService`.
@@ -398,15 +411,22 @@ and UI presentation concerns in their owning layers.
   definitions, and alert-runbook registries live in `Meridian.Platform.Monitoring`; shared alert and health-check contracts live
   in `Meridian.Core.Monitoring`; runtime error ring-buffer diagnostics and system-health snapshots
   live in `Meridian.Platform.Diagnostics`.
-- `Http/` - core host-facing runtime services such as `ConfigStore`, `BackfillCoordinator`, and
-  status response generation. ASP.NET endpoint adapter extensions for packaging, archive
-  maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.
+- `Http/` - core host-facing runtime services such as `ConfigStore` and status response
+  generation. ASP.NET endpoint adapter extensions for packaging, archive maintenance, and
+  data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives
+  in `Backfill/` alongside the rest of the backfill pipeline.
 - `Composition/` - application feature registration and service wiring.
   `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
-  startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
-  `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
-  persistence-backed services. Local/dev launcher flows may set
-  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment.
+  startup requires `MERIDIAN_DATABASE_URL` (or the per-domain
+  `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`)
+  so fund account and fund structure workflows use persistence-backed services.
+  `MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl` (in `Meridian.Storage`) propagates
+  `MERIDIAN_DATABASE_URL` into every unset per-domain connection-string variable at composition
+  time; `PersistenceConfigurationStatus.Evaluate` reports the resulting NONE/PARTIAL/CONFIGURED
+  posture for status endpoints and readiness checks. Local/dev launcher flows may set
+  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment. Placeholder
+  projection-reconciliation jobs are also omitted from production composition until real domain
+  reconcilers replace them; production startup does not report a no-op comparison as assurance.
   `ProviderFeatureRegistration` supplies a non-secret empty `IConfiguration` fallback before
   registering provider adapters, preserving host-provided configuration when present while keeping
   credential-gated data providers resolvable in composition slices.

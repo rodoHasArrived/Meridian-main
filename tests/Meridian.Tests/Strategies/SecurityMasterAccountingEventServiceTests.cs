@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Strategies.Services;
 
 namespace Meridian.Tests.Strategies;
@@ -7,6 +8,7 @@ namespace Meridian.Tests.Strategies;
 public sealed class SecurityMasterAccountingEventServiceTests
 {
     private static readonly Guid BondSecurityId = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb");
+    private static readonly Guid BondPositionId = Guid.Parse("bbbbbbbb-2222-4222-8222-cccccccccccc");
 
     [Fact]
     public void Generate_FixedCouponBond_ShouldCreateAccrualAndBalancedJournalPreview()
@@ -57,7 +59,9 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 1.00m,
                     CurrentFactor: 0.97m,
-                    Source: "custodian-factor-file")
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "evidence://factor/bond-2026-01",
+                    SourceContentHash: "sha256:bond-factor-2026-01")
             ]);
 
         var result = service.Generate(request);
@@ -97,7 +101,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                 SecurityId: BondSecurityId,
                 AccountId: "acct-1",
                 ParAmount: 100_000m,
-                CarryingPrice: 0.91m),
+                CarryingPrice: 0.91m,
+                PositionId: BondPositionId),
             factorSchedule:
             [
                 new SecurityFactorScheduleEntry(
@@ -106,7 +111,8 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     PriorFactor: 0.98m,
                     CurrentFactor: 0.9625m,
                     Source: "custodian-factor-file",
-                    EvidenceLink: "factor-evidence-1")
+                    EvidenceLink: "factor-evidence-1",
+                    SourceContentHash: "sha256:mbs-factor-2026-01")
             ]);
 
         var result = service.Generate(request);
@@ -117,6 +123,10 @@ public sealed class SecurityMasterAccountingEventServiceTests
         factorEvent.Symbol.Should().Be("MBS1");
         factorEvent.PrincipalAmount.Should().Be(1_750m);
         factorEvent.Provenance.Should().Contain("factor-source:custodian-factor-file");
+        factorEvent.EconomicEvent.Should().NotBeNull();
+        factorEvent.EconomicEvent!.EvidenceLinks.Should().Equal("factor-evidence-1");
+        factorEvent.ProjectionLineage!.ModelKey.Should().Be("mbs-factor-paydown");
+        factorEvent.EvidenceLinks.Should().Equal("factor-evidence-1");
     }
 
     [Fact]
@@ -182,7 +192,9 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     new DateOnly(2025, 12, 15),
                     PriorFactor: 1.00m,
                     CurrentFactor: 0.98m,
-                    Source: "prior-month-factor-file")
+                    Source: "prior-month-factor-file",
+                    EvidenceLink: "evidence://factor/prior-month",
+                    SourceContentHash: "sha256:prior-month")
             ]);
 
         var result = service.Generate(request);
@@ -275,7 +287,9 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     new DateOnly(2026, 1, 20),
                     PriorFactor: 1.00m,
                     CurrentFactor: 0.97m,
-                    Source: "custodian-factor-file")
+                    Source: "custodian-factor-file",
+                    EvidenceLink: "evidence://factor/bond-2026-01",
+                    SourceContentHash: "sha256:bond-factor-2026-01")
             ],
             actualActivity:
             [
@@ -315,6 +329,117 @@ public sealed class SecurityMasterAccountingEventServiceTests
         ]);
     }
 
+    [Fact]
+    public void Generate_FactorPaydown_ShouldKeepEventIdentityStableAcrossRunIds()
+    {
+        var service = new SecurityMasterAccountingEventService();
+        var schedule = new SecurityFactorScheduleEntry(
+            BondSecurityId,
+            new DateOnly(2026, 1, 20),
+            0.98m,
+            0.9625m,
+            "custodian-factor-file",
+            "evidence://factor/mbs-2026-01",
+            "sha256:stable-factor-row");
+        var firstRequest = CreateRequest(factorSchedule: [schedule]);
+        var secondRequest = firstRequest with { RunId = "different-reconciliation-run" };
+
+        var first = service.Generate(firstRequest).ExpectedEvents.Single(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+        var second = service.Generate(secondRequest).ExpectedEvents.Single(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+
+        second.EventId.Should().Be(first.EventId);
+        second.IdempotencyKey.Should().Be(first.IdempotencyKey);
+        second.EconomicEvent!.EventId.Should().Be(first.EconomicEvent!.EventId);
+    }
+
+    [Fact]
+    public void Generate_FactorPaydownWithoutEvidence_ShouldFailClosed()
+    {
+        var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    1m,
+                    0.97m,
+                    "custodian-factor-file",
+                    SourceContentHash: "sha256:factor-row")
+            ]));
+
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+        result.Issues.Should().Contain(issue => issue.Code == "FACTOR_PAYDOWN_EVIDENCE_REQUIRED");
+    }
+
+    [Fact]
+    public void Generate_FactorPaydownWithoutDurablePosition_ShouldFailClosed()
+    {
+        var result = new SecurityMasterAccountingEventService().Generate(CreateRequest(
+            position: new SecurityMasterAccountingPosition(
+                "BOND1",
+                BondSecurityId,
+                "acct-1",
+                100_000m,
+                0.94m),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    1m,
+                    0.97m,
+                    "custodian-factor-file",
+                    "evidence://factor/bond-2026-01",
+                    "sha256:factor-row")
+            ]));
+
+        result.ExpectedEvents.Should().NotContain(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown);
+        result.Issues.Should().ContainSingle(issue => issue.Code == "FACTOR_PAYDOWN_POSITION_REQUIRED");
+    }
+
+    [Fact]
+    public void Generate_MultipleFactorRows_ShouldAdvanceExpectedPositionVersionSequentially()
+    {
+        var projector = new RecordingFactorPaydownProjector();
+        var result = new SecurityMasterAccountingEventService(projector).Generate(CreateRequest(
+            position: new SecurityMasterAccountingPosition(
+                "BOND1",
+                BondSecurityId,
+                "acct-1",
+                100_000m,
+                0.94m,
+                BondPositionId,
+                PositionVersion: 7),
+            factorSchedule:
+            [
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 15),
+                    1m,
+                    0.98m,
+                    "custodian-factor-file",
+                    "evidence://factor/bond-2026-01-a",
+                    "sha256:factor-row-a"),
+                new SecurityFactorScheduleEntry(
+                    BondSecurityId,
+                    new DateOnly(2026, 1, 20),
+                    0.98m,
+                    0.97m,
+                    "custodian-factor-file",
+                    "evidence://factor/bond-2026-01-b",
+                    "sha256:factor-row-b")
+            ]));
+
+        result.ExpectedEvents.Count(item =>
+            item.EventKind == ExpectedAccountingEventKindDto.RecognizePrincipalPaydown).Should().Be(2);
+        projector.Requests.Select(static request => request.PositionVersion).Should().Equal(7, 8);
+        projector.Requests.Select(static request => request.ExpectedPositionVersion).Should().Equal(7, 8);
+    }
+
     private static SecurityMasterAccountingEventRequest CreateRequest(
         SecurityMasterAccountingSecurity? security = null,
         SecurityMasterAccountingPosition? position = null,
@@ -350,9 +475,23 @@ public sealed class SecurityMasterAccountingEventServiceTests
                     SecurityId: BondSecurityId,
                     AccountId: "acct-1",
                     ParAmount: 100_000m,
-                    CarryingPrice: 0.94m)
+                    CarryingPrice: 0.94m,
+                    PositionId: BondPositionId)
             ],
             FactorSchedule: factorSchedule,
             ActualActivity: actualActivity);
+    }
+
+    private sealed class RecordingFactorPaydownProjector : IFactorPaydownProjectionService
+    {
+        private readonly FactorPaydownProjectionService _inner = new();
+
+        public List<FactorPaydownProjectionRequest> Requests { get; } = [];
+
+        public FactorPaydownProjectionResult Project(FactorPaydownProjectionRequest request)
+        {
+            Requests.Add(request);
+            return _inner.Project(request);
+        }
     }
 }

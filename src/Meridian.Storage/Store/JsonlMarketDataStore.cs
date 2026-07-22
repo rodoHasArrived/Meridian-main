@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Meridian.Core.Logging;
@@ -6,13 +5,15 @@ using Meridian.Core.Serialization;
 using Meridian.Contracts.Store;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Replay;
 using Serilog;
 
 namespace Meridian.Storage.Store;
 
 /// <summary>
-/// <see cref="IMarketDataStore"/> implementation backed by JSONL (optionally gzip-compressed) files.
-/// Enumerates all <c>*.jsonl</c> and <c>*.jsonl.gz</c> files under the configured root,
+/// <see cref="IMarketDataStore"/> implementation backed by JSONL (optionally compressed) files.
+/// Enumerates all <c>*.jsonl</c> files under the configured root — including any compression suffix
+/// the storage policy can emit (<c>.gz</c>/<c>.gzip</c>/<c>.zst</c>/<c>.lz4</c>/<c>.br</c>) —
 /// deserialises each line, and applies the <see cref="MarketDataQuery"/> predicate in-process.
 /// </summary>
 public sealed class JsonlMarketDataStore : IMarketDataStore
@@ -73,16 +74,21 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
         string file,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        await using var fs = File.OpenRead(file);
-        Stream stream = fs;
-        if (file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
-            stream = new GZipStream(fs, CompressionMode.Decompress);
+        // ReadWrite|Delete sharing: the sink holds a persistent append handle on the active
+        // day file, and retention may delete files mid-enumeration; neither should fail reads.
+        await using var fs = new FileStream(
+            file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 64 * 1024, useAsync: true);
+        // Shared codec detection (magic bytes, extension fallback) so this store decodes every
+        // compression suffix the storage policy can emit (.gz/.gzip/.zst/.lz4/.br), not only .gz.
+        Stream stream = CompressedJsonlStream.Decompress(fs, file);
 
         using var reader = new StreamReader(stream);
-        while (!reader.EndOfStream)
+        while (true)
         {
             ct.ThrowIfCancellationRequested();
-            var line = await reader.ReadLineAsync(ct);
+            var line = await ReadLineOrEndAtTruncatedTailAsync(reader, file, ct).ConfigureAwait(false);
+            if (line is null)
+                break;
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
@@ -99,6 +105,25 @@ public sealed class JsonlMarketDataStore : IMarketDataStore
 
             if (evt is not null)
                 yield return evt;
+        }
+    }
+
+    // A crash while the sink appends a compressed batch can leave a torn trailing gzip member;
+    // the decoder throws InvalidDataException mid-read. Every complete earlier member has
+    // already been yielded, so treat the torn tail as end-of-file rather than failing the query.
+    private static async ValueTask<string?> ReadLineOrEndAtTruncatedTailAsync(
+        StreamReader reader,
+        string file,
+        CancellationToken ct)
+    {
+        try
+        {
+            return await reader.ReadLineAsync(ct).ConfigureAwait(false);
+        }
+        catch (InvalidDataException ex)
+        {
+            Log.Warning(ex, "Truncated compressed tail in {File}; stopping at the last complete block", file);
+            return null;
         }
     }
 

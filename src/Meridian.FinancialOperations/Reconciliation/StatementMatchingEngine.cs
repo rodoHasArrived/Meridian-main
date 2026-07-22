@@ -494,7 +494,8 @@ public sealed class StatementMatchingEngine
 
     private static bool SameCashIdentity(NormalizedStatementCashBalance statement, InternalCashBalance internalCash) =>
         SameText(statement.Account, internalCash.Account)
-        && SameText(statement.Currency, internalCash.Currency);
+        && SameText(statement.Currency, internalCash.Currency)
+        && statement.AsOfDate == internalCash.AsOfDate;
 
     private static bool SameTransactionIdentity(NormalizedStatementTransaction statement, InternalLedgerTransaction internalTransaction) =>
         SameText(statement.Account, internalTransaction.Account)
@@ -612,7 +613,8 @@ public sealed record NormalizedStatementCashBalance(
     string Account,
     string Currency,
     decimal EndingBalance,
-    string EvidenceReference) : IStatementMatchItem
+    string EvidenceReference,
+    DateOnly AsOfDate) : IStatementMatchItem
 {
     string IStatementMatchItem.MatchId => CashBalanceId;
 }
@@ -650,7 +652,8 @@ public sealed record InternalCashBalance(
     string Account,
     string Currency,
     decimal Balance,
-    string EvidenceReference) : IStatementMatchItem
+    string EvidenceReference,
+    DateOnly AsOfDate) : IStatementMatchItem
 {
     string IStatementMatchItem.MatchId => CashBalanceId;
 }

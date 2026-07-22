@@ -67,6 +67,10 @@ public static class CronExpressionParser
             schedule.DaysOfMonth = ParseField(parts[2], 1, 31);
             schedule.Months = ParseField(parts[3], 1, 12);
             schedule.DaysOfWeek = ParseField(parts[4], 0, 6);
+            // Vixie-cron semantics: a day field whose expression starts with '*'
+            // is treated as unrestricted when combining day-of-month with day-of-week.
+            schedule.DayOfMonthIsWildcard = parts[2].StartsWith('*');
+            schedule.DayOfWeekIsWildcard = parts[4].StartsWith('*');
             return true;
         }
         catch
@@ -161,6 +165,12 @@ public sealed class CronSchedule
     public HashSet<int> Months { get; set; } = new();
     public HashSet<int> DaysOfWeek { get; set; } = new();
 
+    /// <summary>True when the day-of-month field was written as a wildcard ("*" or "*/n").</summary>
+    public bool DayOfMonthIsWildcard { get; set; } = true;
+
+    /// <summary>True when the day-of-week field was written as a wildcard ("*" or "*/n").</summary>
+    public bool DayOfWeekIsWildcard { get; set; } = true;
+
     /// <summary>
     /// Calculate the next occurrence after the given time.
     /// </summary>
@@ -196,11 +206,18 @@ public sealed class CronSchedule
 
     private bool Matches(DateTime dt)
     {
-        return Minutes.Contains(dt.Minute) &&
-               Hours.Contains(dt.Hour) &&
-               DaysOfMonth.Contains(dt.Day) &&
-               Months.Contains(dt.Month) &&
-               DaysOfWeek.Contains((int)dt.DayOfWeek);
+        if (!Minutes.Contains(dt.Minute) || !Hours.Contains(dt.Hour) || !Months.Contains(dt.Month))
+            return false;
+
+        var dayOfMonthMatches = DaysOfMonth.Contains(dt.Day);
+        var dayOfWeekMatches = DaysOfWeek.Contains((int)dt.DayOfWeek);
+
+        // POSIX cron: when BOTH day fields are restricted, a day matches if EITHER
+        // field matches (OR). When at least one is a wildcard, both must match (the
+        // wildcard side always matches, so this reduces to the restricted side).
+        return DayOfMonthIsWildcard || DayOfWeekIsWildcard
+            ? dayOfMonthMatches && dayOfWeekMatches
+            : dayOfMonthMatches || dayOfWeekMatches;
     }
 
     private DateTime AdvanceToNextCandidate(DateTime current)

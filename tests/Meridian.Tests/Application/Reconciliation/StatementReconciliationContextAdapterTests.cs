@@ -55,8 +55,8 @@ public sealed class StatementReconciliationContextAdapterTests
             Assert.Equal("broker", result.SourceKind);
             Assert.Equal(path, result.SourcePath);
             Assert.Equal(2, result.RowCount);
-            Assert.Equal(1, result.MatchCount);
-            Assert.Single(result.Cases);
+            Assert.Equal(0, result.MatchCount);
+            Assert.Equal(2, result.Cases.Count);
         }
         finally
         {

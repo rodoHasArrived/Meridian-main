@@ -13,7 +13,14 @@ namespace Meridian.QuantScript.Compilation;
 
 /// <summary>
 /// Compiles QuantScript (.csx) source files using the Roslyn scripting API.
-/// Results are cached by SHA-256 of source text to avoid redundant recompilation.
+/// Results are cached by SHA-256 of source text to avoid redundant recompilation; the cache
+/// is bounded (see <see cref="QuantScriptOptions.MaxCachedCompilations"/>) so retained Roslyn
+/// compilation graphs cannot accumulate without limit.
+/// <para>
+/// When unsafe scripts are disabled the compiler applies a best-effort advisory guard against
+/// File/Network/Process/Reflection usage. That guard is a source-level denylist, not a security
+/// sandbox — see <see cref="QuantScriptOptions.EnableUnsafeScripts"/>.
+/// </para>
 /// </summary>
 public sealed class RoslynScriptCompiler : IQuantScriptCompiler
 {
@@ -44,6 +51,9 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
         @"^\s*#\s*load\b",
         RegexOptions.Compiled | RegexOptions.Multiline);
 
+    // Advisory-only denylist. Substring matching is deliberately simple and can be bypassed by a
+    // determined author (e.g. reflection or runtime type resolution); it exists to catch honest
+    // mistakes, not to sandbox untrusted code. See QuantScriptOptions.EnableUnsafeScripts.
     private static readonly string[] UnsafeApiMarkers =
     [
         "System.IO.",
@@ -55,6 +65,9 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
     ];
 
     private readonly ConcurrentDictionary<string, Script<object>> _cache = new();
+    // Tracks insertion order so the cache can evict oldest-first once it exceeds the configured
+    // bound; each cached Script<object> retains a Roslyn compilation graph.
+    private readonly ConcurrentQueue<string> _cacheInsertionOrder = new();
     private readonly IOptions<QuantScriptOptions> _options;
     private readonly ILogger<RoslynScriptCompiler> _logger;
 
@@ -119,7 +132,7 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
                     return new ScriptCompilationResult(false, sw.Elapsed, errors);
                 }
 
-                _cache.TryAdd(key, script);
+                CacheScript(key, script);
                 _logger.LogDebug("Script compiled in {ElapsedMs}ms", sw.ElapsedMilliseconds);
                 return new ScriptCompilationResult(true, sw.Elapsed, Array.Empty<ScriptDiagnostic>());
             }, cts.Token).ConfigureAwait(false);
@@ -129,6 +142,29 @@ public sealed class RoslynScriptCompiler : IQuantScriptCompiler
             ct.ThrowIfCancellationRequested();
             return new ScriptCompilationResult(false, TimeSpan.Zero,
                 [new ScriptDiagnostic("Error", "Compilation timed out", 0, 0)]);
+        }
+    }
+
+    /// <summary>
+    /// Caches a compiled script, evicting the oldest entries (FIFO) once the cache exceeds
+    /// <see cref="QuantScriptOptions.MaxCachedCompilations"/>. A non-positive bound disables
+    /// caching. Bounding is required because each <see cref="Script{TResult}"/> retains a Roslyn
+    /// compilation graph, so an unbounded cache leaks memory on long-running hosts.
+    /// </summary>
+    private void CacheScript(string key, Script<object> script)
+    {
+        var max = _options.Value.MaxCachedCompilations;
+        if (max <= 0)
+            return;
+
+        if (!_cache.TryAdd(key, script))
+            return;
+
+        _cacheInsertionOrder.Enqueue(key);
+
+        while (_cache.Count > max && _cacheInsertionOrder.TryDequeue(out var oldestKey))
+        {
+            _cache.TryRemove(oldestKey, out _);
         }
     }
 

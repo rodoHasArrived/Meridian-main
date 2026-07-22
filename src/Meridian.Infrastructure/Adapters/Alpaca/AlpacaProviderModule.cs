@@ -74,11 +74,11 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         // ----------------------------------------------------------------
         // Symbol search provider
         // ----------------------------------------------------------------
-        services.AddSingleton<AlpacaSymbolSearchProviderRefactored>(_ =>
-            new AlpacaSymbolSearchProviderRefactored(keyId: keyId, secretKey: secretKey));
+        services.AddSingleton<AlpacaSymbolSearchProvider>(_ =>
+            new AlpacaSymbolSearchProvider(keyId: keyId, secretKey: secretKey));
 
         services.AddSingleton<ISymbolSearchProvider>(sp =>
-            sp.GetRequiredService<AlpacaSymbolSearchProviderRefactored>());
+            sp.GetRequiredService<AlpacaSymbolSearchProvider>());
 
         // ----------------------------------------------------------------
         // Streaming market data client
@@ -102,6 +102,20 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
 
             services.AddSingleton<IMarketDataClient>(sp =>
                 sp.GetRequiredService<AlpacaMarketDataClient>());
+
+            // Keep asset classes independently connectable. The host still selects the equities
+            // adapter as its compatibility default; operators and future routing can resolve the
+            // other streams without treating their entitlements as equivalent.
+            services.AddSingleton<AlpacaOptionsMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+            services.AddSingleton<AlpacaCryptoMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+            services.AddSingleton<AlpacaNewsMarketDataClient>(sp => new(
+                sp.GetRequiredService<TradeDataCollector>(), sp.GetRequiredService<QuoteCollector>(), streamingOptions));
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaOptionsMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaCryptoMarketDataClient>());
+            services.AddSingleton<IAlpacaAssetStream>(sp => sp.GetRequiredService<AlpacaNewsMarketDataClient>());
         }
 
         // ----------------------------------------------------------------

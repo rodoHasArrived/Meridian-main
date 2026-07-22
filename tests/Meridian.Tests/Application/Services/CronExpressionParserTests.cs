@@ -252,6 +252,58 @@ public sealed class CronExpressionParserTests
 
     #endregion
 
+    #region Day-of-month / day-of-week OR semantics
+
+    [Fact]
+    public void GetNextOccurrence_BothDayFieldsRestricted_MatchesEitherField()
+    {
+        // POSIX cron: "0 0 1 * 1" fires at midnight on the 1st OR on any Monday.
+        // 2025-01-02 is Thursday; the next Monday (Jan 6) comes before the next 1st (Feb 1).
+        var from = new DateTimeOffset(2025, 1, 2, 12, 0, 0, TimeSpan.Zero);
+        var next = CronExpressionParser.GetNextOccurrence("0 0 1 * 1", Utc, from);
+
+        next.Should().NotBeNull();
+        next!.Value.DayOfWeek.Should().Be(DayOfWeek.Monday);
+        next.Value.Day.Should().Be(6);
+    }
+
+    [Fact]
+    public void GetNextOccurrence_BothDayFieldsRestricted_DayOfMonthCanWin()
+    {
+        // From Friday Jan 31, the 1st (Saturday Feb 1) comes before the next Monday (Feb 3).
+        var from = new DateTimeOffset(2025, 1, 31, 12, 0, 0, TimeSpan.Zero);
+        var next = CronExpressionParser.GetNextOccurrence("0 0 1 * 1", Utc, from);
+
+        next.Should().NotBeNull();
+        next!.Value.Month.Should().Be(2);
+        next.Value.Day.Should().Be(1);
+    }
+
+    [Fact]
+    public void GetNextOccurrence_OnlyDayOfWeekRestricted_StillIntersects()
+    {
+        // Wildcard day-of-month keeps the classic AND behavior: weekday filter applies.
+        var from = new DateTimeOffset(2025, 1, 4, 0, 0, 0, TimeSpan.Zero); // Saturday
+        var next = CronExpressionParser.GetNextOccurrence("0 9 * * 1-5", Utc, from);
+
+        next.Should().NotBeNull();
+        next!.Value.DayOfWeek.Should().Be(DayOfWeek.Monday);
+    }
+
+    [Fact]
+    public void TryParse_WildcardFlags_TrackDayFieldRestriction()
+    {
+        CronExpressionParser.TryParse("0 0 1 * 1", out var restricted);
+        restricted.DayOfMonthIsWildcard.Should().BeFalse();
+        restricted.DayOfWeekIsWildcard.Should().BeFalse();
+
+        CronExpressionParser.TryParse("0 0 * * 1", out var domWildcard);
+        domWildcard.DayOfMonthIsWildcard.Should().BeTrue();
+        domWildcard.DayOfWeekIsWildcard.Should().BeFalse();
+    }
+
+    #endregion
+
     #region GetDescription
 
     [Fact]

@@ -250,7 +250,11 @@ public sealed class BatchBacktestService : IBatchBacktestService
         return string.Join(", ", parts);
     }
 
-    private static BacktestRequest ApplyParameters(
+    /// <summary>
+    /// Applies a parameter dictionary to a base request, returning a new request. Shared with the
+    /// walk-forward harness so training and out-of-sample runs interpret parameters identically.
+    /// </summary>
+    internal static BacktestRequest ApplyParameters(
         BacktestRequest baseRequest,
         IReadOnlyDictionary<string, object> parameters)
     {
@@ -274,6 +278,11 @@ public sealed class BatchBacktestService : IBatchBacktestService
                 nameof(BacktestRequest.CommissionKind) => request with { CommissionKind = ToEnum<BacktestCommissionKind>(value) },
                 nameof(BacktestRequest.AdjustForCorporateActions) => request with { AdjustForCorporateActions = ToBool(value) },
                 nameof(BacktestRequest.FailOnUnknownSymbols) => request with { FailOnUnknownSymbols = ToBool(value) },
+                nameof(BacktestRequest.FillTiming) => request with { FillTiming = ToEnum<FillTiming>(value) },
+                nameof(BacktestRequest.FillConservatism) => request with { FillConservatism = ToEnum<FillConservatism>(value) },
+                nameof(BacktestRequest.DelistingPolicy) => request with { DelistingPolicy = ToEnum<DelistingPolicy>(value) },
+                nameof(BacktestRequest.DelistingHaircutPercent) => request with { DelistingHaircutPercent = ToDecimal(value) },
+                nameof(BacktestRequest.DelistingGraceDays) => request with { DelistingGraceDays = Convert.ToInt32(value, CultureInfo.InvariantCulture) },
                 _ => request
             };
         }

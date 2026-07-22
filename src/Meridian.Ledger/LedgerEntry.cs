@@ -31,11 +31,19 @@ public sealed record LedgerEntry
     public LedgerLineDimensionSet? Dimensions { get; private init; }
 
     /// <summary>
+    /// Optional transaction-currency detail. When present, <see cref="Debit"/> / <see cref="Credit"/>
+    /// remain the functional (base) amounts and this carries the original currency, transaction
+    /// amounts, and FX rate. When null the leg is currency-blind (legacy behavior).
+    /// </summary>
+    public LedgerEntryCurrency? Currency { get; private init; }
+
+    /// <summary>
     /// Initializes a new <see cref="LedgerEntry"/> with validation.
     /// </summary>
     /// <exception cref="LedgerValidationException">
     /// Thrown when <paramref name="debit"/> or <paramref name="credit"/> is negative,
-    /// or when both are zero or both are non-zero.
+    /// when both are zero or both are non-zero, or when <paramref name="currency"/> disagrees
+    /// with the debit/credit side of the leg.
     /// </exception>
     public LedgerEntry(
         Guid entryId,
@@ -45,7 +53,8 @@ public sealed record LedgerEntry
         decimal debit,
         decimal credit,
         string description,
-        LedgerLineDimensionSet? dimensions = null)
+        LedgerLineDimensionSet? dimensions = null,
+        LedgerEntryCurrency? currency = null)
     {
         ArgumentNullException.ThrowIfNull(account);
         ArgumentNullException.ThrowIfNull(description);
@@ -65,6 +74,29 @@ public sealed record LedgerEntry
                 "Exactly one of Debit or Credit must be non-zero per ledger entry " +
                 $"(debit={debit}, credit={credit}).");
 
+        if (currency is not null)
+        {
+            if (currency.IsDebit != debit > 0m)
+            {
+                throw new LedgerValidationException(
+                    "Transaction currency detail must be on the same side as the functional amount " +
+                    $"(functional debit={debit}, credit={credit}; transaction debit={currency.TransactionDebit}, credit={currency.TransactionCredit}).");
+            }
+
+            // The functional amount must be the transaction amount converted at the recorded FX rate,
+            // so the ledger never persists mutually inconsistent currency evidence (e.g. a USD 1 leg
+            // tagged as EUR 100 at 1.1). Allow a one-cent tolerance for 2-dp posting rounding.
+            var functionalAmount = debit > 0m ? debit : credit;
+            var transactionAmount = currency.IsDebit ? currency.TransactionDebit : currency.TransactionCredit;
+            var expectedFunctional = transactionAmount * currency.FxRateToFunctional;
+            if (Math.Abs(functionalAmount - expectedFunctional) > 0.01m)
+            {
+                throw new LedgerValidationException(
+                    $"Functional amount {functionalAmount} does not match transaction amount {transactionAmount} " +
+                    $"{currency.TransactionCurrency} at FX rate {currency.FxRateToFunctional} (expected ~{expectedFunctional} {currency.FunctionalCurrency}).");
+            }
+        }
+
         EntryId = entryId;
         JournalEntryId = journalEntryId;
         Timestamp = timestamp;
@@ -73,6 +105,7 @@ public sealed record LedgerEntry
         Credit = credit;
         Description = description;
         Dimensions = dimensions;
+        Currency = currency;
     }
 }
 

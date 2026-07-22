@@ -1,6 +1,10 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.Backfill;
+using Meridian.Core.Logging;
+using Meridian.Storage.Archival;
+using Serilog;
 
 namespace Meridian.Application.Scheduling;
 
@@ -257,31 +261,58 @@ public sealed class SymbolExecutionResult
 /// </summary>
 public sealed class BackfillExecutionHistory
 {
-    private readonly ConcurrentDictionary<string, BackfillExecutionLog> _executions = new();
+    private static readonly JsonSerializerOptions PersistenceJsonOptions = CreatePersistenceJsonOptions();
+    private readonly ConcurrentDictionary<string, BackfillExecutionLog> _executions = new(StringComparer.Ordinal);
     private readonly object _lock = new();
+    private readonly string? _persistencePath;
+    private readonly ILogger _log = LoggingSetup.ForContext<BackfillExecutionHistory>();
     private const int MaxHistoryEntries = 1000;
+
+    /// <summary>
+    /// Creates an in-memory history. Retained for focused tests and callers that do not opt into
+    /// restart durability.
+    /// </summary>
+    public BackfillExecutionHistory()
+    {
+    }
+
+    /// <summary>
+    /// Creates a bounded history backed by an atomically replaced JSON snapshot.
+    /// </summary>
+    public BackfillExecutionHistory(string persistencePath)
+    {
+        if (string.IsNullOrWhiteSpace(persistencePath))
+            throw new ArgumentException("A persistence path is required.", nameof(persistencePath));
+
+        _persistencePath = Path.GetFullPath(persistencePath);
+        LoadPersistedSnapshot();
+    }
 
     /// <summary>
     /// Add an execution to the history.
     /// </summary>
     public void AddExecution(BackfillExecutionLog execution)
     {
-        _executions[execution.ExecutionId] = execution;
-
-        // Trim old entries if needed
-        if (_executions.Count > MaxHistoryEntries)
+        ArgumentNullException.ThrowIfNull(execution);
+        lock (_lock)
         {
-            lock (_lock)
-            {
-                var toRemove = _executions.Values
-                    .OrderBy(e => e.ScheduledAt)
-                    .Take(_executions.Count - MaxHistoryEntries + 100)
-                    .Select(e => e.ExecutionId)
-                    .ToList();
+            _executions[execution.ExecutionId] = execution;
+            TrimToBoundLocked();
+            PersistSnapshotLocked();
+        }
+    }
 
-                foreach (var id in toRemove)
-                    _executions.TryRemove(id, out _);
-            }
+    /// <summary>
+    /// Replaces and persists a previously added execution after mutable terminal fields change.
+    /// </summary>
+    public void UpdateExecution(BackfillExecutionLog execution)
+    {
+        ArgumentNullException.ThrowIfNull(execution);
+        lock (_lock)
+        {
+            _executions[execution.ExecutionId] = execution;
+            TrimToBoundLocked();
+            PersistSnapshotLocked();
         }
     }
 
@@ -407,6 +438,83 @@ public sealed class BackfillExecutionHistory
                     g => g.Sum(p => p.RequestCount))
         };
     }
+
+    private void LoadPersistedSnapshot()
+    {
+        if (_persistencePath is null || !File.Exists(_persistencePath))
+            return;
+
+        try
+        {
+            var json = File.ReadAllText(_persistencePath);
+            var snapshot = JsonSerializer.Deserialize<BackfillExecutionHistorySnapshot>(
+                json,
+                PersistenceJsonOptions);
+            foreach (var execution in (snapshot?.Executions ?? [])
+                         .OfType<BackfillExecutionLog>()
+                         .OrderByDescending(static execution => execution.ScheduledAt)
+                         .Take(MaxHistoryEntries))
+            {
+                _executions[execution.ExecutionId] = execution;
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            _log.Warning(ex, "Could not load persisted backfill execution history from {Path}", _persistencePath);
+        }
+    }
+
+    private void TrimToBoundLocked()
+    {
+        var excess = _executions.Count - MaxHistoryEntries;
+        if (excess <= 0)
+            return;
+
+        var toRemove = _executions.Values
+            .OrderBy(static execution => execution.ScheduledAt)
+            .Take(excess)
+            .Select(static execution => execution.ExecutionId)
+            .ToArray();
+        foreach (var id in toRemove)
+            _executions.TryRemove(id, out _);
+    }
+
+    private void PersistSnapshotLocked()
+    {
+        if (_persistencePath is null)
+            return;
+
+        try
+        {
+            var snapshot = new BackfillExecutionHistorySnapshot(
+                Version: 1,
+                Executions: _executions.Values
+                    .OrderByDescending(static execution => execution.ScheduledAt)
+                    .Take(MaxHistoryEntries)
+                    .ToArray());
+            var json = JsonSerializer.Serialize(snapshot, PersistenceJsonOptions);
+            AtomicFileWriter.Write(_persistencePath, json);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            _log.Error(ex, "Could not persist backfill execution history to {Path}", _persistencePath);
+        }
+    }
+
+    private static JsonSerializerOptions CreatePersistenceJsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+        {
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true
+        };
+        options.Converters.Add(new JsonStringEnumConverter());
+        return options;
+    }
+
+    private sealed record BackfillExecutionHistorySnapshot(
+        int Version,
+        IReadOnlyList<BackfillExecutionLog> Executions);
 }
 
 /// <summary>

@@ -44,7 +44,10 @@ public sealed class EventCanonicalizer : IEventCanonicalizer
             return raw;
 
         // Symbol resolution: use provider-aware resolution first, fall back to generic
-        var canonicalSymbol = _symbols.ResolveToCanonical(raw.Symbol);
+        var providerCanonical = _symbols.TryResolve(raw.Symbol, raw.Source);
+        var canonicalSymbol = string.IsNullOrWhiteSpace(providerCanonical)
+            ? _symbols.ResolveToCanonical(raw.Symbol)
+            : providerCanonical;
 
         // Security Master cross-reference: tag with security_id from the seed lookup
         // (cache hit only — no DB round-trip on the hot path).

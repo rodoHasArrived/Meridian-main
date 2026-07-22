@@ -1,0 +1,54 @@
+{
+  "acl": [
+    {
+      "grantable": false,
+      "grantee": "PUBLIC",
+      "grantor": "pg_database_owner",
+      "privilege": "usage"
+    },
+    {
+      "grantable": false,
+      "grantee": "pg_database_owner",
+      "grantor": "pg_database_owner",
+      "privilege": "create"
+    },
+    {
+      "grantable": false,
+      "grantee": "pg_database_owner",
+      "grantor": "pg_database_owner",
+      "privilege": "usage"
+    }
+  ],
+  "comment": "standard public schema",
+  "comments": [
+    {
+      "comment": "standard public schema",
+      "fingerprint": "e353fc2489a851eee521dc0eb5642400b10e4d0ea8ff9333be6e179093ac6bef",
+      "object": "public",
+      "object_type": "schema"
+    }
+  ],
+  "composite_types": [],
+  "dependencies": [],
+  "domains": [],
+  "enums": [],
+  "exists": true,
+  "extensions": [],
+  "fingerprint": "d50d95b1e1f14ff63c78aa659d07cab43b51d2ee16152371176bb5564e18c5b3",
+  "foreign_tables": [],
+  "functions": [],
+  "logical_modules": [],
+  "materialized_views": [],
+  "name": "public",
+  "owner": "pg_database_owner",
+  "partitions": [],
+  "policies": [],
+  "procedures": [],
+  "relations": [],
+  "row_level_security": [],
+  "security_labels": [],
+  "sequences": [],
+  "tables": [],
+  "triggers": [],
+  "views": []
+}

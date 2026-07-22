@@ -1,0 +1,92 @@
+using System.Net;
+using FluentAssertions;
+using Meridian.Application.Composition;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
+
+namespace Meridian.Tests.Ui;
+
+public sealed class CookieCsrfProtectionTests
+{
+    [Fact]
+    public void ShouldUseSecureCookies_WhenProductionApiHttpRequestIsLoopback_ReturnsTrue()
+    {
+        var context = CreateContext(
+            IPAddress.Loopback,
+            IPAddress.Loopback,
+            isHttps: false,
+            deploymentPosture: MeridianDeploymentPosture.ProductionApi);
+
+        CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShouldUseSecureCookies_WhenProductionLocalWorkstationHttpRequestIsLoopback_ReturnsFalse()
+    {
+        var context = CreateContext(
+            IPAddress.Loopback,
+            IPAddress.Loopback,
+            isHttps: false,
+            deploymentPosture: MeridianDeploymentPosture.LocalWorkstation);
+
+        CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ShouldUseSecureCookies_WhenDevelopmentProductionApiHttpRequestIsLoopback_ReturnsTrue()
+    {
+        var context = CreateContext(
+            IPAddress.Loopback,
+            IPAddress.Loopback,
+            isHttps: false,
+            Environments.Development,
+            MeridianDeploymentPosture.ProductionApi);
+
+        CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShouldUseSecureCookies_WhenProductionHttpRequestIsNotLoopback_ReturnsTrue()
+    {
+        var context = CreateContext(IPAddress.Parse("192.0.2.10"), IPAddress.Parse("192.0.2.20"), isHttps: false);
+
+        CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShouldUseSecureCookies_WhenLoopbackRequestUsesHttps_ReturnsTrue()
+    {
+        var context = CreateContext(IPAddress.IPv6Loopback, IPAddress.IPv6Loopback, isHttps: true);
+
+        CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
+    }
+
+    private static DefaultHttpContext CreateContext(
+        IPAddress remoteAddress,
+        IPAddress localAddress,
+        bool isHttps,
+        string environmentName = Environments.Production,
+        MeridianDeploymentPosture deploymentPosture = MeridianDeploymentPosture.Unspecified)
+    {
+        var services = new ServiceCollection()
+            .AddSingleton<IHostEnvironment>(new TestHostEnvironment(environmentName));
+        services.DeclareMeridianDeploymentPosture(deploymentPosture);
+        var serviceProvider = services.BuildServiceProvider();
+        var context = new DefaultHttpContext { RequestServices = serviceProvider };
+        context.Connection.RemoteIpAddress = remoteAddress;
+        context.Connection.LocalIpAddress = localAddress;
+        context.Request.Scheme = isHttps ? "https" : "http";
+        return context;
+    }
+
+    private sealed class TestHostEnvironment(string environmentName) : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = environmentName;
+        public string ApplicationName { get; set; } = "Meridian.Tests";
+        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+    }
+}

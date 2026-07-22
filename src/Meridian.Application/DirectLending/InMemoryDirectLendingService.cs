@@ -412,16 +412,31 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
             var terms = stored.TermsVersions[^1].Terms;
             var annualRate = ResolveAnnualRate(terms, stored.Servicing.CurrentRateReset);
-            var interestAmount = DirectLendingInterop.CalculateDailyAccrualAmount(
-                stored.Servicing.Balances.PrincipalOutstanding,
-                annualRate,
-                (int)terms.DayCountBasis);
+            // PIK posture: interest capitalizes into principal instead of accruing as a
+            // cash receivable.
+            var isPikAccrual = stored.Servicing.IsPikToggled;
+            // Date-aware day count: Act/Act accrues against the actual year length of the
+            // accrual date (366 in leap years); other conventions keep fixed denominators.
+            var accruedInterest = isPikAccrual
+                ? DirectLendingInterop.CalculatePikAccrual(
+                    stored.Servicing.Balances.PrincipalOutstanding,
+                    annualRate,
+                    (int)terms.DayCountBasis,
+                    request.AccrualDate)
+                : DirectLendingInterop.CalculateDailyAccrualAmountForDate(
+                    stored.Servicing.Balances.PrincipalOutstanding,
+                    annualRate,
+                    (int)terms.DayCountBasis,
+                    request.AccrualDate);
+            var interestAmount = isPikAccrual ? 0m : accruedInterest;
+            var pikInterestAmount = isPikAccrual ? accruedInterest : 0m;
 
             var commitmentFeeAmount = terms.CommitmentFeeRate is { } feeRate && feeRate > 0m
-                ? DirectLendingInterop.CalculateDailyAccrualAmount(
+                ? DirectLendingInterop.CalculateDailyAccrualAmountForDate(
                     stored.Servicing.AvailableToDraw,
                     feeRate,
-                    (int)terms.DayCountBasis)
+                    (int)terms.DayCountBasis,
+                    request.AccrualDate)
                 : 0m;
 
             var entry = new DailyAccrualEntryDto(
@@ -431,20 +446,28 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 commitmentFeeAmount,
                 0m,
                 annualRate,
-                DateTimeOffset.UtcNow);
+                DateTimeOffset.UtcNow,
+                pikInterestAmount);
 
             stored.Servicing.AccrualEntries.Add(entry);
             stored.Servicing = stored.Servicing with
             {
                 Balances = stored.Servicing.Balances with
                 {
+                    PrincipalOutstanding = stored.Servicing.Balances.PrincipalOutstanding + pikInterestAmount,
                     InterestAccruedUnpaid = stored.Servicing.Balances.InterestAccruedUnpaid + interestAmount,
                     CommitmentFeeAccruedUnpaid = stored.Servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
                 },
                 LastAccrualDate = request.AccrualDate
             };
 
-            AppendRevision(stored, "InternalEvent", request.AccrualDate, $"Daily accrual posted at annual rate {annualRate:P4}.");
+            AppendRevision(
+                stored,
+                "InternalEvent",
+                request.AccrualDate,
+                isPikAccrual
+                    ? $"Daily PIK accrual capitalized at annual rate {annualRate:P4}."
+                    : $"Daily accrual posted at annual rate {annualRate:P4}.");
             AppendEvent(stored, "loan.daily-accrual-posted", request.AccrualDate, new
             {
                 loanId,
@@ -453,7 +476,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 entry.InterestAmount,
                 entry.CommitmentFeeAmount,
                 entry.PenaltyAmount,
-                entry.AnnualRateApplied
+                entry.AnnualRateApplied,
+                entry.PikInterestAmount
             }, metadata);
             return Task.FromResult<DailyAccrualEntryDto?>(entry);
         }

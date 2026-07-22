@@ -32,6 +32,31 @@ public sealed class ConfigEnvironmentOverrideTests
         result.IBClientPortal.AllowSelfSignedCertificates.Should().BeTrue();
     }
 
+    [Fact]
+    public void ApplyOverrides_ValidDataSource_IsApplied()
+    {
+        using var dataSourceVar = new EnvironmentVariableScope("MDC_DATASOURCE", "alpaca");
+
+        var sut = new ConfigEnvironmentOverride();
+        var result = sut.ApplyOverrides(new AppConfig());
+
+        result.DataSource.Should().Be(DataSourceKind.Alpaca);
+    }
+
+    [Fact]
+    public void ApplyOverrides_UnknownDataSource_FailsClosed()
+    {
+        // A typo must not silently route the operator to another provider's data feed.
+        using var dataSourceVar = new EnvironmentVariableScope("MDC_DATASOURCE", "alpacca");
+
+        var sut = new ConfigEnvironmentOverride();
+        var act = () => sut.ApplyOverrides(new AppConfig());
+
+        act.Should().Throw<Meridian.Core.Exceptions.ConfigurationException>()
+            .WithMessage("*alpacca*")
+            .WithMessage("*MDC_DATASOURCE*");
+    }
+
     private sealed class EnvironmentVariableScope : IDisposable
     {
         private readonly string _name;

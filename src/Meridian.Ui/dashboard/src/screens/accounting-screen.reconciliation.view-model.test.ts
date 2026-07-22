@@ -136,8 +136,32 @@ describe("accounting-screen reconciliation view model", () => {
     expect(state.cases[0]).toMatchObject({
       id: "run-42:cash",
       ownerLabel: "Unassigned",
+      slaLabel: "Review required · assign owner · set sign-off role",
       routeHref: "/accounting/ledger"
     });
+  });
+
+  it("fails exception urgency closed when nominal SLA state lacks ownership, evidence, and sign-off policy", () => {
+    const openBreak: ReconciliationBreakQueueItem = {
+      ...breakQueue[0],
+      slaState: "OnTrack",
+      slaBadgeLabel: "OnTrack",
+      evidenceCount: 0,
+      requiredSignoffRole: null
+    };
+
+    const state = buildReconciliationBreakQueueState({
+      breakQueue: [openBreak],
+      selectedBreakId: openBreak.breakId,
+      loading: false,
+      loadError: null,
+      action: null,
+      actionError: null
+    });
+    const urgency = state.selectedDetail?.fields.find((field) => field.label === "Urgency");
+
+    expect(urgency?.value).toBe("Review required · assign owner · attach evidence · set sign-off role");
+    expect(urgency?.value).not.toContain("OnTrack");
   });
 
   it("derives statement run rows and detail tabs from endpoint supplied counts", () => {
@@ -179,12 +203,12 @@ describe("accounting-screen reconciliation view model", () => {
       brokerCustodianLabel: "Northern Trust",
       accountLabel: "Fund A - Prime",
       periodLabel: "2026-04",
-      statusLabel: "ReviewRequired",
+      statusLabel: "Review required",
       validationIssueCountLabel: "4",
       matchCountLabel: "24",
       breakCountLabel: "2",
       caseCountLabel: "1",
-      importedAtLabel: "2026-05-01T00:04:00Z",
+      importedAtLabel: "May 1, 00:04 UTC",
       unavailableReason: null
     });
     expect(state.tabs.map((tab) => tab.label)).toEqual([
@@ -197,6 +221,38 @@ describe("accounting-screen reconciliation view model", () => {
       "Evidence"
     ]);
     expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
+  });
+
+  it("selects the first available statement run when the requested run is not in the statement list", () => {
+    const state = buildReconciliationStatementRunsViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-1",
+          importId: "import-1",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 8,
+          cashMatches: 3,
+          transactionMatches: 13,
+          openExceptionCount: 2,
+          brokerCustodian: "Northern Trust",
+          account: "Fund A - Prime",
+          period: "2026-04",
+          status: "ReviewRequired"
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: "run-42",
+      loading: false,
+      error: null
+    });
+
+    expect(state.rows[0]).toMatchObject({
+      runId: "statement-run-1",
+      isSelected: true
+    });
+    expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
+    expect(state.tabs[0].ariaLabel).toContain("statement run statement-run-1");
   });
 
   it("derives the compact reconciliation comparison from statement and cash-flow evidence", () => {
@@ -582,7 +638,7 @@ describe("accounting-screen reconciliation view model", () => {
     expect(buildReconciliationDetailViewState(reconciliationQueue[0])).toMatchObject({
       eyebrow: "Reconciliation detail",
       title: "Paper Index Mean Reversion",
-      description: "run-42 is currently BreaksOpen.",
+      description: "Current reconciliation status: Breaks open.",
       ariaLabel: "Reconciliation detail for Paper Index Mean Reversion",
       narrativeLabel: "Reconciliation narrative for Paper Index Mean Reversion",
       fields: [

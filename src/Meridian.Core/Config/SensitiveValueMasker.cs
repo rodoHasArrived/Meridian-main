@@ -104,49 +104,31 @@ public static partial class SensitiveValueMasker
     }
 
     /// <summary>
-    /// Checks if a property name is considered sensitive.
+    /// Checks if a property name is considered sensitive. Exact property names above are a
+    /// documented fast path; the shared <see cref="SensitiveKeyRegistry"/> supplies the
+    /// fragment taxonomy so this surface can never drift from the diagnostic redactor.
     /// </summary>
     public static bool IsSensitiveProperty(string propertyName)
     {
         if (string.IsNullOrEmpty(propertyName))
             return false;
 
-        // Direct match
-        if (SensitivePropertyNames.Contains(propertyName))
-            return true;
-
-        // Partial match (e.g., "AlpacaSecretKey" contains "SecretKey")
-        foreach (var sensitive in SensitivePropertyNames)
-        {
-            if (propertyName.Contains(sensitive, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-
-        return false;
+        return SensitivePropertyNames.Contains(propertyName)
+            || SensitiveKeyRegistry.IsSensitive(propertyName);
     }
 
     /// <summary>
-    /// Checks if an environment variable name is considered sensitive.
+    /// Checks if an environment variable name is considered sensitive. Known provider
+    /// variables are matched exactly; the shared <see cref="SensitiveKeyRegistry"/> covers
+    /// the generic patterns.
     /// </summary>
     public static bool IsSensitiveEnvVar(string envVarName)
     {
         if (string.IsNullOrEmpty(envVarName))
             return false;
 
-        // Direct match
-        if (SensitiveEnvVarNames.Contains(envVarName))
-            return true;
-
-        // Check for common sensitive patterns
-        var upperName = envVarName.ToUpperInvariant();
-        return upperName.Contains("SECRET") ||
-               upperName.Contains("PASSWORD") ||
-               upperName.Contains("TOKEN") ||
-               upperName.Contains("API_KEY") ||
-               upperName.Contains("APIKEY") ||
-               upperName.Contains("CREDENTIAL") ||
-               upperName.Contains("PRIVATE_KEY") ||
-               upperName.Contains("ACCESS_KEY");
+        return SensitiveEnvVarNames.Contains(envVarName)
+            || SensitiveKeyRegistry.IsSensitive(envVarName);
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using Meridian.Core.Logging;
+using Meridian.Core.Resilience;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -427,8 +428,9 @@ public sealed class PriorityBackfillQueue : IDisposable
     /// </summary>
     public async Task RequeueWithBackoffAsync(BackfillJob job, TimeSpan? delay = null, CancellationToken ct = default)
     {
-        delay ??= TimeSpan.FromMinutes(1) * Math.Pow(2, job.Statistics.FailedRequests);
-        delay = TimeSpan.FromMinutes(Math.Min(delay.Value.TotalMinutes, 30)); // Cap at 30 minutes
+        delay ??= Backoff.ExponentialDelay(
+            job.Statistics.FailedRequests + 1, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(30));
+        delay = TimeSpan.FromMinutes(Math.Min(delay.Value.TotalMinutes, 30)); // Cap explicit delays at 30 minutes
 
         _log.Information("Re-queuing job {JobId} after {Delay}", job.JobId, delay);
 

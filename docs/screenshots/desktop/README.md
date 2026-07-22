@@ -1,10 +1,10 @@
 # Desktop WPF Screenshot Index
 
-This index tracks screenshot evidence for active registered WPF screens. It is intentionally conservative: a committed PNG only counts for the exact page tag listed here, and uncovered registered screens are marked TBI instead of implying visual evidence exists.
+This index tracks screenshot evidence for registered WPF screens. WPF is an active co-equal operator UI lane; its current focus is web-UI parity (`W8-WPF-PARITY-001`). The index is intentionally conservative: a committed PNG only counts for the exact page tag listed here, and uncovered registered screens are marked TBI instead of implying visual evidence exists.
 
 ## Sources and refresh policy
 
-- Active screen inventory source: `ShellNavigationCatalog` plus feature-module page registrations under `src/Meridian.Wpf/Models/` and `src/Meridian.Wpf/Features/`.
+- Retained screen inventory source: `ShellNavigationCatalog` plus feature-module page registrations under `src/Meridian.Wpf/Models/` and `src/Meridian.Wpf/Features/`.
 - Canonical screenshot workflow source: `scripts/dev/desktop-workflows.json`, especially the `screenshot-catalog` workflow.
 - Existing committed PNGs were discovered under `docs/screenshots/desktop/`.
 - Last refreshed dates below use each PNG's latest Git commit date. TBI rows have no screenshot refresh date yet.
@@ -99,6 +99,7 @@ This index tracks screenshot evidence for active registered WPF screens. It is i
 | Settings | Settings | `Settings` | [`docs/screenshots/desktop/wpf-settings.png`](wpf-settings.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Settings | Credential management | `CredentialManagement` | [`docs/screenshots/desktop/wpf-credential-management.png`](wpf-credential-management.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Settings | System health | `SystemHealth` | [`docs/screenshots/desktop/wpf-system-health.png`](wpf-system-health.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
+| Settings | Lifecycle control | `LifecycleControl` | TBI | — | TBI | New lifecycle-control surface has no retained PNG yet. | TBI: add a screenshot-catalog workflow step and fixture-mode capture. |
 | Settings | Diagnostics | `Diagnostics` | [`docs/screenshots/desktop/wpf-diagnostics.png`](wpf-diagnostics.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Settings | Service manager | `ServiceManager` | [`docs/screenshots/desktop/wpf-service-manager.png`](wpf-service-manager.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |
 | Settings | Admin maintenance | `AdminMaintenance` | [`docs/screenshots/desktop/wpf-admin-maintenance.png`](wpf-admin-maintenance.png) | 2026-06-26 | Fixture mode (`desktop-workflows.json` default `fixtureMode: true`) | — | Desktop screenshot catalog owner. |

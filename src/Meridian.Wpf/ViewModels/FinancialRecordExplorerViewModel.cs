@@ -226,6 +226,10 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         }
         catch (ObjectDisposedException)
         {
+            // The token source was already disposed; nothing to cancel.
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogDebug(
+                "Ignored cancel on already-disposed token source.",
+                ("view", nameof(FinancialRecordExplorerViewModel)));
         }
 
         _cts.Dispose();
@@ -242,7 +246,7 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         try
         {
             var route = BuildExplorerRoute(ExplorerId, ActiveSavedViewId);
-            var dto = await _apiClient.GetAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true);
+            var dto = (await _apiClient.GetWithResponseAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true)).DataOrLoggedNull("Load financial record explorer");
             ApplyExplorer(dto ?? CreateUnavailableExplorer(ExplorerId, Title));
             _hasLoaded = true;
         }
@@ -300,7 +304,7 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         try
         {
             var route = BuildExplorerRoute(ExplorerId, viewId);
-            var dto = await _apiClient.GetAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true);
+            var dto = (await _apiClient.GetWithResponseAsync<FinancialRecordExplorerDto>(route, ct).ConfigureAwait(true)).DataOrLoggedNull("Apply financial record explorer saved view");
             ApplyExplorer(dto ?? CreateUnavailableExplorer(ExplorerId, Title));
             _hasLoaded = true;
         }

@@ -45,6 +45,12 @@ public sealed class WorkspaceDeepPageChromeTests
                 window.UpdateLayout();
 
                 WorkspaceShellChromeState.GetIsHostedInWorkspaceShell(hostedPage).Should().BeTrue();
+                hostPage.FindName("ContextStrip").Should().BeOfType<WorkspaceShellContextStripControl>()
+                    .Which.Visibility.Should().Be(Visibility.Collapsed);
+                hostPage.FindName("CommandBar").Should().BeOfType<WorkspaceCommandBarControl>()
+                    .Which.Visibility.Should().Be(Visibility.Collapsed);
+                hostPage.FindName("HostedFrame").Should().BeOfType<Frame>()
+                    .Which.ActualHeight.Should().BeGreaterThan(500);
             }
             finally
             {

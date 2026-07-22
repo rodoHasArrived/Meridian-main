@@ -8,6 +8,8 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
@@ -22,6 +24,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
@@ -256,6 +259,13 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 line.Status == ProviderLedgerReconciliationCheckStatusDto.Matched &&
                 line.InternalAmount == 18_750m &&
                 line.ProviderAmount == 18_750m);
+            detail.ShadowBookComparison.Lines.Should().Contain(line =>
+                line.Dimension == "position-cost-basis:AAPL" &&
+                line.InternalSource == "custodian-statement" &&
+                line.ProviderSource == "provider-sync" &&
+                line.Status == ProviderLedgerReconciliationCheckStatusDto.Matched &&
+                line.InternalAmount == 15_000m &&
+                line.ProviderAmount == 15_000m);
         }
         finally
         {
@@ -292,6 +302,90 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 line.InternalAmount == 18_600m &&
                 line.ProviderAmount == 18_750m &&
                 line.Variance == 150m);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_EmitsScopedItemLevelCostBasisBreak()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                recordCustodianPosition: true,
+                custodianPositionCostBasis: 14_750m,
+                includeBreakQueue: true);
+
+            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+
+            var costBasisBreak = detail.Breaks.Should().ContainSingle(item =>
+                item.Code == "SHADOW_BOOK_POSITION_COST_BASIS_AAPL_MISMATCH"
+                && item.Symbol == "AAPL").Subject;
+            costBasisBreak.ExpectedAmount.Should().Be(14_750m);
+            costBasisBreak.ActualAmount.Should().Be(15_000m);
+            costBasisBreak.Variance.Should().Be(250m);
+
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            var queueCase = (await repository.GetAllAsync()).Should().ContainSingle(item =>
+                item.RoutingDetail == costBasisBreak.CheckId).Subject;
+            queueCase.LedgerBookId.Should().NotBeNull().And.NotBe(Guid.Empty);
+            queueCase.AccountingPeriodId.Should().NotBeNullOrWhiteSpace();
+            queueCase.AsOfDate.Should().Be(detail.Summary.InternalAsOfDate);
+            queueCase.Measures.Should().ContainSingle(measure =>
+                measure.Kind == ReconciliationBreakMeasureKindDto.CostBasis
+                && measure.Expected == 14_750m
+                && measure.Actual == 15_000m
+                && measure.Variance == 250m
+                && measure.Unit == "USD");
+            queueCase.Measures.Should().ContainSingle(measure =>
+                measure.Kind == ReconciliationBreakMeasureKindDto.Value
+                && measure.Expected == null
+                && !string.IsNullOrWhiteSpace(measure.UnavailableReason));
+            queueCase.BlockedOutputs.Should().BeEquivalentTo("accounting-close", "certified-reporting");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_EmitsItemLevelQuantityBreak()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                recordCustodianPosition: true,
+                custodianPositionQuantity: 99m,
+                includeBreakQueue: true);
+
+            var detail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
+            var quantityBreak = detail.Breaks.Should().ContainSingle(item =>
+                item.Code == "SHADOW_BOOK_POSITION_QUANTITY_AAPL_MISMATCH"
+                && item.Symbol == "AAPL").Subject;
+            var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+            var queueCase = (await repository.GetAllAsync()).Should().ContainSingle(item =>
+                item.RoutingDetail == quantityBreak.CheckId).Subject;
+
+            queueCase.Measures.Should().ContainSingle(measure =>
+                measure.Kind == ReconciliationBreakMeasureKindDto.Quantity
+                && measure.Expected == 99m
+                && measure.Actual == 100m
+                && measure.Variance == 1m
+                && measure.Unit == "units");
+            queueCase.Measures.Should().ContainSingle(measure =>
+                measure.Kind == ReconciliationBreakMeasureKindDto.CostBasis
+                && measure.Expected == null
+                && !string.IsNullOrWhiteSpace(measure.UnavailableReason));
         }
         finally
         {
@@ -1364,12 +1458,129 @@ public sealed class ProviderLedgerReconciliationServiceTests
             cashCase.BreakExplanation.SuggestedNextAction.ToLowerInvariant().Should().Contain("provider evidence");
             cashCase.BreakExplanation.EvidenceLinks.Should().Contain(cashCase.RoutingTarget!);
             cashCase.BreakExplanation.EvidenceLinks.Should().Contain(cashCase.UpstreamSyncCursor!);
+            cashCase.LedgerBookId.Should().NotBeNull().And.NotBe(Guid.Empty);
+            cashCase.SourceFingerprint.Should().MatchRegex("^[0-9a-f]{64}$");
+            cashCase.EvidenceLinks.Should().Contain(cashCase.RoutingTarget!);
+            cashCase.BlockedOutputs.Should().BeEquivalentTo("accounting-close", "certified-reporting");
+            cashCase.Measures.Should().HaveCount(3);
+            cashCase.Measures.Should().ContainSingle(measure =>
+                measure.Kind == ReconciliationBreakMeasureKindDto.Value
+                && measure.Expected == 49_900m
+                && measure.Actual == 50_000m
+                && measure.Variance == 100m
+                && measure.Unit == "USD");
+            cashCase.Measures.Should().ContainSingle(measure =>
+                measure.Kind == ReconciliationBreakMeasureKindDto.Quantity
+                && measure.Variance == null
+                && !string.IsNullOrWhiteSpace(measure.UnavailableReason));
+            cashCase.Measures.Should().ContainSingle(measure =>
+                measure.Kind == ReconciliationBreakMeasureKindDto.CostBasis
+                && measure.Variance == null
+                && !string.IsNullOrWhiteSpace(measure.UnavailableReason));
 
             var audit = await repository.GetAuditHistoryAsync(cashCase.BreakId);
             audit.Should().ContainSingle(entry =>
                 entry.EventType == "CaseCreated" &&
                 entry.BreakId == cashCase.BreakId &&
                 entry.SignoffStatus == "assigned");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_ProviderLedgerReconciliation_PersistsIntentBeforeCaseworkAndConvergesFailedReplay()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var operationId = $"provider-reconciliation-{Guid.NewGuid():N}";
+            var cases = new Dictionary<string, ReconciliationBreakQueueItem>(StringComparer.Ordinal);
+            var repository = Substitute.For<IReconciliationBreakQueueRepository>();
+            var failAfterFirstWrite = true;
+            var createCalls = 0;
+            var intentExistedBeforeFirstCase = false;
+
+            repository.GetByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(call => Task.FromResult(
+                    cases.TryGetValue(call.ArgAt<string>(0), out var item)
+                        ? item
+                        : null));
+            repository.GetAllAsync(Arg.Any<ReconciliationBreakQueueStatus?>(), Arg.Any<CancellationToken>())
+                .Returns(_ => Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>(cases.Values.ToArray()));
+            repository.CreateIfMissingAsync(Arg.Any<ReconciliationBreakQueueItem>(), Arg.Any<CancellationToken>())
+                .Returns(call =>
+                {
+                    var item = call.ArgAt<ReconciliationBreakQueueItem>(0);
+                    createCalls++;
+                    var operationKey = Convert.ToHexString(
+                            System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(operationId)))
+                        .ToLowerInvariant();
+                    intentExistedBeforeFirstCase |= File.Exists(Path.Combine(
+                        root,
+                        "reconciliation",
+                        item.FundAccountId!.Replace("-", string.Empty, StringComparison.Ordinal),
+                        "operations",
+                        operationKey,
+                        "intent.json"));
+                    cases[item.BreakId] = item;
+                    if (failAfterFirstWrite)
+                    {
+                        failAfterFirstWrite = false;
+                        throw new IOException("Injected queue acknowledgement failure after durable case write.");
+                    }
+                    return Task.FromResult(true);
+                });
+
+            await using var fixture = await CreateFixtureAsync(
+                root,
+                includeSecurityLookup: true,
+                internalCash: 49_900m,
+                includeBreakQueue: true,
+                breakQueueRepository: repository);
+            var request = new ProviderLedgerReconciliationRequestDto(
+                RequestedBy: "ops-user",
+                OperationId: operationId);
+
+            var failed = await fixture.Reconciliation.RunAsync(fixture.AccountId, request);
+
+            failed.Outcome.Should().NotBeNull();
+            failed.Outcome!.State.Should().Be(OperationTerminalState.Failed);
+            failed.Outcome.AttemptNumber.Should().Be(1);
+            failed.Outcome.InputHashSha256.Should().MatchRegex("^[0-9a-f]{64}$");
+            failed.Outcome.Postconditions.Should().Contain(item =>
+                item.Code == "reconciliation-casework-retained" &&
+                item.State == OperationPostconditionState.NotSatisfied);
+            VerifiedOperationOutcomeValidator.Validate(failed.Outcome).Should().BeEmpty();
+            intentExistedBeforeFirstCase.Should().BeTrue();
+            cases.Should().NotBeEmpty();
+            cases.Values.Should().OnlyContain(item =>
+                item.RunId == failed.Summary.ReconciliationRunId.ToString("N"));
+            File.Exists(Path.Combine(
+                root,
+                "reconciliation",
+                fixture.AccountId.ToString("N"),
+                "runs",
+                $"{failed.Summary.ReconciliationRunId:N}.json")).Should().BeTrue();
+
+            var recovered = await fixture.Reconciliation.RunAsync(fixture.AccountId, request);
+
+            recovered.Summary.ReconciliationRunId.Should().Be(failed.Summary.ReconciliationRunId);
+            recovered.Outcome.Should().NotBeNull();
+            recovered.Outcome!.State.Should().Be(OperationTerminalState.CompletedWithWarnings);
+            recovered.Outcome.AttemptNumber.Should().Be(2);
+            recovered.Outcome.InputHashSha256.Should().Be(failed.Outcome.InputHashSha256);
+            VerifiedOperationOutcomeValidator.Validate(recovered.Outcome).Should().BeEmpty();
+            cases.Values.Should().OnlyContain(item =>
+                item.RunId == recovered.Summary.ReconciliationRunId.ToString("N"));
+            var createsAfterRecovery = createCalls;
+
+            var replayed = await fixture.Reconciliation.RunAsync(fixture.AccountId, request);
+
+            replayed.Should().BeEquivalentTo(recovered);
+            createCalls.Should().Be(createsAfterRecovery);
         }
         finally
         {
@@ -1525,7 +1736,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
-    public async Task Scenario_ProviderLedgerReconciliation_SignedOffBreakUpdatesDurableCase()
+    public async Task Scenario_ProviderLedgerReconciliation_RejectsCallerAssertedSignoffAndLeavesCaseOpen()
     {
         var root = CreateTempRoot();
         try
@@ -1539,32 +1750,29 @@ public sealed class ProviderLedgerReconciliationServiceTests
             var firstDetail = await fixture.Reconciliation.RunAsync(fixture.AccountId);
             var firstCashBreak = firstDetail.Breaks.Single(breakRow => breakRow.Code == "CASH_BALANCE_MISMATCH");
 
-            await fixture.Reconciliation.RunAsync(
-                fixture.AccountId,
-                new ProviderLedgerReconciliationRequestDto(
-                    RequestedBy: "ops-user",
-                    SignedOffBreakKeys: [firstCashBreak.BreakKey!],
-                    SignedOffBy: "controller"));
+            Func<Task> act = async () => await fixture.Reconciliation.RunAsync(
+                    fixture.AccountId,
+                    new ProviderLedgerReconciliationRequestDto(
+                        RequestedBy: "ops-user",
+                        SignedOffBreakKeys: [firstCashBreak.BreakKey!],
+                        SignedOffBy: "controller"));
+
+            await act.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*governed reconciliation casework*");
 
             var repository = fixture.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
             var caseId = $"provider-ledger:{fixture.AccountId:N}:{firstCashBreak.BreakKey!.Replace(':', '-').ToLowerInvariant()}";
             var updated = await repository.GetByIdAsync(caseId);
 
             updated.Should().NotBeNull();
-            updated!.Status.Should().Be(ReconciliationBreakQueueStatus.SignedOff);
-            updated.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.SignedOff);
-            updated.SignoffStatus.Should().Be("signed-off");
-            updated.ResolvedBy.Should().Be("controller");
-            updated.SignedOffBy.Should().Be("controller");
-            updated.SignoffHistory.Should().ContainSingle(record =>
-                record.Actor == "controller" &&
-                record.Role == "Fund accounting");
+            updated!.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
+            updated.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Open);
+            updated.ResolvedBy.Should().BeNull();
+            updated.SignedOffBy.Should().BeNull();
 
             var audit = await repository.GetAuditHistoryAsync(caseId);
             audit.Select(entry => entry.EventType).Should().Contain("CaseCreated");
-            audit.Select(entry => entry.EventType).Should().Contain("ReviewStarted");
-            audit.Select(entry => entry.EventType).Should().Contain("Resolved");
-            audit.Select(entry => entry.EventType).Should().Contain("SignedOff");
+            audit.Should().ContainSingle();
         }
         finally
         {
@@ -1573,7 +1781,7 @@ public sealed class ProviderLedgerReconciliationServiceTests
     }
 
     [Fact]
-    public async Task Scenario_ProviderLedgerReconciliation_PreservesBreakAgingAndSignOffState()
+    public async Task Scenario_ProviderLedgerReconciliation_PreservesBreakAgingAcrossComparisonRuns()
     {
         var root = CreateTempRoot();
         try
@@ -1585,21 +1793,18 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 new ProviderLedgerReconciliationRequestDto(DefaultBreakOwner: "fund-controller"));
             var firstCashBreak = firstDetail.Breaks.Single(breakRow => breakRow.Code == "CASH_BALANCE_MISMATCH");
 
-            var signedOffDetail = await fixture.Reconciliation.RunAsync(
+            var repeatedDetail = await fixture.Reconciliation.RunAsync(
                 fixture.AccountId,
                 new ProviderLedgerReconciliationRequestDto(
-                    DefaultBreakOwner: "fund-controller",
-                    SignedOffBreakKeys: [firstCashBreak.BreakKey!],
-                    SignedOffBy: "controller"));
-            var signedOffCashBreak = signedOffDetail.Breaks.Single(breakRow => breakRow.Code == "CASH_BALANCE_MISMATCH");
+                    DefaultBreakOwner: "fund-controller"));
+            var repeatedCashBreak = repeatedDetail.Breaks.Single(breakRow => breakRow.Code == "CASH_BALANCE_MISMATCH");
 
-            signedOffCashBreak.BreakKey.Should().Be(firstCashBreak.BreakKey);
-            signedOffCashBreak.Owner.Should().Be("fund-controller");
-            signedOffCashBreak.FirstObservedAt.Should().Be(firstCashBreak.FirstObservedAt);
-            signedOffCashBreak.SignOffState.Should().Be(ProviderLedgerReconciliationBreakSignOffStateDto.SignedOff);
-            signedOffCashBreak.SignedOffBy.Should().Be("controller");
-            signedOffCashBreak.SignedOffAt.Should().NotBeNull();
-            signedOffDetail.Summary.SignedOffBreakCount.Should().BeGreaterThan(0);
+            repeatedCashBreak.BreakKey.Should().Be(firstCashBreak.BreakKey);
+            repeatedCashBreak.Owner.Should().Be("fund-controller");
+            repeatedCashBreak.FirstObservedAt.Should().Be(firstCashBreak.FirstObservedAt);
+            repeatedCashBreak.SignOffState.Should().Be(ProviderLedgerReconciliationBreakSignOffStateDto.Assigned);
+            repeatedCashBreak.SignedOffBy.Should().BeNull();
+            repeatedDetail.Summary.SignedOffBreakCount.Should().Be(0);
         }
         finally
         {
@@ -1865,6 +2070,33 @@ public sealed class ProviderLedgerReconciliationServiceTests
                 item.Symbol == "AAPL" &&
                 item.Status == ProviderSecurityMasterPassportStatusDto.Resolved &&
                 item.ResolutionSource == "provider-position");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_ProviderLedgerReconciliation_RejectsClientAssertedSignoff()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true);
+            await using var app = await CreateEndpointAppAsync(fixture);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                $"/api/fund-accounts/{fixture.AccountId}/brokerage-sync/reconcile-ledger",
+                new ProviderLedgerReconciliationRequestDto(
+                    RequestedBy: "spoofed-operator",
+                    SignedOffBreakKeys: ["client-asserted-break"],
+                    SignedOffBy: "spoofed-controller"),
+                JsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await response.Content.ReadAsStringAsync()).Should().Contain("cannot be asserted");
         }
         finally
         {
@@ -2419,12 +2651,17 @@ public sealed class ProviderLedgerReconciliationServiceTests
         bool recordCustodianPosition = false,
         decimal custodianPositionQuantity = 100m,
         decimal custodianPositionMarketValue = 18_750m,
+        decimal? custodianPositionCostBasis = 15_000m,
         bool recordBankStatement = false,
         decimal bankClosingBalance = 50_000m,
         decimal? bankIncomeAmount = null,
-        SecurityStatusDto securityStatus = SecurityStatusDto.Active)
+        SecurityStatusDto securityStatus = SecurityStatusDto.Active,
+        IReconciliationBreakQueueRepository? breakQueueRepository = null)
     {
         var accountId = Guid.NewGuid();
+        var ledgerBookId = Guid.NewGuid();
+        var ledgerPeriodId = Guid.NewGuid();
+        var fixtureAsOfDate = DateOnly.FromDateTime(DateTime.UtcNow.Date);
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton(new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"));
@@ -2432,6 +2669,37 @@ public sealed class ProviderLedgerReconciliationServiceTests
         services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
         services.AddSingleton<IAccountManagementService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
         services.AddSingleton<IAccountQueryService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
+        var ledgerBookService = Substitute.For<ILedgerBookService>();
+        ledgerBookService.ListBooksAsync(Arg.Any<LedgerBookQuery>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<LedgerBookDto>>(
+            [
+                new LedgerBookDto(
+                    ledgerBookId,
+                    accountId.ToString("D"),
+                    accountId,
+                    FundStructureNodeKindDto.Fund,
+                    "Provider Ledger Test Book",
+                    "USD",
+                    DateTimeOffset.UtcNow,
+                    DateTimeOffset.UtcNow)
+            ]));
+        ledgerBookService.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<LedgerPeriodDto>>(
+            [
+                new LedgerPeriodDto(
+                    ledgerPeriodId,
+                    ledgerBookId,
+                    fixtureAsOfDate.Year,
+                    fixtureAsOfDate.Month,
+                    fixtureAsOfDate.ToString("yyyy-MM"),
+                    fixtureAsOfDate.AddDays(-15),
+                    fixtureAsOfDate.AddDays(15),
+                    LedgerPeriodStatusDto.Open,
+                    DateTimeOffset.UtcNow,
+                    ClosedAt: null,
+                    Version: 1)
+            ]));
+        services.AddSingleton(ledgerBookService);
         services.AddSingleton<IBrokeragePortfolioSync>(portfolioAdapter ?? new FixedPortfolioAdapter());
         services.AddSingleton(activityAdapter ?? new EmptyActivityAdapter());
         if (includeSecurityLookup)
@@ -2442,7 +2710,11 @@ public sealed class ProviderLedgerReconciliationServiceTests
         {
             services.AddSingleton(capabilityRouter);
         }
-        if (includeBreakQueue)
+        if (breakQueueRepository is not null)
+        {
+            services.AddSingleton(breakQueueRepository);
+        }
+        else if (includeBreakQueue)
         {
             services.AddSingleton<IReconciliationBreakQueueRepository>(sp =>
                 new FileReconciliationBreakQueueRepository(
@@ -2528,7 +2800,8 @@ public sealed class ProviderLedgerReconciliationServiceTests
                         "USD",
                         "Apple Inc.",
                         "Equity",
-                        IsShort: false)
+                        IsShort: false,
+                        CostBasis: custodianPositionCostBasis)
                 ],
                 "tests"));
         }
@@ -3119,6 +3392,12 @@ public sealed class ProviderLedgerReconciliationServiceTests
             string updatedBy,
             CancellationToken ct = default) =>
             throw new NotSupportedException();
+
+        public Task<OperatorOverridesDto> RecordApprovalDecisionAsync(
+            Guid requestedSecurityId,
+            OperatorOverrideDecision decision,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException();
     }
 
     private sealed class StaticSecurityMasterConflictService(params SecurityMasterConflict[] conflicts)
@@ -3143,6 +3422,9 @@ public sealed class ProviderLedgerReconciliationServiceTests
             throw new NotSupportedException();
 
         public Task RecordConflictsForProjectionAsync(SecurityProjectionRecord projection, CancellationToken ct) =>
+            Task.CompletedTask;
+
+        public Task RecordFieldConflictsAsync(SecurityProjectionRecord previous, SecurityProjectionRecord incoming, CancellationToken ct) =>
             Task.CompletedTask;
     }
 

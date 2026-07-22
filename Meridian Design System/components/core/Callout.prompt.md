@@ -1,0 +1,1 @@
+Semantic tone. @default "info"

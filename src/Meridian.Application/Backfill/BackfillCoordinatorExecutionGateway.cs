@@ -1,4 +1,3 @@
-using Meridian.Application.UI;
 using Meridian.Contracts.Backfill;
 
 namespace Meridian.Application.Backfill;

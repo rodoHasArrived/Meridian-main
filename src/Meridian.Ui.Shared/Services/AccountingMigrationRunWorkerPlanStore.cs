@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AccountingSystem;
-using Meridian.Storage.Archival;
+using Meridian.Storage.Store;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -124,25 +124,35 @@ public sealed class InMemoryAccountingMigrationRunWorkerPlanStore : IAccountingM
             : value.Trim();
 }
 
-public sealed class FileAccountingMigrationRunWorkerPlanStore : IAccountingMigrationRunWorkerPlanWriter
+public sealed class FileAccountingMigrationRunWorkerPlanStore :
+    JsonFileSnapshotStore<AccountingMigrationRunWorkerPlanSnapshot>,
+    IAccountingMigrationRunWorkerPlanWriter
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
 
-    private readonly string _snapshotPath;
     private readonly ILogger<FileAccountingMigrationRunWorkerPlanStore> _logger;
-    private readonly SemaphoreSlim _gate = new(1, 1);
 
     public FileAccountingMigrationRunWorkerPlanStore(
         string snapshotPath,
         ILogger<FileAccountingMigrationRunWorkerPlanStore> logger)
+        : base(
+            string.IsNullOrWhiteSpace(snapshotPath)
+                ? throw new ArgumentException("Accounting migration worker plan snapshot path is required.", nameof(snapshotPath))
+                : snapshotPath,
+            JsonOptions)
     {
-        _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
-            ? throw new ArgumentException("Accounting migration worker plan snapshot path is required.", nameof(snapshotPath))
-            : snapshotPath;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    protected override AccountingMigrationRunWorkerPlanSnapshot CreateEmptySnapshot() => new([]);
+
+    protected override AccountingMigrationRunWorkerPlanSnapshot HandleCorruptSnapshot(JsonException exception)
+    {
+        _logger.LogWarning(exception, "Failed to read accounting migration worker plan snapshot {SnapshotPath}", SnapshotPath);
+        return new AccountingMigrationRunWorkerPlanSnapshot([]);
     }
 
     public async Task<IReadOnlyList<AccountingMigrationRunWorkerPlanDto>> ListAsync(
@@ -156,17 +166,18 @@ public sealed class FileAccountingMigrationRunWorkerPlanStore : IAccountingMigra
         var normalizedFundProfileId = InMemoryAccountingMigrationRunWorkerPlanStore.NormalizeOptional(fundProfileId);
         var normalizedTenantId = InMemoryAccountingMigrationRunWorkerPlanStore.NormalizeOptional(tenantId);
         var normalizedCompanyId = InMemoryAccountingMigrationRunWorkerPlanStore.NormalizeOptional(companyId);
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Plans
-            .Where(plan => InMemoryAccountingMigrationRunWorkerPlanStore.MatchesScope(
-                plan,
-                normalizedFundProfileId,
-                ledgerBookId,
-                kind,
-                normalizedTenantId,
-                normalizedCompanyId))
-            .OrderBy(static plan => plan.PlanId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Plans
+                .Where(plan => InMemoryAccountingMigrationRunWorkerPlanStore.MatchesScope(
+                    plan,
+                    normalizedFundProfileId,
+                    ledgerBookId,
+                    kind,
+                    normalizedTenantId,
+                    normalizedCompanyId))
+                .OrderBy(static plan => plan.PlanId, StringComparer.OrdinalIgnoreCase)
+                .ToArray(),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingMigrationRunWorkerPlanDto?> GetAsync(
@@ -179,9 +190,10 @@ public sealed class FileAccountingMigrationRunWorkerPlanStore : IAccountingMigra
             return null;
         }
 
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
-        return snapshot.Plans.FirstOrDefault(plan =>
-            string.Equals(plan.PlanId, normalizedPlanId, StringComparison.OrdinalIgnoreCase));
+        return await ReadSnapshotAsync(
+            snapshot => snapshot.Plans.FirstOrDefault(plan =>
+                string.Equals(plan.PlanId, normalizedPlanId, StringComparison.OrdinalIgnoreCase)),
+            ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingMigrationRunWorkerPlanDto> UpsertAsync(
@@ -189,69 +201,22 @@ public sealed class FileAccountingMigrationRunWorkerPlanStore : IAccountingMigra
         CancellationToken ct = default)
     {
         var normalized = InMemoryAccountingMigrationRunWorkerPlanStore.NormalizePlan(plan);
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-            var plans = snapshot.Plans
-                .Where(item => !string.Equals(item.PlanId, normalized.PlanId, StringComparison.OrdinalIgnoreCase))
-                .Append(normalized)
-                .OrderBy(static item => item.PlanId, StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-
-            var json = JsonSerializer.Serialize(new AccountingMigrationRunWorkerPlanSnapshot(plans), JsonOptions);
-            var directory = Path.GetDirectoryName(_snapshotPath);
-            if (!string.IsNullOrWhiteSpace(directory))
+        return await UpdateSnapshotAsync(
+            snapshot =>
             {
-                Directory.CreateDirectory(directory);
-            }
+                var plans = snapshot.Plans
+                    .Where(item => !string.Equals(item.PlanId, normalized.PlanId, StringComparison.OrdinalIgnoreCase))
+                    .Append(normalized)
+                    .OrderBy(static item => item.PlanId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
 
-            await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
-            return normalized;
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    private async Task<AccountingMigrationRunWorkerPlanSnapshot> ReadSnapshotAsync(CancellationToken ct)
-    {
-        await _gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            return await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            _gate.Release();
-        }
-    }
-
-    private async Task<AccountingMigrationRunWorkerPlanSnapshot> ReadSnapshotWithoutLockAsync(CancellationToken ct)
-    {
-        ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
-        {
-            return new AccountingMigrationRunWorkerPlanSnapshot([]);
-        }
-
-        try
-        {
-            await using var stream = File.OpenRead(_snapshotPath);
-            return await JsonSerializer
-                .DeserializeAsync<AccountingMigrationRunWorkerPlanSnapshot>(stream, JsonOptions, ct)
-                .ConfigureAwait(false) ?? new AccountingMigrationRunWorkerPlanSnapshot([]);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "Failed to read accounting migration worker plan snapshot {SnapshotPath}", _snapshotPath);
-            return new AccountingMigrationRunWorkerPlanSnapshot([]);
-        }
+                return (new AccountingMigrationRunWorkerPlanSnapshot(plans), normalized);
+            },
+            ct).ConfigureAwait(false);
     }
 }
 
-internal sealed record AccountingMigrationRunWorkerPlanSnapshot(
+public sealed record AccountingMigrationRunWorkerPlanSnapshot(
     IReadOnlyList<AccountingMigrationRunWorkerPlanDto>? Plans = null)
 {
     public IReadOnlyList<AccountingMigrationRunWorkerPlanDto> Plans { get; init; } = Plans ?? [];

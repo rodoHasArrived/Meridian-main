@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Meridian — card gallery (visual-regression baseline)</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; background: #DEE3EA; font-family: "Segoe UI", system-ui, sans-serif; }
+  header { padding: 14px 20px; background: #171A1F; color: #F4F6F8; font-size: 13px; display: flex; gap: 12px; align-items: baseline; }
+  header b { font-weight: 600; }
+  header span { color: #8A929B; font-size: 11px; }
+  main { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); gap: 16px; }
+  figure { margin: 0; background: #fff; border: 1px solid #CBD3DC; display: flex; flex-direction: column; }
+  figcaption { padding: 7px 10px; font-size: 11px; color: #4D5967; border-bottom: 1px solid #D2D9E2; display: flex; justify-content: space-between; gap: 8px; }
+  figcaption code { font-size: 10px; color: #59636F; }
+  iframe { border: none; width: 100%; height: 420px; display: block; background: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <b>Meridian — card gallery</b>
+  <span>every @dsCard demo on one page · screenshot this for a visual-regression baseline</span>
+</header>
+<main id="grid"></main>
+<script>
+// Every *.card.html in the repo. Keep in sync when adding cards (the governance script
+// has a gallery-coverage check that diffs this list against the tree).
+const CARDS = [
+  "components/core/core.card.html",
+  "components/core/form-controls.card.html",
+  "components/core/feedback-controls.card.html",
+  "components/core/layout-helpers.card.html",
+  "components/core/live-status.card.html",
+  "components/core/modal.card.html",
+  "components/core/command-palette.card.html",
+  "components/core/context-validators.card.html",
+  "components/core/new-components.card.html",
+  "components/core/new-primitives.card.html",
+  "components/core/workstation-services.card.html",
+  "components/core/forms-depth.card.html",
+  "components/core/theming.card.html",
+  "components/data/data.card.html",
+  "components/data/data-editing.card.html",
+  "components/data/data-extras.card.html",
+  "components/data/expandable-table.card.html",
+  "components/data/filtered-data-table.card.html",
+  "components/data/pagination.card.html",
+  "components/data/worksheet-grid.card.html",
+  "components/data/table-depth.card.html",
+  "components/data/filter-builder.card.html",
+  "components/charts/charts.card.html",
+  "components/charts/analytics-charts.card.html",
+  "components/charts/pnl-calendar.card.html",
+  "components/charts/chart-interaction.card.html",
+  "components/charts/market-coverage.card.html",
+  "components/accounting/accounting.card.html",
+  "components/accounting/accounting-ledger.card.html",
+  "components/accounting/accounting-reconcile.card.html",
+  "components/operations/operations.card.html",
+  "components/operations/diff-view.card.html",
+  "components/operations/evidence-surfaces.card.html",
+  "components/shell/shell.card.html",
+  "components/trading/trading.card.html",
+  "components/trading/depth-ladder.card.html",
+  "tokens/theming.card.html",
+  "tokens/dark-mode.card.html",
+  "tokens/token-browser.card.html",
+  "tokens/white-label.card.html",
+  "docs/COMPONENT_API_REFERENCE.card.html",
+  "docs/cookbook.card.html",
+  "guidelines/brand-hero.card.html",
+  "guidelines/brand-icons.card.html",
+  "guidelines/brand-marks.card.html",
+  "guidelines/colors-accent.card.html",
+  "guidelines/colors-charts.card.html",
+  "guidelines/colors-modes.card.html",
+  "guidelines/colors-states.card.html",
+  "guidelines/colors-surfaces.card.html",
+  "guidelines/spacing-density.card.html",
+  "guidelines/spacing-radii.card.html",
+  "guidelines/type-numerals.card.html",
+  "guidelines/type-scale.card.html",
+  "guidelines/type-stack.card.html",
+  "guidelines/token-reference.card.html",
+  "guidelines/entity-schemas.card.html",
+  "guidelines/states-antipatterns.card.html",
+  "guidelines/accessibility.card.html",
+  "guidelines/dark-mode-validation.card.html",
+  "guidelines/keyboard-map.card.html",
+];
+const grid = document.getElementById("grid");
+for (const path of CARDS) {
+  const fig = document.createElement("figure");
+  const cap = document.createElement("figcaption");
+  cap.innerHTML = `<span>${path.split("/").pop().replace(".card.html", "")}</span><code>${path}</code>`;
+  const frame = document.createElement("iframe");
+  frame.loading = "lazy";
+  frame.src = "../" + path;
+  frame.title = path;
+  fig.appendChild(cap);
+  fig.appendChild(frame);
+  grid.appendChild(fig);
+}
+</script>
+</body>
+</html>

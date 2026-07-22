@@ -56,6 +56,8 @@ In TWS/Gateway:
 - confirm build mode exposed by status endpoint matches intended mode,
 - confirm socket readiness and Client Portal readiness when enabled,
 - verify market data, historical bars, and paper-order roundtrip,
+- verify that the runtime surface reports `Paper` for paper TWS/Gateway and `Live` only for a vendor-enabled live connection; a guidance or smoke build must never be promoted as live,
+- import an account-scoped IB Flex report and reconcile its trades, cash transactions, fees, interest, FX conversions, and corporate actions against the API/TWS snapshot; investigate every variance before live promotion,
 - ensure live routing remains disabled until paper validation is complete.
 
 ## Evidence requirements

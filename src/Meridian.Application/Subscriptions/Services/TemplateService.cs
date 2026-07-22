@@ -1,9 +1,11 @@
 using System.Text.Json;
 using System.Threading;
 using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.UI;
 using Meridian.Storage.Archival;
+using Serilog;
 
 namespace Meridian.Application.Subscriptions.Services;
 
@@ -14,6 +16,7 @@ public sealed class TemplateService
 {
     private readonly ConfigStore _configStore;
     private readonly string _templatesPath;
+    private readonly ILogger _log = LoggingSetup.ForContext<TemplateService>();
     private readonly Dictionary<string, SymbolTemplate> _builtInTemplates;
 
     public TemplateService(ConfigStore configStore, string? templatesPath = null)
@@ -186,8 +189,15 @@ public sealed class TemplateService
             });
             return templates ?? new List<SymbolTemplate>();
         }
-        catch
+        catch (OperationCanceledException)
         {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            var quarantinePath = CorruptStoreQuarantine.PreserveOrThrow(_templatesPath, ex);
+            _log.Error(ex, "Failed to load custom templates from {Path}; unreadable file preserved at {QuarantinePath}",
+                _templatesPath, quarantinePath);
             return new List<SymbolTemplate>();
         }
     }

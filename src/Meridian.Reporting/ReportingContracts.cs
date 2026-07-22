@@ -47,7 +47,8 @@ public sealed record ReportingTemplateMetadata(
     ImmutableArray<string> Sections,
     ImmutableDictionary<string, string> Tags,
     IReadOnlyList<ReportWriterGridDefinitionDto>? ReportWriterGrids = null,
-    ReportAccessPolicyDto? AccessPolicy = null);
+    ReportAccessPolicyDto? AccessPolicy = null,
+    IReadOnlyList<ReportTemplateParameterDefinitionDto>? Parameters = null);
 
 public sealed record ReportingLineageReference(
     string SectionId,
@@ -55,6 +56,32 @@ public sealed record ReportingLineageReference(
     string DatasetSnapshotHash,
     string ReconciliationCheckpointId,
     DateTimeOffset CapturedAtUtc);
+
+/// <summary>
+/// Immutable receipt for the durable server-owned source queried before rendering. The source
+/// checkpoint is deliberately distinct from the reconciliation/readiness checkpoint: one proves
+/// the exact ledger bytes and sequence boundary, while the other proves that those bytes were
+/// eligible for final reporting.
+/// </summary>
+public sealed record ReportingAuthoritativeSourceCheckpoint(
+    string SourceKind,
+    string SourceId,
+    string TenantId,
+    string OrganizationId,
+    string? CompanyId,
+    string FundId,
+    string LedgerBookId,
+    string AccountingPeriodId,
+    string AccountingBasis,
+    DateOnly AsOfDate,
+    DateTimeOffset CutoffUtc,
+    long HighestGlobalSequence,
+    int JournalEntryCount,
+    int LedgerLineCount,
+    string CheckpointId,
+    string CheckpointHash,
+    DateTimeOffset CapturedAtUtc,
+    ImmutableArray<string> EvidenceIds);
 
 public sealed record ReportingOutputManifest(
     string RunId,
@@ -79,7 +106,15 @@ public sealed record ReportingOutputManifest(
     int? RunAttemptOrdinal = null,
     string? PriorRunId = null,
     string? RetryReason = null,
-    ImmutableArray<ReportWriterGridDiffDto> ReportWriterGridDiffs = default);
+    ImmutableArray<ReportWriterGridDiffDto> ReportWriterGridDiffs = default,
+    VersionedReportTemplateIdDto? ResolvedTemplate = null,
+    ReportingRunParametersDto? ResolvedParameters = null,
+    ReportingRunReadinessDto? Readiness = null,
+    ReportingOperationalScope? OperationalScope = null,
+    ReportingAccessScope? ImmutableAccessScope = null,
+    ReportingCertifiedSnapshotScope? CertifiedSnapshot = null,
+    ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null,
+    ImmutableArray<IReadOnlyDictionary<string, string>> CertifiedDatasetRows = default);
 
 public sealed record ReportingRunReportWriterGridArtifact(
     string GridId,
@@ -113,7 +148,16 @@ public sealed record ReportingJobContract(
     string? BrandingThemeId = null,
     ReportBrandingThemeDto? BrandingTheme = null,
     ReportAccessPolicyDto? AccessPolicy = null,
-    string? RetryReason = null);
+    string? RetryReason = null,
+    bool AllowRestatement = false,
+    VersionedReportTemplateIdDto? ResolvedTemplate = null,
+    ReportingRunParametersDto? ResolvedParameters = null,
+    ReportingRunReadinessDto? Readiness = null,
+    ReportingOperationalScope? OperationalScope = null,
+    ReportingAccessScope? ImmutableAccessScope = null,
+    ReportingCertifiedSnapshotScope? CertifiedSnapshot = null,
+    ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null,
+    string? GovernedRunSeriesId = null);
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,
@@ -134,13 +178,22 @@ public sealed record ReportingRunAuditEntry(
 public sealed record ReportingRunSnapshot(
     ReportingOutputManifest Manifest,
     IReadOnlyList<ReportingRunAuditEntry> AuditTrail,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    string? CertifiedDatasetHashSha256 = null,
+    string? ManifestHashSha256 = null);
 
 public interface IReportingRunStore
 {
     IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25);
     ReportingOutputManifest? GetManifest(string runId);
+    ReportingOutputManifest? GetManifest(string tenantId, string runId) =>
+        GetManifest(runId) is { OperationalScope: { } scope } manifest
+        && string.Equals(scope.TenantId, tenantId, StringComparison.Ordinal)
+            ? manifest
+            : null;
     IReadOnlyList<ReportingRunAuditEntry> GetAudit(string runId);
+    IReadOnlyList<ReportingRunAuditEntry> GetAudit(string tenantId, string runId) =>
+        GetManifest(tenantId, runId) is null ? [] : GetAudit(runId);
     Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList<ReportingRunAuditEntry> auditTrail, CancellationToken ct = default);
 }
 

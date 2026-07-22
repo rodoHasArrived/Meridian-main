@@ -1,49 +1,43 @@
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
-import { Select } from "@/components/ui/select";
-import { SeverityBadge } from "@/components/operations";
-import { registerCommandPaletteActions } from "@/components/meridian/command-palette.actions";
-import {
-  encodeViewStateEnvelope,
-  readViewStateFromSearch,
-  stripViewStateFromSearch,
-  VIEW_STATE_QUERY_KEY
-} from "@/lib/view-state-envelope";
+import { useReportRunStream } from "@/hooks/use-report-run-stream";
+import { humanizeStatus, SeverityBadge } from "@/components/operations";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
-import { ReportingPeriodSwitcher } from "@/components/meridian/reporting-period-switcher";
+import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { ReportingHub } from "@/components/meridian/reporting-hub";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import {
-  apiPostJson,
   approveReportTemplateDraft,
-  deliverReportPack,
-  generateReportPack,
   pauseReportingSchedule,
-  previewReportPack,
-  recordReportPackDeliveryFailure,
+  provisionReportingStarterKit,
   rejectReportTemplateDraft,
   resumeReportingSchedule,
-  runDueReportingSchedules,
-  runReportingNow,
   runReportingScheduleNow,
   saveReportingSchedule,
   submitReportTemplateDraft
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
-import { todayIsoDate } from "@/lib/reporting-periods";
-import { buildReportingHubModel } from "@/lib/reporting-hub";
+import { buildReportingHubModel, formatReportingFamilyLabel } from "@/lib/reporting-hub";
+import { workstationRouteWithQuery } from "@/lib/workspace";
 import {
+  hasRetainedReportingAsOfDate,
+  presentReportingAsOfDate,
+  presentReportingIdentifier,
+  presentReportingRunStatusLabel,
+  presentReportingStatusLabel,
+  resolveReportingRunSeverityStatus,
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
   type ReportingProfileRow,
-  type ReportingRunActionRow,
+  type ReportingExportStatusState,
   type ReportingRunStatusRow,
   type ReportingScheduleDeliveryPlanRow,
   type ReportingScheduleRow,
@@ -60,26 +54,22 @@ import {
   type ReportBrandingDraftField,
   type ReportBrandingDraftState
 } from "@/screens/reporting-screen.branding-access";
+import type { ExportsReportRunDraftState } from "@/screens/reporting-screen.exports-runner";
 import {
-  ExportsReportRunner,
-  type ExportsReportRunDraftField,
-  type ExportsReportRunDraftState
-} from "@/screens/reporting-screen.exports-runner";
+  buildDefaultReportRunParameterDraft,
+  validateAndBuildReportingRunParameters,
+  type ReportRunParameterDraftField,
+  type ReportRunParameterDraftState
+} from "@/screens/report-run-parameters-screen.view-model";
 import { ReportingDeliveryHistoryPanel } from "@/screens/reporting-screen.delivery-history";
 import {
   ReportWriterDesignerGrid,
   ReportingReportWriterSection,
-  formatReportWriterFilterOperator,
-  isBlankFilterOperator,
-  normalizeReportWriterFilterOperator,
-  normalizeReportWriterGridKind,
-  parseReportWriterTopN,
   useReportingReportWriter,
   type ReportWriterChartDraft,
   type ReportWriterDraftSettings,
   type ReportWriterDropZone,
   type ReportWriterFormatRuleDraft,
-  type ReportWriterPreviewDatasetProfile
 } from "@/screens/reporting-screen.report-writer";
 import {
   ReportingScheduleManagementPanel,
@@ -89,16 +79,17 @@ import {
   type ReportingScheduleDraftField,
   type ReportingScheduleDraftState,
   type ReportingScheduleDraftTarget,
+  type ReportingScheduleRecipientPrincipalKind,
   type ReportingScheduleManagementModel
 } from "@/screens/reporting-screen.schedule-management";
 import { TemplateLifecycleActionIcon } from "@/screens/reporting-screen.template-lifecycle";
-import { ReportingGeneratedGridExportLinks, ReportingRunVersionFields } from "@/screens/reporting-screen.run-status-modules";
+import { ReportingRunAuditDisclosure } from "@/screens/reporting-screen.run-status-modules";
+import { ReportingStarterKitChooser } from "@/screens/reporting-screen.starter-kit";
 import {
   ReportingBackendReference,
   ReportingCommandStatusView,
   type ReportingCommandStatus
 } from "@/screens/reporting-screen.shared-components";
-import { ReportingTaskModeLauncher } from "@/screens/reporting-screen.task-modes";
 import {
   ReportingChip,
   ReportingWorkbenchContext
@@ -106,24 +97,22 @@ import {
 import type {
   AccountingWorkspaceResponse,
   GovernanceReportArtifactFormat,
-  ReportBrandingTheme,
-  ReportPackDeliveryAttempt,
-  ReportPackDeliveryFailureRequest,
   ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
-  ReportWriterAggregateFunction,
-  ReportWriterChartDefinition,
-  ReportWriterFilterDefinition,
-  ReportWriterFormatRule,
-  ReportWriterGridDefinition,
-  ReportWriterGridKind,
+  ReportingRunParameters,
   ReportingRunRequest,
-  ReportWriterMetricDefinition,
   RenderReportTemplateRequest,
-  ReportingScheduleUpsertRequest,
-  ReportingWorkflowEvidenceLink
+  ReportingScheduleUpsertRequest
 } from "@/types";
+import {
+  buildReportAccessPolicy,
+  buildReportWriterGridDefinition,
+  buildReportWriterPreviewRows,
+  normalizeDraftText,
+  normalizeIdentifierToken,
+  parseReportTemplateVersion
+} from "@/screens/reporting-screen.report-writer-helpers";
 
 interface ReportingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -153,11 +142,26 @@ const reportingStatusFromVariant: Record<
   live: "Blocked",
   research: "Info"
 };
+
 const livePortfolioAutoRefreshIntervalMs = 60_000;
 const LIVE_PORTFOLIO_FRESHNESS_BUDGET_MS = 2 * livePortfolioAutoRefreshIntervalMs;
+// The report-run live chip renders in the "Live" state whenever the SSE channel is healthy,
+// so this budget only governs its internal age tick; a modest interval keeps the dot lively.
+export const REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS = 15_000;
+
+// Governed report-pack workflow rows carry a `report-pack:{id}` run id (server ProjectWorkflowRun)
+// that the run-stream endpoint cannot resolve — it only knows IReportingOrchestrationService run
+// ids and 404s on the workflow scheme. Only generic reporting runs are streamable, so selection
+// skips workflow rows instead of opening an SSE channel that would just 404-loop.
+function isStreamableReportingRun(run: ReportingRunStatusRow): boolean {
+  return !run.id.startsWith("report-pack:");
+}
+
+function normalizeReportingStatus(status: string): string {
+  return status.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 const defaultExportsReportRunRequester = "browser-workstation";
-const EXPORTS_VIEW_STATE_SCREEN = "reporting-exports";
-const exportsViewReflectDebounceMs = 300;
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
     id: "profile",
@@ -165,7 +169,6 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
     render: (profile) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{profile.name}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{profile.id}</span>
       </span>
     )
   },
@@ -203,24 +206,34 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
 
 export function ReportingScreen({ data, onRefreshLivePortfolioViews }: ReportingScreenProps) {
   const { pathname, search } = useLocation();
-  const navigate = useNavigate();
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
   const hubModel = useMemo(
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, data?.reporting?.dailyWork ?? []),
     [data?.reporting?.dailyWork, vm.runStatusRows, vm.templateRows]
   );
+  // Watch the most recent run over the report-run SSE stream. This is additive — the 30s
+  // reporting poll is unchanged and remains the source of truth for the rendered rows. When the
+  // channel is healthy it surfaces that run's approval/status transitions instantly; while it is
+  // unhealthy (or where EventSource is unavailable, e.g. in tests) nothing extra renders.
+  const watchedRunId = vm.runStatusRows.find(isStreamableReportingRun)?.id ?? null;
+  const { status: watchedRunStreamStatus, healthy: watchedRunStreamHealthy } = useReportRunStream(watchedRunId);
+  // When the watched run's stream is healthy, its pushed status supersedes the stale polled status
+  // for that row, so the prominent badge reflects the live approval state instead of contradicting
+  // the live line beneath it until the next 30s poll catches up.
+  const isWatchedRunLive = (run: ReportingRunStatusRow): boolean =>
+    run.id === watchedRunId && watchedRunStreamHealthy && watchedRunStreamStatus !== null;
+  const resolveRowStatus = (run: ReportingRunStatusRow): string =>
+    isWatchedRunLive(run) && watchedRunStreamStatus ? watchedRunStreamStatus.status : run.status;
+  const resolveRowStatusLabel = (run: ReportingRunStatusRow): string =>
+    presentReportingRunStatusLabel(resolveRowStatus(run), run.asOfDateLabel);
+  const resolveRowSeverityStatus = (run: ReportingRunStatusRow): string =>
+    resolveReportingRunSeverityStatus(resolveRowStatus(run), run.asOfDateLabel);
   const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusReportPackProfile = useRef(false);
-  const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
-  const [templateRunStatus, setTemplateRunStatus] = useState<ReportingCommandStatus | null>(null);
   const [templateLifecycleStatus, setTemplateLifecycleStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
-  const [deliveryFailureStatus, setDeliveryFailureStatus] = useState<ReportingCommandStatus | null>(null);
+  const [starterKitStatus, setStarterKitStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
-  const [exportsRunDraft, setExportsRunDraft] = useState<ExportsReportRunDraftState>(() => buildDefaultExportsReportRunDraft(data?.reporting ?? null));
-  const [templateRunDatasetSourceId, setTemplateRunDatasetSourceId] = useState(() => buildDefaultReportWriterDatasetSourceId(data?.reporting ?? null));
-  const [templateRunAsOfDate, setTemplateRunAsOfDate] = useState<string>(() => todayIsoDate());
-  const [brandingPackStatus, setBrandingPackStatus] = useState<ReportingCommandStatus | null>(null);
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(data?.reporting ?? null));
   const reportWriterDatasetSources = data?.reporting.reportWriterDatasetSources ?? [];
@@ -259,17 +272,83 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   const livePortfolioRefreshInFlight = useRef(false);
   const livePortfolioViews = data?.reporting.livePortfolioViews ?? [];
   const shouldAutoRefreshLivePortfolioViews = livePortfolioViews.some((view) => view.isMarketTickLinked || view.state === "LiveLinked");
-  const runningRunActionId = runActionStatus?.state === "running" ? runActionStatus.id : null;
-  const runningTemplateRunId = templateRunStatus?.state === "running" ? templateRunStatus.id : null;
   const runningTemplateLifecycleActionId = templateLifecycleStatus?.state === "running" ? templateLifecycleStatus.id : null;
   const runningScheduleActionId = scheduleActionStatus?.state === "running" ? scheduleActionStatus.id : null;
-  const runningDeliveryFailureId = deliveryFailureStatus?.state === "running" ? deliveryFailureStatus.id : null;
-  const runningBrandingThemeId = brandingPackStatus?.state === "running" ? brandingPackStatus.id : null;
+  const runningStarterKitId = starterKitStatus?.state === "running" ? starterKitStatus.id : null;
   const isRefreshingLivePortfolioViews = livePortfolioRefreshStatus?.state === "running";
-  const reportingFundProfileId = resolveReportingFundProfileId(data?.reporting ?? null);
-  const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
   const isDailyReportingCockpitLanding = vm.taskMode.id === "daily-reporting-cockpit";
+  const isReportBuilderTaskMode = vm.taskMode.id === "report-builder";
+  const isSchedulesTaskMode = vm.taskMode.id === "schedules";
+  const isRunStatusTaskMode = vm.taskMode.id === "run-status";
+  const isDeliveryEvidenceTaskMode = vm.taskMode.id === "delivery-evidence" || vm.taskMode.id === "report-pack-approval";
+  const isExportsTaskMode = vm.taskMode.id === "exports";
+  const isGovernanceTaskMode = vm.taskMode.id === "governance";
+  const reportBuilderSearchParams = useMemo(() => new URLSearchParams(search), [search]);
+  const requestedReportBuilderTemplateId = reportBuilderSearchParams.get("templateId")?.trim() ?? "";
+  const requestedReportBuilderFamily = (
+    reportBuilderSearchParams.get("family")
+    ?? reportBuilderSearchParams.get("report")
+    ?? ""
+  ).trim();
+  const focusedReportBuilderTemplate = useMemo(
+    () => requestedReportBuilderTemplateId
+      ? vm.templateRows.find((template) => (
+          template.id === requestedReportBuilderTemplateId
+          || template.templateName === requestedReportBuilderTemplateId
+        )) ?? null
+      : null,
+    [requestedReportBuilderTemplateId, vm.templateRows]
+  );
+  const reportBuilderFamilyTemplates = useMemo(() => {
+    if (!requestedReportBuilderFamily) {
+      return [];
+    }
+    const familyToken = normalizeReportBuilderContextToken(requestedReportBuilderFamily);
+    return vm.templateRows.filter((template) => normalizeReportBuilderContextToken(template.family) === familyToken);
+  }, [requestedReportBuilderFamily, vm.templateRows]);
+  const reportBuilderTemplateRows = useMemo(() => {
+    const prioritized = focusedReportBuilderTemplate
+      ? [focusedReportBuilderTemplate]
+      : reportBuilderFamilyTemplates;
+    if (prioritized.length === 0) {
+      return vm.templateRows;
+    }
+    const prioritizedIds = new Set(prioritized.map((template) => template.id));
+    return [...prioritized, ...vm.templateRows.filter((template) => !prioritizedIds.has(template.id))];
+  }, [focusedReportBuilderTemplate, reportBuilderFamilyTemplates, vm.templateRows]);
+  const writerTemplateRows = focusedReportBuilderTemplate
+    ? [focusedReportBuilderTemplate]
+    : reportBuilderFamilyTemplates.length > 0
+      ? reportBuilderFamilyTemplates
+      : vm.templateRows;
+  const writerGrids = writerTemplateRows.flatMap((template) => template.writerGrids);
+  const governanceScopeUnavailable = isGovernanceTaskMode && !vm.accessAudit.isAvailable;
+  const latestRetainedAsOfDate = vm.runStatusRows.find((run) => hasRetainedReportingAsOfDate(run.asOfDateLabel))?.asOfDateLabel ?? null;
+  const reportPackWorkflowRecord = [...(data?.reporting.workflowRecords ?? [])]
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0] ?? null;
+  const reportPackPeriodToken = reportPackWorkflowRecord?.period.match(/^\d{4}-\d{2}/)?.[0] ?? null;
+  const reportPackWorkflowRun = reportPackWorkflowRecord
+    ? [...vm.runStatusRows]
+        .filter((run) => (
+          run.templateId === reportPackWorkflowRecord.templateId.name
+          && (!reportPackPeriodToken || run.asOfDateLabel.startsWith(reportPackPeriodToken))
+        ))
+        .sort((left, right) => (
+          Number(right.isLatestGenerated) - Number(left.isLatestGenerated)
+          || right.asOfDateLabel.localeCompare(left.asOfDateLabel)
+          || right.runAttemptOrdinal - left.runAttemptOrdinal
+        ))[0] ?? null
+    : null;
+  const reportPackWorkflowStatusLabel = presentReportingStatusLabel(
+    reportPackWorkflowRun
+      ? resolveRowStatus(reportPackWorkflowRun)
+      : reportPackWorkflowRecord?.state.trim() || vm.workflowTaskPanel?.statusLabel || "Report pack review"
+  );
+  const showStarterKitChooser =
+    isDailyReportingCockpitLanding &&
+    vm.starterKitPanel.showChooser &&
+    starterKitStatus?.state !== "success";
   const scheduleModel: ReportingScheduleManagementModel = {
     scheduleSummary: vm.scheduleSummary,
     hasScheduleRows: vm.hasScheduleRows,
@@ -282,12 +361,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     scheduleDeliveryPlanListLabel: vm.scheduleDeliveryPlanListLabel,
     scheduleDeliveryPlanEmptyText: vm.scheduleDeliveryPlanEmptyText
   };
-  const exportsRunRows = vm.runStatusRows.filter(isExportsOnDemandRun);
-  const templateRowsKey = vm.templateRows.map((template) => template.id).join("|");
-  const selectedExportsTemplate = useMemo(
-    () => resolveSelectedExportsTemplate(vm.templateRows, exportsRunDraft),
-    [exportsRunDraft.templateRowId, templateRowsKey, vm.templateRows]
-  );
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -313,83 +386,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     return () => window.clearInterval(timer);
   }, [onRefreshLivePortfolioViews, shouldAutoRefreshLivePortfolioViews]);
 
-  useEffect(() => {
-    if (!data?.reporting) {
-      return;
-    }
-
-    setExportsRunDraft((current) => {
-      if (current.templateRowId && vm.templateRows.some((template) => template.id === current.templateRowId)) {
-        return current;
-      }
-
-      return buildDefaultExportsReportRunDraft(data.reporting);
-    });
-  }, [data?.reporting, templateRowsKey]);
-
-  const exportsViewHydratedRef = useRef(false);
-  useEffect(() => {
-    if (exportsViewHydratedRef.current || vm.templateRows.length === 0) {
-      return;
-    }
-
-    exportsViewHydratedRef.current = true;
-    const envelope = readViewStateFromSearch(search, EXPORTS_VIEW_STATE_SCREEN);
-    if (!envelope) {
-      return;
-    }
-
-    const templateRowId = typeof envelope.state.selectedExportsTemplateId === "string"
-      ? envelope.state.selectedExportsTemplateId
-      : null;
-    const asOfDate = typeof envelope.state.asOfDate === "string" ? envelope.state.asOfDate : null;
-    const template = templateRowId ? vm.templateRows.find((row) => row.id === templateRowId) : null;
-    if (!template || !template.canRunOnDemand) {
-      return;
-    }
-
-    setExportsRunDraft((current) => ({
-      ...current,
-      templateRowId: template.id,
-      asOfDate: asOfDate ?? current.asOfDate
-    }));
-  }, [search, templateRowsKey, vm.templateRows]);
-
-  const reflectExportsViewTimer = useRef<number | null>(null);
-  useEffect(() => () => {
-    if (reflectExportsViewTimer.current !== null) {
-      window.clearTimeout(reflectExportsViewTimer.current);
-    }
-  }, []);
-
-  function reflectExportsViewState(nextDraft: ExportsReportRunDraftState) {
-    if (reflectExportsViewTimer.current !== null) {
-      window.clearTimeout(reflectExportsViewTimer.current);
-    }
-
-    reflectExportsViewTimer.current = window.setTimeout(() => {
-      reflectExportsViewTimer.current = null;
-      const template = resolveSelectedExportsTemplate(vm.templateRows, nextDraft);
-      const token = template
-        ? encodeViewStateEnvelope({
-            v: 1,
-            screen: EXPORTS_VIEW_STATE_SCREEN,
-            state: { selectedExportsTemplateId: template.id, asOfDate: nextDraft.asOfDate }
-          })
-        : null;
-
-      // When the state cannot encode, strip any carried token so a stale view
-      // param never lingers in the shareable URL.
-      const params = new URLSearchParams(stripViewStateFromSearch(search));
-      if (token) {
-        params.set(VIEW_STATE_QUERY_KEY, token);
-      }
-
-      const nextSearch = params.toString();
-      navigate(nextSearch ? `${pathname}?${nextSearch}` : pathname, { replace: true });
-    }, exportsViewReflectDebounceMs);
-  }
-
   function handleReportPackProfileKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const command = resolveReportPackProfileKeyCommand(event.key);
     if (!command) {
@@ -401,166 +397,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     vm.selectAdjacentReportPackProfile(command);
   }
 
-  async function handleRunAction(run: ReportingRunStatusRow, action: ReportingRunActionRow) {
-    if (!action.isEnabled || action.method !== "POST" || runningRunActionId) {
-      return;
-    }
-
-    if (action.kind === "restatement") {
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "error",
-        message: "Restatement requires changed-line evidence before it can be submitted.",
-        details: ["Open the report-pack workflow and attach changed report lines with retained evidence."]
-      });
-      return;
-    }
-
-    setRunActionStatus({
-      id: action.id,
-      label: action.label,
-      state: "running",
-      message: `${action.label} is running.`,
-      details: []
-    });
-
-    try {
-      await executeRunAction(run, action);
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "success",
-        message: `${action.label} completed.`,
-        details: []
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${action.label} failed.`);
-      setRunActionStatus({
-        id: action.id,
-        label: action.label,
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handleTemplateRun(template: ReportingTemplateRow) {
-    if (!template.canRunOnDemand || runningTemplateRunId) {
-      return;
-    }
-
-    await executeTemplateRun(template, {
-      templateId: template.templateName,
-      asOfDate: templateRunAsOfDate,
-      maxRetries: 0,
-      datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(templateRunDatasetSourceId) : null
-    }, template.runActionLabel);
-  }
-
-  function updateExportsReportRunDraft(field: ExportsReportRunDraftField, value: string) {
-    setExportsRunDraft((current) => {
-      const next = { ...current, [field]: value };
-      reflectExportsViewState(next);
-      return next;
-    });
-  }
-
-  async function handleExportsReportRun() {
-    if (!selectedExportsTemplate || !selectedExportsTemplate.canRunOnDemand || runningTemplateRunId) {
-      return;
-    }
-
-    await executeTemplateRun(
-      selectedExportsTemplate,
-      buildExportsReportRunRequest(selectedExportsTemplate, exportsRunDraft),
-      "Exports report run"
-    );
-  }
-
-  const handleExportsReportRunRef = useRef(handleExportsReportRun);
-  handleExportsReportRunRef.current = handleExportsReportRun;
-
-  const selectedExportsTemplateId = selectedExportsTemplate?.id ?? null;
-  const selectedExportsTemplateName = selectedExportsTemplate?.name ?? null;
-  const selectedExportsTemplateCanRun = selectedExportsTemplate?.canRunOnDemand ?? false;
-  const selectedExportsTemplateRunDisabledReason = selectedExportsTemplate?.runDisabledReason ?? null;
-
-  useEffect(() => {
-    if (!selectedExportsTemplateId || !selectedExportsTemplateName) {
-      return;
-    }
-
-    const disabled = !selectedExportsTemplateCanRun || Boolean(runningTemplateRunId);
-    return registerCommandPaletteActions("reporting-screen", [
-      {
-        id: "reporting-run-exports",
-        verbLabel: `Run exports report: ${selectedExportsTemplateName}`,
-        description: "Start the selected on-demand exports report run with the drafted as-of date.",
-        keywords: ["report", "export", "run"],
-        confirm: true,
-        disabled,
-        disabledReason: runningTemplateRunId
-          ? "A template run is already in progress."
-          : selectedExportsTemplateRunDisabledReason,
-        run: async () => {
-          await handleExportsReportRunRef.current();
-          return {
-            title: `${selectedExportsTemplateName} run requested.`,
-            detail: "Track progress under Reporting exports run status.",
-            tone: "success" as const
-          };
-        }
-      }
-    ]);
-  }, [
-    runningTemplateRunId,
-    selectedExportsTemplateCanRun,
-    selectedExportsTemplateId,
-    selectedExportsTemplateName,
-    selectedExportsTemplateRunDisabledReason
-  ]);
-
-  async function executeTemplateRun(
-    template: ReportingTemplateRow,
-    request: ReportingRunRequest,
-    statusLabel: string
-  ) {
-    setTemplateRunStatus({
-      id: template.id,
-      label: statusLabel,
-      state: "running",
-      message: `${template.name} is running.`,
-      details: []
-    });
-
-    try {
-      const result = await runReportingNow(request);
-      setTemplateRunStatus({
-        id: template.id,
-        label: statusLabel,
-        state: "success",
-        message: `${template.name} run created.`,
-        details: buildReportRunResultDetails(result.run)
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${template.name} run failed.`);
-      setTemplateRunStatus({
-        id: template.id,
-        label: statusLabel,
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
   async function handleTemplateLifecycleAction(
     template: ReportingTemplateRow,
     action: ReportingTemplateLifecycleActionRow
   ) {
-    if (!action.isEnabled || runningTemplateLifecycleActionId) {
+    if (governanceScopeUnavailable || !action.isEnabled || runningTemplateLifecycleActionId) {
       return;
     }
 
@@ -732,10 +573,43 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function updateScheduleDraft(field: ReportingScheduleDraftField, value: string) {
+    setScheduleDraft((current) => {
+      const next = {
+        ...current,
+        [field]: field === "deliveryMode"
+          ? normalizeReportingScheduleDeliveryMode(value)
+          : field === "recipientPrincipalKind"
+            ? normalizeReportingScheduleRecipientPrincipalKind(value)
+            : value
+      } as ReportingScheduleDraftState;
+      if (field === "cronExpression" || field === "nextAsOfDate") {
+        next.dueAtUtc = resolveReportingScheduleDueAtUtc(next.nextAsOfDate, next.cronExpression, current.dueAtUtc);
+      }
+      if (field === "nextAsOfDate") {
+        next.runParameters = {
+          ...next.runParameters,
+          periodId: value.slice(0, 7)
+        };
+      }
+      if (field === "templateId") {
+        const selectedTemplate = vm.templateRows.find((template) => template.id === value && template.canRunOnDemand);
+        if (selectedTemplate) {
+          next.templateId = selectedTemplate.templateName;
+          next.templateVersion = selectedTemplate.versionNumber;
+        }
+      }
+      return next;
+    });
+  }
+
+  function updateScheduleRunParameters(field: ReportRunParameterDraftField, value: string | boolean) {
     setScheduleDraft((current) => ({
       ...current,
-      [field]: field === "deliveryMode" ? normalizeReportingScheduleDeliveryMode(value) : value
-    } as ReportingScheduleDraftState));
+      runParameters: {
+        ...current.runParameters,
+        [field]: value
+      } as ReportRunParameterDraftState
+    }));
   }
 
   function toggleScheduleDraftFormat(format: ReportingScheduleArtifactFormat, isSelected: boolean) {
@@ -749,6 +623,17 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   function stageScheduleDraftDeliveryTarget() {
+    if (!scheduleDraft.recipientPrincipalId.trim() || !scheduleDraft.recipientPrincipalKind) {
+      setScheduleActionStatus({
+        id: "schedule-draft:target",
+        label: "Stage reporting schedule recipient",
+        state: "error",
+        message: "Select a recipient kind and enter its explicit principal ID before staging this target.",
+        details: ["Scheduled delivery audiences must retain an exact User, Group, or Company principal."]
+      });
+      return;
+    }
+
     setScheduleDraft((current) => {
       const target = buildCurrentScheduleDraftTarget(current);
       return {
@@ -774,7 +659,20 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       return;
     }
 
-    const request = buildReportingScheduleUpsertRequest(scheduleDraft, brandingDraft);
+    let request: ReportingScheduleUpsertRequest;
+    try {
+      request = buildReportingScheduleUpsertRequest(scheduleDraft, brandingDraft, vm.templateRows);
+    } catch (error) {
+      const display = describeApiError(error, "The reporting schedule parameters are incomplete.");
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Save reporting schedule",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+      return;
+    }
     const targets = request.deliveryTargets ?? [];
     if (targets.some((target) => (target.formats ?? []).length === 0)) {
       setScheduleActionStatus({
@@ -806,7 +704,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         details: [
           `Template: ${result.templateId}`,
           savedTargets.length > 0
-            ? `Delivery targets: ${savedTargets.map((target) => `${target.distributionId} via ${target.deliveryMode ?? "SecurePortal"}`).join("; ")}`
+            ? `Delivery targets: ${savedTargets.map((target) => `${target.distributionId} to ${target.recipientPrincipalKind ?? "Unknown"}:${target.recipientPrincipalId ?? "missing principal"} via ${target.deliveryMode ?? "SecurePortal"}`).join("; ")}`
             : "Delivery targets: none",
           `Formats: ${savedTargets.map((target) => `${target.distributionId}=${(target.formats ?? []).join("/")}`).join("; ")}`,
           result.brandingThemeOverride
@@ -828,166 +726,39 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
     }
   }
 
-  async function handleRunDueSchedules() {
-    const statusId = "schedule-due:run";
-    if (runningScheduleActionId) {
+  async function handleProvisionStarterKit(kitId: string, title: string) {
+    const statusId = `starter-kit:${kitId}`;
+    if (runningStarterKitId) {
       return;
     }
 
-    setScheduleActionStatus({
+    setStarterKitStatus({
       id: statusId,
-      label: "Run due reporting schedules",
+      label: "Provision reporting starter kit",
       state: "running",
-      message: "Due reporting schedules are running.",
+      message: `${title} reporting desk is provisioning.`,
       details: []
     });
 
     try {
-      const result = await runDueReportingSchedules();
-      const deliveryCount = result.runs.reduce((total, run) => total + (run.deliveryAttempts?.length ?? 0), 0);
-      const warningDetails = result.runs.flatMap((run) => run.deliveryWarnings ?? []);
-      setScheduleActionStatus({
+      const result = await provisionReportingStarterKit(kitId);
+      setStarterKitStatus({
         id: statusId,
-        label: "Run due reporting schedules",
+        label: "Provision reporting starter kit",
         state: "success",
-        message: `Due schedule run completed for ${result.runs.length} schedule${result.runs.length === 1 ? "" : "s"}.`,
+        message: `${result.kit.displayName} reporting desk provisioned.`,
         details: [
-          `Evaluated: ${result.evaluatedAtUtc}`,
-          `Deliveries: ${deliveryCount}`,
-          ...warningDetails.map((warning) => `Delivery warning: ${warning}`)
+          `Templates enabled: ${result.state.enabledTemplateIds.join(", ")}`,
+          `Hub layout: ${result.state.defaultLayoutId ?? result.kit.defaultLayoutId}`,
+          `Default period: ${result.state.defaultPeriod ?? result.kit.defaultPeriod}`,
+          `Draft schedules: ${result.seededSchedules.map((schedule) => `${schedule.scheduleId} (${schedule.state})`).join("; ")}`
         ]
       });
     } catch (error) {
-      const display = describeApiError(error, "Run due reporting schedules failed.");
-      setScheduleActionStatus({
+      const display = describeApiError(error, `${title} starter kit provisioning failed.`);
+      setStarterKitStatus({
         id: statusId,
-        label: "Run due reporting schedules",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handleRecordDeliveryFailure(attempt: ReportPackDeliveryAttempt) {
-    const statusId = `${attempt.attemptId}:delivery-failure`;
-    if (runningDeliveryFailureId || attempt.state === "Failed") {
-      return;
-    }
-
-    const label = `Record ${attempt.recipient} delivery failure`;
-    setDeliveryFailureStatus({
-      id: statusId,
-      label,
-      state: "running",
-      message: `${label} is running.`,
-      details: [`Attempt: ${attempt.attemptId}`, `Distribution: ${attempt.distributionId}`]
-    });
-
-    try {
-      const result = await recordReportPackDeliveryFailure(attempt.reportId, buildReportPackDeliveryFailureRequest(attempt));
-      setDeliveryFailureStatus({
-        id: statusId,
-        label,
-        state: "success",
-        message: `${attempt.recipient} delivery failure recorded.`,
-        details: [
-          `Attempt ID: ${result.attemptId}`,
-          `State: ${result.state}`,
-          `Reason: ${result.failureReason ?? "Delivery failure recorded from Reporting workspace."}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${label} failed.`);
-      setDeliveryFailureStatus({
-        id: statusId,
-        label,
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handleGenerateBrandedPack(theme: ReportBrandingTheme) {
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    setBrandingPackStatus({
-      id: theme.themeId,
-      label: "Generate branded report pack",
-      state: "running",
-      message: `${theme.name} report pack is generating.`,
-      details: []
-    });
-
-    try {
-      const result = await generateReportPack({
-        fundProfileId: reportingFundProfileId,
-        auditActor: "browser.reporting",
-        reportKind: "BoardPacket",
-        formats: ["Pdf", "Xlsx", "Csv"],
-        brandingThemeId: theme.themeId,
-        decisionRationale: `Generated from Reporting branding theme ${theme.name}.`
-      });
-
-      setBrandingPackStatus({
-        id: theme.themeId,
-        label: "Generate branded report pack",
-        state: "success",
-        message: `${theme.name} report pack generated.`,
-        details: [
-          `Report ID: ${result.reportId}`,
-          `Artifacts: ${result.artifacts.length}`,
-          `Theme: ${result.brandingTheme?.name ?? theme.name}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack generation failed.`);
-      setBrandingPackStatus({
-        id: theme.themeId,
-        label: "Generate branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handlePreviewBrandedPack(theme: ReportBrandingTheme) {
-    const statusId = `${theme.themeId}:preview`;
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Preview branded report pack",
-      state: "running",
-      message: `${theme.name} report pack preview is rendering.`,
-      details: []
-    });
-
-    try {
-      const result = await previewReportPack({
-        fundProfileId: reportingFundProfileId,
-        reportKind: "BoardPacket",
-        brandingThemeId: theme.themeId
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview branded report pack",
-        state: "success",
-        message: `${theme.name} report pack preview rendered.`,
-        details: formatReportPackPreviewDetails(result)
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack preview failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview branded report pack",
+        label: "Provision reporting starter kit",
         state: "error",
         message: display.summary,
         details: display.details
@@ -1000,95 +771,6 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
       ...current,
       [field]: value
     }));
-  }
-
-  async function handleGenerateCustomBrandedPack() {
-    const statusId = "custom-branding-override";
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    const theme = buildReportBrandingOverride(brandingDraft);
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Generate custom branded report pack",
-      state: "running",
-      message: `${theme.name} report pack is generating.`,
-      details: []
-    });
-
-    try {
-      const result = await generateReportPack({
-        fundProfileId: reportingFundProfileId,
-        auditActor: "browser.reporting",
-        reportKind: "BoardPacket",
-        formats: ["Pdf", "Xlsx", "Csv"],
-        brandingThemeOverride: theme,
-        decisionRationale: `Generated from custom Reporting branding override ${theme.name}.`
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Generate custom branded report pack",
-        state: "success",
-        message: `${theme.name} report pack generated.`,
-        details: [
-          `Report ID: ${result.reportId}`,
-          `Artifacts: ${result.artifacts.length}`,
-          `Theme: ${result.brandingTheme?.name ?? theme.name}`
-        ]
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack generation failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Generate custom branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
-  }
-
-  async function handlePreviewCustomBrandedPack() {
-    const statusId = "custom-branding-override:preview";
-    if (!reportingFundProfileId || runningBrandingThemeId) {
-      return;
-    }
-
-    const theme = buildReportBrandingOverride(brandingDraft);
-    setBrandingPackStatus({
-      id: statusId,
-      label: "Preview custom branded report pack",
-      state: "running",
-      message: `${theme.name} report pack preview is rendering.`,
-      details: []
-    });
-
-    try {
-      const result = await previewReportPack({
-        fundProfileId: reportingFundProfileId,
-        reportKind: "BoardPacket",
-        brandingThemeOverride: theme
-      });
-
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview custom branded report pack",
-        state: "success",
-        message: `${theme.name} report pack preview rendered.`,
-        details: formatReportPackPreviewDetails(result)
-      });
-    } catch (error) {
-      const display = describeApiError(error, `${theme.name} report pack preview failed.`);
-      setBrandingPackStatus({
-        id: statusId,
-        label: "Preview custom branded report pack",
-        state: "error",
-        message: display.summary,
-        details: display.details
-      });
-    }
   }
 
   if (!data) {
@@ -1120,25 +802,51 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
   }
 
   return (
-    <div className="space-y-8">
-      <ReportingWorkbenchContext
-        taskMode={vm.taskMode}
-        actions={vm.workbenchActions}
-        chips={vm.workbenchChips}
+    <div className="space-y-5">
+      <ReportingWorkbenchContext taskMode={vm.taskMode} actions={vm.workbenchActions} />
+      <OperationalTrustSummary
+        source={{ value: "Governed Reporting service", tone: "ready" }}
+        scope={{ value: vm.taskMode.label, detail: vm.taskMode.description, tone: "ready" }}
+        freshness={{
+          value: latestRetainedAsOfDate ? presentReportingAsOfDate(latestRetainedAsOfDate) : "No as-of date retained",
+          detail: latestRetainedAsOfDate
+            ? "Latest retained reporting period"
+            : vm.runStatusRows.length > 0
+              ? "Loaded runs do not retain an as-of date; confirm the reporting period before release"
+              : "Generate a report to establish freshness",
+          tone: latestRetainedAsOfDate ? "ready" : "review"
+        }}
+        completeness={{
+          value: `${vm.templateRows.length} templates · ${vm.runStatusRows.length} runs`,
+          detail: "Caller-visible Reporting records",
+          tone: vm.templateRows.length > 0 ? "ready" : "review"
+        }}
+        blocker={governanceScopeUnavailable ? {
+          value: "Access scope unavailable",
+          detail: "Template lifecycle decisions are disabled until caller scope can be verified.",
+          tone: "blocked"
+        } : undefined}
+        label="Reporting data confidence"
       />
 
-      <ReportingHub model={hubModel} />
+      {showStarterKitChooser ? (
+        <ReportingStarterKitChooser
+          panel={vm.starterKitPanel}
+          status={starterKitStatus}
+          runningStarterKitId={runningStarterKitId}
+          onProvision={handleProvisionStarterKit}
+        />
+      ) : isDailyReportingCockpitLanding && starterKitStatus ? (
+        <ReportingCommandStatusView status={starterKitStatus} />
+      ) : null}
 
       {isDailyReportingCockpitLanding ? (
-        <ReportingTaskModeLauncher />
-      ) : (
-        <>
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {data.metrics.map((metric) => (
-          <MetricSnapshotCard key={metric.id} {...metric} />
-        ))}
-      </section>
+        <ReportingHub model={hubModel} />
+      ) : null}
 
+      {isDailyReportingCockpitLanding ? null : (
+        <>
+      {isGovernanceTaskMode ? (
       <section role="region" aria-label="Reporting access audit">
         <Card className="panel-surface" aria-label={vm.accessAudit.ariaLabel}>
           <CardHeader>
@@ -1150,14 +858,16 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <span className="flex flex-wrap items-center gap-1.5">
                 <Badge variant={vm.accessAudit.postureVariant}>{vm.accessAudit.postureLabel}</Badge>
                 <Badge variant="outline">{vm.accessAudit.evaluationScope}</Badge>
-                <Badge variant="outline">{vm.accessAudit.hiddenTotalLabel}</Badge>
+                {vm.accessAudit.isAvailable ? <Badge variant="outline">{vm.accessAudit.hiddenTotalLabel}</Badge> : null}
               </span>
             </div>
             <CardDescription>{vm.accessAudit.summary}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            {vm.accessAudit.isAvailable ? (
+            <>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
-              <div className="text-[11px] uppercase text-muted-foreground">Matched principal scopes</div>
+              <div className="text-xs font-medium text-muted-foreground">Matched principal scopes</div>
               <div className="mt-1 break-words font-mono text-xs text-foreground">{vm.accessAudit.scopeLabel}</div>
             </div>
             <div role="list" aria-label="Reporting access visible and hidden counts" className="grid gap-2 md:grid-cols-5">
@@ -1171,6 +881,12 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                 </div>
               ))}
             </div>
+            </>
+            ) : (
+              <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-3 text-sm leading-6 text-warning">
+                Access counts are unavailable. Refresh Reporting or ask an administrator to verify the caller-scoped access audit before relying on visibility totals.
+              </p>
+            )}
             {vm.accessAudit.hasDenialReasons ? (
               <ul aria-label="Reporting access denial reasons" className="grid gap-1.5 text-xs leading-5 text-muted-foreground">
                 {vm.accessAudit.denialReasons.map((reason) => (
@@ -1181,8 +897,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
-      {data.reporting.reportLineProvenanceExplorer ? (
+      {isDeliveryEvidenceTaskMode && data.reporting.reportLineProvenanceExplorer ? (
         <FinancialRecordExplorerShell
           className="report-line-provenance-explorer"
           explorerLabel="Report-line provenance"
@@ -1199,7 +916,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </FinancialRecordExplorerShell>
       ) : null}
 
-      {(data.reporting.portfolioCuts ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.portfolioCuts ?? []).length > 0 ? (
         <section role="region" aria-label="Portfolio reporting cuts">
           <Card className="panel-surface">
             <CardHeader>
@@ -1242,7 +959,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.livePortfolioViews ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.livePortfolioViews ?? []).length > 0 ? (
         <section role="region" aria-label="Live portfolio views">
           <Card className="panel-surface">
             <CardHeader>
@@ -1361,7 +1078,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.pnlSlices ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.pnlSlices ?? []).length > 0 ? (
         <section role="region" aria-label="P&L slicing">
           <Card className="panel-surface">
             <CardHeader>
@@ -1416,7 +1133,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.analyticsRows ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.analyticsRows ?? []).length > 0 ? (
         <section role="region" aria-label="Top-N and contribution analytics">
           <Card className="panel-surface">
             <CardHeader>
@@ -1488,7 +1205,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.crossFundConsolidations ?? []).length > 0 ? (
+      {isReportBuilderTaskMode && (data.reporting.crossFundConsolidations ?? []).length > 0 ? (
         <section role="region" aria-label="Cross-fund consolidations">
           <Card className="panel-surface">
             <CardHeader>
@@ -1545,7 +1262,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
-      {(data.reporting.structuredExports ?? []).length > 0 ? (
+      {isExportsTaskMode && (data.reporting.structuredExports ?? []).length > 0 ? (
         <section role="region" aria-label="Structured reporting exports">
           <Card className="panel-surface">
             <CardHeader>
@@ -1690,20 +1407,48 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
+      {isReportBuilderTaskMode && (requestedReportBuilderTemplateId || requestedReportBuilderFamily) ? (
+        <section
+          role="status"
+          aria-label="Report builder route context"
+          className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3"
+        >
+          <div className="eyebrow-label">Builder context</div>
+          <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-sm font-semibold text-foreground">
+                {focusedReportBuilderTemplate
+                  ? `Review ${focusedReportBuilderTemplate.name}`
+                  : requestedReportBuilderTemplateId
+                    ? `${presentReportingIdentifier(requestedReportBuilderTemplateId.split(":", 1)[0], "Requested template")} is unavailable`
+                    : `Set up ${formatReportingFamilyLabel(requestedReportBuilderFamily)}`}
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                {focusedReportBuilderTemplate
+                  ? `Template v${focusedReportBuilderTemplate.version} and its report-writer controls are prioritized below.`
+                  : requestedReportBuilderTemplateId
+                    ? "The requested template is no longer available to this operator. Choose another governed template below."
+                    : reportBuilderFamilyTemplates.length > 0
+                      ? `${reportBuilderFamilyTemplates.length} existing ${formatReportingFamilyLabel(requestedReportBuilderFamily)} template version${reportBuilderFamilyTemplates.length === 1 ? " is" : "s are"} prioritized below.`
+                      : "No governed template exists for this family yet. Use the available builder controls and templates below as the starting point."}
+              </p>
+            </div>
+            <Badge variant={focusedReportBuilderTemplate || reportBuilderFamilyTemplates.length > 0 ? "success" : "warning"}>
+              {focusedReportBuilderTemplate ? "Template selected" : reportBuilderFamilyTemplates.length > 0 ? "Family selected" : "Setup required"}
+            </Badge>
+          </div>
+        </section>
+      ) : null}
+
+      {isReportBuilderTaskMode ? (
       <ReportingBrandingAccessPanel
         themes={data.reporting.brandingThemes ?? []}
         draft={brandingDraft}
-        status={brandingPackStatus}
-        runningBrandingThemeId={runningBrandingThemeId}
-        reportingFundProfileId={reportingFundProfileId}
         onDraftChange={updateBrandingDraft}
-        onPreviewTheme={handlePreviewBrandedPack}
-        onGenerateTheme={handleGenerateBrandedPack}
-        onPreviewCustom={handlePreviewCustomBrandedPack}
-        onGenerateCustom={handleGenerateCustomBrandedPack}
       />
+      ) : null}
 
-      {writerGrids.length > 0 ? (
+      {isReportBuilderTaskMode && writerGrids.length > 0 ? (
         <ReportingReportWriterSection>
           {writerGrids.map((grid) => (
             <ReportWriterDesignerGrid
@@ -1749,75 +1494,71 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </ReportingReportWriterSection>
       ) : null}
 
-      <ExportsReportRunner
-        draft={exportsRunDraft}
-        templates={vm.templateRows}
-        selectedTemplate={selectedExportsTemplate}
-        datasetSources={reportWriterDatasetSources}
-        recentRuns={exportsRunRows}
-        status={templateRunStatus}
-        runningTemplateRunId={runningTemplateRunId}
-        defaultRequester={defaultExportsReportRunRequester}
-        onDraftChange={updateExportsReportRunDraft}
-        onRun={() => void handleExportsReportRun()}
-      />
-
+      {isReportBuilderTaskMode || isRunStatusTaskMode || isGovernanceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        {isReportBuilderTaskMode || isGovernanceTaskMode ? (
         <Card className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">Template families</div>
-            <CardTitle>Governed report templates</CardTitle>
-            <CardDescription>Investor statements, SEC packets, and shadow NAV packs share the same run contract.</CardDescription>
+            <div className="eyebrow-label">{isGovernanceTaskMode ? "Template governance" : "Template families"}</div>
+            <CardTitle>{isGovernanceTaskMode ? "Template lifecycle and access" : "Governed report templates"}</CardTitle>
+            <CardDescription>
+              {isGovernanceTaskMode
+                ? "Review template access, validation, approval lineage, and the next permitted lifecycle decision."
+                : "Design reusable report templates, review versions, and open the governed authoring surface. Run operations remain in Report Parameters."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <ReportingPeriodSwitcher
-              asOfDate={templateRunAsOfDate}
-              onSelect={setTemplateRunAsOfDate}
-              disabled={Boolean(runningTemplateRunId)}
-            />
-            <p className="text-[11px] leading-4 text-muted-foreground">
-              On-demand template runs use this as-of period. Switch periods to regenerate the same report for a prior month, quarter, or year.
-            </p>
-            {vm.templateRows.map((template) => (
-              <div key={template.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+            {(isReportBuilderTaskMode ? reportBuilderTemplateRows : vm.templateRows).map((template) => (
+              <div
+                key={template.id}
+                aria-current={focusedReportBuilderTemplate?.id === template.id ? "true" : undefined}
+                className={cn(
+                  "rounded-md border bg-secondary/20 px-3 py-2",
+                  focusedReportBuilderTemplate?.id === template.id ? "border-primary/50 bg-primary/5" : "border-border/70"
+                )}
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">{template.name}</span>
                   <span className="flex flex-wrap items-center gap-1.5">
                     <SeverityBadge status={reportingStatusFromVariant[template.statusVariant]} label={template.statusLabel} />
                     <Badge variant="outline">{template.sourceLabel}</Badge>
-                    <Badge variant="outline">{template.family}</Badge>
-                    <Badge variant="outline">{template.accessMode}</Badge>
+                    <Badge variant="outline">{presentReportingIdentifier(template.family, "Report")}</Badge>
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {template.version} · {template.sectionSummary} · <span className="font-mono">{template.id}</span>
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{template.version} · {template.sectionSummary}</p>
+                {isGovernanceTaskMode ? (
+                <>
+                <details className="mt-2 rounded-md border border-border/60 bg-background/25">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                    Version, validation, and audit details
+                  </summary>
                 <div
                   role="group"
                   aria-label={`${template.name} template audit and version lineage`}
-                  className="mt-2 grid gap-2 rounded-md border border-border/60 bg-background/25 px-2 py-2 text-xs md:grid-cols-2"
+                  className="grid gap-3 border-t border-border/60 px-3 py-3 text-xs md:grid-cols-2"
                 >
                   <span className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Version</span>
+                    <span className="block font-medium text-muted-foreground">Version</span>
                     <span className="mt-1 block break-words text-foreground">{template.versionLineageSummary}</span>
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Audit</span>
+                    <span className="block font-medium text-muted-foreground">Audit</span>
                     <span className="mt-1 block break-words text-foreground">
                       {template.auditTrailSummary} · {template.lastAuditSummary}
                     </span>
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Approval</span>
+                    <span className="block font-medium text-muted-foreground">Approval</span>
                     <span className="mt-1 block break-words text-foreground">
                       {template.latestApprovedLabel} · {template.decisionSummary}
                     </span>
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Validation</span>
+                    <span className="block font-medium text-muted-foreground">Validation</span>
                     <span className="mt-1 block break-words text-foreground">{template.validationSummary}</span>
                   </span>
                 </div>
+                </details>
                 <div
                   role="group"
                   aria-label={template.accessGovernance.ariaLabel}
@@ -1829,43 +1570,35 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                       <Badge variant="outline">{template.accessGovernance.scopeLabel}</Badge>
                       <Badge variant={template.accessGovernance.postureVariant}>{template.accessGovernance.postureLabel}</Badge>
                     </span>
-                    <span className="break-all font-mono text-[11px] text-muted-foreground">{template.accessMode}</span>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{template.accessGovernance.detail}</p>
                 </div>
+                </>
+                ) : null}
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                   <p className="min-w-0 flex-1 text-xs leading-5 text-muted-foreground">
                     <span className="block">{template.approvalSummary}</span>
                     <span className="block">{template.accessSummary}</span>
                   </p>
                   <span className="flex flex-wrap items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      aria-label={template.runActionAriaLabel}
-                      disabled={!template.canRunOnDemand || Boolean(runningTemplateRunId)}
-                      disabledReason={template.runDisabledReason}
-                      busy={runningTemplateRunId === template.id}
-                      busyLabel="Running"
-                      onClick={() => void handleTemplateRun(template)}
-                    >
-                      <FileText className="h-4 w-4" aria-hidden="true" />
-                      {template.runActionLabel}
-                    </Button>
+                    {isReportBuilderTaskMode ? (
                     <Button asChild variant="outline" size="sm">
                       <a href={template.authoringHref} target="_blank" rel="noreferrer" aria-label={template.actionAriaLabel}>
                         <PencilLine className="h-4 w-4" aria-hidden="true" />
                         {template.actionLabel}
                       </a>
                     </Button>
-                    {template.lifecycleActions.map((action) => (
+                    ) : null}
+                    {isGovernanceTaskMode ? template.lifecycleActions.map((action) => (
                       <Button
                         key={action.id}
                         variant={action.kind === "reject" ? "ghost" : "outline"}
                         size="sm"
                         aria-label={action.ariaLabel}
-                        disabled={!action.isEnabled || Boolean(runningTemplateLifecycleActionId)}
-                        disabledReason={action.disabledReason}
+                        disabled={governanceScopeUnavailable || !action.isEnabled || Boolean(runningTemplateLifecycleActionId)}
+                        disabledReason={governanceScopeUnavailable
+                          ? "Access scope is unavailable. Refresh Reporting or ask an administrator before approving or rejecting a template."
+                          : action.disabledReason}
                         busy={runningTemplateLifecycleActionId === action.id}
                         busyLabel={buildTemplateLifecycleBusyLabel(action.kind)}
                         onClick={() => void handleTemplateLifecycleAction(template, action)}
@@ -1873,37 +1606,24 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                         <TemplateLifecycleActionIcon action={action.kind} />
                         {action.label}
                       </Button>
-                    ))}
+                    )) : null}
                   </span>
                 </div>
-                {template.hasWriterGrids && reportWriterDatasetSources.length > 0 ? (
-                  <label className="mt-2 block space-y-1">
-                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Run dataset</span>
-                    <Select
-                      value={templateRunDatasetSourceId}
-                      onChange={(event) => setTemplateRunDatasetSourceId(event.target.value)}
-                      aria-label={`${template.name} on-demand report-writer dataset source`}
-                    >
-                      <option value="">Default retained dataset</option>
-                      {reportWriterDatasetSources.map((source) => (
-                        <option key={source.sourceId} value={source.sourceId}>
-                          {source.label} ({source.rowCount})
-                        </option>
-                      ))}
-                    </Select>
-                  </label>
+                {isGovernanceTaskMode && governanceScopeUnavailable && template.lifecycleActions.length > 0 ? (
+                  <p role="alert" className="mt-2 rounded-sm border border-danger/30 bg-danger/10 px-2.5 py-2 text-xs leading-5 text-danger">
+                    Approval and rejection are disabled because caller access scope could not be verified. Refresh Reporting or ask an administrator to restore the access audit.
+                  </p>
                 ) : null}
               </div>
             ))}
-            {templateRunStatus && templateRunStatus.label !== "Exports report run" ? (
-              <ReportingCommandStatusView status={templateRunStatus} />
-            ) : null}
-            {templateLifecycleStatus ? (
+            {isGovernanceTaskMode && templateLifecycleStatus ? (
               <ReportingCommandStatusView status={templateLifecycleStatus} />
             ) : null}
           </CardContent>
         </Card>
+        ) : null}
 
+        {isRunStatusTaskMode ? (
         <Card className="panel-surface">
           <CardHeader>
             <div className="eyebrow-label">Run status</div>
@@ -1914,112 +1634,58 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             {vm.hasRunStatusRows ? vm.runStatusRows.map((run) => (
               <div key={run.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono text-sm text-foreground">{run.id}</span>
-                  <SeverityBadge status={run.status} label={run.status} />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-foreground">{run.templateLabel}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                      {presentReportingIdentifier(run.family, "Report")} · {hasRetainedReportingAsOfDate(run.asOfDateLabel)
+                        ? `As of ${presentReportingAsOfDate(run.asOfDateLabel)}`
+                        : presentReportingAsOfDate(run.asOfDateLabel)}
+                    </span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {isWatchedRunLive(run) ? (
+                      <FreshnessChip
+                        live
+                        label={`Run ${run.id} status`}
+                        timestamp={null}
+                        staleBudgetMs={REPORT_RUN_STREAM_FRESHNESS_BUDGET_MS}
+                      />
+                    ) : null}
+                    <SeverityBadge status={resolveRowSeverityStatus(run)} label={resolveRowStatusLabel(run)} />
+                  </div>
                 </div>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  {run.family} · {run.trigger} · {run.lineageSummary} · {run.auditSummary}
+                  {humanizeStatus(run.trigger)} run · {run.attemptLabel} · {run.comparisonSummary}
                 </p>
-                <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-3" aria-label={`${run.id} audit metadata`}>
-                    <div>
-                      <dt className="text-[11px] uppercase text-muted-foreground">Run ID</dt>
-                      <dd className="break-all font-mono text-foreground">{run.runIdLabel}</dd>
-                    </div>
-                      <ReportingRunVersionFields run={run} />
-                      <div>
-                        <dt className="text-[11px] uppercase text-muted-foreground">Template</dt>
-                        <dd className="break-all font-mono text-foreground">{run.templateLabel}</dd>
-                    </div>
-                  <div>
-                    <dt className="text-[11px] uppercase text-muted-foreground">As of</dt>
-                    <dd className="font-mono text-foreground">{run.asOfDateLabel}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] uppercase text-muted-foreground">Trigger</dt>
-                    <dd className="text-foreground">{run.trigger}</dd>
-                  </div>
-                    <div>
-                      <dt className="text-[11px] uppercase text-muted-foreground">Attempts</dt>
-                      <dd className="text-foreground">{run.attemptLabel}</dd>
-                    </div>
-                      <div>
-                        <dt className="text-[11px] uppercase text-muted-foreground">Sections</dt>
-                        <dd className="text-foreground">{run.sectionLabel}</dd>
-                      </div>
-                  <div>
-                    <dt className="text-[11px] uppercase text-muted-foreground">Lineage</dt>
-                    <dd className="text-foreground">{run.lineageLabel}</dd>
-                  </div>
-                  <div className="sm:col-span-2 xl:col-span-3">
-                    <dt className="text-[11px] uppercase text-muted-foreground">Artifacts</dt>
-                    <dd className="break-all font-mono text-foreground">
-                      {run.hasArtifacts ? `${run.artifactLabel}: ${run.artifactNames.join(", ")}` : run.artifactLabel}
-                    </dd>
-                  </div>
-                  <div className="sm:col-span-2 xl:col-span-3">
-                    <dt className="text-[11px] uppercase text-muted-foreground">Dataset source</dt>
-                    <dd className="break-all font-mono text-foreground">{run.datasetSourceLabel}</dd>
-                  </div>
-                  <div className="sm:col-span-2 xl:col-span-3">
-                    <dt className="text-[11px] uppercase text-muted-foreground">Generated grids</dt>
-                    <dd className="break-all font-mono text-foreground">
-                      {run.hasGeneratedGrids ? `${run.generatedGridLabel}: ${run.generatedGridNames.join(", ")}` : run.generatedGridLabel}
-                    </dd>
-                      <ReportingGeneratedGridExportLinks run={run} />
-                    </div>
-                </dl>
+                {resolveRowStatusLabel(run) === "Period confirmation required" ? (
+                  <p role="status" className="mt-2 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs leading-5 text-warning">
+                    The workflow state is retained, but this run has no as-of date. Confirm the report period before treating the output as approved or published.
+                  </p>
+                ) : null}
+                {isWatchedRunLive(run) && watchedRunStreamStatus ? (
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground" data-testid="report-run-live-status">
+                    Live · attempt {watchedRunStreamStatus.attemptCount} · streamed ahead of the 30s poll
+                  </p>
+                ) : null}
+                <ReportingRunAuditDisclosure run={run} />
                 {run.failureReason ? <p className="mt-1 text-xs text-warning">{run.failureReason}</p> : null}
-                {run.hasDrilldownLinks ? (
-                  <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} drilldown links`}>
-                    {run.drilldownLinks.map((link) => link.isBrowserNavigable ? (
-                      <a
-                        key={link.id}
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={link.ariaLabel}
-                        className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground hover:bg-secondary/55 focus:outline-none focus:ring-2 focus:ring-primary/40"
-                      >
-                        <Badge variant="outline">{link.kind}</Badge>
-                        <span className="truncate">{link.label}</span>
-                      </a>
-                    ) : (
-                      <span
-                        key={link.id}
-                        role="group"
-                        aria-label={link.ariaLabel}
-                        className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground"
-                      >
-                        <Badge variant="outline">{link.kind}</Badge>
-                        <span className="truncate">{link.label}</span>
-                      </span>
-                    ))}
-                  </div>
+                {normalizeReportingStatus(resolveRowStatus(run)) === "awaitingapproval" ? (
+                  <Button asChild size="sm" variant="outline" className="mt-2">
+                    <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
+                      Review approval details
+                    </a>
+                  </Button>
                 ) : null}
                 {run.hasNextActions ? (
-                  <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} next actions`}>
-                    {run.nextActions.map((action) => (
-                      <Button
-                        key={action.id}
-                        aria-label={action.ariaLabel}
-                        disabled={!action.isEnabled || action.method !== "POST" || action.kind === "restatement" || Boolean(runningRunActionId)}
-                        busy={runningRunActionId === action.id}
-                        busyLabel="Running"
-                        disabledReason={action.disabledReason ?? (action.kind === "restatement" ? "Restatement requires changed-line evidence." : null)}
-                        onClick={() => void handleRunAction(run, action)}
-                        size="sm"
-                        variant={action.isEnabled ? "outline" : "ghost"}
-                        className={cn(
-                          "min-w-0 justify-start px-2 py-1 text-[11px]",
-                          action.isEnabled
-                            ? "border-primary/35 bg-primary/10 text-primary hover:bg-primary/15"
-                            : "border-border/60 bg-secondary/20 text-muted-foreground"
-                        )}
-                      >
-                        <Badge variant="outline">{action.method}</Badge>
-                        <span className="truncate">{action.label}</span>
-                      </Button>
-                    ))}
+                  <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2" aria-label={`${run.id} governed workflow continuation`}>
+                    <p className="min-w-0 flex-1 text-xs leading-5 text-primary">
+                      Legacy pack mutations are retired. Continue validation, approval, release, restatement, and distribution from the governed run.
+                    </p>
+                    <Button asChild size="sm" variant="outline">
+                      <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
+                        Open governed run
+                      </a>
+                    </Button>
                   </div>
                 ) : null}
               </div>
@@ -2028,42 +1694,47 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                 No report runs have been generated yet.
               </p>
             )}
-            {runActionStatus ? (
-              <ReportingCommandStatusView status={runActionStatus} />
-            ) : null}
           </CardContent>
         </Card>
+        ) : null}
       </section>
+      ) : null}
 
-      <ReportingPrivateCapitalReadinessPanel data={data} />
+      {isReportBuilderTaskMode ? (
+        <ReportingPrivateCapitalReadinessPanel data={data} />
+      ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+      {isSchedulesTaskMode || isDeliveryEvidenceTaskMode ? (
+      <section className="grid items-start gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        {isSchedulesTaskMode ? (
         <ReportingScheduleManagementPanel
           model={scheduleModel}
           scheduleDraft={scheduleDraft}
           distributionOptions={scheduleDistributionOptions}
           datasetSources={reportWriterDatasetSources}
+          templates={vm.templateRows}
           status={scheduleActionStatus}
           runningScheduleActionId={runningScheduleActionId}
           onDraftChange={updateScheduleDraft}
+          onRunParameterChange={updateScheduleRunParameters}
           onToggleFormat={toggleScheduleDraftFormat}
           onStageTarget={stageScheduleDraftDeliveryTarget}
           onRemoveTarget={removeScheduleDraftDeliveryTarget}
           onSaveDraft={saveScheduleDraft}
-          onRunDue={handleRunDueSchedules}
           onScheduleAction={handleScheduleAction}
           onSchedulePlanRun={handleSchedulePlanRun}
         />
+        ) : null}
 
+        {isSchedulesTaskMode || isDeliveryEvidenceTaskMode ? (
         <ReportingDeliveryHistoryPanel
           deliveryAttempts={data.reporting.deliveryAttempts ?? []}
-          deliveryFailureStatus={deliveryFailureStatus}
-          runningDeliveryFailureId={runningDeliveryFailureId}
-          onRecordDeliveryFailure={handleRecordDeliveryFailure}
         />
+        ) : null}
       </section>
+      ) : null}
 
-      {vm.workflowTaskPanel ? (
+      {isDeliveryEvidenceTaskMode && vm.workflowTaskPanel ? (
         <section
           role="region"
           aria-label={vm.workflowTaskPanel.regionLabel}
@@ -2078,10 +1749,21 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   {vm.workflowTaskPanel.description}
                 </p>
               </div>
-              <SeverityBadge
-                status={reportingStatusFromVariant[vm.workflowTaskPanel.statusVariant]}
-                label={vm.workflowTaskPanel.statusLabel}
-              />
+              <span className="flex flex-wrap items-center gap-2">
+                <SeverityBadge
+                  status={reportPackWorkflowRecord || reportPackWorkflowRun
+                    ? reportPackWorkflowStatusLabel
+                    : reportingStatusFromVariant[vm.workflowTaskPanel.statusVariant]}
+                  label={reportPackWorkflowStatusLabel}
+                />
+                {reportPackWorkflowRun ? (
+                  <Button asChild size="sm">
+                    <a href={workstationRouteWithQuery("reportingRunDetail", { runId: reportPackWorkflowRun.id })}>
+                      Open governed run
+                    </a>
+                  </Button>
+                ) : null}
+              </span>
             </div>
             <div className="flex flex-wrap gap-2">
               {vm.workflowTaskPanel.chips.map((chip) => (
@@ -2116,18 +1798,21 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <p className="mt-3 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-foreground">
                 {vm.workflowTaskPanel.publicationReview.summaryText}
               </p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <details className="mt-3 rounded-md border border-border/60 bg-background/25">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                  Publication evidence, provenance, and retained identifiers
+                  <Badge variant="outline">{vm.workflowTaskPanel.publicationReview.evidenceSummary}</Badge>
+                </summary>
+              <div className="space-y-3 border-t border-border/60 px-3 py-3">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {vm.workflowTaskPanel.publicationReview.fields.map((field) => (
                   <div key={field.label} className="rounded-md border border-border/70 bg-background/40 px-3 py-2">
-                    <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">{field.label}</span>
+                    <span className="block text-xs font-medium text-muted-foreground">{field.label}</span>
                     <span className={cn("mt-1 block break-all font-mono text-xs", field.className)}>{field.value}</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-3">
-                <Badge variant="outline">{vm.workflowTaskPanel.publicationReview.evidenceSummary}</Badge>
-              </div>
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="eyebrow-label">{vm.workflowTaskPanel.publicationReview.evidenceLinksLabel}</div>
                 <Badge variant="outline">
                   {vm.workflowTaskPanel.publicationReview.evidenceLinks.length} link{vm.workflowTaskPanel.publicationReview.evidenceLinks.length === 1 ? "" : "s"}
@@ -2217,6 +1902,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   {vm.workflowTaskPanel.publicationReview.lineProvenanceEmptyText}
                 </p>
               )}
+              </div>
+              </details>
             </div>
             <div
               role="region"
@@ -2238,10 +1925,16 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <p className="mt-3 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-foreground">
                 {vm.workflowTaskPanel.restatementReview.summaryText}
               </p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <details className="mt-3 rounded-md border border-border/60 bg-background/25">
+                <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-2 text-xs font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                  Changed lines and restatement evidence
+                  <Badge variant="outline">{vm.workflowTaskPanel.restatementReview.evidenceSummary}</Badge>
+                </summary>
+              <div className="space-y-3 border-t border-border/60 px-3 py-3">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {vm.workflowTaskPanel.restatementReview.fields.map((field) => (
                   <div key={field.label} className="rounded-md border border-border/70 bg-background/40 px-3 py-2">
-                    <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">{field.label}</span>
+                    <span className="block text-xs font-medium text-muted-foreground">{field.label}</span>
                     <span className={cn("mt-1 block break-all font-mono text-xs", field.className)}>{field.value}</span>
                   </div>
                 ))}
@@ -2282,6 +1975,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   {vm.workflowTaskPanel.restatementReview.emptyText}
                 </p>
               )}
+              </div>
+              </details>
             </div>
             <div>
               <div className="eyebrow-label">Actions</div>
@@ -2380,12 +2075,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                   </p>
                 )}
               </div>
-              <div>
-                <div className="eyebrow-label">Export service</div>
+              <TechnicalDetails
+                label="System service references"
+                description="Endpoint paths and service actions are retained for diagnostics and audit support."
+              >
                 <div
                   id={vm.workflowTaskPanel.backendPanelId}
                   aria-label={vm.workflowTaskPanel.backendLinksLabel}
-                  className="mt-2 grid gap-2"
+                  className="grid gap-2"
                 >
                   {vm.workflowTaskPanel.backendLinks.map((link) => link.isBrowserNavigable ? (
                     <a
@@ -2409,7 +2106,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                     </div>
                   ))}
                 </div>
-              </div>
+              </TechnicalDetails>
             </div>
           </div>
           <div>
@@ -2472,6 +2169,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
         </section>
       ) : null}
 
+      {isDeliveryEvidenceTaskMode && vm.exportStatus ? (
+        <ReportingExportStatusPanel status={vm.exportStatus} />
+      ) : null}
+
+      {isDeliveryEvidenceTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -2515,7 +2217,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
             {vm.hasPackTargets ? (
               <div
                 role="list"
-                aria-label={vm.packTargetsListLabel}
+                aria-label="Report-pack distribution route recipients"
                 className="data-grid-surface space-y-2 border-0 bg-background/40 p-3"
               >
                 {vm.packTargets.map((target) => (
@@ -2547,12 +2249,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                       <span>Last sent: {target.lastSentLabel}</span>
                     </div>
                     <a
-                      className="mt-2 inline-flex break-all font-mono text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                      className="mt-2 inline-flex min-h-9 items-center text-xs font-medium text-primary underline-offset-2 hover:underline"
                       href={target.href}
                       aria-label={`Open ${target.label} report-pack distribution route`}
                     >
-                      {target.href}
+                      Open recipient workflow
                     </a>
+                    <TechnicalDetails label="Recipient route details" className="mt-2">
+                      <p className="break-all font-mono text-xs text-muted-foreground">{target.href}</p>
+                    </TechnicalDetails>
                   </div>
                 ))}
               </div>
@@ -2568,7 +2273,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </CardContent>
         </Card>
       </section>
+      ) : null}
 
+      {isExportsTaskMode ? (
       <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -2635,62 +2342,15 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <h3 className="text-sm font-semibold text-foreground">
                 {vm.selectedProfile?.title ?? vm.statusTitle}
               </h3>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">
-                {vm.selectedProfile ? `${vm.selectedProfile.id} · ${vm.selectedProfile.subtitle}` : vm.nextAction}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {vm.selectedProfile ? vm.selectedProfile.subtitle : vm.nextAction}
               </p>
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{vm.statusDetail}</p>
             {vm.exportStatus ? (
-              <div
-                role="status"
-                aria-label={vm.exportStatus.ariaLabel}
-                className={cn("mt-3 space-y-3 rounded-md border px-3 py-2 text-sm leading-6", vm.exportStatus.className)}
-              >
-                <p>{vm.exportStatus.text}</p>
-                {vm.exportStatus.fields.length > 0 ? (
-                  <dl className="grid gap-2 sm:grid-cols-2">
-                    {vm.exportStatus.fields.map((field) => (
-                      <div
-                        key={field.label}
-                        className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-                      >
-                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {field.label}
-                        </dt>
-                        <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
-                          {field.value}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : null}
-                {vm.exportStatus.warnings.length > 0 ? (
-                  <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
-                    {vm.exportStatus.warnings.map((warning) => (
-                      <li key={warning}>{warning}</li>
-                    ))}
-                  </ul>
-                ) : null}
-                {vm.exportStatus.artifacts.length > 0 ? (
-                  <dl
-                    aria-label="Export artifacts"
-                    className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-                  >
-                    {vm.exportStatus.artifacts.map((artifact) => (
-                      <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
-                        <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {artifact.label}
-                        </dt>
-                        <dd className={cn("break-words font-mono text-xs", artifact.className)}>
-                          {artifact.value}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : null}
-              </div>
+              <ReportingExportStatusPanel status={vm.exportStatus} className="mt-3" />
             ) : null}
-            <p className="mt-3 font-mono text-xs text-muted-foreground">{vm.nextAction}</p>
+            <p className="mt-3 text-xs text-muted-foreground">{vm.nextAction}</p>
             {vm.selectedProfile ? (
               <div className="mt-4 space-y-3 border-t border-border/70 pt-4">
                 <p className="text-sm leading-6 text-muted-foreground">{vm.selectedProfile.description}</p>
@@ -2763,6 +2423,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
           </div>
         </aside>
       </section>
+      ) : null}
         </>
       )}
     </div>
@@ -2778,10 +2439,69 @@ function ReportingHighlight({ title, description }: { title: string; description
   );
 }
 
+function ReportingExportStatusPanel({
+  status,
+  className
+}: {
+  status: ReportingExportStatusState;
+  className?: string;
+}) {
+  return (
+    <div
+      role="status"
+      aria-label={status.ariaLabel}
+      className={cn("space-y-3 rounded-md border px-3 py-2 text-sm leading-6", status.className, className)}
+    >
+      <p>{status.text}</p>
+      {status.fields.length > 0 ? (
+        <dl className="grid gap-2 sm:grid-cols-2">
+          {status.fields.map((field) => (
+            <div
+              key={field.label}
+              className="rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+            >
+              <dt className="text-xs font-medium text-muted-foreground">
+                {field.label}
+              </dt>
+              <dd className={cn("mt-1 break-words font-mono text-xs", field.className)}>
+                {field.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+      {status.warnings.length > 0 ? (
+        <ul className="space-y-1 rounded-sm border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
+          {status.warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      ) : null}
+      {status.artifacts.length > 0 ? (
+        <dl
+          aria-label="Export artifacts"
+          className="space-y-1 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
+        >
+          {status.artifacts.map((artifact) => (
+            <div key={`${artifact.label}-${artifact.value}`} className="grid gap-1">
+              <dt className="text-xs font-medium text-muted-foreground">
+                {artifact.label}
+              </dt>
+              <dd className={cn("break-words font-mono text-xs", artifact.className)}>
+                {artifact.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
+    </div>
+  );
+}
+
 function ReportingCutMetric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
     </div>
   );
@@ -2803,51 +2523,50 @@ function buildStructuredExportDownloadHref(
   return queryString ? `${path}?${queryString}` : path;
 }
 
-function buildDefaultExportsReportRunDraft(reporting: AccountingWorkspaceResponse["reporting"] | null): ExportsReportRunDraftState {
-  const template = reporting?.templates?.find((item) => (item.isAccessible ?? true) && (item.lifecycleStatus ?? "Approved") === "Approved")
-    ?? reporting?.templates?.[0]
-    ?? null;
-
-  return {
-    templateRowId: template ? `${template.templateId}:${template.version}` : "",
-    asOfDate: new Date().toISOString().slice(0, 10),
-    maxRetries: "0",
-    requestedBy: defaultExportsReportRunRequester,
-    datasetSourceId: buildDefaultReportWriterDatasetSourceId(reporting)
-  };
-}
-
-function resolveSelectedExportsTemplate(
-  templates: ReportingTemplateRow[],
-  draft: ExportsReportRunDraftState
-): ReportingTemplateRow | null {
-  return templates.find((template) => template.id === draft.templateRowId)
-    ?? templates.find((template) => template.canRunOnDemand)
-    ?? templates[0]
-    ?? null;
-}
-
 export function buildExportsReportRunRequest(
-  template: ReportingTemplateRow,
-  draft: ExportsReportRunDraftState
+  template: ReportingTemplateRow | null,
+  draft: ExportsReportRunDraftState,
+  parameters?: ReportingRunParameters | null
 ): ReportingRunRequest {
+  // Authorized restatement targets a specific released run's series: reuse its job id and as-of
+  // date so the regenerated run versions into the same series (-v2) and trips the governed guard.
+  // It carries its own template identity, so it does not depend on the current template selection.
+  if (draft.restatementTargetRunId) {
+    return {
+      templateId: draft.restatementTemplateId,
+      jobId: draft.restatementJobId,
+      asOfDate: draft.restatementAsOfDate,
+      maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
+      requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
+      // Reuse the released run's dataset source so the restatement renders and diffs against the
+      // same data, not the default retained dataset.
+      datasetSourceId: normalizeOptionalDatasetSourceId(draft.restatementDatasetSourceId),
+      retryReason: draft.retryReason.trim() || null,
+      allowRestatement: true
+    };
+  }
+
+  if (!template) {
+    throw new Error("A report template must be selected to run a report.");
+  }
+
   return {
     templateId: template.templateName,
+    template: {
+      name: template.templateName,
+      version: template.versionNumber
+    },
     asOfDate: normalizeDraftText(draft.asOfDate, new Date().toISOString().slice(0, 10)),
     maxRetries: parseExportsReportMaxRetries(draft.maxRetries),
     requestedBy: normalizeDraftText(draft.requestedBy, defaultExportsReportRunRequester),
-    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null
+    datasetSourceId: template.hasWriterGrids ? normalizeOptionalDatasetSourceId(draft.datasetSourceId) : null,
+    parameters: parameters ?? null
   };
 }
 
 function parseExportsReportMaxRetries(value: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-}
-
-export function isExportsOnDemandRun(run: ReportingRunStatusRow): boolean {
-  const trigger = run.trigger.trim().toLowerCase().replace(/[^a-z]/g, "");
-  return trigger === "adhoc" || trigger === "ondemand" || trigger === "manual";
 }
 
 export function buildReportRunResultDetails(run: {
@@ -2859,9 +2578,13 @@ export function buildReportRunResultDetails(run: {
   reportWriterDatasetSourceId?: string | null;
   reportWriterDatasetRowCount?: number | null;
 }): string[] {
-  const details = [`Run ID: ${run.runId}`, `Status: ${run.status}`, `Trigger: ${run.trigger}`];
+  const details = [
+    "Run retained for audit review",
+    `Status: ${presentReportingStatusLabel(run.status)}`,
+    `Trigger: ${presentReportingStatusLabel(run.trigger)}`
+  ];
   if (run.asOfDate) {
-    details.push(`As of: ${run.asOfDate}`);
+    details.push(`As of: ${presentReportingAsOfDate(run.asOfDate)}`);
   }
 
   const source = run.reportWriterDatasetSourceLabel?.trim() || run.reportWriterDatasetSourceId?.trim();
@@ -2885,6 +2608,10 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
   const scheduleId = normalizeIdentifierToken(schedule?.scheduleId, `sched-${templateId}`);
   const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, new Date().toISOString().slice(0, 10));
   const dueAtUtc = normalizeDraftText(schedule?.dueAtUtc, `${nextAsOfDate}T20:00:00Z`);
+  const retainedTemplate = schedule?.template
+    ?? (template
+      ? { name: template.templateId, version: parseReportTemplateVersion(template.version) ?? 1 }
+      : { name: templateId, version: 1 });
 
   return {
     scheduleId,
@@ -2898,9 +2625,17 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     datasetSourceId: normalizeOptionalDatasetSourceId(schedule?.datasetSourceId ?? buildDefaultReportWriterDatasetSourceId(reporting)) ?? "",
     distributionId: normalizeIdentifierToken(firstTarget?.distributionId ?? distribution?.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(firstTarget?.deliveryMode),
+    recipientPrincipalId: normalizeDraftText(firstTarget?.recipientPrincipalId, ""),
+    recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(firstTarget?.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
     formats: buildScheduleFormatSelection(firstTarget?.formats),
-    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget)
+    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget),
+    templateVersion: retainedTemplate.version,
+    runParameters: buildDefaultReportRunParameterDraft({
+      fundProfileId: reporting?.selectedFundProfileId ?? reporting?.fundProfileId,
+      asOfDate: nextAsOfDate,
+      parameters: schedule?.runParameters
+    })
   };
 }
 
@@ -2913,15 +2648,90 @@ function normalizeOptionalDatasetSourceId(sourceId: string | null | undefined): 
   return normalized ? normalized : null;
 }
 
+function normalizeReportBuilderContextToken(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+export function resolveReportingScheduleDueAtUtc(
+  nextAsOfDate: string,
+  cronExpression: string,
+  currentDueAtUtc: string
+): string {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(nextAsOfDate.trim());
+  const cronFields = cronExpression.trim().split(/\s+/);
+  const minute = Number.parseInt(cronFields[0] ?? "", 10);
+  const hour = Number.parseInt(cronFields[1] ?? "", 10);
+  if (!dateMatch || !Number.isInteger(minute) || minute < 0 || minute > 59 || !Number.isInteger(hour) || hour < 0 || hour > 23) {
+    return currentDueAtUtc;
+  }
+
+  const year = Number.parseInt(dateMatch[1], 10);
+  const monthIndex = Number.parseInt(dateMatch[2], 10) - 1;
+  const day = Number.parseInt(dateMatch[3], 10);
+  let dueDate = new Date(Date.UTC(year, monthIndex, day));
+  if (
+    dueDate.getUTCFullYear() !== year
+    || dueDate.getUTCMonth() !== monthIndex
+    || dueDate.getUTCDate() !== day
+  ) {
+    return currentDueAtUtc;
+  }
+
+  const normalizedCron = cronFields.join(" ");
+  if (normalizedCron === "0 8 * * 1-5") {
+    while (dueDate.getUTCDay() === 0 || dueDate.getUTCDay() === 6) {
+      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
+    }
+  } else if (normalizedCron === "0 8 * * 1") {
+    while (dueDate.getUTCDay() !== 1) {
+      dueDate.setUTCDate(dueDate.getUTCDate() + 1);
+    }
+  } else if (normalizedCron === "0 8 1 * *") {
+    if (dueDate.getUTCDate() !== 1) {
+      dueDate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth() + 1, 1));
+    }
+  } else if (normalizedCron === "0 8 1 1,4,7,10 *") {
+    const quarterlyMonths = new Set([0, 3, 6, 9]);
+    let candidate = new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), 1));
+    if (candidate < dueDate || !quarterlyMonths.has(candidate.getUTCMonth())) {
+      do {
+        candidate = new Date(Date.UTC(candidate.getUTCFullYear(), candidate.getUTCMonth() + 1, 1));
+      } while (!quarterlyMonths.has(candidate.getUTCMonth()));
+    }
+    dueDate = candidate;
+  }
+
+  const dueYear = dueDate.getUTCFullYear().toString().padStart(4, "0");
+  const dueMonth = (dueDate.getUTCMonth() + 1).toString().padStart(2, "0");
+  const dueDay = dueDate.getUTCDate().toString().padStart(2, "0");
+  return `${dueYear}-${dueMonth}-${dueDay}T${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:00Z`;
+}
+
 function buildReportingScheduleUpsertRequest(
   draft: ReportingScheduleDraftState,
-  brandingDraft: ReportBrandingDraftState
+  brandingDraft: ReportBrandingDraftState,
+  templates: ReportingTemplateRow[]
 ): ReportingScheduleUpsertRequest {
   const scheduleId = normalizeIdentifierToken(draft.scheduleId, "sched-reporting-pack");
   const templateId = normalizeIdentifierToken(draft.templateId, "investor-monthly-statement");
   const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, new Date().toISOString().slice(0, 10));
   const deliveryNote = normalizeDraftText(draft.deliveryNote, "");
   const brandingThemeOverride = buildReportBrandingOverride(brandingDraft);
+  const parameterValidation = validateAndBuildReportingRunParameters(draft.runParameters, nextAsOfDate);
+  if (!parameterValidation.parameters) {
+    throw new Error(parameterValidation.issues.join(" "));
+  }
+  const exactTemplate = templates.find((template) =>
+    template.templateName === templateId && template.versionNumber === draft.templateVersion)
+    ?? templates
+      .filter((template) => template.templateName === templateId && template.canRunOnDemand)
+      .reduce<ReportingTemplateRow | null>(
+        (latest, template) => !latest || template.versionNumber > latest.versionNumber ? template : latest,
+        null
+      );
+  if (!exactTemplate) {
+    throw new Error("Select an approved reporting template version before saving the schedule.");
+  }
 
   return {
     scheduleId,
@@ -2936,7 +2746,12 @@ function buildReportingScheduleUpsertRequest(
     deliveryTargets: buildReportingScheduleDeliveryTargets(draft, deliveryNote),
     datasetSourceId: normalizeOptionalDatasetSourceId(draft.datasetSourceId),
     brandingThemeId: brandingThemeOverride.themeId,
-    brandingThemeOverride
+    brandingThemeOverride,
+    template: {
+      name: exactTemplate.templateName,
+      version: exactTemplate.versionNumber
+    },
+    runParameters: parameterValidation.parameters
   };
 }
 
@@ -2947,11 +2762,18 @@ function buildReportingScheduleDeliveryTargets(
   const targets = new Map<string, NonNullable<ReportingScheduleUpsertRequest["deliveryTargets"]>[number]>();
   for (const target of [...draft.deliveryTargets, buildCurrentScheduleDraftTarget(draft)]) {
     const distributionId = normalizeIdentifierToken(target.distributionId, "board-reporting-committee");
+    const recipientPrincipalId = target.recipientPrincipalId.trim();
+    const recipientPrincipalKind = normalizeReportingScheduleRecipientPrincipalKind(target.recipientPrincipalKind);
+    if (!recipientPrincipalId || !recipientPrincipalKind) {
+      throw new Error("Every scheduled delivery target requires an explicit User, Group, or Company recipient principal and ID.");
+    }
     const note = target.distributionId === draft.distributionId
       ? currentDeliveryNote
       : normalizeDraftText(target.deliveryNote, "");
     targets.set(distributionId, {
       distributionId,
+      recipientPrincipalId,
+      recipientPrincipalKind,
       deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
       formats: reportingScheduleArtifactFormats.filter((format) => target.formats[format]),
       note: note || null
@@ -2965,6 +2787,8 @@ function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): Re
   return normalizeScheduleDraftTarget({
     distributionId: draft.distributionId,
     deliveryMode: draft.deliveryMode,
+    recipientPrincipalId: draft.recipientPrincipalId,
+    recipientPrincipalKind: draft.recipientPrincipalKind,
     note: draft.deliveryNote,
     formats: reportingScheduleArtifactFormats.filter((format) => draft.formats[format])
   });
@@ -2973,12 +2797,16 @@ function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): Re
 function normalizeScheduleDraftTarget(target: {
   distributionId: string;
   deliveryMode?: ReportPackDeliveryMode | null;
+  recipientPrincipalId?: string | null;
+  recipientPrincipalKind?: string | null;
   note?: string | null;
   formats?: readonly GovernanceReportArtifactFormat[] | null;
 }): ReportingScheduleDraftTarget {
   return {
     distributionId: normalizeIdentifierToken(target.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
+    recipientPrincipalId: normalizeDraftText(target.recipientPrincipalId, ""),
+    recipientPrincipalKind: normalizeReportingScheduleRecipientPrincipalKind(target.recipientPrincipalKind),
     deliveryNote: normalizeDraftText(target.note, ""),
     formats: buildScheduleFormatSelection(target.formats)
   };
@@ -3008,6 +2836,12 @@ function normalizeReportingScheduleDeliveryMode(value: string | null | undefined
     : "SecurePortal";
 }
 
+function normalizeReportingScheduleRecipientPrincipalKind(
+  value: string | null | undefined
+): ReportingScheduleRecipientPrincipalKind | "" {
+  return value === "User" || value === "Group" || value === "Company" ? value : "";
+}
+
 function parseScheduleMaxRetries(value: string): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 1;
@@ -3015,29 +2849,9 @@ function parseScheduleMaxRetries(value: string): number {
 
 function formatReportingScheduleRunDetails(result: Awaited<ReturnType<typeof runReportingScheduleNow>>): string[] {
   return [
-    `Run ID: ${result.run.runId}`,
+    "Run retained for audit review",
     `Deliveries: ${result.deliveryAttempts?.length ?? 0}`,
     ...(result.deliveryWarnings ?? []).map((warning) => `Delivery warning: ${warning}`)
-  ];
-}
-
-function formatReportPackPreviewDetails(result: Awaited<ReturnType<typeof previewReportPack>>): string[] {
-  const assetClasses = result.assetClassSections
-    .map((section) => `${section.assetClass}: ${formatReportingMoney(section.total, result.currency)}`)
-    .join("; ");
-
-  return [
-    `Preview ID: ${result.reportId}`,
-    `Fund: ${result.displayName}`,
-    `Report kind: ${result.reportKind}`,
-    `As of: ${result.asOf}`,
-    `Total net assets: ${formatReportingMoney(result.totalNetAssets, result.currency)}`,
-    `Trial balance lines: ${result.trialBalanceLineCount}`,
-    `Asset-class sections: ${result.assetClassSectionCount}`,
-    result.brandingTheme
-      ? `Branding: ${result.brandingTheme.name} · ${result.brandingTheme.firmName} · ${result.brandingTheme.themeId}`
-      : "Branding: default theme",
-    assetClasses ? `Asset classes: ${assetClasses}` : "Asset classes: none"
   ];
 }
 
@@ -3085,606 +2899,8 @@ function buildRenderReportTemplateRequest(
   };
 }
 
-function buildReportWriterGridDefinition(
-  grid: ReportingWriterGridRow,
-  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
-  settings: ReportWriterDraftSettings,
-  chartDraft?: ReportWriterChartDraft | null,
-  formatRules?: ReportWriterFormatRuleDraft[] | null
-): ReportWriterGridDefinition {
-  const kind = normalizeReportWriterGridKind(settings.gridKind);
-  const metrics = normalizeWriterMetrics(zones.metrics, kind);
-  return {
-    gridId: grid.gridId,
-    title: grid.title,
-    kind,
-    rowFields: normalizeStringList(zones.rowFields.map(resolveWriterFieldName)),
-    columnFields: normalizeStringList(zones.columnFields.map(resolveWriterFieldName)),
-    metrics,
-    formulas: normalizeWriterFormulas(zones.formulas),
-    topN: kind === "TopN" ? parseReportWriterTopN(settings.topN) : null,
-    sortBy: kind === "Contribution" ? "contributionAbsPercent" : grid.sortBy,
-    sortDescending: grid.sortDescending,
-    filters: buildWriterFilters(settings),
-    formatRules: buildWriterFormatRules(formatRules),
-    chart: buildWriterChartDefinition(chartDraft)
-  };
-}
-
-function buildWriterFormatRules(drafts: ReportWriterFormatRuleDraft[] | null | undefined): ReportWriterFormatRule[] | null {
-  if (!drafts || drafts.length === 0) return null;
-  const valid = drafts.filter((d) => d.column.trim().length > 0);
-  if (valid.length === 0) return null;
-  return valid.map((d) => ({
-    column: d.column.trim(),
-    operator: d.operator,
-    value: d.value || null,
-    style: d.style
-  }));
-}
-
-function buildWriterChartDefinition(draft: ReportWriterChartDraft | null | undefined): ReportWriterChartDefinition | null {
-  if (!draft?.enabled || !draft.categoryField.trim()) return null;
-  const valueColumns = draft.valueColumns
-    .split(",")
-    .map((v) => v.trim())
-    .filter((v) => v.length > 0);
-  if (valueColumns.length === 0) return null;
-  return { type: draft.type, categoryField: draft.categoryField.trim(), valueColumns };
-}
-
-function buildReportWriterPreviewRows(
-  grid: ReportWriterGridDefinition,
-  profile: ReportWriterPreviewDatasetProfile
-): Record<string, string>[] {
-  const dimensionFields = normalizeStringList([
-    ...(grid.rowFields ?? []),
-    ...(grid.columnFields ?? [])
-  ]);
-  const metricSourceFields = normalizeStringList((grid.metrics ?? []).map((metric) => metric.sourceField));
-  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression)))
-    .filter((field) => grid.kind !== "Contribution" || !isGeneratedContributionField(field));
-  const numericFields = normalizeStringList([
-    ...metricSourceFields,
-    ...formulaFields,
-    ...(grid.sortBy ? [grid.sortBy] : [])
-  ]).filter((field) =>
-    !dimensionFields.some((dimension) => dimension.toLowerCase() === field.toLowerCase())
-    && (grid.kind !== "Contribution" || !isGeneratedContributionField(field)));
-  const fields = normalizeStringList([...dimensionFields, ...numericFields]);
-  const filters = grid.filters ?? [];
-  const filterFields = normalizeStringList(filters.map((filter) => filter.field));
-
-  if (fields.length === 0 && filterFields.length === 0) {
-    return [{ previewDataset: profile, previewRow: "1" }, { previewDataset: profile, previewRow: "2" }];
-  }
-
-  return Array.from({ length: 4 }, (_, index) => {
-    const row: Record<string, string> = { previewDataset: profile };
-    for (const field of dimensionFields) {
-      row[field] = previewDimensionValue(field, index, profile);
-    }
-
-    for (const field of numericFields) {
-      row[field] = grid.kind === "Contribution" && isPnlLikeField(field)
-        ? previewContributionPnlValue(index, profile)
-        : previewNumericValue(field, index, profile);
-    }
-
-    for (const filter of filters) {
-      if (!filter.field) {
-        continue;
-      }
-
-      row[filter.field] = previewFilterValue(filter, index, profile);
-    }
-
-    return row;
-  });
-}
-
-function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTemplateDraftRequest["accessPolicy"] {
-  if (settings.accessMode === "CompanyWide") {
-    return {
-      mode: "CompanyWide",
-      allowOwnerAccess: true
-    };
-  }
-
-  const principalId = normalizeDraftText(settings.principalId, "browser-workstation");
-  const principalKind = settings.accessMode === "Private" ? "User" : settings.principalKind;
-  return {
-    mode: settings.accessMode,
-    ownerPrincipalId: settings.accessMode === "Private" ? principalId : null,
-    principals: [
-      {
-        kind: principalKind,
-        principalId,
-        displayName: principalId
-      }
-    ],
-    allowOwnerAccess: true
-  };
-}
-
-function buildWriterFilters(settings: ReportWriterDraftSettings): ReportWriterFilterDefinition[] | null {
-  const field = normalizeDraftText(settings.filterField, "");
-  if (!field) {
-    return null;
-  }
-
-  const operator = normalizeReportWriterFilterOperator(settings.filterOperator);
-  const value = isBlankFilterOperator(operator)
-    ? null
-    : normalizeDraftText(settings.filterValue, "");
-  if (!isBlankFilterOperator(operator) && !value) {
-    return null;
-  }
-
-  return [
-    {
-      field,
-      operator,
-      value,
-      label: isBlankFilterOperator(operator)
-        ? `${field} ${formatReportWriterFilterOperator(operator)}`
-        : `${field} ${formatReportWriterFilterOperator(operator)} ${value}`
-    }
-  ];
-}
-
-function normalizeWriterMetrics(
-  tokens: ReportingWriterToken[],
-  gridKind: ReportWriterGridKind | null = null
-): ReportWriterMetricDefinition[] {
-  const metrics = tokens
-    .map(tokenToMetricDefinition)
-    .filter((metric): metric is ReportWriterMetricDefinition => Boolean(metric));
-  const deduped = dedupeBy(metrics, (metric) => metric.name.toLowerCase());
-  return gridKind === "Contribution" ? preferContributionMetric(deduped) : deduped;
-}
-
-function tokenToMetricDefinition(token: ReportingWriterToken): ReportWriterMetricDefinition | null {
-  if (token.kind === "formula") {
-    return null;
-  }
-
-  const sourceField = normalizeDraftText(token.sourceField ?? token.fieldName ?? token.label, "");
-  if (!sourceField) {
-    return null;
-  }
-
-  const name = normalizeIdentifierToken(token.name ?? sourceField, sourceField);
-  return {
-    name,
-    sourceField,
-    function: normalizeAggregateFunction(token.function),
-    label: token.kind === "metric" ? token.label : sourceField
-  };
-}
-
-function preferContributionMetric(metrics: ReportWriterMetricDefinition[]): ReportWriterMetricDefinition[] {
-  const contributionIndex = metrics.findIndex((metric) =>
-    isPnlLikeField(metric.name)
-    || isPnlLikeField(metric.sourceField)
-    || isPnlLikeField(metric.label));
-  if (contributionIndex <= 0) {
-    return metrics;
-  }
-
-  const next = [...metrics];
-  const [contributionMetric] = next.splice(contributionIndex, 1);
-  next.unshift(contributionMetric);
-  return next;
-}
-
-function normalizeWriterFormulas(tokens: ReportingWriterToken[]) {
-  const formulas = tokens
-    .map(tokenToFormulaDefinition)
-    .filter((formula): formula is NonNullable<ReturnType<typeof tokenToFormulaDefinition>> => Boolean(formula));
-  return dedupeBy(formulas, (formula) => formula.name.toLowerCase());
-}
-
-function tokenToFormulaDefinition(token: ReportingWriterToken) {
-  if (token.kind === "metric") {
-    const metricName = normalizeIdentifierToken(token.name ?? token.label, "");
-    return metricName
-      ? {
-          name: `${metricName}Formula`,
-          expression: `{${metricName}}`,
-          label: `${token.label} formula`
-        }
-      : null;
-  }
-
-  if (token.kind === "field") {
-    const field = normalizeDraftText(token.fieldName ?? token.sourceField ?? token.label, "");
-    return field
-      ? {
-          name: normalizeIdentifierToken(field, "fieldFormula"),
-          expression: `{${field}}`,
-          label: field
-        }
-      : null;
-  }
-
-  const name = normalizeIdentifierToken(token.name ?? token.label, "");
-  const expression = normalizeDraftText(token.expression ?? token.detail, "");
-  return name && expression
-    ? {
-        name,
-        expression,
-        label: token.label
-      }
-    : null;
-}
-
-function resolveWriterFieldName(token: ReportingWriterToken): string {
-  return normalizeDraftText(token.fieldName ?? token.sourceField ?? token.name ?? token.label, "");
-}
-
-function extractReportWriterFormulaFields(expression: string | null | undefined): string[] {
-  if (!expression) {
-    return [];
-  }
-
-  const fields: string[] = [];
-  let position = 0;
-  while (position < expression.length) {
-    const current = expression[position];
-    if (isReportWriterIdentifierStart(current)) {
-      const identifierStart = position;
-      const identifier = readReportWriterIdentifier(expression, position);
-      position += identifier.length;
-      const nextToken = skipReportWriterWhitespace(expression, position);
-      if (identifier.toLowerCase() === "total" && expression[nextToken] === "(") {
-        const totalArgument = readReportWriterFunctionFieldArgument(expression, nextToken + 1);
-        if (totalArgument) {
-          fields.push(totalArgument.field);
-          position = totalArgument.nextPosition;
-          continue;
-        }
-      }
-
-      if (isReportWriterFormulaFunction(identifier) && expression[nextToken] === "(") {
-        position = nextToken + 1;
-        continue;
-      }
-
-      fields.push(identifier);
-      position = identifierStart + Math.max(identifier.length, 1);
-      continue;
-    }
-
-    if (current !== "{") {
-      position += 1;
-      continue;
-    }
-
-    const end = expression.indexOf("}", position + 1);
-    if (end < 0) {
-      break;
-    }
-
-    const field = expression.slice(position + 1, end).trim();
-    if (field) {
-      fields.push(field);
-    }
-
-    position = end + 1;
-  }
-
-  return normalizeStringList(fields);
-}
-
-function readReportWriterFunctionFieldArgument(
-  expression: string,
-  argumentStart: number
-): { field: string; nextPosition: number } | null {
-  const start = skipReportWriterWhitespace(expression, argumentStart);
-  if (start >= expression.length) {
-    return null;
-  }
-
-  if (expression[start] === "{") {
-    const closeBrace = expression.indexOf("}", start + 1);
-    if (closeBrace < 0) {
-      return null;
-    }
-
-    const closeParen = skipReportWriterWhitespace(expression, closeBrace + 1);
-    if (expression[closeParen] !== ")") {
-      return null;
-    }
-
-    const field = expression.slice(start + 1, closeBrace).trim();
-    return field ? { field, nextPosition: closeParen + 1 } : null;
-  }
-
-  const close = expression.indexOf(")", start);
-  if (close < 0) {
-    return null;
-  }
-
-  const field = expression.slice(start, close).trim();
-  return field ? { field, nextPosition: close + 1 } : null;
-}
-
-function readReportWriterIdentifier(expression: string, start: number): string {
-  let position = start;
-  while (position < expression.length && isReportWriterIdentifierPart(expression[position])) {
-    position += 1;
-  }
-
-  return expression.slice(start, position);
-}
-
-function skipReportWriterWhitespace(expression: string, position: number): number {
-  while (position < expression.length && /\s/.test(expression[position])) {
-    position += 1;
-  }
-
-  return position;
-}
-
-function isReportWriterIdentifierStart(value: string | undefined): boolean {
-  return Boolean(value && /[A-Za-z_]/.test(value));
-}
-
-function isReportWriterIdentifierPart(value: string | undefined): boolean {
-  return Boolean(value && /[A-Za-z0-9_.-]/.test(value));
-}
-
-function isReportWriterFormulaFunction(identifier: string): boolean {
-  return ["abs", "min", "max", "safedivide", "percent", "basispoints", "round"].includes(identifier.toLowerCase());
-}
-
-function isGeneratedContributionField(field: string | null | undefined): boolean {
-  const normalized = normalizeIdentifierToken(field ?? "", "").toLowerCase();
-  return normalized === "contributionpercent" || normalized === "contributionabspercent";
-}
-
-function isPnlLikeField(field: string | null | undefined): boolean {
-  const normalized = (field ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
-  return normalized.includes("pnl") || normalized.includes("profitloss");
-}
-
-function previewDimensionValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  const normalized = field.toLowerCase();
-  if (profile === "ledgerFacts") {
-    if (normalized.includes("sector")) {
-      return ["Operating expense", "Capital activity", "Financing", "Revenue"][index] ?? "Ledger";
-    }
-
-    if (normalized.includes("strategy")) {
-      return ["Close accrual", "Investor activity", "Cash financing", "Management fee"][index] ?? "Ledger";
-    }
-
-    if (normalized.includes("fund")) {
-      return ["Fund Alpha", "Fund Alpha", "Fund Beta", "Fund Beta"][index] ?? "Fund Alpha";
-    }
-
-    if (normalized.includes("security") || normalized.includes("asset")) {
-      return ["GL-6000", "GL-3100", "GL-2100", "GL-4100"][index] ?? "Ledger line";
-    }
-  }
-
-  if (profile === "cashLadder") {
-    if (normalized.includes("sector")) {
-      return ["Cash", "Settlement", "Financing", "Reserve"][index] ?? "Cash";
-    }
-
-    if (normalized.includes("strategy")) {
-      return ["T+0 liquidity", "T+1 settlement", "Credit facility", "Operating reserve"][index] ?? "Cash ladder";
-    }
-
-    if (normalized.includes("fund")) {
-      return ["Fund Alpha", "Fund Alpha", "Fund Alpha", "Fund Beta"][index] ?? "Fund Alpha";
-    }
-
-    if (normalized.includes("security") || normalized.includes("asset")) {
-      return ["USD sweep", "Broker receivable", "Credit draw", "Reserve cash"][index] ?? "Cash bucket";
-    }
-  }
-
-  if (normalized.includes("sector")) {
-    return ["Technology", "Technology", "Rates", "Credit"][index] ?? "Other";
-  }
-
-  if (normalized.includes("strategy")) {
-    return ["Core", "Growth", "Rates", "Credit"][index] ?? "Core";
-  }
-
-  if (normalized.includes("fund")) {
-    return ["Fund A", "Fund A", "Fund B", "Fund B"][index] ?? "Fund A";
-  }
-
-  if (normalized.includes("region")) {
-    return ["North America", "Europe", "Asia Pacific", "North America"][index] ?? "North America";
-  }
-
-  if (normalized.includes("security") || normalized.includes("asset")) {
-    return ["ABC Corp", "XYZ Fund", "UST 10Y", "Cash USD"][index] ?? "Position";
-  }
-
-  return `${formatPreviewFieldLabel(field)} ${(index % 2) + 1}`;
-}
-
-function previewNumericValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  const normalized = field.toLowerCase();
-  if (profile === "ledgerFacts") {
-    if (normalized.includes("pnl") || normalized.includes("p&l")) {
-      return ["25", "-7", "4", "12"][index] ?? "0";
-    }
-
-    if (normalized.includes("cash") || normalized.includes("liquidity")) {
-      return ["350", "150", "500", "225"][index] ?? "0";
-    }
-
-    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-      return ["250", "125", "80", "60"][index] ?? "0";
-    }
-  }
-
-  if (profile === "cashLadder") {
-    if (normalized.includes("pnl") || normalized.includes("p&l")) {
-      return ["1", "0", "-1", "0"][index] ?? "0";
-    }
-
-    if (normalized.includes("cash") || normalized.includes("liquidity")) {
-      return ["1250", "900", "650", "300"][index] ?? "0";
-    }
-
-    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-      return ["1200", "875", "600", "275"][index] ?? "0";
-    }
-  }
-
-  if (normalized.includes("pnl") || normalized.includes("p&l")) {
-    return ["10", "5", "-2", "4"][index] ?? "0";
-  }
-
-  if (normalized.includes("cash") || normalized.includes("liquidity")) {
-    return ["1000", "750", "400", "250"][index] ?? "0";
-  }
-
-  if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-    return ["100", "50", "75", "25"][index] ?? "0";
-  }
-
-  if (normalized.includes("percent") || normalized.includes("pct")) {
-    return ["12.5", "8.25", "-3.5", "6"][index] ?? "0";
-  }
-
-  return String((index + 1) * 10);
-}
-
-function previewContributionPnlValue(index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  if (profile === "ledgerFacts") {
-    return ["150", "-50", "0", "25"][index] ?? "0";
-  }
-
-  if (profile === "cashLadder") {
-    return ["12", "-4", "0", "2"][index] ?? "0";
-  }
-
-  return ["150", "-50", "0", "25"][index] ?? "0";
-}
-
-function previewFilterValue(
-  filter: ReportWriterFilterDefinition,
-  index: number,
-  profile: ReportWriterPreviewDatasetProfile
-): string {
-  const operator = normalizeReportWriterFilterOperator(filter.operator);
-  const value = filter.value ?? "";
-  if (operator === "IsBlank") {
-    return index === 0 ? "" : previewDimensionValue(filter.field, index, profile);
-  }
-
-  if (operator === "IsNotBlank") {
-    return index === 0 ? previewDimensionValue(filter.field, index, profile) : "";
-  }
-
-  if (["GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"].includes(operator)) {
-    const numeric = Number.parseFloat(value);
-    if (Number.isFinite(numeric)) {
-      return index < 2 ? String(numeric + 10 + index) : String(numeric - 10 - index);
-    }
-  }
-
-  if (operator === "Contains") {
-    return index < 2 ? `Preview ${value} ${index + 1}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "StartsWith") {
-    return index < 2 ? `${value}${index + 1}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "EndsWith") {
-    return index < 2 ? `Preview ${index + 1}${value}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "NotEquals") {
-    return index < 2 ? `${value}-alternate-${index + 1}` : value;
-  }
-
-  return index < 2 ? value : previewDimensionValue(filter.field, index, profile);
-}
-
-function formatPreviewFieldLabel(field: string): string {
-  const spaced = field
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .trim();
-  if (!spaced) {
-    return "Value";
-  }
-
-  return spaced.replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-function normalizeAggregateFunction(value: ReportWriterAggregateFunction | string | null | undefined): ReportWriterAggregateFunction {
-  switch ((value ?? "").toString().toLowerCase()) {
-    case "count":
-      return "Count";
-    case "average":
-      return "Average";
-    case "min":
-      return "Min";
-    case "max":
-      return "Max";
-    default:
-      return "Sum";
-  }
-}
-
-function normalizeStringList(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
-}
-
-function normalizeDraftText(value: string | null | undefined, fallback: string): string {
-  const normalized = value?.trim();
-  return normalized || fallback;
-}
-
-function normalizeIdentifierToken(value: string | null | undefined, fallback: string): string {
-  const normalized = normalizeDraftText(value, fallback)
-    .replace(/[^A-Za-z0-9_.-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return normalized || fallback;
-}
-
-function parseReportTemplateVersion(version: string): number | null {
-  const first = version.split(".", 1)[0];
-  const parsed = Number.parseInt(first, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function dedupeBy<T>(items: T[], keySelector: (item: T) => string): T[] {
-  const seen = new Set<string>();
-  const output: T[] = [];
-  for (const item of items) {
-    const key = keySelector(item);
-    if (!seen.has(key)) {
-      seen.add(key);
-      output.push(item);
-    }
-  }
-
-  return output;
-}
-
 function formatReportingMoney(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: currency || "USD",
-      maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2
-    }).format(value);
-  } catch {
-    return `${currency || "USD"} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
-  }
+  return formatCurrencyAmount(value, { currency, maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2 });
 }
 
 function formatReportingDateRange(startDate: string, endDate: string): string {
@@ -3692,7 +2908,7 @@ function formatReportingDateRange(startDate: string, endDate: string): string {
 }
 
 function formatReportingPercent(value: number): string {
-  return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+  return formatPercentAmount(value);
 }
 
 function formatHeatMapWidth(value: number): string {
@@ -3701,54 +2917,6 @@ function formatHeatMapWidth(value: number): string {
   }
 
   return `${Math.min(100, Math.max(2, value))}%`;
-}
-
-function resolveReportingFundProfileId(reporting: AccountingWorkspaceResponse["reporting"] | null): string | null {
-  const direct = reporting?.fundProfileId?.trim() || reporting?.selectedFundProfileId?.trim();
-  if (direct) {
-    return direct;
-  }
-
-  return reporting?.workflowRecords
-    ?.map((record) => record.fundProfileId?.trim())
-    .find((fundProfileId): fundProfileId is string => Boolean(fundProfileId)) ?? null;
-}
-
-async function executeRunAction(run: ReportingRunStatusRow, action: ReportingRunActionRow): Promise<void> {
-  if (action.kind.startsWith("delivery:")) {
-    const reportId = extractReportPackId(run, action);
-    const distributionId = action.kind.slice("delivery:".length);
-    await deliverReportPack(reportId, {
-      distributionId,
-      note: "Delivered from browser Reporting workspace.",
-      formats: ["Pdf", "Xlsx", "Csv"],
-      evidenceLinks: buildEvidenceLinksFromRun(run)
-    });
-    return;
-  }
-
-  if (action.kind === "approval-reject") {
-    await apiPostJson<unknown>(action.href, {
-      reason: "Returned from browser Reporting workspace.",
-      evidenceLinks: buildEvidenceLinksFromRun(run)
-    });
-    return;
-  }
-
-  if (action.kind === "publication") {
-    const reportId = extractReportPackId(run, action);
-    await apiPostJson<unknown>(action.href, {
-      signedOffBy: "server-authenticated-actor",
-      evidenceHash: `sha256:${normalizeEvidenceToken(run.id)}`,
-      manifestId: `browser-${normalizeEvidenceToken(reportId)}`,
-      retainedManifestPath: `workstation/reporting/${normalizeEvidenceToken(reportId)}/manifest.json`,
-      evidenceLinks: buildEvidenceLinksFromRun(run),
-      note: "Published from browser Reporting workspace."
-    });
-    return;
-  }
-
-  await apiPostJson<unknown>(action.href);
 }
 
 function buildReportTemplateDecisionRequest(
@@ -3799,64 +2967,4 @@ function buildTemplateLifecycleBusyLabel(action: ReportingTemplateLifecycleActio
   }
 
   return "Submitting";
-}
-
-function extractReportPackId(run: ReportingRunStatusRow, action: ReportingRunActionRow): string {
-  const hrefMatch = action.href.match(/\/reporting\/packs\/([0-9a-fA-F-]{36})(?:\/|$)/);
-  if (hrefMatch?.[1]) {
-    return hrefMatch[1];
-  }
-
-  if (run.id.startsWith("report-pack:")) {
-    return run.id.slice("report-pack:".length);
-  }
-
-  return run.id;
-}
-
-function buildEvidenceLinksFromRun(run: ReportingRunStatusRow): ReportingWorkflowEvidenceLink[] {
-  const links = run.drilldownLinks
-    .filter((link) => link.kind.includes("evidence") || link.href.includes("/evidence"))
-    .map((link) => ({
-      evidenceId: normalizeEvidenceToken(link.id),
-      label: link.label,
-      route: link.href,
-      source: link.source || "reporting",
-      capturedAtUtc: null
-    }));
-
-  if (links.length > 0) {
-    return links;
-  }
-
-  return [{
-    evidenceId: normalizeEvidenceToken(run.id),
-    label: `${run.templateId} report run`,
-    route: null,
-    source: "reporting",
-    capturedAtUtc: null
-  }];
-}
-
-function buildReportPackDeliveryFailureRequest(attempt: ReportPackDeliveryAttempt): ReportPackDeliveryFailureRequest {
-  return {
-    distributionId: attempt.distributionId,
-    deliveryReference: `delivery-failure:${normalizeEvidenceToken(attempt.attemptId)}`,
-    note: `Delivery failure recorded from Reporting workspace for ${attempt.recipient}.`,
-    failureReason: `Operator recorded delivery failure for ${attempt.recipient} after attempt ${attempt.attemptNumber}.`,
-    evidenceLinks: [
-      {
-        evidenceId: normalizeEvidenceToken(attempt.attemptId),
-        label: `${attempt.recipient} delivery attempt ${attempt.attemptNumber}`,
-        route: attempt.package?.portalRoute ?? attempt.package?.secureLink ?? null,
-        source: "report-pack-delivery",
-        capturedAtUtc: attempt.attemptedAtUtc
-      }
-    ]
-  };
-}
-
-function normalizeEvidenceToken(value: string): string {
-  const normalized = value.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
-  return normalized || "reporting-evidence";
 }

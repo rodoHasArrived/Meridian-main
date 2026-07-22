@@ -173,6 +173,18 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
                     case LifecycleActionType.Delete:
                         if (File.Exists(action.FilePath))
                         {
+                            // Re-validate eligibility at execution time: an action computed during
+                            // evaluation can be stale (the file may have been rewritten, reclassified,
+                            // or moved out of the managed root before execution). Never delete a file
+                            // that no longer satisfies its retention policy.
+                            if (!IsStillDeletable(action.FilePath))
+                            {
+                                _logger.LogWarning(
+                                    "Skipping stale delete for {FilePath}: file is no longer eligible for retention expiry",
+                                    action.FilePath);
+                                break;
+                            }
+
                             bytesDeleted += new FileInfo(action.FilePath).Length;
                             File.Delete(action.FilePath);
                             _fileStates.TryRemove(action.FilePath, out _);
@@ -324,6 +336,45 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
                                       && !filePath.EndsWith(".zst", StringComparison.OrdinalIgnoreCase),
             _ => true
         };
+    }
+
+    /// <summary>
+    /// Validates, at execution time, that a file flagged for deletion is safe to remove. Guards
+    /// against deleting non-data files, files that have moved outside the managed root, or data
+    /// classified as <see cref="DataClassification.Critical"/>. Retention eligibility itself is
+    /// determined during evaluation; this is a defensive gate against stale or malformed actions.
+    /// </summary>
+    private bool IsStillDeletable(string filePath)
+    {
+        var fileInfo = new FileInfo(filePath);
+        if (!fileInfo.Exists)
+            return false;
+
+        // Only ever delete recognised data files.
+        if (!DataExtensions.Any(ext => filePath.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+            return false;
+
+        // The file must still live under the managed root. Compare against the root with a
+        // trailing separator so a sibling directory (e.g. "/var/data-other" vs "/var/data")
+        // cannot bypass the check via partial-name matching. Use a case-sensitive comparison on
+        // Linux (where the filesystem is case-sensitive) so a path differing from the root only by
+        // casing is correctly treated as out-of-root; Windows/macOS default to case-insensitive.
+        if (!string.IsNullOrEmpty(_options.RootPath))
+        {
+            var pathComparison = OperatingSystem.IsLinux()
+                ? StringComparison.Ordinal
+                : StringComparison.OrdinalIgnoreCase;
+            var root = Path.GetFullPath(_options.RootPath);
+            var rootWithSeparator = root.EndsWith(Path.DirectorySeparatorChar)
+                ? root
+                : root + Path.DirectorySeparatorChar;
+            var full = Path.GetFullPath(filePath);
+            if (!full.StartsWith(rootWithSeparator, pathComparison))
+                return false;
+        }
+
+        // Never delete data classified as Critical.
+        return ResolvePolicy(filePath).Classification != DataClassification.Critical;
     }
 
     private static bool IsExpired(TimeSpan fileAge, StoragePolicyConfig policy)

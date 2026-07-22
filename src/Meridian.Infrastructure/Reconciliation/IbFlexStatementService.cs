@@ -17,6 +17,8 @@ namespace Meridian.Infrastructure.Reconciliation;
 /// </summary>
 public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store) : IBrokerStatementService
 {
+    private const long MaximumStatementBytes = 32L * 1024 * 1024;
+    private const int MaximumStatementRows = 100_000;
     private static readonly string[] SupportedBrokerAliases =
         ["ibflex", "ib-flex", "ibkr", "interactivebrokers", "interactive-brokers"];
 
@@ -35,6 +37,12 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         if (!File.Exists(request.SourcePath))
         {
             errors.Add("Source file not found.");
+            return new BrokerStatementValidationResult(false, errors, 0);
+        }
+
+        if (new FileInfo(request.SourcePath).Length > MaximumStatementBytes)
+        {
+            errors.Add($"Flex report exceeds the {MaximumStatementBytes}-byte limit.");
             return new BrokerStatementValidationResult(false, errors, 0);
         }
 
@@ -67,10 +75,24 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             + statement.Descendants("OpenPosition").Count()
             + statement.Descendants("CashTransaction").Count());
 
+        if (rowCount > MaximumStatementRows)
+        {
+            errors.Add($"Flex report exceeds the {MaximumStatementRows}-row limit.");
+            return new BrokerStatementValidationResult(false, errors, rowCount);
+        }
+
         if (rowCount == 0)
         {
             errors.Add("Flex report contains no Trade, OpenPosition, or CashTransaction rows; "
                 + "include those sections in the Flex Query definition.");
+        }
+
+        var distinctAccounts = DistinctRowAccounts(document);
+        if (distinctAccounts.Length > 1)
+        {
+            errors.Add(
+                $"Flex report contains rows for {distinctAccounts.Length} different accounts; a statement run reconciles a single account. "
+                + "Split the report into one document per account before importing.");
         }
 
         return new BrokerStatementValidationResult(errors.Count == 0, errors, rowCount);
@@ -82,9 +104,9 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var fileBytes = await File.ReadAllBytesAsync(request.SourcePath, ct).ConfigureAwait(false);
+        EnsureBoundedFile(request.SourcePath);
         var sourceFileHash = string.IsNullOrWhiteSpace(request.SourceFileHash)
-            ? Convert.ToHexString(SHA256.HashData(fileBytes))
+            ? await HashFileAsync(request.SourcePath, ct).ConfigureAwait(false)
             : request.SourceFileHash.Trim().ToUpperInvariant();
         var duplicateKey = StatementDuplicateKey.Create(
             request.FundAccountId,
@@ -103,6 +125,10 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
         var importId = duplicateKey;
         var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
         var rows = ParseRows(document, importId).ToList();
+        if (rows.Count > MaximumStatementRows)
+        {
+            throw new InvalidDataException($"Flex report exceeds the {MaximumStatementRows}-row limit.");
+        }
         if (rows.Count == 0)
         {
             // A Flex query configured without the supported sections must fail loudly instead
@@ -110,6 +136,21 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             throw new InvalidDataException(
                 "Flex report contains no Trade, OpenPosition, or CashTransaction rows; "
                 + "include those sections in the Flex Query definition.");
+        }
+
+        // An advisor Flex report can carry several accounts, but a statement run reconciles a single
+        // account and the matcher normalizes every row to the run's one external account. Committing a
+        // multi-account report would match one account's rows against another account's Meridian
+        // records, so reject it: the operator must split it into one document per account.
+        var distinctAccounts = rows
+            .Select(static row => row.Account)
+            .Where(static account => !string.IsNullOrWhiteSpace(account))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinctAccounts.Length > 1)
+        {
+            throw new InvalidDataException(
+                $"Flex report contains rows for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the report into one document per account before importing.");
         }
 
         var import = new CanonicalStatementImport(
@@ -135,7 +176,12 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             DuplicateKey = duplicateKey
         };
 
-        await store.SaveImportAsync(import, rows, ct).ConfigureAwait(false);
+        if (!await store.TrySaveImportAsync(import, rows, ct).ConfigureAwait(false))
+        {
+            throw new InvalidOperationException(
+                "Statement already imported (fund account, statement period, and source file hash match).");
+        }
+
         return new BrokerStatementImportResult(import, rows);
     }
 
@@ -148,11 +194,33 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
             DtdProcessing = DtdProcessing.Prohibit,
             XmlResolver = null,
             Async = true,
-            CloseInput = true
+            CloseInput = true,
+            MaxCharactersInDocument = MaximumStatementBytes,
+            MaxCharactersFromEntities = 0
         };
 
         using var reader = XmlReader.Create(File.OpenRead(path), settings);
         return await XDocument.LoadAsync(reader, LoadOptions.None, ct).ConfigureAwait(false);
+    }
+
+    private static void EnsureBoundedFile(string path)
+    {
+        if (new FileInfo(path).Length > MaximumStatementBytes)
+        {
+            throw new InvalidDataException($"Flex report exceeds the {MaximumStatementBytes}-byte limit.");
+        }
+    }
+
+    private static async Task<string> HashFileAsync(string path, CancellationToken ct)
+    {
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 64 * 1024,
+            options: FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false));
     }
 
     private static IEnumerable<CanonicalStatementRow> ParseRows(XDocument document, string importId)
@@ -176,7 +244,11 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                     ParseFirstDecimal(trade, "netCash", "proceeds"),
                     "trade",
                     RequireDate(trade, "tradeDate", statementToDate, rowNumber),
-                    HashElement(trade));
+                    HashElement(trade))
+                {
+                    Currency = FlexCurrency(trade),
+                    ExternalTransactionId = FlexIdentifier(trade, "tradeID", "transactionID", "ibOrderID")
+                };
             }
 
             foreach (var position in statement.Descendants("OpenPosition"))
@@ -192,7 +264,10 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                     0m,
                     "position",
                     RequireDate(position, "reportDate", statementToDate, rowNumber),
-                    HashElement(position));
+                    HashElement(position))
+                {
+                    Currency = FlexCurrency(position)
+                };
             }
 
             foreach (var cash in statement.Descendants("CashTransaction"))
@@ -208,24 +283,73 @@ public sealed class IbFlexBrokerStatementService(ICanonicalStatementStore store)
                     ParseDecimal(cash, "amount"),
                     MapCashTransactionActivity((string?)cash.Attribute("type")),
                     RequireFirstDate(cash, ["dateTime", "reportDate", "settleDate"], statementToDate, rowNumber),
-                    HashElement(cash));
+                    HashElement(cash))
+                {
+                    Currency = FlexCurrency(cash),
+                    ExternalTransactionId = FlexIdentifier(cash, "transactionID", "tradeID")
+                };
             }
         }
+    }
+
+    private static string FlexCurrency(XElement element) =>
+        (string?)element.Attribute("currency") is { Length: > 0 } currency
+            ? currency.Trim().ToUpperInvariant()
+            : "USD";
+
+    private static string? FlexIdentifier(XElement element, params string[] attributeNames)
+    {
+        foreach (var attributeName in attributeNames)
+        {
+            if ((string?)element.Attribute(attributeName) is { Length: > 0 } value)
+            {
+                return value.Trim();
+            }
+        }
+
+        return null;
     }
 
     private static string Account(XElement element, string statementAccount) =>
         (string?)element.Attribute("accountId") is { Length: > 0 } account ? account : statementAccount;
 
+    private static string[] DistinctRowAccounts(XDocument document) =>
+        document.Root!.Descendants("FlexStatement")
+            .SelectMany(static statement =>
+            {
+                var statementAccount = (string?)statement.Attribute("accountId") ?? string.Empty;
+                return statement.Descendants()
+                    .Where(static element => element.Name.LocalName is "Trade" or "OpenPosition" or "CashTransaction")
+                    .Select(element => Account(element, statementAccount));
+            })
+            .Where(static account => !string.IsNullOrWhiteSpace(account))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
     /// <summary>
-    /// Maps a Flex CashTransaction <c>type</c> to the canonical activity type so downstream
-    /// matching applies fee handling to fee-like rows ("Other Fees", "Advisor Fees", …) instead
-    /// of cash tolerance rules. All other cash transaction types (dividends, deposits,
-    /// withholding tax, interest) stay canonical <c>cash</c>.
+    /// Maps a Flex CashTransaction <c>type</c> to the canonical activity type. Cash transactions are
+    /// ledger movements, not the account's ending cash balance, so they reconcile against ledger
+    /// transactions rather than the closing balance: fee-like rows ("Other Fees", "Advisor Fees", …)
+    /// become <c>fee</c>, dividends become <c>dividend</c>, and the rest (deposits, withdrawals,
+    /// interest, withholding tax) become generic <c>transaction</c> rows. Canonical <c>cash</c> and
+    /// <c>cashbalance</c> are reserved for balance rows so a movement is never treated as a balance.
     /// </summary>
-    public static string MapCashTransactionActivity(string? flexType) =>
-        flexType is not null && flexType.Contains("fee", StringComparison.OrdinalIgnoreCase)
-            ? "fee"
-            : "cash";
+    public static string MapCashTransactionActivity(string? flexType)
+    {
+        if (flexType is null)
+        {
+            return "transaction";
+        }
+
+        if (flexType.Contains("fee", StringComparison.OrdinalIgnoreCase))
+        {
+            return "fee";
+        }
+
+        return flexType.Contains("dividend", StringComparison.OrdinalIgnoreCase)
+            ? "dividend"
+            : "transaction";
+    }
 
     private static decimal ParseDecimal(XElement element, string attribute)
     {

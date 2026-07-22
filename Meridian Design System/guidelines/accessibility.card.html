@@ -1,0 +1,155 @@
+<!-- @dsCard group="Documentation" viewport="940x660" name="Accessibility" subtitle="WCAG 2.2 AA — measured contrast, keyboard, ARIA guarantees" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px 22px; background: var(--bg); font-family: var(--font-body);
+    color: var(--text-primary); -webkit-font-smoothing: antialiased; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    border-bottom: 1px solid var(--border-strong); padding-bottom: 10px; margin-bottom: 14px; }
+  h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+  .target { font-family: var(--font-data); font-size: 11px; color: var(--text-muted);
+    border: 1px solid var(--border); padding: 3px 8px; }
+  .grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 20px; align-items: start; }
+  .lbl { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .05em;
+    color: var(--text-muted); margin: 0 0 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--border-divider); }
+  thead th { font-size: 9px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em;
+    color: var(--text-muted); border-bottom: 1px solid var(--border-strong); }
+  .sw { display: inline-block; width: 12px; height: 12px; border: 1px solid var(--border-strong);
+    vertical-align: -2px; margin-right: 7px; }
+  .tok { font-family: var(--font-data); font-size: 11px; color: var(--text-secondary);
+    white-space: nowrap; }
+  .ratio { font-family: var(--font-data); font-size: 12px; font-weight: 600; text-align: right;
+    font-variant-numeric: tabular-nums; color: var(--text-primary); }
+  td.b { text-align: right; }
+  .pass { display: inline-block; font-family: var(--font-data); font-size: 9px; font-weight: 700;
+    padding: 1px 5px; border: 1px solid; white-space: nowrap; letter-spacing: .02em; }
+  .aaa { color: var(--green-dim); border-color: var(--green); background: var(--green-a10); }
+  .aa  { color: var(--accent); border-color: var(--accent); background: var(--blue-a10); }
+  .warn{ color: var(--orange-dim); border-color: var(--orange); background: var(--orange-a10); }
+  .panel { border: 1px solid var(--border); background: var(--bg-light); padding: 11px 13px;
+    margin-bottom: 11px; }
+  .panel h2 { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .05em;
+    color: var(--text-muted); margin: 0 0 8px; }
+  .kv { font-size: 11.5px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
+  .kv + .kv { margin-top: 6px; }
+  .kv b { color: var(--text-primary); font-weight: 600; }
+  kbd { font-family: var(--font-data); font-size: 10px; border: 1px solid var(--border-strong);
+    border-bottom-width: 2px; background: var(--bg-medium); padding: 1px 5px;
+    color: var(--text-primary); }
+  .rule { border: 1px solid var(--green); border-left-width: 3px; background: var(--green-a10);
+    padding: 9px 12px; font-size: 11px; line-height: 1.55; color: var(--text-secondary); }
+  .rule b { color: var(--green-dim); }
+  .rule .tk { font-family: var(--font-data); font-size: 10.5px; color: var(--text-primary); }
+  .note { font-size: 10px; color: var(--text-muted); margin: 9px 2px 0; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1>Accessibility — guarantees, measured</h1>
+    <span class="target">WCAG 2.2 · Level AA</span>
+  </div>
+
+  <div class="grid">
+    <div>
+      <p class="lbl">Text contrast — measured against Concrete tokens</p>
+      <table>
+        <thead>
+          <tr><th>Foreground</th><th>On</th><th class="b">Ratio</th><th>Normal</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#22272E"></span>text-primary</td>
+            <td class="tok">panel</td><td class="ratio">15.0</td>
+            <td><span class="pass aaa">AAA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#4D5967"></span>text-secondary</td>
+            <td class="tok">panel</td><td class="ratio">7.1</td>
+            <td><span class="pass aaa">AAA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#59636F"></span>text-muted</td>
+            <td class="tok">panel</td><td class="ratio">6.1</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#59636F"></span>text-muted</td>
+            <td class="tok">canvas</td><td class="ratio">4.7</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#2F6F8F"></span>accent</td>
+            <td class="tok">panel</td><td class="ratio">5.5</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#FFFFFF"></span>white</td>
+            <td class="tok">accent btn</td><td class="ratio">5.5</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#BA3F55"></span>red</td>
+            <td class="tok">panel</td><td class="ratio">5.3</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#8A520E"></span>orange</td>
+            <td class="tok">panel</td><td class="ratio">6.4</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#6F5BA7"></span>purple</td>
+            <td class="tok">panel</td><td class="ratio">5.6</td>
+            <td><span class="pass aa">AA</span></td>
+          </tr>
+          <tr>
+            <td class="tok"><span class="sw" style="background:#16885F"></span>green&nbsp;(raw)</td>
+            <td class="tok">panel</td><td class="ratio">4.45</td>
+            <td><span class="pass warn">USE -dim</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">Raw <span class="tok" style="font-size:10.5px">--green</span> is the one hue
+        that lands marginally under 4.5:1 as body text — which is exactly why semantic labels
+        render in the darker <span class="tok" style="font-size:10.5px">-dim</span> variant. Focus
+        ring (accent on panel) is 5.5:1, well over the 3:1 non-text minimum.</p>
+    </div>
+
+    <div>
+      <div class="rule">
+        <b>The rule:</b> semantic text uses the <span class="tk">-dim</span> variant; raw hues are
+        for borders &amp; ≥18px icons. Follow the <b>colors-states</b> trio and you are conformant
+        by construction.
+      </div>
+
+      <div class="panel" style="margin-top:11px">
+        <h2>Keyboard</h2>
+        <p class="kv"><b><kbd>Tab</kbd></b> follows DOM order — no positive tabindex anywhere.</p>
+        <p class="kv"><b><kbd>Ctrl/⌘ K</kbd></b> opens the command palette from anywhere.</p>
+        <p class="kv"><b><kbd>Esc</kbd></b> closes every overlay — Dialog, Drawer, <b>Modal</b>,
+          palette — and focus returns to the trigger.</p>
+        <p class="kv"><b>Arrows</b> rove within Select, Tree, Tabs, Radio, Menu; container is one
+          tab stop.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Semantics &amp; motion</h2>
+        <p class="kv">Overlays are <b>role="dialog"</b> + <b>aria-modal</b>, labelled by title.
+          Toasts are <b>aria-live</b> polite. Breadcrumb carries <b>aria-current</b>.</p>
+        <p class="kv">Icon-only buttons require an <b>aria-label</b>; decorative glyphs are
+          <b>aria-hidden</b>.</p>
+        <p class="kv">Every continuous motion honors
+          <b>prefers-reduced-motion</b>.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Full guide: <span class="tok" style="font-size:10.5px">guidelines/ACCESSIBILITY.md</span>
+    — measured tables, focus-management matrix, and the consumer conformance checklist.</p>
+</body>
+</html>

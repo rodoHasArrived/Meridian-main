@@ -171,6 +171,31 @@ public sealed class FundReconciliationWorkbenchServiceTests
             Source: "test",
             RecordedBy: "test",
             SecuritiesMarketValue: 250m));
+        // Supply a matching bank closing balance so the cash check is genuinely Matched;
+        // without independent evidence reconciliation now reports Unverified exception rows.
+        var bankBatchId = Guid.NewGuid();
+        await fundAccountService.IngestBankStatementAsync(new IngestBankStatementRequest(
+            BatchId: bankBatchId,
+            AccountId: accountId,
+            StatementDate: new DateOnly(2026, 3, 21),
+            BankName: "Northern Trust",
+            Notes: null,
+            Lines:
+            [
+                new BankStatementLineDto(
+                    LineId: Guid.NewGuid(),
+                    BatchId: bankBatchId,
+                    AccountId: accountId,
+                    TransactionDate: new DateOnly(2026, 3, 21),
+                    ValueDate: new DateOnly(2026, 3, 21),
+                    Amount: 750m,
+                    Currency: "USD",
+                    TransactionType: "Deposit",
+                    Description: "Opening funding",
+                    Reference: null,
+                    ClosingBalance: 750m),
+            ],
+            LoadedBy: "test"));
         await fundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(
             AccountId: accountId,
             AsOfDate: new DateOnly(2026, 3, 21),

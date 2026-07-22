@@ -6,9 +6,9 @@ This document describes the provider management architecture used by Meridian. I
 
 See also:
 
-- [ADR-001: Provider Abstraction](../adr/001-provider-abstraction.md)
-- [ADR-004: Async Streaming Patterns](../adr/004-async-streaming-patterns.md)
-- [ADR-005: Attribute-Based Discovery](../adr/005-attribute-based-discovery.md)
+- [ADR-001: Provider Abstraction](../../archive/docs/adr/001-provider-abstraction.md)
+- [ADR-004: Async Streaming Patterns](../../archive/docs/adr/004-async-streaming-patterns.md)
+- [ADR-005: Attribute-Based Discovery](../../archive/docs/adr/005-attribute-based-discovery.md)
 - [Provider Implementation Guide](../development/provider-implementation.md)
 - [Provider Capability Matrix](../reference/provider-capability-matrix.md)
 - [Provider Backfill Operations](../operators/provider-backfill-operations.md)
@@ -240,11 +240,11 @@ All located under `src/Meridian.Infrastructure/Adapters/`.
 
 | Provider | Class | Filterable | Exchanges | Rate Limit |
 |----------|-------|------------|-----------|------------|
-| Alpaca | `AlpacaSymbolSearchProviderRefactored` | Yes | US, Crypto | 200/min |
+| Alpaca | `AlpacaSymbolSearchProvider` | Yes | US, Crypto | 200/min |
 | Alpha Vantage | `AlphaVantageSymbolSearchProvider` | Yes | Region-scoped global keyword results | 5/min |
 | Tiingo | `TiingoSymbolSearchProvider` | Yes | Tiingo utilities search results with client-side asset/exchange filtering | 50/hour |
 | Twelve Data | `TwelveDataSymbolSearchProvider` | Yes | `/symbol_search` results with client-side asset/exchange filtering | 8/min |
-| Finnhub | `FinnhubSymbolSearchProviderRefactored` | Yes | US, International | 60/min |
+| Finnhub | `FinnhubSymbolSearchProvider` | Yes | US, International | 60/min |
 | Polygon | `PolygonSymbolSearchProvider` | Yes | US | 5/min (free) |
 | OpenFIGI | `OpenFigiClient` | No | Global (ID mapping) | Varies |
 | StockSharp | `StockSharpSymbolSearchProvider` | No | Multi-exchange | Varies |

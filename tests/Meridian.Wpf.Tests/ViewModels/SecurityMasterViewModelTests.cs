@@ -1852,6 +1852,13 @@ public sealed class SecurityMasterViewModelTests
             return Task.FromResult(ApiResponse<BulkResolveSecurityMasterConflictsResult>.Ok(BulkResolveResult));
         }
 
+        // Operator-override read/decision methods are not exercised by these tests.
+        public Task<OperatorOverridesDto?> GetOperatorOverridesAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<OperatorOverridesDto?>(null);
+
+        public Task<ApiResponse<OperatorOverridesDto>> RecordOperatorOverrideDecisionAsync(Guid securityId, OperatorOverrideDecisionRequest request, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<OperatorOverridesDto>.Fail("not supported in stub", 501));
+
         // Passport Workbench governed-write methods are not exercised by these tests.
         public Task<ApiResponse<SecurityMasterEditResultDto>> UpdateFieldAsync(Guid securityId, UpdateSecurityFieldRequest request, CancellationToken ct = default)
             => Task.FromResult(ApiResponse<SecurityMasterEditResultDto>.Fail("not supported in stub", 501));

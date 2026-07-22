@@ -2,8 +2,13 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Reporting;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -438,10 +444,35 @@ public sealed class LedgerAmountProvenanceServiceTests
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
-        builder.Services.AddSingleton<IGovernanceReportPackRepository>(new InMemoryReportPackRepository(snapshot));
+        var reportRepository = new InMemoryReportPackRepository(snapshot);
+        var securityMaster = new NullSecurityMasterQueryService();
+        var fundGuard = Substitute.For<IFundProfileTenantGuard>();
+        fundGuard.EvaluateAsync(
+                Arg.Any<WorkstationTenantContext>(),
+                "fund-ops",
+                Arg.Any<CancellationToken>())
+            .Returns(FundProfileTenantDecision.Allow("owned by the test tenant"));
+
+        builder.Services.AddSingleton<IGovernanceReportPackRepository>(reportRepository);
+        builder.Services.AddSingleton(new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            reportPackRepository: reportRepository));
         builder.Services.AddSingleton<LedgerAmountProvenanceService>();
+        builder.Services.AddSingleton(fundGuard);
 
         var app = builder.Build();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "reporting-test-operator";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewReporting;
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
+            await next();
+        });
         app.MapFundStructureEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         await app.StartAsync();
         return app;

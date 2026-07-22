@@ -101,7 +101,82 @@ const fundEventLedgerRecord: PrivateCapitalFundEventLedgerRecord = {
   }
 };
 
+function createCapitalAccountWorkbench(
+  fundEventRecords: CapitalAccountWorkbench["investorAccounts"][number]["fundEventRecords"]
+): CapitalAccountWorkbench {
+  return {
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "book-alpha",
+    projectedAtUtc: "2026-06-30T17:00:00Z",
+    capitalAccountId: "capital-account:fund-alpha:lp-1",
+    investorId: "investor:lp-1",
+    currency: "USD",
+    workbenchRoute: "/api/ledger/private-capital/capital-account-workbench?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+    statusLabel: "Ready",
+    statusReason: "Capital account projection loaded.",
+    investorAccountCount: 1,
+    fundEventCount: fundEventRecords?.length ?? 0,
+    statementCount: 0,
+    restatementLineageCount: 0,
+    auditDrillThroughCount: 0,
+    netCapitalActivity: 125,
+    investorAccounts: [{
+      accountKey: "capital-account:fund-alpha:lp-1|investor:lp-1|USD",
+      capitalAccountId: "capital-account:fund-alpha:lp-1",
+      investorId: "investor:lp-1",
+      currency: "USD",
+      activityRoute: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+      readiness: "Ready",
+      readinessLabel: "Ready",
+      readinessReason: "Retained evidence and statement support are available.",
+      nextAction: "Open statement",
+      nextActionRoute: "/api/ledger/private-capital/report-output?reportOutputId=report-output-1",
+      openingNetActivity: 0,
+      endingNetActivity: 125,
+      netCapitalActivity: 125,
+      contributions: 125,
+      distributions: 0,
+      subscriptions: 0,
+      redemptions: 0,
+      managementFees: 0,
+      fundEventCount: fundEventRecords?.length ?? 0,
+      postedFundEventCount: 0,
+      approvalQueueCount: 0,
+      publishedReportOutputCount: 0,
+      evidenceLinkCount: 0,
+      validationIssueCount: 0,
+      evidenceCategorySummary: "No evidence categories projected.",
+      evidenceLinks: [],
+      evidenceCategories: [],
+      fundEventRecords,
+      subledgerEntries: [],
+      ledgerImpacts: [],
+      reportOutputs: [],
+      validationIssues: [],
+      paymentIntentEvidence: null
+    }],
+    allocationRules: [],
+    statementLineage: [],
+    auditDrillThroughs: [],
+    validationIssues: [],
+    liveCapabilities: [],
+    plannedCapabilities: []
+  };
+}
+
 describe("accounting capital account view model", () => {
+  it("keeps the workbench unavailable when the first load fails", async () => {
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn().mockRejectedValue(new Error("capital accounts offline"))
+    };
+
+    const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(true, "", services));
+
+    await waitFor(() => expect(result.current.errorText).toBeTruthy());
+    expect(result.current.available).toBe(false);
+    expect(result.current.investorAccounts).toEqual([]);
+  });
+
   it("loads the Capital Account Workbench with investor evidence, allocation rules, lineage, and audit drill-through rows", async () => {
     const workbench: CapitalAccountWorkbench = {
       fundProfileId: "fund-alpha",
@@ -274,7 +349,7 @@ describe("accounting capital account view model", () => {
       expect.objectContaining({ id: "statements", detail: "1 restatement lineage" })
     ]));
     expect(result.current.investorAccounts[0]).toMatchObject({
-      title: "capital-account:fund-alpha:lp-1",
+      title: "LP 1 capital account",
       netActivityLabel: "+$125.00 USD",
       paymentEvidenceLabel: "Settlement matched / Inflow / $125 USD / 1 cash evidence / settlement linked"
     });
@@ -318,5 +393,93 @@ describe("accounting capital account view model", () => {
     });
     expect(result.current.liveCapabilities).toContain("Investor-level capital account evidence");
     expect(result.current.plannedCapabilities).toContain("Broad LP portal self-service");
+  });
+
+  it("renders investor accounts when fund-event records are absent from the projection", async () => {
+    const workbench = createCapitalAccountWorkbench(null as unknown as CapitalAccountWorkbench["investorAccounts"][number]["fundEventRecords"]);
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(workbench)
+    };
+
+    const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(
+      true,
+      "?capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD",
+      services
+    ));
+
+    await waitFor(() => expect(result.current.statusLabel).toBe("Review required"));
+    expect(result.current.statusTone).toBe("warning");
+    expect(result.current.statusReason).toContain("cash-support evidence review");
+    expect(result.current.investorAccounts).toHaveLength(1);
+    expect(result.current.investorAccounts[0]).toMatchObject({
+      statusLabel: "Cash support review",
+      statusTone: "warning",
+      paymentEvidenceTone: "warning"
+    });
+    expect(result.current.fundEventCommandRows).toEqual([]);
+  });
+
+  it("does not present an empty capital-account projection as ready", async () => {
+    const workbench: CapitalAccountWorkbench = {
+      ...createCapitalAccountWorkbench([]),
+      statusLabel: "Ready",
+      statusReason: "Projection request completed.",
+      investorAccountCount: 0,
+      statementCount: 0,
+      restatementLineageCount: 0,
+      auditDrillThroughCount: 0,
+      netCapitalActivity: 0,
+      investorAccounts: [],
+      allocationRules: [],
+      statementLineage: [],
+      auditDrillThroughs: []
+    };
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(workbench)
+    };
+
+    const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(true, "", services));
+
+    await waitFor(() => expect(result.current.available).toBe(true));
+    expect(result.current.statusLabel).toBe("No activity loaded");
+    expect(result.current.statusTone).toBe("warning");
+    expect(result.current.statusReason).toContain("no investor accounts, allocation evidence, statement lineage, or audit routes");
+    expect(result.current.summaryCards).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "allocation-rules", value: "0", tone: "warning" }),
+      expect.objectContaining({ id: "audit-drill-throughs", value: "0", tone: "warning" })
+    ]));
+  });
+
+  it("keeps ancillary evidence in review when no investor capital account matches", async () => {
+    const populated = createCapitalAccountWorkbench([]);
+    const workbench: CapitalAccountWorkbench = {
+      ...populated,
+      statusLabel: "Ready",
+      statusReason: "Supporting evidence loaded.",
+      investorAccountCount: 0,
+      investorAccounts: [],
+      auditDrillThroughCount: 1,
+      auditDrillThroughs: [{
+        drillThroughId: "drill-supporting-evidence",
+        kind: "evidence",
+        label: "Supporting evidence",
+        summary: "Retained support is available, but no investor account matched.",
+        route: "/reporting/evidence",
+        isAvailable: true,
+        evidenceLinkCount: 1,
+        evidenceLinks: ["/reporting/evidence"],
+        relatedIds: []
+      }]
+    };
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(workbench)
+    };
+
+    const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(true, "", services));
+
+    await waitFor(() => expect(result.current.available).toBe(true));
+    expect(result.current.statusLabel).toBe("Review required");
+    expect(result.current.statusTone).toBe("warning");
+    expect(result.current.statusReason).toContain("no investor capital accounts matched this scope");
   });
 });

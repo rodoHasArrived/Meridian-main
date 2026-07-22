@@ -248,6 +248,9 @@ public sealed class LedgerBookServiceTests
         result.Summary.PeriodOnPeriodVariance.Should().Be(400m);
         result.Summary.OpenBreakCount.Should().Be(1);
         result.Summary.SignoffStatus.Should().Be(LedgerPeriodSignoffStatusDto.Pending);
+        store.QueryHistory.Should().Contain(query =>
+            query.LedgerBookId == book.LedgerBookId &&
+            query.PeriodId == current.PeriodId);
         result.Summary.TrialBalance.Should().Contain(row =>
             row.AccountName == "Management fees" &&
             row.AccountType == nameof(LedgerAccountType.Revenue) &&
@@ -341,6 +344,187 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task ClosePeriodAsync_OpenPeriodRejectsHardCloseUntilGovernedSoftCloseCompletes()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund",
+            "USD"));
+        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            3,
+            "2026-P03",
+            new DateOnly(2026, 3, 1),
+            new DateOnly(2026, 3, 31)));
+
+        var act = () => service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, "fund-controller"));
+
+        await act.Should().ThrowAsync<LedgerPeriodTransitionException>()
+            .WithMessage("*Cannot transition*Open to HardClosed*");
+        (await store.GetPeriodAsync(period.PeriodId))!.Status.Should().Be("Open");
+    }
+
+    [Fact]
+    public async Task ClosePeriodAsync_HardCloseWithTemporaryAccountResiduals_FailsClosedWithoutMutation()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund",
+            "USD"));
+        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            4,
+            "2026-P04",
+            new DateOnly(2026, 4, 1),
+            new DateOnly(2026, 4, 30)));
+        await store.AppendAsync(BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 1_000m,
+            expense: 250m,
+            timestamp: new DateTimeOffset(2026, 4, 30, 21, 0, 0, TimeSpan.Zero)));
+        await service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
+
+        var act = () => service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, "fund-controller"));
+
+        await act.Should().ThrowAsync<LedgerBookValidationException>()
+            .WithMessage("*cannot be hard-closed*revenue/expense balance*closing-entry draft*");
+        var retained = await store.GetPeriodAsync(period.PeriodId);
+        retained.Should().NotBeNull();
+        retained!.Status.Should().Be("SoftClosed");
+        retained.ClosedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ClosePeriodAsync_HardCloseAndLateAdjustment_SerializeOnOnePeriodMutationGate()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund",
+            "USD"));
+        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            4,
+            "2026-P04-race",
+            new DateOnly(2026, 4, 1),
+            new DateOnly(2026, 4, 30)));
+        await service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
+        using var hardCloseEntered = new ManualResetEventSlim();
+        using var releaseHardClose = new ManualResetEventSlim();
+        using var appendAttempted = new ManualResetEventSlim();
+        store.HardCloseEntered = hardCloseEntered;
+        store.ReleaseHardClose = releaseHardClose;
+        store.AppendAttempted = appendAttempted;
+        var closeTask = Task.Run(() => service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, "fund-controller")));
+        var enteredHardClose = hardCloseEntered.Wait(TimeSpan.FromSeconds(5));
+        if (!enteredHardClose)
+        {
+            releaseHardClose.Set();
+        }
+
+        enteredHardClose.Should().BeTrue();
+        var lateAdjustment = BuildBalancedEntry(
+            period.PeriodId,
+            revenue: 200m,
+            expense: 50m,
+            timestamp: DateTimeOffset.Parse("2026-04-30T23:59:59Z")) with
+        {
+            PostingKind = LedgerPostingKindDto.Adjustment,
+            AdjustmentApproval = BuildApprovedAdjustmentApproval()
+        };
+
+        var appendTask = Task.Run(() => store.AppendAsync(lateAdjustment));
+        var attemptedAppend = appendAttempted.Wait(TimeSpan.FromSeconds(5));
+        if (!attemptedAppend)
+        {
+            releaseHardClose.Set();
+        }
+
+        attemptedAppend.Should().BeTrue();
+        var appendCompletedWhileHardCloseHeld = appendTask.IsCompleted;
+        releaseHardClose.Set();
+
+        var closed = await closeTask;
+        var append = async () => await appendTask;
+        appendCompletedWhileHardCloseHeld.Should().BeFalse(
+            "a journal append must wait while hard-close holds the period mutation boundary");
+        closed.Period.Status.Should().Be(LedgerPeriodStatusDto.HardClosed);
+        await append.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*hard-closed*");
+        (await store.GetByPeriodAsync(period.PeriodId)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReopenPeriodAsync_HardClosedPeriod_RequiresControllerAndScopedRestatementEvidence()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var service = new PostgresLedgerBookService(store);
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund",
+            "USD"));
+        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            5,
+            "2026-P05",
+            new DateOnly(2026, 5, 1),
+            new DateOnly(2026, 5, 31)));
+        await service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, "fund-controller"));
+        await service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, "fund-controller"));
+        const string approval = "approval-restatement-2026-p05";
+        var evidence = $"evidence://restatement/reversal/period/{period.PeriodId:D}/book/{book.LedgerBookId:D}/approval/{approval}";
+
+        var unauthorized = () => service.ReopenPeriodAsync(
+            period.PeriodId,
+            new ReopenLedgerPeriodRequest(
+                "fund-accountant", "Accountant", "Correct retained close evidence.", approval, [evidence]));
+        await unauthorized.Should().ThrowAsync<LedgerBookValidationException>()
+            .WithMessage("*Controller or Fund Controller*");
+
+        var reopened = await service.ReopenPeriodAsync(
+            period.PeriodId,
+            new ReopenLedgerPeriodRequest(
+                "fund-controller", "Fund Controller", "Correct retained close evidence.", approval, [evidence]));
+
+        reopened.Period.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
+        reopened.Period.ClosedAt.Should().BeNull();
+        reopened.PriorStatus.Should().Be("HardClosed");
+        reopened.ApprovalReference.Should().Be(approval);
+        reopened.EvidenceLinks.Should().ContainSingle().Which.Should().Be(evidence);
+    }
+
+    [Fact]
     public async Task AppendAsync_AfterSoftClose_AllowsOnlyAdjustmentPostingKind()
     {
         var store = new InMemoryLedgerJournalStore();
@@ -404,7 +588,7 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
-    public async Task LedgerEndpoints_CreateListAndClosePeriod_PropagatesCloseWorkItemToOperatorInbox()
+    public async Task LedgerEndpoints_CreateListAndSoftClosePeriod_PropagatesCloseWorkItemToOperatorInbox()
     {
         await using var app = await CreateAppAsync();
         var client = app.GetTestClient();
@@ -439,12 +623,12 @@ public sealed class LedgerBookServiceTests
             client,
             closeRoute,
             new CloseLedgerPeriodRequest(
-                LedgerPeriodCloseKindDto.HardClose,
+                LedgerPeriodCloseKindDto.SoftClose,
                 ClosedBy: "fund-controller",
                 RequiredSignoffRole: "Fund Controller",
                 ToleranceProfileId: "close-tolerance-v1"));
 
-        close.Period.Status.Should().Be(LedgerPeriodStatusDto.HardClosed);
+        close.Period.Status.Should().Be(LedgerPeriodStatusDto.SoftClosed);
         close.WorkItem.Kind.Should().Be(OperatorWorkItemKindDto.LedgerPeriodClose);
         close.WorkItem.TargetRoute.Should().Be(UiApiRoutes.ReconciliationBreakQueue);
         close.WorkItem.TargetPageTag.Should().Be("FundReconciliation");
@@ -593,7 +777,7 @@ public sealed class LedgerBookServiceTests
         await PostJsonAsync<LedgerPeriodCloseResultDto>(
             client,
             UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", prior.PeriodId.ToString()),
-            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.HardClose, ClosedBy: "fund-controller"));
+            new CloseLedgerPeriodRequest(LedgerPeriodCloseKindDto.SoftClose, ClosedBy: "fund-controller"));
 
         var current = await PostJsonAsync<LedgerPeriodDto>(
             client,
@@ -945,7 +1129,10 @@ public sealed class LedgerBookServiceTests
             periodSummary.NetIncome == 100m);
         filteredPnlReport.TotalRevenue.Should().Be(100m);
         filteredPnlReport.NetIncome.Should().Be(100m);
-        store.QueryHistory.Should().HaveCount(4);
+        store.QueryHistory.Should().Contain(query =>
+            query.LedgerBookId == book.LedgerBookId &&
+            query.PeriodId == period.PeriodId &&
+            query.LineDimensions == null);
         store.QueryHistory.Should().Contain(query =>
             query.LedgerBookId == book.LedgerBookId &&
             query.PeriodId == period.PeriodId &&
@@ -993,7 +1180,7 @@ public sealed class LedgerBookServiceTests
             end: new DateOnly(2026, 1, 31),
             revenue: 800m,
             expense: 300m,
-            closeKind: LedgerPeriodCloseKindDto.HardClose);
+            closeKind: LedgerPeriodCloseKindDto.SoftClose);
         var second = await CreatePeriodWithPostingAsync(
             client,
             store,
@@ -1448,8 +1635,11 @@ public sealed class LedgerBookServiceTests
         throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
     }
 
-    private sealed class InMemoryLedgerJournalStore : ILedgerJournalStore
+    private sealed class InMemoryLedgerJournalStore :
+        ILedgerJournalStore,
+        IAtomicLedgerPeriodCloseStore
     {
+        private readonly object _periodMutationGate = new();
         private readonly Dictionary<Guid, LedgerBookRecord> _books = [];
         private readonly Dictionary<Guid, LedgerAccountingPeriod> _periods = [];
         private readonly Dictionary<Guid, List<LedgerJournalEntryRecord>> _entriesByPeriod = [];
@@ -1457,47 +1647,58 @@ public sealed class LedgerBookServiceTests
 
         public List<LedgerJournalEntryQuery> QueryHistory { get; } = [];
 
+        public ManualResetEventSlim? HardCloseEntered { get; set; }
+
+        public ManualResetEventSlim? ReleaseHardClose { get; set; }
+
+        public ManualResetEventSlim? AppendAttempted { get; set; }
+
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            if (!_periods.TryGetValue(entry.PeriodId, out var period))
+            AppendAttempted?.Set();
+            lock (_periodMutationGate)
             {
-                throw new LedgerValidationException($"Accounting period '{entry.PeriodId}' was not found.");
+                if (!_periods.TryGetValue(entry.PeriodId, out var period))
+                {
+                    throw new LedgerValidationException($"Accounting period '{entry.PeriodId}' was not found.");
+                }
+
+                LedgerPeriodPostingGuard.Validate(entry, period);
+
+                if (period.LedgerBookId is { } ledgerBookId &&
+                    _books.TryGetValue(ledgerBookId, out var book) &&
+                    book.AccountingBasis != entry.AccountingBasis)
+                {
+                    throw new LedgerValidationException(
+                        $"Journal entry '{entry.Entry.JournalEntryId}' basis '{entry.AccountingBasis}' does not match ledger book '{book.DisplayName}' basis '{book.AccountingBasis}'.");
+                }
+
+                if (!_entriesByPeriod.TryGetValue(entry.PeriodId, out var entries))
+                {
+                    entries = [];
+                    _entriesByPeriod[entry.PeriodId] = entries;
+                }
+
+                entries.Add(new LedgerJournalEntryRecord(
+                    entry.Entry,
+                    entry.AggregateId,
+                    entry.PeriodId,
+                    entry.CommandId,
+                    entry.CorrelationId,
+                    ++_sequence,
+                    DateTimeOffset.UtcNow,
+                    entry.AccountingBasis,
+                    entry.AccountingPolicyId,
+                    entry.AccountingPolicyVersion,
+                    entry.RuleId,
+                    entry.RuleVersion,
+                    entry.SourceEventId,
+                    entry.SourceJournalEntryId,
+                    entry.PostingKind,
+                    entry.AdjustmentApproval));
             }
 
-            LedgerPeriodPostingGuard.Validate(entry, period);
-
-            if (period.LedgerBookId is { } ledgerBookId &&
-                _books.TryGetValue(ledgerBookId, out var book) &&
-                book.AccountingBasis != entry.AccountingBasis)
-            {
-                throw new LedgerValidationException(
-                    $"Journal entry '{entry.Entry.JournalEntryId}' basis '{entry.AccountingBasis}' does not match ledger book '{book.DisplayName}' basis '{book.AccountingBasis}'.");
-            }
-
-            if (!_entriesByPeriod.TryGetValue(entry.PeriodId, out var entries))
-            {
-                entries = [];
-                _entriesByPeriod[entry.PeriodId] = entries;
-            }
-
-            entries.Add(new LedgerJournalEntryRecord(
-                entry.Entry,
-                entry.AggregateId,
-                entry.PeriodId,
-                entry.CommandId,
-                entry.CorrelationId,
-                ++_sequence,
-                DateTimeOffset.UtcNow,
-                entry.AccountingBasis,
-                entry.AccountingPolicyId,
-                entry.AccountingPolicyVersion,
-                entry.RuleId,
-                entry.RuleVersion,
-                entry.SourceEventId,
-                entry.SourceJournalEntryId,
-                entry.PostingKind,
-                entry.AdjustmentApproval));
             return Task.CompletedTask;
         }
 
@@ -1519,6 +1720,7 @@ public sealed class LedgerBookServiceTests
             if (!query.LedgerBookId.HasValue &&
                 !query.PeriodId.HasValue &&
                 !query.AggregateId.HasValue &&
+                !query.SourceEventId.HasValue &&
                 query.LineDimensions is null &&
                 string.IsNullOrWhiteSpace(query.AccountName) &&
                 !query.OccurredFrom.HasValue &&
@@ -1543,6 +1745,11 @@ public sealed class LedgerBookServiceTests
             if (query.AggregateId.HasValue)
             {
                 records = records.Where(entry => entry.AggregateId == query.AggregateId.Value);
+            }
+
+            if (query.SourceEventId.HasValue)
+            {
+                records = records.Where(entry => entry.SourceEventId == query.SourceEventId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(query.AccountName))
@@ -1633,26 +1840,78 @@ public sealed class LedgerBookServiceTests
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            if (_periods.TryGetValue(period.PeriodId, out var current))
+            lock (_periodMutationGate)
             {
-                if (current.Version != expectedVersion)
+                if (_periods.TryGetValue(period.PeriodId, out var current))
+                {
+                    if (current.Version != expectedVersion)
+                    {
+                        throw new InvalidOperationException("Simulated period version conflict.");
+                    }
+
+                    var updated = period with { Version = expectedVersion + 1 };
+                    _periods[period.PeriodId] = updated;
+                    return Task.FromResult(updated);
+                }
+
+                if (expectedVersion != 0)
                 {
                     throw new InvalidOperationException("Simulated period version conflict.");
                 }
 
-                var updated = period with { Version = expectedVersion + 1 };
-                _periods[period.PeriodId] = updated;
-                return Task.FromResult(updated);
+                var saved = period with { Version = 1 };
+                _periods[period.PeriodId] = saved;
+                return Task.FromResult(saved);
             }
+        }
 
-            if (expectedVersion != 0)
+        public Task<LedgerAccountingPeriod> SaveHardClosedPeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord closeEvent,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            lock (_periodMutationGate)
             {
-                throw new InvalidOperationException("Simulated period version conflict.");
-            }
+                HardCloseEntered?.Set();
+                ReleaseHardClose?.Wait(ct);
+                IEnumerable<LedgerJournalEntryRecord> retainedEntries =
+                    _entriesByPeriod.TryGetValue(period.PeriodId, out var entries)
+                        ? entries
+                        : [];
+                var residuals = retainedEntries
+                    .SelectMany(static record => record.Entry.Lines)
+                    .Where(static line => line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense)
+                    .GroupBy(static line => new
+                    {
+                        line.Account.Name,
+                        line.Account.AccountType,
+                        line.Account.Symbol,
+                        line.Account.FinancialAccountId,
+                        line.Dimensions
+                    })
+                    .Select(static group => new
+                    {
+                        group.Key.Name,
+                        Balance = group.Key.AccountType == LedgerAccountType.Revenue
+                            ? group.Sum(static line => line.Credit - line.Debit)
+                            : group.Sum(static line => line.Debit - line.Credit)
+                    })
+                    .Where(static row => row.Balance != 0m)
+                    .ToArray();
+                if (residuals.Length > 0)
+                {
+                    var preview = string.Join(
+                        "; ",
+                        residuals.Take(5).Select(static row =>
+                            FormattableString.Invariant($"{row.Name}={row.Balance}")));
+                    throw new LedgerBookValidationException(
+                        $"Accounting period '{period.Label}' cannot be hard-closed while {residuals.Length} revenue/expense balance(s) remain non-zero ({preview}). Post and approve the closing-entry draft before period lock.");
+                }
 
-            var saved = period with { Version = 1 };
-            _periods[period.PeriodId] = saved;
-            return Task.FromResult(saved);
+                return SavePeriodAsync(period, expectedVersion, closeEvent, ct);
+            }
         }
 
         public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)

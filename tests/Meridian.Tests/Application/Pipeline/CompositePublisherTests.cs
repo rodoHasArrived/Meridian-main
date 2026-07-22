@@ -4,6 +4,8 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Events.Publishers;
 using Meridian.Domain.Models;
+using Meridian.Tests.TestHelpers;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;
@@ -95,6 +97,29 @@ public class CompositePublisherTests
         // Assert
         result.Should().BeTrue(); // Second publisher succeeded
         publisher1.Received(1).TryPublish(Arg.Any<MarketEvent>());
+        publisher2.Received(1).TryPublish(Arg.Any<MarketEvent>());
+    }
+
+    [Fact]
+    public void TryPublish_PublisherThrowsException_LogsWarningAndContinues()
+    {
+        var publisher1 = Substitute.For<IMarketEventPublisher>();
+        var publisher2 = Substitute.For<IMarketEventPublisher>();
+        var logger = new RecordingLogger<CompositePublisher>();
+
+        publisher1.TryPublish(Arg.Any<MarketEvent>()).Throws(new InvalidOperationException("publisher unavailable"));
+        publisher2.TryPublish(Arg.Any<MarketEvent>()).Returns(true);
+
+        var composite = new CompositePublisher(logger, publisher1, publisher2);
+        var evt = CreateTestEvent();
+
+        var result = composite.TryPublish(evt);
+
+        result.Should().BeTrue();
+        logger.Entries.Should().Contain(entry =>
+            entry.LogLevel == LogLevel.Warning &&
+            entry.Exception is InvalidOperationException &&
+            entry.Message.Contains("failed while publishing", StringComparison.OrdinalIgnoreCase));
         publisher2.Received(1).TryPublish(Arg.Any<MarketEvent>());
     }
 

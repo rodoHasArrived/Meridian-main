@@ -1,0 +1,32 @@
+{
+  "_comment": "Allowlist for scripts/check_design_system_governance.py. Keep entries narrow and re-derive them from the CURRENT tree \u2014 this file went stale once already (it used to point at ui_kits/, preview/, colors_and_type.css from a folder layout that no longer exists) and silently stopped catching anything real. Prefer fixing a violation over adding an entry here.",
+
+  "raw_hex_allowed": [
+    "tokens/*.css",
+    "*.card.html",
+    "*.prompt.md",
+    "guidelines/*.md",
+    "docs/*.md",
+    "docs/changelog/*.md",
+    "readme.md",
+    "PATTERNS.md",
+    "SKILL.md"
+  ],
+
+  "large_radius_allowed": [],
+
+  "gradient_allowed": [
+    "components/data/Skeleton.jsx",
+    "guidelines/*.md"
+  ],
+
+  "legacy_workspace_mentions_allowed": [],
+
+  "white_on_fill_allowed": [],
+
+  "gallery_coverage_allowed": [],
+
+  "prompt_coverage_allowed": [],
+
+  "template_entry_allowed": []
+}

@@ -501,10 +501,11 @@ describe("execution evidence view model", () => {
     expect(state.controlsPanel?.rows).toContainEqual({ id: "active-overrides", label: "Active overrides", value: "BypassOrderControls (AAPL)" });
     expect(state.auditRows[0]).toMatchObject({
       id: "audit-1",
-      action: "ReplayPaperSession",
+      action: "Paper session replay",
       outcome: "Completed",
       outcomeTone: "success",
-      metadataText: "2026-01-01T00:20:00Z · session sess-1"
+      metadataText: "Recorded Jan 1, 2026, 00:20 UTC",
+      technicalMetadataText: "2026-01-01T00:20:00Z · session sess-1"
     });
     expect(state.auditRows[0].ariaLabel).toContain("Replay matched current state");
     expect(state.statusAnnouncement).toBe("Breaker Closed. 1 audit entry loaded.");
@@ -1096,6 +1097,7 @@ describe("trading confirmation view model", () => {
     expect(state.dialogTitleId).toBe("trading-confirm-cancel-order-po-1-title");
     expect(state.dialogDescriptionId).toBe("trading-confirm-cancel-order-po-1-description");
     expect(state.confirmButtonLabel).toBe("Confirm");
+    expect(state.confirmButtonVariant).toBe("destructive");
     expect(state.confirmAriaLabel).toBe("Confirm cancel order po-1");
     expect(state.canClose).toBe(true);
     expect(state.canConfirm).toBe(false);
@@ -1113,6 +1115,9 @@ describe("trading confirmation view model", () => {
     const acknowledged = buildTradingConfirmDialogState(createTradingConfirmState({ kind: "cancel-order", orderId: "PO-1" }, true));
     expect(acknowledged.canConfirm).toBe(true);
     expect(acknowledged.confirmDisabledReason).toBeNull();
+
+    const pause = buildTradingConfirmDialogState(createTradingConfirmState({ kind: "pause-strategy", strategyId: "strat-1" }));
+    expect(pause.confirmButtonVariant).toBe("default");
   });
 
   it("derives busy and completed states for assistive feedback", () => {

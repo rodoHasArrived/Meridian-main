@@ -113,7 +113,9 @@
   - `src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs` (new)
 
 ### Step 3.2 — Migrate Polygon reconnection to shared helper ✅
-- **Status:** Complete (partial migration).
+- **Status:** Complete (partial migration). *(Historical: the interim `WebSocketReconnectionHelper`
+  was later superseded by `WebSocketConnectionManager` — which owns reconnection and raises
+  `GapDetected` — and has been removed.)*
 - **What was done:**
   - Replaced Polygon's ~60-line manual reconnection logic (`SemaphoreSlim` gating, `CalculateReconnectDelay`, manual attempt tracking) with `WebSocketReconnectionHelper.TryReconnectAsync()`.
   - Polygon still manages its own `ClientWebSocket` directly (required for protocol-specific handshake: sync message exchange for `WaitForConnectionMessage` and `Authenticate` before receive loop).
@@ -134,7 +136,7 @@
 - **What was done:**
   - Removed Polygon's manual `SemaphoreSlim _reconnectGate`, `_reconnectAttempts`, `MaxReconnectAttempts`, `ReconnectBaseDelay`, `ReconnectMaxDelay` fields.
   - Removed `CalculateReconnectDelay()` method.
-  - Reconnection now delegated to `WebSocketReconnectionHelper` which provides identical behavior (gated exponential backoff with jitter).
+  - Reconnection now delegated to the shared reconnection layer (gated exponential backoff with jitter); today this is `WebSocketConnectionManager` (the interim `WebSocketReconnectionHelper` has been removed).
 - **Key files:**
   - `src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs`
 
@@ -213,7 +215,7 @@
 - **What was done:**
   - Removed `ConfigValidationHelper` static class (3 obsolete methods: `ValidateAndLog()` × 2, `ValidateOrThrow()`).
   - Preserved all FluentValidation validator classes (`AppConfigValidator`, `AlpacaOptionsValidator`, etc.) as they're used by `ConfigValidationPipeline`.
-  - Polygon reconnection logic consolidated to `WebSocketReconnectionHelper`.
+  - Polygon reconnection logic consolidated to the shared reconnection layer (now `WebSocketConnectionManager`).
 - **Key files:**
   - `src/Meridian.Core/Config/ConfigValidationHelper.cs`
 
@@ -223,6 +225,136 @@
   - This file updated with completion status for all phases.
   - Phase completion markers added to each step.
   - Deferred items documented with rationale.
+
+---
+
+## Phase 8 — Shared Infrastructure Consolidation ✅ COMPLETE
+
+One-fix-many leverage pass: each shared component below collapses a family of copy-pasted
+implementations and fixes the robustness gaps those copies had diverged on. Behavior is preserved
+at every migrated site except where a divergence was itself the defect (noted per step).
+
+### Step 8.1 — Single PostgreSQL migration runner ✅
+- **What was done:**
+  - `PostgresMigrationRunner` + `PostgresMigrationRunnerOptions` in `src/Meridian.Storage/Migrations/` consolidate the eight per-feature `{Feature}MigrationRunner` classes (AssetOperations, SecurityMaster, Banking, MoneyMarket, Ledger, FundStructure, FundAccounts, DirectLending), which are now thin option-mapping wrappers.
+  - Every schema now gets the strongest tier's semantics: one transaction over the whole run, a `pg_advisory_xact_lock` serializing concurrent starters (fixes the Banking/MoneyMarket/SecurityMaster check-then-act race), a durable migration ledger with SHA-256 checksums (fixes the Ledger/FundStructure/FundAccounts/DirectLending no-tracking/no-transaction tier), and strict schema-identifier validation everywhere.
+  - Historical differences preserved via options: ledger table name/key column (AssetOperations), ordinal-prefixed filenames (SecurityMaster), quoted vs raw `__SCHEMA__` rendering, missing-directory tolerance (Banking/MoneyMarket), and `MigrationDriftPolicy.Reapply` for the formerly re-run-every-boot schemas so their edit-in-place script workflow keeps working. Legacy ledger rows without checksums are adopted (checksum backfilled) rather than re-run.
+- **Key files:**
+  - `src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs`
+  - `src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs`
+- **Follow-up:** `PostgresScopedAccessAssignmentStore.EnsureMigratedAsync` (Meridian.Identity) still applies inline DDL; fold into the shared runner when its DDL moves to script files. `SchemaUpcasterRegistry` (ADR-007) vs `SchemaVersionManager` remain two JSON-document migration engines to reconcile separately.
+
+### Step 8.2 — Canonical backoff primitive ✅
+- **What was done:**
+  - `Backoff.ExponentialDelay(attempt, baseDelay, maxDelay, jitterFraction, multiplier, random)` in `src/Meridian.Core/Resilience/Backoff.cs` replaces ~10 hand-rolled `Math.Pow(2, …)` variants: `WebSocketConnectionManager`, `NYSEDataSource`, `BackfillWorkerService`, `PriorityBackfillQueue`, `PollingProviderBase`, `DataSourceBase`, `BaseBrokerageGateway`, `DailySummaryWebhook`, `ReconciliationOrchestrationResilienceOptions`, and `ExponentialBackoffRetry` (ConnectionWarmUp).
+  - Robustness fixes riding along: `BaseBrokerageGateway` reconnect delays are now capped (60 s) and jittered; `DailySummaryWebhook` retries are capped (2 min); `ExponentialBackoffRetry` uses `Random.Shared` instead of a private `Random`; the IB reconnect loop passes its cancellation token into the backoff wait; integer-overflow on high attempt counts is guarded.
+- **Key files:**
+  - `src/Meridian.Core/Resilience/Backoff.cs`
+  - `tests/Meridian.Tests/Core/BackoffTests.cs`
+- **Follow-up:** the three hand-rolled circuit breakers (`AutoResubscribePolicy`, `CompositeSink`, Polly pipelines) remain separate implementations; `IngestionJob.NextDelay` lives in Contracts and cannot reference Core.
+
+### Step 8.3 — Shared guarded-endpoint helper ✅
+- **What was done:**
+  - `EndpointHelpers.GuardAsync` (src/Meridian.Ui.Shared/Endpoints/EndpointHelpers.cs) is the single try/catch contract for minimal-API handlers: cancellations propagate, per-endpoint typed-exception mapping runs first, remaining failures are logged and folded into `Results.Problem`.
+  - ~49 copy-pasted handler guards migrated across `StorageEndpoints`, `StorageQualityEndpoints`, `CatalogEndpoints`, `BackfillValidationEndpoints`, `SymbolEndpoints`, `ArchiveMaintenanceEndpoints`, and `PackagingEndpoints`. Success and null-service payloads are unchanged.
+  - Bug fixed: 27 handlers previously caught bare `Exception`, so client disconnects were logged as errors and returned HTTP 500; cancellations now propagate (the existing `HandleAsync(ct)` overload got the same fix).
+- **Key files:**
+  - `src/Meridian.Ui.Shared/Endpoints/EndpointHelpers.cs`
+  - `tests/Meridian.Tests/Integration/EndpointTests/EndpointGuardTests.cs`
+- **Follow-up:** `FundStructureEndpoints.cs` keeps its narrow typed-catch pattern (safe today); `DataQualityEndpoints`' file-local wrappers return raw `ex.Message` and were left for a deliberate response-shape decision.
+
+### Step 8.4 — Shared JSON file snapshot store ✅
+- **What was done:**
+  - `JsonFileSnapshotStore<TSnapshot>` in `src/Meridian.Storage/Store/` provides the load → read-modify-write → `AtomicFileWriter` persist cycle (SemaphoreSlim-gated) that ~15 stores had each re-implemented; supports reflection and source-generated serializers, with overridable corrupt-snapshot and post-load (version-check) hooks.
+  - Migrated the dominant `_snapshotPath + SemaphoreSlim + AtomicFileWriter` family in `Meridian.Ui.Shared` (accounting configuration/migration-run/tenancy/certification/journal-draft stores, saved-view and workflow-preset stores), `Meridian.FinancialOperations` (statement checkpoint/fetch-schedule/mapping-profile stores), and `Meridian.Strategies` (reconciliation run/break-queue repositories), preserving each store's serializer options and corrupt-file policy.
+- **Key files:**
+  - `src/Meridian.Storage/Store/JsonFileSnapshotStore.cs`
+  - `tests/Meridian.Tests/Storage/JsonFileSnapshotStoreTests.cs`
+- **Follow-up:** non-atomic writers (`WindowStateStore`, `JsonRunbookStore`, `JsonCanonicalStatementStore`/`JsonReconciliationBreakStore`) and the ctor-loading registry family (`SourceRegistry`, `SymbolRegistryService`, `QualityArchiveStore`) are candidates for a later pass.
+
+### Step 8.5 — Shared lot-consumption core ✅
+- **What was done:**
+  - `LotConsumption.Consume` in `src/Meridian.Ledger/LotConsumption.cs` implements the walk-ordered-lots / split-partial-lot algorithm once; callers keep their own relief ordering, rounding, fee treatment, and side effects, so engine-specific accounting semantics stay at their owners.
+  - Migrated all seven duplicated consume loops: `LedgerTaxLotReliefProjector.SelectLots`, `TaxLotSelectors` (ordered + specific-id), `BacktestMetricsEngine` (realized-P&L and win-rate FIFO matchers), `SimulatedPortfolio.RealiseLots`/`RealiseShortLots`, and `PaperPosition.ConsumeLots`.
+- **Key files:**
+  - `src/Meridian.Ledger/LotConsumption.cs`
+  - `tests/Meridian.Tests/Ledger/LotConsumptionTests.cs`
+- **Follow-up:** the known divergences flagged here were resolved or ratified in Phase 9 — see
+  Step 9.5 for the current lot-accounting policy statement.
+
+---
+
+## Phase 9 — Shared Infrastructure Follow-ups ✅ COMPLETE
+
+Second consolidation pass closing out the Phase 8 follow-up queue.
+
+### Step 9.1 — Identity inline-DDL migrator onto the shared runner ✅
+- **What was done:** the inline `CREATE TABLE`/`ALTER TABLE … IF NOT EXISTS` statements in
+  `PostgresScopedAccessAssignmentStore.EnsureMigratedAsync` moved to
+  `src/Meridian.Identity/Migrations/001_user_access_assignment.sql` (copied to
+  `IdentityAccess/Migrations` in build output) and run through `PostgresMigrationRunner` with a
+  feature-prefixed checksum ledger (`identity_access_schema_migrations`), quoted-schema rendering,
+  and the `Reapply` drift policy that preserves the historical re-run-every-startup workflow.
+- **Key files:** `src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs`,
+  `src/Meridian.Identity/Migrations/001_user_access_assignment.sql`.
+
+### Step 9.2 — Retired the dead JSON-document migration registries ✅
+- **What was done:** deleted `SchemaUpcasterRegistry` (never instantiated; no
+  `ISchemaUpcaster<MarketEvent>` implementation exists) and `SchemaVersionManager` (its semver/BFS
+  migration engine and built-in Trade/Quote schemas had zero reachable invocations).
+  `SchemaValidationService` keeps its live behavior (EventSchemaValidator delegation and the JSONL
+  startup scan) and drops the inert version-manager plumbing. The platform's single
+  schema-evolution seam is the `ISchemaUpcaster<T>` contract, whose one live consumer (Security
+  Master asset-terms version promotion) is unchanged.
+- **Key files:** `src/Meridian.Contracts/Schema/ISchemaUpcaster.cs` (kept),
+  `src/Meridian.DataIntegration/Monitoring/SchemaValidationService.cs`.
+
+### Step 9.3 — One circuit-breaker state machine ✅
+- **What was done:** `CircuitBreaker` in `src/Meridian.Core/Resilience/` implements the
+  consecutive-failure Closed/Open/HalfOpen machine once (injectable `TimeProvider`, optional
+  half-open probe throttle, `StateChanged` transition hook). `CompositeSink`'s per-sink state and
+  `AutoResubscribePolicy`'s global and per-symbol machines delegate to it; observable surfaces
+  (SinkHealth report, `TotalCircuitBreaks`, `ResubscriptionMetrics` transitions, log shapes) are
+  unchanged, and the resubscribe policy gained a clock seam that finally makes it testable.
+  The Polly HTTP/WS pipelines remain the right tool for HTTP-shaped resilience and are untouched.
+- **Key files:** `src/Meridian.Core/Resilience/CircuitBreaker.cs`,
+  `src/Meridian.Storage/Sinks/CompositeSink.cs`,
+  `src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs`,
+  `tests/Meridian.Tests/Core/CircuitBreakerTests.cs`.
+
+### Step 9.4 — Remaining non-atomic JSON writers ✅
+- **What was done:** `WindowStateStore` (WPF window layout) and the per-record
+  `JsonCanonicalStatementStore`/`JsonReconciliationBreakStore` files now persist via
+  `AtomicFileWriter`; `JsonRunbookStore` moved onto `JsonFileSnapshotStore`, gaining the shared
+  gate and temp+rename persistence.
+
+### Step 9.5 — Lot-accounting divergences resolved or ratified ✅
+- **Fixed — backtest metrics attribution:** `BacktestMetricsEngine` realized attribution now
+  honors each account's `LotSelectionMethod`, matches lots per (symbol, account), and keeps
+  separate long/short books mirroring `SimulatedPortfolio.RealiseLots`/`RealiseShortLots`
+  (short-cover P&L was previously ignored entirely). `SpecificId` falls back to FIFO because
+  attribution's synthetic lots cannot share the portfolio's lot ids.
+- **Fixed — paper corporate actions:** `ApplyCorporateActionsAsync` now rescales the open lot
+  book by the same factors applied to the aggregate position, so a post-split sell realizes
+  against split-adjusted lot costs instead of falling into the shortfall fallback.
+- **Ratified policy — oversell/crossing fills:** all engines split crossing fills into a close
+  plus an open on the other side (paper and backtest agree); the ledger relief projector throws
+  on oversell because a book-of-record relief must never invent lots.
+- **Ratified policy — short unrealized P&L:** `(MarketPrice − CostBasis) × Quantity` with signed
+  quantity in both paper and backtest engines; `PortfolioValue` uses signed market value plus
+  short collateral and does not double-count.
+- **Ratified policy — rounding:** GL postings (`LedgerTaxLotReliefProjector`) round to the minor
+  currency unit (2 dp away-from-zero) as the book of record; paper/backtest engines keep full
+  decimal precision as simulation/analytics surfaces. Any reconciliation crossing the two must
+  use a ≥ 1-cent tolerance (the statement reconciliation default `AmountTolerance = 0.01`
+  already does).
+- **Ratified policy — fees:** realized lot P&L excludes commission in the portfolio engines and
+  attribution (commission is a separate cash flow / column); the win-rate round-trip counter
+  deliberately includes proportional commission because it approximates net trade outcomes.
+- **Key files:** `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs`,
+  `src/Meridian.Execution/Services/PaperTradingPortfolio.cs`,
+  `tests/Meridian.Backtesting.Tests/BacktestMetricsEngineTests.cs`,
+  `tests/Meridian.Tests/Execution/PaperTradingPortfolioTests.cs`.
 
 ---
 

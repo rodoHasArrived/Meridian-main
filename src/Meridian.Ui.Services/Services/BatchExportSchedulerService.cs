@@ -22,15 +22,18 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
     private readonly CancellationTokenSource _cts = new();
     private readonly List<Task> _workers = new();
     private readonly string _jobStorePath;
+    private readonly int _queuePollIntervalMs;
     private Timer? _schedulerTimer;
     private int _disposeState;
 
-    public BatchExportSchedulerService(int maxConcurrentJobs = 4, string? jobStorePath = null)
+    public BatchExportSchedulerService(int maxConcurrentJobs = 4, string? jobStorePath = null, int queuePollIntervalMs = 1000)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(queuePollIntervalMs);
         _workerSemaphore = new SemaphoreSlim(maxConcurrentJobs, maxConcurrentJobs);
         _jobStorePath = jobStorePath ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Meridian", "export_jobs.json");
+        _queuePollIntervalMs = queuePollIntervalMs;
     }
 
     /// <summary>
@@ -195,7 +198,7 @@ public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable
                 else
                 {
                     _workerSemaphore.Release();
-                    await Task.Delay(1000, ct);
+                    await Task.Delay(_queuePollIntervalMs, ct);
                 }
             }
             catch (OperationCanceledException)

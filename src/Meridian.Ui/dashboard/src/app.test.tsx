@@ -273,6 +273,8 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
     const trigger = screen.getByRole("button", { name: "Open workstation command palette (Ctrl K)" });
 
+    expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
+    expect(trigger).toHaveClass("mds-masthead__search");
     expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
     expect(trigger).toHaveAttribute("aria-controls", "command-palette-dialog");
     expect(trigger).toHaveAttribute("aria-expanded", "false");
@@ -309,6 +311,7 @@ describe("App", () => {
   });
 
   it("renders the daily control tower on the root route", async () => {
+    const user = userEvent.setup();
     mockDailyControlTowerData();
 
     const { container } = renderWithRouter(<App />, { initialEntries: ["/"] });
@@ -320,18 +323,22 @@ describe("App", () => {
     )).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
-    const drivers = screen.getByRole("region", { name: "Daily control tower decision drivers" });
-    expect(within(drivers).getByText("Continuity source")).toBeInTheDocument();
-    expect(within(drivers).getByText("Daily Control Tower")).toBeInTheDocument();
-    expect(within(drivers).getByText("Finance queue")).toBeInTheDocument();
-    expect(within(drivers).getByText("Trust posture")).toBeInTheDocument();
-    expect(within(drivers).getByText("Evidence events")).toBeInTheDocument();
+    const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
+    ["Source", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
+      expect(within(confidence).getByText(label)).toBeInTheDocument();
+    });
+    expect(confidence).toHaveTextContent("4 ranked items");
+    expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Daily control tower finance queue" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
     }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
 
     const evidenceSummary = screen.getByRole("region", { name: "Report pack approval waiting Evidence summary" });
+    const moreEvidence = within(evidenceSummary).getByText("More evidence").closest("details");
+    expect(moreEvidence).not.toHaveAttribute("open");
+    await user.click(within(evidenceSummary).getByText("More evidence"));
+    expect(moreEvidence).toHaveAttribute("open");
     [
       "Source",
       "Freshness",
@@ -359,7 +366,7 @@ describe("App", () => {
     await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
   });
 
-  it("renders build, environment, data-source, and provider trust in the masthead", () => {
+  it("renders build, environment, data-source, and provider trust in the masthead", async () => {
     mockWorkstationData({
       session: {
         displayName: "Ops Desk",
@@ -388,7 +395,10 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/data/providers"] });
 
+    expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
+    expect(screen.getByText("Data", { selector: ".sub" })).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Workstation build, mode, data source, and provider posture" });
+    await userEvent.click(within(strip).getByText("Environment"));
     expect(within(strip).getByLabelText("Build 0.1.0. Current Meridian web release.")).toHaveTextContent("Buildv0.1.0");
     expect(within(strip).getByLabelText("Mode Paper. Session Ops Desk is operating in paper mode.")).toHaveTextContent("ModePaper");
     expect(within(strip).getByLabelText("Data source Demo data. Demo data is visible; confirm live source status before making operating decisions.")).toHaveTextContent("SourceDemo data");
@@ -464,30 +474,32 @@ describe("App", () => {
 
     expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
     expect(screen.getByText("Data / MSFT")).toBeInTheDocument();
-    expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
+    expect(screen.getByLabelText("Current route /data/quotes")).toHaveTextContent("/data/quotes");
+    expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
 
     await user.click(screen.getByText("Flow details"));
 
+    expect(screen.getByText("/data/quotes?symbol=MSFT")).toBeInTheDocument();
     expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Primary operator workflow steps" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Live quotes, current workflow step, Waiting" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Market data, current workflow step, Waiting" })).toHaveAttribute(
       "href",
       "/data/quotes?symbol=MSFT"
     );
     expect(screen.getByRole("link", { name: "Validate, current primary operator workflow step, Current" })).toHaveAttribute(
       "href",
-      "/data/backfills?symbol=MSFT"
+      "/data/operations?symbol=MSFT"
     );
-    expect(screen.getByRole("link", { name: "Price alerts, next workflow step, Waiting" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Readiness, next workflow step, Waiting" })).toHaveAttribute(
       "href",
-      "/data/alerts?symbol=MSFT"
+      "/trading/readiness?symbol=MSFT"
     );
-    expect(screen.getByRole("link", { name: "Continue workflow to Price alerts" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Continue workflow to Readiness" })).toHaveAttribute(
       "href",
-      "/data/alerts?symbol=MSFT"
+      "/trading/readiness?symbol=MSFT"
     );
     expect(screen.getByRole("button", { name: "Clear MSFT operating context" })).toBeInTheDocument();
   });
@@ -536,7 +548,8 @@ describe("App", () => {
     expect(within(operatingScope).getByText("Account")).toBeInTheDocument();
     expect(within(operatingScope).getByText("fund-1")).toBeInTheDocument();
     expect(within(operatingScope).getByText("Run")).toBeInTheDocument();
-    expect(within(operatingScope).getByText("run-9")).toBeInTheDocument();
+    expect(within(operatingScope).getByText("Selected run")).toBeInTheDocument();
+    expect(within(operatingScope).queryByText("run-9")).not.toBeInTheDocument();
     expect(within(operatingScope).getByText("Provider")).toBeInTheDocument();
     expect(within(operatingScope).getByText("Alpaca")).toBeInTheDocument();
     expect(within(operatingScope).getByText("Window")).toBeInTheDocument();
@@ -544,7 +557,7 @@ describe("App", () => {
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toContain("\"fundAccountId\":\"fund-1\"");
 
     await user.keyboard("{Control>}k{/Control}");
-    expect(screen.getAllByText("Subject: MSFT / Account: fund-1 / Run: run-9 / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Subject: MSFT / Account: fund-1 / Run: Selected run / Provider: Alpaca / Window: 2026-05-01 to 2026-05-15").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Open Trading workspace" })).toHaveAttribute(
       "href",
       "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
@@ -552,7 +565,7 @@ describe("App", () => {
 
     await user.keyboard("{Escape}");
     await user.click(screen.getByRole("button", {
-      name: "Clear operating scope: Subject MSFT, Account fund-1, Run run-9, Provider Alpaca, Window 2026-05-01 to 2026-05-15"
+      name: "Clear operating scope: Subject MSFT, Account fund-1, Run Selected run, Provider Alpaca, Window 2026-05-01 to 2026-05-15"
     }));
 
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toBeNull();
@@ -716,7 +729,7 @@ describe("App", () => {
     );
     expect(screen.getByRole("link", { name: "Open Price alerts route" })).toHaveAttribute(
       "href",
-      "/data/alerts?symbol=MSFT"
+      "/data/quotes?view=alerts&symbol=MSFT"
     );
 
     await user.keyboard("{Escape}");
@@ -894,6 +907,7 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Open workspace navigation" }));
     const navigationDialog = screen.getByRole("dialog", { name: "Workspace navigation" });
     expect(navigationDialog).toBeInTheDocument();
+    expect(within(navigationDialog).getByLabelText("Meridian navigation")).toHaveAttribute("data-design-system-component", "NavRail");
     expect(within(navigationDialog).getByLabelText("Trading workspace, current route, Review")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Close workspace navigation" }));

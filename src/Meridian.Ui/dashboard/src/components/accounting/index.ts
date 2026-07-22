@@ -24,3 +24,11 @@ export type { TaxLotTableProps, TaxLot } from "./TaxLotTable";
 
 export { ReconciliationPanel } from "./ReconciliationPanel";
 export type { ReconciliationPanelProps, ReconciliationSide, ReconciliationItem, ReconciliationColumn } from "./ReconciliationPanel";
+
+export { TrialBalanceTable } from "./TrialBalanceTable";
+export type { TrialBalanceTableProps } from "./TrialBalanceTable";
+
+export { AgingTable } from "./AgingTable";
+export type { AgingTableProps, AgingTableRow } from "./AgingTable";
+
+export { ReconciliationComparisonPanel } from "./ReconciliationComparisonPanel";

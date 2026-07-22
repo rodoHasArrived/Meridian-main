@@ -72,7 +72,8 @@ export function readOperatingScopeFromSearch(search: string): AppShellOperatingS
 
 export function buildOperatingScopeFromSearch(
   search: string,
-  fallback: AppShellOperatingScopeInput | null = null
+  fallback: AppShellOperatingScopeInput | null = null,
+  activeRoute: string | null = null
 ): AppShellOperatingScopeState {
   const routeScope = readOperatingScopeFromSearch(search);
   const subjectSymbol = routeScope.symbol ?? normalizeSubjectSymbol(fallback?.symbol ?? null);
@@ -88,7 +89,7 @@ export function buildOperatingScopeFromSearch(
   const items: AppShellOperatingScopeItem[] = [
     subjectSymbol ? buildOperatingScopeItem("symbol", "Subject", subjectSymbol) : null,
     fundAccountId ? buildOperatingScopeItem("fundAccountId", "Account", fundAccountId) : null,
-    runId ? buildOperatingScopeItem("runId", "Run", runId) : null,
+    runId ? buildOperatingScopeItem("runId", "Run", operatingRunScopeLabel(activeRoute)) : null,
     provider ? buildOperatingScopeItem("provider", "Provider", provider) : null,
     windowValue ? buildOperatingScopeItem("window", "Window", windowValue) : null
   ].filter((item): item is AppShellOperatingScopeItem => Boolean(item));
@@ -120,6 +121,22 @@ export function buildOperatingScopeFromSearch(
     items,
     queryParams
   };
+}
+
+function operatingRunScopeLabel(route: string | null): string {
+  if (!route) {
+    return "Selected run";
+  }
+
+  const workspaceKey = workspaceForPath(splitContinuityRoute(route).pathname).key;
+  switch (workspaceKey) {
+    case "accounting":
+      return "Selected ledger run";
+    case "reporting":
+      return "Selected report run";
+    default:
+      return "Selected run";
+  }
 }
 
 export function readOperatingContextSymbolFromSearch(search: string): string | null {

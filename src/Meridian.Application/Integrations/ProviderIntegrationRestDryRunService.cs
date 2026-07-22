@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
@@ -19,7 +21,8 @@ public sealed record ProviderIntegrationHttpRequest(
     string Path,
     IReadOnlyDictionary<string, string> Headers,
     IReadOnlyDictionary<string, string> Query,
-    string? BodyTemplate);
+    string? BodyTemplate,
+    string ApprovedBaseUri);
 
 public sealed record ProviderIntegrationHttpResponse(
     int StatusCode,
@@ -28,16 +31,20 @@ public sealed record ProviderIntegrationHttpResponse(
 
 public sealed class ProviderIntegrationRestDryRunService
 {
+    private const int MaximumDryRunRecords = 10_000;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
     private readonly IProviderIntegrationHttpTransport transport;
 
     public ProviderIntegrationRestDryRunService(
         IProviderIntegrationManifestStore store,
-        IProviderIntegrationHttpTransport transport)
+        IProviderIntegrationHttpTransport transport,
+        ILogger<ProviderIntegrationRestDryRunService>? logger = null)
     {
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.transport = transport ?? throw new ArgumentNullException(nameof(transport));
+        this.logger = logger ?? NullLogger<ProviderIntegrationRestDryRunService>.Instance;
     }
 
     public async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
@@ -46,6 +53,22 @@ public sealed class ProviderIntegrationRestDryRunService
         => await RunRestDryRunAsync(null, request, ct).ConfigureAwait(false);
 
     public async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
+        string? tenantId,
+        ProviderIntegrationRestDryRunRequestDto request,
+        CancellationToken ct = default)
+        => await ProviderIntegrationServiceBoundary.RunAsync(
+            logger,
+            "rest-dry-run",
+            new ProviderIntegrationBoundaryContext(
+                TenantId: tenantId,
+                ManifestId: request?.ManifestId,
+                ConnectionId: request?.ConnectionId,
+                Capability: request is null ? null : request.Capability.ToString(),
+                EndpointKey: request?.EndpointKey,
+                SyncRunId: request?.SyncRunId),
+            () => RunRestDryRunCoreAsync(tenantId, request, ct)).ConfigureAwait(false);
+
+    private async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunCoreAsync(
         string? tenantId,
         ProviderIntegrationRestDryRunRequestDto request,
         CancellationToken ct = default)
@@ -109,15 +132,17 @@ public sealed class ProviderIntegrationRestDryRunService
         var quarantined = 0;
         string? firstPayloadId = null;
         string? cursor = null;
-        var maxPages = request.MaxPages <= 0 ? 1 : request.MaxPages;
+        var maxPages = Math.Clamp(request.MaxPages <= 0 ? 1 : request.MaxPages, 1, 100);
         var dedupeValidator = new ProviderIntegrationStagingDedupeValidator();
 
         for (var page = 1; page <= maxPages; page++)
         {
             ct.ThrowIfCancellationRequested();
-            var httpRequest = BuildHttpRequest(endpoint, request, cursor);
+            var httpRequest = BuildHttpRequest(manifest, endpoint, request, cursor);
             var response = await transport.SendAsync(httpRequest, ct).ConfigureAwait(false);
-            using var document = JsonDocument.Parse(response.Body);
+            using var document = JsonDocument.Parse(
+                response.Body,
+                new JsonDocumentOptions { MaxDepth = 64, CommentHandling = JsonCommentHandling.Disallow });
             var responseBody = document.RootElement.Clone();
             var payloadId = StableId("raw-payload", request.SyncRunId, endpoint.EndpointKey, page.ToString(CultureInfo.InvariantCulture));
             firstPayloadId ??= payloadId;
@@ -156,6 +181,12 @@ public sealed class ProviderIntegrationRestDryRunService
             }
 
             var rawRecords = ExtractRecords(responseBody, endpoint.Response.RecordsPath);
+            if (received + rawRecords.Count > MaximumDryRunRecords)
+            {
+                throw new InvalidOperationException(
+                    $"REST dry run exceeded the {MaximumDryRunRecords}-record processing limit.");
+            }
+
             received += rawRecords.Count;
             foreach (var rawRecord in rawRecords)
             {
@@ -334,6 +365,7 @@ public sealed class ProviderIntegrationRestDryRunService
     }
 
     private static ProviderIntegrationHttpRequest BuildHttpRequest(
+        ProviderIntegrationManifestDto manifest,
         EndpointDefinitionDto endpoint,
         ProviderIntegrationRestDryRunRequestDto request,
         string? cursor)
@@ -366,7 +398,26 @@ public sealed class ProviderIntegrationRestDryRunService
             path,
             new Dictionary<string, string>(endpoint.Headers, StringComparer.OrdinalIgnoreCase),
             query,
-            endpoint.RequestBodyTemplate);
+            endpoint.RequestBodyTemplate,
+            ResolveApprovedBaseUri(manifest));
+    }
+
+    private static string ResolveApprovedBaseUri(ProviderIntegrationManifestDto manifest)
+    {
+        if (manifest.Auth.Metadata.TryGetValue("baseUrl", out var configuredBaseUri) &&
+            Uri.TryCreate(configuredBaseUri, UriKind.Absolute, out var baseUri))
+        {
+            return baseUri.GetLeftPart(UriPartial.Authority);
+        }
+
+        if (Uri.TryCreate(manifest.Auth.TokenUrl, UriKind.Absolute, out var tokenUri))
+        {
+            return tokenUri.GetLeftPart(UriPartial.Authority);
+        }
+
+        throw new InvalidOperationException(
+            "REST integrations require an approved HTTPS base URL in auth metadata 'baseUrl' " +
+            "or an absolute token URL from the same provider origin.");
     }
 
     private static IReadOnlyList<JsonElement> ExtractRecords(JsonElement responseBody, string recordsPath)
