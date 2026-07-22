@@ -48,4 +48,11 @@ public sealed class IBApiVersionValidatorTests
         message.Should().Contain(IBApiVersionValidator.MinSupportedServerVersion.ToString());
         message.Should().Contain(IBApiVersionValidator.MaxTestedServerVersion.ToString());
     }
+
+    [Fact]
+    public void CompatibilityBounds_DescribeTheOfficialSdkReleaseEvidence()
+    {
+        IBApiVersionValidator.MinSupportedClientVersion.Should().Be(178);
+        IBApiVersionValidator.BuildVersionRequirementsMessage().Should().Contain("TWS 10.19");
+    }
 }

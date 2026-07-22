@@ -120,6 +120,11 @@ configuration. It also owns account catalog, portfolio snapshot, and connected-s
 sync: source-identified TWS execution callbacks provide fills and open-order evidence, while
 account-scoped Flex imports remain the controlled reconciliation backstop for fees, cash,
 dividends, interest, FX conversions, corporate actions, and prior-session activity.
+The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam for scanner discovery,
+contract details, option chains, news, fundamentals, tick-by-tick data, account P&L, market rules,
+and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB
+live/frozen/delayed status, exchange, market rules, and subscription descriptor alongside any
+materialized observation; successful request submission is not evidence of a live entitlement.
 The brokerage gateway template remains an obsolete copy-target, but its scaffold behavior is
 deterministic: provider-discovery metadata, option-backed identity/capabilities, configurable
 connection readiness, option-backed account/position reads, and in-memory open-order tracking let

@@ -755,6 +755,94 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     }
 
     // -----------------------
+    // IB entitlement-sensitive data services
+    private void ThrowIfNotConnected()
+    {
+        if (!IsConnected)
+            throw new InvalidOperationException("Not connected to IB Gateway/TWS");
+    }
+
+    // -----------------------
+    public void RequestScanner(int requestId, IBScannerRequest request)
+    {
+        ThrowIfNotConnected();
+        var subscription = new ScannerSubscription
+        {
+            Instrument = request.Instrument,
+            LocationCode = request.LocationCode,
+            ScanCode = request.ScanCode,
+            NumberOfRows = request.NumberOfRows,
+            AbovePrice = request.AbovePrice,
+            AboveVolume = request.AboveVolume
+        };
+        _clientSocket.reqScannerSubscription(requestId, subscription, [], []);
+    }
+
+    public void RequestContractDetails(int requestId, SymbolConfig contract)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqContractDetails(requestId, ContractFactory.Create(contract));
+    }
+
+    public void RequestOptionChain(int requestId, SymbolConfig underlying)
+    {
+        ThrowIfNotConnected();
+        if (underlying.ConId is not int conId || conId <= 0)
+            throw new ArgumentException("IB option-chain requests require the resolved underlying ConId.", nameof(underlying));
+        _clientSocket.reqSecDefOptParams(requestId, underlying.Symbol, string.Empty, ContractFactory.ResolveSecType(underlying), conId);
+    }
+
+    public void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqHistoricalNews(requestId, conId, providerCodes,
+            start.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture),
+            end.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture), maximumResults, []);
+    }
+
+    public void RequestNewsArticle(int requestId, string providerCode, string articleId)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqNewsArticle(requestId, providerCode, articleId, []);
+    }
+
+    public void RequestFundamentals(int requestId, SymbolConfig contract, string reportType)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqFundamentalData(requestId, ContractFactory.Create(contract), reportType, []);
+    }
+
+    public void RequestDividendEarnings(int requestId, SymbolConfig contract)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqMktData(requestId, ContractFactory.Create(contract), "456,258", false, false, []);
+    }
+
+    public void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqTickByTickData(requestId, ContractFactory.Create(contract), tickType, numberOfTicks, ignoreSize);
+    }
+
+    public void RequestPnl(int requestId, string account, string? modelCode)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqPnL(requestId, account, modelCode ?? string.Empty);
+    }
+
+    public void RequestMarketRule(int requestId, int marketRuleId)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqMarketRule(marketRuleId);
+    }
+
+    public void RequestDepthExchanges(int requestId)
+    {
+        ThrowIfNotConnected();
+        _clientSocket.reqMktDepthExchanges();
+    }
+
+    // -----------------------
     // EWrapper depth callbacks
     // -----------------------
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -944,7 +1032,13 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         }
     }
 
-    public void marketDataType(int reqId, int marketDataType) { }
+    public event EventHandler<IBMarketDataTypeUpdate>? MarketDataTypeReceived;
+
+    public void marketDataType(int reqId, int marketDataType)
+    {
+        RecordMessageReceived();
+        MarketDataTypeReceived?.Invoke(this, new IBMarketDataTypeUpdate(reqId, marketDataType));
+    }
     public void contractDetails(int reqId, ContractDetails contractDetails) { }
     public void contractDetailsEnd(int reqId) { }
     public void symbolSamples(int reqId, ContractDescription[] contractDescriptions) { }
