@@ -149,6 +149,11 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
   const strategyLoaded = workspace.highlights.some((highlight) => highlight.label === "Strategy");
   return (
     <section className="mt-6 rounded-2xl border border-slate-700 bg-slate-950/40 p-6" aria-label="Sample workspace contents">
+      {workspace.provenance ? (
+        <p className="mb-2 inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-xs font-semibold text-amber-200" title="Every artifact in this workspace is seeded demo data — no live trading or production accounting.">
+          <Database size={12} /> {workspace.provenance}
+        </p>
+      ) : null}
       <p className="text-sm text-slate-300">{workspace.summary}</p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
