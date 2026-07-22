@@ -51,6 +51,49 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 
 `--quickstart` delegates to the configuration pipeline and prepares the app for a local workstation launch. Use `config/appsettings.sample.json` as the template for local runtime configuration. Do not commit local `appsettings*.json`, secrets, provider credentials, logs, or generated data.
 
+## See It Working: One-Command Demo
+
+To evaluate Meridian end-to-end without wiring up providers or a database, seed a demo workspace and
+open the populated browser workstation with a single command:
+
+```powershell
+dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo
+```
+
+This provisions a durable, clearly-labelled **Seeded** demo workspace and then starts the browser
+workstation on it, so the first screen you see is a populated one — reconciliation casework in the
+control tower and a completed paper strategy run on the Strategy desk — not an empty shell or a
+fabricated default watchlist. Every seeded record carries `Seeded` provenance (source system
+`Meridian Seeded Demo`) so it is always distinguishable from real operator data.
+
+Key properties:
+
+- **Isolated.** All demo data lives in a dedicated root, `{dataRoot}/demo-workspace`, that is never
+  mixed with your real data root.
+- **Durable.** The reconciliation and strategy desks are written to durable, file-backed stores under
+  the demo root and survive a restart with zero configuration. Money-path stores such as the ledger
+  become durable only when PostgreSQL is configured — set
+  `MERIDIAN_DATABASE_URL=postgres://user:password@localhost:5432/meridian` before seeding for a
+  fully database-backed demo.
+- **Idempotent.** Re-running `--seed-demo` never duplicates casework or runs.
+- **Reversible and safe.** `--reset-demo` deletes only the demo workspace; a teardown guard refuses to
+  touch any directory that is not the dedicated, sentinel-marked demo root.
+
+```powershell
+# Seed without launching the workstation (used by CI and scripted checks)
+dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo --seed-only
+
+# Re-open the already-seeded demo later
+dotnet run --project src/Meridian/Meridian.csproj -- --demo
+
+# Tear the demo workspace down (only the demo root is ever removed)
+dotnet run --project src/Meridian/Meridian.csproj -- --reset-demo
+```
+
+The seeded workspace is the same sample workspace the browser onboarding wizard's "Use sample data"
+choice provisions, so the demo and the guided first-run experience walk through identical data. See
+`dotnet run --project src/Meridian/Meridian.csproj -- --help demo` for the full command reference.
+
 ## First Help Commands
 
 Plain Windows/PowerShell path:
@@ -74,6 +117,7 @@ If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `n
 
 | Goal | Command | Notes |
 | --- | --- | --- |
+| Seeded end-to-end demo (fastest evaluation) | `dotnet run --project src/Meridian/Meridian.csproj -- --seed-demo` | Seeds an isolated, durable, `Seeded`-labelled demo workspace and opens the populated workstation. See [See It Working](#see-it-working-one-command-demo). |
 | Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Serves the host and, after assets are built, `http://localhost:8080/workstation/`. |
 | Desktop-local host mode | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Use when intentionally running the desktop-local host and streaming collector together. |
 | Browser workstation development | `npm --prefix src/Meridian.Ui/dashboard run dev` | Use for active React/TypeScript workstation work. |

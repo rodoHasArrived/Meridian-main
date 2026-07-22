@@ -57,6 +57,7 @@ export interface SampleHighlight {
 export interface SampleWorkspace {
   headline: string;
   summary: string;
+  provenance: string;
   portfolioName: string;
   portfolioValue: number;
   cash: number;
