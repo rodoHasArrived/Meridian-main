@@ -116,7 +116,9 @@ public static class LedgerReportPresentation
                 Money(account.BeginningCapital),
                 Money(account.Contributions),
                 Money(account.Distributions),
-                Money(account.AllocatedResult),
+                Money(account.IncomeGainAllocations),
+                Money(account.ExpenseAllocations),
+                Money(account.FeeAllocations),
                 Money(account.EndingCapital),
             ])
             .ToList();
@@ -126,13 +128,15 @@ public static class LedgerReportPresentation
             Money(partnersCapital.BeginningCapital),
             Money(partnersCapital.Contributions),
             Money(partnersCapital.Distributions),
-            Money(partnersCapital.AllocatedResult),
+            Money(partnersCapital.IncomeGainAllocations),
+            Money(partnersCapital.ExpenseAllocations),
+            Money(partnersCapital.FeeAllocations),
             Money(partnersCapital.EndingCapital),
         ]);
 
         return new LedgerReportTable(
             "Statement of Changes in Partners' Capital",
-            ["Partner", "Beginning", "Contributions", "Distributions", "Allocated", "Ending"],
+            ["Partner", "Beginning", "Contributions", "Distributions", "Income & Gains", "Expenses", "Fees", "Ending"],
             rows);
     }
 

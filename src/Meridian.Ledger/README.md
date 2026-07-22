@@ -35,7 +35,15 @@ income-statement and balance-sheet rows with net-income and accounting-equation 
 `BuildForPeriod` additionally derives a direct-method `LedgerCashFlowStatement` (operating /
 investing / financing, reconciled to beginning and ending cash) and a
 `LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,
-allocated result, ending capital per equity account) from the period's journal activity.
+allocated result, ending capital per equity account) from the period's journal activity. The
+allocated result is additionally decomposed into `IncomeGainAllocations`, `ExpenseAllocations`, and
+`FeeAllocations` (management and performance fees, identified by
+`LedgerAccounts.IsFundFeeExpenseAccount`) so a client-grade partners' capital statement reports the
+income/expense/fee drivers a fund accountant delivers rather than one lumped figure; the split holds
+`AllocatedResult == IncomeGainAllocations - ExpenseAllocations - FeeAllocations` on every line, so it
+never disturbs the existing ending-capital reconciliation, and it flows through both the
+partners-capital CSV artifact and the shared `LedgerReportPresentation` table that drives the Xlsx/Pdf
+renderers.
 `LedgerReportPackBuilder` emits those statements as CSV/JSON pack artifacts, and
 `LedgerScheduledReportExportPackageBuilder` now honors every declared `LedgerReportExportFormat`:
 Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
@@ -54,8 +62,13 @@ capital → preferred return → automatic GP catch-up → carried-interest spli
 (`ShareClass`, `ShareClassUnitRegisterProjector`, `NavPerUnitCalculator`, `EqualizationCalculator`)
 for unitized NAV-per-unit with single-NAV equalisation. `PrivateCapitalCommitments` plus
 `CapitalCallDraftFactory` and `CapitalCallPlanBuilder` add the LP commitment register,
-uncalled-commitment roll-forward invariant, and governed capital-call drafting; the
-`CommitmentRollForwardCalculator` and `DefaultInterestCalculator` live in
+uncalled-commitment roll-forward invariant, and governed capital-call drafting;
+`CapitalCallScheduleDraftBuilder` closes the wiring gap between the two — it apportions a fund-level
+call over the commitment roll-forwards (`CapitalCallPlanBuilder`) and turns each executable plan line
+into a balanced governed issuance draft (`CapitalCallDraftFactory`) in a deterministic per-investor
+order, failing closed when the plan does not tie to the requested amount, so callers post capital
+calls through the standard `AutomatedJournalApproval` lifecycle instead of leaving the kernels
+uncalled. The `CommitmentRollForwardCalculator` and `DefaultInterestCalculator` live in
 `Meridian.FinancialOperations/PrivateCapital`.
 `Ledger.CalculateNetBalance` exposes the ledger-owned normal-balance calculation over the shared
 F# posting kernel so storage and reporting projections do not duplicate account-type math.

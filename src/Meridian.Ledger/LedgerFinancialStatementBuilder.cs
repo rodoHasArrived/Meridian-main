@@ -167,7 +167,7 @@ public static class LedgerFinancialStatementBuilder
 
         var movements = equityAccounts.ToDictionary(
             static account => account,
-            static _ => (Contributions: 0m, Distributions: 0m, Allocated: 0m, Other: 0m));
+            static _ => (Contributions: 0m, Distributions: 0m, Allocated: 0m, Income: 0m, Expense: 0m, Fee: 0m, Other: 0m));
 
         foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
         {
@@ -194,17 +194,63 @@ public static class LedgerFinancialStatementBuilder
                 MatchesScope(line, financialAccountId, lineDimensions)
                 && line.Account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Liability);
 
+            // When an entry closes P&L directly into named capital accounts, split the allocated
+            // movement into the fee and (non-fee) expense amounts moved out of P&L — measured with
+            // the closing sign, where a credited expense leg reduces capital — so the income/gain
+            // component falls out as the balancing figure. This keeps each line's decomposition tied
+            // to its allocated result exactly (income − expense − fee == allocated) while attributing
+            // the fee and expense drivers a fund accountant reports separately.
+            var allocatedLines = equityLines
+                .Where(line => hasIncomeCounterpart
+                    && !line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal))
+                .ToArray();
+            var (closedExpense, closedFee) = ClassifyClosedExpenseAndFee(entry, financialAccountId, lineDimensions);
+            var allocatedTotal = allocatedLines.Sum(static line => line.Credit - line.Debit);
+            var attributedExpense = 0m;
+            var attributedFee = 0m;
+
+            for (var index = 0; index < allocatedLines.Length; index++)
+            {
+                var line = allocatedLines[index];
+                var signed = line.Credit - line.Debit;
+                decimal expense;
+                decimal fee;
+                if (index == allocatedLines.Length - 1)
+                {
+                    expense = closedExpense - attributedExpense;
+                    fee = closedFee - attributedFee;
+                }
+                else if (allocatedTotal != 0m)
+                {
+                    expense = LedgerCurrencyRounding.RoundCurrency(closedExpense * signed / allocatedTotal);
+                    fee = LedgerCurrencyRounding.RoundCurrency(closedFee * signed / allocatedTotal);
+                    attributedExpense += expense;
+                    attributedFee += fee;
+                }
+                else
+                {
+                    expense = 0m;
+                    fee = 0m;
+                }
+
+                var current = movements[line.Account];
+                current.Allocated += signed;
+                current.Expense += expense;
+                current.Fee += fee;
+                // Income/gain is the residual so income − expense − fee == the allocated movement exactly.
+                current.Income += signed + expense + fee;
+                movements[line.Account] = current;
+            }
+
             foreach (var line in equityLines)
             {
+                var isRetainedEarnings = line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal);
+                if (hasIncomeCounterpart && !isRetainedEarnings)
+                    continue; // already handled as an allocation above.
+
                 var signed = line.Credit - line.Debit;
                 var current = movements[line.Account];
-                var isRetainedEarnings = line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal);
-
-                if (hasIncomeCounterpart && !isRetainedEarnings)
-                {
-                    current.Allocated += signed;
-                }
-                else if (hasSettlementCounterpart)
+                if (hasSettlementCounterpart)
                 {
                     if (signed >= 0m)
                         current.Contributions += signed;
@@ -234,6 +280,9 @@ public static class LedgerFinancialStatementBuilder
                     movement.Contributions,
                     movement.Distributions,
                     movement.Allocated,
+                    movement.Income,
+                    movement.Expense,
+                    movement.Fee,
                     movement.Other,
                     ending);
             })
@@ -262,6 +311,11 @@ public static class LedgerFinancialStatementBuilder
         var netIncomeAtStart = NetIncomeOf(beginningBalances);
         var periodNetIncome = PeriodNetIncomeFromActivity(
             ledger, periodStart, asOf, financialAccountId, lineDimensions);
+        // Decompose the same period P&L activity into the income/gain, (non-fee) expense, and fee
+        // drivers, so income − expense − fee == periodNetIncome (the undistributed line's allocated
+        // result) exactly, using the identical closing-entry exclusion.
+        var (undistributedIncome, undistributedExpense, undistributedFee) = PeriodPnlComponentsFromActivity(
+            ledger, periodStart, asOf, financialAccountId, lineDimensions);
         var closedToEquity = (netIncome - netIncomeAtStart) - periodNetIncome;
         if (netIncome != 0m || netIncomeAtStart != 0m || periodNetIncome != 0m || closedToEquity != 0m)
         {
@@ -273,6 +327,9 @@ public static class LedgerFinancialStatementBuilder
                 Contributions: 0m,
                 Distributions: 0m,
                 AllocatedResult: periodNetIncome,
+                IncomeGainAllocations: undistributedIncome,
+                ExpenseAllocations: undistributedExpense,
+                FeeAllocations: undistributedFee,
                 OtherMovements: closedToEquity,
                 EndingCapital: netIncome));
         }
@@ -289,6 +346,9 @@ public static class LedgerFinancialStatementBuilder
             orderedRollForwards.Sum(static rollForward => rollForward.Contributions),
             orderedRollForwards.Sum(static rollForward => rollForward.Distributions),
             orderedRollForwards.Sum(static rollForward => rollForward.AllocatedResult),
+            orderedRollForwards.Sum(static rollForward => rollForward.IncomeGainAllocations),
+            orderedRollForwards.Sum(static rollForward => rollForward.ExpenseAllocations),
+            orderedRollForwards.Sum(static rollForward => rollForward.FeeAllocations),
             orderedRollForwards.Sum(static rollForward => rollForward.OtherMovements),
             orderedRollForwards.Sum(static rollForward => rollForward.EndingCapital),
             orderedRollForwards);
@@ -344,6 +404,86 @@ public static class LedgerFinancialStatementBuilder
         }
 
         return total;
+    }
+
+    /// <summary>
+    /// Decomposes current-period net income (excluding Retained-Earnings closing transfers, matching
+    /// <see cref="PeriodNetIncomeFromActivity"/>) into its income/gain, (non-fee) expense, and fund-fee
+    /// drivers. Revenue legs contribute (credit − debit) to income; expense legs contribute
+    /// (debit − credit) to either the fee or the expense bucket. By construction
+    /// <c>income − expense − fee</c> equals <see cref="PeriodNetIncomeFromActivity"/> for the same scope.
+    /// </summary>
+    private static (decimal Income, decimal Expense, decimal Fee) PeriodPnlComponentsFromActivity(
+        IReadOnlyLedger ledger,
+        DateTimeOffset periodStart,
+        DateTimeOffset asOf,
+        string? financialAccountId,
+        LedgerLineDimensionSet? lineDimensions)
+    {
+        var income = 0m;
+        var expense = 0m;
+        var fee = 0m;
+        foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
+        {
+            var closesToRetainedEarnings = entry.Lines.Any(line =>
+                MatchesScope(line, financialAccountId, lineDimensions)
+                && line.Account.AccountType == LedgerAccountType.Equity
+                && line.Account.Name.Equals("Retained Earnings", StringComparison.Ordinal));
+            if (closesToRetainedEarnings)
+                continue;
+
+            foreach (var line in entry.Lines)
+            {
+                if (!MatchesScope(line, financialAccountId, lineDimensions))
+                    continue;
+
+                switch (line.Account.AccountType)
+                {
+                    case LedgerAccountType.Revenue:
+                        income += line.Credit - line.Debit;
+                        break;
+                    case LedgerAccountType.Expense when LedgerAccounts.IsFundFeeExpenseAccount(line.Account):
+                        fee += line.Debit - line.Credit;
+                        break;
+                    case LedgerAccountType.Expense:
+                        expense += line.Debit - line.Credit;
+                        break;
+                }
+            }
+        }
+
+        return (income, expense, fee);
+    }
+
+    /// <summary>
+    /// Sums the fund-fee and (non-fee) operating-expense amounts closed OUT of P&amp;L into named
+    /// capital accounts within one journal entry, measured with the closing sign where a credited
+    /// expense leg reduces capital. Used to attribute the fee and expense drivers of a direct
+    /// per-partner allocation; the income/gain component is then the balancing figure so a line's
+    /// decomposition ties exactly to its allocated movement.
+    /// </summary>
+    private static (decimal Expense, decimal Fee) ClassifyClosedExpenseAndFee(
+        JournalEntry entry,
+        string? financialAccountId,
+        LedgerLineDimensionSet? lineDimensions)
+    {
+        var expense = 0m;
+        var fee = 0m;
+        foreach (var line in entry.Lines)
+        {
+            if (!MatchesScope(line, financialAccountId, lineDimensions)
+                || line.Account.AccountType != LedgerAccountType.Expense)
+            {
+                continue;
+            }
+
+            if (LedgerAccounts.IsFundFeeExpenseAccount(line.Account))
+                fee += line.Credit - line.Debit;
+            else
+                expense += line.Credit - line.Debit;
+        }
+
+        return (expense, fee);
     }
 
     private static bool IsCashAccount(LedgerAccount account)

@@ -389,6 +389,31 @@ public static class LedgerAccounts
     internal static bool UsesInstrumentSymbol(LedgerAccount account)
         => account.Symbol is not null && InstrumentSymbolAccountNames.Contains(account.Name);
 
+    /// <summary>
+    /// Fund-level fee expense account names posted by the automated fee-accrual path
+    /// (<c>ManagementFeeExpenseFor</c>, <c>PerformanceFeeExpenseFor</c>). These are the fees a
+    /// partners' capital statement reports separately from other operating expenses; keep in sync
+    /// with the fee accrual producers. Trading costs such as commissions and borrow fees are
+    /// deliberately excluded — they are operating expenses, not fund management/incentive fees.
+    /// </summary>
+    private static readonly HashSet<string> FundFeeExpenseAccountNames = new(StringComparer.Ordinal)
+    {
+        "Management Fee Expense",
+        "Performance Fee Expense",
+    };
+
+    /// <summary>
+    /// Returns <see langword="true"/> when <paramref name="account"/> is a fund-level management or
+    /// performance/incentive fee expense account, so a partners' capital statement can present fee
+    /// allocations separately from other operating-expense allocations.
+    /// </summary>
+    public static bool IsFundFeeExpenseAccount(LedgerAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        return account.AccountType == LedgerAccountType.Expense
+            && FundFeeExpenseAccountNames.Contains(account.Name);
+    }
+
     private static LedgerAccount CreateScoped(string name, LedgerAccountType accountType, string financialAccountId)
         => new(name, accountType, FinancialAccountId: NormalizeAccountId(financialAccountId));
 
