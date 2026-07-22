@@ -5,33 +5,6 @@ using Meridian.ProviderSdk;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 
-/// <summary>IB data access class returned by TWS/Gateway for a request.</summary>
-public enum IBMarketDataAvailability
-{
-    Unknown = 0,
-    Live = 1,
-    Frozen = 2,
-    Delayed = 3,
-    DelayedFrozen = 4
-}
-
-/// <summary>
-/// Immutable, entitlement-aware evidence for an IB request or subscription. Persist this with
-/// downstream observations: exchange and data availability are part of the meaning of IB data.
-/// </summary>
-public sealed record IBDataLineage(
-    int RequestId,
-    string Service,
-    string Symbol,
-    string? Exchange,
-    string? MarketRuleIds,
-    string? MinimumIncrements,
-    string? Subscription,
-    IBMarketDataAvailability Availability,
-    bool IsDelayed,
-    string Status,
-    DateTimeOffset ObservedAt);
-
 /// <summary>Scanner criteria intentionally limited to IB's stable scanner subscription fields.</summary>
 public sealed record IBScannerRequest(
     string Instrument,
@@ -349,7 +322,7 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
         var requestId = Interlocked.Increment(ref _nextRequestId);
         var evidence = new IBDataLineage(requestId, service, symbol, exchange, null, null, subscription, IBMarketDataAvailability.Unknown, false, "requested", DateTimeOffset.UtcNow);
         if (!_lineage.TryAdd(requestId, evidence)) throw new InvalidOperationException($"Duplicate IB request id {requestId}.");
-        var projection = new ProviderDataRequestReadModel(requestId, "interactive-brokers", service, ProviderDataRequestStatus.Requested, evidence.ObservedAt);
+        var projection = new ProviderDataRequestReadModel(requestId, "interactive-brokers", service, ProviderDataRequestStatus.Requested, evidence.ObservedAt, Lineage: evidence);
         _requests.TryAdd(requestId, projection);
         try { send(requestId); }
         catch { _lineage.TryRemove(requestId, out _); _requests.TryRemove(requestId, out _); throw; }
@@ -362,11 +335,13 @@ public sealed class IBDataServices : IProviderDataReadService, IDisposable
     {
         var updated = _lineage.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current));
         LineageUpdated?.Invoke(updated);
+        UpdateReadModel(requestId, current => current with { Lineage = updated });
     }
 
     private void UpdateReadModel(int requestId, Func<ProviderDataRequestReadModel, ProviderDataRequestReadModel> update)
     {
-        var updated = _requests.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current) with { UpdatedAt = DateTimeOffset.UtcNow });
+        var lineage = _lineage.TryGetValue(requestId, out var currentLineage) ? currentLineage : null;
+        var updated = _requests.AddOrUpdate(requestId, _ => throw new KeyNotFoundException($"Unknown IB request id {requestId}."), (_, current) => update(current) with { UpdatedAt = DateTimeOffset.UtcNow, Lineage = lineage });
         Publish(updated);
     }
 

@@ -58,7 +58,9 @@ read-oriented by default; write/posting support must be exposed explicitly by pr
 before any service or client can offer export actions.
 `IProviderDataReadService` owns vendor-neutral, request-correlated read models for option discovery,
 scanner rows, real-time bars, historical ticks, account/model-account P&L, and market-rule increments;
-operator surfaces consume this seam rather than vendor callback types.
+operator surfaces consume this seam rather than vendor callback types. `IIBDataResultStore` is the
+storage-facing companion seam: every materialized IB snapshot carries normalized payload, stable
+request/subscription identity, lifecycle state, capture time, and complete `IBDataLineage` evidence.
 
 ## Diagrams
 
