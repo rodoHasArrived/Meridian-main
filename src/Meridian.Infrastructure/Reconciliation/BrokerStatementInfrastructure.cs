@@ -147,6 +147,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         try
         {
             var rows = await ParseFileAsync(request.SourcePath, request, importId: "validation", ct).ConfigureAwait(false);
+            ValidateRowAccounts(rows, request.ExternalAccountId);
             return new BrokerStatementValidationResult(true, errors, rows.Count);
         }
         catch (InvalidDataException ex)
@@ -174,6 +175,7 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         var importId = duplicateKey;
         var normalizedRequest = request.WithSourceFileHash(sourceFileHash);
         var rows = await ParseFileAsync(request.SourcePath, normalizedRequest, importId, ct).ConfigureAwait(false);
+        ValidateRowAccounts(rows, normalizedRequest.ExternalAccountId);
         var import = new CanonicalStatementImport(
             importId,
             normalizedRequest.Broker,
@@ -323,6 +325,18 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         }
 
         return rows;
+    }
+
+    private static void ValidateRowAccounts(
+        IReadOnlyList<CanonicalStatementRow> rows,
+        string externalAccountId)
+    {
+        var expectedAccount = externalAccountId.Trim();
+        if (rows.Any(row => !string.Equals(row.Account.Trim(), expectedAccount, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidDataException(
+                "Statement rows must all identify the statement run's external account.");
+        }
     }
 
     private static IReadOnlyList<string> ParseCsvLine(string line, int rowNumber)

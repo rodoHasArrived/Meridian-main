@@ -81,6 +81,17 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Validate_FlexReportForAnotherAccount_Fails()
+    {
+        var path = WriteFlexFile(SampleFlexXml);
+
+        var result = await _service.ValidateAsync(MakeRequest(path) with { ExternalAccountId = "U7654321" });
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Contains("external account", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task Validate_MissingFile_Fails()
     {
         var result = await _service.ValidateAsync(MakeRequest(Path.Combine(_tempDir, "missing.xml")));
