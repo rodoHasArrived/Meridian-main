@@ -6,7 +6,7 @@ module_id: SRC-HOST
 path: src/Meridian
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-07-22
+last_reviewed: 2026-07-17
 ---
 
 # src/Meridian
@@ -38,13 +38,6 @@ and process-host concerns isolated from domain and application logic.
 
 Use this module when changing host startup, CLI routing, runtime hosting, configuration bootstrap,
 local workstation API process behavior, or production API binding policy.
-
-The `--seed-demo` / `--reset-demo` / `--demo` verbs are host-level (`DemoWorkspaceCli`, intercepted in
-`Program.cs`) rather than shared `ICliCommand` handlers, because only the host composition can reach
-the shared `DemoWorkspaceSeeder` in `Meridian.Ui.Shared`. `--seed-demo` provisions the isolated,
-durable, `Seeded`-labelled demo workspace under `{dataRoot}/demo-workspace` and then serves it by
-re-entering startup with a generated demo config; `--reset-demo` deletes only that guarded demo root.
-See `docs/start/README.md` for the operator-facing walkthrough.
 
 `ApiHost` configuration separates local workstation hosting from remote API deployment. The default
 `LocalWorkstation` posture preserves `http://localhost:8080` and host-served `/workstation` assets.
