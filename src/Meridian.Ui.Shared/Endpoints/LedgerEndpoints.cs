@@ -1069,12 +1069,17 @@ public static class LedgerEndpoints
             {
                 var actor = ResolveMutationActor(context, request.Actor);
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!HasAccountingPackageTenantScope(tenantContext))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .BuildPackageAsync(request with
                     {
                         Actor = actor,
-                        TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -1112,12 +1117,17 @@ public static class LedgerEndpoints
             {
                 var actor = ResolveMutationActor(context, request.Actor);
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!HasAccountingPackageTenantScope(tenantContext))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .CertifyPackageAsync(request with
                     {
                         Actor = actor,
-                        TenantId = tenantContext.TenantId ?? request.TenantId,
-                        CompanyId = tenantContext.CompanyId ?? request.CompanyId
+                        TenantId = tenantContext.TenantId,
+                        CompanyId = tenantContext.CompanyId
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return result is null
@@ -1164,6 +1174,11 @@ public static class LedgerEndpoints
 
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!HasAccountingPackageTenantScope(tenantContext))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service
                 .ListPackagesAsync(
                     fundProfileId,
@@ -1200,6 +1215,11 @@ public static class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!HasAccountingPackageTenantScope(tenantContext))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .GetExportArtifactManifestAsync(
                         packageId,
@@ -1803,6 +1823,11 @@ public static class LedgerEndpoints
 
     private static IResult ServiceUnavailable()
         => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+
+    private static bool HasAccountingPackageTenantScope(WorkstationTenantContext tenantContext)
+        => !string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
+           !string.IsNullOrWhiteSpace(tenantContext.CompanyId);
 
     private static bool HasLedgerReadPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(

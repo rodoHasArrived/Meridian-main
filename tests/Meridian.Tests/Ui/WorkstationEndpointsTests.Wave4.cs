@@ -1372,6 +1372,62 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task LedgerAccountingReportPackageEndpoints_RequireAuthenticatedTenantScope()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserCompanyId: null);
+        var client = app.GetTestClient();
+        var ledgerBookId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+        using var buildResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-tenant-bypass",
+                PeriodId: "2026-12",
+                Actor: "browser-user",
+                LedgerBookId: ledgerBookId,
+                BeginningCapital: 100_000m,
+                Contributions: 25_000m,
+                Distributions: 5_000m,
+                RealizedGainLoss: 10_000m,
+                Nav: 130_000m,
+                EvidenceLinks:
+                [
+                    $"evidence:ledger:trial-balance:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:reconciliation:gl-tie-out:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:report-render:financial-statements:2026-12:book:{ledgerBookId:D}",
+                    $"evidence:nav:support-package:2026-12:book:{ledgerBookId:D}"
+                ],
+                TenantId: "spoofed-tenant",
+                CompanyId: "spoofed-company"),
+            ServerJsonOptions);
+
+        buildResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var certifyResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackageCertification,
+            new CertifyAccountingReportPackageRequestDto(
+                PackageId: "acct-report-fund-tenant-bypass-2026-12",
+                Actor: "browser-user",
+                Notes: "Attempt to certify without tenant scope.",
+                TenantId: "spoofed-tenant",
+                CompanyId: "spoofed-company"),
+            ServerJsonOptions);
+
+        certifyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var historyResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-tenant-bypass&periodId=2026-12&ledgerBookId={ledgerBookId:D}");
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        using var exportResponse = await client.GetAsync(
+            "/api/ledger/reports/accounting-packages/acct-report-fund-tenant-bypass-2026-12/exports/financial-statements");
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task LedgerAccountingReportPackageCertificationEndpoint_RequiresAdminMaintenance()
     {
         await using var app = await CreateAppAsync(
