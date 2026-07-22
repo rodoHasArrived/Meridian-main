@@ -27,11 +27,10 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
             .Returns(new List<AccountBalanceSnapshotDto> { Balance(new DateOnly(2026, 5, 31), 2500.25m) });
 
         var positions = Substitute.For<IPositionSnapshotStore>();
-        positions.GetLatestSnapshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new AccountSnapshotRecord(
-                "run-1", AccountId.ToString("D"), "Fund One", "Brokerage", 2500.25m, 0m, 0m, 0m,
-                [new PositionRecord("SPY", 10m, 500m, 0m, 0m)],
-                new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero)));
+        positions.GetSnapshotHistoryAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(_ => AsyncStream(Snapshot(
+                new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero),
+                new PositionRecord("SPY", 10m, 500m, 0m, 0m))));
 
         var provider = new RetainedInternalReconciliationPopulationProvider(accounts, positions);
 
@@ -103,11 +102,10 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
         accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
 
         var positions = Substitute.For<IPositionSnapshotStore>();
-        positions.GetLatestSnapshotAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new AccountSnapshotRecord(
-                "run-1", AccountId.ToString("D"), "Fund One", "Brokerage", 2500.25m, 0m, 0m, 0m,
-                [new PositionRecord("SPY", 10m, 500m, 0m, 0m)],
-                new DateTimeOffset(2026, 6, 15, 0, 0, 0, TimeSpan.Zero)));
+        positions.GetSnapshotHistoryAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(_ => AsyncStream(Snapshot(
+                new DateTimeOffset(2026, 6, 15, 0, 0, 0, TimeSpan.Zero),
+                new PositionRecord("SPY", 10m, 500m, 0m, 0m))));
 
         var provider = new RetainedInternalReconciliationPopulationProvider(accounts, positions);
 
@@ -115,6 +113,29 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
 
         result.Positions.Should().BeEmpty(
             "a snapshot captured after the statement period end fails closed rather than reconciling against a later book state");
+    }
+
+    [Fact]
+    public async Task GetPopulationsAsync_SelectsLatestSnapshotAtOrBeforePeriodEnd()
+    {
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+
+        // Both a period-end (31 May) snapshot and a later (15 June) snapshot are retained for a 31 May
+        // run. The period-appropriate 31 May book must be used, not discarded because a newer one exists.
+        var positions = Substitute.For<IPositionSnapshotStore>();
+        positions.GetSnapshotHistoryAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(_ => AsyncStream(
+                Snapshot(new DateTimeOffset(2026, 5, 31, 0, 0, 0, TimeSpan.Zero), new PositionRecord("SPY", 10m, 500m, 0m, 0m)),
+                Snapshot(new DateTimeOffset(2026, 6, 15, 0, 0, 0, TimeSpan.Zero), new PositionRecord("QQQ", 99m, 900m, 0m, 0m))));
+
+        var provider = new RetainedInternalReconciliationPopulationProvider(accounts, positions);
+
+        var result = await provider.GetPopulationsAsync(Context(AccountId.ToString("D")));
+
+        var position = result.Positions.Should().ContainSingle().Subject;
+        position.SecurityId.Should().Be("SPY", "the 31 May snapshot is the latest at or before the period end");
+        position.AsOfDate.Should().Be(new DateOnly(2026, 5, 31));
     }
 
     [Fact]
@@ -176,4 +197,17 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
         LedgerReference: null,
         StrategyId: null,
         RunId: runId);
+
+    private static AccountSnapshotRecord Snapshot(DateTimeOffset asOf, params PositionRecord[] positions) => new(
+        "run-1", AccountId.ToString("D"), "Fund One", "Brokerage", 2500.25m, 0m, 0m, 0m, positions, asOf);
+
+    private static async IAsyncEnumerable<AccountSnapshotRecord> AsyncStream(params AccountSnapshotRecord[] records)
+    {
+        foreach (var record in records)
+        {
+            yield return record;
+        }
+
+        await Task.CompletedTask;
+    }
 }

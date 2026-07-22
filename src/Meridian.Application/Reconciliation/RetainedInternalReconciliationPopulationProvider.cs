@@ -144,8 +144,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
             return [];
         }
 
-        var snapshot = await positionSnapshots
-            .GetLatestSnapshotAsync(account.RunId.Trim(), accountIdText, ct)
+        var snapshot = await ResolvePeriodSnapshotAsync(positionSnapshots, account.RunId.Trim(), accountIdText, asOfCeiling, ct)
             .ConfigureAwait(false);
         if (snapshot is null || snapshot.Positions.Count == 0)
         {
@@ -153,15 +152,6 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         }
 
         var asOfDate = DateOnly.FromDateTime(snapshot.AsOf.UtcDateTime);
-
-        // Fail closed when the only retained snapshot post-dates the statement period: a position set
-        // captured after the period end cannot be reconciled against a closed statement, so surface the
-        // statement's position rows as breaks rather than matching them to a later book state.
-        if (asOfCeiling is not null && asOfDate > asOfCeiling.Value)
-        {
-            return [];
-        }
-
         var positions = new List<InternalPortfolioPosition>(snapshot.Positions.Count);
         foreach (var position in snapshot.Positions)
         {
@@ -181,5 +171,39 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         }
 
         return positions;
+    }
+
+    // Resolve the position snapshot the statement period closes on. With a period ceiling, select the
+    // latest snapshot at or before it from history rather than the account's newest snapshot: a run with
+    // both a period-end snapshot and a later one must still reconcile against the period-appropriate book
+    // instead of discarding every position because the newest snapshot post-dates the period. Without a
+    // ceiling, fall back to the newest retained snapshot.
+    private static async Task<AccountSnapshotRecord?> ResolvePeriodSnapshotAsync(
+        IPositionSnapshotStore positionSnapshots,
+        string runId,
+        string accountIdText,
+        DateOnly? asOfCeiling,
+        CancellationToken ct)
+    {
+        if (asOfCeiling is null)
+        {
+            return await positionSnapshots.GetLatestSnapshotAsync(runId, accountIdText, ct).ConfigureAwait(false);
+        }
+
+        var ceiling = new DateTimeOffset(asOfCeiling.Value.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        AccountSnapshotRecord? latest = null;
+        await foreach (var candidate in positionSnapshots
+            .GetSnapshotHistoryAsync(runId, accountIdText, DateTimeOffset.MinValue, ceiling, ct)
+            .ConfigureAwait(false))
+        {
+            // Keep the latest snapshot effective at or before the period close; the explicit ceiling
+            // check stays correct even if a store streams a record outside the requested bound.
+            if (candidate.AsOf <= ceiling && (latest is null || candidate.AsOf > latest.AsOf))
+            {
+                latest = candidate;
+            }
+        }
+
+        return latest;
     }
 }
