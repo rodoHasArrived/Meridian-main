@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.UI;
+using Meridian.Contracts.Operations;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.ProviderSdk;
 using Microsoft.Extensions.FileProviders;
@@ -413,8 +414,16 @@ public sealed class ProviderRoutingServiceTests : IDisposable
             yield break;
         }
 
-        public Task<IReadOnlyList<TradingSession>> GetSessionsAsync(TradingCalendarRequest request, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<TradingSession>>([]);
+        public Task<ProviderTradingCalendarResponse> GetTradingCalendarAsync(ProviderTradingCalendarRequest request, CancellationToken ct = default)
+            => Task.FromResult(new ProviderTradingCalendarResponse(
+                Sessions: [],
+                Closures: [],
+                Provenance: new ProviderCalendarProvenance(
+                    ProviderId,
+                    SourceReference: "test/calendar",
+                    RetrievedAtUtc: DateTimeOffset.UtcNow,
+                    SourceAsOfUtc: null,
+                    DataProvenance: DataProvenance.Simulated)));
 
         public Task<ProviderMarketRule?> GetMarketRuleAsync(MarketRuleRequest request, CancellationToken ct = default)
             => Task.FromResult<ProviderMarketRule?>(null);
