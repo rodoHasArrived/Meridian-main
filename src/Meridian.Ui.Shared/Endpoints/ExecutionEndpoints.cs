@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
@@ -160,12 +162,14 @@ public static class ExecutionEndpoints
                 return brokerAccountFailure;
             }
 
-            if (await RequireScopedFundAccountOrderAccessAsync(
+            if (request.FundAccountId is { } fundAccountId
+                && await RequireExecutionFundAccountAccessAsync(
+                    fundAccountId,
+                    UserPermission.ManageOrders,
                     context,
-                    request.FundAccountId,
-                    UserPermission.ManageOrders).ConfigureAwait(false) is { } fundAccountFailure)
+                    jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
             {
-                return fundAccountFailure;
+                return accountScopeFailure;
             }
 
             string? correlationId = null;
@@ -1209,6 +1213,16 @@ public static class ExecutionEndpoints
             return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
         }
 
+        if (fundAccountId is { } requestedFundAccountId
+            && await RequireExecutionFundAccountAccessAsync(
+                requestedFundAccountId,
+                UserPermission.ExecuteTrades,
+                context,
+                jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
+        {
+            return accountScopeFailure;
+        }
+
         var metadata = MergeMetadata(
             RemoveServerOwnedExecutionMetadata(position.Metadata),
             ("actor", actor),
@@ -1407,6 +1421,62 @@ public static class ExecutionEndpoints
     private static ILogger GetLogger(IServiceProvider sp) =>
         sp.GetRequiredService<ILoggerFactory>()
           .CreateLogger("Meridian.Ui.Shared.Endpoints.ExecutionEndpoints");
+
+
+    private static async Task<IResult?> RequireExecutionFundAccountAccessAsync(
+        Guid fundAccountId,
+        UserPermission requiredPermission,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (!EndpointAuthorization.TryGetPermissions(context, out _))
+        {
+            return Results.Unauthorized();
+        }
+
+        var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
+        if (scopedAuthorization is null)
+        {
+            return Results.Problem(
+                "Fund account scope authorization is not active.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
+            && !await EndpointAuthorization.HasScopedPermissionAsync(
+                context,
+                requiredPermission,
+                AccessScopeKindDto.Account,
+                fundAccountId,
+                context.RequestAborted).ConfigureAwait(false))
+        {
+            return ExecutionFundAccountForbidden(jsonOptions);
+        }
+
+        var queryService = ResolveAccountQueryService(context);
+        if (queryService is null)
+        {
+            return Results.Problem(
+                "Fund account scope validation is not active.",
+                statusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+
+        var account = await queryService.GetAccountAsync(fundAccountId, context.RequestAborted).ConfigureAwait(false);
+        return account is null ? ExecutionFundAccountForbidden(jsonOptions) : null;
+    }
+
+    private static IResult ExecutionFundAccountForbidden(JsonSerializerOptions jsonOptions)
+    {
+        var blocked = new TradingActionResult(
+            ActionId: GenerateActionId(),
+            Status: "Rejected",
+            Message: "The requested fund account is not authorized for this execution action.",
+            OccurredAt: DateTimeOffset.UtcNow);
+        return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    private static IAccountQueryService? ResolveAccountQueryService(HttpContext context) =>
+        context.RequestServices.GetService<IAccountQueryService>();
 
     private static bool TryResolveActor(HttpContext context, out string actor)
         => EndpointAuthorization.TryResolveActor(context, out actor);
