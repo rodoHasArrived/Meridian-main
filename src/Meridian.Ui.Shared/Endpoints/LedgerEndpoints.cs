@@ -1106,6 +1106,11 @@ public static partial class LedgerEndpoints
             {
                 var actor = ResolveMutationActor(context, request.Actor);
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!HasAccountingPackageTenantScope(tenantContext))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .CertifyPackageAsync(request with
                     {
@@ -1159,6 +1164,11 @@ public static partial class LedgerEndpoints
 
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!HasAccountingPackageTenantScope(tenantContext))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service
                 .ListPackagesAsync(
                     fundProfileId,
@@ -1196,6 +1206,11 @@ public static partial class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!HasAccountingPackageTenantScope(tenantContext))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .GetExportArtifactManifestAsync(
                         packageId,
@@ -1888,6 +1903,11 @@ public static partial class LedgerEndpoints
 
     private static IResult ServiceUnavailable()
         => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+
+
+    private static bool HasAccountingPackageTenantScope(WorkstationTenantContext tenantContext)
+        => !string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
+           !string.IsNullOrWhiteSpace(tenantContext.CompanyId);
 
     private static bool HasLedgerReadPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
