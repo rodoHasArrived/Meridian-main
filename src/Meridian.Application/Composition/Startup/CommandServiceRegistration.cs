@@ -120,7 +120,7 @@ internal static class CommandServiceRegistration
             sp.GetRequiredService<ILogger>()));
         services.AddSingleton<ICliCommand>(sp => new StatementImportCommands(
             sp.GetRequiredService<IBrokerStatementService>(),
-            sp.GetRequiredService<IStatementRunWorkflowService>(),
+            sp.GetRequiredService<Meridian.FinancialOperations.Reconciliation.Connectors.IStatementImportCommitService>(),
             sp.GetRequiredService<ILogger>()));
         services.AddSingleton<ICliCommand>(sp => new StatementCommands(
             sp.GetRequiredService<IStatementReconciliationValidationService>(),

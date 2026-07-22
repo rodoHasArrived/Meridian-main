@@ -1,4 +1,5 @@
 using Meridian.FinancialOperations.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Domain.Reconciliation;
 using Meridian.Platform.Results;
 using Serilog;
@@ -7,7 +8,7 @@ namespace Meridian.Application.Commands;
 
 public sealed class StatementImportCommands(
     IBrokerStatementService brokerStatementService,
-    IStatementRunWorkflowService statementRunWorkflowService,
+    IStatementImportCommitService importCommitService,
     ILogger log) : ICliCommand
 {
     public IReadOnlyList<string> Triggers { get; } = ["--statement-validate", "--statement-import"];
@@ -43,21 +44,38 @@ public sealed class StatementImportCommands(
             return result.IsValid ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
         }
 
-        var runRequest = await StatementRunCreateRequest.FromFileAsync(
-            broker,
-            Get(args, "--statement-source-institution") ?? Get(args, "--statement-custodian") ?? broker,
-            Get(args, "--statement-fund-account-id") ?? "legacy-fund-account",
-            Get(args, "--statement-external-account-id") ?? "legacy-external-account",
-            TryGetDate(args, "--statement-period-start", out var periodStart) ? periodStart : statementDate,
-            TryGetDate(args, "--statement-period-end", out var periodEnd) ? periodEnd : statementDate,
-            path,
-            Get(args, "--statement-mapping-profile-id") ?? "legacy-mapping-profile",
-            Get(args, "--statement-tolerance-profile-id") ?? StatementToleranceProfile.DefaultProfileId,
-            Get(args, "--statement-imported-by") ?? Environment.UserName,
-            ct: ct);
-        var imported = await statementRunWorkflowService.CreateAsync(runRequest.ToStatementRunRequest(), ct).ConfigureAwait(false);
-        Console.WriteLine($"imported={imported.Import.ImportId}; rows={imported.Import.NormalizedRowCount}");
-        log.Information("Imported broker statement {ImportId} from {SourcePath}", imported.Import.ImportId, path);
+        // Route the import through the connector pipeline (CSV, OFX, IB Flex, Alpaca, camt.053, BAI2)
+        // rather than the CSV/IB-Flex-only broker router, so the bank formats registered for the
+        // workstation are also importable from the CLI. The connector resolves from file content unless
+        // an explicit connector id is supplied.
+        var content = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
+        var document = new StatementSourceDocument(
+            Path.GetFileName(path),
+            content,
+            MappingProfileId: Get(args, "--statement-mapping-profile-id"),
+            ExternalAccountId: Get(args, "--statement-external-account-id"));
+
+        // The connector pipeline distinguishes the source channel (broker vs custodian), not a broker
+        // name; derive it from the request and carry the operator's broker/custodian label as the
+        // institution.
+        var sourceKind = Get(args, "--statement-source-kind")
+            ?? (string.Equals(broker, "custodian", StringComparison.OrdinalIgnoreCase) ? "custodian" : "broker");
+
+        var commitRequest = new StatementImportCommitRequest(
+            document,
+            ConnectorId: Get(args, "--statement-connector-id"),
+            SourceKind: sourceKind,
+            SourceInstitution: Get(args, "--statement-source-institution") ?? Get(args, "--statement-custodian") ?? broker,
+            FundAccountId: Get(args, "--statement-fund-account-id") ?? "legacy-fund-account",
+            ExternalAccountId: Get(args, "--statement-external-account-id") ?? "legacy-external-account",
+            PeriodStart: TryGetDate(args, "--statement-period-start", out var periodStart) ? periodStart : statementDate,
+            PeriodEnd: TryGetDate(args, "--statement-period-end", out var periodEnd) ? periodEnd : statementDate,
+            ToleranceProfileId: Get(args, "--statement-tolerance-profile-id") ?? StatementToleranceProfile.DefaultProfileId,
+            ImportedBy: Get(args, "--statement-imported-by") ?? Environment.UserName);
+
+        var imported = await importCommitService.CommitAsync(commitRequest, ct).ConfigureAwait(false);
+        Console.WriteLine($"imported={imported.RunId}; rows={imported.RecordCount}; breaks={imported.BreakCount}; cases={imported.CaseCount}");
+        log.Information("Imported statement {RunId} from {SourcePath} through the connector pipeline", imported.RunId, path);
         return CliResult.Ok();
     }
 
