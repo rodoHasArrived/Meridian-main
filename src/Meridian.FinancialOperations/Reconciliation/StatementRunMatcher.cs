@@ -38,14 +38,15 @@ internal static class StatementRunMatcher
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
 
-        // A statement run reconciles a single custodian account, so the account dimension is a
-        // run-level constant. Normalize the statement side to the run's external (custodian) account
-        // key — the same key the internal populations use — so institutional statements whose per-row
-        // account column carries an IBAN or bank id (camt.053, BAI2) still reconcile instead of
-        // breaking on an account-string mismatch.
+        // A statement run reconciles a single custodian account. Before replacing the source-row
+        // account with the run-level key, reject any populated source account that names a different
+        // custodian account. Otherwise a statement for account B could be normalized to account A and
+        // falsely reconcile against A's internal book. Account aliases must be resolved before this
+        // boundary; this matcher never silently treats distinct account identifiers as equivalent.
         var canonicalAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
-            ? import.FundAccountId
+            ? import.FundAccountId.Trim()
             : import.ExternalAccountId.Trim();
+        ValidateStatementAccounts(rows, canonicalAccount);
 
         foreach (var row in rows)
         {
@@ -120,6 +121,27 @@ internal static class StatementRunMatcher
         }
 
         return new StatementRunMatchResult(breaks, matchCount);
+    }
+
+    private static void ValidateStatementAccounts(
+        IReadOnlyList<CanonicalStatementRow> rows,
+        string canonicalAccount)
+    {
+        foreach (var row in rows)
+        {
+            if (string.IsNullOrWhiteSpace(row.Account))
+            {
+                continue;
+            }
+
+            var sourceAccount = row.Account.Trim();
+            if (!string.Equals(sourceAccount, canonicalAccount, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(
+                    $"Statement row {row.SourceRowNumber} identifies account '{sourceAccount}', " +
+                    $"which does not match the requested external account '{canonicalAccount}'.");
+            }
+        }
     }
 
     private static NormalizedStatementPosition MapPosition(
