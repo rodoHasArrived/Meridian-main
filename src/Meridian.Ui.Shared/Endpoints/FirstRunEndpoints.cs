@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -17,7 +18,7 @@ public static class FirstRunEndpoints
             try
             { return Results.Ok(await service.CompleteAsync(CurrentUser(context), request, ct).ConfigureAwait(false)); }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
-        });
+        }).RequirePermission(UserPermission.AdminMaintenance);
         group.MapPost("/outcomes/complete", async (HttpContext context, CompleteActivationOutcomeRequestDto request, FirstRunExperienceService service, CancellationToken ct) =>
         {
             try
