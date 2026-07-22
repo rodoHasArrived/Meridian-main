@@ -132,6 +132,16 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         edgar.Brokerage.Should().BeNull();
         edgar.CorporateActions.Should().BeNull(
             "EDGAR corporate-action support is routed through Security Master/reference-data workflows, not an ICorporateActionProvider implementation");
+
+        var ibStreaming = descriptorsById["ib"];
+        ibStreaming.Streaming.Should().Be(typeof(IBMarketDataClient));
+        ibStreaming.Historical.Should().BeNull(
+            "the IBKR historical adapter registers under its actual ibkr provider identity");
+
+        var ibHistorical = descriptorsById["ibkr"];
+        ibHistorical.Historical.Should().Be(typeof(IBHistoricalDataProvider));
+        ibHistorical.Streaming.Should().BeNull(
+            "the TWS/Gateway streaming adapter registers under its actual ib provider identity");
     }
 
     [Fact]

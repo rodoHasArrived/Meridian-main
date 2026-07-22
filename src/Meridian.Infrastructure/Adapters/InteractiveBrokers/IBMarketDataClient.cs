@@ -111,6 +111,14 @@ public sealed class IBMarketDataClient :
         maxDepthLevels: 10) with
     {
         SupportedMarkets = new[] { "US", "EU", "APAC", "Global" },
+        DeclaredMarketDataCapabilities = new[]
+        {
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.Trades, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Account and exchange subscription required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB event timestamp", "Entitlement-dependent; simulation builds are synthetic"),
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.NbboQuotes, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Account and exchange subscription required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB tick timestamp", "Entitlement-dependent; simulation builds are synthetic"),
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.Level1Snapshot, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Snapshot permission required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB tick timestamp", "Entitlement-dependent; simulation builds are synthetic"),
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.Level2Book, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Market-depth subscription required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB depth update timestamp", "Entitlement-dependent; maximum 10 displayed levels"),
+            new MarketDataCapabilityProfile(MarketDataCapabilityKind.TickByTick, new[] { "Equity", "Option", "Future", "Forex" }, new[] { "US", "EU", "APAC" }, new[] { "SMART" }, "IBKR TWS/Gateway", "Real-time or delayed", "Tick-by-tick subscription required", 50, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(20), "IB tick timestamp", "Entitlement-dependent; simulation builds are synthetic")
+        },
         MaxRequestsPerWindow = 50,
         RateLimitWindow = TimeSpan.FromSeconds(1),
         MinRequestDelay = TimeSpan.FromMilliseconds(20)

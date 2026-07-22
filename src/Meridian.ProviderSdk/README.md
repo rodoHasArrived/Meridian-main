@@ -48,6 +48,10 @@ keeping reflection-based provider discovery in Application.
 Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
 generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,
 amortization, and paydown evidence when a provider cannot route the required factor/coupon feed.
+`ProviderCapabilities.MarketDataCapabilities` is the granular entitlement-aware product contract:
+each declared product records asset class, geography/venue, feed, delivery status, entitlement
+posture, pacing budget, source-timestamp semantics, and quality posture. Registry-derived catalog
+entries project this contract rather than maintaining a separate UI capability inventory.
 `AccountingSystem/IAccountingSystemProvider.cs` defines the provider-neutral GL import surface for
 chart-of-accounts, journal-entry, trial-balance, and reconciliation-preview evidence. It is
 read-oriented by default; write/posting support must be exposed explicitly by provider capabilities

@@ -29,7 +29,14 @@ public static class ProviderCapabilityDescriptorCatalog
             InstrumentTypes: [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto]),
         new("synthetic", Historical: typeof(SyntheticHistoricalDataProvider),
             InstrumentTypes: [InstrumentType.Equity]),
-        new("ib", typeof(IBMarketDataClient), typeof(IBHistoricalDataProvider), Brokerage: typeof(IBBrokerageGateway),
+        new("ib", Streaming: typeof(IBMarketDataClient),
+            InstrumentTypes:
+            [
+                InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
+                InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex,
+                InstrumentType.Bond, InstrumentType.CFD, InstrumentType.Warrant, InstrumentType.Index
+            ]),
+        new("ibkr", Historical: typeof(IBHistoricalDataProvider),
             InstrumentTypes:
             [
                 InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
