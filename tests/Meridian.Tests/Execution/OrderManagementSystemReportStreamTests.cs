@@ -188,6 +188,54 @@ public sealed class OrderManagementSystemReportStreamTests
     }
 
     [Fact]
+    public async Task AcceptedQuantityIncrease_AllowsStreamedFillUpToAmendedQuantity()
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m);
+        var gateway = new StreamingGateway
+        {
+            SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null),
+            ModifyAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.Modified, filledQty: 0m, fillPrice: null, orderQuantity: 30m)
+        };
+        using var oms = new OrderManagementSystem(
+            gateway,
+            NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: portfolio);
+
+        var result = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 25m,
+            LimitPrice = 150m
+        });
+        result.Success.Should().BeTrue();
+
+        var modification = await oms.ModifyOrderAsync(result.OrderId, new OrderModification { NewQuantity = 30m });
+        modification.Success.Should().BeTrue();
+        modification.OrderState!.Quantity.Should().Be(30m,
+            because: "the accepted broker amendment establishes the authorized order quantity");
+
+        await gateway.PublishAsync(
+            BuildReport(result.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 30m, fillPrice: 150m, orderQuantity: 30m));
+
+        await WaitUntilAsync(() => oms.GetOrder(result.OrderId)!.Status == OrderStatus.Filled,
+            "the streamed completion report must reach the amended tracked order");
+
+        var order = oms.GetOrder(result.OrderId)!;
+        order.Quantity.Should().Be(30m);
+        order.FilledQuantity.Should().Be(30m,
+            because: "fills must be capped to the broker-accepted amended quantity, not the original request");
+        portfolio.Positions["AAPL"].Quantity.Should().Be(30m);
+        portfolio.Cash.Should().Be(100_000m - 4_500m);
+
+        using var readCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var published = await oms.ExecutionReports.ReadAsync(readCts.Token);
+        published.FilledQuantity.Should().Be(30m,
+            because: "downstream consumers must receive the full authorized amended fill increment");
+    }
+
+    [Fact]
     public async Task LateFillAfterTerminalOrder_DoesNotMutatePortfolioOrOrderState()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
@@ -234,7 +282,8 @@ public sealed class OrderManagementSystemReportStreamTests
         ExecutionReportType reportType,
         decimal filledQty,
         decimal? fillPrice,
-        string symbol = "AAPL") =>
+        string symbol = "AAPL",
+        decimal? orderQuantity = null) =>
         new()
         {
             OrderId = orderId,
@@ -243,7 +292,7 @@ public sealed class OrderManagementSystemReportStreamTests
             Symbol = symbol,
             Side = OrderSide.Buy,
             OrderStatus = status,
-            OrderQuantity = filledQty,
+            OrderQuantity = orderQuantity ?? filledQty,
             FilledQuantity = filledQty,
             FillPrice = fillPrice,
             Commission = 0m,
@@ -273,6 +322,7 @@ public sealed class OrderManagementSystemReportStreamTests
         private readonly Channel<ExecutionReport> _reports = Channel.CreateUnbounded<ExecutionReport>();
 
         public required ExecutionReport SubmitAck { get; set; }
+        public ExecutionReport? ModifyAck { get; set; }
         public bool PublishAckOnStream { get; set; }
 
         public string GatewayId => "stream-test";
@@ -300,8 +350,17 @@ public sealed class OrderManagementSystemReportStreamTests
         public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
             throw new NotSupportedException();
 
-        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
-            throw new NotSupportedException();
+        public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
+        {
+            if (ModifyAck is null)
+                throw new NotSupportedException();
+
+            return Task.FromResult(ModifyAck with
+            {
+                OrderId = orderId,
+                ClientOrderId = orderId
+            });
+        }
 
         public IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(CancellationToken ct = default) =>
             _reports.Reader.ReadAllAsync(ct);

@@ -543,10 +543,20 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             return current;
         }
 
+        // A broker-accepted modification establishes the new authorized order
+        // quantity. Preserve the current quantity for report types that do not
+        // carry a reliable order quantity (for example, fills from some brokers).
+        var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
+            && report.OrderStatus is OrderStatus.Accepted
+            && report.OrderQuantity > 0m
+            ? Math.Max(report.OrderQuantity, current.FilledQuantity)
+            : current.Quantity;
+
         return current with
         {
             Status = report.OrderStatus,
-            FilledQuantity = Math.Min(current.Quantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
+            Quantity = authorizedQuantity,
+            FilledQuantity = Math.Min(authorizedQuantity, Math.Max(report.FilledQuantity, current.FilledQuantity)),
             AverageFillPrice = report.FillPrice ?? current.AverageFillPrice,
             LastUpdatedAt = report.Timestamp
         };
