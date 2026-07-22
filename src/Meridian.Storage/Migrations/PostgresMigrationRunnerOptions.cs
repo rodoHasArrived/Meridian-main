@@ -62,6 +62,14 @@ public sealed class PostgresMigrationRunnerOptions
     /// <summary>Whether a missing scripts directory is an error or an empty migration set.</summary>
     public bool ThrowWhenScriptsDirectoryMissing { get; init; } = true;
 
+    /// <summary>
+    /// Applied script filenames that must run again on every startup. These scripts must be
+    /// idempotent and are typically used for guarded backfills that can repair legacy rows after
+    /// new ownership data becomes available.
+    /// </summary>
+    public IReadOnlySet<string> RepeatableMigrationFileNames { get; init; } =
+        new HashSet<string>(StringComparer.Ordinal);
+
     /// <summary>How a checksum mismatch on an already-applied script is handled.</summary>
     public MigrationDriftPolicy DriftPolicy { get; init; } = MigrationDriftPolicy.Throw;
 }
@@ -73,8 +81,9 @@ public enum MigrationDriftPolicy
     Throw,
 
     /// <summary>
-    /// Re-apply the script on every startup and update the ledger checksum. Used by schemas whose
-    /// scripts were historically re-run on every startup and are written to be idempotent.
+    /// Re-apply a changed script and update the ledger checksum. Unchanged scripts run again only
+    /// when their filename is listed in
+    /// <see cref="PostgresMigrationRunnerOptions.RepeatableMigrationFileNames"/>.
     /// </summary>
     Reapply,
 }

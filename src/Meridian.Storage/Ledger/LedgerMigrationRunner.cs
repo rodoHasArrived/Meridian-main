@@ -21,6 +21,11 @@ public sealed class LedgerMigrationRunner
             // feature's migration table layout.
             LedgerTableName = "ledger_journal_schema_migrations",
             DriftPolicy = MigrationDriftPolicy.Reapply,
+            RepeatableMigrationFileNames = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "V_ledger_020__fund_scope_tenant_columns.sql",
+                "V_ledger_021__operations_continuity_tenant_column.sql",
+            },
         });
     }
 

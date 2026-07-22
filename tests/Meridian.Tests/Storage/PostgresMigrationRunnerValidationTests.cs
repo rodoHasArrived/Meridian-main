@@ -70,11 +70,34 @@ public sealed class PostgresMigrationRunnerValidationTests
     [InlineData(null)]
     [InlineData("same-checksum")]
     [InlineData("old-checksum")]
-    public void ResolveAppliedMigrationAction_ReapplyExecutesAlreadyAppliedScriptsEveryStartup(string? appliedChecksum)
+    public void ResolveAppliedMigrationAction_ReapplyExecutesExplicitlyRepeatableScriptsEveryStartup(string? appliedChecksum)
     {
         var action = PostgresMigrationRunner.ResolveAppliedMigrationAction(
             appliedChecksum,
             "same-checksum",
+            MigrationDriftPolicy.Reapply,
+            isRepeatableMigration: true);
+
+        action.Should().Be(PostgresMigrationRunner.AppliedMigrationAction.ExecuteAndUpdateChecksum);
+    }
+
+    [Fact]
+    public void ResolveAppliedMigrationAction_ReapplySkipsUnchangedNonRepeatableScripts()
+    {
+        var action = PostgresMigrationRunner.ResolveAppliedMigrationAction(
+            "same-checksum",
+            "same-checksum",
+            MigrationDriftPolicy.Reapply);
+
+        action.Should().Be(PostgresMigrationRunner.AppliedMigrationAction.Skip);
+    }
+
+    [Fact]
+    public void ResolveAppliedMigrationAction_ReapplyExecutesChangedNonRepeatableScripts()
+    {
+        var action = PostgresMigrationRunner.ResolveAppliedMigrationAction(
+            "old-checksum",
+            "new-checksum",
             MigrationDriftPolicy.Reapply);
 
         action.Should().Be(PostgresMigrationRunner.AppliedMigrationAction.ExecuteAndUpdateChecksum);

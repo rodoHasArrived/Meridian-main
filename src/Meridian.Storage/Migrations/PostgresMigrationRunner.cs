@@ -58,7 +58,11 @@ public sealed class PostgresMigrationRunner
 
             if (applied.IsApplied)
             {
-                var action = ResolveAppliedMigrationAction(applied.Checksum, checksum, _options.DriftPolicy);
+                var action = ResolveAppliedMigrationAction(
+                    applied.Checksum,
+                    checksum,
+                    _options.DriftPolicy,
+                    _options.RepeatableMigrationFileNames.Contains(script.FileName));
                 switch (action)
                 {
                     case AppliedMigrationAction.Skip:
@@ -73,9 +77,8 @@ public sealed class PostgresMigrationRunner
                         throw new InvalidOperationException(
                             $"{_options.DisplayName} migration '{script.FileName}' has changed since it was applied.");
                     case AppliedMigrationAction.ExecuteAndUpdateChecksum:
-                        // MigrationDriftPolicy.Reapply preserves the no-ledger runner convention:
-                        // idempotent scripts run on every startup, including unchanged backfills
-                        // that repair legacy rows after ownership bindings become available.
+                        // Explicitly repeatable migrations run on every startup; changed scripts in
+                        // Reapply mode also run so their revised idempotent behavior takes effect.
                         await ExecuteScriptAsync(connection, transaction, sql, ct).ConfigureAwait(false);
                         await UpdateChecksumAsync(connection, transaction, script.FileName, checksum, ct)
                             .ConfigureAwait(false);
@@ -182,9 +185,10 @@ public sealed class PostgresMigrationRunner
     internal static AppliedMigrationAction ResolveAppliedMigrationAction(
         string? appliedChecksum,
         string currentChecksum,
-        MigrationDriftPolicy driftPolicy)
+        MigrationDriftPolicy driftPolicy,
+        bool isRepeatableMigration = false)
     {
-        if (driftPolicy == MigrationDriftPolicy.Reapply)
+        if (driftPolicy == MigrationDriftPolicy.Reapply && isRepeatableMigration)
         {
             return AppliedMigrationAction.ExecuteAndUpdateChecksum;
         }
@@ -199,7 +203,9 @@ public sealed class PostgresMigrationRunner
             return AppliedMigrationAction.Skip;
         }
 
-        return AppliedMigrationAction.Throw;
+        return driftPolicy == MigrationDriftPolicy.Reapply
+            ? AppliedMigrationAction.ExecuteAndUpdateChecksum
+            : AppliedMigrationAction.Throw;
     }
 
     private async Task RecordMigrationAsync(
