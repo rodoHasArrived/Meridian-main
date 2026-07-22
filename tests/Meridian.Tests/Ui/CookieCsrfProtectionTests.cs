@@ -1,5 +1,6 @@
 using System.Net;
 using FluentAssertions;
+using Meridian.Application.Composition;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,20 +12,40 @@ namespace Meridian.Tests.Ui;
 public sealed class CookieCsrfProtectionTests
 {
     [Fact]
-    public void ShouldUseSecureCookies_WhenProductionHttpRequestIsLoopback_ReturnsTrue()
+    public void ShouldUseSecureCookies_WhenProductionApiHttpRequestIsLoopback_ReturnsTrue()
     {
-        var context = CreateContext(IPAddress.Loopback, IPAddress.Loopback, isHttps: false);
+        var context = CreateContext(
+            IPAddress.Loopback,
+            IPAddress.Loopback,
+            isHttps: false,
+            deploymentPosture: MeridianDeploymentPosture.ProductionApi);
 
         CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
     }
 
-
     [Fact]
-    public void ShouldUseSecureCookies_WhenDevelopmentHttpRequestIsLoopback_ReturnsFalse()
+    public void ShouldUseSecureCookies_WhenProductionLocalWorkstationHttpRequestIsLoopback_ReturnsFalse()
     {
-        var context = CreateContext(IPAddress.Loopback, IPAddress.Loopback, isHttps: false, Environments.Development);
+        var context = CreateContext(
+            IPAddress.Loopback,
+            IPAddress.Loopback,
+            isHttps: false,
+            deploymentPosture: MeridianDeploymentPosture.LocalWorkstation);
 
         CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ShouldUseSecureCookies_WhenDevelopmentProductionApiHttpRequestIsLoopback_ReturnsTrue()
+    {
+        var context = CreateContext(
+            IPAddress.Loopback,
+            IPAddress.Loopback,
+            isHttps: false,
+            Environments.Development,
+            MeridianDeploymentPosture.ProductionApi);
+
+        CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
     }
 
     [Fact]
@@ -43,12 +64,18 @@ public sealed class CookieCsrfProtectionTests
         CookieCsrfProtection.ShouldUseSecureCookies(context).Should().BeTrue();
     }
 
-    private static DefaultHttpContext CreateContext(IPAddress remoteAddress, IPAddress localAddress, bool isHttps, string environmentName = Environments.Production)
+    private static DefaultHttpContext CreateContext(
+        IPAddress remoteAddress,
+        IPAddress localAddress,
+        bool isHttps,
+        string environmentName = Environments.Production,
+        MeridianDeploymentPosture deploymentPosture = MeridianDeploymentPosture.Unspecified)
     {
         var services = new ServiceCollection()
-            .AddSingleton<IHostEnvironment>(new TestHostEnvironment(environmentName))
-            .BuildServiceProvider();
-        var context = new DefaultHttpContext { RequestServices = services };
+            .AddSingleton<IHostEnvironment>(new TestHostEnvironment(environmentName));
+        services.DeclareMeridianDeploymentPosture(deploymentPosture);
+        var serviceProvider = services.BuildServiceProvider();
+        var context = new DefaultHttpContext { RequestServices = serviceProvider };
         context.Connection.RemoteIpAddress = remoteAddress;
         context.Connection.LocalIpAddress = localAddress;
         context.Request.Scheme = isHttps ? "https" : "http";
