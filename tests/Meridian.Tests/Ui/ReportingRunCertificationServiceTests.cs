@@ -804,6 +804,84 @@ public sealed class ReportingRunCertificationServiceTests
     }
 
     [Fact]
+    public async Task ProduceAsync_ClientGradePdfIsValidAndByteStable()
+    {
+        var manifest = await BuildCertifiedManifestAsync("run-cg-pdf", ReportingOutputFormatDto.Pdf);
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer());
+
+        var first = await producer.ProduceAsync(manifest);
+        var second = await producer.ProduceAsync(manifest);
+
+        var firstPdf = first.Artifacts.Single(artifact => artifact.FileName == "run-cg-pdf.pdf").Content.ToArray();
+        var secondPdf = second.Artifacts.Single(artifact => artifact.FileName == "run-cg-pdf.pdf").Content.ToArray();
+
+        Encoding.ASCII.GetString(firstPdf, 0, 5).Should().Be("%PDF-");
+        firstPdf.Should().Equal(secondPdf, "client-grade PDF bytes must be deterministic for hash verification");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_ClientGradeXlsxIsValidWorkbookAndByteStable()
+    {
+        var manifest = await BuildCertifiedManifestAsync("run-cg-xlsx", ReportingOutputFormatDto.Xlsx);
+        var producer = new DeterministicReportingCertifiedArtifactProducer(
+            new DocumentsReportingPrimaryDocumentRenderer());
+
+        var first = await producer.ProduceAsync(manifest);
+        var second = await producer.ProduceAsync(manifest);
+
+        var firstXlsx = first.Artifacts.Single(artifact => artifact.FileName == "run-cg-xlsx.xlsx").Content.ToArray();
+        var secondXlsx = second.Artifacts.Single(artifact => artifact.FileName == "run-cg-xlsx.xlsx").Content.ToArray();
+
+        using (var archive = new ZipArchive(new MemoryStream(firstXlsx), ZipArchiveMode.Read))
+        {
+            archive.GetEntry("xl/workbook.xml").Should().NotBeNull();
+            archive.Entries.Count(entry =>
+                    entry.FullName.StartsWith("xl/worksheets/sheet", StringComparison.Ordinal))
+                .Should().BeGreaterThan(0);
+        }
+
+        firstXlsx.Should().Equal(secondXlsx, "client-grade XLSX bytes must be deterministic for hash verification");
+    }
+
+    [Fact]
+    public async Task ProduceAsync_ClientGradePreservesDeclarationsDescriptorsAndRetainedManifest()
+    {
+        var manifest = await BuildCertifiedManifestAsync("run-cg-parity", ReportingOutputFormatDto.Pdf);
+        var plain = await new DeterministicReportingCertifiedArtifactProducer().ProduceAsync(manifest);
+        var clientGrade = await new DeterministicReportingCertifiedArtifactProducer(
+                new DocumentsReportingPrimaryDocumentRenderer())
+            .ProduceAsync(manifest);
+
+        clientGrade.Artifacts.Select(artifact => artifact.ArtifactId)
+            .Should().Equal(plain.Artifacts.Select(artifact => artifact.ArtifactId));
+        clientGrade.ManifestArtifactId.Should().Be(plain.ManifestArtifactId);
+
+        var retainedManifest = clientGrade.Artifacts
+            .Single(artifact => artifact.ArtifactId == clientGrade.ManifestArtifactId)
+            .Content;
+        var retained = DeterministicReportingCertifiedArtifactProducer.ParseRetainedManifest(retainedManifest.Span);
+        retained.Artifacts.Should().OnlyContain(descriptor =>
+            descriptor.ContentHashSha256 == null || descriptor.ContentHashSha256.Length == 64);
+    }
+
+    [Fact]
+    public async Task ProduceAsync_ClientGradePdfRendersUnicodeAccountNamesWithoutRejection()
+    {
+        var rows = ImmutableArray.Create<IReadOnlyDictionary<string, string>>(
+            Row(
+                ("account", "Café Ünïcode 資本"),
+                ("debit", "100.00"),
+                ("credit", "0"),
+                ("netAmount", "100.00")));
+
+        var production = await ProduceClientGradeAsync("run-cg-unicode", ReportingOutputFormatDto.Pdf, rows);
+
+        var pdf = production.Artifacts.Single(artifact => artifact.FileName == "run-cg-unicode.pdf").Content.ToArray();
+        Encoding.ASCII.GetString(pdf, 0, 5).Should().Be("%PDF-");
+    }
+
+    [Fact]
     public async Task ProduceAsync_PdfPaginatesEveryAccountSummaryWithinVisiblePageBounds()
     {
         const int accountCount = 120;
@@ -1031,6 +1109,21 @@ public sealed class ReportingRunCertificationServiceTests
         string runId,
         ReportingOutputFormatDto outputFormat,
         ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default)
+        => await new DeterministicReportingCertifiedArtifactProducer()
+            .ProduceAsync(await BuildCertifiedManifestAsync(runId, outputFormat, certifiedRows));
+
+    private static async Task<ReportingGovernedArtifactProduction> ProduceClientGradeAsync(
+        string runId,
+        ReportingOutputFormatDto outputFormat,
+        ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default)
+        => await new DeterministicReportingCertifiedArtifactProducer(
+                new DocumentsReportingPrimaryDocumentRenderer())
+            .ProduceAsync(await BuildCertifiedManifestAsync(runId, outputFormat, certifiedRows));
+
+    private static async Task<ReportingOutputManifest> BuildCertifiedManifestAsync(
+        string runId,
+        ReportingOutputFormatDto outputFormat,
+        ImmutableArray<IReadOnlyDictionary<string, string>> certifiedRows = default)
     {
         var rows = certifiedRows.IsDefault ? Rows() : certifiedRows;
         var template = Template(reportWriterGrid: false);
@@ -1041,8 +1134,7 @@ public sealed class ReportingRunCertificationServiceTests
                 template,
                 Readiness("evaluation-artifact", CapturedAt, outputFormat),
                 Access());
-        var manifest = BuildManifest(runId, template, certified);
-        return await new DeterministicReportingCertifiedArtifactProducer().ProduceAsync(manifest);
+        return BuildManifest(runId, template, certified);
     }
 
     private static ReportingOutputManifest BuildManifest(
