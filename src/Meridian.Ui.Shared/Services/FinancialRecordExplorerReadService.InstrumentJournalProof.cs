@@ -21,11 +21,9 @@ public sealed partial class FinancialRecordExplorerReadService
                 continue;
             }
 
-            // The instrument-to-journal proof is model-agnostic: any position whose projection
-            // lineage is authoritative and self-consistent (see IsAuthoritativeProjectionLineage)
-            // can reconstruct its chain, not just the MBS factor-paydown calculator. The downstream
-            // spine and durable-journal matching validate the lineage against its own model key, so
-            // "prove the number" is demonstrable on any security and any asset accounting event kind.
+            // The instrument-to-journal proof is model-agnostic across the canonical Asset
+            // Accounting event kinds. A self-consistent lineage from another projection producer
+            // cannot establish an accounting proof without the typed event spine.
             var lineage = new[] { position.ProjectionLineage }
                 .Concat(operations.ProjectionLineages)
                 .Where(static candidate => candidate is not null)
@@ -72,6 +70,11 @@ public sealed partial class FinancialRecordExplorerReadService
                 {
                     spine = null;
                 }
+            }
+
+            if (!IsCanonicalAssetAccountingEvent(lineage) && spine is null)
+            {
+                continue;
             }
 
             LedgerJournalEntryRecord? journal = null;
@@ -426,6 +429,9 @@ public sealed partial class FinancialRecordExplorerReadService
            HasText(lineage.TriggerEvent.SourceDomain) &&
            HasText(lineage.TriggerEvent.SourceEntityId) &&
            HasText(lineage.TriggerEvent.SourceContentHash);
+
+    private static bool IsCanonicalAssetAccountingEvent(ProjectionLineageDto lineage)
+        => AssetAccountingEventTypeNames.TryParse(lineage.TriggerEvent.EventType, out _);
 
     private static bool IsAuthoritativeProjectionScope(
         BookPositionDto position,

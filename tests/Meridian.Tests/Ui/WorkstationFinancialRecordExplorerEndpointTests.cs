@@ -455,6 +455,35 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_SecurityInstrumentExplorer_ShouldExcludeNonCanonicalProjectionLineageWithoutTypedSpine()
+    {
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
+        app.Services.GetRequiredService<FinancialRecordExplorerAssetOperationsQueryService>().ProjectionEventType =
+            "ThirdPartyUnregisteredPnLMark";
+        app.Services.GetRequiredService<FinancialRecordExplorerAssetAccountingEventSpineService>().ReturnSpine = false;
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-unregistered-lineage", withBreaks: false));
+
+        var explorer = await app.GetTestClient().GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/security-instrument",
+            ServerJsonOptions);
+
+        var row = explorer!.Rows.Single(item => item.RecordId == $"security:{FinancialRecordExplorerAaplSecurityId:D}");
+        row.Detail.Fields.Should().NotContain(static field =>
+            field.Label is "Source Evidence" or "Corporate Action Evidence" or "Role / Position");
+        row.Detail.Impacts.Should().NotContain(static impact =>
+            impact.RelationshipId is "factor-evidence" or "instrument-role-position" or "economic-projection");
+        row.Detail.UsedIn.Should().NotContain(static relationship =>
+            relationship.RelationshipId == "accounting-projection-proof");
+        explorer.RecordGraph.Nodes.Should().NotContain(static node =>
+            node.Label is "Source evidence" or "Role / position");
+        explorer.RecordGraph.Edges.Should().NotContain(static edge =>
+            edge.Label is "supports" or "projects");
+        app.Services.GetRequiredService<FinancialRecordExplorerJournalStore>().LastQuery.Should().BeNull();
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldExcludeApprovedButUnpublishedRecords()
     {
         await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
@@ -702,8 +731,10 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ReportPackDeliveryService>();
         services.AddSingleton<ISecurityMasterWorkbenchQueryService>(
             new FinancialRecordExplorerSecurityMasterWorkbenchQueryService(FinancialRecordExplorerAaplSecurityId));
-        services.AddSingleton<IAssetOperationsQueryService>(
+        services.AddSingleton<FinancialRecordExplorerAssetOperationsQueryService>(
             new FinancialRecordExplorerAssetOperationsQueryService(FinancialRecordExplorerAaplSecurityId));
+        services.AddSingleton<IAssetOperationsQueryService>(sp =>
+            sp.GetRequiredService<FinancialRecordExplorerAssetOperationsQueryService>());
         services.AddSingleton<FinancialRecordExplorerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<FinancialRecordExplorerJournalStore>());
         services.AddSingleton<FinancialRecordExplorerAssetAccountingEventSpineService>();
@@ -918,6 +949,8 @@ public sealed partial class WorkstationEndpointsTests
     {
         private readonly DateTimeOffset _now = new(2026, 3, 22, 15, 0, 0, TimeSpan.Zero);
 
+        public string ProjectionEventType { get; set; } = AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction);
+
         public Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid requestedSecurityId, CancellationToken ct = default)
             => Task.FromResult<AssetOperationsDetailDto?>(requestedSecurityId == securityId ? CreateDetail() : null);
 
@@ -1037,7 +1070,7 @@ public sealed partial class WorkstationEndpointsTests
             var roleId = Guid.Parse("11111111-1111-1111-1111-111111111115");
             var economicEvent = new EconomicEventReferenceDto(
                 FinancialRecordExplorerEventId,
-                AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction),
+                ProjectionEventType,
                 1,
                 new DateOnly(2026, 3, 22),
                 _now,
