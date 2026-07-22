@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Meridian.Contracts.Operations;
 using Meridian.ProviderSdk;
 using Xunit;
 
@@ -14,6 +13,7 @@ public sealed class ProviderTradingCalendarContractsTests
             Sessions:
             [
                 new ProviderTradingSession(
+                    new DateOnly(2026, 7, 2),
                     "NYSE",
                     "US",
                     "Regular",
@@ -21,15 +21,21 @@ public sealed class ProviderTradingCalendarContractsTests
                     new DateTimeOffset(2026, 7, 2, 20, 0, 0, TimeSpan.Zero))
             ],
             Closures: [],
-            Provenance: new ProviderCalendarProvenance(
+            Provenance: new ProviderDataProvenance(
                 ProviderId: "calendar-vendor",
-                SourceReference: "calendar-vendor/us/2026-07-02",
-                RetrievedAtUtc: new DateTimeOffset(2026, 7, 1, 12, 0, 0, TimeSpan.Zero),
-                SourceAsOfUtc: new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
-                DataProvenance: DataProvenance.Real));
+                ProviderConnectionId: "primary-feed",
+                SourceTimestamp: new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero),
+                ReceiptTimestamp: new DateTimeOffset(2026, 7, 1, 12, 0, 0, TimeSpan.Zero),
+                Entitlement: "us-equities-calendar",
+                Feed: "calendar-v2",
+                MarketDataAvailability: "live",
+                RequestOrSubscriptionDescriptor: "US:2026-07-02",
+                ProviderNativeId: "NYSE-2026-07-02",
+                CorrelationId: "calendar-request-42",
+                StableDeduplicationKey: "calendar-vendor:US:2026-07-02"));
 
         response.EnsureProvenanceComplete();
-        response.Provenance.DataProvenance.Should().Be(DataProvenance.Real);
+        response.Provenance.ProviderConnectionId.Should().Be("primary-feed");
         ProviderCapabilityKind.TradingCalendar.Should().Be((ProviderCapabilityKind)17);
     }
 
@@ -39,12 +45,18 @@ public sealed class ProviderTradingCalendarContractsTests
         var response = new ProviderTradingCalendarResponse(
             Sessions: [],
             Closures: [],
-            Provenance: new ProviderCalendarProvenance(
+            Provenance: new ProviderDataProvenance(
                 ProviderId: "calendar-vendor",
-                SourceReference: "",
-                RetrievedAtUtc: default,
-                SourceAsOfUtc: null,
-                DataProvenance: DataProvenance.Real));
+                ProviderConnectionId: "",
+                SourceTimestamp: default,
+                ReceiptTimestamp: default,
+                Entitlement: "",
+                Feed: "",
+                MarketDataAvailability: "",
+                RequestOrSubscriptionDescriptor: "",
+                ProviderNativeId: "",
+                CorrelationId: "",
+                StableDeduplicationKey: ""));
 
         var action = response.EnsureProvenanceComplete;
 
