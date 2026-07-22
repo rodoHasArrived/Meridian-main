@@ -374,7 +374,7 @@ public static partial class LedgerEndpoints
             DailyValuationBatchLifecycleRequestDto request,
             HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!HasLedgerCertificationPermission(context))
             {
                 return EndpointHelpers.Forbidden();
             }
