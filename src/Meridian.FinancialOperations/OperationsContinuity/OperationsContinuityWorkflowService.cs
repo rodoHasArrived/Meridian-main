@@ -3033,6 +3033,16 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 []));
         }
 
+        if (request.LedgerBookId == Guid.Empty)
+        {
+            blockers.Add(new OperationsWorkflowBlockerDto(
+                "LEDGER_BOOK_REQUIRED",
+                "Ledger book id must be omitted for fund-level workflows or set to a valid ledger book id.",
+                null,
+                "Error",
+                []));
+        }
+
         return blockers;
     }
 

@@ -12,6 +12,25 @@ namespace Meridian.Tests.Application;
 public sealed class OperationsContinuityPostgresRoundTripTests
 {
     [LedgerDatabaseFact]
+    public async Task PostgresOperationsContinuityStore_ShouldRejectBookScopedWorkflowWhenTenantCannotBeResolved()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var workflow = OperationsContinuityWorkflow.Start(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "2026-05-invalid-book",
+            securityMasterSnapshotId: Guid.NewGuid(),
+            brokerSource: "postgres-fixture",
+            now: DateTimeOffset.UtcNow,
+            ledgerBookId: Guid.NewGuid());
+
+        var act = () => database.OperationsStore.SaveAsync(workflow);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*does not resolve to a claimed fund tenant*");
+    }
+
+    [LedgerDatabaseFact]
     public async Task PostgresOperationsContinuityStore_ShouldRoundTripTransactionalLedgerPosting()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
