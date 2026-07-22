@@ -97,7 +97,7 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
-    public async Task Parse_Bai2_WithBlankAccountIdentifier_IsRejected()
+    public async Task Parse_Bai2_WithMultipleBlankAccountIdentifiers_IsRejected()
     {
         // Two 03 account sections whose required account-number field is blank. Both would otherwise share
         // the "unknown-account" placeholder, collapsing to one distinct account and slipping past the
