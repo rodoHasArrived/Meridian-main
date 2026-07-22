@@ -119,6 +119,37 @@ public sealed class ExecutionWriteEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task CancelOrder_WhenLiveProductionRoutingDisabled_Returns403AndDoesNotCancel()
+    {
+        var orderManager = new RecordingOrderManager(CreateOrderState("ord-live-001", "AAPL", 1m));
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IOrderManager>(orderManager);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "robinhood",
+                LiveExecutionEnabled = true,
+                ReadOnlyPhaseEnabled = true,
+                PaperTradingPhaseEnabled = true,
+                ProductionRoutingPhaseEnabled = false,
+                BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["robinhood"] = new() { ProductionOrderRoutingEnabled = true }
+                }
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/ord-live-001/cancel", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("production routing is disabled");
+        orderManager.CancelledOrderIds.Should().BeEmpty();
+    }
+
     // ------------------------------------------------------------------ //
     //  POST /api/execution/orders/cancel-all                              //
     // ------------------------------------------------------------------ //
@@ -151,7 +182,7 @@ public sealed class ExecutionWriteEndpointsTests
 
 
     [Fact]
-    public async Task CancelAllOrders_WhenProductionPhaseDisabled_StillCancels()
+    public async Task CancelAllOrders_WhenProductionPhaseDisabledForPaperFlow_StillCancels()
     {
         await using var app = await CreateAppAsync(services =>
         {
@@ -168,6 +199,38 @@ public sealed class ExecutionWriteEndpointsTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await ReadActionResultAsync(response);
         result.Status.Should().Be("Completed");
+    }
+
+    [Fact]
+    public async Task CancelAllOrders_WhenLiveProductionRoutingDisabled_Returns403AndDoesNotCancel()
+    {
+        var orderManager = new RecordingOrderManager(CreateOrderState("ord-live-001", "AAPL", 1m));
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IOrderManager>(orderManager);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "robinhood",
+                LiveExecutionEnabled = true,
+                ReadOnlyPhaseEnabled = true,
+                PaperTradingPhaseEnabled = true,
+                ProductionRoutingPhaseEnabled = false,
+                BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["robinhood"] = new() { ProductionOrderRoutingEnabled = true }
+                }
+            });
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync("/api/execution/orders/cancel-all", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("production routing is disabled");
+        orderManager.CancelAllCallCount.Should().Be(0);
+        orderManager.CancelledOrderIds.Should().BeEmpty();
     }
 
     // ------------------------------------------------------------------ //
@@ -1246,6 +1309,44 @@ file sealed class StaticPortfolioState(params ExecutionPosition[] positions) : M
         position => position.Symbol,
         position => (Meridian.Execution.Sdk.IPosition)position,
         StringComparer.OrdinalIgnoreCase);
+}
+
+file sealed class RecordingOrderManager(params OrderState[] openOrders) : IOrderManager
+{
+    private readonly IReadOnlyList<OrderState> _openOrders = openOrders;
+
+    public List<string> CancelledOrderIds { get; } = new();
+    public int CancelAllCallCount { get; private set; }
+
+    public Task<OrderResult> PlaceOrderAsync(ExecutionOrderRequest request, CancellationToken ct = default) =>
+        Task.FromResult(new OrderResult { Success = true, OrderId = request.ClientOrderId ?? "recorded-order" });
+
+    public Task<OrderResult> CancelOrderAsync(string orderId, CancellationToken ct = default)
+    {
+        CancelledOrderIds.Add(orderId);
+        return Task.FromResult(new OrderResult { Success = true, OrderId = orderId });
+    }
+
+    public Task<OrderResult> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
+        Task.FromResult(new OrderResult { Success = true, OrderId = orderId });
+
+    public IReadOnlyList<OrderState> GetOpenOrders() => _openOrders;
+
+    public OrderState? GetOrder(string orderId) =>
+        _openOrders.FirstOrDefault(order => string.Equals(order.OrderId, orderId, StringComparison.OrdinalIgnoreCase));
+
+    public Task CancelAllAsync(CancellationToken ct = default)
+    {
+        CancelAllCallCount++;
+        foreach (var order in _openOrders)
+        {
+            CancelledOrderIds.Add(order.OrderId);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public IReadOnlyList<OrderState> GetCompletedOrders(int take = 20) => Array.Empty<OrderState>();
 }
 
 sealed class RecordingBrokerageGateway(params BrokerPosition[] positions) : IBrokerageGateway
