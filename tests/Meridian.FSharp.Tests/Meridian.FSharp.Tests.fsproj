@@ -24,6 +24,7 @@
     <Compile Include="TradingReadinessRulesTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations' Or '$(FSharpTestSlice)' == 'Trading'" />
     <Compile Include="TradingTransitionTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations' Or '$(FSharpTestSlice)' == 'Trading'" />
     <Compile Include="LedgerKernelTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
+    <Compile Include="FundEconomicsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
     <Compile Include="ReconciliationCaseWorkflowTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
     <Compile Include="PeriodManagementTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
     <Compile Include="DeterministicInvariantTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger' Or '$(FSharpTestSlice)' == 'Operations'" />
