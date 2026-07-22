@@ -134,6 +134,15 @@ public static class LedgerAccounts
     public static LedgerAccount PerformanceFeePayableFor(string fundId) =>
         CreateScoped("Performance Fee Payable", LedgerAccountType.Liability, fundId);
 
+    public static LedgerAccount FundOperatingExpenseFor(string fundId) =>
+        CreateScoped("Fund Operating Expense", LedgerAccountType.Expense, fundId);
+
+    public static LedgerAccount AccruedExpensesPayableFor(string fundId) =>
+        CreateScoped("Accrued Expenses Payable", LedgerAccountType.Liability, fundId);
+
+    public static LedgerAccount FundDistributionPayableFor(string investorId) =>
+        CreateScoped("Fund Distribution Payable", LedgerAccountType.Liability, investorId);
+
     public static LedgerAccount CommissionPayableFor(string financialAccountId) =>
         CreateScoped("Commission Payable", LedgerAccountType.Liability, financialAccountId);
 
