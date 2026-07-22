@@ -3536,7 +3536,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var existing = await _draftStore.GetAsync(normalizedDraft.FundProfileId, normalizedDraft.JournalEntryId, ct, normalizedDraft.TenantId, normalizedDraft.CompanyId).ConfigureAwait(false);
         if (existing is not null)
         {
-            EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing);
+            EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, existing, requireScopeForBookScopedDraft: true);
         }
         if (existing is not null && existing.Version != request.Draft.Version)
         {
@@ -4799,10 +4799,17 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
     private static void EnsureRequestedLedgerBookMatchesDraft(
         Guid? requestedLedgerBookId,
-        ManualJournalEntryDraftDto draft)
+        ManualJournalEntryDraftDto draft,
+        bool requireScopeForBookScopedDraft = false)
     {
         if (!requestedLedgerBookId.HasValue)
         {
+            if (requireScopeForBookScopedDraft && draft.LedgerBookId.HasValue)
+            {
+                throw new InvalidOperationException(
+                    $"Manual journal entry '{draft.JournalEntryId:D}' belongs to ledger book '{draft.LedgerBookId.Value:D}' and requires the request to specify that ledger book.");
+            }
+
             return;
         }
 
