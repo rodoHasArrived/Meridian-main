@@ -7,6 +7,17 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
+public static class StatementConnectorLimits
+{
+    /// <summary>
+    /// Maximum accepted statement file size (20 MiB). IB Flex XML exports routinely exceed the general
+    /// 5 MB data-upload cap, so statement imports get their own, larger bound. Shared by the workstation
+    /// upload endpoint and the CLI import/validate commands so neither path buffers an unbounded
+    /// caller-supplied file into memory.
+    /// </summary>
+    public const long MaxFileBytes = 20L * 1024 * 1024;
+}
+
 public sealed record StatementImportCommitRequest(
     StatementSourceDocument Document,
     string? ConnectorId,
@@ -19,10 +30,31 @@ public sealed record StatementImportCommitRequest(
     string? ToleranceProfileId,
     string ImportedBy);
 
+/// <summary>
+/// The outcome of validating a statement document through the connector pipeline without
+/// committing it: whether the document parsed cleanly into canonical records, how many records it
+/// produced, and any blocking error messages. Mirrors the connector's parse result so an operator
+/// can validate a bank file (camt.053, BAI2, ...) before importing it, not only CSV/IB Flex.
+/// </summary>
+public sealed record StatementImportValidationResult(
+    bool IsValid,
+    int RecordCount,
+    IReadOnlyList<string> Errors);
+
 public interface IStatementImportCommitService
 {
     Task<StatementImportCommitResultDto> CommitAsync(
         StatementImportCommitRequest request,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Validates a statement document through the connector pipeline (resolve connector, parse, no
+    /// commit), so the newly supported bank formats are validatable from the CLI just as they are
+    /// importable. Returns the record count and any blocking parse errors.
+    /// </summary>
+    Task<StatementImportValidationResult> ValidateAsync(
+        StatementSourceDocument document,
+        string? connectorId,
         CancellationToken ct = default);
 }
 
@@ -117,12 +149,23 @@ public sealed class StatementImportService(
 
         var artifactContent = RenderCanonicalArtifact(parse.Records);
         var artifactBytes = Encoding.UTF8.GetBytes(artifactContent);
-        var uploadId = "sc-" + Convert.ToHexString(SHA256.HashData(request.Document.Content.Span))[..16].ToLowerInvariant();
+        // Key the retained evidence on both the raw content and its canonical rendering. Keying on the
+        // raw hash alone let a re-import of the same source file under a changed mapping profile — which
+        // renders different canonical output — reuse the directory and overwrite the first import's
+        // canonical artifact, destroying the normalized evidence that run still references. Combining
+        // both hashes gives every distinct rendering its own directory, while a same-profile re-import
+        // rewrites identical bytes in place and stays idempotent.
+        var rawHash = Convert.ToHexString(SHA256.HashData(request.Document.Content.Span))[..16].ToLowerInvariant();
+        var canonicalHash = Convert.ToHexString(SHA256.HashData(artifactBytes))[..16].ToLowerInvariant();
+        var uploadId = $"sc-{rawHash}-{canonicalHash}";
         var retainedDirectory = Path.Combine(_retainedRoot, uploadId);
-        Directory.CreateDirectory(retainedDirectory);
 
+        // Retain the raw source under its own subdirectory so a source file literally named
+        // "canonical.csv" cannot overwrite (or be overwritten by) the rendered canonical artifact.
+        const string sourceSubdirectory = "source";
         var safeSourceName = SanitizeFileName(request.Document.FileName);
-        var rawPath = Path.Combine(retainedDirectory, safeSourceName);
+        Directory.CreateDirectory(Path.Combine(retainedDirectory, sourceSubdirectory));
+        var rawPath = Path.Combine(retainedDirectory, sourceSubdirectory, safeSourceName);
         var canonicalPath = Path.Combine(retainedDirectory, "canonical.csv");
         await AtomicFileWriter.WriteAsync(rawPath, request.Document.Content.ToArray(), ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(canonicalPath, artifactBytes, ct).ConfigureAwait(false);
@@ -145,7 +188,7 @@ public sealed class StatementImportService(
             .ConfigureAwait(false);
 
         var kindSummaries = BuildKindSummaries(parse.Records);
-        var relativeRaw = ToRelativeRetainedPath(uploadId, safeSourceName);
+        var relativeRaw = ToRelativeRetainedPath(uploadId, $"{sourceSubdirectory}/{safeSourceName}");
         var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
 
         StatementRunWorkflowResult result;
@@ -203,6 +246,43 @@ public sealed class StatementImportService(
                 .ToArray(),
             ReconciliationCaseLinks = caseLinks
         };
+    }
+
+    public async Task<StatementImportValidationResult> ValidateAsync(
+        StatementSourceDocument document,
+        string? connectorId,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+
+        var (connector, resolutionIssue) = ResolveConnector(document, connectorId);
+        if (connector is null)
+        {
+            return new StatementImportValidationResult(false, 0, [resolutionIssue!.Message]);
+        }
+
+        var parse = await connector.ParseAsync(document, ct).ConfigureAwait(false);
+        var errors = parse.Issues
+            .Where(static issue => string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase))
+            .Select(static issue => issue.RowNumber is { } row ? $"Row {row}: {issue.Message}" : issue.Message)
+            .ToArray();
+
+        if (parse.HasErrors)
+        {
+            return new StatementImportValidationResult(false, parse.Records.Count, errors);
+        }
+
+        // A well-formed document that yields no canonical rows cannot be imported (CommitAsync rejects
+        // it the same way), so report it as invalid rather than a passing empty validation.
+        if (parse.Records.Count == 0)
+        {
+            return new StatementImportValidationResult(
+                false,
+                0,
+                ["Statement produced no canonical records; nothing to import."]);
+        }
+
+        return new StatementImportValidationResult(true, parse.Records.Count, errors);
     }
 
     /// <summary>Fetches a remote statement document through a fetch-capable connector.</summary>

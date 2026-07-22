@@ -185,6 +185,23 @@ public sealed class IbFlexStatementConnector(StatementMappingProfileCatalog cata
             }
         }
 
+        // An advisor Flex report can carry several accounts across FlexStatement sections, but a
+        // statement run reconciles a single account and the matcher normalizes every row to the run's
+        // one external account. Committing a multi-account report would compare one account's rows
+        // against another account's Meridian records, so reject it: split into one document per account.
+        var distinctAccounts = records
+            .Select(static record => record.Account)
+            .Where(static account => !string.IsNullOrWhiteSpace(account))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (distinctAccounts.Length > 1)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "IBFLEX_MULTIPLE_ACCOUNTS",
+                $"The Flex report contains records for {distinctAccounts.Length} different accounts, but a statement run reconciles a single account. Split the report into one document per account before importing."));
+            return EmptyResult(profileId, issues);
+        }
+
         if (records.Count == 0 && statements.Length > 0)
         {
             issues.Add(StatementParseIssue.Warning(

@@ -169,6 +169,12 @@ public sealed partial class WorkstationEndpointsTests
                 RetainedCanonicalPath: "reconciliation/canonical.csv",
                 Status: "Imported",
                 NextAction: "Build report."));
+
+        public Task<StatementImportValidationResult> ValidateAsync(
+            StatementSourceDocument document,
+            string? connectorId,
+            CancellationToken ct = default)
+            => Task.FromResult(new StatementImportValidationResult(true, 1, []));
     }
 
     private sealed class EndpointStatementEvidenceRetainer : IStatementImportEvidenceRetainer

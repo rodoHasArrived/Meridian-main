@@ -12,8 +12,9 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
-    // IB Flex XML exports routinely exceed the 5 MB data-upload cap; statements get their own limit.
-    private const long StatementConnectorMaxFileBytes = 20 * 1024 * 1024;
+    // IB Flex XML exports routinely exceed the 5 MB data-upload cap; statements get their own limit,
+    // shared with the CLI import/validate commands so the two paths cannot drift.
+    private const long StatementConnectorMaxFileBytes = StatementConnectorLimits.MaxFileBytes;
 
     private static readonly string[] StatementConnectorAcceptedExtensions =
         [".csv", ".txt", ".ofx", ".qfx", ".xml", ".json"];

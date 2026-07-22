@@ -6,6 +6,7 @@ using Meridian.Application.DirectLending;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Audit.Compliance;
 using Meridian.Application.FundStructure;
+using Meridian.Application.Reconciliation;
 using Meridian.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
@@ -34,6 +35,7 @@ using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
@@ -291,6 +293,27 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
+        // Reconcile statement runs against Meridian's own retained account records (positions + cash)
+        // instead of the fail-closed empty book. Replace (not TryAdd) so this wins over the
+        // EmptyInternalReconciliationPopulationProvider that AddStatementReconciliationServices
+        // registers via TryAddSingleton, regardless of composition order.
+        services.Replace(ServiceDescriptor.Singleton<IInternalReconciliationPopulationProvider, RetainedInternalReconciliationPopulationProvider>());
+        // Normalize cross-currency statement lines against their base-currency internal balance using an
+        // operator-maintained FX rate table (reconciliation/fx-rates.json under the data root) instead of
+        // the identity-only default that fails every genuine cross-currency line closed to a break. A
+        // missing or empty table preserves that fail-closed behavior until rates are supplied.
+        services.Replace(ServiceDescriptor.Singleton<IReconciliationFxRateProvider>(sp =>
+            FileReconciliationFxRateProvider.Load(
+                sp.GetRequiredService<StorageOptions>().RootPath,
+                sp.GetService<ILoggerFactory>()?.CreateLogger(typeof(FileReconciliationFxRateProvider).FullName!))));
+        // Resolve the run's selected tolerance profile from the operator-maintained profile table
+        // (reconciliation/tolerance-profiles.json) instead of only the built-in default, so a run
+        // configured with a registered non-default profile is matched with that profile's thresholds; an
+        // unknown id fails closed at the workflow rather than silently applying the default.
+        services.Replace(ServiceDescriptor.Singleton<IStatementToleranceProfileProvider>(sp =>
+            FileStatementToleranceProfileProvider.Load(
+                sp.GetRequiredService<StorageOptions>().RootPath,
+                sp.GetService<ILoggerFactory>()?.CreateLogger(typeof(FileStatementToleranceProfileProvider).FullName!))));
         services.TryAddSingleton<FundAccountCloseReadinessService>();
 
         services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();

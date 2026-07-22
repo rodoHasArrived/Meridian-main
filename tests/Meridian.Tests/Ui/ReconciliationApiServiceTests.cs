@@ -37,6 +37,16 @@ public sealed class ReconciliationApiServiceTests
         services.AddSingleton<IReconciliationCaseStore>(_ => new JsonReconciliationCaseStore(root));
         services.AddSingleton<IReconciliationBreakStore>(_ => new JsonReconciliationBreakStore(root));
         services.AddSingleton<IBrokerStatementService>(sp => new CsvBrokerStatementService(sp.GetRequiredService<ICanonicalStatementStore>()));
+        // Reconcile against a small internal book that holds the statement's SPY position, so the
+        // position matches exactly and only the cash and fee rows surface as breaks. This proves the
+        // engine now compares statements to Meridian's records instead of to themselves.
+        services.AddSingleton<IInternalReconciliationPopulationProvider>(
+            new StubInternalPopulationProvider(new InternalReconciliationPopulations(
+                [new InternalPortfolioPosition("internal-spy", "external-account-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
+                [],
+                [])));
+        services.AddSingleton<IReconciliationFxRateProvider>(IdentityReconciliationFxRateProvider.Instance);
+        services.AddSingleton<IStatementToleranceProfileProvider>(new InMemoryStatementToleranceProfileProvider());
         services.AddSingleton<IStatementRunWorkflowService, StatementRunWorkflowService>();
         services.AddSingleton<IReconciliationApiService, ReconciliationApiService>();
 
@@ -208,6 +218,15 @@ public sealed class ReconciliationApiServiceTests
         projected.EscalationLabel.Should().Be("Escalate");
         projected.EscalationReason.Should().Contain("breached SLA");
         projected.EvidenceLink.Should().Be("/api/workstation/reconciliation/statement-runs/statement-run-1");
+    }
+
+    private sealed class StubInternalPopulationProvider(InternalReconciliationPopulations populations)
+        : IInternalReconciliationPopulationProvider
+    {
+        public Task<InternalReconciliationPopulations> GetPopulationsAsync(
+            InternalReconciliationPopulationContext context,
+            CancellationToken ct = default)
+            => Task.FromResult(populations);
     }
 
     private sealed class StubStatementRunWorkflowService(

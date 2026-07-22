@@ -1,6 +1,6 @@
 {
   "total_files": 632,
-  "total_lines": 114499,
+  "total_lines": 114503,
   "orphaned_count": 258,
   "no_heading_count": 148,
   "stale_count": 0,
@@ -1461,7 +1461,7 @@
     },
     {
       "path": "docs/architecture/event-accounting-architecture.md",
-      "line_count": 207,
+      "line_count": 199,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2549,7 +2549,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 9392,
+      "line_count": 9402,
       "has_heading": true,
       "todo_count": 8,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5037,7 +5037,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 609,
+      "line_count": 611,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

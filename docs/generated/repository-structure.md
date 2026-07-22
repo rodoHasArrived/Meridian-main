@@ -4268,6 +4268,7 @@ Meridian-main
 │   │   ├── MultiCurrency
 │   │   │   ├── FxRate.cs
 │   │   │   ├── IFxRateProvider.cs
+│   │   │   ├── InMemoryFxRateProvider.cs
 │   │   │   └── MultiCurrencyCashBalance.cs
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
@@ -4401,6 +4402,10 @@ Meridian-main
 │   │   │   │   ├── Alpaca
 │   │   │   │   │   ├── AlpacaActivityStatementConnector.cs
 │   │   │   │   │   └── AlpacaStatementSnapshot.cs
+│   │   │   │   ├── Bai2
+│   │   │   │   │   └── Bai2StatementConnector.cs
+│   │   │   │   ├── Camt
+│   │   │   │   │   └── Camt053StatementConnector.cs
 │   │   │   │   ├── IbFlex
 │   │   │   │   │   └── IbFlexStatementConnector.cs
 │   │   │   │   ├── Ofx
@@ -4427,11 +4432,12 @@ Meridian-main
 │   │   │   ├── DefaultReconciliationIngestionScheduler.cs
 │   │   │   ├── FileReconciliationDecisionJournal.cs
 │   │   │   ├── FileStatementReconciliationCheckpointStore.cs
-│   │   │   ├── InternalReconciliationBook.cs
+│   │   │   ├── InternalReconciliationPopulations.cs
 │   │   │   ├── MatchingTolerances.cs
 │   │   │   ├── ReconciliationContextContracts.cs
 │   │   │   ├── ReconciliationContractCatalog.cs
 │   │   │   ├── ReconciliationEngineService.cs
+│   │   │   ├── ReconciliationFxRateProvider.cs
 │   │   │   ├── ReconciliationIngestionContracts.cs
 │   │   │   ├── ReconciliationMatchingEngine.cs
 │   │   │   ├── ReconciliationNormalizationService.cs
@@ -4447,7 +4453,7 @@ Meridian-main
 │   │   │   ├── StatementRepositories.cs
 │   │   │   ├── StatementRunCreateRequest.cs
 │   │   │   ├── StatementRunEvidenceLinks.cs
-│   │   │   ├── StatementRunMatchingService.cs
+│   │   │   ├── StatementRunMatcher.cs
 │   │   │   ├── StatementRunWorkflowService.cs
 │   │   │   ├── StatementToleranceProfiles.cs
 │   │   │   └── StatementValidationService.cs
@@ -6893,6 +6899,7 @@ Meridian-main
 │   │   │   ├── StrategyRunReviewPacketService.cs
 │   │   │   ├── TradingOperatorLiveOrderReadinessGate.cs
 │   │   │   ├── TradingOperatorReadinessService.cs
+│   │   │   ├── WorkstationInternalReconciliationPopulationProvider.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
 │   │   ├── Streaming
@@ -8153,6 +8160,8 @@ Meridian-main
 │   │   │   │   ├── MarginModelTests.cs
 │   │   │   │   ├── MultiCurrencyTests.cs
 │   │   │   │   └── TaxLotAccountingTests.cs
+│   │   │   ├── MultiCurrency
+│   │   │   │   └── InMemoryFxRateProviderTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
@@ -8479,6 +8488,8 @@ Meridian-main
 │   │   ├── Reconciliation
 │   │   │   ├── Connectors
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
+│   │   │   │   ├── Bai2StatementConnectorTests.cs
+│   │   │   │   ├── Camt053StatementConnectorTests.cs
 │   │   │   │   ├── CsvLineSplitterTests.cs
 │   │   │   │   ├── CsvStatementConnectorTests.cs
 │   │   │   │   ├── IbFlexStatementConnectorTests.cs
@@ -8499,7 +8510,6 @@ Meridian-main
 │   │   │   ├── StatementBreakClassifierTests.cs
 │   │   │   ├── StatementFixtureScenarioTests.cs
 │   │   │   ├── StatementImportAndMatchingTests.cs
-│   │   │   ├── StatementRunMatchingServiceTests.cs
 │   │   │   └── StatementRunWorkflowServiceTests.cs
 │   │   ├── ReferenceData
 │   │   │   └── SecurityMaster
@@ -8712,6 +8722,8 @@ Meridian-main
 │   │   │   └── Golden
 │   │   │       ├── statement-connectors
 │   │   │       │   ├── alpaca-combined-snapshot.json
+│   │   │       │   ├── bai2-sample.bai
+│   │   │       │   ├── camt053-sample.xml
 │   │   │       │   ├── csv-drifted-headers.csv
 │   │   │       │   ├── csv-mixed-kinds.csv
 │   │   │       │   ├── csv-quoted-bom.csv
@@ -8875,6 +8887,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
+│   │   │   ├── WorkstationInternalReconciliationPopulationProviderTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationServiceCollectionExtensionsTests.cs
 │   │   │   ├── WorkstationStatementReconciliationEndpointTests.cs
