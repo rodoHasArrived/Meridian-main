@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-07-22
 
 This is the canonical operator procedure lane for Interactive Brokers setup and validation in Meridian.
 
@@ -41,6 +41,25 @@ dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Relea
 
 Smoke and vendor modes must not be mixed.
 
+### Supported official-SDK runtime lane
+
+The release configuration remains opt-in: `EnableIbApiVendor` and derived runtime integration both
+default to `false`. Vendor mode is supported only with an official `CSharpAPI.csproj` or
+`CSharpAPI.dll`; it fails closed if neither resolves. Run the same build-and-connectivity check used
+by the protected paper integration lane with one SDK input and a paper TWS/Gateway socket:
+
+```powershell
+pwsh scripts/dev/build-ibapi-vendor.ps1 `
+  -IBApiProjectPath 'D:\vendor\IBApi\TWS API\source\CSharpClient\client\CSharpAPI.csproj' `
+  -SmokeHost '127.0.0.1' `
+  -SmokePort 7497
+```
+
+`build-ibapi-vendor.ps1` compiles against the official SDK and verifies only TCP reachability to
+the specified paper socket. It does not authenticate, request market data, or place an order.
+See [Interactive Brokers API Compatibility](../reference/interactive-brokers-api-compatibility.md)
+for the tested-version evidence and protected GitHub Actions environment contract.
+
 ## TWS / Gateway validation
 
 In TWS/Gateway:
@@ -74,6 +93,7 @@ In TWS/Gateway:
 - [Provider Integration Status](../reference/provider-integration-status.md)
 - [Provider Validation Matrix](../reference/provider-validation-matrix.md)
 - [Provider Validation Evidence Schema](../reference/provider-validation-evidence-schema.md)
+- [Interactive Brokers API Compatibility](../reference/interactive-brokers-api-compatibility.md)
 
 ## Source and archive
 
