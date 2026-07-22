@@ -275,4 +275,31 @@ public sealed class Camt053StatementConnectorTests
         var transaction = result.Records.Single(record => record.Kind == StatementRecordKind.Transaction);
         transaction.CashAmount.Should().Be(40.00m, "a reversal of a debit is a credit and must be positive");
     }
+
+    [Fact]
+    public async Task Parse_Camt053_WithoutAccountIdentifier_IsRejected()
+    {
+        // The single statement's Acct carries no IBAN or other account id. Falling back to an
+        // "unknown-account" placeholder would let the matcher normalize the rows to the run's account and
+        // reconcile an unidentifiable statement against the selected Meridian account, so it must be
+        // rejected — the same treatment the BAI2 connector gives a blank 03 account number.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("no-account.xml", Encoding.UTF8.GetBytes(xml));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a camt.053 statement with no account identifier must not commit");
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_MISSING_ACCOUNT_ID");
+    }
 }

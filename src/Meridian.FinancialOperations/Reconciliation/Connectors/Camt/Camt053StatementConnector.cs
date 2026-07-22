@@ -69,7 +69,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
         if (statements.Length > 1)
         {
             var distinctAccounts = statements
-                .Select(static statement => ResolveAccount(Element(statement, "Acct")))
+                .Select(static statement => ResolveAccount(Element(statement, "Acct")) ?? "unknown-account")
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             var (code, message) = distinctAccounts.Length > 1
@@ -88,6 +88,18 @@ public sealed class Camt053StatementConnector : IStatementConnector
             ct.ThrowIfCancellationRequested();
             var accountElement = Element(statement, "Acct");
             var account = ResolveAccount(accountElement);
+            if (string.IsNullOrWhiteSpace(account))
+            {
+                // A statement with no IBAN or other account identifier cannot be tied to the account being
+                // reconciled. StatementRunMatcher normalizes every row to the operator-supplied run
+                // account, so an unidentifiable statement could reconcile against the selected Meridian
+                // account; reject it rather than continue with an "unknown-account" placeholder.
+                issues.Add(StatementParseIssue.Error(
+                    "CAMT_MISSING_ACCOUNT_ID",
+                    "The camt.053 statement has no IBAN or other account identifier; a statement run must reconcile a single, identified account. Repair the file so the statement carries its account id before importing."));
+                return Task.FromResult(EmptyResult(issues));
+            }
+
             var accountCurrency = Value(accountElement, "Ccy") ?? "USD";
 
             foreach (var balance in Elements(statement, "Bal"))
@@ -284,7 +296,8 @@ public sealed class Camt053StatementConnector : IStatementConnector
         => string.Equals(reversalIndicator, "true", StringComparison.OrdinalIgnoreCase)
             || string.Equals(reversalIndicator, "1", StringComparison.Ordinal);
 
-    private static string ResolveAccount(XElement? accountElement)
+    // Returns the statement's account identifier (IBAN, else Othr/Id), or null when neither is present.
+    private static string? ResolveAccount(XElement? accountElement)
     {
         var idElement = Element(accountElement, "Id");
         var iban = Value(idElement, "IBAN");
@@ -294,7 +307,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
         }
 
         var other = Value(Element(idElement, "Othr"), "Id");
-        return string.IsNullOrWhiteSpace(other) ? "unknown-account" : other.Trim();
+        return string.IsNullOrWhiteSpace(other) ? null : other.Trim();
     }
 
     private static string? BalanceCode(XElement balance)
