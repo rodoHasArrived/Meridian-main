@@ -162,6 +162,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<UserProfileRegistry>();
         services.TryAddSingleton<LoginSessionService>();
         services.TryAddSingleton<InitialAccountBootstrapService>();
+        services.TryAddSingleton<DemoTenantProvisioner>();
         services.TryAddSingleton<FirstRunExperienceService>();
         services.TryAddSingleton<DesktopWorkstationLaunchService>();
         services.TryAddSingleton<DesktopLaunchTicketService>();

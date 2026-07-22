@@ -2,11 +2,44 @@
 
 # `security-master-contracts` data objects - page 3 of 3
 
-Objects 161-170 of 170. References crossing pages remain available in the dependency manifest.
+Objects 161-174 of 174. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
+        +decimal? CurrentIndexRate
+        +string? DayCountConvention
+        +CashFlowLegDirection? Direction
+        +bool ExchangesPrincipal
+        +decimal? FixedRate
+        +string? IndexName
+        +string LegId
+        +decimal? Notional
+        +string? PaymentFrequency
+        +CashFlowLegRateKind RateKind
+        +decimal? SpreadBps
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule["StructuredCashFlowLegSchedule"] {
+        +CashFlowLegDirection? Direction
+        +string LegId
+        +CashFlowLegRateKind RateKind
+        +IReadOnlyList~StructuredCashFlowScheduleEntry~ Schedule
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto["StructuredCashFlowProjectionDto"] {
+        +DateTimeOffset AsOf
+        +IReadOnlyList~StructuredFactorScheduleEntry~? FactorSchedule
+        +IReadOnlyList~StructuredCashFlowLegSchedule~? LegSchedules
+        +StructuredCashFlowScenario Scenario
+        +IReadOnlyList~StructuredCashFlowScheduleEntry~ Schedule
+        +Guid SecurityId
+        +StructuredCashFlowSourceKind SourceKind
+        +DateTimeOffset? SourceLastUpdatedUtc
+        +StructuredCashFlowStaleness Staleness
+        +StructuredCashFlowTerms? TermsUsed
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario["StructuredCashFlowScenario"] {
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry["StructuredCashFlowScheduleEntry"] {
         +decimal Factor
         +decimal InterestAmount
@@ -79,6 +112,15 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScenario
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
 ```

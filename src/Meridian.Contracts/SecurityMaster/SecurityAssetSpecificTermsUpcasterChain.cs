@@ -154,3 +154,28 @@ public static class SecurityAssetSpecificTermsUpcasterChain
         }
     }
 }
+
+/// <summary>
+/// The registered <see cref="ISchemaUpcaster{T}"/> form of <see cref="SecurityAssetSpecificTermsUpcasterChain"/>:
+/// a single injectable choke point that composes the full asset-specific-terms migrate-on-read chain
+/// (v0 stamping plus cross-family economic-terms v2 → v1 flattening). Registering this instead of the
+/// bare <see cref="SecurityAssetSpecificTermsV0ToCurrentUpcaster"/> makes the projection store's
+/// <c>schema_version</c> promotion flatten a v2 economic-terms document to the accepted legacy version
+/// before persisting, so the store no longer promotes a version the mapping guard would reject. Unknown
+/// future versions still pass through with their version preserved, keeping acceptance the guard's decision.
+/// </summary>
+public sealed class SecurityAssetSpecificTermsUpcasterPipeline : ISchemaUpcaster<SecurityAssetSpecificTerms>
+{
+    /// <summary>Shared stateless instance for callers that resolve the pipeline outside DI.</summary>
+    public static SecurityAssetSpecificTermsUpcasterPipeline Instance { get; } = new();
+
+    /// <summary>The oldest (unstamped legacy) payload family this pipeline reads from.</summary>
+    public int FromSchemaVersion => 0;
+
+    /// <summary>The normalized asset-specific-terms version the pipeline resolves accepted payloads to.</summary>
+    public int ToSchemaVersion => AssetSpecificTermsSchema.Legacy;
+
+    /// <summary>Normalizes a stored asset-specific-terms payload through the full chain.</summary>
+    public SecurityAssetSpecificTerms? Upcast(string json)
+        => SecurityAssetSpecificTermsUpcasterChain.Normalize(json);
+}

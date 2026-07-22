@@ -21,13 +21,17 @@ public sealed partial class FinancialRecordExplorerReadService
                 continue;
             }
 
+            // The instrument-to-journal proof is model-agnostic: any position whose projection
+            // lineage is authoritative and self-consistent (see IsAuthoritativeProjectionLineage)
+            // can reconstruct its chain, not just the MBS factor-paydown calculator. The downstream
+            // spine and durable-journal matching validate the lineage against its own model key, so
+            // "prove the number" is demonstrable on any security and any asset accounting event kind.
             var lineage = new[] { position.ProjectionLineage }
                 .Concat(operations.ProjectionLineages)
                 .Where(static candidate => candidate is not null)
                 .Select(static candidate => candidate!)
                 .FirstOrDefault(candidate => IsAuthoritativeProjectionLineage(position, candidate));
-            if (lineage is null ||
-                !string.Equals(lineage.ModelKey, "mbs-factor-paydown", StringComparison.OrdinalIgnoreCase))
+            if (lineage is null)
             {
                 continue;
             }
@@ -38,9 +42,22 @@ public sealed partial class FinancialRecordExplorerReadService
                 .OrderByDescending(static candidate => candidate.AsOfDate)
                 .ThenByDescending(static candidate => candidate.Version)
                 .FirstOrDefault() ?? position.CurrentEconomicState;
-            var scopeMatches = IsAuthoritativeProjectionScope(position, role, state, lineage);
+            // Fail closed on scope, per the Instrument-to-Journal boundary in
+            // docs/architecture/event-accounting-architecture.md: a structurally authoritative lineage
+            // whose scope does not match the position's current economic state, role, book context, or
+            // dimensions is stale or unrelated to this position. Publishing it would surface source
+            // evidence and an accounting-projection-proof relationship for a projection that is not
+            // authoritative here. The removed model-key filter previously masked this for every
+            // non-factor model, so generalizing the proof must also enforce the scope gate for all of
+            // them. The valid projection-only case (scope matches but no durable spine/journal exists)
+            // is still published below.
+            if (!IsAuthoritativeProjectionScope(position, role, state, lineage))
+            {
+                continue;
+            }
+
             AssetAccountingEventSpineDto? spine = null;
-            if (_assetAccountingEventSpineService is not null && scopeMatches)
+            if (_assetAccountingEventSpineService is not null)
             {
                 try
                 {
@@ -95,7 +112,7 @@ public sealed partial class FinancialRecordExplorerReadService
         }
 
         fields.Add(new(
-            "Factor Evidence",
+            ResolveEvidenceLabel(proof),
             proof.Lineage.TriggerEvent.EvidenceLinks.FirstOrDefault() ?? "Missing",
             $"Source event {proof.Lineage.TriggerEvent.EventId:D}; content hash {proof.Lineage.TriggerEvent.SourceContentHash ?? "missing"}.",
             proof.Lineage.TriggerEvent.EvidenceLinks.Count > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning));
@@ -107,7 +124,7 @@ public sealed partial class FinancialRecordExplorerReadService
         fields.Add(new(
             "Accounting Projection",
             proof.Lineage.ModelKey,
-            $"Projection run {proof.Lineage.ProjectionRunId:D}; projection event {proof.Lineage.ProjectionEventId?.ToString("D") ?? "none"}; trigger {proof.Lineage.TriggerEvent.EventId:D}; factors {proof.State?.PriorFactor?.ToString(CultureInfo.InvariantCulture) ?? "?"} to {proof.State?.CurrentFactor?.ToString(CultureInfo.InvariantCulture) ?? "?"}.",
+            BuildAccountingProjectionDetail(proof),
             FinancialRecordExplorerTone.Info));
 
         if (TryGetAuthoritativeStage(proof, AssetAccountingLifecycleStageDto.Drafted, out var drafted))
@@ -172,7 +189,7 @@ public sealed partial class FinancialRecordExplorerReadService
         var assetHref = BuildAssetOperationsHref(reference.SecurityId);
         impacts.Add(new(
             "factor-evidence",
-            "Factor evidence",
+            ToImpactLabel(ResolveEvidenceLabel(proof)),
             $"{proof.Lineage.TriggerEvent.EvidenceLinks.FirstOrDefault() ?? "Missing evidence"}; source hash {proof.Lineage.TriggerEvent.SourceContentHash ?? "missing"}.",
             proof.Lineage.TriggerEvent.EvidenceLinks.FirstOrDefault() ?? BuildSecurityEvidenceHref(reference, enrichment),
             proof.Lineage.TriggerEvent.EvidenceLinks.Count > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning));
@@ -314,6 +331,69 @@ public sealed partial class FinancialRecordExplorerReadService
 
     private static string BuildAssetOperationsHref(Guid securityId)
         => UiApiRoutes.WithParam(UiApiRoutes.WorkstationAssetOperations, "securityId", securityId.ToString("D"));
+
+    // Event type emitted by the MBS factor-paydown calculator
+    // (Meridian.Instruments FactorPaydownProjectionService.EventType). Kept as a local literal so the
+    // shared UI read model does not take a dependency on the Instruments assembly.
+    private const string FactorPaydownEventType = "MbsFactorPaydown";
+
+    /// <summary>
+    /// Names the source-evidence field/impact for the triggering economic event so the
+    /// instrument-to-journal proof reads correctly on any security, not only the factor-paydown
+    /// model it was first wired for. Canonical asset accounting event kinds get an event-specific
+    /// label; the legacy factor-paydown event keeps its established "Factor Evidence" wording; any
+    /// other producer falls back to a generic "Source Evidence" label.
+    /// </summary>
+    private static string ResolveEvidenceLabel(InstrumentJournalProof proof)
+    {
+        var eventType = proof.Lineage.TriggerEvent.EventType;
+        if (AssetAccountingEventTypeNames.TryParse(eventType, out var eventKind))
+        {
+            return eventKind switch
+            {
+                AssetAccountingEventKindDto.Acquisition => "Acquisition Evidence",
+                AssetAccountingEventKindDto.Capitalization => "Capitalization Evidence",
+                AssetAccountingEventKindDto.Valuation => "Valuation Evidence",
+                AssetAccountingEventKindDto.Income => "Income Evidence",
+                AssetAccountingEventKindDto.CorporateAction => "Corporate Action Evidence",
+                AssetAccountingEventKindDto.Impairment => "Impairment Evidence",
+                AssetAccountingEventKindDto.DepreciationAmortization => "Depreciation / Amortization Evidence",
+                AssetAccountingEventKindDto.Disposal => "Disposal Evidence",
+                _ => "Source Evidence"
+            };
+        }
+
+        return string.Equals(eventType, FactorPaydownEventType, StringComparison.OrdinalIgnoreCase)
+            ? "Factor Evidence"
+            : "Source Evidence";
+    }
+
+    /// <summary>
+    /// Converts a title-case field label ("Corporate Action Evidence") into the sentence-case form
+    /// used by impact and graph relationships ("Corporate action evidence").
+    /// </summary>
+    private static string ToImpactLabel(string fieldLabel)
+        => fieldLabel.Length <= 1
+            ? fieldLabel
+            : string.Concat(fieldLabel[..1], fieldLabel[1..].ToLowerInvariant());
+
+    /// <summary>
+    /// Builds the accounting-projection field detail. The factor-delta clause is factor-paydown
+    /// specific, so it is included only when the position economic state carries prior/current
+    /// factors; other asset accounting event kinds (valuation, income, corporate action, ...) leave
+    /// them null, and rendering "factors ? to ?" would misdescribe the projection.
+    /// </summary>
+    private static string BuildAccountingProjectionDetail(InstrumentJournalProof proof)
+    {
+        var detail =
+            $"Projection run {proof.Lineage.ProjectionRunId:D}; projection event {proof.Lineage.ProjectionEventId?.ToString("D") ?? "none"}; trigger {proof.Lineage.TriggerEvent.EventId:D}.";
+        if (proof.State?.PriorFactor is { } priorFactor && proof.State?.CurrentFactor is { } currentFactor)
+        {
+            detail += $" Factors {priorFactor.ToString(CultureInfo.InvariantCulture)} to {currentFactor.ToString(CultureInfo.InvariantCulture)}.";
+        }
+
+        return detail;
+    }
 
     private sealed record InstrumentJournalProof(
         BookPositionDto Position,

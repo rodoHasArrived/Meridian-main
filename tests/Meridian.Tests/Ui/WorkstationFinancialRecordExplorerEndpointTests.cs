@@ -344,7 +344,7 @@ public sealed partial class WorkstationEndpointsTests
                 "Accounting Projection",
                 "Projected Accounting Effect",
                 "Reconciliation",
-                "Factor Evidence",
+                "Corporate Action Evidence",
                 "Role / Position",
                 "Accounting Projection",
                 "Posting Candidate",
@@ -364,7 +364,7 @@ public sealed partial class WorkstationEndpointsTests
             field.Label == "Audit Trail" &&
             field.Detail.Contains("audit event", StringComparison.OrdinalIgnoreCase));
         row.Detail.UsedIn.Select(static relationship => relationship.Label).Should().Contain(
-            ["Portfolio position", "Ledger trial balance", "Report-line provenance", "AssetOperations reconciliation", "Accounting projection proof", "Instrument-to-posted-journal proof"]);
+            ["Portfolio position", "Ledger trial balance", "Reported-line provenance", "AssetOperations reconciliation", "Accounting projection proof", "Instrument-to-posted-journal proof"]);
         row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
             [
                 "Position / transaction",
@@ -376,7 +376,7 @@ public sealed partial class WorkstationEndpointsTests
                 "Accounting projection",
                 "Projected accounting effect",
                 "Posted Journal",
-                "Factor evidence",
+                "Corporate action evidence",
                 "Role / position",
                 "Accounting projection",
                 "Posting candidate",
@@ -408,7 +408,7 @@ public sealed partial class WorkstationEndpointsTests
         actions["open-audit-trail"].Href.Should().Contain($"/api/workstation/evidence/subjects/security-instrument/{FinancialRecordExplorerAaplSecurityId:D}/graph");
 
         explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain(
-            ["Apple Inc.", "Position / transaction", "Reconciliation", "Posted Journal", "Factor evidence", "Role / position", "Accounting projection", "Posting candidate", "Independent approval", "Reported line", "Evidence", "Audit event"]);
+            ["Apple Inc.", "Position / transaction", "Reconciliation", "Posted Journal", "Corporate action evidence", "Role / position", "Accounting projection", "Posting candidate", "Independent approval", "Reported line", "Evidence", "Audit event"]);
         explorer.RecordGraph.Edges.Select(static edge => edge.Label).Should().Contain(
             ["referenced by", "reconciles", "posts", "reported", "supports", "projects", "proposes", "authorizes", "retains evidence", "audits"]);
 
@@ -1052,7 +1052,7 @@ public sealed partial class WorkstationEndpointsTests
             var lineage = new ProjectionLineageDto(
                 Guid.Parse("11111111-1111-1111-1111-111111111116"),
                 Guid.Parse("11111111-1111-1111-1111-111111111117"),
-                "mbs-factor-paydown",
+                "equity-corporate-action",
                 "1.0.0",
                 "factor-paydown-projection-v1",
                 "Base",
@@ -1169,6 +1169,7 @@ public sealed partial class WorkstationEndpointsTests
             }
 
             var effectiveDate = new DateOnly(2026, 3, 22);
+            var sourceHash = new string('a', 64);
             var evidence = new RetainedEvidenceIdentityDto(
                 "factor-row-aapl",
                 "https://evidence.example.test/factor-row-aapl",
@@ -1182,7 +1183,7 @@ public sealed partial class WorkstationEndpointsTests
                 1,
                 EventTimestamp,
                 "evidence-vault",
-                "AssetAccountingEvent",
+                AssetAccountingEvidenceSubjects.Event,
                 FinancialRecordExplorerEventId.ToString("D"));
             var economicEvent = new EconomicEventReferenceDto(
                 FinancialRecordExplorerEventId,
@@ -1192,7 +1193,7 @@ public sealed partial class WorkstationEndpointsTests
                 EventTimestamp,
                 "SecurityMaster",
                 "factor-row-aapl",
-                SourceContentHash: new string('a', 64),
+                SourceContentHash: sourceHash,
                 EvidenceLinks: ["/evidence/factor-row-aapl"])
             {
                 SecurityId = FinancialRecordExplorerAaplSecurityId,
@@ -1201,7 +1202,7 @@ public sealed partial class WorkstationEndpointsTests
             var lineage = new ProjectionLineageDto(
                 Guid.Parse("11111111-1111-1111-1111-111111111116"),
                 Guid.Parse("11111111-1111-1111-1111-111111111117"),
-                "mbs-factor-paydown",
+                "equity-corporate-action",
                 "1.0.0",
                 "factor-paydown-projection-v1",
                 "Base",
@@ -1417,7 +1418,7 @@ public sealed partial class WorkstationEndpointsTests
                         ["bookPositionId"] = FinancialRecordExplorerPositionId.ToString("D"),
                         ["projectionRunId"] = "11111111-1111-1111-1111-111111111116",
                         ["projectionEventId"] = "11111111-1111-1111-1111-111111111117",
-                        ["projectionModelKey"] = "mbs-factor-paydown",
+                        ["projectionModelKey"] = "equity-corporate-action",
                         ["projectionModelVersion"] = "1.0.0",
                         ["projectionEngineVersion"] = "factor-paydown-projection-v1",
                         ["projectionScenario"] = "Base"
