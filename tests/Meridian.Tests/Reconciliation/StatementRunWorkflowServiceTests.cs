@@ -236,11 +236,13 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task CreateAsync_WhenStatementAccountDiffersFromRequestedExternalAccount_FailsClosed()
+    public async Task CreateAsync_WhenStatementAccountDiffersFromRequestedExternalAccount_PreservesSourceAccountAndCreatesBreaks()
     {
         // The internal book belongs to EXT-1 and would exactly match this row if the matcher rewrote
-        // its retained source account. The run must instead reject a populated account B before that
-        // normalization can turn this into a false reconciliation for account A.
+        // its retained source account. The source account must remain EXT-B so it produces a
+        // statement-only break and leaves EXT-1 as an internal-only break. This also accepts bank
+        // source identifiers (such as BAI2 account numbers and camt.053 IBANs) that differ from a
+        // Meridian run-level external key without creating a partial persisted import.
         var path = await WriteStatementAsync(
             "wrong-account.csv",
             "EXT-B,SPY,10,500,5000,position,2026-05-28,,USD,,");
@@ -249,10 +251,15 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
             [],
             [])));
 
-        var act = async () => await workflow.CreateAsync(Request(path), CancellationToken.None);
+        var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
 
-        await act.Should().ThrowAsync<InvalidDataException>()
-            .WithMessage("*account 'EXT-B'*requested external account 'EXT-1'*");
+        result.Breaks.Should().HaveCount(2);
+        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference.EndsWith(":2", StringComparison.Ordinal));
+        result.Breaks.Should().Contain(breakRecord => breakRecord.SourceReference == "internal:pos:spy");
+        result.Cases.Should().HaveCount(2);
+
+        var imports = await new JsonCanonicalStatementStore(_root).ListImportsAsync();
+        imports.Should().ContainSingle("the accepted source-account difference is materialized as a complete reconciliation run");
     }
 
     [Fact]
