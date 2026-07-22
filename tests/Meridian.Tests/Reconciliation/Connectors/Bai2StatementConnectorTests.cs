@@ -97,6 +97,34 @@ public sealed class Bai2StatementConnectorTests
     }
 
     [Fact]
+    public async Task Parse_Bai2_WithBlankAccountIdentifier_IsRejected()
+    {
+        // Two 03 account sections whose required account-number field is blank. Both would otherwise share
+        // the "unknown-account" placeholder, collapsing to one distinct account and slipping past the
+        // multi-account guard, so a section could reconcile against the selected Meridian account. A
+        // missing 03 account identifier must be a parse error instead.
+        const string bai2 = """
+            01,CITIBANK,MERIDIAN,260531,0800,1,,,2/
+            02,MERIDIAN,CITIBANK,1,260531,,USD,2/
+            03,,USD,015,1000000,,/
+            16,115,250000,,BANKREF01,CUSTREF01,Incoming wire/
+            03,,USD,015,2000000,,/
+            16,115,500000,,BANKREF02,CUSTREF02,Incoming wire/
+            49,3750000,5/
+            98,3750000,1,5/
+            99,3750000,1,9/
+            """;
+        var document = new StatementSourceDocument("blank-account.bai", Encoding.UTF8.GetBytes(bai2));
+
+        _connector.CanHandle(document).Should().BeTrue();
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a BAI2 file with an unidentifiable account must not commit");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_MISSING_ACCOUNT_ID");
+    }
+
+    [Fact]
     public async Task Parse_Bai2_ScalesAmountsByDeclaredCurrencyExponent()
     {
         // JPY has no minor unit, so a BAI2 amount of 10000 is 10000 yen, not 100. Assuming cents would

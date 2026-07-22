@@ -55,6 +55,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
         var accountTrailerCount = 0;
         var fileTrailerCount = 0;
         int? declaredFileGroupCount = null;
+        var hasBlankAccountId = false;
 
         foreach (var rawLine in content.Split('\n'))
         {
@@ -77,7 +78,17 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
                 case "03":
                     accountCount++;
-                    account = string.IsNullOrWhiteSpace(FieldAt(fields, 1)) ? "unknown-account" : FieldAt(fields, 1)!.Trim();
+                    var accountId = FieldAt(fields, 1);
+                    // A blank 03 account number cannot identify the account being reconciled. Flag it so
+                    // the file is rejected below rather than sharing an "unknown-account" placeholder: two
+                    // blank sections would otherwise collapse to one distinct account and slip past the
+                    // multi-account guard, letting one section reconcile against the selected account.
+                    if (string.IsNullOrWhiteSpace(accountId))
+                    {
+                        hasBlankAccountId = true;
+                    }
+
+                    account = string.IsNullOrWhiteSpace(accountId) ? "unknown-account" : accountId.Trim();
                     accountCurrency = NormalizeCurrency(FieldAt(fields, 2), groupCurrency);
                     if (TryResolveClosingBalance(fields, out var balanceMinorUnits) && asOfDate is { } balanceDate)
                     {
@@ -155,6 +166,24 @@ public sealed class Bai2StatementConnector : IStatementConnector
             Convert.ToHexString(SHA256.HashData(document.Content.Span)).ToLowerInvariant(),
             detectedColumns.Select(static column => column.ToLowerInvariant()).ToArray(),
             "bai2");
+
+        // Every 03 account-identifier record must carry its account number. A blank one cannot identify
+        // the account being reconciled and would share the "unknown-account" placeholder with any other
+        // blank section, so reject the file rather than reconcile an unidentifiable account.
+        if (hasBlankAccountId)
+        {
+            issues.Add(StatementParseIssue.Error(
+                "BAI2_MISSING_ACCOUNT_ID",
+                "A BAI2 account identifier (03) record has no account number; a statement run must reconcile a single, identified account. Repair the file so every 03 record carries its account number before importing."));
+            return Task.FromResult(new StatementParseResult(
+                ConnectorId,
+                ProfileId: null,
+                detectedColumns,
+                ColumnMappings: [],
+                [],
+                issues,
+                fingerprint));
+        }
 
         // A BAI2 file can carry several 03 account-identifier records, but a statement run reconciles a
         // single account and the matcher normalizes every imported row to the run's one external account.
