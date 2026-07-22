@@ -69,6 +69,7 @@ import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
+import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { DesignSystemMasthead } from "@/design-system/primitives";
 import {
   WorkstationStatusBar,
@@ -508,6 +509,7 @@ function AppShell({ firstRunStatus }: { firstRunStatus?: FirstRunStatus | null }
       />
 
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
+      <DataProvenanceBanner provenance={usingDevelopmentFixtures ? "seeded" : "real"} />
 
       <div className="workstation-shell">
         <WorkspaceNav

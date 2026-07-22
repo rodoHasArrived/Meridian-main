@@ -41,6 +41,24 @@ Every receipt binds:
 before returning or persisting a receipt. Consumers must fail closed when validation, identity,
 hash, or evidence retrieval fails.
 
+## Data provenance
+
+Every receipt carries a `DataProvenance` signal (`Real`, `Simulated`, `Seeded`, or `Sample`) defined
+in `src/Meridian.Contracts/Operations/DataProvenance.cs`. It defaults to `Real`; any operation whose
+inputs are simulated, seeded, or sample data must downgrade it so the signal travels with the receipt
+and downstream evidence gates fail closed on it. No client may present non-real figures as real:
+
+- `DataProvenanceBadge.TryCreate` builds a persistent, non-dismissable badge (`Dismissable` is always
+  `false`) that both the browser workstation and the WPF desktop shell render identically. `Real`
+  produces no badge.
+- The accounting append boundary (`AccountingPostingCommandValidator`) refuses to persist a figure
+  whose evidence declares a simulated origin unless the posting carries the retained provenance mark;
+  when marked, the mark is written onto the journal so it can never be silently lost.
+- The demo-mode API always emits the `Seeded` label, and
+  `ProductionServiceRegistrationPolicy.ResolveComposedDataProvenance` forces the `Simulated` label
+  whenever the supported local-workstation posture binds an in-memory money-path store rather than a
+  durable one.
+
 ## Persistence and replay
 
 Operator-controlled or long-running work appends `OperationalCaseHistoryRecord` entries. History

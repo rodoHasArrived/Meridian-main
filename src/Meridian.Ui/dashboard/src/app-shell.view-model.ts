@@ -50,6 +50,8 @@ export type {
 } from "@/app-shell.command-palette";
 export { buildDevelopmentFixtureNoticeViewModel } from "@/app-shell.development-fixture-notice";
 export type { DevelopmentFixtureNoticeStep, DevelopmentFixtureNoticeViewModel } from "@/app-shell.development-fixture-notice";
+export { buildDataProvenanceBadgeViewModel, normalizeDataProvenance } from "@/app-shell.data-provenance-badge";
+export type { DataProvenanceBadgeViewModel, DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 export type { AppShellLinkedContextItem } from "@/app-shell.linked-context";
 export type { AppShellRouteFocusState } from "@/app-shell.route-focus";
 export type { ShellStatusItem, ShellStatusPanel, ShellStatusTone } from "@/app-shell.status-panel";
