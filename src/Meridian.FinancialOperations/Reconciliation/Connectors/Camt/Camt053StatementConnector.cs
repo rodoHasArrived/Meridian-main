@@ -107,12 +107,15 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 }
 
                 rowNumber++;
-                if (!TrySignedAmount(balance, accountCurrency, out var amount, out var currency))
+                var balanceAmount = TrySignedAmount(balance, accountCurrency, out var amount, out var currency);
+                if (balanceAmount != CamtAmountResult.Ok)
                 {
-                    issues.Add(StatementParseIssue.Error(
-                        "CAMT_BALANCE_BAD_AMOUNT",
-                        "Closing balance has a missing or non-numeric Amt; the statement cannot be reconciled.",
-                        rowNumber));
+                    var (code, message) = balanceAmount == CamtAmountResult.BadDirection
+                        ? ("CAMT_BALANCE_BAD_DIRECTION",
+                            "Closing balance has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
+                        : ("CAMT_BALANCE_BAD_AMOUNT",
+                            "Closing balance has a missing or non-numeric Amt; the statement cannot be reconciled.");
+                    issues.Add(StatementParseIssue.Error(code, message, rowNumber));
                     continue;
                 }
 
@@ -157,12 +160,15 @@ public sealed class Camt053StatementConnector : IStatementConnector
                 }
 
                 rowNumber++;
-                if (!TrySignedAmount(entry, accountCurrency, out var amount, out var currency))
+                var entryAmount = TrySignedAmount(entry, accountCurrency, out var amount, out var currency);
+                if (entryAmount != CamtAmountResult.Ok)
                 {
-                    issues.Add(StatementParseIssue.Error(
-                        "CAMT_ENTRY_BAD_AMOUNT",
-                        "Entry has a missing or non-numeric Amt; the statement cannot be reconciled.",
-                        rowNumber));
+                    var (code, message) = entryAmount == CamtAmountResult.BadDirection
+                        ? ("CAMT_ENTRY_BAD_DIRECTION",
+                            "Entry has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
+                        : ("CAMT_ENTRY_BAD_AMOUNT",
+                            "Entry has a missing or non-numeric Amt; the statement cannot be reconciled.");
+                    issues.Add(StatementParseIssue.Error(code, message, rowNumber));
                     continue;
                 }
 
@@ -203,10 +209,21 @@ public sealed class Camt053StatementConnector : IStatementConnector
             fingerprint));
     }
 
-    // Resolves the signed monetary amount and currency. Returns false when the Amt element is missing
-    // or non-numeric: a manufactured 0 amount could exact-match an internal zero balance and leave a
-    // malformed statement apparently reconciled, so the caller must reject the record instead.
-    private static bool TrySignedAmount(XElement element, string fallbackCurrency, out decimal signed, out string currency)
+    // Why a signed amount could not be resolved, so the caller can report the specific defect rather
+    // than a single ambiguous "bad amount" for both a malformed number and an unusable direction.
+    private enum CamtAmountResult
+    {
+        Ok,
+        BadAmount,
+        BadDirection,
+    }
+
+    // Resolves the signed monetary amount and currency. Returns a non-Ok result when the Amt element is
+    // missing or non-numeric (BadAmount) or the credit/debit direction is missing or unrecognized
+    // (BadDirection): a manufactured 0 amount or a wrong-signed value could exact-match an internal
+    // balance or transaction and leave a malformed statement apparently reconciled, so the caller must
+    // reject the record instead.
+    private static CamtAmountResult TrySignedAmount(XElement element, string fallbackCurrency, out decimal signed, out string currency)
     {
         signed = 0m;
         var amountElement = Element(element, "Amt");
@@ -215,25 +232,51 @@ public sealed class Camt053StatementConnector : IStatementConnector
         if (amountElement is null
             || !decimal.TryParse(amountElement.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var magnitude))
         {
+            return CamtAmountResult.BadAmount;
+        }
+
+        if (!TryResolveDirection(element, out var negative))
+        {
+            return CamtAmountResult.BadDirection;
+        }
+
+        signed = negative ? -magnitude : magnitude;
+        return CamtAmountResult.Ok;
+    }
+
+    // Resolves the sign from the credit/debit indicator. Only recognized codes are honored: CRDT is a
+    // credit (positive) and DBIT a debit (negative); the reversal codes some banks emit in place of a
+    // separate flag invert the base direction — a reversal of a credit (RCRD) behaves as a debit and a
+    // reversal of a debit (RDBT) as a credit. A separate reversal flag (RvslInd) flips a standard
+    // CRDT/DBIT entry. A missing or unrecognized indicator is rejected rather than assumed to be a
+    // positive credit: assuming credit would give a malformed debit the opposite sign and let it
+    // exact-match an internal positive balance or transaction.
+    private static bool TryResolveDirection(XElement element, out bool negative)
+    {
+        negative = false;
+        var indicator = Value(element, "CdtDbtInd");
+        if (string.IsNullOrWhiteSpace(indicator))
+        {
             return false;
         }
 
-        var indicator = Value(element, "CdtDbtInd");
-        // Direction from the credit/debit indicator. A debit is negative; the reversal codes some banks
-        // emit invert the base direction — a reversal of a credit (RCRD) behaves as a debit and a
-        // reversal of a debit (RDBT) as a credit. A separate reversal flag (RvslInd) flips a standard
-        // CRDT/DBIT entry. Treating every non-DBIT indicator as a positive credit would give reversals
-        // the opposite sign and manufacture false matches or breaks.
-        var negative = string.Equals(indicator, "DBIT", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(indicator, "RCRD", StringComparison.OrdinalIgnoreCase);
-        if ((string.Equals(indicator, "CRDT", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(indicator, "DBIT", StringComparison.OrdinalIgnoreCase))
-            && IsReversal(Value(element, "RvslInd")))
+        var isCredit = string.Equals(indicator, "CRDT", StringComparison.OrdinalIgnoreCase);
+        var isDebit = string.Equals(indicator, "DBIT", StringComparison.OrdinalIgnoreCase);
+        var isReversalOfCredit = string.Equals(indicator, "RCRD", StringComparison.OrdinalIgnoreCase);
+        var isReversalOfDebit = string.Equals(indicator, "RDBT", StringComparison.OrdinalIgnoreCase);
+        if (!isCredit && !isDebit && !isReversalOfCredit && !isReversalOfDebit)
+        {
+            return false;
+        }
+
+        negative = isDebit || isReversalOfCredit;
+        // The reversal codes already encode the inversion; only a standard CRDT/DBIT entry is flipped by
+        // a standalone RvslInd flag.
+        if ((isCredit || isDebit) && IsReversal(Value(element, "RvslInd")))
         {
             negative = !negative;
         }
 
-        signed = negative ? -magnitude : magnitude;
         return true;
     }
 

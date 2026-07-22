@@ -196,4 +196,83 @@ public sealed class Camt053StatementConnectorTests
         var transaction = result.Records.Single(record => record.Kind == StatementRecordKind.Transaction);
         transaction.CashAmount.Should().Be(-40.00m, "a reversal of a credit is a debit and must be negative");
     }
+
+    [Fact]
+    public async Task Parse_Camt053_WithMissingCreditDebitIndicator_IsRejected()
+    {
+        // The closing balance omits CdtDbtInd. Assuming a positive credit could give a malformed debit
+        // balance the wrong sign and exact-match an internal positive, so a row with no recognized
+        // credit/debit direction must be rejected rather than defaulted to a credit.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">100.00</Amt><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("missing-direction.xml", Encoding.UTF8.GetBytes(xml));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().BeEmpty("a balance with no credit/debit direction must not become a signed canonical row");
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_BALANCE_BAD_DIRECTION");
+    }
+
+    [Fact]
+    public async Task Parse_Camt053_WithUnrecognizedEntryDirection_IsRejected()
+    {
+        // A booked entry carries an unrecognized CdtDbtInd. It must be rejected, not imported as a
+        // positive credit, so a malformed debit cannot exact-match an internal positive transaction.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                  <Ntry><Amt Ccy="EUR">50.00</Amt><CdtDbtInd>XXXX</CdtDbtInd><Sts>BOOK</Sts><BookgDt><Dt>2026-05-30</Dt></BookgDt></Ntry>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("bad-entry-direction.xml", Encoding.UTF8.GetBytes(xml));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeTrue();
+        result.Records.Should().NotContain(record => record.Kind == StatementRecordKind.Transaction,
+            "the entry with no recognized direction must not become a canonical transaction");
+        result.Issues.Should().Contain(issue => issue.Code == "CAMT_ENTRY_BAD_DIRECTION");
+    }
+
+    [Fact]
+    public async Task Parse_Camt053_SignsReversedDebitEntriesAsCredits()
+    {
+        // An entry whose CdtDbtInd is RDBT (reversal of a debit) is a credit: the amount must be
+        // positive. This also proves RDBT is a recognized direction and is not rejected.
+        const string xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+              <BkToCstmrStmt>
+                <Stmt>
+                  <Acct><Id><IBAN>DE89370400440532013000</IBAN></Id><Ccy>EUR</Ccy></Acct>
+                  <Bal><Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp><Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd><Dt><Dt>2026-05-31</Dt></Dt></Bal>
+                  <Ntry><Amt Ccy="EUR">40.00</Amt><CdtDbtInd>RDBT</CdtDbtInd><Sts>BOOK</Sts><BookgDt><Dt>2026-05-30</Dt></BookgDt></Ntry>
+                </Stmt>
+              </BkToCstmrStmt>
+            </Document>
+            """;
+        var document = new StatementSourceDocument("reversed-debit.xml", Encoding.UTF8.GetBytes(xml));
+
+        var result = await _connector.ParseAsync(document);
+
+        result.HasErrors.Should().BeFalse();
+        var transaction = result.Records.Single(record => record.Kind == StatementRecordKind.Transaction);
+        transaction.CashAmount.Should().Be(40.00m, "a reversal of a debit is a credit and must be positive");
+    }
 }
