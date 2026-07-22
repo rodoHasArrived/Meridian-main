@@ -16,5 +16,6 @@
   <ItemGroup>
     <PackageReference Include="QuestPDF" />
     <PackageReference Include="ClosedXML" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 </Project>

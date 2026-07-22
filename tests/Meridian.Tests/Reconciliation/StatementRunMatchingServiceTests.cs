@@ -108,7 +108,7 @@ public sealed class StatementRunMatchingServiceTests
         var withinRows = new[] { Row(1, string.Empty, 0m, 0m, 100.00m, "cash") };
         var withinBook = new InternalReconciliationBook(
             [],
-            [new InternalCashBalance("int-cash-1", "A1", "", 100.005m, "internal:cash:1")],
+            [new InternalCashBalance("int-cash-1", "A1", "", 100.005m, "internal:cash:1", AsOf)],
             []);
 
         var withinResult = StatementRunMatchingService.Match(import, withinRows, withinBook, StatementToleranceProfile.Default);
@@ -117,7 +117,7 @@ public sealed class StatementRunMatchingServiceTests
 
         var beyondBook = new InternalReconciliationBook(
             [],
-            [new InternalCashBalance("int-cash-1", "A1", "", 200m, "internal:cash:1")],
+            [new InternalCashBalance("int-cash-1", "A1", "", 200m, "internal:cash:1", AsOf)],
             []);
         var beyondResult = StatementRunMatchingService.Match(import, withinRows, beyondBook, StatementToleranceProfile.Default);
         beyondResult.Breaks.Should().ContainSingle();

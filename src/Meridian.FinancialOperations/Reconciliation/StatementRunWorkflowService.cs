@@ -138,24 +138,6 @@ public sealed class StatementRunWorkflowService(
         };
     }
 
-    private async Task<StatementToleranceProfile> ResolveToleranceProfileAsync(string profileId, CancellationToken cancellationToken)
-    {
-        if (_toleranceProfileProvider is null || string.IsNullOrWhiteSpace(profileId))
-        {
-            return StatementToleranceProfile.Default;
-        }
-
-        try
-        {
-            return await _toleranceProfileProvider.GetProfileAsync(profileId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (KeyNotFoundException)
-        {
-            // Unknown profile ids fall back to the conservative default rather than failing the run.
-            return StatementToleranceProfile.Default;
-        }
-    }
-
     private static BrokerStatementImportRequest ToImportRequest(StatementRunRequest request)
         => new(
             request.Broker,
