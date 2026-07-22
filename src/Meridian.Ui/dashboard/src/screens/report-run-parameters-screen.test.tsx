@@ -341,7 +341,9 @@ describe("ReportRunParametersScreen", () => {
 
     expect(screen.getByRole("heading", { name: "Report Parameters" })).toBeInTheDocument();
     expect(screen.getByLabelText("Fund profile")).toHaveValue("fund-alpha");
-    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("AllEntities");
+    const entityScopeSelect = screen.getByLabelText("Entity / fund / portfolio");
+    expect(entityScopeSelect).toHaveAttribute("id", "report-entity-scope");
+    expect(entityScopeSelect).toHaveValue("AllEntities");
     expect(screen.getByLabelText("Ledger book code")).toHaveValue("Primary GL");
     expect(screen.getByLabelText("Accounting basis")).toHaveValue("Gaap");
     expect(screen.getByLabelText("Output format")).toHaveValue("Pdf");
