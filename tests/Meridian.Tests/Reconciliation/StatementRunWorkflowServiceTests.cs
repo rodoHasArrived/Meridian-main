@@ -37,9 +37,9 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     {
         var path = await WriteStatementAsync(
             "empty-book.csv",
-            "FUND-1,SPY,10,500,5000,position,2026-05-28,,USD,,",
-            "FUND-1,,0,0,2500.25,cash,2026-05-28,,USD,,",
-            "FUND-1,MSFT,5,20,100,trade,2026-05-28,,USD,,EXT-9");
+            "EXT-1,SPY,10,500,5000,position,2026-05-28,,USD,,",
+            "EXT-1,,0,0,2500.25,cash,2026-05-28,,USD,,",
+            "EXT-1,MSFT,5,20,100,trade,2026-05-28,,USD,,EXT-9");
         var workflow = CreateWorkflow();
 
         var result = await workflow.CreateAsync(Request(path), CancellationToken.None);
@@ -57,9 +57,9 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     {
         var path = await WriteStatementAsync(
             "matched.csv",
-            "FUND-1,SPY,10,500,5000,position,2026-05-28,,USD,,",
-            "FUND-1,,0,0,2500.25,cash,2026-05-28,,USD,,",
-            "FUND-1,MSFT,5,20,-100,trade,2026-05-28,2026-05-30,USD,,EXT-9");
+            "EXT-1,SPY,10,500,5000,position,2026-05-28,,USD,,",
+            "EXT-1,,0,0,2500.25,cash,2026-05-28,,USD,,",
+            "EXT-1,MSFT,5,20,-100,trade,2026-05-28,2026-05-30,USD,,EXT-9");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [new InternalPortfolioPosition("i-spy", "EXT-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
             [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash", new DateOnly(2026, 5, 28))],
@@ -79,7 +79,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // must be dated at the run's statement period end before it can be reconciled.
         var path = await WriteStatementAsync(
             "wrong-period-cash.csv",
-            "FUND-1,,0,0,2500.25,cash,2026-04-30,,USD,,");
+            "EXT-1,,0,0,2500.25,cash,2026-04-30,,USD,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
             [new InternalCashBalance("i-cash", "EXT-1", "USD", 2500.25m, "internal:cash", new DateOnly(2026, 4, 30))],
@@ -100,7 +100,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // 1,000 EUR converts to 1,085 USD at 1.085; the internal book holds 1,085 USD for the account.
         var path = await WriteStatementAsync(
             "fx.csv",
-            "FUND-1,,0,0,1000,cash,2026-05-28,,EUR,,");
+            "EXT-1,,0,0,1000,cash,2026-05-28,,EUR,,");
         var workflow = CreateWorkflow(
             Populations(new InternalReconciliationPopulations(
                 [],
@@ -118,7 +118,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     {
         var path = await WriteStatementAsync(
             "fx-missing.csv",
-            "FUND-1,,0,0,1000,cash,2026-05-28,,EUR,,");
+            "EXT-1,,0,0,1000,cash,2026-05-28,,EUR,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
             [new InternalCashBalance("i-cash", "FUND-1", "USD", 1085m, "internal:cash", new DateOnly(2026, 5, 28))],
@@ -136,7 +136,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     {
         var path = await WriteStatementAsync(
             "internal-only.csv",
-            "FUND-1,SPY,10,500,5000,position,2026-05-28,,USD,,");
+            "EXT-1,SPY,10,500,5000,position,2026-05-28,,USD,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [
                 new InternalPortfolioPosition("i-spy", "EXT-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy"),
@@ -171,7 +171,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // profile, not a hard-coded default, drives the thresholds.
         var path = await WriteStatementAsync(
             "tolerance-default.csv",
-            "FUND-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
+            "EXT-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
         var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
             [],
             [new InternalCashBalance("i-cash", "EXT-1", "USD", 1000m, "internal:cash", new DateOnly(2026, 5, 28))],
@@ -190,7 +190,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // ToleranceProfileId threads into the matcher instead of always using the default thresholds.
         var path = await WriteStatementAsync(
             "tolerance-loose.csv",
-            "FUND-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
+            "EXT-1,,0,0,1000.50,cash,2026-05-28,,USD,,");
         var looseProfile = new StatementToleranceProfile(
             "statement-loose",
             1,
@@ -220,7 +220,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // id, so the persisted profile is always the profile actually applied.
         var path = await WriteStatementAsync(
             "unknown-tolerance.csv",
-            "FUND-1,,0,0,1000,cash,2026-05-28,,USD,,");
+            "EXT-1,,0,0,1000,cash,2026-05-28,,USD,,");
         var workflow = CreateWorkflow();
 
         var act = async () => await workflow.CreateAsync(
@@ -236,6 +236,26 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateAsync_WhenStatementAccountDiffersFromRequestedExternalAccount_FailsClosed()
+    {
+        // The internal book belongs to EXT-1 and would exactly match this row if the matcher rewrote
+        // its retained source account. The run must instead reject a populated account B before that
+        // normalization can turn this into a false reconciliation for account A.
+        var path = await WriteStatementAsync(
+            "wrong-account.csv",
+            "EXT-B,SPY,10,500,5000,position,2026-05-28,,USD,,");
+        var workflow = CreateWorkflow(Populations(new InternalReconciliationPopulations(
+            [new InternalPortfolioPosition("i-spy", "EXT-1", "SPY", new DateOnly(2026, 5, 28), 10m, 5000m, "internal:pos:spy")],
+            [],
+            [])));
+
+        var act = async () => await workflow.CreateAsync(Request(path), CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*account 'EXT-B'*requested external account 'EXT-1'*");
+    }
+
+    [Fact]
     public async Task CreateAsync_WithMalformedSettlementDate_FailsClosed()
     {
         // A nonblank but unparsable optional settlement date must be rejected, not silently dropped to
@@ -243,7 +263,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         // could exact-match a same-day ledger transaction instead of blocking the import.
         var path = await WriteStatementAsync(
             "bad-settlement.csv",
-            "FUND-1,MSFT,5,20,-100,trade,2026-05-28,not-a-date,USD,,EXT-9");
+            "EXT-1,MSFT,5,20,-100,trade,2026-05-28,not-a-date,USD,,EXT-9");
         var workflow = CreateWorkflow();
 
         var act = async () => await workflow.CreateAsync(Request(path), CancellationToken.None);
