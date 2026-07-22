@@ -2,8 +2,8 @@
 
 **Status:** active; production certification blocked  
 **Owner:** core-team  
-**Reviewed:** 2026-07-20
-**Baseline:** closure candidate on `codex/complete-production-p0-gates`, based on `main` at `bc1dd127e`
+**Reviewed:** 2026-07-22
+**Baseline:** current `main` history through `d3c472934`; production readiness remains blocked pending same-commit release evidence and required GitHub Actions checks
 **Previous production audit:** `f0ac384a2` on 2026-07-11
 **Sources:** [Meridian Design Document (Version 0.25)](meridian-design-document.md), [Program State](../roadmap/data/program-state.yml), [Roadmap Registry](../roadmap/data/roadmap-items.yml), and the live source, test, workflow, deployment, security, and operator surfaces named below
 
@@ -36,8 +36,8 @@ Priority meanings:
 | P0 (`PRD-000` through `PRD-017`) | 12 implementation-complete; 6 evidence-gated; 0 production-certified | `PRD-001` through `PRD-012` have closure implementations and focused proof in this candidate. `PRD-000` and `PRD-013` through `PRD-017` now have executable gates but remain production-blocking until the external same-commit evidence listed below exists. |
 | P1 (`PRD-100` through `PRD-114`) | 15 open | Required acceptance, operability, architecture, and product-envelope work remains. A row may move out only through an explicit support-matrix scope decision. |
 | P2 (`PRD-200` through `PRD-205`) | 6 open | Compatibility cleanup remains sequenced after the P0/P1 policy migrations it depends on. |
-| Active roadmap acceptance | 3 in progress | `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, and `W8-WPF-PARITY-001` remain active and are not production-certified by this tracker. |
-| Planned roadmap work | 1 planned | `W6-BTSTUDIO-001` remains planned and outside the v1 production envelope unless the signed support matrix includes it. |
+| Active roadmap acceptance | 4 in progress | `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W8-WPF-PARITY-001`, and critical `W9-ASSET-010` remain active and are not production-certified by this tracker. |
+| Planned roadmap work | 1 planned | `W6-BTSTUDIO-001` remains planned and outside the v1 production envelope unless the signed support matrix includes it. `W9-ASSET-010` is active, not planned, and does not change the P0 release-certification gate. |
 
 ### Progress Since the 2026-07-11 Production Audit
 
@@ -51,6 +51,7 @@ Priority meanings:
 | `PRD-007`, `PRD-008`, `PRD-013`, `PRD-107` verified-outcome slice | The 2026-07-19 source adds the shared `VerifiedOperationOutcome` validator and tamper-evident operational case-history port/store; durable strategy-run and fund-workflow replay; truthful runbook, ETL export, maintenance, quality, and startup receipts; exact reconciliation-break continuity into retained report artifacts; and an exact-`Ready` browser launch gate. Evidence anchors: `Meridian.Contracts/Operations/VerifiedOperationOutcome.cs`, `Meridian.Storage/Operations/FileOperationalCaseHistoryStore.cs`, `EtlServices.cs`, `RunbookExecutor.cs`, `MaintenanceScheduler.cs`, `ReportingReconciliationEvidenceContracts.cs`, and `LifecycleStartupOutcome.cs`. Legacy v1 reconciliation receipts are integrity-checked and fail closed with an operator re-close requirement because they cannot prove item-level break evidence. | The P0 branch now adds ETL ownership leases and safe commit ordering. Atomic action-plus-evidence outboxes, promotion/operator-inbox migration, a cross-store scope lease or transaction that makes final reporting release atomic with the reconciliation queue head, multi-process retention/recovery proof, full-host lifecycle adoption, and clean installed publish/start/repair/upgrade/rollback certification remain evidence-gated or P1 follow-up. |
 | `PRD-007`, `PRD-010`, `PRD-013`, `W5X-STMT-ONBOARD-001` statement-to-report slice | The 2026-07-20 candidate adds a tenant/company-scoped persisted statement-to-report coordinator and endpoints. The source statement is retained before import; stage checkpoints are written atomically; committed import and Evidence Vault references survive restart; unresolved reconciliation cases pause publication; retry resumes without a second import; JSON/CSV reports plus a hash manifest are retained; downloads verify the stored hash before serving. Focused service and HTTP tests cover clean completion, restart idempotency, failed evidence-link recovery, reconciliation pause/resume, tenant denial, and retained artifact download. | Browser/WPF operator-surface acceptance and hosted same-commit retention/recovery evidence remain required; this slice does not mark the active roadmap row or production certification complete. |
 | `PRD-013`, `PRD-017`, `W8-WPF-PARITY-001` desktop configuration recovery | WPF now validates configuration before host construction, atomically retains a last-known-good copy, displaces invalid input into a timestamped backup, writes a recovery receipt, falls back to safe host defaults when configuration cannot be read, and keeps Data Sources available with an operator recovery card and retry action. | Installed-candidate startup proof and complete WPF release acceptance remain evidence-gated. |
+| `W9-ASSET-010` asset-accounting event spine | `a3a01eff3` added the critical active roadmap row for a shared Asset Accounting Event Spine: all eight canonical event kinds must retain Security Master, position, ledger, rule-pack, projection-lineage, and evidence identity before drafting; immutable journals alone establish posted impact; acquisition/disposal lot effects must join governed journal posting atomically. The row anchors the service, PostgreSQL atomic-lot store, and focused storage/evidence tests. | `W9-ASSET-010` remains `in_progress` with `evidence_posture: in_progress`; the eight-event lifecycle, shared read-model, atomic selected-lot disposal, focused/full CI, and authoritative GitHub Actions exit criteria remain open. It is an active productization target, not production certification. |
 
 ### 2026-07-19 P0 Closure Candidate
 
@@ -184,7 +185,7 @@ The word intended here is **deprecated**. Repeated filenames or concepts are not
 | Roadmap posture | Rows | Production interpretation |
 | --- | --- | --- |
 | Bounded capability evidence complete | `W1-DATA-001`, `W2-TRD-001`, `W2-PROMO-001`, `W3-CONT-001`, `W4-RECON-001`, `W4-RPT-001`, `W5-ACCT-001`, `W5-MASSET-001`, `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, `W7-LIVE-001` | Preserve the evidence; do not reinterpret these rows as production certification. `W7-LIVE-001` closes governance only, not broad live execution. |
-| Active productization | `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W8-WPF-PARITY-001` | Finish their registered exit criteria if they are inside the supported release envelope; otherwise explicitly scope them out without claiming full parity/productization. |
+| Active productization | `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W8-WPF-PARITY-001`, `W9-ASSET-010` | Finish their registered exit criteria if they are inside the supported release envelope; otherwise explicitly scope them out without claiming full parity/productization. `W9-ASSET-010` adds a critical asset-accounting spine but does not replace the independent production-certification evidence gates. |
 | Planned | `W6-BTSTUDIO-001` | Not a blocker unless the supported release advertises Backtesting Studio; the shared orchestration/durability defects in `PRD-007` and `PRD-106` still apply to any existing production entrypoint. |
 
 The following remain deferred and are not production blockers unless the signed support envelope reopens them: broad live execution and live portfolio operations beyond bounded W7 governance, treasury payment execution, broad alternative-asset expansion beyond current evidence, forecasting/scenario engines, enterprise risk platform, capital-structure modeling, client portal, no-code workflow designer, broad collaboration productization, and all native mobile lanes.
@@ -206,7 +207,7 @@ The following remain deferred and are not production blockers unless the signed 
 
 ## Verification Snapshot
 
-Reviewed on 2026-07-18 at `main` commit `aa3d7edde` against:
+Reviewed on 2026-07-22 at `main` commit `d3c472934` against:
 
 - `docs/roadmap/data/roadmap-items.yml`
 - `docs/roadmap/generated/ROADMAP_SUMMARY.md`
@@ -217,7 +218,7 @@ Reviewed on 2026-07-18 at `main` commit `aa3d7edde` against:
 Result:
 
 - W1 through W5 plus `W5X-FREX-001`, `W5X-FINOPS-001`, `W5X-CONNECT-001`, and bounded `W7-LIVE-001` governance are verified as `done` with `evidence_posture: complete`.
-- `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, and `W8-WPF-PARITY-001` remain `in_progress` with `evidence_posture: in_progress`.
+- `W5X-EVIDENCE-001`, `W5X-STMT-ONBOARD-001`, `W8-WPF-PARITY-001`, and `W9-ASSET-010` remain `in_progress` with `evidence_posture: in_progress`.
 - `W6-BTSTUDIO-001` remains `planned` with `evidence_posture: planned_evidence`.
 - Broader domain rows in the design document are evidence-backed foundations, not independent completion claims.
 
@@ -330,6 +331,16 @@ Acceptance evidence produced for this FINOPS slice:
 - `tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs`
 - `docs/roadmap/data/roadmap-items.yml`
 - `docs/roadmap/generated/roadmap-register.md`
+
+## W9-ASSET-010 TODOs: Asset Accounting Event Spine
+
+- [ ] Complete all eight canonical event kinds—acquisition, capitalization, valuation, income, corporate action, impairment, depreciation/amortization, and disposal—using typed retained evidence and authoritative Security Master, position, ledger, period, accounting-basis, and promoted-rule-pack inputs before candidate drafting.
+- [ ] Preserve the distinct `Expected`, `Projected`, `Drafted`, `Approved`, `Posted`, `Reconciled`, and `Reported` states in contracts and shared read models; only an immutable, balanced journal with retained identity may establish `Posted` impact.
+- [ ] Complete idempotent serializable acquisition-lot creation and selected-lot disposal with expected versions, retained selection evidence, relief policy, before/after snapshots, correction lineage, and replay-safe fingerprints in the same database transaction as the governed journal append.
+- [ ] Keep production-readiness flags, endpoint availability, navigation links, legacy full tokens, and synthesized obligations from substituting for typed retained evidence.
+- [ ] Close the focused contract, event-spine, storage, endpoint, shared-read-model, and readiness tests, then the full CI and authoritative GitHub Actions gates, before moving the roadmap row to `done`.
+
+Evidence and exit criteria are owned by `W9-ASSET-010` in `docs/roadmap/data/roadmap-items.yml`; current implementation anchors are `src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs`, `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs`, `tests/Meridian.Tests/Storage/AtomicTaxLotJournalStoreTests.cs`, and `tests/Meridian.Tests/Storage/AssetAccountingPostingEvidenceValidatorTests.cs`. This active roadmap work is not a production-readiness certification claim.
 
 ## W6 TODOs: Backtesting Studio Evidence Loop
 
