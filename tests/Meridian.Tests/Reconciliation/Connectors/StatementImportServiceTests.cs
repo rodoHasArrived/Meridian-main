@@ -181,6 +181,31 @@ public sealed class StatementImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task Commit_SourceFileNamedCanonicalCsv_RetainsRawAndCanonicalSeparately()
+    {
+        // A source file literally named "canonical.csv" must not collide with the rendered canonical
+        // artifact. The raw evidence is retained under its own subdirectory, so neither file overwrites
+        // the other and the original source bytes survive intact.
+        var rawContent = StatementConnectorTestData.ReadFixture("csv-mixed-kinds.csv");
+        var document = new StatementSourceDocument("canonical.csv", rawContent);
+
+        var result = await _service.CommitAsync(CommitRequest(document));
+
+        var rawPath = Path.Combine(_root, result.RetainedSourcePath);
+        var canonicalPath = Path.Combine(_root, result.RetainedCanonicalPath);
+        File.Exists(rawPath).Should().BeTrue();
+        File.Exists(canonicalPath).Should().BeTrue();
+        Path.GetFullPath(rawPath).Should().NotBe(
+            Path.GetFullPath(canonicalPath),
+            "the raw source and the rendered canonical artifact must be retained at distinct paths");
+        (await File.ReadAllBytesAsync(rawPath)).Should().Equal(
+            rawContent,
+            "the retained raw evidence must be the untouched source bytes, not the canonical rendering");
+        (await File.ReadAllTextAsync(canonicalPath)).Should().StartWith(
+            "account,symbol,quantity,price,cashAmount,activityType,tradeDate");
+    }
+
+    [Fact]
     public async Task Commit_SameStatementTwice_IsIdempotentDuplicate()
     {
         var first = await _service.CommitAsync(CommitRequest(FixtureDocument("csv-mixed-kinds.csv")));

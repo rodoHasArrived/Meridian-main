@@ -34,6 +34,17 @@ public sealed class StatementImportCommands(
             return CliResult.Fail(ErrorCode.ValidationFailed);
         }
 
+        // Bound the file before buffering it into memory: the connectors are invoked only after the
+        // whole file is read, and a very large camt.053/BAI2 file could otherwise exhaust the CLI
+        // process. Apply the same 20 MiB limit the workstation upload route enforces.
+        var fileInfo = new FileInfo(path);
+        if (fileInfo.Exists && fileInfo.Length > StatementConnectorLimits.MaxFileBytes)
+        {
+            Console.Error.WriteLine(
+                $"Statement file exceeds the {StatementConnectorLimits.MaxFileBytes / (1024 * 1024)} MiB import limit.");
+            return CliResult.Fail(ErrorCode.ValidationFailed);
+        }
+
         // Read the raw source once and route both validate and import through the connector pipeline
         // (CSV, OFX, IB Flex, Alpaca, camt.053, BAI2) rather than the CSV/IB-Flex-only broker router,
         // so the bank formats registered for the workstation are equally usable from the CLI. The

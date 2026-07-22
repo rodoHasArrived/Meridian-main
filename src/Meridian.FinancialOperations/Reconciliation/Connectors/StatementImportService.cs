@@ -7,6 +7,17 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
 
+public static class StatementConnectorLimits
+{
+    /// <summary>
+    /// Maximum accepted statement file size (20 MiB). IB Flex XML exports routinely exceed the general
+    /// 5 MB data-upload cap, so statement imports get their own, larger bound. Shared by the workstation
+    /// upload endpoint and the CLI import/validate commands so neither path buffers an unbounded
+    /// caller-supplied file into memory.
+    /// </summary>
+    public const long MaxFileBytes = 20L * 1024 * 1024;
+}
+
 public sealed record StatementImportCommitRequest(
     StatementSourceDocument Document,
     string? ConnectorId,
@@ -138,12 +149,23 @@ public sealed class StatementImportService(
 
         var artifactContent = RenderCanonicalArtifact(parse.Records);
         var artifactBytes = Encoding.UTF8.GetBytes(artifactContent);
-        var uploadId = "sc-" + Convert.ToHexString(SHA256.HashData(request.Document.Content.Span))[..16].ToLowerInvariant();
+        // Key the retained evidence on both the raw content and its canonical rendering. Keying on the
+        // raw hash alone let a re-import of the same source file under a changed mapping profile — which
+        // renders different canonical output — reuse the directory and overwrite the first import's
+        // canonical artifact, destroying the normalized evidence that run still references. Combining
+        // both hashes gives every distinct rendering its own directory, while a same-profile re-import
+        // rewrites identical bytes in place and stays idempotent.
+        var rawHash = Convert.ToHexString(SHA256.HashData(request.Document.Content.Span))[..16].ToLowerInvariant();
+        var canonicalHash = Convert.ToHexString(SHA256.HashData(artifactBytes))[..16].ToLowerInvariant();
+        var uploadId = $"sc-{rawHash}-{canonicalHash}";
         var retainedDirectory = Path.Combine(_retainedRoot, uploadId);
-        Directory.CreateDirectory(retainedDirectory);
 
+        // Retain the raw source under its own subdirectory so a source file literally named
+        // "canonical.csv" cannot overwrite (or be overwritten by) the rendered canonical artifact.
+        const string sourceSubdirectory = "source";
         var safeSourceName = SanitizeFileName(request.Document.FileName);
-        var rawPath = Path.Combine(retainedDirectory, safeSourceName);
+        Directory.CreateDirectory(Path.Combine(retainedDirectory, sourceSubdirectory));
+        var rawPath = Path.Combine(retainedDirectory, sourceSubdirectory, safeSourceName);
         var canonicalPath = Path.Combine(retainedDirectory, "canonical.csv");
         await AtomicFileWriter.WriteAsync(rawPath, request.Document.Content.ToArray(), ct).ConfigureAwait(false);
         await AtomicFileWriter.WriteAsync(canonicalPath, artifactBytes, ct).ConfigureAwait(false);
@@ -166,7 +188,7 @@ public sealed class StatementImportService(
             .ConfigureAwait(false);
 
         var kindSummaries = BuildKindSummaries(parse.Records);
-        var relativeRaw = ToRelativeRetainedPath(uploadId, safeSourceName);
+        var relativeRaw = ToRelativeRetainedPath(uploadId, $"{sourceSubdirectory}/{safeSourceName}");
         var relativeCanonical = ToRelativeRetainedPath(uploadId, "canonical.csv");
 
         StatementRunWorkflowResult result;

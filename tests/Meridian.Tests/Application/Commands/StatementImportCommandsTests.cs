@@ -324,6 +324,42 @@ public sealed class StatementImportCommandsTests
         }
     }
 
+    [Fact]
+    public async Task ExecuteAsync_StatementImport_RejectsFileExceedingSizeLimit()
+    {
+        // A file larger than the shared limit must be rejected before it is buffered into memory, so a
+        // very large camt.053/BAI2 file cannot exhaust the CLI process. Uses a sparse file to avoid
+        // writing 20 MiB of real data.
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-oversize-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var statementPath = Path.Combine(root, "huge.csv");
+        await using (var stream = new FileStream(statementPath, FileMode.Create, FileAccess.Write))
+        {
+            stream.SetLength(StatementConnectorLimits.MaxFileBytes + 1);
+        }
+
+        var commitService = new StubStatementImportCommitService();
+        var command = new StatementImportCommands(commitService, Logger.None);
+
+        try
+        {
+            var result = await command.ExecuteAsync(
+                [
+                    "--statement-import",
+                    "--statement-broker", "custodian",
+                    "--statement-source-path", statementPath,
+                    "--statement-date", "2026-05-31"
+                ]);
+
+            result.Success.Should().BeFalse("a file over the size limit must be rejected before buffering");
+            commitService.Requests.Should().BeEmpty("the oversized file must not reach the connector pipeline");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     private sealed class StubStatementImportCommitService : IStatementImportCommitService
     {
         public List<StatementImportCommitRequest> Requests { get; } = [];
