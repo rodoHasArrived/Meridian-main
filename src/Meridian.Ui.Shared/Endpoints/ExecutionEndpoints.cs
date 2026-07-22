@@ -160,9 +160,12 @@ public static class ExecutionEndpoints
                 return brokerAccountFailure;
             }
 
-            if (await RequireScopedOrderAccountAccessAsync(request, context).ConfigureAwait(false) is { } accountScopeFailure)
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    request.FundAccountId,
+                    UserPermission.ManageOrders).ConfigureAwait(false) is { } fundAccountFailure)
             {
-                return accountScopeFailure;
+                return fundAccountFailure;
             }
 
             string? correlationId = null;
@@ -920,6 +923,14 @@ public static class ExecutionEndpoints
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    request.FundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
+            }
+
             return await SubmitPositionActionAsync(
                 position,
                 snapshot.Source,
@@ -963,6 +974,14 @@ public static class ExecutionEndpoints
                     Message: $"Position {request.PositionKey} was not found.",
                     OccurredAt: DateTimeOffset.UtcNow);
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    request.FundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
             }
 
             return await SubmitPositionActionAsync(
@@ -1020,6 +1039,14 @@ public static class ExecutionEndpoints
                     Message: $"Multiple positions match {symbolUpper}. Use the keyed position action endpoint.",
                     OccurredAt: DateTimeOffset.UtcNow);
                 return Results.Json(ambiguous, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (await RequireScopedFundAccountOrderAccessAsync(
+                    context,
+                    fundAccountId,
+                    UserPermission.ExecuteTrades).ConfigureAwait(false) is { } fundAccountFailure)
+            {
+                return fundAccountFailure;
             }
 
             var position = matches[0];
@@ -1390,23 +1417,34 @@ public static class ExecutionEndpoints
     private static bool HasExecutionTradingPermission(HttpContext context, UserPermission requiredPermission)
         => EndpointAuthorization.HasPermission(context, requiredPermission);
 
-    private static async Task<IResult?> RequireScopedOrderAccountAccessAsync(
-        OrderRequest request,
-        HttpContext context)
+    private static async Task<IResult?> RequireScopedFundAccountOrderAccessAsync(
+        HttpContext context,
+        Guid? fundAccountId,
+        UserPermission requiredPermission)
     {
-        if (!request.FundAccountId.HasValue)
+        if (!fundAccountId.HasValue)
         {
             return null;
         }
 
-        var allowed = await EndpointAuthorization.HasScopedPermissionAsync(
-            context,
-            UserPermission.ManageOrders,
-            AccessScopeKindDto.Account,
-            request.FundAccountId.Value,
-            context.RequestAborted).ConfigureAwait(false);
+        var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
+        if (scopedAuthorization is null ||
+            !EndpointAuthorization.TryResolveActor(context, out var actor) ||
+            !EndpointAuthorization.TryGetPermissions(context, out var permissions))
+        {
+            return EndpointHelpers.Forbidden();
+        }
 
-        return allowed ? null : EndpointHelpers.Forbidden();
+        var decision = await scopedAuthorization.AuthorizeAsync(
+                actor,
+                requiredPermission,
+                AccessScopeKindDto.Account,
+                fundAccountId.Value,
+                permissions,
+                context.RequestAborted)
+            .ConfigureAwait(false);
+
+        return decision.IsAllowed ? null : EndpointHelpers.Forbidden();
     }
 
     private static IResult? TryRejectClientControlledExecutionMetadata(

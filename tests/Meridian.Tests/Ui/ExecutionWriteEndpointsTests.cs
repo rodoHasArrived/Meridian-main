@@ -366,7 +366,9 @@ public sealed class ExecutionWriteEndpointsTests
         var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
 
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway),
+            allowedAccountScopes: [fundAccountId]);
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(
@@ -385,7 +387,9 @@ public sealed class ExecutionWriteEndpointsTests
         var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
 
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway),
+            allowedAccountScopes: [fundAccountId]);
 
         var client = app.GetTestClient();
         var response = await client.PostAsync($"/api/execution/positions/AAPL/close?fundAccountId={fundAccountId:D}", null);
@@ -394,6 +398,23 @@ public sealed class ExecutionWriteEndpointsTests
 
         var request = gateway.SubmittedRequests.Should().ContainSingle().Subject;
         request.FundAccountId.Should().Be(fundAccountId);
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_WithUnscopedFundAccount_ReturnsForbiddenAndDoesNotSubmit()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m, FundAccountId: fundAccountId)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        gateway.SubmittedRequests.Should().BeEmpty();
     }
 
     [Fact]
@@ -620,6 +641,29 @@ public sealed class ExecutionWriteEndpointsTests
         var result = await ReadAsync<OrderResult>(response);
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("server-side");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WithUnscopedFundAccount_ReturnsForbiddenAndDoesNotSubmit()
+    {
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionOrderSubmit,
+            JsonContent(new ExecutionOrderRequest
+            {
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Market,
+                Quantity = 1m,
+                FundAccountId = fundAccountId
+            }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         gateway.SubmittedRequests.Should().BeEmpty();
     }
 
@@ -1205,7 +1249,8 @@ public sealed class ExecutionWriteEndpointsTests
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
         UserPermission currentUserPermissions = UserPermission.ExecuteTrades | UserPermission.ManageOrders | UserPermission.ManageStrategies,
-        string? currentUser = "ops-user")
+        string? currentUser = "ops-user",
+        IReadOnlyCollection<Guid>? allowedAccountScopes = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -1213,6 +1258,11 @@ public sealed class ExecutionWriteEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        if (allowedAccountScopes is not null)
+        {
+            builder.Services.AddSingleton<IScopedAuthorizationService>(
+                new TestScopedAuthorizationService(allowedAccountScopes));
+        }
 
         var app = builder.Build();
         app.Use(async (context, next) =>
@@ -1239,6 +1289,38 @@ public sealed class ExecutionWriteEndpointsTests
 
         await app.StartAsync();
         return app;
+    }
+
+    private sealed class TestScopedAuthorizationService : IScopedAuthorizationService
+    {
+        private readonly HashSet<Guid> _allowedAccountScopes;
+
+        public TestScopedAuthorizationService(IReadOnlyCollection<Guid> allowedAccountScopes)
+        {
+            _allowedAccountScopes = allowedAccountScopes.ToHashSet();
+        }
+
+        public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(
+            string actor,
+            UserPermission requiredPermission,
+            AccessScopeKindDto scopeKind,
+            Guid? scopeId,
+            UserPermission globalPermissions,
+            CancellationToken ct = default)
+        {
+            var allowed = scopeKind == AccessScopeKindDto.Account
+                && scopeId.HasValue
+                && _allowedAccountScopes.Contains(scopeId.Value)
+                && (globalPermissions & requiredPermission) == requiredPermission;
+
+            return Task.FromResult(new ScopedAuthorizationDecisionDto(
+                allowed,
+                actor,
+                requiredPermission,
+                scopeKind,
+                scopeId,
+                allowed ? "Test account scope grants access." : "Test account scope denies access."));
+        }
     }
 
     private static async Task<TradingActionResult> ReadActionResultAsync(HttpResponseMessage response) =>
