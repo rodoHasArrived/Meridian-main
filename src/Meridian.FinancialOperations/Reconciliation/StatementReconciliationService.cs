@@ -147,16 +147,9 @@ public sealed class StatementReconciliationService
     /// </summary>
     private static void ValidateFlexDocument(string sourcePath)
     {
-        var settings = new System.Xml.XmlReaderSettings
-        {
-            DtdProcessing = System.Xml.DtdProcessing.Prohibit,
-            XmlResolver = null,
-            CloseInput = true
-        };
-
         try
         {
-            using var reader = System.Xml.XmlReader.Create(File.OpenRead(sourcePath), settings);
+            using var reader = System.Xml.XmlReader.Create(File.OpenRead(sourcePath), CreateFlexReaderSettings());
             reader.MoveToContent();
             if (!string.Equals(reader.LocalName, "FlexQueryResponse", StringComparison.Ordinal))
             {
@@ -170,6 +163,21 @@ public sealed class StatementReconciliationService
         }
     }
 
+    private static System.Xml.Linq.XDocument LoadFlexDocument(string content)
+    {
+        using var textReader = new StringReader(content);
+        using var reader = System.Xml.XmlReader.Create(textReader, CreateFlexReaderSettings());
+        return System.Xml.Linq.XDocument.Load(reader);
+    }
+
+    private static System.Xml.XmlReaderSettings CreateFlexReaderSettings() => new()
+    {
+        DtdProcessing = System.Xml.DtdProcessing.Prohibit,
+        XmlResolver = null,
+        CloseInput = true,
+        MaxCharactersFromEntities = 0
+    };
+
     /// <summary>
     /// Reads an IB Flex report into normalized statement rows (one per Trade, OpenPosition,
     /// and CashTransaction element) so case intake matches Flex statements with the same
@@ -182,7 +190,7 @@ public sealed class StatementReconciliationService
         string sourcePath,
         string content)
     {
-        var document = System.Xml.Linq.XDocument.Parse(content);
+        var document = LoadFlexDocument(content);
         var rows = new List<NormalizedStatementRow>();
         var rowNumber = 0;
 
@@ -297,7 +305,9 @@ public sealed class StatementReconciliationService
         var content = await File.ReadAllTextAsync(sourcePath, ct).ConfigureAwait(false);
         var importId = DeterministicFingerprint.Compute($"{normalizedSourceKind}|{sourcePath}|{content}");
 
-        var document = System.Xml.Linq.XDocument.Parse(content);
+        // Import can be invoked without validation (for example, when resuming from a checkpoint),
+        // so parse with the same DTD-prohibiting settings as ValidateFlexDocument.
+        var document = LoadFlexDocument(content);
         var sourceRows = new List<StatementSourceRowReference>();
         var rowNumber = 0;
         foreach (var element in document.Descendants()
@@ -492,11 +502,10 @@ public sealed class StatementReconciliationService
             var sourceActivityType = mapped.GetRequired(StatementCanonicalField.ActivityType, currentRowNumber);
             var activityType = profile.MapActivityType(sourceActivityType);
             var rowKind = ToStatementRowKind(activityType);
-            // Position rows must carry a security identifier so the matching engine can compare
-            // them against internal positions by security; a blank one is a mapping error, not a
-            // matchable position. Account-level cash/fee/dividend and other activity rows may omit
-            // it, matching the prior positional importer.
-            var symbol = rowKind == StatementRowKind.Position
+            // Security-bearing positions and transactions must carry an identifier so downstream
+            // matching and resolution retain a security reference. Only account-level cash, fee,
+            // and dividend rows may omit it, matching the prior positional importer.
+            var symbol = rowKind is StatementRowKind.Position or StatementRowKind.Transaction
                 ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, currentRowNumber)
                 : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, currentRowNumber);
@@ -579,9 +588,10 @@ public sealed class StatementReconciliationService
             var account = mapped.GetRequired(StatementCanonicalField.Account, rowNumber);
             var activityType = profile.MapActivityType(mapped.GetRequired(StatementCanonicalField.ActivityType, rowNumber));
             var rowKind = ToStatementRowKind(activityType);
-            // Position rows must carry a security identifier (see import path); account-level
-            // cash/fee/dividend and other activity rows may omit it. Kept consistent across both paths.
-            var symbol = rowKind == StatementRowKind.Position
+            // Security-bearing positions and transactions must carry an identifier (see import
+            // path); only account-level cash, fee, and dividend rows may omit it. Kept consistent
+            // across both paths.
+            var symbol = rowKind is StatementRowKind.Position or StatementRowKind.Transaction
                 ? mapped.GetRequired(StatementCanonicalField.SecurityIdentifier, rowNumber)
                 : mapped.GetOptional(StatementCanonicalField.SecurityIdentifier) ?? string.Empty;
             var quantity = mapped.GetRequiredDecimal(StatementCanonicalField.Quantity, rowNumber);

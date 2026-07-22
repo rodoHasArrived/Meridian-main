@@ -51,18 +51,6 @@ public sealed class CorporateActionLedgerKnownDefectTests
     }
 
     [Fact]
-    public async Task BondCall_CurrentBehavior_PercentOfParBookedAsCash_CA_DEF_005()
-    {
-        // TARGET (Idea #3): cash = 101.5% x par x 50,000 face quantity, with position
-        // close-out at the call price — not the percent-of-par proxy.
-        var (_, ledger) = await PostAsync("bond-call-101-5");
-
-        var entry = ledger.Journal.Should().ContainSingle().Subject;
-        entry.Lines.Single(static line => line.Account == LedgerAccounts.Cash).Debit.Should().Be(101.5m,
-            "CURRENT defective behavior: percent-of-par posts as literal proxy cash");
-    }
-
-    [Fact]
     public async Task Dividend_NoPositionContext_CurrentBehavior_SkippedEntirely_CA_DEF_006()
     {
         // TARGET (Idea #3): the record-date holdings seam supplies the position quantity;

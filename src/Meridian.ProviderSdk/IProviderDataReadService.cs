@@ -22,8 +22,42 @@ public sealed record ProviderDataProvenance(
         "unknown", "unknown", "unknown", "unknown");
 }
 
-/// <summary>Provider-neutral lifecycle state for a correlated data request.</summary>
-public enum ProviderDataRequestStatus { Requested, Streaming, Completed, Cancelled, TimedOut, Rejected, Failed }
+
+/// <summary>Provider-neutral contract-definition result.</summary>
+public sealed record ProviderContractDetails(
+    string ProviderContractId, string Symbol, string? LocalSymbol, string? SecurityType,
+    string? Exchange, string? PrimaryExchange, string? Currency, string? TradingClass,
+    string? Multiplier, DateOnly? Expiration, decimal? Strike, string? Right,
+    string? MarketRuleIds, decimal? MinimumTick, string? LongName, string? Industry,
+    string? Category, string? Subcategory, string? TimeZoneId, string? TradingHours, string? LiquidHours);
+
+/// <summary>Provider-neutral option-chain definition returned for an underlying instrument.</summary>
+public sealed record ProviderOptionChainDefinition(
+    string Exchange, string UnderlyingProviderContractId, string TradingClass, string? Multiplier,
+    IReadOnlyList<DateOnly> Expirations, IReadOnlyList<decimal> Strikes);
+
+/// <summary>Provider-neutral historical-news headline.</summary>
+public sealed record ProviderNewsHeadline(DateTimeOffset Timestamp, string ProviderCode, string ArticleId, string Headline);
+
+/// <summary>Provider-neutral news-article payload.</summary>
+public sealed record ProviderNewsArticle(int ArticleType, string Content);
+
+/// <summary>Provider-neutral fundamental report payload.</summary>
+public sealed record ProviderFundamentalReport(string Content);
+
+/// <summary>Provider-neutral tick-by-tick trade, quote, or midpoint observation.</summary>
+public sealed record ProviderTickByTickObservation(
+    DateTimeOffset Timestamp, string Kind, decimal? Price = null, decimal? Size = null,
+    decimal? Bid = null, decimal? Ask = null, decimal? BidSize = null, decimal? AskSize = null,
+    string? Exchange = null, string? SpecialConditions = null);
+
+/// <summary>Provider-neutral market-depth exchange capability.</summary>
+public sealed record ProviderDepthExchangeDescription(string Exchange, string SecurityType, string ListingExchange, string Service, bool IsAggregator);
+
+/// <summary>Provider-neutral dividend and earnings evidence supplied by a market-data callback.</summary>
+public sealed record ProviderDividendEarnings(
+    decimal? TrailingTwelveMonthDividend, decimal? ForwardTwelveMonthDividend, DateOnly? NextDividendDate,
+    decimal? NextDividendAmount, decimal? EarningsPerShare, decimal? PriceEarningsRatio);
 
 /// <summary>Provider-neutral evidence for a discovered option contract.</summary>
 public sealed record ProviderOptionContract(string Symbol, string UnderlyingSymbol, DateOnly Expiration, decimal Strike, string Right, string Exchange, string? TradingClass, string? Multiplier, string? ProviderContractId, ProviderDataProvenance Provenance);
@@ -45,12 +79,29 @@ public sealed record ProviderMarketRuleIncrement(decimal LowEdge, decimal Increm
 
 /// <summary>A correlated, presentation-safe snapshot of provider data.</summary>
 public sealed record ProviderDataRequestReadModel(
-    int RequestId, string ProviderFamily, string Capability, ProviderDataRequestStatus Status, DateTimeOffset UpdatedAt,
-    ProviderDataProvenance Provenance, string? AccountId = null, string? ModelAccountId = null, string? ErrorCode = null,
-    string? ErrorMessage = null, IReadOnlyList<ProviderOptionContract>? OptionContracts = null,
-    IReadOnlyList<ProviderScannerResult>? ScannerResults = null, IReadOnlyList<ProviderRealTimeBar>? RealTimeBars = null,
-    IReadOnlyList<ProviderHistoricalTick>? HistoricalTicks = null, ProviderAccountPnl? Pnl = null,
-    IReadOnlyList<ProviderMarketRuleIncrement>? MarketRuleIncrements = null);
+    int RequestId,
+    string ProviderFamily,
+    string Capability,
+    ProviderDataRequestStatus Status,
+    DateTimeOffset UpdatedAt,
+    string? AccountId = null,
+    string? ModelAccountId = null,
+    string? ErrorCode = null,
+    string? ErrorMessage = null,
+    IReadOnlyList<ProviderOptionContract>? OptionContracts = null,
+    IReadOnlyList<ProviderScannerResult>? ScannerResults = null,
+    IReadOnlyList<ProviderRealTimeBar>? RealTimeBars = null,
+    IReadOnlyList<ProviderHistoricalTick>? HistoricalTicks = null,
+    ProviderAccountPnl? Pnl = null,
+    IReadOnlyList<ProviderMarketRuleIncrement>? MarketRuleIncrements = null,
+    IReadOnlyList<ProviderContractDetails>? ContractDetails = null,
+    IReadOnlyList<ProviderOptionChainDefinition>? OptionChainDefinitions = null,
+    IReadOnlyList<ProviderNewsHeadline>? NewsHeadlines = null,
+    ProviderNewsArticle? NewsArticle = null,
+    ProviderFundamentalReport? FundamentalReport = null,
+    IReadOnlyList<ProviderTickByTickObservation>? TickByTickObservations = null,
+    IReadOnlyList<ProviderDepthExchangeDescription>? DepthExchanges = null,
+    ProviderDividendEarnings? DividendEarnings = null);
 
 /// <summary>Shared read-model seam for rich provider data requested by an operator workflow.</summary>
 public interface IProviderDataReadService

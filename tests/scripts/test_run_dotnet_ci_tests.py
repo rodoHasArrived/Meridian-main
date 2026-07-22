@@ -43,6 +43,12 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         self.assertTrue(projects[0].filter_expression)
         self.assertTrue(projects[-1].filter_expression, "core-remainder must carry the catch-all filter")
 
+    def test_core_reporting_shard_includes_all_reporting_governance_tests(self):
+        projects = MODULE.parse_project_entries([])
+        reporting = next(project for project in projects if project.name == "core-reporting")
+
+        self.assertEqual(reporting.filter_expression, "FullyQualifiedName~Meridian.Tests.Reporting")
+
     def test_core_remainder_filter_excludes_every_explicit_core_prefix(self):
         remainder = MODULE.build_core_remainder_filter(MODULE.DEFAULT_TEST_PROJECTS[:-1])
 

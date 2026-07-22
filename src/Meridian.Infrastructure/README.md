@@ -41,7 +41,8 @@ diagnostics, `WebSocketState` is `None`. Consumers should use this contract inst
 into provider-specific transport internals.
 
 Alpaca streaming keeps equities, options, crypto, and news as explicit adapters with their own
-WebSocket endpoints. Its diagnostics carry a per-stream selected feed and entitlement (for
+WebSocket endpoints. Consumers resolve them through the capability-aware Alpaca asset-stream router, which
+fails closed when a requested stream has no usable entitlement rather than falling back to equities. Its diagnostics carry a per-stream selected feed and entitlement (for
 example, IEX versus SIP and indicative versus OPRA), so a connected price socket cannot be
 misrepresented as consolidated or OPRA-entitled data.
 
@@ -124,7 +125,9 @@ The IB vendor runtime also exposes an entitlement-aware `IBDataServices` seam fo
 contract details, option chains, news, fundamentals, tick-by-tick data, account P&L, market rules,
 and depth-exchange metadata. Its request lineage begins `Unknown` and must retain the actual IB
 live/frozen/delayed status, exchange, market rules, and subscription descriptor alongside any
-materialized observation; successful request submission is not evidence of a live entitlement.
+materialized result. `IBDataResultMaterializer` is the Infrastructure-to-storage composition seam:
+it commits each `WatchAsync` update to `IIBDataResultStore` before making that update available to
+operator readers; successful request submission is not evidence of a live entitlement.
 Its richer request callbacks publish bounded, request-correlated ProviderSdk read-model updates for
 option discovery, scanners, real-time bars, historical ticks, account/model-account P&L, and market
 rules. Each returned request and observation carries required provenance: provider and configured

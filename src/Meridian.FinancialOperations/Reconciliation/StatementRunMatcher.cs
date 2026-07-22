@@ -37,17 +37,19 @@ internal static class StatementRunMatcher
         var statementCash = new List<NormalizedStatementCashBalance>();
         var statementTransactions = new List<NormalizedStatementTransaction>();
         var rowByEvidence = new Dictionary<string, CanonicalStatementRow>(StringComparer.OrdinalIgnoreCase);
+        var statementPeriodEnd = import.StatementPeriodEnd == default
+            ? import.StatementDate
+            : import.StatementPeriodEnd;
 
-        ValidateRowAccounts(rows, import.ExternalAccountId);
-
-        // A statement run reconciles a single custodian account, so the account dimension is a
-        // run-level constant. Normalize the statement side to the run's external (custodian) account
-        // key — the same key the internal populations use — so institutional statements whose per-row
-        // account column carries an IBAN or bank id (camt.053, BAI2) still reconcile instead of
-        // breaking on an account-string mismatch.
+        // A statement run reconciles a single custodian account. Before replacing the source-row
+        // account with the run-level key, reject any populated source account that names a different
+        // custodian account. Otherwise a statement for account B could be normalized to account A and
+        // falsely reconcile against A's internal book. Account aliases must be resolved before this
+        // boundary; this matcher never silently treats distinct account identifiers as equivalent.
         var canonicalAccount = string.IsNullOrWhiteSpace(import.ExternalAccountId)
-            ? import.FundAccountId
+            ? import.FundAccountId.Trim()
             : import.ExternalAccountId.Trim();
+        ValidateStatementAccounts(rows, canonicalAccount);
 
         foreach (var row in rows)
         {
@@ -59,7 +61,7 @@ internal static class StatementRunMatcher
                     statementPositions.Add(MapPosition(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
                     break;
                 case StatementRowKind.CashBalance:
-                    statementCash.Add(MapCash(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
+                    statementCash.Add(MapCash(row, canonicalAccount, evidence, statementPeriodEnd, fxRateProvider, normalizedBase));
                     break;
                 default:
                     statementTransactions.Add(MapTransaction(row, canonicalAccount, evidence, fxRateProvider, normalizedBase));
@@ -67,9 +69,8 @@ internal static class StatementRunMatcher
             }
         }
 
-        var asOf = import.StatementPeriodEnd == default ? import.StatementDate : import.StatementPeriodEnd;
         var internalCash = populations.CashBalances
-            .Select(cash => NormalizeInternalCash(cash, fxRateProvider, normalizedBase, asOf))
+            .Select(cash => NormalizeInternalCash(cash, fxRateProvider, normalizedBase, statementPeriodEnd))
             .ToArray();
         var internalTransactions = populations.LedgerTransactions
             .Select(transaction => NormalizeInternalTransaction(transaction, fxRateProvider, normalizedBase))
@@ -124,18 +125,24 @@ internal static class StatementRunMatcher
         return new StatementRunMatchResult(breaks, matchCount);
     }
 
-    // Imported rows are retained evidence. Do not erase their recorded account identity by mapping
-    // them to a caller-supplied run account unless the two agree; otherwise a statement for a
-    // different account could be reconciled against this run's internal population.
-    private static void ValidateRowAccounts(
+    private static void ValidateStatementAccounts(
         IReadOnlyList<CanonicalStatementRow> rows,
-        string externalAccountId)
+        string canonicalAccount)
     {
-        var expectedAccount = externalAccountId.Trim();
-        if (rows.Any(row => !string.Equals(row.Account.Trim(), expectedAccount, StringComparison.OrdinalIgnoreCase)))
+        foreach (var row in rows)
         {
-            throw new InvalidDataException(
-                "Statement rows must all identify the statement run's external account.");
+            if (string.IsNullOrWhiteSpace(row.Account))
+            {
+                continue;
+            }
+
+            var sourceAccount = row.Account.Trim();
+            if (!string.Equals(sourceAccount, canonicalAccount, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException(
+                    $"Statement row {row.SourceRowNumber} identifies account '{sourceAccount}', " +
+                    $"which does not match the requested external account '{canonicalAccount}'.");
+            }
         }
     }
 
@@ -173,14 +180,23 @@ internal static class StatementRunMatcher
         CanonicalStatementRow row,
         string account,
         string evidence,
+        DateOnly statementPeriodEnd,
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
     {
         var (currency, amount) = ToBaseCurrency(row.CashAmount, row.Currency, baseCurrency, row.TradeDate, fxRateProvider);
-        // Carry the statement balance's as-of date into the cash identity. The internal cash is the book's
-        // balance as of its own recorded date, and the engine now requires the two dates to agree, so a
-        // closing balance from the wrong period cannot exact-match a period-appropriate internal balance.
-        return new NormalizedStatementCashBalance(evidence, account, currency, amount, evidence, row.TradeDate);
+        // A cash balance is a closing balance only when it is dated at the run's closing period. Keep the
+        // source as-of date for evidence and mark an out-of-period row ineligible for matching. This
+        // prevents a stale cash row from reconciling if a faulty internal source happens to return the
+        // same stale snapshot instead of the requested period-end snapshot.
+        return new NormalizedStatementCashBalance(
+            evidence,
+            account,
+            currency,
+            amount,
+            evidence,
+            row.TradeDate,
+            IsForStatementPeriodEnd: row.TradeDate == statementPeriodEnd);
     }
 
     private static NormalizedStatementTransaction MapTransaction(

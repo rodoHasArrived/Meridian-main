@@ -2,11 +2,42 @@ using FluentAssertions;
 using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.ProviderSdk;
+using Meridian.Storage.Store;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
 public sealed class IBDataServicesTests
 {
+    [Fact]
+    public async Task Materializer_PersistsAnUpdateBeforePublishingItToOperatorReaders()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-ib-materializer", Guid.NewGuid().ToString("N"));
+        try
+        {
+            using var services = new IBDataServices(new RecordingTransport());
+            var store = new JsonFileIBDataResultStore(new IBDataResultStoreOptions { DataRoot = root });
+            var materializer = new IBDataResultMaterializer(services, store);
+            using var cts = new CancellationTokenSource();
+            var worker = materializer.MaterializeAsync(cts.Token);
+            await Task.Delay(25);
+
+            var requestId = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+            await using var enumerator = materializer.WatchAsync(cts.Token).GetAsyncEnumerator();
+            (await enumerator.MoveNextAsync()).Should().BeTrue();
+
+            var persisted = await store.QueryAsync(new IBDataResultQuery(RequestIdentity: requestId.ToString(), Limit: 1));
+            persisted.Should().ContainSingle();
+            persisted[0].Lineage.RequestId.Should().Be(requestId);
+            persisted[0].NormalizedPayload.Should().Contain("interactive-brokers");
+            cts.Cancel();
+            await worker.ContinueWith(_ => { });
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public void RequestContractDetails_TracksExchangeAndMarketRuleLineage()
     {
@@ -211,7 +242,51 @@ public sealed class IBDataServicesTests
         services.GetRequests().Single(request => request.RequestId == second).Status.Should().Be(ProviderDataRequestStatus.Requested);
     }
 
-    private sealed class RecordingTransport : IIBDataServiceTransport
+    [Fact]
+    public void CallbackSource_ProjectsEveryRichDataPayloadAndTerminalCallback()
+    {
+        var transport = new CallbackTransport();
+        using var services = new IBDataServices(transport);
+        var contract = services.RequestContractDetails(new SymbolConfig("AAPL"));
+        var chain = services.RequestOptionChain(new SymbolConfig("AAPL", ConId: 265598));
+        var headlines = services.RequestHistoricalNews(265598, "BRFG", DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow);
+        var article = services.RequestNewsArticle("BRFG", "article-1");
+        var fundamentals = services.RequestFundamentals(new SymbolConfig("AAPL"), "ReportsFinSummary");
+        var ticks = services.SubscribeTickByTick(new SymbolConfig("AAPL"));
+        var depth = services.RequestDepthExchanges();
+        var dividends = services.SubscribeDividendEarnings(new SymbolConfig("AAPL"));
+        var scanner = services.RequestScanner(new IBScannerRequest("STK", "STK.US.MAJOR", "TOP_PERC_GAIN"));
+        var pnl = services.SubscribePnl("DU123");
+        var rules = services.RequestMarketRule(26);
+
+        transport.RaiseContract(contract, new ProviderContractDetails("265598", "AAPL", null, "STK", "NASDAQ", null, "USD", null, null, null, null, "26", .01m, "Apple", null, null, null, null, null, null));
+        transport.RaiseChain(chain, new ProviderOptionChainDefinition("SMART", "265598", "AAPL", "100", [new DateOnly(2027, 1, 15)], [250m]));
+        transport.RaiseHeadline(headlines, new ProviderNewsHeadline(DateTimeOffset.UtcNow, "BRFG", "headline-1", "Apple headline"));
+        transport.RaiseArticle(article, new ProviderNewsArticle(0, "article text"));
+        transport.RaiseFundamental(fundamentals, new ProviderFundamentalReport("<Report />"));
+        transport.RaiseTick(ticks, new ProviderTickByTickObservation(DateTimeOffset.UtcNow, "last", 200m, 10m));
+        transport.RaiseDepth(depth, [new ProviderDepthExchangeDescription("NASDAQ", "STK", "NASDAQ", "Deep", false)]);
+        transport.RaiseDividend(dividends, new ProviderDividendEarnings(1m, 1.1m, new DateOnly(2027, 2, 1), .30m, 7m, 30m));
+        transport.RaiseScanner(scanner, new ProviderScannerResult(0, "AAPL", "NASDAQ", "265598", null, null, null, null));
+        transport.RaisePnl(pnl, new ProviderAccountPnl("DU123", null, 1m, 2m, 3m));
+        transport.RaiseMarketRule(rules, [new ProviderMarketRuleIncrement(0m, .01m)]);
+        transport.RaiseCompleted(contract);
+        transport.RaiseRejected(ticks, "354", "Not subscribed");
+
+        services.GetRequests().Single(x => x.RequestId == contract).ContractDetails.Should().ContainSingle();
+        services.GetRequests().Single(x => x.RequestId == chain).OptionChainDefinitions.Should().ContainSingle();
+        services.GetRequests().Single(x => x.RequestId == headlines).NewsHeadlines.Should().ContainSingle();
+        services.GetRequests().Single(x => x.RequestId == article).NewsArticle!.Content.Should().Be("article text");
+        services.GetRequests().Single(x => x.RequestId == fundamentals).FundamentalReport!.Content.Should().Be("<Report />");
+        services.GetRequests().Single(x => x.RequestId == ticks).Status.Should().Be(ProviderDataRequestStatus.Rejected);
+        services.GetRequests().Single(x => x.RequestId == depth).DepthExchanges.Should().ContainSingle();
+        services.GetRequests().Single(x => x.RequestId == dividends).DividendEarnings!.NextDividendAmount.Should().Be(.30m);
+        services.GetRequests().Single(x => x.RequestId == scanner).ScannerResults.Should().ContainSingle();
+        services.GetRequests().Single(x => x.RequestId == pnl).Pnl!.Daily.Should().Be(1m);
+        services.GetRequests().Single(x => x.RequestId == rules).MarketRuleIncrements.Should().ContainSingle();
+    }
+
+    private class RecordingTransport : IIBDataServiceTransport
     {
         public List<string> Calls { get; } = [];
         public void RequestScanner(int requestId, IBScannerRequest request) => Calls.Add($"scanner:{requestId}:{request.ScanCode}");

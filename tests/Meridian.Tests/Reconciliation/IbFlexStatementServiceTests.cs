@@ -319,6 +319,29 @@ public sealed class IbFlexStatementServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task StatementReconciliationService_ImportRejectsFlexDocumentWithDtd()
+    {
+        var service = new StatementReconciliationService();
+        var path = WriteFlexFile("""
+            <!DOCTYPE FlexQueryResponse [<!ENTITY symbol "AAPL">]>
+            <FlexQueryResponse>
+              <FlexStatements count="1">
+                <FlexStatement toDate="20260630">
+                  <Trades>
+                    <Trade symbol="&symbol;" tradeDate="20260615" quantity="1" tradePrice="1" />
+                  </Trades>
+                </FlexStatement>
+              </FlexStatements>
+            </FlexQueryResponse>
+            """, "dtd-flex-report.xml");
+
+        // ImportAsync can run without a prior validation stage, so it must reject DTDs itself.
+        var import = async () => await service.ImportAsync("ib-flex", path, null, CancellationToken.None);
+
+        await import.Should().ThrowAsync<System.Xml.XmlException>();
+    }
+
+    [Fact]
     public async Task StatementRunWorkflow_ImportsFlexStatementEndToEnd()
     {
         var workflow = new StatementRunWorkflowService(
