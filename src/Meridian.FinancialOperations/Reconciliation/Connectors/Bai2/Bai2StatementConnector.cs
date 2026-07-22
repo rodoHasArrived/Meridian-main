@@ -42,7 +42,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
 
         var groupCurrency = "USD";
         DateOnly? asOfDate = null;
-        var account = "unknown-account";
+        string? account = null;
         var accountCurrency = groupCurrency;
         var rowNumber = 0;
 
@@ -91,14 +91,16 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         hasBlankAccountId = true;
                     }
 
-                    account = string.IsNullOrWhiteSpace(accountId) ? "unknown-account" : accountId.Trim();
+                    account = string.IsNullOrWhiteSpace(accountId) ? null : accountId.Trim();
                     accountCurrency = NormalizeCurrency(FieldAt(fields, 2), groupCurrency);
-                    if (TryResolveClosingBalance(fields, out var balanceMinorUnits) && asOfDate is { } balanceDate)
+                    if (account is { } identifiedAccount &&
+                        TryResolveClosingBalance(fields, out var balanceMinorUnits) &&
+                        asOfDate is { } balanceDate)
                     {
                         rowNumber++;
                         records.Add(new StatementCanonicalRecord(
                             StatementRecordKind.CashBalance,
-                            account,
+                            identifiedAccount,
                             Symbol: string.Empty,
                             Quantity: 0m,
                             Price: 0m,
@@ -123,6 +125,15 @@ public sealed class Bai2StatementConnector : IStatementConnector
                         break;
                     }
 
+                    // Do not construct canonical rows under a shared placeholder account. The parse
+                    // result is rejected below, but keeping malformed sections out of records also
+                    // prevents a future validation-path change from accidentally exposing them.
+                    if (account is not { } identifiedTransactionAccount)
+                    {
+                        hasBlankAccountId = true;
+                        break;
+                    }
+
                     if (asOfDate is not { } transactionDate)
                     {
                         issues.Add(StatementParseIssue.Warning("BAI2_NO_ASOF_DATE", "Transaction detail appeared before a group as-of date; skipped.", rowNumber + 1));
@@ -140,7 +151,7 @@ public sealed class Bai2StatementConnector : IStatementConnector
                     var signedAmount = SignByTypeCode(ToMajorUnits(amountMinorUnits, accountCurrency), typeCode);
                     records.Add(new StatementCanonicalRecord(
                         StatementRecordKind.Transaction,
-                        account,
+                        identifiedTransactionAccount,
                         Symbol: string.Empty,
                         Quantity: 0m,
                         Price: 0m,
