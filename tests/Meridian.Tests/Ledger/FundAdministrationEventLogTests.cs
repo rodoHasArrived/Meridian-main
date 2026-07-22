@@ -99,17 +99,42 @@ public sealed class FundAdministrationEventLogTests
     [Fact]
     public void Append_EvidenceFieldChange_ChangesHash()
     {
-        // Altering any evidence field (here the URI) — not just its id or content hash — must change
-        // the chained hash, so tampering with the supporting record for a governed action is detectable.
-        var left = new FundAdministrationEventLog();
-        var right = new FundAdministrationEventLog();
-        var evidence = new JournalEvidenceReference("ev-1", "vault://approval/1", "Approval", "Governance", At, "approver");
-        var tampered = evidence with { Uri = "vault://approval/forged" };
+        // Every evidence property carries provenance for a privileged action and must be folded into
+        // the event hash, so changing any one of them invalidates the record.
+        var evidence = new JournalEvidenceReference(
+            "ev-1", "vault://approval/1", "Approval", "Governance", At, "approver",
+            SubjectId: "approval-1", ContentHash: "sha256:original", Description: "Controller approval",
+            SourceReference: "ticket-123", ReviewStatus: "Approved", ReviewedBy: "reviewer",
+            ReviewedAtUtc: At.AddMinutes(1), EffectiveDate: DateOnly.FromDateTime(At.DateTime),
+            EvidenceVersion: 1, SubjectType: "PeriodReopen");
 
-        var original = left.Append(FundAdministrationEventKind.PeriodReopened, "approver", "FUND:2026-Q2", "Reopened", evidence: [evidence], occurredAtUtc: At);
-        var altered = right.Append(FundAdministrationEventKind.PeriodReopened, "approver", "FUND:2026-Q2", "Reopened", evidence: [tampered], occurredAtUtc: At);
+        var original = AppendWithEvidence(evidence);
+        var tamperedEvidence = new[]
+        {
+            evidence with { Uri = "vault://approval/forged" },
+            evidence with { SourceReference = "ticket-forged" },
+            evidence with { ReviewStatus = "Rejected" },
+            evidence with { ReviewedBy = "forged-reviewer" },
+            evidence with { ReviewedAtUtc = At.AddMinutes(2) },
+            evidence with { EffectiveDate = DateOnly.FromDateTime(At.AddDays(1).DateTime) },
+            evidence with { EvidenceVersion = 2 },
+            evidence with { SubjectType = "Journal" },
+        };
 
-        altered.Hash.Should().NotBe(original.Hash);
+        foreach (var tampered in tamperedEvidence)
+            AppendWithEvidence(tampered).Hash.Should().NotBe(original.Hash);
+    }
+
+    private static FundAdministrationEvent AppendWithEvidence(JournalEvidenceReference evidence)
+    {
+        var log = new FundAdministrationEventLog();
+        return log.Append(
+            FundAdministrationEventKind.PeriodReopened,
+            "approver",
+            "FUND:2026-Q2",
+            "Reopened",
+            evidence: [evidence],
+            occurredAtUtc: At);
     }
 
     [Fact]
