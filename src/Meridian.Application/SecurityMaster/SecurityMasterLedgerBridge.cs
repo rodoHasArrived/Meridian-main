@@ -205,7 +205,17 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
                     break;
 
                 case CorporateActionLedgerPostingKind.RedemptionMemo when action.RedemptionPricePercentOfPar.HasValue:
-                    PostRedemptionMemo(ledger, action, normalizedTicker, ts, meta, eventType);
+                    if (postingContext.PositionQuantity <= 0m)
+                    {
+                        _logger.LogWarning(
+                            "SecurityMasterLedgerBridge skipped redemption {CorporateActionId} for {Ticker} because no held face amount was supplied.",
+                            action.CorpActId,
+                            normalizedTicker);
+                        break;
+                    }
+
+                    var redemptionProceeds = action.RedemptionPricePercentOfPar.Value / 100m * postingContext.PositionQuantity;
+                    PostRedemptionMemo(ledger, action, normalizedTicker, ts, meta, eventType, redemptionProceeds);
                     posted++;
                     break;
 
@@ -507,13 +517,11 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
         string ticker,
         DateTimeOffset ts,
         JournalEntryMetadata meta,
-        string eventType)
+        string eventType,
+        decimal proceeds)
     {
-        // Contractual-flow view: the redemption price is expressed as percent of par (a
-        // per-100-par proxy amount); converting to actual cash against face-value lots is
-        // the durable ledger's job, the same as per-share dividend declarations.
-        var amount = action.RedemptionPricePercentOfPar!.Value;
-        var description = $"{eventType} {ticker} at {amount:N4}% of par, ex {action.ExDate:yyyy-MM-dd}";
+        var redemptionPricePercentOfPar = action.RedemptionPricePercentOfPar!.Value;
+        var description = $"{eventType} {ticker} at {redemptionPricePercentOfPar:N4}% of par, ex {action.ExDate:yyyy-MM-dd}";
 
         var entry = new JournalEntry(
             action.CorpActId,
@@ -521,9 +529,9 @@ public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge
             description,
             [
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Cash, amount, 0m, description),
+                    LedgerAccounts.Cash, proceeds, 0m, description),
                 new LedgerEntry(Guid.NewGuid(), action.CorpActId, ts,
-                    LedgerAccounts.Securities(ticker), 0m, amount, description),
+                    LedgerAccounts.Securities(ticker), 0m, proceeds, description),
             ],
             meta);
 

@@ -17,7 +17,6 @@ dotnet test tests/Meridian.Backtesting.Tests -c Release /p:EnableWindowsTargetin
 |----|----------|---------------------------|-----------------|-------------|---------|
 | CA-DEF-001 | `src/Meridian.Backtesting/CorporateActionAdjustmentService.cs` (`BuildDividendFactors`) | Dividend factor silently skipped when no prior-close bar exists before an ex-date; series returned unadjusted with no signal | Explicit degradation: warning + machine-readable adjustment report | Idea #2 remainder (factor engine) | `dividend-missing-prior-bar.json` |
 | CA-DEF-002 | `src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs` (`PostNonCashLifecycleMemo`) | Spinoffs, mergers, and distributions post symbolic 1-unit memos; no basis allocation, lot conversion, or new position | Entitlement-driven position transformation with basis conservation | Idea #3 (entitlement engine) | `t-wbd-spinoff-2022.json`, `cash-stock-merger-2018.json` |
-| CA-DEF-005 | `src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs` (`PostRedemptionMemo`) | Percent-of-par redemption price posted as literal proxy cash | Cash = price% × par × face quantity | Idea #3 | `bond-call-101-5.json` |
 | CA-DEF-006 | `src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs` (dividend branch) | All dividends skipped with a warning when `CorporateActionLedgerPostingContext.PositionQuantity` is not supplied (defaults to 0) | Record-date holdings seam supplies the position quantity | Idea #3 | `dividend-no-position-context.json` |
 
 ## Fixture schema
