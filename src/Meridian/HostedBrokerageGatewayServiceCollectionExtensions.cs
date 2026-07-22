@@ -6,6 +6,7 @@ using Meridian.Infrastructure.Adapters.Robinhood;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Meridian.ProviderSdk;
 
 namespace Meridian;
 
@@ -36,6 +37,18 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             var logger = sp.GetRequiredService<ILogger<IBBrokerageGateway>>();
             return new IBBrokerageGateway(options, logger);
         });
+#if IBAPI
+        // Only an official-vendor build wires a transport; non-vendor builds remain fail-closed.
+        services.TryAddSingleton<EnhancedIBConnectionManager>(sp =>
+        {
+            var options = sp.GetService<Meridian.Core.Config.IBOptions>() ?? new Meridian.Core.Config.IBOptions();
+            return new EnhancedIBConnectionManager(new IBCallbackRouter(), options.Host, options.Port, options.ClientId);
+        });
+        services.TryAddSingleton<IBDataServices>(sp => new IBDataServices(
+            sp.GetRequiredService<EnhancedIBConnectionManager>(),
+            new IBDataResultMaterializer(sp.GetRequiredService<IBDurableResultStore>())));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProviderDataReadService>(sp => sp.GetRequiredService<IBDataServices>()));
+#endif
         services.AddBrokerageGateway("ib", sp => sp.GetRequiredService<IBBrokerageGateway>());
         services.AddBrokerageGateway("ibkr", sp => sp.GetRequiredService<IBBrokerageGateway>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog>(sp => sp.GetRequiredService<IBBrokerageGateway>()));

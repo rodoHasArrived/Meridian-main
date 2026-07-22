@@ -79,6 +79,7 @@ public static class UiApiRoutes
     public const string BackfillProviderConfigAudit = "/api/backfill/providers/audit";
 
     // Provider endpoints
+    public const string ProviderDataProjection = "/api/providers/data-projection";
     public const string ProviderComparison = "/api/providers/comparison";
     public const string ProviderStatus = "/api/providers/status";
     public const string ProviderMetrics = "/api/providers/metrics";
@@ -144,6 +145,7 @@ public static class UiApiRoutes
     public const string IBStatus = "/api/providers/ib/status";
     public const string IBErrorCodes = "/api/providers/ib/error-codes";
     public const string IBLimits = "/api/providers/ib/limits";
+    public const string IBResults = "/api/workstation/ib/results";
 
     // Failover endpoints
     public const string FailoverConfig = "/api/failover/config";

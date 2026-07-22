@@ -593,7 +593,7 @@ public static partial class LedgerEndpoints
             UpsertClosePeriodPlanConfigurationRequestDto request,
             HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!HasLedgerMutationPermission(context) || !CanConfigureCloseTaskApprovalRoles(context, request.TaskConfigurations))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -779,7 +779,7 @@ public static partial class LedgerEndpoints
             SignOffCloseTaskRequestDto request,
             HttpContext context) =>
         {
-            if (!HasLedgerMutationPermission(context))
+            if (!HasLedgerMutationPermission(context) || !HasCloseTaskSignOffRoleAuthority(context, request.Role))
             {
                 return EndpointHelpers.Forbidden();
             }
@@ -1106,6 +1106,11 @@ public static partial class LedgerEndpoints
             {
                 var actor = ResolveMutationActor(context, request.Actor);
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!HasAccountingPackageTenantScope(tenantContext))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .CertifyPackageAsync(request with
                     {
@@ -1159,6 +1164,11 @@ public static partial class LedgerEndpoints
 
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
             var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!HasAccountingPackageTenantScope(tenantContext))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             var result = await service
                 .ListPackagesAsync(
                     fundProfileId,
@@ -1196,6 +1206,11 @@ public static partial class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                if (!HasAccountingPackageTenantScope(tenantContext))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .GetExportArtifactManifestAsync(
                         packageId,
@@ -1889,6 +1904,11 @@ public static partial class LedgerEndpoints
     private static IResult ServiceUnavailable()
         => Results.Problem("Ledger book service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
+
+    private static bool HasAccountingPackageTenantScope(WorkstationTenantContext tenantContext)
+        => !string.IsNullOrWhiteSpace(tenantContext.TenantId) &&
+           !string.IsNullOrWhiteSpace(tenantContext.CompanyId);
+
     private static bool HasLedgerReadPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(
             context,
@@ -2060,6 +2080,38 @@ public static partial class LedgerEndpoints
 
     private static bool HasLedgerCertificationPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance);
+
+    private static bool CanConfigureCloseTaskApprovalRoles(
+        HttpContext context,
+        IReadOnlyList<CloseTaskConfigurationDto> taskConfigurations)
+        => taskConfigurations.All(configuration =>
+            string.IsNullOrWhiteSpace(configuration.RequiredApprovalRole) ||
+            HasCloseTaskSignOffRoleAuthority(context, configuration.RequiredApprovalRole));
+
+    private static bool HasCloseTaskSignOffRoleAuthority(HttpContext context, string role)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+        {
+            return false;
+        }
+
+        if (HasLedgerCertificationPermission(context))
+        {
+            return true;
+        }
+
+        var normalizedRole = role.Trim();
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var rawRole) &&
+            rawRole is UserRole currentRole &&
+            string.Equals(currentRole.ToString(), normalizedRole, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleProfileNameKey, out var rawProfile) &&
+            rawProfile is string profileName &&
+            string.Equals(profileName.Trim(), normalizedRole, StringComparison.OrdinalIgnoreCase);
+    }
 
     private static bool HasManualJournalLifecycleActionPermission(
         HttpContext context,
